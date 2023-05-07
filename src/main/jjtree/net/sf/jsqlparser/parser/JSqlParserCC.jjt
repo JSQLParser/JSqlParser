@@ -1353,67 +1353,50 @@ Insert Insert( List<WithItem> with ):
     List<SelectItem> returning = null;
     Select select = null;
     boolean useDuplicate = false;
-    List<Column> duplicateUpdateColumns = null;
-    List<Expression> duplicateUpdateExpressionList = null;
     Token tk = null;
     InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
-    boolean useSet = false;
-    List<Column> setColumns = new ArrayList<Column>();
-    List<Expression> setExpressionList = new ArrayList<Expression>();
+
+    List<UpdateSet> updateSets;
+    List<UpdateSet> duplicateUpdateSets;
+
     String name = null;
     boolean useAs = false;
     OutputClause outputClause = null;
 
-    UpdateSet updateSet = null;
     InsertConflictTarget conflictTarget = null;
     InsertConflictAction conflictAction = null;
 }
 {
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
-    [LOOKAHEAD(2) (tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
-    {if (tk!=null)
-        modifierPriority = InsertModifierPriority.from(tk.image);
-    }]
+
+    [
+        LOOKAHEAD(2) (tk = <K_LOW_PRIORITY> | tk = <K_DELAYED> | tk = <K_HIGH_PRIORITY>)
+        {
+            if (tk!=null)
+            modifierPriority = InsertModifierPriority.from(tk.image);
+        }
+    ]
     [ LOOKAHEAD(2) <K_IGNORE>{ modifierIgnore = true; }]
     [ LOOKAHEAD(2) <K_INTO>] table=Table()
 
     [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
-    [LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); } ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"  ]
+    [LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
 
     [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
 
     (
         (
-            <K_SET> { useSet = true; }
-            tableColumn=Column() "=" exp=SimpleExpression()
-            {
-                setColumns = new ArrayList<Column>();
-                setExpressionList = new ArrayList<Expression>();
-                setColumns.add(tableColumn);
-                setExpressionList.add(exp);
-            }
-            ("," tableColumn=Column() "=" exp=SimpleExpression()
-                { setColumns.add(tableColumn);
-                setExpressionList.add(exp); } )*
+            <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); }
         )
         |
         select = Select()
     )
 
     [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-        { useDuplicate = true; }
-      tableColumn=Column() "=" exp=SimpleExpression()
-        {
-            duplicateUpdateColumns = new ArrayList<Column>();
-            duplicateUpdateExpressionList = new ArrayList<Expression>();
-            duplicateUpdateColumns.add(tableColumn);
-            duplicateUpdateExpressionList.add(exp);
-        }
-      ("," tableColumn=Column() "=" exp=SimpleExpression()
-        { duplicateUpdateColumns.add(tableColumn);
-        duplicateUpdateExpressionList.add(exp); } )*]
+         duplicateUpdateSets = UpdateSets() { insert.withDuplicateUpdateSets(duplicateUpdateSets); }
+    ]
 
     [
         <K_ON> <K_CONFLICT>
@@ -1430,15 +1413,9 @@ Insert Insert( List<WithItem> with ):
         return insert.withWithItemsList(with)
               .withSelect(select)
               .withTable(table)
-              .withUseDuplicate(useDuplicate)
-              .withDuplicateUpdateColumns(duplicateUpdateColumns)
-              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList)
               .withReturningExpressionList(returning)
               .withModifierPriority(modifierPriority)
-              .withModifierIgnore(modifierIgnore)
-              .withUseSet(useSet)
-              .withUseSetColumns(setColumns)
-              .withSetExpressionList(setExpressionList);
+              .withModifierIgnore(modifierIgnore);
     }
 }
 
@@ -3489,6 +3466,20 @@ ExpressionList SimpleExpressionList():
     }
 }
 
+
+ExpressionList<Column> ColumnList():
+{
+    ExpressionList<Column> expressions = new ExpressionList<Column>();
+    Column expr;
+}
+{
+    expr=Column() { expressions.add(expr); }
+    ( LOOKAHEAD(2) "," expr=Column() { expressions.add(expr); } )*
+    {
+        return expressions;
+    }
+}
+
 ExpressionList ComplexExpressionList():
 {
     ExpressionList expressions = new ExpressionList();
@@ -3908,16 +3899,14 @@ Expression PrimaryExpression() #PrimaryExpression:
             timezoneExpr = new TimezoneExpression();
 
         timezoneExpr.addTimezoneExpression(timezoneRightExpr);
-    } )*
+        }
+    )*
 
     {
         if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
         }
-    }
-
-    {
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
         }
@@ -4012,9 +4001,9 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
 }
 
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
-    ArrayList<Expression> expList = new ArrayList();
+    ExpressionList expList = new ExpressionList();
     ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
-    Expression exp = null;
+    Expression exp;
 } {
     "["
         [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
@@ -4613,17 +4602,15 @@ Execute Execute(): {
 }
 
 FullTextSearch FullTextSearch() : {
-    Column col;
     Token searchModifier;
     Token againstValue;
     JdbcParameter jdbcParameter;
     JdbcNamedParameter jdbcNamedParameter;
     FullTextSearch fs = new FullTextSearch();
-    List<Column> matchedColumns = new ArrayList<Column>();
-    List<Expression> expList = new ArrayList<Expression>();
+    ExpressionList<Column> matchedColumns;
 }
 {
-    <K_MATCH> "(" col=Column() { matchedColumns.add(col); } ("," col=Column() { matchedColumns.add(col); } )* ")" <K_AGAINST>
+    <K_MATCH> "(" matchedColumns=ColumnList() ")" <K_AGAINST>
     "("
     (
       againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }

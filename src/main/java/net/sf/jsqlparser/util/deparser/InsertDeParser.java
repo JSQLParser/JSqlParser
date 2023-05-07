@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -85,34 +84,14 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             select.accept(selectVisitor);
         }
 
-        if (insert.isUseSet()) {
+        if (insert.getSetUpdateSets() != null) {
             buffer.append(" SET ");
-            for (int i = 0; i < insert.getSetColumns().size(); i++) {
-                Column column = insert.getSetColumns().get(i);
-                column.accept(expressionVisitor);
-
-                buffer.append(" = ");
-
-                Expression expression = insert.getSetExpressionList().get(i);
-                expression.accept(expressionVisitor);
-                if (i < insert.getSetColumns().size() - 1) {
-                    buffer.append(", ");
-                }
-            }
+            deparseUpdateSets(insert.getSetUpdateSets(), buffer, expressionVisitor);
         }
 
-        if (insert.isUseDuplicate()) {
+        if (insert.getDuplicateUpdateSets() != null) {
             buffer.append(" ON DUPLICATE KEY UPDATE ");
-            for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
-                Column column = insert.getDuplicateUpdateColumns().get(i);
-                buffer.append(column.getFullyQualifiedName()).append(" = ");
-
-                Expression expression = insert.getDuplicateUpdateExpressionList().get(i);
-                expression.accept(expressionVisitor);
-                if (i < insert.getDuplicateUpdateColumns().size() - 1) {
-                    buffer.append(", ");
-                }
-            }
+            deparseUpdateSets(insert.getDuplicateUpdateSets(), buffer, expressionVisitor);
         }
 
         // @todo: Accept some Visitors for the involved Expressions

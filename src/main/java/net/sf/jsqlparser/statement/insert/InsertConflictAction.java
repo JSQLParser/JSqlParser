@@ -110,7 +110,7 @@ public class InsertConflictAction implements Serializable {
                 builder.append(" DO NOTHING");
                 break;
             case DO_UPDATE:
-                builder.append(" DO UPDATE ");
+                builder.append(" DO UPDATE SET ");
                 UpdateSet.appendUpdateSetsTo(builder, updateSets);
 
                 if (whereExpression != null) {

@@ -337,7 +337,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="673" height="175">
+        <svg xmlns="http://www.w3.org/2000/svg" width="653" height="175">
          <polygon points="9 108 1 104 1 112"/>
          <polygon points="17 108 9 104 9 112"/>
          <rect x="23" y="99" width="24" height="18" class="terminal" rx="4"/>
@@ -350,24 +350,24 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="177" y="111">K_DATETIMELITERAL</text></a><rect x="285" y="99" width="34" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="289" y="111">ZONE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#uservariable" xlink:title="UserVariable" shape="rect">
             <rect x="193" y="127" width="66" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="197" y="139">UserVariable</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext" xlink:title="RelObjectNameExt" shape="rect">
-            <rect x="193" y="155" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="197" y="167">RelObjectNameExt</text></a><rect x="335" y="148" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="339" y="160">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
-            <rect x="417" y="99" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="421" y="111">Expression</text></a><rect x="437" y="22" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="441" y="34">ZONE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-datetimeliteral" xlink:title="K_DATETIMELITERAL" shape="rect">
-            <rect x="479" y="22" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="483" y="34">K_DATETIMELITERAL</text></a><rect x="457" y="71" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="461" y="83">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext" xlink:title="RelObjectNameExt" shape="rect">
-            <rect x="499" y="50" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="503" y="62">RelObjectNameExt</text></a><rect x="621" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="625" y="13">,</text>
-         <path class="line" d="m17 108 h2 m0 0 h4 m24 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m38 0 h4 m0 0 h12 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m40 -49 h4 m104 0 h4 m0 0 h4 m34 0 h4 m0 0 h50 m-224 0 h20 m204 0 h20 m-244 0 q10 0 10 10 m224 0 q0 -10 10 -10 m-234 10 v8 m224 0 v-8 m-224 8 q0 10 10 10 m204 0 q10 0 10 -10 m-194 10 h4 m66 0 h4 m0 0 h28 m-122 0 h20 m102 0 h20 m-142 0 q10 0 10 10 m122 0 q0 -10 10 -10 m-132 10 v8 m122 0 v-8 m-122 8 q0 10 10 10 m102 0 q10 0 10 -10 m-112 10 h4 m94 0 h4 m40 -28 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m60 -49 h4 m60 0 h4 m0 0 h152 m-240 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -78 q0 -10 10 -10 m220 98 l20 0 m-20 0 q10 0 10 -10 l0 -78 q0 -10 -10 -10 m-200 0 h10 m0 0 h154 m-184 0 h20 m164 0 h20 m-204 0 q10 0 10 10 m184 0 q0 -10 10 -10 m-194 10 v1 m184 0 v-1 m-184 1 q0 10 10 10 m164 0 q10 0 10 -10 m-174 10 h4 m34 0 h4 m0 0 h4 m104 0 h4 m0 0 h10 m-174 -10 v20 m184 0 v-20 m-184 20 v8 m184 0 v-8 m-184 8 q0 10 10 10 m164 0 q10 0 10 -10 m-154 10 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m20 -21 h4 m94 0 h4 m20 -49 h4 m8 0 h4 m23 98 h-3"/>
-         <polygon points="663 108 671 104 671 112"/>
-         <polygon points="663 108 655 104 655 112"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="197" y="139">UserVariable</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#identifierchain" xlink:title="IdentifierChain" shape="rect">
+            <rect x="193" y="155" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="197" y="167">IdentifierChain</text></a><rect x="315" y="148" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="319" y="160">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+            <rect x="397" y="99" width="60" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="401" y="111">Expression</text></a><rect x="417" y="22" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="421" y="34">ZONE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-datetimeliteral" xlink:title="K_DATETIMELITERAL" shape="rect">
+            <rect x="459" y="22" width="104" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="463" y="34">K_DATETIMELITERAL</text></a><rect x="437" y="71" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="441" y="83">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext" xlink:title="RelObjectNameExt" shape="rect">
+            <rect x="479" y="50" width="94" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="483" y="62">RelObjectNameExt</text></a><rect x="601" y="1" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="605" y="13">,</text>
+         <path class="line" d="m17 108 h2 m0 0 h4 m24 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m38 0 h4 m0 0 h12 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m40 -49 h4 m104 0 h4 m0 0 h4 m34 0 h4 m0 0 h30 m-204 0 h20 m184 0 h20 m-224 0 q10 0 10 10 m204 0 q0 -10 10 -10 m-214 10 v8 m204 0 v-8 m-204 8 q0 10 10 10 m184 0 q10 0 10 -10 m-174 10 h4 m66 0 h4 m0 0 h8 m-102 0 h20 m82 0 h20 m-122 0 q10 0 10 10 m102 0 q0 -10 10 -10 m-112 10 v8 m102 0 v-8 m-102 8 q0 10 10 10 m82 0 q10 0 10 -10 m-92 10 h4 m74 0 h4 m40 -28 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m60 -49 h4 m60 0 h4 m0 0 h152 m-240 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -78 q0 -10 10 -10 m220 98 l20 0 m-20 0 q10 0 10 -10 l0 -78 q0 -10 -10 -10 m-200 0 h10 m0 0 h154 m-184 0 h20 m164 0 h20 m-204 0 q10 0 10 10 m184 0 q0 -10 10 -10 m-194 10 v1 m184 0 v-1 m-184 1 q0 10 10 10 m164 0 q10 0 10 -10 m-174 10 h4 m34 0 h4 m0 0 h4 m104 0 h4 m0 0 h10 m-174 -10 v20 m184 0 v-20 m-184 20 v8 m184 0 v-8 m-184 8 q0 10 10 10 m164 0 q10 0 10 -10 m-154 10 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m20 -21 h4 m94 0 h4 m20 -49 h4 m8 0 h4 m23 98 h-3"/>
+         <polygon points="643 108 651 104 651 112"/>
+         <polygon points="643 108 635 104 635 112"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#set" title="Set" shape="rect">Set</a>      ::= 'SET' ( 'LOCAL' | 'SESSION' )? ( <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' | ( <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#relobjectnameext" title="RelObjectNameExt" shape="rect">RelObjectNameExt</a> ) '='? ) <a href="#expression" title="Expression" shape="rect">Expression</a> ( ',' ( <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' | <a href="#relobjectnameext" title="RelObjectNameExt" shape="rect">RelObjectNameExt</a> '='? )? <a href="#expression" title="Expression" shape="rect">Expression</a> )*</div></xhtml:code></xhtml:div>
+               <div><a href="#set" title="Set" shape="rect">Set</a>      ::= 'SET' ( 'LOCAL' | 'SESSION' )? ( <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' | ( <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#identifierchain" title="IdentifierChain" shape="rect">IdentifierChain</a> ) '='? ) <a href="#expression" title="Expression" shape="rect">Expression</a> ( ',' ( <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' | <a href="#relobjectnameext" title="RelObjectNameExt" shape="rect">RelObjectNameExt</a> '='? )? <a href="#expression" title="Expression" shape="rect">Expression</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
@@ -770,22 +770,22 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="241" height="49">
+        <svg xmlns="http://www.w3.org/2000/svg" width="211" height="49">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="1" width="42" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="47" y="13">VALUES</text>
          <rect x="43" y="29" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="41">VALUE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="113" y="1" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="117" y="13">SimpleExpressionList</text></a><path class="line" d="m17 10 h2 m20 0 h4 m42 0 h4 m-70 0 h20 m50 0 h20 m-90 0 q10 0 10 10 m70 0 q0 -10 10 -10 m-80 10 v8 m70 0 v-8 m-70 8 q0 10 10 10 m50 0 q10 0 10 -10 m-60 10 h4 m36 0 h4 m0 0 h6 m20 -28 h4 m104 0 h4 m3 0 h-3"/>
-         <polygon points="231 10 239 6 239 14"/>
-         <polygon points="231 10 223 6 223 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="47" y="41">VALUE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="113" y="1" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="117" y="13">ExpressionList</text></a><path class="line" d="m17 10 h2 m20 0 h4 m42 0 h4 m-70 0 h20 m50 0 h20 m-90 0 q10 0 10 10 m70 0 q0 -10 10 -10 m-80 10 v8 m70 0 v-8 m-70 8 q0 10 10 10 m50 0 q10 0 10 -10 m-60 10 h4 m36 0 h4 m0 0 h6 m20 -28 h4 m74 0 h4 m3 0 h-3"/>
+         <polygon points="201 10 209 6 209 14"/>
+         <polygon points="201 10 193 6 193 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#values" title="Values" shape="rect">Values</a>   ::= ( 'VALUES' | 'VALUE' ) <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a></div></xhtml:code></xhtml:div>
+               <div><a href="#values" title="Values" shape="rect">Values</a>   ::= ( 'VALUES' | 'VALUE' ) <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -795,7 +795,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="665" height="385">
+        <svg xmlns="http://www.w3.org/2000/svg" width="707" height="175">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="44" height="18" class="terminal" rx="4"/>
@@ -808,78 +808,77 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="301" y="13">TableWithAlias</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#joinslist" xlink:title="JoinsList" shape="rect">
             <rect x="399" y="22" width="46" height="18" class="nonterminal"/>
             <text class="nonterminal" x="403" y="34">JoinsList</text></a><rect x="473" y="1" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="477" y="13">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="57" y="92" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="61" y="104">Column</text></a><rect x="111" y="92" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="115" y="104">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="133" y="92" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="137" y="104">SimpleExpression</text></a><rect x="57" y="64" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="61" y="76">,</text>
-         <rect x="77" y="197" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="81" y="209">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="137" y="176" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="141" y="188">Column</text></a><rect x="137" y="148" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="141" y="160">,</text>
-         <rect x="231" y="197" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="235" y="209">)</text>
-         <rect x="271" y="176" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="275" y="188">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="313" y="176" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="317" y="188">ParenthesedSelectBody</text></a><rect x="313" y="204" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="317" y="216">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="333" y="204" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="337" y="216">ComplexExpressionList</text></a><rect x="455" y="204" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="459" y="216">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
-            <rect x="313" y="232" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="317" y="244">Expression</text></a><rect x="57" y="120" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="61" y="132">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#outputclause" xlink:title="OutputClause" shape="rect">
-            <rect x="555" y="113" width="72" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="559" y="125">OutputClause</text></a><rect x="58" y="286" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="62" y="298">FROM</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fromitem" xlink:title="FromItem" shape="rect">
-            <rect x="102" y="286" width="54" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="106" y="298">FromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#joinslist" xlink:title="JoinsList" shape="rect">
-            <rect x="184" y="307" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="188" y="319">JoinsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
-            <rect x="298" y="286" width="72" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="302" y="298">WhereClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="418" y="286" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="422" y="298">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#plainlimit" xlink:title="PlainLimit" shape="rect">
-            <rect x="556" y="286" width="50" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="560" y="298">PlainLimit</text></a><rect x="473" y="365" width="62" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="477" y="377">RETURNING</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
-            <rect x="543" y="365" width="78" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="547" y="377">SelectItemsList</text></a><path class="line" d="m17 10 h2 m0 0 h4 m44 0 h4 m20 0 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m20 -21 h4 m74 0 h4 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m20 -21 h4 m24 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-512 91 l2 0 m2 0 l2 0 m2 0 l2 0 m42 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m20 28 h264 m-498 0 h20 m478 0 h20 m-518 0 q10 0 10 10 m498 0 q0 -10 10 -10 m-508 10 v64 m498 0 v-64 m-498 64 q0 10 10 10 m478 0 q10 0 10 -10 m-448 10 h10 m0 0 h10 m-40 0 h20 m20 0 h20 m-60 0 q10 0 10 10 m40 0 q0 -10 10 -10 m-50 10 v1 m40 0 v-1 m-40 1 q0 10 10 10 m20 0 q10 0 10 -10 m-30 10 h4 m12 0 h4 m40 -21 h4 m46 0 h4 m-74 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m54 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-54 0 h4 m8 0 h4 m0 0 h38 m40 28 h10 m0 0 h10 m-40 0 h20 m20 0 h20 m-60 0 q10 0 10 10 m40 0 q0 -10 10 -10 m-50 10 v1 m40 0 v-1 m-40 1 q0 10 10 10 m20 0 q10 0 10 -10 m-30 10 h4 m12 0 h4 m20 -21 h4 m14 0 h4 m20 0 h4 m118 0 h4 m0 0 h36 m-182 0 h20 m162 0 h20 m-202 0 q10 0 10 10 m182 0 q0 -10 10 -10 m-192 10 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m12 0 h4 m0 0 h4 m114 0 h4 m0 0 h4 m12 0 h4 m-172 -10 v20 m182 0 v-20 m-182 20 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m60 0 h4 m0 0 h94 m-438 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -36 q0 -10 10 -10 m438 56 l20 0 m-20 0 q10 0 10 -10 l0 -36 q0 -10 -10 -10 m-438 0 h4 m8 0 h4 m0 0 h422 m60 -28 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-641 173 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h190 m-220 0 h20 m200 0 h20 m-240 0 q10 0 10 10 m220 0 q0 -10 10 -10 m-230 10 v1 m220 0 v-1 m-220 1 q0 10 10 10 m200 0 q10 0 10 -10 m-210 10 h4 m36 0 h4 m0 0 h4 m54 0 h4 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m60 -42 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-205 79 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h146 m-176 0 h20 m156 0 h20 m-196 0 q10 0 10 10 m176 0 q0 -10 10 -10 m-186 10 v1 m176 0 v-1 m-176 1 q0 10 10 10 m156 0 q10 0 10 -10 m-166 10 h4 m62 0 h4 m0 0 h4 m78 0 h4 m23 -21 h-3"/>
-         <polygon points="655 353 663 349 663 357"/>
-         <polygon points="655 353 647 349 647 357"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="477" y="13">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#updatesets" xlink:title="UpdateSets" shape="rect">
+            <rect x="505" y="1" width="64" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="509" y="13">UpdateSets</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#outputclause" xlink:title="OutputClause" shape="rect">
+            <rect x="597" y="22" width="72" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="601" y="34">OutputClause</text></a><rect x="79" y="76" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="83" y="88">FROM</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fromitem" xlink:title="FromItem" shape="rect">
+            <rect x="123" y="76" width="54" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="127" y="88">FromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#joinslist" xlink:title="JoinsList" shape="rect">
+            <rect x="205" y="97" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="209" y="109">JoinsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
+            <rect x="319" y="76" width="72" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="323" y="88">WhereClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="439" y="76" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="443" y="88">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#plainlimit" xlink:title="PlainLimit" shape="rect">
+            <rect x="577" y="76" width="50" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="581" y="88">PlainLimit</text></a><rect x="515" y="155" width="62" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="519" y="167">RETURNING</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
+            <rect x="585" y="155" width="78" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="589" y="167">SelectItemsList</text></a><path class="line" d="m17 10 h2 m0 0 h4 m44 0 h4 m20 0 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m20 -21 h4 m74 0 h4 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m20 -21 h4 m24 0 h4 m0 0 h4 m64 0 h4 m20 0 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-662 54 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h190 m-220 0 h20 m200 0 h20 m-240 0 q10 0 10 10 m220 0 q0 -10 10 -10 m-230 10 v1 m220 0 v-1 m-220 1 q0 10 10 10 m200 0 q10 0 10 -10 m-210 10 h4 m36 0 h4 m0 0 h4 m54 0 h4 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m60 -42 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-184 79 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h146 m-176 0 h20 m156 0 h20 m-196 0 q10 0 10 10 m176 0 q0 -10 10 -10 m-186 10 v1 m176 0 v-1 m-176 1 q0 10 10 10 m156 0 q10 0 10 -10 m-166 10 h4 m62 0 h4 m0 0 h4 m78 0 h4 m23 -21 h-3"/>
+         <polygon points="697 143 705 139 705 147"/>
+         <polygon points="697 143 689 139 689 147"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#update" title="Update" shape="rect">Update</a>   ::= 'UPDATE' 'LOW_PRIORITY'? 'IGNORE'? <a href="#tablewithalias" title="TableWithAlias" shape="rect">TableWithAlias</a> <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? 'SET' ( <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* | '('? <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')'? '=' ( <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | '(' <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ')' | <a href="#expression" title="Expression" shape="rect">Expression</a> ) ( ',' '('? <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')'? '=' ( <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | '(' <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ')' | <a href="#expression" title="Expression" shape="rect">Expression</a> ) )* ) <a href="#outputclause" title="OutputClause" shape="rect">OutputClause</a>? ( 'FROM' <a href="#fromitem" title="FromItem" shape="rect">FromItem</a> <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? )? <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#plainlimit" title="PlainLimit" shape="rect">PlainLimit</a>? ( 'RETURNING' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> )?</div></xhtml:code></xhtml:div>
+               <div><a href="#update" title="Update" shape="rect">Update</a>   ::= 'UPDATE' 'LOW_PRIORITY'? 'IGNORE'? <a href="#tablewithalias" title="TableWithAlias" shape="rect">TableWithAlias</a> <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? 'SET' <a href="#updatesets" title="UpdateSets" shape="rect">UpdateSets</a> <a href="#outputclause" title="OutputClause" shape="rect">OutputClause</a>? ( 'FROM' <a href="#fromitem" title="FromItem" shape="rect">FromItem</a> <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? )? <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#plainlimit" title="PlainLimit" shape="rect">PlainLimit</a>? ( 'RETURNING' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
-        ListExpressionItem
+        UpdateSets
 ======================================================================================================================
 
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="195" height="49">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectexpressionitem" xlink:title="SelectExpressionItem" shape="rect">
-            <rect x="43" y="29" width="108" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="41">SelectExpressionItem</text></a><rect x="43" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="13">,</text>
-         <path class="line" d="m17 38 h2 m20 0 h4 m108 0 h4 m-136 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m116 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-116 0 h4 m8 0 h4 m0 0 h100 m23 28 h-3"/>
-         <polygon points="185 38 193 34 193 42"/>
-         <polygon points="185 38 177 34 177 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="495" height="199">
+         <polygon points="11 10 3 6 3 14"/>
+         <polygon points="19 10 11 6 11 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="45" y="1" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="49" y="13">Column</text></a><rect x="99" y="1" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="103" y="13">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="121" y="1" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="125" y="13">SimpleExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="45" y="29" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="49" y="41">ParenthesedExpressionList</text></a><rect x="185" y="29" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="189" y="41">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="227" y="29" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="231" y="41">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="227" y="57" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="231" y="69">ParenthesedExpressionList</text></a><rect x="77" y="111" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="81" y="123">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="93" y="111" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="97" y="123">Column</text></a><rect x="147" y="111" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="151" y="123">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="169" y="111" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="173" y="123">SimpleExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="77" y="139" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="81" y="151">ParenthesedExpressionList</text></a><rect x="217" y="139" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="221" y="151">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="259" y="139" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="263" y="151">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="259" y="167" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="263" y="179">ParenthesedExpressionList</text></a><path class="line" d="m19 10 h2 m20 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m0 0 h168 m-362 0 h20 m342 0 h20 m-382 0 q10 0 10 10 m362 0 q0 -10 10 -10 m-372 10 v8 m362 0 v-8 m-362 8 q0 10 10 10 m342 0 q10 0 10 -10 m-352 10 h4 m132 0 h4 m0 0 h4 m14 0 h4 m20 0 h4 m96 0 h4 m0 0 h36 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m132 0 h4 m42 -56 l2 0 m2 0 l2 0 m2 0 l2 0 m-414 110 l2 0 m2 0 l2 0 m2 0 l2 0 m62 0 h4 m8 0 h4 m0 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m0 0 h152 m-362 0 h20 m342 0 h20 m-382 0 q10 0 10 10 m362 0 q0 -10 10 -10 m-372 10 v8 m362 0 v-8 m-362 8 q0 10 10 10 m342 0 q10 0 10 -10 m-352 10 h4 m132 0 h4 m0 0 h4 m14 0 h4 m20 0 h4 m96 0 h4 m0 0 h36 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m132 0 h4 m-362 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m382 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-382 0 h10 m0 0 h372 m-422 21 h20 m422 0 h20 m-462 0 q10 0 10 10 m442 0 q0 -10 10 -10 m-452 10 v57 m442 0 v-57 m-442 57 q0 10 10 10 m422 0 q10 0 10 -10 m-432 10 h10 m0 0 h412 m23 -77 h-3"/>
+         <polygon points="485 120 493 116 493 124"/>
+         <polygon points="485 120 477 116 477 124"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#listexpressionitem" title="ListExpressionItem" shape="rect">ListExpressionItem</a></div>
-               <div>         ::= <a href="#selectexpressionitem" title="SelectExpressionItem" shape="rect">SelectExpressionItem</a> ( ',' <a href="#selectexpressionitem" title="SelectExpressionItem" shape="rect">SelectExpressionItem</a> )*</div></xhtml:code></xhtml:div>
+               <div><a href="#updatesets" title="UpdateSets" shape="rect">UpdateSets</a></div>
+               <div>         ::= ( <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> '=' ( <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> ) ) ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> '=' ( <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> ) )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Not referenced by any.
-                                </div></td></tr></tbody></table>
+                                    Referenced by:
+                                    <ul><li><a>insertconflictaction</a></li><li><a>update</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -1002,48 +1001,26 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="795" height="259">
-         <polygon points="11 10 3 6 3 14"/>
-         <polygon points="19 10 11 6 11 14"/>
-         <rect x="25" y="1" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="29" y="13">DO</text>
-         <rect x="37" y="43" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="41" y="55">NOTHING</text>
-         <rect x="37" y="99" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="41" y="111">UPDATE</text>
-         <rect x="89" y="99" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="93" y="111">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="161" y="99" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="165" y="111">Column</text></a><rect x="215" y="99" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="219" y="111">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="237" y="99" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="241" y="111">SimpleExpression</text></a><rect x="161" y="71" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="165" y="83">,</text>
-         <rect x="181" y="204" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="216">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="241" y="183" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="245" y="195">Column</text></a><rect x="241" y="155" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="167">,</text>
-         <rect x="335" y="204" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="339" y="216">)</text>
-         <rect x="375" y="183" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="379" y="195">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="417" y="183" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="421" y="195">ParenthesedSelectBody</text></a><rect x="417" y="211" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="421" y="223">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="437" y="211" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="441" y="223">ComplexExpressionList</text></a><rect x="559" y="211" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="563" y="223">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
-            <rect x="417" y="239" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="421" y="251">Expression</text></a><rect x="161" y="127" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="165" y="139">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
-            <rect x="659" y="120" width="72" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="663" y="132">WhereClause</text></a><path class="line" d="m19 10 h2 m0 0 h4 m22 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-62 42 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h4 m52 0 h4 m0 0 h662 m-742 0 h20 m722 0 h20 m-762 0 q10 0 10 10 m742 0 q0 -10 10 -10 m-752 10 v36 m742 0 v-36 m-742 36 q0 10 10 10 m722 0 q10 0 10 -10 m-732 10 h4 m44 0 h4 m0 0 h4 m24 0 h4 m40 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m20 28 h264 m-498 0 h20 m478 0 h20 m-518 0 q10 0 10 10 m498 0 q0 -10 10 -10 m-508 10 v64 m498 0 v-64 m-498 64 q0 10 10 10 m478 0 q10 0 10 -10 m-448 10 h10 m0 0 h10 m-40 0 h20 m20 0 h20 m-60 0 q10 0 10 10 m40 0 q0 -10 10 -10 m-50 10 v1 m40 0 v-1 m-40 1 q0 10 10 10 m20 0 q10 0 10 -10 m-30 10 h4 m12 0 h4 m40 -21 h4 m46 0 h4 m-74 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m54 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-54 0 h4 m8 0 h4 m0 0 h38 m40 28 h10 m0 0 h10 m-40 0 h20 m20 0 h20 m-60 0 q10 0 10 10 m40 0 q0 -10 10 -10 m-50 10 v1 m40 0 v-1 m-40 1 q0 10 10 10 m20 0 q10 0 10 -10 m-30 10 h4 m12 0 h4 m20 -21 h4 m14 0 h4 m20 0 h4 m118 0 h4 m0 0 h36 m-182 0 h20 m162 0 h20 m-202 0 q10 0 10 10 m182 0 q0 -10 10 -10 m-192 10 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m12 0 h4 m0 0 h4 m114 0 h4 m0 0 h4 m12 0 h4 m-172 -10 v20 m182 0 v-20 m-182 20 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m60 0 h4 m0 0 h94 m-438 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -36 q0 -10 10 -10 m438 56 l20 0 m-20 0 q10 0 10 -10 l0 -36 q0 -10 -10 -10 m-438 0 h4 m8 0 h4 m0 0 h422 m60 -28 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m43 -77 h-3"/>
-         <polygon points="785 52 793 48 793 56"/>
-         <polygon points="785 52 777 48 777 56"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="385" height="70">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">DO</text>
+         <rect x="73" y="1" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="77" y="13">NOTHING</text>
+         <rect x="73" y="29" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="77" y="41">UPDATE</text>
+         <rect x="125" y="29" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="129" y="41">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#updatesets" xlink:title="UpdateSets" shape="rect">
+            <rect x="157" y="29" width="64" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="161" y="41">UpdateSets</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
+            <rect x="249" y="50" width="72" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="253" y="62">WhereClause</text></a><path class="line" d="m17 10 h2 m0 0 h4 m22 0 h4 m20 0 h4 m52 0 h4 m0 0 h216 m-296 0 h20 m276 0 h20 m-316 0 q10 0 10 10 m296 0 q0 -10 10 -10 m-306 10 v8 m296 0 v-8 m-296 8 q0 10 10 10 m276 0 q10 0 10 -10 m-286 10 h4 m44 0 h4 m0 0 h4 m24 0 h4 m0 0 h4 m64 0 h4 m20 0 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m43 -49 h-3"/>
+         <polygon points="375 10 383 6 383 14"/>
+         <polygon points="375 10 367 6 367 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#insertconflictaction" title="InsertConflictAction" shape="rect">InsertConflictAction</a></div>
-               <div>         ::= 'DO' ( 'NOTHING' | 'UPDATE' 'SET' ( <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* | '('? <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')'? '=' ( <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | '(' <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ')' | <a href="#expression" title="Expression" shape="rect">Expression</a> ) ( ',' '('? <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')'? '=' ( <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | '(' <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ')' | <a href="#expression" title="Expression" shape="rect">Expression</a> ) )* ) <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? )</div></xhtml:code></xhtml:div>
+               <div>         ::= 'DO' ( 'NOTHING' | 'UPDATE' 'SET' <a href="#updatesets" title="UpdateSets" shape="rect">UpdateSets</a> <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? )</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>insert</a></li></ul></div></td></tr></tbody></table>
@@ -1087,68 +1064,55 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="543" height="411">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/>
-         <rect x="43" y="29" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="41">UPSERT</text>
-         <rect x="63" y="78" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="67" y="90">INSERT</text>
-         <rect x="111" y="78" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="115" y="90">OR</text>
-         <rect x="161" y="57" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="165" y="69">REPLACE</text>
-         <rect x="257" y="50" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="261" y="62">INTO</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#table" xlink:title="Table" shape="rect">
-            <rect x="317" y="29" width="34" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="321" y="41">Table</text></a><rect x="379" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="383" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="419" y="29" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="423" y="41">Column</text></a><rect x="419" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="423" y="13">,</text>
-         <rect x="493" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="497" y="41">)</text>
-         <rect x="121" y="148" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="125" y="160">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="173" y="148" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="177" y="160">Column</text></a><rect x="227" y="148" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="231" y="160">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="249" y="148" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="253" y="160">SimpleExpression</text></a><rect x="173" y="120" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="177" y="132">,</text>
-         <rect x="141" y="253" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="145" y="265">VALUES</text>
-         <rect x="141" y="281" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="145" y="293">VALUE</text>
-         <rect x="231" y="232" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="235" y="244">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="271" y="232" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="275" y="244">SimpleExpression</text></a><rect x="271" y="204" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="275" y="216">,</text>
-         <rect x="389" y="232" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="393" y="244">)</text>
-         <rect x="231" y="176" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="235" y="188">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
-            <rect x="121" y="309" width="36" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="125" y="321">Select</text></a><rect x="113" y="379" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="117" y="391">ON</text>
-         <rect x="143" y="379" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="147" y="391">DUPLICATE</text>
-         <rect x="209" y="379" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="213" y="391">KEY</text>
-         <rect x="241" y="379" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="391">UPDATE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="313" y="379" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="317" y="391">Column</text></a><rect x="367" y="379" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="371" y="391">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="389" y="379" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="393" y="391">SimpleExpression</text></a><rect x="313" y="351" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="317" y="363">,</text>
-         <path class="line" d="m17 38 h2 m20 0 h4 m44 0 h4 m0 0 h122 m-194 0 h20 m174 0 h20 m-214 0 q10 0 10 10 m194 0 q0 -10 10 -10 m-204 10 v8 m194 0 v-8 m-194 8 q0 10 10 10 m174 0 q10 0 10 -10 m-164 10 h10 m0 0 h68 m-98 0 h20 m78 0 h20 m-118 0 q10 0 10 10 m98 0 q0 -10 10 -10 m-108 10 v1 m98 0 v-1 m-98 1 q0 10 10 10 m78 0 q10 0 10 -10 m-88 10 h4 m40 0 h4 m0 0 h4 m22 0 h4 m20 -21 h4 m48 0 h4 m40 -28 h10 m0 0 h30 m-60 0 h20 m40 0 h20 m-80 0 q10 0 10 10 m60 0 q0 -10 10 -10 m-70 10 v1 m60 0 v-1 m-60 1 q0 10 10 10 m40 0 q10 0 10 -10 m-50 10 h4 m32 0 h4 m20 -21 h4 m34 0 h4 m20 0 h4 m12 0 h4 m20 0 h4 m46 0 h4 m-74 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m54 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-54 0 h4 m8 0 h4 m0 0 h38 m20 28 h4 m12 0 h4 m-154 0 h20 m134 0 h20 m-174 0 q10 0 10 10 m154 0 q0 -10 10 -10 m-164 10 v1 m154 0 v-1 m-154 1 q0 10 10 10 m134 0 q10 0 10 -10 m-144 10 h10 m0 0 h124 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-456 119 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h4 m24 0 h4 m20 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m20 28 h62 m-328 0 h20 m308 0 h20 m-348 0 q10 0 10 10 m328 0 q0 -10 10 -10 m-338 10 v64 m328 0 v-64 m-328 64 q0 10 10 10 m308 0 q10 0 10 -10 m-298 10 h10 m0 0 h40 m-70 0 h20 m50 0 h20 m-90 0 q10 0 10 10 m70 0 q0 -10 10 -10 m-80 10 v1 m70 0 v-1 m-70 1 q0 10 10 10 m50 0 q10 0 10 -10 m-60 10 h4 m42 0 h4 m-60 -10 v20 m70 0 v-20 m-70 20 v8 m70 0 v-8 m-70 8 q0 10 10 10 m50 0 q10 0 10 -10 m-60 10 h4 m36 0 h4 m0 0 h6 m40 -49 h4 m12 0 h4 m20 0 h4 m90 0 h4 m-118 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m98 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-98 0 h4 m8 0 h4 m0 0 h82 m20 28 h4 m12 0 h4 m-198 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -36 q0 -10 10 -10 m178 56 l20 0 m-20 0 q10 0 10 -10 l0 -36 q0 -10 -10 -10 m-178 0 h4 m8 0 h4 m0 0 h162 m-298 46 v20 m328 0 v-20 m-328 20 v57 m328 0 v-57 m-328 57 q0 10 10 10 m308 0 q10 0 10 -10 m-318 10 h4 m36 0 h4 m0 0 h264 m22 -161 l2 0 m2 0 l2 0 m2 0 l2 0 m-380 231 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h4 m22 0 h4 m0 0 h4 m58 0 h4 m0 0 h4 m24 0 h4 m0 0 h4 m44 0 h4 m20 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m-394 28 h20 m394 0 h20 m-434 0 q10 0 10 10 m414 0 q0 -10 10 -10 m-424 10 v1 m414 0 v-1 m-414 1 q0 10 10 10 m394 0 q10 0 10 -10 m-404 10 h10 m0 0 h384 m23 -21 h-3"/>
-         <polygon points="533 388 541 384 541 392"/>
-         <polygon points="533 388 525 384 525 392"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="753" height="196">
+         <polygon points="11 38 3 34 3 42"/>
+         <polygon points="19 38 11 34 11 42"/>
+         <rect x="45" y="29" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="49" y="41">UPSERT</text>
+         <rect x="65" y="78" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="69" y="90">INSERT</text>
+         <rect x="113" y="78" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="117" y="90">OR</text>
+         <rect x="163" y="57" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="167" y="69">REPLACE</text>
+         <rect x="259" y="50" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="263" y="62">INTO</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#table" xlink:title="Table" shape="rect">
+            <rect x="319" y="29" width="34" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="323" y="41">Table</text></a><rect x="381" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="385" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="421" y="29" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="425" y="41">Column</text></a><rect x="421" y="1" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="425" y="13">,</text>
+         <rect x="495" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="499" y="41">)</text>
+         <rect x="37" y="148" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="41" y="160">SET</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="89" y="148" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="93" y="160">Column</text></a><rect x="143" y="148" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="147" y="160">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="165" y="148" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="169" y="160">SimpleExpression</text></a><rect x="89" y="120" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="93" y="132">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="37" y="176" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="41" y="188">Select</text></a><rect x="323" y="148" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="327" y="160">ON</text>
+         <rect x="353" y="148" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="357" y="160">DUPLICATE</text>
+         <rect x="419" y="148" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="423" y="160">KEY</text>
+         <rect x="451" y="148" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="455" y="160">UPDATE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="523" y="148" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="527" y="160">Column</text></a><rect x="577" y="148" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="581" y="160">=</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="599" y="148" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="603" y="160">SimpleExpression</text></a><rect x="523" y="120" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="527" y="132">,</text>
+         <path class="line" d="m19 38 h2 m20 0 h4 m44 0 h4 m0 0 h122 m-194 0 h20 m174 0 h20 m-214 0 q10 0 10 10 m194 0 q0 -10 10 -10 m-204 10 v8 m194 0 v-8 m-194 8 q0 10 10 10 m174 0 q10 0 10 -10 m-164 10 h10 m0 0 h68 m-98 0 h20 m78 0 h20 m-118 0 q10 0 10 10 m98 0 q0 -10 10 -10 m-108 10 v1 m98 0 v-1 m-98 1 q0 10 10 10 m78 0 q10 0 10 -10 m-88 10 h4 m40 0 h4 m0 0 h4 m22 0 h4 m20 -21 h4 m48 0 h4 m40 -28 h10 m0 0 h30 m-60 0 h20 m40 0 h20 m-80 0 q10 0 10 10 m60 0 q0 -10 10 -10 m-70 10 v1 m60 0 v-1 m-60 1 q0 10 10 10 m40 0 q10 0 10 -10 m-50 10 h4 m32 0 h4 m20 -21 h4 m34 0 h4 m20 0 h4 m12 0 h4 m20 0 h4 m46 0 h4 m-74 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m54 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-54 0 h4 m8 0 h4 m0 0 h38 m20 28 h4 m12 0 h4 m-154 0 h20 m134 0 h20 m-174 0 q10 0 10 10 m154 0 q0 -10 10 -10 m-164 10 v1 m154 0 v-1 m-154 1 q0 10 10 10 m134 0 q10 0 10 -10 m-144 10 h10 m0 0 h124 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-542 119 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h4 m24 0 h4 m20 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m-246 28 h20 m246 0 h20 m-286 0 q10 0 10 10 m266 0 q0 -10 10 -10 m-276 10 v8 m266 0 v-8 m-266 8 q0 10 10 10 m246 0 q10 0 10 -10 m-256 10 h4 m36 0 h4 m0 0 h202 m40 -28 h4 m22 0 h4 m0 0 h4 m58 0 h4 m0 0 h4 m24 0 h4 m0 0 h4 m44 0 h4 m20 0 h4 m46 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m90 0 h4 m-194 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m174 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-174 0 h4 m8 0 h4 m0 0 h158 m-394 28 h20 m394 0 h20 m-434 0 q10 0 10 10 m414 0 q0 -10 10 -10 m-424 10 v1 m414 0 v-1 m-414 1 q0 10 10 10 m394 0 q10 0 10 -10 m-404 10 h10 m0 0 h384 m23 -21 h-3"/>
+         <polygon points="743 157 751 153 751 161"/>
+         <polygon points="743 157 735 153 735 161"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#upsert" title="Upsert" shape="rect">Upsert</a>   ::= ( 'UPSERT' | ( 'INSERT' 'OR' )? 'REPLACE' ) 'INTO'? <a href="#table" title="Table" shape="rect">Table</a> ( '(' <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')' )? ( 'SET' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* | ( 'VALUES' | 'VALUE' )? '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* ')' ( ',' '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* ')' )* | <a href="#select" title="Select" shape="rect">Select</a> ) ( 'ON' 'DUPLICATE' 'KEY' 'UPDATE' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* )?</div></xhtml:code></xhtml:div>
+               <div><a href="#upsert" title="Upsert" shape="rect">Upsert</a>   ::= ( 'UPSERT' | ( 'INSERT' 'OR' )? 'REPLACE' ) 'INTO'? <a href="#table" title="Table" shape="rect">Table</a> ( '(' <a href="#column" title="Column" shape="rect">Column</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> )* ')' )? ( 'SET' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* | <a href="#select" title="Select" shape="rect">Select</a> ) ( 'ON' 'DUPLICATE' 'KEY' 'UPDATE' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#column" title="Column" shape="rect">Column</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )* )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
@@ -1388,7 +1352,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#column" title="Column" shape="rect">Column</a>   ::= <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>comment</a></li><li><a>connectbyrootoperator</a></li><li><a>fulltextsearch</a></li><li><a>insert</a></li><li><a>insertconflictaction</a></li><li><a>internalfunction</a></li><li><a>intervalexpression</a></li><li><a>joinerexpression</a></li><li><a>jsonexpression</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>pivotforcolumns</a></li><li><a>primaryexpression</a></li><li><a>update</a></li><li><a>upsert</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>comment</a></li><li><a>connectbyrootoperator</a></li><li><a>fulltextsearch</a></li><li><a>insert</a></li><li><a>internalfunction</a></li><li><a>intervalexpression</a></li><li><a>joinerexpression</a></li><li><a>jsonexpression</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>pivotforcolumns</a></li><li><a>primaryexpression</a></li><li><a>updatesets</a></li><li><a>upsert</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -1398,7 +1362,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="231" height="6069">
+        <svg xmlns="http://www.w3.org/2000/svg" width="231" height="6097">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-identifier" xlink:title="S_IDENTIFIER" shape="rect">
             <rect x="43" y="1" width="74" height="18" class="nonterminal"/>
@@ -1494,347 +1458,349 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <text class="terminal" x="47" y="1273">COMMIT</text>
          <rect x="43" y="1289" width="54" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="47" y="1301">CONFLICT</text>
-         <rect x="43" y="1317" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1329">COSTS</text>
-         <rect x="43" y="1345" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1357">CS</text>
-         <rect x="43" y="1373" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1385">CYCLE</text>
-         <rect x="43" y="1401" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1413">DATABASE</text>
-         <rect x="43" y="1429" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1441">DDL</text>
-         <rect x="43" y="1457" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1469">DECLARE</text>
+         <rect x="43" y="1317" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1329">CONVERT</text>
+         <rect x="43" y="1345" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1357">COSTS</text>
+         <rect x="43" y="1373" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1385">CS</text>
+         <rect x="43" y="1401" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1413">CYCLE</text>
+         <rect x="43" y="1429" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1441">DATABASE</text>
+         <rect x="43" y="1457" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1469">DDL</text>
          <rect x="43" y="1485" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1497">DEFAULT</text>
-         <rect x="43" y="1513" width="66" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1525">DEFERRABLE</text>
-         <rect x="43" y="1541" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1553">DELAYED</text>
-         <rect x="43" y="1569" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1581">DELETE</text>
-         <rect x="43" y="1597" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1609">DESC</text>
-         <rect x="43" y="1625" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1637">DESCRIBE</text>
-         <rect x="43" y="1653" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1665">DISABLE</text>
-         <rect x="43" y="1681" width="68" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1693">DISCONNECT</text>
-         <rect x="43" y="1709" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1721">DIV</text>
-         <rect x="43" y="1737" width="28" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1749">DML</text>
-         <rect x="43" y="1765" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1777">DO</text>
-         <rect x="43" y="1793" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1805">DROP</text>
-         <rect x="43" y="1821" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1833">DUMP</text>
-         <rect x="43" y="1849" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1861">DUPLICATE</text>
-         <rect x="43" y="1877" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1889">EMIT</text>
-         <rect x="43" y="1905" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1917">ENABLE</text>
-         <rect x="43" y="1933" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1945">END</text>
-         <rect x="43" y="1961" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="1973">ESCAPE</text>
-         <rect x="43" y="1989" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2001">EXCLUDE</text>
-         <rect x="43" y="2017" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2029">EXEC</text>
-         <rect x="43" y="2045" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2057">EXECUTE</text>
-         <rect x="43" y="2073" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2085">EXPLAIN</text>
-         <rect x="43" y="2101" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2113">EXTENDED</text>
-         <rect x="43" y="2129" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2141">EXTRACT</text>
-         <rect x="43" y="2157" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2169">FALSE</text>
-         <rect x="43" y="2185" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2197">FILTER</text>
-         <rect x="43" y="2213" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2225">FIRST</text>
-         <rect x="43" y="2241" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2253">FLUSH</text>
-         <rect x="43" y="2269" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2281">FN</text>
-         <rect x="43" y="2297" width="66" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2309">FOLLOWING</text>
-         <rect x="43" y="2325" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2337">FORMAT</text>
-         <rect x="43" y="2353" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2365">FULLTEXT</text>
-         <rect x="43" y="2381" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2393">FUNCTION</text>
-         <rect x="43" y="2409" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2421">GLOBAL</text>
-         <rect x="43" y="2437" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2449">GRANT</text>
+         <text class="terminal" x="47" y="1497">DECLARE</text>
+         <rect x="43" y="1513" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1525">DEFAULT</text>
+         <rect x="43" y="1541" width="66" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1553">DEFERRABLE</text>
+         <rect x="43" y="1569" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1581">DELAYED</text>
+         <rect x="43" y="1597" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1609">DELETE</text>
+         <rect x="43" y="1625" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1637">DESC</text>
+         <rect x="43" y="1653" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1665">DESCRIBE</text>
+         <rect x="43" y="1681" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1693">DISABLE</text>
+         <rect x="43" y="1709" width="68" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1721">DISCONNECT</text>
+         <rect x="43" y="1737" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1749">DIV</text>
+         <rect x="43" y="1765" width="28" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1777">DML</text>
+         <rect x="43" y="1793" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1805">DO</text>
+         <rect x="43" y="1821" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1833">DROP</text>
+         <rect x="43" y="1849" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1861">DUMP</text>
+         <rect x="43" y="1877" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1889">DUPLICATE</text>
+         <rect x="43" y="1905" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1917">EMIT</text>
+         <rect x="43" y="1933" width="42" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1945">ENABLE</text>
+         <rect x="43" y="1961" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="1973">END</text>
+         <rect x="43" y="1989" width="42" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2001">ESCAPE</text>
+         <rect x="43" y="2017" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2029">EXCLUDE</text>
+         <rect x="43" y="2045" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2057">EXEC</text>
+         <rect x="43" y="2073" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2085">EXECUTE</text>
+         <rect x="43" y="2101" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2113">EXPLAIN</text>
+         <rect x="43" y="2129" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2141">EXTENDED</text>
+         <rect x="43" y="2157" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2169">EXTRACT</text>
+         <rect x="43" y="2185" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2197">FALSE</text>
+         <rect x="43" y="2213" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2225">FILTER</text>
+         <rect x="43" y="2241" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2253">FIRST</text>
+         <rect x="43" y="2269" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2281">FLUSH</text>
+         <rect x="43" y="2297" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2309">FN</text>
+         <rect x="43" y="2325" width="66" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2337">FOLLOWING</text>
+         <rect x="43" y="2353" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2365">FORMAT</text>
+         <rect x="43" y="2381" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2393">FULLTEXT</text>
+         <rect x="43" y="2409" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2421">FUNCTION</text>
+         <rect x="43" y="2437" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2449">GLOBAL</text>
          <rect x="43" y="2465" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2477">GUARD</text>
-         <rect x="43" y="2493" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2505">HISTORY</text>
-         <rect x="43" y="2521" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2533">HOPPING</text>
-         <rect x="43" y="2549" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2561">INCLUDE</text>
-         <rect x="43" y="2577" width="62" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2589">INCREMENT</text>
-         <rect x="43" y="2605" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2617">INDEX</text>
-         <rect x="43" y="2633" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2645">INSERT</text>
-         <rect x="43" y="2661" width="62" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2673">INTERLEAVE</text>
-         <rect x="43" y="2689" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2701">ISNULL</text>
-         <rect x="43" y="2717" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2729">JSON</text>
-         <rect x="43" y="2745" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2757">KEEP</text>
-         <rect x="43" y="2773" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2785">KEY</text>
-         <rect x="43" y="2801" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2813">KEYS</text>
+         <text class="terminal" x="47" y="2477">GRANT</text>
+         <rect x="43" y="2493" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2505">GUARD</text>
+         <rect x="43" y="2521" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2533">HISTORY</text>
+         <rect x="43" y="2549" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2561">HOPPING</text>
+         <rect x="43" y="2577" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2589">INCLUDE</text>
+         <rect x="43" y="2605" width="62" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2617">INCREMENT</text>
+         <rect x="43" y="2633" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2645">INDEX</text>
+         <rect x="43" y="2661" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2673">INSERT</text>
+         <rect x="43" y="2689" width="62" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2701">INTERLEAVE</text>
+         <rect x="43" y="2717" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2729">ISNULL</text>
+         <rect x="43" y="2745" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2757">JSON</text>
+         <rect x="43" y="2773" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2785">KEEP</text>
+         <rect x="43" y="2801" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2813">KEY</text>
          <rect x="43" y="2829" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2841">LAST</text>
-         <rect x="43" y="2857" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2869">LEADING</text>
-         <rect x="43" y="2885" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2897">LINK</text>
-         <rect x="43" y="2913" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2925">LOCAL</text>
-         <rect x="43" y="2941" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2953">LOCKED</text>
-         <rect x="43" y="2969" width="28" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="2981">LOG</text>
-         <rect x="43" y="2997" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3009">MATCH</text>
-         <rect x="43" y="3025" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3037">MATCHED</text>
-         <rect x="43" y="3053" width="74" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3065">MATERIALIZED</text>
-         <rect x="43" y="3081" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3093">MAXVALUE</text>
-         <rect x="43" y="3109" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3121">MERGE</text>
-         <rect x="43" y="3137" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3149">MINVALUE</text>
-         <rect x="43" y="3165" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3177">MODIFY</text>
-         <rect x="43" y="3193" width="62" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3205">MOVEMENT</text>
-         <rect x="43" y="3221" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3233">NEXT</text>
-         <rect x="43" y="3249" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3261">NO</text>
-         <rect x="43" y="3277" width="54" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3289">NOCACHE</text>
-         <rect x="43" y="3305" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3317">NOKEEP</text>
-         <rect x="43" y="3333" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3345">NOLOCK</text>
-         <rect x="43" y="3361" width="72" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3373">NOMAXVALUE</text>
-         <rect x="43" y="3389" width="70" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3401">NOMINVALUE</text>
-         <rect x="43" y="3417" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3429">NOORDER</text>
-         <rect x="43" y="3445" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3457">NOTHING</text>
-         <rect x="43" y="3473" width="68" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3485">NOVALIDATE</text>
-         <rect x="43" y="3501" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3513">NOWAIT</text>
-         <rect x="43" y="3529" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3541">NULLS</text>
-         <rect x="43" y="3557" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3569">OF</text>
-         <rect x="43" y="3585" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3597">OFF</text>
-         <rect x="43" y="3613" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3625">OPEN</text>
+         <text class="terminal" x="47" y="2841">KEYS</text>
+         <rect x="43" y="2857" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2869">LAST</text>
+         <rect x="43" y="2885" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2897">LEADING</text>
+         <rect x="43" y="2913" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2925">LINK</text>
+         <rect x="43" y="2941" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2953">LOCAL</text>
+         <rect x="43" y="2969" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="2981">LOCKED</text>
+         <rect x="43" y="2997" width="28" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3009">LOG</text>
+         <rect x="43" y="3025" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3037">MATCH</text>
+         <rect x="43" y="3053" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3065">MATCHED</text>
+         <rect x="43" y="3081" width="74" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3093">MATERIALIZED</text>
+         <rect x="43" y="3109" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3121">MAXVALUE</text>
+         <rect x="43" y="3137" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3149">MERGE</text>
+         <rect x="43" y="3165" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3177">MINVALUE</text>
+         <rect x="43" y="3193" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3205">MODIFY</text>
+         <rect x="43" y="3221" width="62" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3233">MOVEMENT</text>
+         <rect x="43" y="3249" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3261">NEXT</text>
+         <rect x="43" y="3277" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3289">NO</text>
+         <rect x="43" y="3305" width="54" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3317">NOCACHE</text>
+         <rect x="43" y="3333" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3345">NOKEEP</text>
+         <rect x="43" y="3361" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3373">NOLOCK</text>
+         <rect x="43" y="3389" width="72" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3401">NOMAXVALUE</text>
+         <rect x="43" y="3417" width="70" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3429">NOMINVALUE</text>
+         <rect x="43" y="3445" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3457">NOORDER</text>
+         <rect x="43" y="3473" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3485">NOTHING</text>
+         <rect x="43" y="3501" width="68" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3513">NOVALIDATE</text>
+         <rect x="43" y="3529" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3541">NOWAIT</text>
+         <rect x="43" y="3557" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3569">NULLS</text>
+         <rect x="43" y="3585" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3597">OF</text>
+         <rect x="43" y="3613" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3625">OFF</text>
          <rect x="43" y="3641" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3653">OVER</text>
-         <rect x="43" y="3669" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3681">OVERLAPS</text>
-         <rect x="43" y="3697" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3709">PARALLEL</text>
-         <rect x="43" y="3725" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3737">PARENT</text>
-         <rect x="43" y="3753" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3765">PARTITION</text>
-         <rect x="43" y="3781" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3793">PATH</text>
-         <rect x="43" y="3809" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3821">PERCENT</text>
+         <text class="terminal" x="47" y="3653">OPEN</text>
+         <rect x="43" y="3669" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3681">OVER</text>
+         <rect x="43" y="3697" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3709">OVERLAPS</text>
+         <rect x="43" y="3725" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3737">PARALLEL</text>
+         <rect x="43" y="3753" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3765">PARENT</text>
+         <rect x="43" y="3781" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3793">PARTITION</text>
+         <rect x="43" y="3809" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3821">PATH</text>
          <rect x="43" y="3837" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3849">PLACING</text>
-         <rect x="43" y="3865" width="60" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3877">PRECEDING</text>
+         <text class="terminal" x="47" y="3849">PERCENT</text>
+         <rect x="43" y="3865" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3877">PLACING</text>
          <rect x="43" y="3893" width="60" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3905">PRECISION</text>
-         <rect x="43" y="3921" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3933">PRIMARY</text>
-         <rect x="43" y="3949" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3961">PRIOR</text>
+         <text class="terminal" x="47" y="3905">PRECEDING</text>
+         <rect x="43" y="3921" width="60" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3933">PRECISION</text>
+         <rect x="43" y="3949" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="3961">PRIMARY</text>
          <rect x="43" y="3977" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="3989">PURGE</text>
-         <rect x="43" y="4005" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4017">QUERY</text>
-         <rect x="43" y="4033" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4045">QUICK</text>
-         <rect x="43" y="4061" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4073">QUIESCE</text>
-         <rect x="43" y="4089" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4101">RANGE</text>
-         <rect x="43" y="4117" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4129">READ</text>
-         <rect x="43" y="4145" width="64" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4157">RECYCLEBIN</text>
-         <rect x="43" y="4173" width="66" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4185">REFERENCES</text>
-         <rect x="43" y="4201" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4213">REFRESH</text>
-         <rect x="43" y="4229" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4241">REGISTER</text>
-         <rect x="43" y="4257" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4269">RENAME</text>
-         <rect x="43" y="4285" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4297">REPLACE</text>
-         <rect x="43" y="4313" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4325">RESET</text>
-         <rect x="43" y="4341" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4353">RESTART</text>
-         <rect x="43" y="4369" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4381">RESTRICT</text>
-         <rect x="43" y="4397" width="64" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4409">RESTRICTED</text>
-         <rect x="43" y="4425" width="62" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4437">RESUMABLE</text>
-         <rect x="43" y="4453" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4465">RESUME</text>
-         <rect x="43" y="4481" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4493">RLIKE</text>
-         <rect x="43" y="4509" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4521">ROLLBACK</text>
-         <rect x="43" y="4537" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4549">ROW</text>
-         <rect x="43" y="4565" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4577">ROWS</text>
-         <rect x="43" y="4593" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4605">RR</text>
+         <text class="terminal" x="47" y="3989">PRIOR</text>
+         <rect x="43" y="4005" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4017">PURGE</text>
+         <rect x="43" y="4033" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4045">QUERY</text>
+         <rect x="43" y="4061" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4073">QUICK</text>
+         <rect x="43" y="4089" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4101">QUIESCE</text>
+         <rect x="43" y="4117" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4129">RANGE</text>
+         <rect x="43" y="4145" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4157">READ</text>
+         <rect x="43" y="4173" width="64" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4185">RECYCLEBIN</text>
+         <rect x="43" y="4201" width="66" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4213">REFERENCES</text>
+         <rect x="43" y="4229" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4241">REFRESH</text>
+         <rect x="43" y="4257" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4269">REGISTER</text>
+         <rect x="43" y="4285" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4297">RENAME</text>
+         <rect x="43" y="4313" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4325">REPLACE</text>
+         <rect x="43" y="4341" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4353">RESET</text>
+         <rect x="43" y="4369" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4381">RESTART</text>
+         <rect x="43" y="4397" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4409">RESTRICT</text>
+         <rect x="43" y="4425" width="64" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4437">RESTRICTED</text>
+         <rect x="43" y="4453" width="62" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4465">RESUMABLE</text>
+         <rect x="43" y="4481" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4493">RESUME</text>
+         <rect x="43" y="4509" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4521">RLIKE</text>
+         <rect x="43" y="4537" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4549">ROLLBACK</text>
+         <rect x="43" y="4565" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4577">ROW</text>
+         <rect x="43" y="4593" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4605">ROWS</text>
          <rect x="43" y="4621" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4633">RS</text>
-         <rect x="43" y="4649" width="60" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4661">SAVEPOINT</text>
-         <rect x="43" y="4677" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4689">SCHEMA</text>
-         <rect x="43" y="4705" width="64" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4717">SEPARATOR</text>
-         <rect x="43" y="4733" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4745">SEQUENCE</text>
-         <rect x="43" y="4761" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4773">SESSION</text>
-         <rect x="43" y="4789" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4801">SETS</text>
-         <rect x="43" y="4817" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4829">SHOW</text>
-         <rect x="43" y="4845" width="66" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4857">SHUTDOWN</text>
-         <rect x="43" y="4873" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4885">SIBLINGS</text>
-         <rect x="43" y="4901" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4913">SIGNED</text>
-         <rect x="43" y="4929" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4941">SIMILAR</text>
-         <rect x="43" y="4957" width="28" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4969">SIZE</text>
-         <rect x="43" y="4985" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="4997">SKIP</text>
-         <rect x="43" y="5013" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5025">STORED</text>
-         <rect x="43" y="5041" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5053">STRING</text>
-         <rect x="43" y="5069" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5081">SUSPEND</text>
-         <rect x="43" y="5097" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5109">SWITCH</text>
-         <rect x="43" y="5125" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5137">SYNONYM</text>
-         <rect x="43" y="5153" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5165">SYSTEM</text>
-         <rect x="43" y="5181" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5193">TABLE</text>
-         <rect x="43" y="5209" width="64" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5221">TABLESPACE</text>
-         <rect x="43" y="5237" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5249">TEMP</text>
-         <rect x="43" y="5265" width="66" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5277">TEMPORARY</text>
-         <rect x="43" y="5293" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5305">THEN</text>
-         <rect x="43" y="5321" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5333">TIMEOUT</text>
-         <rect x="43" y="5349" width="72" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5361">TIMESTAMPTZ</text>
-         <rect x="43" y="5377" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5389">TO</text>
-         <rect x="43" y="5405" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5417">TRUE</text>
-         <rect x="43" y="5433" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5445">TRUNCATE</text>
+         <text class="terminal" x="47" y="4633">RR</text>
+         <rect x="43" y="4649" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4661">RS</text>
+         <rect x="43" y="4677" width="60" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4689">SAVEPOINT</text>
+         <rect x="43" y="4705" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4717">SCHEMA</text>
+         <rect x="43" y="4733" width="64" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4745">SEPARATOR</text>
+         <rect x="43" y="4761" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4773">SEQUENCE</text>
+         <rect x="43" y="4789" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4801">SESSION</text>
+         <rect x="43" y="4817" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4829">SETS</text>
+         <rect x="43" y="4845" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4857">SHOW</text>
+         <rect x="43" y="4873" width="66" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4885">SHUTDOWN</text>
+         <rect x="43" y="4901" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4913">SIBLINGS</text>
+         <rect x="43" y="4929" width="42" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4941">SIGNED</text>
+         <rect x="43" y="4957" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4969">SIMILAR</text>
+         <rect x="43" y="4985" width="28" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="4997">SIZE</text>
+         <rect x="43" y="5013" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5025">SKIP</text>
+         <rect x="43" y="5041" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5053">STORED</text>
+         <rect x="43" y="5069" width="42" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5081">STRING</text>
+         <rect x="43" y="5097" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5109">SUSPEND</text>
+         <rect x="43" y="5125" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5137">SWITCH</text>
+         <rect x="43" y="5153" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5165">SYNONYM</text>
+         <rect x="43" y="5181" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5193">SYSTEM</text>
+         <rect x="43" y="5209" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5221">TABLE</text>
+         <rect x="43" y="5237" width="64" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5249">TABLESPACE</text>
+         <rect x="43" y="5265" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5277">TEMP</text>
+         <rect x="43" y="5293" width="66" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5305">TEMPORARY</text>
+         <rect x="43" y="5321" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5333">THEN</text>
+         <rect x="43" y="5349" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5361">TIMEOUT</text>
+         <rect x="43" y="5377" width="72" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5389">TIMESTAMPTZ</text>
+         <rect x="43" y="5405" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5417">TO</text>
+         <rect x="43" y="5433" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5445">TRUE</text>
          <rect x="43" y="5461" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5473">TUMBLING</text>
-         <rect x="43" y="5489" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5501">TYPE</text>
-         <rect x="43" y="5517" width="60" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5529">UNLOGGED</text>
-         <rect x="43" y="5545" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5557">UNQIESCE</text>
+         <text class="terminal" x="47" y="5473">TRUNCATE</text>
+         <rect x="43" y="5489" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5501">TUMBLING</text>
+         <rect x="43" y="5517" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5529">TYPE</text>
+         <rect x="43" y="5545" width="60" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5557">UNLOGGED</text>
          <rect x="43" y="5573" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5585">UNSIGNED</text>
-         <rect x="43" y="5601" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5613">UPDATE</text>
+         <text class="terminal" x="47" y="5585">UNQIESCE</text>
+         <rect x="43" y="5601" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5613">UNSIGNED</text>
          <rect x="43" y="5629" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5641">UPSERT</text>
-         <rect x="43" y="5657" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5669">UR</text>
-         <rect x="43" y="5685" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5697">USER</text>
-         <rect x="43" y="5713" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5725">VALIDATE</text>
-         <rect x="43" y="5741" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5753">VERBOSE</text>
-         <rect x="43" y="5769" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5781">VIEW</text>
+         <text class="terminal" x="47" y="5641">UPDATE</text>
+         <rect x="43" y="5657" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5669">UPSERT</text>
+         <rect x="43" y="5685" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5697">UR</text>
+         <rect x="43" y="5713" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5725">USER</text>
+         <rect x="43" y="5741" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5753">VALIDATE</text>
+         <rect x="43" y="5769" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5781">VERBOSE</text>
          <rect x="43" y="5797" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5809">WAIT</text>
-         <rect x="43" y="5825" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5837">WITHIN</text>
-         <rect x="43" y="5853" width="54" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5865">WITHOUT</text>
-         <rect x="43" y="5881" width="40" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5893">WORK</text>
-         <rect x="43" y="5909" width="28" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5921">XML</text>
-         <rect x="43" y="5937" width="46" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5949">XMLAGG</text>
-         <rect x="43" y="5965" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="5977">XMLTEXT</text>
-         <rect x="43" y="5993" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="6005">YAML</text>
-         <rect x="43" y="6021" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="6033">YES</text>
-         <rect x="43" y="6049" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="6061">ZONE</text>
-         <path class="line" d="m17 10 h2 m20 0 h4 m74 0 h4 m0 0 h70 m-172 0 h20 m152 0 h20 m-192 0 q10 0 10 10 m172 0 q0 -10 10 -10 m-182 10 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m120 0 h4 m0 0 h24 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m88 0 h4 m0 0 h56 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m104 0 h4 m0 0 h40 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m144 0 h4 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m98 0 h4 m0 0 h46 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m86 0 h4 m0 0 h58 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m74 0 h4 m0 0 h70 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m70 0 h4 m0 0 h74 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m23 -6048 h-3"/>
+         <text class="terminal" x="47" y="5809">VIEW</text>
+         <rect x="43" y="5825" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5837">WAIT</text>
+         <rect x="43" y="5853" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5865">WITHIN</text>
+         <rect x="43" y="5881" width="54" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5893">WITHOUT</text>
+         <rect x="43" y="5909" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5921">WORK</text>
+         <rect x="43" y="5937" width="28" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5949">XML</text>
+         <rect x="43" y="5965" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="5977">XMLAGG</text>
+         <rect x="43" y="5993" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="6005">XMLTEXT</text>
+         <rect x="43" y="6021" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="6033">YAML</text>
+         <rect x="43" y="6049" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="6061">YES</text>
+         <rect x="43" y="6077" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="6089">ZONE</text>
+         <path class="line" d="m17 10 h2 m20 0 h4 m74 0 h4 m0 0 h70 m-172 0 h20 m152 0 h20 m-192 0 q10 0 10 10 m172 0 q0 -10 10 -10 m-182 10 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m120 0 h4 m0 0 h24 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m88 0 h4 m0 0 h56 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m104 0 h4 m0 0 h40 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m144 0 h4 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m98 0 h4 m0 0 h46 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m86 0 h4 m0 0 h58 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m74 0 h4 m0 0 h70 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m22 0 h4 m0 0 h122 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m70 0 h4 m0 0 h74 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m68 0 h4 m0 0 h76 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m26 0 h4 m0 0 h118 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m58 0 h4 m0 0 h86 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m62 0 h4 m0 0 h82 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m38 0 h4 m0 0 h106 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m42 0 h4 m0 0 h102 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m36 0 h4 m0 0 h108 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m64 0 h4 m0 0 h80 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m66 0 h4 m0 0 h78 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m72 0 h4 m0 0 h72 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m30 0 h4 m0 0 h114 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m60 0 h4 m0 0 h84 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m56 0 h4 m0 0 h88 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m20 0 h4 m0 0 h124 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m32 0 h4 m0 0 h112 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m52 0 h4 m0 0 h92 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m50 0 h4 m0 0 h94 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m44 0 h4 m0 0 h100 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m54 0 h4 m0 0 h90 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m40 0 h4 m0 0 h104 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m28 0 h4 m0 0 h116 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m46 0 h4 m0 0 h98 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m48 0 h4 m0 0 h96 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m24 0 h4 m0 0 h120 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m34 0 h4 m0 0 h110 m23 -6076 h-3"/>
          <polygon points="221 10 229 6 229 14"/>
          <polygon points="221 10 213 6 213 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
@@ -1886,6 +1852,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>           | 'COMMENT'</div>
                <div>           | 'COMMIT'</div>
                <div>           | 'CONFLICT'</div>
+               <div>           | 'CONVERT'</div>
                <div>           | 'COSTS'</div>
                <div>           | 'CS'</div>
                <div>           | 'CYCLE'</div>
@@ -2147,7 +2114,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>           | 'INTERVAL'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>alias</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>alias</a></li><li><a>lateralview</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2253,7 +2220,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>           | 'CURRENT'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>insertconflicttarget</a></li><li><a>jdbcnamedparameter</a></li><li><a>oraclenamedfunctionparameter</a></li><li><a>relobjectnamelist</a></li><li><a>uservariable</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>identifierchain</a></li><li><a>insertconflicttarget</a></li><li><a>oraclenamedfunctionparameter</a></li><li><a>relobjectnamelist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2308,16 +2275,16 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="107" height="21">
+        <svg xmlns="http://www.w3.org/2000/svg" width="83" height="21">
          <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="23" y="1" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="27" y="13">SelectBody</text></a><path class="line" d="m17 10 h2 m0 0 h4 m60 0 h4 m3 0 h-3"/>
-         <polygon points="97 10 105 6 105 14"/>
-         <polygon points="97 10 89 6 89 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="23" y="1" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="27" y="13">Select</text></a><path class="line" d="m17 10 h2 m0 0 h4 m36 0 h4 m3 0 h-3"/>
+         <polygon points="73 10 81 6 81 14"/>
+         <polygon points="73 10 65 6 65 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#selectwithwithitems" title="SelectWithWithItems" shape="rect">SelectWithWithItems</a></div>
-               <div>         ::= <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a></div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#select" title="Select" shape="rect">Select</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
@@ -2330,28 +2297,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="107" height="21">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="23" y="1" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="27" y="13">SelectBody</text></a><path class="line" d="m17 10 h2 m0 0 h4 m60 0 h4 m3 0 h-3"/>
-         <polygon points="97 10 105 6 105 14"/>
-         <polygon points="97 10 89 6 89 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#select" title="Select" shape="rect">Select</a>   ::= <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a></div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>createtable</a></li><li><a>createview</a></li><li><a>explain</a></li><li><a>insert</a></li><li><a>singlestatement</a></li><li><a>upsert</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        SelectBody
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="771" height="135">
+        <svg xmlns="http://www.w3.org/2000/svg" width="749" height="135">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withlist" xlink:title="WithList" shape="rect">
             <rect x="43" y="22" width="46" height="18" class="nonterminal"/>
@@ -2359,55 +2305,109 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <rect x="137" y="1" width="56" height="18" class="nonterminal"/>
             <text class="nonterminal" x="141" y="13">PlainSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#values" xlink:title="Values" shape="rect">
             <rect x="137" y="29" width="40" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="141" y="41">Values</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="137" y="57" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="141" y="69">ParenthesedSelectBody</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#setoperationlist" xlink:title="SetOperationList" shape="rect">
-            <rect x="303" y="22" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="307" y="34">SetOperationList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="435" y="22" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="439" y="34">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
-            <rect x="573" y="22" width="76" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="577" y="34">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
-            <rect x="697" y="22" width="36" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="701" y="34">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
-            <rect x="577" y="115" width="34" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="581" y="127">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
-            <rect x="659" y="115" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="663" y="127">WithIsolation</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m40 -21 h4 m56 0 h4 m0 0 h62 m-146 0 h20 m126 0 h20 m-166 0 q10 0 10 10 m146 0 q0 -10 10 -10 m-156 10 v8 m146 0 v-8 m-146 8 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m40 0 h4 m0 0 h78 m-136 -10 v20 m146 0 v-20 m-146 20 v8 m146 0 v-8 m-146 8 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m118 0 h4 m40 -56 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-228 93 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m23 -21 h-3"/>
-         <polygon points="761 103 769 99 769 107"/>
-         <polygon points="761 103 753 99 753 107"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="141" y="41">Values</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="137" y="57" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="141" y="69">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#setoperationlist" xlink:title="SetOperationList" shape="rect">
+            <rect x="281" y="22" width="84" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="285" y="34">SetOperationList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="413" y="22" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="417" y="34">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="551" y="22" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="555" y="34">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
+            <rect x="675" y="22" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="679" y="34">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
+            <rect x="555" y="115" width="34" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="559" y="127">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
+            <rect x="637" y="115" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="641" y="127">WithIsolation</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m40 -21 h4 m56 0 h4 m0 0 h40 m-124 0 h20 m104 0 h20 m-144 0 q10 0 10 10 m124 0 q0 -10 10 -10 m-134 10 v8 m124 0 v-8 m-124 8 q0 10 10 10 m104 0 q10 0 10 -10 m-114 10 h4 m40 0 h4 m0 0 h56 m-114 -10 v20 m124 0 v-20 m-124 20 v8 m124 0 v-8 m-124 8 q0 10 10 10 m104 0 q10 0 10 -10 m-114 10 h4 m96 0 h4 m40 -56 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-228 93 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m23 -21 h-3"/>
+         <polygon points="739 103 747 99 747 107"/>
+         <polygon points="739 103 731 99 731 107"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a></div>
-               <div>         ::= <a href="#withlist" title="WithList" shape="rect">WithList</a>? ( <a href="#plainselect" title="PlainSelect" shape="rect">PlainSelect</a> | <a href="#values" title="Values" shape="rect">Values</a> | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> ) <a href="#setoperationlist" title="SetOperationList" shape="rect">SetOperationList</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>?</div></xhtml:code></xhtml:div>
+               <div><a href="#select" title="Select" shape="rect">Select</a>   ::= <a href="#withlist" title="WithList" shape="rect">WithList</a>? ( <a href="#plainselect" title="PlainSelect" shape="rect">PlainSelect</a> | <a href="#values" title="Values" shape="rect">Values</a> | <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> ) <a href="#setoperationlist" title="SetOperationList" shape="rect">SetOperationList</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>alterview</a></li><li><a>internalfunction</a></li><li><a>lateralsubselect</a></li><li><a>parenthesedselectbody</a></li><li><a>pivotxml</a></li><li><a>select</a></li><li><a>selectwithwithitems</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>alterview</a></li><li><a>anycomparisonexpression</a></li><li><a>createtable</a></li><li><a>createview</a></li><li><a>explain</a></li><li><a>insert</a></li><li><a>internalfunction</a></li><li><a>lateralsubselect</a></li><li><a>parenthesedselect</a></li><li><a>pivotxml</a></li><li><a>selectwithwithitems</a></li><li><a>singlestatement</a></li><li><a>upsert</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
-        ParenthesedSelectBody
+        ParenthesedSelect
 ======================================================================================================================
 
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="147" height="21">
+        <svg xmlns="http://www.w3.org/2000/svg" width="123" height="21">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="43" y="1" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">SelectBody</text></a><rect x="111" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="115" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m0 0 h4 m60 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="137 10 145 6 145 14"/>
-         <polygon points="137 10 129 6 129 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="43" y="1" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="13">Select</text></a><rect x="87" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="91" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m0 0 h4 m36 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="113 10 121 6 121 14"/>
+         <polygon points="113 10 105 6 105 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a></div>
-               <div>         ::= '(' <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a> ')'</div></xhtml:code></xhtml:div>
+               <div><a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a></div>
+               <div>         ::= '(' <a href="#select" title="Select" shape="rect">Select</a> ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>anycomparisonexpression</a></li><li><a>fromitem</a></li><li><a>inexpression</a></li><li><a>insertconflictaction</a></li><li><a>jsonexpression</a></li><li><a>plainlimit</a></li><li><a>primaryexpression</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li><li><a>update</a></li><li><a>withitem</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>fromitem</a></li><li><a>inexpression</a></li><li><a>jsonexpression</a></li><li><a>plainlimit</a></li><li><a>primaryexpression</a></li><li><a>select</a></li><li><a>setoperationlist</a></li><li><a>updatesets</a></li><li><a>withitem</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        LateralView
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="639" height="42">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="46" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">LATERAL</text>
+         <rect x="77" y="1" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="81" y="13">VIEW</text>
+         <rect x="139" y="22" width="40" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="143" y="34">OUTER</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#function" xlink:title="Function" shape="rect">
+            <rect x="207" y="1" width="48" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="211" y="13">Function</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamewithoutstart" xlink:title="RelObjectNameWithoutStart" shape="rect">
+            <rect x="283" y="22" width="138" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="287" y="34">RelObjectNameWithoutStart</text></a><rect x="449" y="1" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="453" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamewithoutstart" xlink:title="RelObjectNameWithoutStart" shape="rect">
+            <rect x="477" y="1" width="138" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="481" y="13">RelObjectNameWithoutStart</text></a><path class="line" d="m17 10 h2 m0 0 h4 m46 0 h4 m0 0 h4 m34 0 h4 m20 0 h10 m0 0 h38 m-68 0 h20 m48 0 h20 m-88 0 q10 0 10 10 m68 0 q0 -10 10 -10 m-78 10 v1 m68 0 v-1 m-68 1 q0 10 10 10 m48 0 q10 0 10 -10 m-58 10 h4 m40 0 h4 m20 -21 h4 m48 0 h4 m20 0 h10 m0 0 h136 m-166 0 h20 m146 0 h20 m-186 0 q10 0 10 10 m166 0 q0 -10 10 -10 m-176 10 v1 m166 0 v-1 m-166 1 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m138 0 h4 m20 -21 h4 m20 0 h4 m0 0 h4 m138 0 h4 m3 0 h-3"/>
+         <polygon points="629 10 637 6 637 14"/>
+         <polygon points="629 10 621 6 621 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#lateralview" title="LateralView" shape="rect">LateralView</a></div>
+               <div>         ::= 'LATERAL' 'VIEW' 'OUTER'? <a href="#function" title="Function" shape="rect">Function</a> <a href="#relobjectnamewithoutstart" title="RelObjectNameWithoutStart" shape="rect">RelObjectNameWithoutStart</a>? 'AS' <a href="#relobjectnamewithoutstart" title="RelObjectNameWithoutStart" shape="rect">RelObjectNameWithoutStart</a></div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>lateralviews</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        LateralViews
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="149" height="33">
+         <polygon points="9 22 1 18 1 26"/>
+         <polygon points="17 22 9 18 9 26"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lateralview" xlink:title="LateralView" shape="rect">
+            <rect x="43" y="13" width="62" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="25">LateralView</text></a><path class="line" d="m17 22 h2 m20 0 h4 m62 0 h4 m-90 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m70 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-70 0 h10 m0 0 h60 m23 21 h-3"/>
+         <polygon points="139 22 147 18 147 26"/>
+         <polygon points="139 22 131 18 131 26"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#lateralviews" title="LateralViews" shape="rect">LateralViews</a></div>
+               <div>         ::= <a href="#lateralview" title="LateralView" shape="rect">LateralView</a>+</div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>plainselect</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2417,22 +2417,22 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="201" height="21">
+        <svg xmlns="http://www.w3.org/2000/svg" width="177" height="21">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="46" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="27" y="13">LATERAL</text>
          <rect x="77" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="81" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="97" y="1" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="101" y="13">SelectBody</text></a><rect x="165" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="169" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m46 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m60 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="191 10 199 6 199 14"/>
-         <polygon points="191 10 183 6 183 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="81" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="97" y="1" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="101" y="13">Select</text></a><rect x="141" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="145" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m46 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m36 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="167 10 175 6 175 14"/>
+         <polygon points="167 10 159 6 159 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#lateralsubselect" title="LateralSubSelect" shape="rect">LateralSubSelect</a></div>
-               <div>         ::= 'LATERAL' '(' <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a> ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= 'LATERAL' '(' <a href="#select" title="Select" shape="rect">Select</a> ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>fromitem</a></li></ul></div></td></tr></tbody></table>
@@ -2445,7 +2445,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="779" height="647">
+        <svg xmlns="http://www.w3.org/2000/svg" width="785" height="647">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-select" xlink:title="K_SELECT" shape="rect">
             <rect x="23" y="1" width="56" height="18" class="nonterminal"/>
@@ -2475,84 +2475,91 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <text class="terminal" x="391" y="195">SQL_CACHE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#top" xlink:title="Top" shape="rect">
             <rect x="681" y="22" width="26" height="18" class="nonterminal"/>
             <text class="nonterminal" x="685" y="34">Top</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
-            <rect x="41" y="225" width="78" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="45" y="237">SelectItemsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#intoclause" xlink:title="IntoClause" shape="rect">
-            <rect x="147" y="246" width="58" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="151" y="258">IntoClause</text></a><rect x="253" y="246" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="257" y="258">FROM</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fromitem" xlink:title="FromItem" shape="rect">
-            <rect x="297" y="246" width="54" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="301" y="258">FromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#joinslist" xlink:title="JoinsList" shape="rect">
-            <rect x="379" y="267" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="383" y="279">JoinsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#ksqlwindowclause" xlink:title="KSQLWindowClause" shape="rect">
-            <rect x="493" y="246" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="497" y="258">KSQLWindowClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
-            <rect x="645" y="246" width="72" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="649" y="258">WhereClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#oraclehierarchicalqueryclause" xlink:title="OracleHierarchicalQueryClause" shape="rect">
-            <rect x="111" y="321" width="146" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="115" y="333">OracleHierarchicalQueryClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#groupbycolumnreferences" xlink:title="GroupByColumnReferences" shape="rect">
-            <rect x="305" y="321" width="136" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="309" y="333">GroupByColumnReferences</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#having" xlink:title="Having" shape="rect">
-            <rect x="489" y="321" width="40" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="493" y="333">Having</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="577" y="321" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="581" y="333">OrderByElements</text></a><rect x="37" y="391" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="41" y="403">WINDOW</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectname" xlink:title="RelObjectName" shape="rect">
-            <rect x="121" y="391" width="80" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="125" y="403">RelObjectName</text></a><rect x="209" y="391" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="213" y="403">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#windowdefinition" xlink:title="windowDefinition" shape="rect">
-            <rect x="237" y="391" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="241" y="403">windowDefinition</text></a><rect x="121" y="363" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="125" y="375">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="389" y="412" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="393" y="424">OrderByElements</text></a><rect x="527" y="412" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="531" y="424">EMIT</text>
-         <rect x="565" y="412" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="569" y="424">CHANGES</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
-            <rect x="665" y="412" width="76" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="669" y="424">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
-            <rect x="210" y="466" width="36" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="214" y="478">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
-            <rect x="294" y="466" width="76" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="298" y="478">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
-            <rect x="418" y="466" width="34" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="422" y="478">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
-            <rect x="500" y="466" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="504" y="478">WithIsolation</text></a><rect x="135" y="520" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="139" y="532">FOR</text>
-         <rect x="169" y="520" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="173" y="532">UPDATE</text>
-         <rect x="241" y="541" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="553">OF</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#table" xlink:title="Table" shape="rect">
-            <rect x="269" y="541" width="34" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="273" y="553">Table</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#wait" xlink:title="Wait" shape="rect">
-            <rect x="351" y="541" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="355" y="553">Wait</text></a><rect x="429" y="541" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="433" y="553">NOWAIT</text>
-         <rect x="429" y="569" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="433" y="581">SKIP</text>
-         <rect x="467" y="569" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="471" y="581">LOCKED</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#optimizefor" xlink:title="OptimizeFor" shape="rect">
-            <rect x="579" y="520" width="64" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="583" y="532">OptimizeFor</text></a><rect x="495" y="627" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="499" y="639">FOR</text>
-         <rect x="529" y="627" width="28" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="533" y="639">XML</text>
-         <rect x="565" y="627" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="569" y="639">PATH</text>
-         <rect x="605" y="627" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="609" y="639">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="625" y="627" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="629" y="639">S_CHAR_LITERAL</text></a><rect x="723" y="627" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="727" y="639">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m56 0 h4 m20 0 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m40 -21 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m40 -21 h10 m0 0 h24 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v1 m54 0 v-1 m-54 1 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m40 -21 h10 m0 0 h244 m-274 0 h20 m254 0 h20 m-294 0 q10 0 10 10 m274 0 q0 -10 10 -10 m-284 10 v1 m274 0 v-1 m-274 1 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m24 0 h4 m0 0 h222 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m50 0 h4 m20 0 h10 m0 0 h146 m-176 0 h20 m156 0 h20 m-196 0 q10 0 10 10 m176 0 q0 -10 10 -10 m-186 10 v1 m176 0 v-1 m-176 1 q0 10 10 10 m156 0 q10 0 10 -10 m-166 10 h4 m22 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m78 0 h4 m0 0 h4 m12 0 h4 m-244 -31 v20 m274 0 v-20 m-274 20 v29 m274 0 v-29 m-274 29 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m44 0 h4 m0 0 h202 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m132 0 h4 m0 0 h114 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m84 0 h4 m0 0 h162 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m64 0 h4 m0 0 h182 m40 -182 h10 m0 0 h24 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v1 m54 0 v-1 m-54 1 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-718 224 l2 0 m2 0 l2 0 m2 0 l2 0 m2 0 h4 m78 0 h4 m20 0 h10 m0 0 h56 m-86 0 h20 m66 0 h20 m-106 0 q10 0 10 10 m86 0 q0 -10 10 -10 m-96 10 v1 m86 0 v-1 m-86 1 q0 10 10 10 m66 0 q10 0 10 -10 m-76 10 h4 m58 0 h4 m40 -21 h10 m0 0 h190 m-220 0 h20 m200 0 h20 m-240 0 q10 0 10 10 m220 0 q0 -10 10 -10 m-230 10 v1 m220 0 v-1 m-220 1 q0 10 10 10 m200 0 q10 0 10 -10 m-210 10 h4 m36 0 h4 m0 0 h4 m54 0 h4 m20 0 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m60 -42 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m104 0 h4 m40 -21 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-678 75 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h144 m-174 0 h20 m154 0 h20 m-194 0 q10 0 10 10 m174 0 q0 -10 10 -10 m-184 10 v1 m174 0 v-1 m-174 1 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m146 0 h4 m40 -21 h10 m0 0 h134 m-164 0 h20 m144 0 h20 m-184 0 q10 0 10 10 m164 0 q0 -10 10 -10 m-174 10 v1 m164 0 v-1 m-164 1 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m136 0 h4 m40 -21 h10 m0 0 h38 m-68 0 h20 m48 0 h20 m-88 0 q10 0 10 10 m68 0 q0 -10 10 -10 m-78 10 v1 m68 0 v-1 m-68 1 q0 10 10 10 m48 0 q10 0 10 -10 m-58 10 h4 m40 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-702 91 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h4 m56 0 h4 m20 0 h4 m80 0 h4 m0 0 h4 m20 0 h4 m0 0 h4 m84 0 h4 m-228 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m208 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-208 0 h4 m8 0 h4 m0 0 h192 m-312 28 h20 m312 0 h20 m-352 0 q10 0 10 10 m332 0 q0 -10 10 -10 m-342 10 v1 m332 0 v-1 m-332 1 q0 10 10 10 m312 0 q10 0 10 -10 m-322 10 h10 m0 0 h302 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m30 0 h4 m0 0 h4 m52 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-603 54 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-505 54 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h394 m-424 0 h20 m404 0 h20 m-444 0 q10 0 10 10 m424 0 q0 -10 10 -10 m-434 10 v1 m424 0 v-1 m-424 1 q0 10 10 10 m404 0 q10 0 10 -10 m-414 10 h4 m26 0 h4 m0 0 h4 m44 0 h4 m20 0 h10 m0 0 h60 m-90 0 h20 m70 0 h20 m-110 0 q10 0 10 10 m90 0 q0 -10 10 -10 m-100 10 v1 m90 0 v-1 m-90 1 q0 10 10 10 m70 0 q10 0 10 -10 m-80 10 h4 m20 0 h4 m0 0 h4 m34 0 h4 m40 -21 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m48 0 h4 m0 0 h34 m-100 -10 v20 m110 0 v-20 m-110 20 v8 m110 0 v-8 m-110 8 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m30 0 h4 m0 0 h4 m44 0 h4 m60 -70 h10 m0 0 h62 m-92 0 h20 m72 0 h20 m-112 0 q10 0 10 10 m92 0 q0 -10 10 -10 m-102 10 v1 m92 0 v-1 m-92 1 q0 10 10 10 m72 0 q10 0 10 -10 m-82 10 h4 m64 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-220 107 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h238 m-268 0 h20 m248 0 h20 m-288 0 q10 0 10 10 m268 0 q0 -10 10 -10 m-278 10 v1 m268 0 v-1 m-268 1 q0 10 10 10 m248 0 q10 0 10 -10 m-258 10 h4 m26 0 h4 m0 0 h4 m28 0 h4 m0 0 h4 m32 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m12 0 h4 m23 -21 h-3"/>
-         <polygon points="769 615 777 611 777 619"/>
-         <polygon points="769 615 761 611 761 619"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <rect x="82" y="225" width="78" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="86" y="237">SelectItemsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#intoclause" xlink:title="IntoClause" shape="rect">
+            <rect x="188" y="246" width="58" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="192" y="258">IntoClause</text></a><rect x="294" y="246" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="298" y="258">FROM</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fromitem" xlink:title="FromItem" shape="rect">
+            <rect x="338" y="246" width="54" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="342" y="258">FromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lateralviews" xlink:title="LateralViews" shape="rect">
+            <rect x="420" y="267" width="66" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="424" y="279">LateralViews</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#joinslist" xlink:title="JoinsList" shape="rect">
+            <rect x="534" y="267" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="538" y="279">JoinsList</text></a><rect x="648" y="246" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="652" y="258">FINAL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#ksqlwindowclause" xlink:title="KSQLWindowClause" shape="rect">
+            <rect x="47" y="321" width="104" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="51" y="333">KSQLWindowClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#whereclause" xlink:title="WhereClause" shape="rect">
+            <rect x="199" y="321" width="72" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="203" y="333">WhereClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#oraclehierarchicalqueryclause" xlink:title="OracleHierarchicalQueryClause" shape="rect">
+            <rect x="319" y="321" width="146" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="323" y="333">OracleHierarchicalQueryClause</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#having" xlink:title="Having" shape="rect">
+            <rect x="513" y="321" width="40" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="517" y="333">Having</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#groupbycolumnreferences" xlink:title="GroupByColumnReferences" shape="rect">
+            <rect x="601" y="321" width="136" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="605" y="333">GroupByColumnReferences</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#having" xlink:title="Having" shape="rect">
+            <rect x="58" y="412" width="40" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="62" y="424">Having</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="146" y="412" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="150" y="424">OrderByElements</text></a><rect x="284" y="391" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="288" y="403">WINDOW</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectname" xlink:title="RelObjectName" shape="rect">
+            <rect x="368" y="391" width="80" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="372" y="403">RelObjectName</text></a><rect x="456" y="391" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="460" y="403">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#windowdefinition" xlink:title="windowDefinition" shape="rect">
+            <rect x="484" y="391" width="84" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="488" y="403">windowDefinition</text></a><rect x="368" y="363" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="372" y="375">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="636" y="412" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="640" y="424">OrderByElements</text></a><rect x="37" y="466" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="41" y="478">EMIT</text>
+         <rect x="75" y="466" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="79" y="478">CHANGES</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitby" xlink:title="LimitBy" shape="rect">
+            <rect x="175" y="466" width="42" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="179" y="478">LimitBy</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="265" y="466" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="269" y="478">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
+            <rect x="389" y="466" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="393" y="478">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="473" y="466" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="477" y="478">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
+            <rect x="597" y="466" width="34" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="601" y="478">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
+            <rect x="679" y="466" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="683" y="478">WithIsolation</text></a><rect x="138" y="520" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="142" y="532">FOR</text>
+         <rect x="172" y="520" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="176" y="532">UPDATE</text>
+         <rect x="244" y="541" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="248" y="553">OF</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#table" xlink:title="Table" shape="rect">
+            <rect x="272" y="541" width="34" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="276" y="553">Table</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#wait" xlink:title="Wait" shape="rect">
+            <rect x="354" y="541" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="358" y="553">Wait</text></a><rect x="432" y="541" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="436" y="553">NOWAIT</text>
+         <rect x="432" y="569" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="436" y="581">SKIP</text>
+         <rect x="470" y="569" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="474" y="581">LOCKED</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#optimizefor" xlink:title="OptimizeFor" shape="rect">
+            <rect x="582" y="520" width="64" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="586" y="532">OptimizeFor</text></a><rect x="501" y="627" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="505" y="639">FOR</text>
+         <rect x="535" y="627" width="28" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="539" y="639">XML</text>
+         <rect x="571" y="627" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="575" y="639">PATH</text>
+         <rect x="611" y="627" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="615" y="639">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="631" y="627" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="635" y="639">S_CHAR_LITERAL</text></a><rect x="729" y="627" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="733" y="639">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m56 0 h4 m20 0 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m40 -21 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m40 -21 h10 m0 0 h24 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v1 m54 0 v-1 m-54 1 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m40 -21 h10 m0 0 h244 m-274 0 h20 m254 0 h20 m-294 0 q10 0 10 10 m274 0 q0 -10 10 -10 m-284 10 v1 m274 0 v-1 m-274 1 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m24 0 h4 m0 0 h222 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m50 0 h4 m20 0 h10 m0 0 h146 m-176 0 h20 m156 0 h20 m-196 0 q10 0 10 10 m176 0 q0 -10 10 -10 m-186 10 v1 m176 0 v-1 m-176 1 q0 10 10 10 m156 0 q10 0 10 -10 m-166 10 h4 m22 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m78 0 h4 m0 0 h4 m12 0 h4 m-244 -31 v20 m274 0 v-20 m-274 20 v29 m274 0 v-29 m-274 29 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m44 0 h4 m0 0 h202 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m132 0 h4 m0 0 h114 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m84 0 h4 m0 0 h162 m-264 -10 v20 m274 0 v-20 m-274 20 v8 m274 0 v-8 m-274 8 q0 10 10 10 m254 0 q10 0 10 -10 m-264 10 h4 m64 0 h4 m0 0 h182 m40 -182 h10 m0 0 h24 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v1 m54 0 v-1 m-54 1 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-677 224 l2 0 m2 0 l2 0 m2 0 l2 0 m2 0 h4 m78 0 h4 m20 0 h10 m0 0 h56 m-86 0 h20 m66 0 h20 m-106 0 q10 0 10 10 m86 0 q0 -10 10 -10 m-96 10 v1 m86 0 v-1 m-86 1 q0 10 10 10 m66 0 q10 0 10 -10 m-76 10 h4 m58 0 h4 m40 -21 h10 m0 0 h304 m-334 0 h20 m314 0 h20 m-354 0 q10 0 10 10 m334 0 q0 -10 10 -10 m-344 10 v1 m334 0 v-1 m-334 1 q0 10 10 10 m314 0 q10 0 10 -10 m-324 10 h4 m36 0 h4 m0 0 h4 m54 0 h4 m20 0 h10 m0 0 h64 m-94 0 h20 m74 0 h20 m-114 0 q10 0 10 10 m94 0 q0 -10 10 -10 m-104 10 v1 m94 0 v-1 m-94 1 q0 10 10 10 m74 0 q10 0 10 -10 m-84 10 h4 m66 0 h4 m40 -21 h10 m0 0 h44 m-74 0 h20 m54 0 h20 m-94 0 q10 0 10 10 m74 0 q0 -10 10 -10 m-84 10 v1 m74 0 v-1 m-74 1 q0 10 10 10 m54 0 q10 0 10 -10 m-64 10 h4 m46 0 h4 m60 -42 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-707 75 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m104 0 h4 m40 -21 h10 m0 0 h70 m-100 0 h20 m80 0 h20 m-120 0 q10 0 10 10 m100 0 q0 -10 10 -10 m-110 10 v1 m100 0 v-1 m-100 1 q0 10 10 10 m80 0 q10 0 10 -10 m-90 10 h4 m72 0 h4 m40 -21 h10 m0 0 h144 m-174 0 h20 m154 0 h20 m-194 0 q10 0 10 10 m174 0 q0 -10 10 -10 m-184 10 v1 m174 0 v-1 m-174 1 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m146 0 h4 m40 -21 h10 m0 0 h38 m-68 0 h20 m48 0 h20 m-88 0 q10 0 10 10 m68 0 q0 -10 10 -10 m-78 10 v1 m68 0 v-1 m-68 1 q0 10 10 10 m48 0 q10 0 10 -10 m-58 10 h4 m40 0 h4 m40 -21 h10 m0 0 h134 m-164 0 h20 m144 0 h20 m-184 0 q10 0 10 10 m164 0 q0 -10 10 -10 m-174 10 v1 m164 0 v-1 m-164 1 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m136 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-751 91 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h38 m-68 0 h20 m48 0 h20 m-88 0 q10 0 10 10 m68 0 q0 -10 10 -10 m-78 10 v1 m68 0 v-1 m-68 1 q0 10 10 10 m48 0 q10 0 10 -10 m-58 10 h4 m40 0 h4 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h4 m56 0 h4 m20 0 h4 m80 0 h4 m0 0 h4 m20 0 h4 m0 0 h4 m84 0 h4 m-228 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m208 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-208 0 h4 m8 0 h4 m0 0 h192 m-312 28 h20 m312 0 h20 m-352 0 q10 0 10 10 m332 0 q0 -10 10 -10 m-342 10 v1 m332 0 v-1 m-332 1 q0 10 10 10 m312 0 q10 0 10 -10 m-322 10 h10 m0 0 h302 m40 -21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-761 54 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m30 0 h4 m0 0 h4 m52 0 h4 m40 -21 h10 m0 0 h40 m-70 0 h20 m50 0 h20 m-90 0 q10 0 10 10 m70 0 q0 -10 10 -10 m-80 10 v1 m70 0 v-1 m-70 1 q0 10 10 10 m50 0 q10 0 10 -10 m-60 10 h4 m42 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-681 54 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h394 m-424 0 h20 m404 0 h20 m-444 0 q10 0 10 10 m424 0 q0 -10 10 -10 m-434 10 v1 m424 0 v-1 m-424 1 q0 10 10 10 m404 0 q10 0 10 -10 m-414 10 h4 m26 0 h4 m0 0 h4 m44 0 h4 m20 0 h10 m0 0 h60 m-90 0 h20 m70 0 h20 m-110 0 q10 0 10 10 m90 0 q0 -10 10 -10 m-100 10 v1 m90 0 v-1 m-90 1 q0 10 10 10 m70 0 q10 0 10 -10 m-80 10 h4 m20 0 h4 m0 0 h4 m34 0 h4 m40 -21 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m48 0 h4 m0 0 h34 m-100 -10 v20 m110 0 v-20 m-110 20 v8 m110 0 v-8 m-110 8 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m30 0 h4 m0 0 h4 m44 0 h4 m60 -70 h10 m0 0 h62 m-92 0 h20 m72 0 h20 m-112 0 q10 0 10 10 m92 0 q0 -10 10 -10 m-102 10 v1 m92 0 v-1 m-92 1 q0 10 10 10 m72 0 q10 0 10 -10 m-82 10 h4 m64 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-217 107 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h238 m-268 0 h20 m248 0 h20 m-288 0 q10 0 10 10 m268 0 q0 -10 10 -10 m-278 10 v1 m268 0 v-1 m-268 1 q0 10 10 10 m248 0 q10 0 10 -10 m-258 10 h4 m26 0 h4 m0 0 h4 m28 0 h4 m0 0 h4 m32 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m12 0 h4 m23 -21 h-3"/>
+         <polygon points="775 615 783 611 783 619"/>
+         <polygon points="775 615 767 611 767 619"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#plainselect" title="PlainSelect" shape="rect">PlainSelect</a></div>
-               <div>         ::= <a href="#k-select" title="K_SELECT" shape="rect">K_SELECT</a> 'STRAIGHT_JOIN'? <a href="#skip" title="Skip" shape="rect">Skip</a>? <a href="#first" title="First" shape="rect">First</a>? ( 'ALL' | 'DISTINCT' ( 'ON' '(' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> ')' )? | 'UNIQUE' | 'SQL_CALC_FOUND_ROWS' | 'SQL_NO_CACHE' | 'SQL_CACHE' )? <a href="#top" title="Top" shape="rect">Top</a>? <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> <a href="#intoclause" title="IntoClause" shape="rect">IntoClause</a>? ( 'FROM' <a href="#fromitem" title="FromItem" shape="rect">FromItem</a> <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? )? <a href="#ksqlwindowclause" title="KSQLWindowClause" shape="rect">KSQLWindowClause</a>? <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? <a href="#oraclehierarchicalqueryclause" title="OracleHierarchicalQueryClause" shape="rect">OracleHierarchicalQueryClause</a>? <a href="#groupbycolumnreferences" title="GroupByColumnReferences" shape="rect">GroupByColumnReferences</a>? <a href="#having" title="Having" shape="rect">Having</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'WINDOW' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> 'AS' <a href="#windowdefinition" title="windowDefinition" shape="rect">windowDefinition</a> ( ',' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> 'AS' <a href="#windowdefinition" title="windowDefinition" shape="rect">windowDefinition</a> )* )? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'EMIT' 'CHANGES' )? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>? ( 'FOR' 'UPDATE' ( 'OF' <a href="#table" title="Table" shape="rect">Table</a> )? <a href="#wait" title="Wait" shape="rect">Wait</a>? ( 'NOWAIT' | 'SKIP' 'LOCKED' )? )? <a href="#optimizefor" title="OptimizeFor" shape="rect">OptimizeFor</a>? ( 'FOR' 'XML' 'PATH' '(' <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> ')' )?</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#k-select" title="K_SELECT" shape="rect">K_SELECT</a> 'STRAIGHT_JOIN'? <a href="#skip" title="Skip" shape="rect">Skip</a>? <a href="#first" title="First" shape="rect">First</a>? ( 'ALL' | 'DISTINCT' ( 'ON' '(' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> ')' )? | 'UNIQUE' | 'SQL_CALC_FOUND_ROWS' | 'SQL_NO_CACHE' | 'SQL_CACHE' )? <a href="#top" title="Top" shape="rect">Top</a>? <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> <a href="#intoclause" title="IntoClause" shape="rect">IntoClause</a>? ( 'FROM' <a href="#fromitem" title="FromItem" shape="rect">FromItem</a> <a href="#lateralviews" title="LateralViews" shape="rect">LateralViews</a>? <a href="#joinslist" title="JoinsList" shape="rect">JoinsList</a>? )? 'FINAL'? <a href="#ksqlwindowclause" title="KSQLWindowClause" shape="rect">KSQLWindowClause</a>? <a href="#whereclause" title="WhereClause" shape="rect">WhereClause</a>? <a href="#oraclehierarchicalqueryclause" title="OracleHierarchicalQueryClause" shape="rect">OracleHierarchicalQueryClause</a>? <a href="#having" title="Having" shape="rect">Having</a>? <a href="#groupbycolumnreferences" title="GroupByColumnReferences" shape="rect">GroupByColumnReferences</a>? <a href="#having" title="Having" shape="rect">Having</a>? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'WINDOW' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> 'AS' <a href="#windowdefinition" title="windowDefinition" shape="rect">windowDefinition</a> ( ',' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> 'AS' <a href="#windowdefinition" title="windowDefinition" shape="rect">windowDefinition</a> )* )? <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'EMIT' 'CHANGES' )? <a href="#limitby" title="LimitBy" shape="rect">LimitBy</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>? ( 'FOR' 'UPDATE' ( 'OF' <a href="#table" title="Table" shape="rect">Table</a> )? <a href="#wait" title="Wait" shape="rect">Wait</a>? ( 'NOWAIT' | 'SKIP' 'LOCKED' )? )? <a href="#optimizefor" title="OptimizeFor" shape="rect">OptimizeFor</a>? ( 'FOR' 'XML' 'PATH' '(' <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> ')' )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2562,7 +2569,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="771" height="224">
+        <svg xmlns="http://www.w3.org/2000/svg" width="749" height="224">
          <polygon points="9 22 1 18 1 26"/>
          <polygon points="17 22 9 18 9 26"/>
          <rect x="63" y="13" width="40" height="18" class="terminal" rx="4"/>
@@ -2580,30 +2587,30 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <rect x="249" y="13" width="56" height="18" class="nonterminal"/>
             <text class="nonterminal" x="253" y="25">PlainSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#values" xlink:title="Values" shape="rect">
             <rect x="249" y="41" width="40" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="253" y="53">Values</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="249" y="69" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="253" y="81">ParenthesedSelectBody</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="435" y="34" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="439" y="46">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
-            <rect x="573" y="34" width="76" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="577" y="46">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
-            <rect x="697" y="34" width="36" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="701" y="46">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
-            <rect x="453" y="204" width="76" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="457" y="216">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
-            <rect x="577" y="204" width="34" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="581" y="216">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
-            <rect x="659" y="204" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="663" y="216">WithIsolation</text></a><path class="line" d="m17 22 h2 m40 0 h4 m40 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-146 -49 h20 m146 0 h20 m-186 0 q10 0 10 10 m166 0 q0 -10 10 -10 m-176 10 v57 m166 0 v-57 m-166 57 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m58 0 h4 m0 0 h80 m-156 -10 v20 m166 0 v-20 m-166 20 v8 m166 0 v-8 m-166 8 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m40 0 h4 m0 0 h98 m-156 -10 v20 m166 0 v-20 m-166 20 v8 m166 0 v-8 m-166 8 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m42 0 h4 m0 0 h96 m40 -133 h4 m56 0 h4 m0 0 h62 m-146 0 h20 m126 0 h20 m-166 0 q10 0 10 10 m146 0 q0 -10 10 -10 m-156 10 v8 m146 0 v-8 m-146 8 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m40 0 h4 m0 0 h78 m-136 -10 v20 m146 0 v-20 m-146 20 v8 m146 0 v-8 m-146 8 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m118 0 h4 m-352 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m352 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-352 0 h10 m0 0 h342 m40 21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-352 170 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m23 -21 h-3"/>
-         <polygon points="761 192 769 188 769 196"/>
-         <polygon points="761 192 753 188 753 196"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="253" y="53">Values</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="249" y="69" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="253" y="81">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="413" y="34" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="417" y="46">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="551" y="34" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="555" y="46">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#offset" xlink:title="Offset" shape="rect">
+            <rect x="675" y="34" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="679" y="46">Offset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="431" y="204" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="435" y="216">LimitWithOffset</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#fetch" xlink:title="Fetch" shape="rect">
+            <rect x="555" y="204" width="34" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="559" y="216">Fetch</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#withisolation" xlink:title="WithIsolation" shape="rect">
+            <rect x="637" y="204" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="641" y="216">WithIsolation</text></a><path class="line" d="m17 22 h2 m40 0 h4 m40 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-146 -49 h20 m146 0 h20 m-186 0 q10 0 10 10 m166 0 q0 -10 10 -10 m-176 10 v57 m166 0 v-57 m-166 57 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m58 0 h4 m0 0 h80 m-156 -10 v20 m166 0 v-20 m-166 20 v8 m166 0 v-8 m-166 8 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m40 0 h4 m0 0 h98 m-156 -10 v20 m166 0 v-20 m-166 20 v8 m166 0 v-8 m-166 8 q0 10 10 10 m146 0 q10 0 10 -10 m-156 10 h4 m42 0 h4 m0 0 h96 m40 -133 h4 m56 0 h4 m0 0 h40 m-124 0 h20 m104 0 h20 m-144 0 q10 0 10 10 m124 0 q0 -10 10 -10 m-134 10 v8 m124 0 v-8 m-124 8 q0 10 10 10 m104 0 q10 0 10 -10 m-114 10 h4 m40 0 h4 m0 0 h56 m-114 -10 v20 m124 0 v-20 m-124 20 v8 m124 0 v-8 m-124 8 q0 10 10 10 m104 0 q10 0 10 -10 m-114 10 h4 m96 0 h4 m-330 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m330 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-330 0 h10 m0 0 h320 m40 21 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h34 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v1 m64 0 v-1 m-64 1 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-352 170 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h74 m-104 0 h20 m84 0 h20 m-124 0 q10 0 10 10 m104 0 q0 -10 10 -10 m-114 10 v1 m104 0 v-1 m-104 1 q0 10 10 10 m84 0 q10 0 10 -10 m-94 10 h4 m76 0 h4 m40 -21 h10 m0 0 h32 m-62 0 h20 m42 0 h20 m-82 0 q10 0 10 10 m62 0 q0 -10 10 -10 m-72 10 v1 m62 0 v-1 m-62 1 q0 10 10 10 m42 0 q10 0 10 -10 m-52 10 h4 m34 0 h4 m40 -21 h10 m0 0 h66 m-96 0 h20 m76 0 h20 m-116 0 q10 0 10 10 m96 0 q0 -10 10 -10 m-106 10 v1 m96 0 v-1 m-96 1 q0 10 10 10 m76 0 q10 0 10 -10 m-86 10 h4 m68 0 h4 m23 -21 h-3"/>
+         <polygon points="739 192 747 188 747 196"/>
+         <polygon points="739 192 731 188 731 196"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#setoperationlist" title="SetOperationList" shape="rect">SetOperationList</a></div>
                <div>         ::= ( ( 'UNION' ( 'ALL' | 'DISTINCT' )? | 'INTERSECT' | 'MINUS' | 'EXCEPT'
-                  ) ( <a href="#plainselect" title="PlainSelect" shape="rect">PlainSelect</a> | <a href="#values" title="Values" shape="rect">Values</a> | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> ) )+ <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>?</div></xhtml:code></xhtml:div>
+                  ) ( <a href="#plainselect" title="PlainSelect" shape="rect">PlainSelect</a> | <a href="#values" title="Values" shape="rect">Values</a> | <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> ) )+ <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#offset" title="Offset" shape="rect">Offset</a>? <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a>? <a href="#fetch" title="Fetch" shape="rect">Fetch</a>? <a href="#withisolation" title="WithIsolation" shape="rect">WithIsolation</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>selectbody</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>select</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2628,7 +2635,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#withlist" title="WithList" shape="rect">WithList</a> ::= 'WITH' <a href="#withitem" title="WithItem" shape="rect">WithItem</a> ( ',' <a href="#withitem" title="WithItem" shape="rect">WithItem</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>selectbody</a></li><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>select</a></li><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2638,7 +2645,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="555" height="42">
+        <svg xmlns="http://www.w3.org/2000/svg" width="533" height="42">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="22" width="60" height="18" class="terminal" rx="4"/>
@@ -2650,13 +2657,13 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="263" y="34">SelectItemsList</text></a><rect x="345" y="22" width="12" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="349" y="34">)</text>
          <rect x="385" y="1" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="389" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="413" y="1" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="417" y="13">ParenthesedSelectBody</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h58 m-88 0 h20 m68 0 h20 m-108 0 q10 0 10 10 m88 0 q0 -10 10 -10 m-98 10 v1 m88 0 v-1 m-88 1 q0 10 10 10 m68 0 q10 0 10 -10 m-78 10 h4 m60 0 h4 m20 -21 h4 m80 0 h4 m20 0 h10 m0 0 h116 m-146 0 h20 m126 0 h20 m-166 0 q10 0 10 10 m146 0 q0 -10 10 -10 m-156 10 v1 m146 0 v-1 m-146 1 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m12 0 h4 m0 0 h4 m78 0 h4 m0 0 h4 m12 0 h4 m20 -21 h4 m20 0 h4 m0 0 h4 m118 0 h4 m3 0 h-3"/>
-         <polygon points="545 10 553 6 553 14"/>
-         <polygon points="545 10 537 6 537 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="389" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="413" y="1" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="417" y="13">ParenthesedSelect</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h58 m-88 0 h20 m68 0 h20 m-108 0 q10 0 10 10 m88 0 q0 -10 10 -10 m-98 10 v1 m88 0 v-1 m-88 1 q0 10 10 10 m68 0 q10 0 10 -10 m-78 10 h4 m60 0 h4 m20 -21 h4 m80 0 h4 m20 0 h10 m0 0 h116 m-146 0 h20 m126 0 h20 m-166 0 q10 0 10 10 m146 0 q0 -10 10 -10 m-156 10 v1 m146 0 v-1 m-146 1 q0 10 10 10 m126 0 q10 0 10 -10 m-136 10 h4 m12 0 h4 m0 0 h4 m78 0 h4 m0 0 h4 m12 0 h4 m20 -21 h4 m20 0 h4 m0 0 h4 m96 0 h4 m3 0 h-3"/>
+         <polygon points="523 10 531 6 531 14"/>
+         <polygon points="523 10 515 6 515 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#withitem" title="WithItem" shape="rect">WithItem</a> ::= 'RECURSIVE'? <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> ( '(' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> ')' )? 'AS' <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a></div></xhtml:code></xhtml:div>
+               <div><a href="#withitem" title="WithItem" shape="rect">WithItem</a> ::= 'RECURSIVE'? <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> ( '(' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> ')' )? 'AS' <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>withlist</a></li></ul></div></td></tr></tbody></table>
@@ -2683,35 +2690,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= <a href="#selectitem" title="SelectItem" shape="rect">SelectItem</a> ( ',' <a href="#selectitem" title="SelectItem" shape="rect">SelectItem</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>delete</a></li><li><a>insert</a></li><li><a>outputclause</a></li><li><a>plainselect</a></li><li><a>update</a></li><li><a>withitem</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        SelectExpressionItem
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="257" height="77">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#condition" xlink:title="Condition" shape="rect">
-            <rect x="43" y="1" width="52" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">Condition</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#concatexpression" xlink:title="ConcatExpression" shape="rect">
-            <rect x="43" y="29" width="92" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="41">ConcatExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
-            <rect x="43" y="57" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="69">Expression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="183" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="187" y="34">Alias</text></a><path class="line" d="m17 10 h2 m20 0 h4 m52 0 h4 m0 0 h40 m-120 0 h20 m100 0 h20 m-140 0 q10 0 10 10 m120 0 q0 -10 10 -10 m-130 10 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m92 0 h4 m-110 -10 v20 m120 0 v-20 m-120 20 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m60 0 h4 m0 0 h32 m40 -56 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
-         <polygon points="247 10 255 6 255 14"/>
-         <polygon points="247 10 239 6 239 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#selectexpressionitem" title="SelectExpressionItem" shape="rect">SelectExpressionItem</a></div>
-               <div>         ::= ( <a href="#condition" title="Condition" shape="rect">Condition</a> | <a href="#concatexpression" title="ConcatExpression" shape="rect">ConcatExpression</a> | <a href="#expression" title="Expression" shape="rect">Expression</a> ) <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>listexpressionitem</a></li><li><a>selectitem</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>delete</a></li><li><a>insert</a></li><li><a>outputclause</a></li><li><a>pivot</a></li><li><a>pivotxml</a></li><li><a>plainselect</a></li><li><a>unpivot</a></li><li><a>update</a></li><li><a>withitem</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2721,22 +2700,26 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="195" height="77">
+        <svg xmlns="http://www.w3.org/2000/svg" width="257" height="133">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="1" width="14" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="47" y="13">*</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alltablecolumns" xlink:title="AllTableColumns" shape="rect">
             <rect x="43" y="29" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="41">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectexpressionitem" xlink:title="SelectExpressionItem" shape="rect">
-            <rect x="43" y="57" width="108" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="69">SelectExpressionItem</text></a><path class="line" d="m17 10 h2 m20 0 h4 m14 0 h4 m0 0 h94 m-136 0 h20 m116 0 h20 m-156 0 q10 0 10 10 m136 0 q0 -10 10 -10 m-146 10 v8 m136 0 v-8 m-136 8 q0 10 10 10 m116 0 q10 0 10 -10 m-126 10 h4 m84 0 h4 m0 0 h24 m-126 -10 v20 m136 0 v-20 m-136 20 v8 m136 0 v-8 m-136 8 q0 10 10 10 m116 0 q10 0 10 -10 m-126 10 h4 m108 0 h4 m23 -56 h-3"/>
-         <polygon points="185 10 193 6 193 14"/>
-         <polygon points="185 10 177 6 177 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="47" y="41">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#condition" xlink:title="Condition" shape="rect">
+            <rect x="43" y="57" width="52" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="69">Condition</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#concatexpression" xlink:title="ConcatExpression" shape="rect">
+            <rect x="43" y="85" width="92" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="97">ConcatExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+            <rect x="43" y="113" width="60" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="125">Expression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
+            <rect x="183" y="22" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="187" y="34">Alias</text></a><path class="line" d="m17 10 h2 m20 0 h4 m14 0 h4 m0 0 h78 m-120 0 h20 m100 0 h20 m-140 0 q10 0 10 10 m120 0 q0 -10 10 -10 m-130 10 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m84 0 h4 m0 0 h8 m-110 -10 v20 m120 0 v-20 m-120 20 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m52 0 h4 m0 0 h40 m-110 -10 v20 m120 0 v-20 m-120 20 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m92 0 h4 m-110 -10 v20 m120 0 v-20 m-120 20 v8 m120 0 v-8 m-120 8 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m60 0 h4 m0 0 h32 m40 -112 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
+         <polygon points="247 10 255 6 255 14"/>
+         <polygon points="247 10 239 6 239 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#selectitem" title="SelectItem" shape="rect">SelectItem</a></div>
-               <div>         ::= '*'</div>
-               <div>           | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a></div>
-               <div>           | <a href="#selectexpressionitem" title="SelectExpressionItem" shape="rect">SelectExpressionItem</a></div></xhtml:code></xhtml:div>
+               <div>         ::= ( '*' | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a> | <a href="#condition" title="Condition" shape="rect">Condition</a> | <a href="#concatexpression" title="ConcatExpression" shape="rect">ConcatExpression</a> | <a href="#expression" title="Expression" shape="rect">Expression</a> ) <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>selectitemslist</a></li></ul></div></td></tr></tbody></table>
@@ -2799,7 +2782,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#alias" title="Alias" shape="rect">Alias</a>    ::= 'AS'? ( <a href="#relobjectnamewithoutstart" title="RelObjectNameWithoutStart" shape="rect">RelObjectNameWithoutStart</a> | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> ) ( '(' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a>? ( ',' <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a>? )* ')' )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>expressionlistitem</a></li><li><a>fromitem</a></li><li><a>functionitem</a></li><li><a>pivot</a></li><li><a>pivotselectexpritem</a></li><li><a>selectexpressionitem</a></li><li><a>tablefunction</a></li><li><a>tablewithalias</a></li><li><a>unpivot</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>expressionlistitem</a></li><li><a>fromitem</a></li><li><a>functionitem</a></li><li><a>pivot</a></li><li><a>selectitem</a></li><li><a>tablefunction</a></li><li><a>tablewithalias</a></li><li><a>unpivot</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -2982,75 +2965,24 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
 
         
 ======================================================================================================================
-        PivotSingleInItems
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="187" height="49">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotselectexpritem" xlink:title="PivotSelectExprItem" shape="rect">
-            <rect x="43" y="29" width="100" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="41">PivotSelectExprItem</text></a><rect x="43" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="13">,</text>
-         <path class="line" d="m17 38 h2 m20 0 h4 m100 0 h4 m-128 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m108 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-108 0 h4 m8 0 h4 m0 0 h92 m23 28 h-3"/>
-         <polygon points="177 38 185 34 185 42"/>
-         <polygon points="177 38 169 34 169 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#pivotsingleinitems" title="PivotSingleInItems" shape="rect">PivotSingleInItems</a></div>
-               <div>         ::= <a href="#pivotselectexpritem" title="PivotSelectExprItem" shape="rect">PivotSelectExprItem</a> ( ',' <a href="#pivotselectexpritem" title="PivotSelectExprItem" shape="rect">PivotSelectExprItem</a> )*</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>pivot</a></li><li><a>pivotxml</a></li><li><a>unpivot</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        PivotSelectExprItem
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="215" height="42">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="23" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="27" y="13">SimpleExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="141" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="145" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m90 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
-         <polygon points="205 10 213 6 213 14"/>
-         <polygon points="205 10 197 6 197 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#pivotselectexpritem" title="PivotSelectExprItem" shape="rect">PivotSelectExprItem</a></div>
-               <div>         ::= <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>pivotsingleinitems</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
         ExpressionListItem
 ======================================================================================================================
 
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="269" height="42">
+        <svg xmlns="http://www.w3.org/2000/svg" width="257" height="42">
          <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="43" y="1" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">SimpleExpressionList</text></a><rect x="155" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="159" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="195" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="199" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m0 0 h4 m104 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
-         <polygon points="259 10 267 6 267 14"/>
-         <polygon points="259 10 251 6 251 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="23" y="1" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="27" y="13">ParenthesedExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
+            <rect x="183" y="22" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="187" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m132 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
+         <polygon points="247 10 255 6 255 14"/>
+         <polygon points="247 10 239 6 239 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#expressionlistitem" title="ExpressionListItem" shape="rect">ExpressionListItem</a></div>
-               <div>         ::= '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ')' <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>pivotmultiinitems</a></li></ul></div></td></tr></tbody></table>
@@ -3087,7 +3019,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="641" height="49">
+        <svg xmlns="http://www.w3.org/2000/svg" width="633" height="49">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="36" height="18" class="terminal" rx="4"/>
@@ -3101,20 +3033,20 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="229" y="13">PivotForColumns</text></a><rect x="319" y="1" width="18" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="323" y="13">IN</text>
          <rect x="345" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="349" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotsingleinitems" xlink:title="PivotSingleInItems" shape="rect">
-            <rect x="385" y="1" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="389" y="13">PivotSingleInItems</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotmultiinitems" xlink:title="PivotMultiInItems" shape="rect">
+         <text class="terminal" x="349" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
+            <rect x="385" y="1" width="78" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="389" y="13">SelectItemsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotmultiinitems" xlink:title="PivotMultiInItems" shape="rect">
             <rect x="385" y="29" width="86" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="389" y="41">PivotMultiInItems</text></a><rect x="507" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="511" y="13">)</text>
-         <rect x="527" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="531" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="567" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="571" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m36 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m96 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m94 0 h4 m-122 0 h20 m102 0 h20 m-142 0 q10 0 10 10 m122 0 q0 -10 10 -10 m-132 10 v8 m122 0 v-8 m-122 8 q0 10 10 10 m102 0 q10 0 10 -10 m-112 10 h4 m86 0 h4 m0 0 h8 m20 -28 h4 m12 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
-         <polygon points="631 10 639 6 639 14"/>
-         <polygon points="631 10 623 6 623 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="389" y="41">PivotMultiInItems</text></a><rect x="499" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="503" y="13">)</text>
+         <rect x="519" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="523" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
+            <rect x="559" y="22" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="563" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m36 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m96 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m78 0 h4 m0 0 h8 m-114 0 h20 m94 0 h20 m-134 0 q10 0 10 10 m114 0 q0 -10 10 -10 m-124 10 v8 m114 0 v-8 m-114 8 q0 10 10 10 m94 0 q10 0 10 -10 m-104 10 h4 m86 0 h4 m20 -28 h4 m12 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
+         <polygon points="623 10 631 6 631 14"/>
+         <polygon points="623 10 615 6 615 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#pivot" title="Pivot" shape="rect">Pivot</a>    ::= 'PIVOT' '(' <a href="#pivotfunctionitems" title="PivotFunctionItems" shape="rect">PivotFunctionItems</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' ( <a href="#pivotsingleinitems" title="PivotSingleInItems" shape="rect">PivotSingleInItems</a> | <a href="#pivotmultiinitems" title="PivotMultiInItems" shape="rect">PivotMultiInItems</a> ) ')' ')' <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
+               <div><a href="#pivot" title="Pivot" shape="rect">Pivot</a>    ::= 'PIVOT' '(' <a href="#pivotfunctionitems" title="PivotFunctionItems" shape="rect">PivotFunctionItems</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' ( <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> | <a href="#pivotmultiinitems" title="PivotMultiInItems" shape="rect">PivotMultiInItems</a> ) ')' ')' <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>fromitem</a></li></ul></div></td></tr></tbody></table>
@@ -3127,7 +3059,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="599" height="105">
+        <svg xmlns="http://www.w3.org/2000/svg" width="591" height="105">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="36" height="18" class="terminal" rx="4"/>
@@ -3145,21 +3077,21 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <rect x="381" y="1" width="12" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="385" y="13">(</text>
          <rect x="421" y="1" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="425" y="13">ANY</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="421" y="29" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="425" y="41">SelectBody</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotsingleinitems" xlink:title="PivotSingleInItems" shape="rect">
-            <rect x="421" y="57" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="425" y="69">PivotSingleInItems</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotmultiinitems" xlink:title="PivotMultiInItems" shape="rect">
+         <text class="terminal" x="425" y="13">ANY</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="421" y="29" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="425" y="41">Select</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
+            <rect x="421" y="57" width="78" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="425" y="69">SelectItemsList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotmultiinitems" xlink:title="PivotMultiInItems" shape="rect">
             <rect x="421" y="85" width="86" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="425" y="97">PivotMultiInItems</text></a><rect x="543" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="547" y="13">)</text>
-         <rect x="563" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="567" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m36 0 h4 m0 0 h4 m28 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m96 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m26 0 h4 m0 0 h68 m-122 0 h20 m102 0 h20 m-142 0 q10 0 10 10 m122 0 q0 -10 10 -10 m-132 10 v8 m122 0 v-8 m-122 8 q0 10 10 10 m102 0 q10 0 10 -10 m-112 10 h4 m60 0 h4 m0 0 h34 m-112 -10 v20 m122 0 v-20 m-122 20 v8 m122 0 v-8 m-122 8 q0 10 10 10 m102 0 q10 0 10 -10 m-112 10 h4 m94 0 h4 m-112 -10 v20 m122 0 v-20 m-122 20 v8 m122 0 v-8 m-122 8 q0 10 10 10 m102 0 q10 0 10 -10 m-112 10 h4 m86 0 h4 m0 0 h8 m20 -84 h4 m12 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="589 10 597 6 597 14"/>
-         <polygon points="589 10 581 6 581 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="425" y="97">PivotMultiInItems</text></a><rect x="535" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="539" y="13">)</text>
+         <rect x="555" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="559" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m36 0 h4 m0 0 h4 m28 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m96 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m26 0 h4 m0 0 h60 m-114 0 h20 m94 0 h20 m-134 0 q10 0 10 10 m114 0 q0 -10 10 -10 m-124 10 v8 m114 0 v-8 m-114 8 q0 10 10 10 m94 0 q10 0 10 -10 m-104 10 h4 m36 0 h4 m0 0 h50 m-104 -10 v20 m114 0 v-20 m-114 20 v8 m114 0 v-8 m-114 8 q0 10 10 10 m94 0 q10 0 10 -10 m-104 10 h4 m78 0 h4 m0 0 h8 m-104 -10 v20 m114 0 v-20 m-114 20 v8 m114 0 v-8 m-114 8 q0 10 10 10 m94 0 q10 0 10 -10 m-104 10 h4 m86 0 h4 m20 -84 h4 m12 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="581 10 589 6 589 14"/>
+         <polygon points="581 10 573 6 573 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#pivotxml" title="PivotXml" shape="rect">PivotXml</a> ::= 'PIVOT' 'XML' '(' <a href="#pivotfunctionitems" title="PivotFunctionItems" shape="rect">PivotFunctionItems</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' ( 'ANY' | <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a> | <a href="#pivotsingleinitems" title="PivotSingleInItems" shape="rect">PivotSingleInItems</a> | <a href="#pivotmultiinitems" title="PivotMultiInItems" shape="rect">PivotMultiInItems</a> ) ')' ')'</div></xhtml:code></xhtml:div>
+               <div><a href="#pivotxml" title="PivotXml" shape="rect">PivotXml</a> ::= 'PIVOT' 'XML' '(' <a href="#pivotfunctionitems" title="PivotFunctionItems" shape="rect">PivotFunctionItems</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' ( 'ANY' | <a href="#select" title="Select" shape="rect">Select</a> | <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> | <a href="#pivotmultiinitems" title="PivotMultiInItems" shape="rect">PivotMultiInItems</a> ) ')' ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>fromitem</a></li></ul></div></td></tr></tbody></table>
@@ -3172,7 +3104,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="787" height="70">
+        <svg xmlns="http://www.w3.org/2000/svg" width="771" height="70">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="50" height="18" class="terminal" rx="4"/>
@@ -3192,18 +3124,18 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="415" y="13">PivotForColumns</text></a><rect x="505" y="1" width="18" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="509" y="13">IN</text>
          <rect x="531" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="535" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotsingleinitems" xlink:title="PivotSingleInItems" shape="rect">
-            <rect x="551" y="1" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="555" y="13">PivotSingleInItems</text></a><rect x="653" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="657" y="13">)</text>
-         <rect x="673" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="677" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="713" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="717" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m50 0 h4 m20 0 h10 m0 0 h132 m-162 0 h20 m142 0 h20 m-182 0 q10 0 10 10 m162 0 q0 -10 10 -10 m-172 10 v1 m162 0 v-1 m-162 1 q0 10 10 10 m142 0 q10 0 10 -10 m-132 10 h4 m48 0 h4 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m20 -28 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m94 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
-         <polygon points="777 10 785 6 785 14"/>
-         <polygon points="777 10 769 6 769 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="535" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectitemslist" xlink:title="SelectItemsList" shape="rect">
+            <rect x="551" y="1" width="78" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="555" y="13">SelectItemsList</text></a><rect x="637" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="641" y="13">)</text>
+         <rect x="657" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="661" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
+            <rect x="697" y="22" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="701" y="34">Alias</text></a><path class="line" d="m17 10 h2 m0 0 h4 m50 0 h4 m20 0 h10 m0 0 h132 m-162 0 h20 m142 0 h20 m-182 0 q10 0 10 10 m162 0 q0 -10 10 -10 m-172 10 v1 m162 0 v-1 m-162 1 q0 10 10 10 m142 0 q10 0 10 -10 m-132 10 h4 m48 0 h4 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m20 -28 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m26 0 h4 m0 0 h4 m86 0 h4 m0 0 h4 m18 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m78 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m23 -21 h-3"/>
+         <polygon points="761 10 769 6 769 14"/>
+         <polygon points="761 10 753 6 753 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>  ::= 'UNPIVOT' ( ( 'INCLUDE' | 'EXCLUDE' ) 'NULLS' )? '(' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' <a href="#pivotsingleinitems" title="PivotSingleInItems" shape="rect">PivotSingleInItems</a> ')' ')' <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
+               <div><a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>  ::= 'UNPIVOT' ( ( 'INCLUDE' | 'EXCLUDE' ) 'NULLS' )? '(' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'FOR' <a href="#pivotforcolumns" title="PivotForColumns" shape="rect">PivotForColumns</a> 'IN' '(' <a href="#selectitemslist" title="SelectItemsList" shape="rect">SelectItemsList</a> ')' ')' <a href="#alias" title="Alias" shape="rect">Alias</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>fromitem</a></li></ul></div></td></tr></tbody></table>
@@ -3270,7 +3202,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="773" height="154">
+        <svg xmlns="http://www.w3.org/2000/svg" width="751" height="154">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tablefunction" xlink:title="TableFunction" shape="rect">
             <rect x="43" y="1" width="72" height="18" class="nonterminal"/>
@@ -3278,31 +3210,31 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <rect x="43" y="29" width="34" height="18" class="nonterminal"/>
             <text class="nonterminal" x="47" y="41">Table</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedfromitem" xlink:title="ParenthesedFromItem" shape="rect">
             <rect x="43" y="57" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="69">ParenthesedFromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="43" y="85" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="97">ParenthesedSelectBody</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivot" xlink:title="Pivot" shape="rect">
-            <rect x="189" y="106" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="193" y="118">Pivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#unpivot" xlink:title="UnPivot" shape="rect">
-            <rect x="267" y="106" width="44" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="271" y="118">UnPivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lateralsubselect" xlink:title="LateralSubSelect" shape="rect">
+            <text class="nonterminal" x="47" y="69">ParenthesedFromItem</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="43" y="85" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="97">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivot" xlink:title="Pivot" shape="rect">
+            <rect x="167" y="106" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="171" y="118">Pivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#unpivot" xlink:title="UnPivot" shape="rect">
+            <rect x="245" y="106" width="44" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="249" y="118">UnPivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#lateralsubselect" xlink:title="LateralSubSelect" shape="rect">
             <rect x="43" y="134" width="84" height="18" class="nonterminal"/>
             <text class="nonterminal" x="47" y="146">LateralSubSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alias" xlink:title="Alias" shape="rect">
-            <rect x="379" y="22" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="383" y="34">Alias</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#unpivot" xlink:title="UnPivot" shape="rect">
-            <rect x="457" y="22" width="44" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="461" y="34">UnPivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotxml" xlink:title="PivotXml" shape="rect">
-            <rect x="549" y="22" width="48" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="553" y="34">PivotXml</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivot" xlink:title="Pivot" shape="rect">
-            <rect x="549" y="50" width="30" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="553" y="62">Pivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#mysqlindexhint" xlink:title="MySQLIndexHint" shape="rect">
-            <rect x="645" y="22" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="649" y="34">MySQLIndexHint</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sqlserverhints" xlink:title="SQLServerHints" shape="rect">
-            <rect x="645" y="50" width="80" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="649" y="62">SQLServerHints</text></a><path class="line" d="m17 10 h2 m20 0 h4 m72 0 h4 m0 0 h216 m-316 0 h20 m296 0 h20 m-336 0 q10 0 10 10 m316 0 q0 -10 10 -10 m-326 10 v8 m316 0 v-8 m-316 8 q0 10 10 10 m296 0 q10 0 10 -10 m-306 10 h4 m34 0 h4 m0 0 h254 m-306 -10 v20 m316 0 v-20 m-316 20 v8 m316 0 v-8 m-316 8 q0 10 10 10 m296 0 q10 0 10 -10 m-306 10 h4 m114 0 h4 m0 0 h174 m-306 -10 v20 m316 0 v-20 m-316 20 v8 m316 0 v-8 m-316 8 q0 10 10 10 m296 0 q10 0 10 -10 m-306 10 h4 m118 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m-286 -31 v20 m316 0 v-20 m-316 20 v29 m316 0 v-29 m-316 29 q0 10 10 10 m296 0 q10 0 10 -10 m-306 10 h4 m84 0 h4 m0 0 h204 m40 -133 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m40 -21 h10 m0 0 h46 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v1 m76 0 v-1 m-76 1 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m-66 -10 v20 m76 0 v-20 m-76 20 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m30 0 h4 m0 0 h18 m40 -49 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m-102 -10 v20 m112 0 v-20 m-112 20 v8 m112 0 v-8 m-112 8 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m80 0 h4 m0 0 h4 m23 -49 h-3"/>
-         <polygon points="763 10 771 6 771 14"/>
-         <polygon points="763 10 755 6 755 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <rect x="357" y="22" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="361" y="34">Alias</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#unpivot" xlink:title="UnPivot" shape="rect">
+            <rect x="435" y="22" width="44" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="439" y="34">UnPivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivotxml" xlink:title="PivotXml" shape="rect">
+            <rect x="527" y="22" width="48" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="531" y="34">PivotXml</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#pivot" xlink:title="Pivot" shape="rect">
+            <rect x="527" y="50" width="30" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="531" y="62">Pivot</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#mysqlindexhint" xlink:title="MySQLIndexHint" shape="rect">
+            <rect x="623" y="22" width="84" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="627" y="34">MySQLIndexHint</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#sqlserverhints" xlink:title="SQLServerHints" shape="rect">
+            <rect x="623" y="50" width="80" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="627" y="62">SQLServerHints</text></a><path class="line" d="m17 10 h2 m20 0 h4 m72 0 h4 m0 0 h194 m-294 0 h20 m274 0 h20 m-314 0 q10 0 10 10 m294 0 q0 -10 10 -10 m-304 10 v8 m294 0 v-8 m-294 8 q0 10 10 10 m274 0 q10 0 10 -10 m-284 10 h4 m34 0 h4 m0 0 h232 m-284 -10 v20 m294 0 v-20 m-294 20 v8 m294 0 v-8 m-294 8 q0 10 10 10 m274 0 q10 0 10 -10 m-284 10 h4 m114 0 h4 m0 0 h152 m-284 -10 v20 m294 0 v-20 m-294 20 v8 m294 0 v-8 m-294 8 q0 10 10 10 m274 0 q10 0 10 -10 m-284 10 h4 m96 0 h4 m20 0 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m-264 -31 v20 m294 0 v-20 m-294 20 v29 m294 0 v-29 m-294 29 q0 10 10 10 m274 0 q10 0 10 -10 m-284 10 h4 m84 0 h4 m0 0 h182 m40 -133 h10 m0 0 h28 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v1 m58 0 v-1 m-58 1 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m40 -21 h10 m0 0 h42 m-72 0 h20 m52 0 h20 m-92 0 q10 0 10 10 m72 0 q0 -10 10 -10 m-82 10 v1 m72 0 v-1 m-72 1 q0 10 10 10 m52 0 q10 0 10 -10 m-62 10 h4 m44 0 h4 m40 -21 h10 m0 0 h46 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v1 m76 0 v-1 m-76 1 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m-66 -10 v20 m76 0 v-20 m-76 20 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m30 0 h4 m0 0 h18 m40 -49 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m-102 -10 v20 m112 0 v-20 m-112 20 v8 m112 0 v-8 m-112 8 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m80 0 h4 m0 0 h4 m23 -49 h-3"/>
+         <polygon points="741 10 749 6 749 14"/>
+         <polygon points="741 10 733 6 733 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#fromitem" title="FromItem" shape="rect">FromItem</a> ::= ( <a href="#tablefunction" title="TableFunction" shape="rect">TableFunction</a> | <a href="#table" title="Table" shape="rect">Table</a> | <a href="#parenthesedfromitem" title="ParenthesedFromItem" shape="rect">ParenthesedFromItem</a> | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> <a href="#pivot" title="Pivot" shape="rect">Pivot</a>? <a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>? | <a href="#lateralsubselect" title="LateralSubSelect" shape="rect">LateralSubSelect</a> ) <a href="#alias" title="Alias" shape="rect">Alias</a>? <a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>? ( <a href="#pivotxml" title="PivotXml" shape="rect">PivotXml</a> | <a href="#pivot" title="Pivot" shape="rect">Pivot</a> )? ( <a href="#mysqlindexhint" title="MySQLIndexHint" shape="rect">MySQLIndexHint</a> | <a href="#sqlserverhints" title="SQLServerHints" shape="rect">SQLServerHints</a> )?</div></xhtml:code></xhtml:div>
+               <div><a href="#fromitem" title="FromItem" shape="rect">FromItem</a> ::= ( <a href="#tablefunction" title="TableFunction" shape="rect">TableFunction</a> | <a href="#table" title="Table" shape="rect">Table</a> | <a href="#parenthesedfromitem" title="ParenthesedFromItem" shape="rect">ParenthesedFromItem</a> | <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> <a href="#pivot" title="Pivot" shape="rect">Pivot</a>? <a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>? | <a href="#lateralsubselect" title="LateralSubSelect" shape="rect">LateralSubSelect</a> ) <a href="#alias" title="Alias" shape="rect">Alias</a>? <a href="#unpivot" title="UnPivot" shape="rect">UnPivot</a>? ( <a href="#pivotxml" title="PivotXml" shape="rect">PivotXml</a> | <a href="#pivot" title="Pivot" shape="rect">Pivot</a> )? ( <a href="#mysqlindexhint" title="MySQLIndexHint" shape="rect">MySQLIndexHint</a> | <a href="#sqlserverhints" title="SQLServerHints" shape="rect">SQLServerHints</a> )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>joinerexpression</a></li><li><a>merge</a></li><li><a>parenthesedfromitem</a></li><li><a>plainselect</a></li><li><a>update</a></li></ul></div></td></tr></tbody></table>
@@ -3564,59 +3496,70 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="775" height="217">
+        <svg xmlns="http://www.w3.org/2000/svg" width="537" height="117">
          <polygon points="9 38 1 34 1 42"/>
          <polygon points="17 38 9 34 9 42"/>
          <rect x="23" y="29" width="42" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="27" y="41">GROUP</text>
          <rect x="73" y="29" width="20" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="77" y="41">BY</text>
-         <rect x="141" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="145" y="41">(</text>
-         <rect x="161" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="165" y="41">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="141" y="57" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="145" y="69">ComplexExpressionList</text></a><rect x="303" y="29" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="307" y="41">GROUPING</text>
-         <rect x="369" y="29" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="373" y="41">SETS</text>
-         <rect x="407" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="411" y="41">(</text>
-         <rect x="467" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="471" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="507" y="50" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="511" y="62">SimpleExpressionList</text></a><rect x="639" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="643" y="41">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="467" y="78" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="471" y="90">SimpleExpression</text></a><rect x="447" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="451" y="13">,</text>
-         <rect x="699" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="703" y="41">)</text>
-         <rect x="121" y="148" width="58" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="125" y="160">GROUPING</text>
-         <rect x="187" y="148" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="191" y="160">SETS</text>
-         <rect x="225" y="148" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="229" y="160">(</text>
-         <rect x="285" y="148" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="289" y="160">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="325" y="169" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="329" y="181">SimpleExpressionList</text></a><rect x="457" y="148" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="461" y="160">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="285" y="197" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="289" y="209">SimpleExpression</text></a><rect x="265" y="120" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="269" y="132">,</text>
-         <rect x="517" y="148" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="521" y="160">)</text>
-         <path class="line" d="m17 38 h2 m0 0 h4 m42 0 h4 m0 0 h4 m20 0 h4 m40 0 h4 m12 0 h4 m0 0 h4 m12 0 h4 m0 0 h82 m-142 0 h20 m122 0 h20 m-162 0 q10 0 10 10 m142 0 q0 -10 10 -10 m-152 10 v8 m142 0 v-8 m-142 8 q0 10 10 10 m122 0 q10 0 10 -10 m-132 10 h4 m114 0 h4 m40 -28 h4 m58 0 h4 m0 0 h4 m30 0 h4 m0 0 h4 m12 0 h4 m40 0 h4 m12 0 h4 m20 0 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m104 0 h4 m20 -21 h4 m12 0 h4 m-212 0 h20 m192 0 h20 m-232 0 q10 0 10 10 m212 0 q0 -10 10 -10 m-222 10 v29 m212 0 v-29 m-212 29 q0 10 10 10 m192 0 q10 0 10 -10 m-202 10 h4 m90 0 h4 m0 0 h94 m-232 -49 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m232 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-232 0 h4 m8 0 h4 m0 0 h216 m20 28 h4 m12 0 h4 m-436 0 h20 m416 0 h20 m-456 0 q10 0 10 10 m436 0 q0 -10 10 -10 m-446 10 v50 m436 0 v-50 m-436 50 q0 10 10 10 m416 0 q10 0 10 -10 m-426 10 h10 m0 0 h406 m-618 -70 h20 m618 0 h20 m-658 0 q10 0 10 10 m638 0 q0 -10 10 -10 m-648 10 v99 m638 0 v-99 m-638 99 q0 10 10 10 m618 0 q10 0 10 -10 m-628 10 h4 m58 0 h4 m0 0 h4 m30 0 h4 m0 0 h4 m12 0 h4 m40 0 h4 m12 0 h4 m20 0 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m104 0 h4 m20 -21 h4 m12 0 h4 m-212 0 h20 m192 0 h20 m-232 0 q10 0 10 10 m212 0 q0 -10 10 -10 m-222 10 v29 m212 0 v-29 m-212 29 q0 10 10 10 m192 0 q10 0 10 -10 m-202 10 h4 m90 0 h4 m0 0 h94 m-232 -49 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m232 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-232 0 h4 m8 0 h4 m0 0 h216 m20 28 h4 m12 0 h4 m0 0 h202 m23 -119 h-3"/>
-         <polygon points="765 38 773 34 773 42"/>
-         <polygon points="765 38 757 34 757 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <rect x="121" y="29" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="125" y="41">GROUPING</text>
+         <rect x="187" y="29" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="191" y="41">SETS</text>
+         <rect x="225" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="229" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#groupingset" xlink:title="GroupingSet" shape="rect">
+            <rect x="265" y="29" width="66" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="269" y="41">GroupingSet</text></a><rect x="265" y="1" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="269" y="13">,</text>
+         <rect x="359" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="363" y="41">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="121" y="85" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="125" y="97">ExpressionList</text></a><rect x="223" y="85" width="58" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="227" y="97">GROUPING</text>
+         <rect x="289" y="85" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="293" y="97">SETS</text>
+         <rect x="327" y="85" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="331" y="97">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#groupingset" xlink:title="GroupingSet" shape="rect">
+            <rect x="367" y="85" width="66" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="371" y="97">GroupingSet</text></a><rect x="367" y="57" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="371" y="69">,</text>
+         <rect x="461" y="85" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="465" y="97">)</text>
+         <path class="line" d="m17 38 h2 m0 0 h4 m42 0 h4 m0 0 h4 m20 0 h4 m20 0 h4 m58 0 h4 m0 0 h4 m30 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m66 0 h4 m-94 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m74 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-74 0 h4 m8 0 h4 m0 0 h58 m20 28 h4 m12 0 h4 m0 0 h122 m-400 0 h20 m380 0 h20 m-420 0 q10 0 10 10 m400 0 q0 -10 10 -10 m-410 10 v36 m400 0 v-36 m-400 36 q0 10 10 10 m380 0 q10 0 10 -10 m-390 10 h4 m74 0 h4 m20 0 h4 m58 0 h4 m0 0 h4 m30 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m66 0 h4 m-94 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m74 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-74 0 h4 m8 0 h4 m0 0 h58 m20 28 h4 m12 0 h4 m-278 0 h20 m258 0 h20 m-298 0 q10 0 10 10 m278 0 q0 -10 10 -10 m-288 10 v1 m278 0 v-1 m-278 1 q0 10 10 10 m258 0 q10 0 10 -10 m-268 10 h10 m0 0 h248 m43 -77 h-3"/>
+         <polygon points="527 38 535 34 535 42"/>
+         <polygon points="527 38 519 34 519 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#groupbycolumnreferences" title="GroupByColumnReferences" shape="rect">GroupByColumnReferences</a></div>
-               <div>         ::= 'GROUP' 'BY' ( ( '(' ')' | <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ) ( 'GROUPING' 'SETS' '(' ( '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a>? ')' | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ) ( ',' ( '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a>? ')' | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ) )* ')' )? | 'GROUPING' 'SETS' '(' ( '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a>? ')' | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ) ( ',' ( '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a>? ')' | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ) )* ')' )</div></xhtml:code></xhtml:div>
+               <div>         ::= 'GROUP' 'BY' ( 'GROUPING' 'SETS' '(' <a href="#groupingset" title="GroupingSet" shape="rect">GroupingSet</a> ( ',' <a href="#groupingset" title="GroupingSet" shape="rect">GroupingSet</a> )* ')' | <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a> ( 'GROUPING' 'SETS' '(' <a href="#groupingset" title="GroupingSet" shape="rect">GroupingSet</a> ( ',' <a href="#groupingset" title="GroupingSet" shape="rect">GroupingSet</a> )* ')' )? )</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>plainselect</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        GroupingSet
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="219" height="49">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="43" y="1" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="13">ParenthesedExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="43" y="29" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="41">SimpleExpression</text></a><path class="line" d="m17 10 h2 m20 0 h4 m132 0 h4 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m90 0 h4 m0 0 h42 m23 -28 h-3"/>
+         <polygon points="209 10 217 6 217 14"/>
+         <polygon points="209 10 201 6 201 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#groupingset" title="GroupingSet" shape="rect">GroupingSet</a></div>
+               <div>         ::= <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div>
+               <div>           | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a></div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>groupbycolumnreferences</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3669,7 +3612,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= 'ORDER' 'SIBLINGS'? 'BY' <a href="#orderbyelement" title="OrderByElement" shape="rect">OrderByElement</a> ( ',' <a href="#orderbyelement" title="OrderByElement" shape="rect">OrderByElement</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>delete</a></li><li><a>internalfunction</a></li><li><a>jsonaggregatefunction</a></li><li><a>keepexpression</a></li><li><a>mysqlgroupconcat</a></li><li><a>plainselect</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li><li><a>simplefunction</a></li><li><a>update</a></li><li><a>xmlserializeexpr</a></li><li><a>windowdefinition</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>delete</a></li><li><a>internalfunction</a></li><li><a>jsonaggregatefunction</a></li><li><a>keepexpression</a></li><li><a>mysqlgroupconcat</a></li><li><a>plainselect</a></li><li><a>select</a></li><li><a>setoperationlist</a></li><li><a>simplefunction</a></li><li><a>update</a></li><li><a>xmlserializeexpr</a></li><li><a>windowdefinition</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3779,7 +3722,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>           | <a href="#plainlimit" title="PlainLimit" shape="rect">PlainLimit</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>plainselect</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>limitby</a></li><li><a>plainselect</a></li><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3789,26 +3732,47 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="287" height="49">
+        <svg xmlns="http://www.w3.org/2000/svg" width="225" height="49">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">LIMIT</text>
-         <rect x="85" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="89" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="105" y="1" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="109" y="13">ParenthesedSelectBody</text></a><rect x="231" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="235" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+         <text class="terminal" x="27" y="13">LIMIT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="85" y="1" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="89" y="13">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
             <rect x="85" y="29" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="89" y="41">Expression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m34 0 h4 m20 0 h4 m12 0 h4 m0 0 h4 m118 0 h4 m0 0 h4 m12 0 h4 m-186 0 h20 m166 0 h20 m-206 0 q10 0 10 10 m186 0 q0 -10 10 -10 m-196 10 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m60 0 h4 m0 0 h98 m23 -28 h-3"/>
-         <polygon points="277 10 285 6 285 14"/>
-         <polygon points="277 10 269 6 269 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="89" y="41">Expression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m34 0 h4 m20 0 h4 m96 0 h4 m-124 0 h20 m104 0 h20 m-144 0 q10 0 10 10 m124 0 q0 -10 10 -10 m-134 10 v8 m124 0 v-8 m-124 8 q0 10 10 10 m104 0 q10 0 10 -10 m-114 10 h4 m60 0 h4 m0 0 h36 m23 -28 h-3"/>
+         <polygon points="215 10 223 6 223 14"/>
+         <polygon points="215 10 207 6 207 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#plainlimit" title="PlainLimit" shape="rect">PlainLimit</a></div>
-               <div>         ::= 'LIMIT' ( '(' <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> ')' | <a href="#expression" title="Expression" shape="rect">Expression</a> )</div></xhtml:code></xhtml:div>
+               <div>         ::= 'LIMIT' ( <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> | <a href="#expression" title="Expression" shape="rect">Expression</a> )</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>delete</a></li><li><a>limitwithoffset</a></li><li><a>update</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        LimitBy
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="223" height="21">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#limitwithoffset" xlink:title="LimitWithOffset" shape="rect">
+            <rect x="23" y="1" width="76" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="27" y="13">LimitWithOffset</text></a><rect x="107" y="1" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="111" y="13">BY</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressions" xlink:title="Expressions" shape="rect">
+            <rect x="135" y="1" width="64" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="139" y="13">Expressions</text></a><path class="line" d="m17 10 h2 m0 0 h4 m76 0 h4 m0 0 h4 m20 0 h4 m0 0 h4 m64 0 h4 m3 0 h-3"/>
+         <polygon points="213 10 221 6 221 14"/>
+         <polygon points="213 10 205 6 205 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#limitby" title="LimitBy" shape="rect">LimitBy</a>  ::= <a href="#limitwithoffset" title="LimitWithOffset" shape="rect">LimitWithOffset</a> 'BY' <a href="#expressions" title="Expressions" shape="rect">Expressions</a></div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>plainselect</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3835,7 +3799,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#offset" title="Offset" shape="rect">Offset</a>   ::= 'OFFSET' <a href="#expression" title="Expression" shape="rect">Expression</a> ( 'ROWS' | 'ROW' )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>plainselect</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>plainselect</a></li><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3868,7 +3832,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#fetch" title="Fetch" shape="rect">Fetch</a>    ::= 'FETCH' ( 'FIRST' | 'NEXT' ) <a href="#expression" title="Expression" shape="rect">Expression</a> ( 'ROWS' | 'ROW' ) 'ONLY'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>plainselect</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>plainselect</a></li><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -3892,7 +3856,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= 'WITH' <a href="#k-isolation" title="K_ISOLATION" shape="rect">K_ISOLATION</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>plainselect</a></li><li><a>selectbody</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>plainselect</a></li><li><a>select</a></li><li><a>setoperationlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4035,7 +3999,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= <a href="#xorexpression" title="XorExpression" shape="rect">XorExpression</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>alterexpression</a></li><li><a>analyticexpression</a></li><li><a>casewhenexpression</a></li><li><a>complexexpressionlist</a></li><li><a>createparameter</a></li><li><a>createtable</a></li><li><a>declare</a></li><li><a>fetch</a></li><li><a>having</a></li><li><a>insertconflictaction</a></li><li><a>joinerexpression</a></li><li><a>jsonaggregatefunction</a></li><li><a>jsonfunction</a></li><li><a>likeexpression</a></li><li><a>limitwithoffset</a></li><li><a>merge</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>offset</a></li><li><a>oraclenamedfunctionparameter</a></li><li><a>orderbyelement</a></li><li><a>plainlimit</a></li><li><a>sqlexpressionlist</a></li><li><a>selectexpressionitem</a></li><li><a>set</a></li><li><a>showtables</a></li><li><a>update</a></li><li><a>whenthensearchcondition</a></li><li><a>whereclause</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>alterexpression</a></li><li><a>analyticexpression</a></li><li><a>casewhenexpression</a></li><li><a>complexexpressionlist</a></li><li><a>createparameter</a></li><li><a>createtable</a></li><li><a>declare</a></li><li><a>expressions</a></li><li><a>fetch</a></li><li><a>having</a></li><li><a>joinerexpression</a></li><li><a>jsonaggregatefunction</a></li><li><a>jsonfunction</a></li><li><a>likeexpression</a></li><li><a>limitwithoffset</a></li><li><a>merge</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>offset</a></li><li><a>oraclenamedfunctionparameter</a></li><li><a>orderbyelement</a></li><li><a>plainlimit</a></li><li><a>selectitem</a></li><li><a>set</a></li><li><a>showtables</a></li><li><a>transcodingfunction</a></li><li><a>trimfunction</a></li><li><a>whenthensearchcondition</a></li><li><a>whereclause</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4146,7 +4110,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= ( 'NOT' | '!' )? ( <a href="#regularcondition" title="RegularCondition" shape="rect">RegularCondition</a> | <a href="#sqlcondition" title="SQLCondition" shape="rect">SQLCondition</a> )</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>andexpression</a></li><li><a>selectexpressionitem</a></li><li><a>statement</a></li><li><a>statements</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>andexpression</a></li><li><a>selectitem</a></li><li><a>statement</a></li><li><a>statements</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4156,27 +4120,19 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="567" height="21">
+        <svg xmlns="http://www.w3.org/2000/svg" width="383" height="21">
          <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlistatleasttwoitems" xlink:title="SimpleExpressionListAtLeastTwoItems" shape="rect">
-            <rect x="43" y="1" width="184" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">SimpleExpressionListAtLeastTwoItems</text></a><rect x="235" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="239" y="13">)</text>
-         <rect x="255" y="1" width="56" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="259" y="13">OVERLAPS</text>
-         <rect x="319" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="323" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlistatleasttwoitems" xlink:title="SimpleExpressionListAtLeastTwoItems" shape="rect">
-            <rect x="339" y="1" width="184" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="343" y="13">SimpleExpressionListAtLeastTwoItems</text></a><rect x="531" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="535" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m0 0 h4 m184 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m56 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m184 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="557 10 565 6 565 14"/>
-         <polygon points="557 10 549 6 549 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="23" y="1" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="27" y="13">ParenthesedExpressionList</text></a><rect x="163" y="1" width="56" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="167" y="13">OVERLAPS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="227" y="1" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="231" y="13">ParenthesedExpressionList</text></a><path class="line" d="m17 10 h2 m0 0 h4 m132 0 h4 m0 0 h4 m56 0 h4 m0 0 h4 m132 0 h4 m3 0 h-3"/>
+         <polygon points="373 10 381 6 381 14"/>
+         <polygon points="373 10 365 6 365 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#overlapscondition" title="OverlapsCondition" shape="rect">OverlapsCondition</a></div>
-               <div>         ::= '(' <a href="#simpleexpressionlistatleasttwoitems" title="SimpleExpressionListAtLeastTwoItems" shape="rect">SimpleExpressionListAtLeastTwoItems</a> ')' 'OVERLAPS' '(' <a href="#simpleexpressionlistatleasttwoitems" title="SimpleExpressionListAtLeastTwoItems" shape="rect">SimpleExpressionListAtLeastTwoItems</a> ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> 'OVERLAPS' <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>sqlcondition</a></li></ul></div></td></tr></tbody></table>
@@ -4322,7 +4278,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="543" height="133">
+        <svg xmlns="http://www.w3.org/2000/svg" width="521" height="133">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
             <rect x="23" y="1" width="90" height="18" class="nonterminal"/>
@@ -4339,55 +4295,21 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <rect x="345" y="1" width="90" height="18" class="nonterminal"/>
             <text class="nonterminal" x="349" y="13">S_CHAR_LITERAL</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#function" xlink:title="Function" shape="rect">
             <rect x="345" y="29" width="48" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="349" y="41">Function</text></a><rect x="345" y="57" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="349" y="69">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="365" y="57" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="369" y="69">ComplexExpressionList</text></a><rect x="487" y="57" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="491" y="69">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="345" y="85" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="349" y="97">ParenthesedSelectBody</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <text class="nonterminal" x="349" y="41">Function</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="345" y="57" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="349" y="69">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="345" y="85" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="349" y="97">ParenthesedExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
             <rect x="345" y="113" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="349" y="125">SimpleExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m90 0 h4 m20 0 h10 m0 0 h52 m-82 0 h20 m62 0 h20 m-102 0 q10 0 10 10 m82 0 q0 -10 10 -10 m-92 10 v1 m82 0 v-1 m-82 1 q0 10 10 10 m62 0 q10 0 10 -10 m-72 10 h4 m12 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m12 0 h4 m40 -21 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m20 -21 h4 m18 0 h4 m20 0 h4 m90 0 h4 m0 0 h64 m-182 0 h20 m162 0 h20 m-202 0 q10 0 10 10 m182 0 q0 -10 10 -10 m-192 10 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m48 0 h4 m0 0 h106 m-172 -10 v20 m182 0 v-20 m-182 20 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m12 0 h4 m0 0 h4 m114 0 h4 m0 0 h4 m12 0 h4 m-172 -10 v20 m182 0 v-20 m-182 20 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m118 0 h4 m0 0 h36 m-172 -10 v20 m182 0 v-20 m-182 20 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m90 0 h4 m0 0 h64 m23 -112 h-3"/>
-         <polygon points="533 10 541 6 541 14"/>
-         <polygon points="533 10 525 6 525 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="349" y="125">SimpleExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m90 0 h4 m20 0 h10 m0 0 h52 m-82 0 h20 m62 0 h20 m-102 0 q10 0 10 10 m82 0 q0 -10 10 -10 m-92 10 v1 m82 0 v-1 m-82 1 q0 10 10 10 m62 0 q10 0 10 -10 m-72 10 h4 m12 0 h4 m0 0 h4 m14 0 h4 m0 0 h4 m12 0 h4 m40 -21 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m20 -21 h4 m18 0 h4 m20 0 h4 m90 0 h4 m0 0 h42 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m48 0 h4 m0 0 h84 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m96 0 h4 m0 0 h36 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m132 0 h4 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m90 0 h4 m0 0 h42 m23 -112 h-3"/>
+         <polygon points="511 10 519 6 519 14"/>
+         <polygon points="511 10 503 6 503 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#inexpression" title="InExpression" shape="rect">InExpression</a></div>
-               <div>         ::= <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( '(' '+' ')' )? 'NOT'? 'IN' ( <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | <a href="#function" title="Function" shape="rect">Function</a> | '(' <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> ')' | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( '(' '+' ')' )? 'NOT'? 'IN' ( <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | <a href="#function" title="Function" shape="rect">Function</a> | <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>sqlcondition</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        MultiInExpressions
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="271" height="49">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/>
-         <rect x="23" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="41">(</text>
-         <rect x="63" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="67" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="83" y="29" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="87" y="41">SimpleExpressionList</text></a><rect x="195" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="199" y="41">)</text>
-         <rect x="63" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="67" y="13">,</text>
-         <rect x="235" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="239" y="41">)</text>
-         <path class="line" d="m17 38 h2 m0 0 h4 m12 0 h4 m20 0 h4 m12 0 h4 m0 0 h4 m104 0 h4 m0 0 h4 m12 0 h4 m-172 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m152 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-152 0 h4 m8 0 h4 m0 0 h136 m20 28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="261 38 269 34 269 42"/>
-         <polygon points="261 38 253 34 253 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#multiinexpressions" title="MultiInExpressions" shape="rect">MultiInExpressions</a></div>
-               <div>         ::= '(' '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ')' ( ',' '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ')' )* ')'</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Not referenced by any.
-                                </div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4596,7 +4518,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
 
         
 ======================================================================================================================
-        SQLExpressionList
+        Expressions
 ======================================================================================================================
 
         
@@ -4612,11 +4534,67 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <polygon points="137 38 145 34 145 42"/>
          <polygon points="137 38 129 34 129 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#sqlexpressionlist" title="SQLExpressionList" shape="rect">SQLExpressionList</a></div>
+               <div><a href="#expressions" title="Expressions" shape="rect">Expressions</a></div>
                <div>         ::= <a href="#expression" title="Expression" shape="rect">Expression</a> ( ',' <a href="#expression" title="Expression" shape="rect">Expression</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Not referenced by any.
-                                </div></td></tr></tbody></table>
+                                    Referenced by:
+                                    <ul><li><a>limitby</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        ExpressionList
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="219" height="77">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
+            <rect x="43" y="1" width="114" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="13">ComplexExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
+            <rect x="43" y="29" width="104" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="41">SimpleExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="43" y="57" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="69">ParenthesedExpressionList</text></a><path class="line" d="m17 10 h2 m20 0 h4 m114 0 h4 m0 0 h18 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m104 0 h4 m0 0 h28 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m132 0 h4 m23 -56 h-3"/>
+         <polygon points="209 10 217 6 217 14"/>
+         <polygon points="209 10 201 6 201 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a></div>
+               <div>         ::= <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a></div>
+               <div>           | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a></div>
+               <div>           | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>execute</a></li><li><a>groupbycolumnreferences</a></li><li><a>internalfunction</a></li><li><a>mysqlgroupconcat</a></li><li><a>simplefunction</a></li><li><a>specialstringfunctionwithnamedparameters</a></li><li><a>values</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        ParenthesedExpressionList
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="241" height="70">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
+            <rect x="63" y="22" width="114" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="67" y="34">ComplexExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
+            <rect x="63" y="50" width="104" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="67" y="62">SimpleExpressionList</text></a><rect x="205" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="209" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h112 m-142 0 h20 m122 0 h20 m-162 0 q10 0 10 10 m142 0 q0 -10 10 -10 m-152 10 v1 m142 0 v-1 m-142 1 q0 10 10 10 m122 0 q10 0 10 -10 m-132 10 h4 m114 0 h4 m-132 -10 v20 m142 0 v-20 m-142 20 v8 m142 0 v-8 m-142 8 q0 10 10 10 m122 0 q10 0 10 -10 m-132 10 h4 m104 0 h4 m0 0 h10 m20 -49 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="231 10 239 6 239 14"/>
+         <polygon points="231 10 223 6 223 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div>
+               <div>         ::= '(' ( <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> )? ')'</div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>comparisonitem</a></li><li><a>expressionlist</a></li><li><a>expressionlistitem</a></li><li><a>groupingset</a></li><li><a>inexpression</a></li><li><a>overlapscondition</a></li><li><a>primaryexpression</a></li><li><a>rowconstructor</a></li><li><a>updatesets</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4640,7 +4618,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>anycomparisonexpression</a></li><li><a>execute</a></li><li><a>expressionlistitem</a></li><li><a>groupbycolumnreferences</a></li><li><a>internalfunction</a></li><li><a>multiinexpressions</a></li><li><a>mysqlgroupconcat</a></li><li><a>primaryexpression</a></li><li><a>simplefunction</a></li><li><a>specialstringfunctionwithnamedparameters</a></li><li><a>values</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>expressionlist</a></li><li><a>parenthesedexpressionlist</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4666,42 +4644,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= ( <a href="#oraclenamedfunctionparameter" title="OracleNamedFunctionParameter" shape="rect">OracleNamedFunctionParameter</a> | <a href="#expression" title="Expression" shape="rect">Expression</a> ) ( ',' ( <a href="#oraclenamedfunctionparameter" title="OracleNamedFunctionParameter" shape="rect">OracleNamedFunctionParameter</a> | <a href="#expression" title="Expression" shape="rect">Expression</a> ) )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>groupbycolumnreferences</a></li><li><a>inexpression</a></li><li><a>insertconflictaction</a></li><li><a>internalfunction</a></li><li><a>jsonaggregatefunction</a></li><li><a>primaryexpression</a></li><li><a>specialstringfunctionwithnamedparameters</a></li><li><a>update</a></li><li><a>windowdefinition</a></li><li><a>windowfun</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        NamedExpressionList1
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="431" height="77">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="43" y="1" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="13">BOTH</text>
-         <rect x="43" y="29" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="41">LEADING</text>
-         <rect x="43" y="57" width="52" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="69">TRAILING</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="123" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="127" y="13">SimpleExpression</text></a><rect x="241" y="1" width="36" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="13">FROM</text>
-         <rect x="241" y="29" width="18" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="41">IN</text>
-         <rect x="241" y="57" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="69">PLACING</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="317" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="321" y="13">SimpleExpression</text></a><path class="line" d="m17 10 h2 m20 0 h4 m34 0 h4 m0 0 h18 m-80 0 h20 m60 0 h20 m-100 0 q10 0 10 10 m80 0 q0 -10 10 -10 m-90 10 v8 m80 0 v-8 m-80 8 q0 10 10 10 m60 0 q10 0 10 -10 m-70 10 h4 m48 0 h4 m0 0 h4 m-70 -10 v20 m80 0 v-20 m-80 20 v8 m80 0 v-8 m-80 8 q0 10 10 10 m60 0 q10 0 10 -10 m-70 10 h4 m52 0 h4 m20 -56 h4 m90 0 h4 m20 0 h4 m36 0 h4 m0 0 h12 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m18 0 h4 m0 0 h30 m-66 -10 v20 m76 0 v-20 m-76 20 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m20 -56 h4 m90 0 h4 m3 0 h-3"/>
-         <polygon points="421 10 429 6 429 14"/>
-         <polygon points="421 10 413 6 413 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#namedexpressionlist1" title="NamedExpressionList1" shape="rect">NamedExpressionList1</a></div>
-               <div>         ::= ( 'BOTH' | 'LEADING' | 'TRAILING' ) <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( 'FROM' | 'IN' | 'PLACING' ) <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a></div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>specialstringfunctionwithnamedparameters</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>expressionlist</a></li><li><a>jsonaggregatefunction</a></li><li><a>parenthesedexpressionlist</a></li><li><a>windowdefinition</a></li><li><a>windowfun</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4742,31 +4685,6 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
 
         
 ======================================================================================================================
-        SimpleExpressionListAtLeastTwoItems
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="291" height="33">
-         <polygon points="9 22 1 18 1 26"/>
-         <polygon points="17 22 9 18 9 26"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="23" y="13" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="27" y="25">SimpleExpression</text></a><rect x="141" y="13" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="145" y="25">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="157" y="13" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="161" y="25">SimpleExpression</text></a><path class="line" d="m17 22 h2 m0 0 h4 m90 0 h4 m20 0 h4 m8 0 h4 m0 0 h4 m90 0 h4 m-134 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m114 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-114 0 h10 m0 0 h104 m23 21 h-3"/>
-         <polygon points="281 22 289 18 289 26"/>
-         <polygon points="281 22 273 18 273 26"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#simpleexpressionlistatleasttwoitems" title="SimpleExpressionListAtLeastTwoItems" shape="rect">SimpleExpressionListAtLeastTwoItems</a></div>
-               <div>         ::= <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> ( ',' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> )+</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>overlapscondition</a></li><li><a>valuelistexpression</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
         ComparisonItem
 ======================================================================================================================
 
@@ -4777,22 +4695,22 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#anycomparisonexpression" xlink:title="AnyComparisonExpression" shape="rect">
             <rect x="43" y="1" width="132" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">AnyComparisonExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#valuelistexpression" xlink:title="ValueListExpression" shape="rect">
-            <rect x="43" y="29" width="98" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="41">ValueListExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="43" y="57" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="69">SimpleExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rowconstructor" xlink:title="RowConstructor" shape="rect">
+            <text class="nonterminal" x="47" y="13">AnyComparisonExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="43" y="29" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="41">SimpleExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="43" y="57" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="69">ParenthesedExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rowconstructor" xlink:title="RowConstructor" shape="rect">
             <rect x="43" y="85" width="82" height="18" class="nonterminal"/>
             <text class="nonterminal" x="47" y="97">RowConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#primaryexpression" xlink:title="PrimaryExpression" shape="rect">
             <rect x="43" y="113" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="125">PrimaryExpression</text></a><path class="line" d="m17 10 h2 m20 0 h4 m132 0 h4 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m98 0 h4 m0 0 h34 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m90 0 h4 m0 0 h42 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m82 0 h4 m0 0 h50 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m94 0 h4 m0 0 h38 m23 -112 h-3"/>
+            <text class="nonterminal" x="47" y="125">PrimaryExpression</text></a><path class="line" d="m17 10 h2 m20 0 h4 m132 0 h4 m-160 0 h20 m140 0 h20 m-180 0 q10 0 10 10 m160 0 q0 -10 10 -10 m-170 10 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m90 0 h4 m0 0 h42 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m132 0 h4 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m82 0 h4 m0 0 h50 m-150 -10 v20 m160 0 v-20 m-160 20 v8 m160 0 v-8 m-160 8 q0 10 10 10 m140 0 q10 0 10 -10 m-150 10 h4 m94 0 h4 m0 0 h38 m23 -112 h-3"/>
          <polygon points="209 10 217 6 217 14"/>
          <polygon points="209 10 201 6 201 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#comparisonitem" title="ComparisonItem" shape="rect">ComparisonItem</a></div>
                <div>         ::= <a href="#anycomparisonexpression" title="AnyComparisonExpression" shape="rect">AnyComparisonExpression</a></div>
-               <div>           | <a href="#valuelistexpression" title="ValueListExpression" shape="rect">ValueListExpression</a></div>
                <div>           | <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a></div>
+               <div>           | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div>
                <div>           | <a href="#rowconstructor" title="RowConstructor" shape="rect">RowConstructor</a></div>
                <div>           | <a href="#primaryexpression" title="PrimaryExpression" shape="rect">PrimaryExpression</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
@@ -4807,7 +4725,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="365" height="77">
+        <svg xmlns="http://www.w3.org/2000/svg" width="167" height="77">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="1" width="26" height="18" class="terminal" rx="4"/>
@@ -4815,22 +4733,14 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <rect x="43" y="29" width="36" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="47" y="41">SOME</text>
          <rect x="43" y="57" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="69">ALL</text>
-         <rect x="107" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="111" y="13">(</text>
-         <rect x="147" y="1" width="42" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="151" y="13">VALUES</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="197" y="1" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="201" y="13">SimpleExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="147" y="29" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="151" y="41">ParenthesedSelectBody</text></a><rect x="329" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="333" y="13">)</text>
-         <path class="line" d="m17 10 h2 m20 0 h4 m26 0 h4 m0 0 h10 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v8 m64 0 v-8 m-64 8 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m-54 -10 v20 m64 0 v-20 m-64 20 v8 m64 0 v-8 m-64 8 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m24 0 h4 m0 0 h12 m20 -56 h4 m12 0 h4 m20 0 h4 m42 0 h4 m0 0 h4 m104 0 h4 m-182 0 h20 m162 0 h20 m-202 0 q10 0 10 10 m182 0 q0 -10 10 -10 m-192 10 v8 m182 0 v-8 m-182 8 q0 10 10 10 m162 0 q10 0 10 -10 m-172 10 h4 m118 0 h4 m0 0 h36 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="355 10 363 6 363 14"/>
-         <polygon points="355 10 347 6 347 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="47" y="69">ALL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="107" y="1" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="111" y="13">Select</text></a><path class="line" d="m17 10 h2 m20 0 h4 m26 0 h4 m0 0 h10 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v8 m64 0 v-8 m-64 8 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m-54 -10 v20 m64 0 v-20 m-64 20 v8 m64 0 v-8 m-64 8 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m24 0 h4 m0 0 h12 m20 -56 h4 m36 0 h4 m3 0 h-3"/>
+         <polygon points="157 10 165 6 165 14"/>
+         <polygon points="157 10 149 6 149 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#anycomparisonexpression" title="AnyComparisonExpression" shape="rect">AnyComparisonExpression</a></div>
-               <div>         ::= ( 'ANY' | 'SOME' | 'ALL' ) '(' ( 'VALUES' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> ) ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= ( 'ANY' | 'SOME' | 'ALL' ) <a href="#select" title="Select" shape="rect">Select</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>comparisonitem</a></li></ul></div></td></tr></tbody></table>
@@ -4860,7 +4770,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= ( <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> ( '=' | ':=' ) )? <a href="#concatexpression" title="ConcatExpression" shape="rect">ConcatExpression</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>arrayconstructor</a></li><li><a>arrayexpression</a></li><li><a>between</a></li><li><a>castexpression</a></li><li><a>comparisonitem</a></li><li><a>existsexpression</a></li><li><a>extractexpression</a></li><li><a>groupbycolumnreferences</a></li><li><a>inexpression</a></li><li><a>insert</a></li><li><a>insertconflictaction</a></li><li><a>isdistinctexpression</a></li><li><a>likeexpression</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>namedexpressionlist1</a></li><li><a>namedexpressionlistexprfirst</a></li><li><a>pivotselectexpritem</a></li><li><a>sqlcondition</a></li><li><a>safecastexpression</a></li><li><a>showtables</a></li><li><a>similartoexpression</a></li><li><a>simpleexpressionlist</a></li><li><a>simpleexpressionlistatleasttwoitems</a></li><li><a>trycastexpression</a></li><li><a>update</a></li><li><a>upsert</a></li><li><a>variableexpression</a></li><li><a>windowoffset</a></li><li><a>xmlserializeexpr</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>arrayconstructor</a></li><li><a>arrayexpression</a></li><li><a>between</a></li><li><a>castexpression</a></li><li><a>comparisonitem</a></li><li><a>existsexpression</a></li><li><a>extractexpression</a></li><li><a>groupingset</a></li><li><a>inexpression</a></li><li><a>insert</a></li><li><a>isdistinctexpression</a></li><li><a>likeexpression</a></li><li><a>mergeinsertclause</a></li><li><a>mergeupdateclause</a></li><li><a>namedexpressionlistexprfirst</a></li><li><a>sqlcondition</a></li><li><a>showtables</a></li><li><a>similartoexpression</a></li><li><a>simpleexpressionlist</a></li><li><a>updatesets</a></li><li><a>upsert</a></li><li><a>variableexpression</a></li><li><a>windowoffset</a></li><li><a>xmlserializeexpr</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -4884,7 +4794,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= <a href="#bitwiseandor" title="BitwiseAndOr" shape="rect">BitwiseAndOr</a> ( <a href="#op-concat" title="OP_CONCAT" shape="rect">OP_CONCAT</a> <a href="#bitwiseandor" title="BitwiseAndOr" shape="rect">BitwiseAndOr</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>selectexpressionitem</a></li><li><a>simpleexpression</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>selectitem</a></li><li><a>simpleexpression</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -5033,7 +4943,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="749" height="1163">
+        <svg xmlns="http://www.w3.org/2000/svg" width="687" height="1128">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="22" width="28" height="18" class="terminal" rx="4"/>
@@ -5085,69 +4995,62 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <rect x="181" y="498" width="40" height="18" class="nonterminal"/>
             <text class="nonterminal" x="185" y="510">S_HEX</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#castexpression" xlink:title="CastExpression" shape="rect">
             <rect x="181" y="526" width="80" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="538">CastExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#trycastexpression" xlink:title="TryCastExpression" shape="rect">
-            <rect x="181" y="554" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="566">TryCastExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#safecastexpression" xlink:title="SafeCastExpression" shape="rect">
-            <rect x="181" y="582" width="100" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="594">SafeCastExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-time-key-expr" xlink:title="K_TIME_KEY_EXPR" shape="rect">
-            <rect x="181" y="610" width="98" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="622">K_TIME_KEY_EXPR</text></a><rect x="181" y="638" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="650">CURRENT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#datetimeliteralexpression" xlink:title="DateTimeLiteralExpression" shape="rect">
-            <rect x="181" y="666" width="128" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="678">DateTimeLiteralExpression</text></a><rect x="181" y="694" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="706">ARRAY</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrayconstructor" xlink:title="ArrayConstructor" shape="rect">
-            <rect x="227" y="694" width="86" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="231" y="706">ArrayConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#nextvalexpression" xlink:title="NextValExpression" shape="rect">
-            <rect x="181" y="722" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="734">NextValExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#connectbyrootoperator" xlink:title="ConnectByRootOperator" shape="rect">
-            <rect x="181" y="750" width="120" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="762">ConnectByRootOperator</text></a><rect x="181" y="778" width="24" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="790">ALL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="181" y="806" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="818">Column</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="181" y="834" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="846">S_CHAR_LITERAL</text></a><rect x="201" y="862" width="18" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="205" y="874">{d</text>
-         <rect x="201" y="890" width="16" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="205" y="902">{t</text>
-         <rect x="201" y="918" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="205" y="930">{ts</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="249" y="862" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="253" y="874">S_CHAR_LITERAL</text></a><rect x="347" y="862" width="14" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="351" y="874">}</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="181" y="946" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="185" y="958">ParenthesedSelectBody</text></a><rect x="181" y="974" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="986">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="221" y="974" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="225" y="986">ComplexExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="221" y="1002" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="225" y="1014">SimpleExpressionList</text></a><rect x="363" y="974" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="367" y="986">)</text>
-         <rect x="403" y="995" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="407" y="1007">.</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext" xlink:title="RelObjectNameExt" shape="rect">
-            <rect x="419" y="995" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="423" y="1007">RelObjectNameExt</text></a><rect x="581" y="22" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="585" y="34">COLLATE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-identifier" xlink:title="S_IDENTIFIER" shape="rect">
-            <rect x="637" y="22" width="74" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="641" y="34">S_IDENTIFIER</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#intervalexpressionwithoutinterval" xlink:title="IntervalExpressionWithoutInterval" shape="rect">
-            <rect x="140" y="1077" width="162" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="144" y="1089">IntervalExpressionWithoutInterval</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrayexpression" xlink:title="ArrayExpression" shape="rect">
-            <rect x="350" y="1077" width="82" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="354" y="1089">ArrayExpression</text></a><rect x="500" y="1056" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="504" y="1068">::</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
-            <rect x="520" y="1056" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="524" y="1068">ColDataType</text></a><rect x="409" y="1131" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="413" y="1143">AT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-datetimeliteral" xlink:title="K_DATETIMELITERAL" shape="rect">
-            <rect x="437" y="1131" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="441" y="1143">K_DATETIMELITERAL</text></a><rect x="549" y="1131" width="34" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="553" y="1143">ZONE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#primaryexpression" xlink:title="PrimaryExpression" shape="rect">
-            <rect x="591" y="1131" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="595" y="1143">PrimaryExpression</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m-46 -10 v20 m56 0 v-20 m-56 20 v8 m56 0 v-8 m-56 8 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m10 0 h4 m0 0 h18 m40 -49 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m-32 -10 v20 m42 0 v-20 m-42 20 v8 m42 0 v-8 m-42 8 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m10 0 h4 m0 0 h4 m-32 -10 v20 m42 0 v-20 m-42 20 v8 m42 0 v-8 m-42 8 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m40 -77 h4 m32 0 h4 m0 0 h320 m-380 0 h20 m360 0 h20 m-400 0 q10 0 10 10 m380 0 q0 -10 10 -10 m-390 10 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m112 0 h4 m0 0 h240 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m108 0 h4 m0 0 h244 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m112 0 h4 m0 0 h240 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m66 0 h4 m0 0 h286 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m66 0 h4 m0 0 h286 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m90 0 h4 m0 0 h262 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m102 0 h4 m0 0 h250 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m86 0 h4 m0 0 h266 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m80 0 h4 m0 0 h272 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m68 0 h4 m0 0 h284 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m116 0 h4 m0 0 h236 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m74 0 h4 m0 0 h278 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m48 0 h4 m20 0 h10 m0 0 h90 m-120 0 h20 m100 0 h20 m-140 0 q10 0 10 10 m120 0 q0 -10 10 -10 m-130 10 v1 m120 0 v-1 m-120 1 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m92 0 h4 m20 -21 h164 m-370 -10 v20 m380 0 v-20 m-380 20 v29 m380 0 v-29 m-380 29 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m92 0 h4 m0 0 h260 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m60 0 h4 m0 0 h292 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m48 0 h4 m0 0 h304 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m40 0 h4 m0 0 h312 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m80 0 h4 m0 0 h272 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m94 0 h4 m0 0 h258 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m100 0 h4 m0 0 h252 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m98 0 h4 m0 0 h254 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m50 0 h4 m0 0 h302 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m128 0 h4 m0 0 h224 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m38 0 h4 m0 0 h4 m86 0 h4 m0 0 h220 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m94 0 h4 m0 0 h258 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m120 0 h4 m0 0 h232 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m24 0 h4 m0 0 h328 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m46 0 h4 m0 0 h306 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m90 0 h4 m0 0 h262 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-350 10 h4 m18 0 h4 m0 0 h2 m-48 0 h20 m28 0 h20 m-68 0 q10 0 10 10 m48 0 q0 -10 10 -10 m-58 10 v8 m48 0 v-8 m-48 8 q0 10 10 10 m28 0 q10 0 10 -10 m-38 10 h4 m16 0 h4 m0 0 h4 m-38 -10 v20 m48 0 v-20 m-48 20 v8 m48 0 v-8 m-48 8 q0 10 10 10 m28 0 q10 0 10 -10 m-38 10 h4 m20 0 h4 m20 -56 h4 m90 0 h4 m0 0 h4 m14 0 h4 m0 0 h172 m-370 -10 v20 m380 0 v-20 m-380 20 v64 m380 0 v-64 m-380 64 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m118 0 h4 m0 0 h234 m-370 -10 v20 m380 0 v-20 m-380 20 v8 m380 0 v-8 m-380 8 q0 10 10 10 m360 0 q10 0 10 -10 m-370 10 h4 m12 0 h4 m20 0 h4 m114 0 h4 m-142 0 h20 m122 0 h20 m-162 0 q10 0 10 10 m142 0 q0 -10 10 -10 m-152 10 v8 m142 0 v-8 m-142 8 q0 10 10 10 m122 0 q10 0 10 -10 m-132 10 h4 m104 0 h4 m0 0 h10 m20 -28 h4 m12 0 h4 m20 0 h10 m0 0 h108 m-138 0 h20 m118 0 h20 m-158 0 q10 0 10 10 m138 0 q0 -10 10 -10 m-148 10 v1 m138 0 v-1 m-138 1 q0 10 10 10 m118 0 q10 0 10 -10 m-128 10 h4 m8 0 h4 m0 0 h4 m94 0 h4 m60 -994 h10 m0 0 h128 m-158 0 h20 m138 0 h20 m-178 0 q10 0 10 10 m158 0 q0 -10 10 -10 m-168 10 v1 m158 0 v-1 m-158 1 q0 10 10 10 m138 0 q10 0 10 -10 m-148 10 h4 m48 0 h4 m0 0 h4 m74 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-643 1055 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h160 m-190 0 h20 m170 0 h20 m-210 0 q10 0 10 10 m190 0 q0 -10 10 -10 m-200 10 v1 m190 0 v-1 m-190 1 q0 10 10 10 m170 0 q10 0 10 -10 m-180 10 h4 m162 0 h4 m40 -21 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m60 -21 h4 m12 0 h4 m0 0 h4 m68 0 h4 m-116 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m96 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-96 0 h10 m0 0 h86 m-136 21 h20 m136 0 h20 m-176 0 q10 0 10 10 m156 0 q0 -10 10 -10 m-166 10 v1 m156 0 v-1 m-156 1 q0 10 10 10 m136 0 q10 0 10 -10 m-146 10 h10 m0 0 h126 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-291 75 l2 0 m2 0 l2 0 m2 0 l2 0 m42 0 h4 m20 0 h4 m0 0 h4 m104 0 h4 m0 0 h4 m34 0 h4 m0 0 h4 m94 0 h4 m-304 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m284 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-284 0 h10 m0 0 h274 m-324 21 h20 m324 0 h20 m-364 0 q10 0 10 10 m344 0 q0 -10 10 -10 m-354 10 v1 m344 0 v-1 m-344 1 q0 10 10 10 m324 0 q10 0 10 -10 m-334 10 h10 m0 0 h314 m23 -21 h-3"/>
-         <polygon points="739 1140 747 1136 747 1144"/>
-         <polygon points="739 1140 731 1136 731 1144"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="185" y="538">CastExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#characterprimary" xlink:title="CharacterPrimary" shape="rect">
+            <rect x="181" y="554" width="88" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="566">CharacterPrimary</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-time-key-expr" xlink:title="K_TIME_KEY_EXPR" shape="rect">
+            <rect x="181" y="582" width="98" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="594">K_TIME_KEY_EXPR</text></a><rect x="181" y="610" width="50" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="185" y="622">CURRENT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#datetimeliteralexpression" xlink:title="DateTimeLiteralExpression" shape="rect">
+            <rect x="181" y="638" width="128" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="650">DateTimeLiteralExpression</text></a><rect x="181" y="666" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="185" y="678">ARRAY</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrayconstructor" xlink:title="ArrayConstructor" shape="rect">
+            <rect x="227" y="666" width="86" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="231" y="678">ArrayConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#nextvalexpression" xlink:title="NextValExpression" shape="rect">
+            <rect x="181" y="694" width="94" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="706">NextValExpression</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#connectbyrootoperator" xlink:title="ConnectByRootOperator" shape="rect">
+            <rect x="181" y="722" width="120" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="734">ConnectByRootOperator</text></a><rect x="181" y="750" width="24" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="185" y="762">ALL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="181" y="778" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="790">Column</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="181" y="806" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="818">S_CHAR_LITERAL</text></a><rect x="201" y="834" width="18" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="205" y="846">{d</text>
+         <rect x="201" y="862" width="16" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="205" y="874">{t</text>
+         <rect x="201" y="890" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="205" y="902">{ts</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="249" y="834" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="253" y="846">S_CHAR_LITERAL</text></a><rect x="347" y="834" width="14" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="351" y="846">}</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="181" y="918" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="930">ParenthesedSelect</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="181" y="946" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="185" y="958">ParenthesedExpressionList</text></a><rect x="341" y="967" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="345" y="979">.</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext" xlink:title="RelObjectNameExt" shape="rect">
+            <rect x="357" y="967" width="94" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="361" y="979">RelObjectNameExt</text></a><rect x="519" y="22" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="523" y="34">COLLATE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-identifier" xlink:title="S_IDENTIFIER" shape="rect">
+            <rect x="575" y="22" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="579" y="34">S_IDENTIFIER</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#intervalexpressionwithoutinterval" xlink:title="IntervalExpressionWithoutInterval" shape="rect">
+            <rect x="109" y="1042" width="162" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="113" y="1054">IntervalExpressionWithoutInterval</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrayexpression" xlink:title="ArrayExpression" shape="rect">
+            <rect x="319" y="1042" width="82" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="323" y="1054">ArrayExpression</text></a><rect x="469" y="1021" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="473" y="1033">::</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
+            <rect x="489" y="1021" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="493" y="1033">ColDataType</text></a><rect x="347" y="1096" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="351" y="1108">AT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-datetimeliteral" xlink:title="K_DATETIMELITERAL" shape="rect">
+            <rect x="375" y="1096" width="104" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="379" y="1108">K_DATETIMELITERAL</text></a><rect x="487" y="1096" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="491" y="1108">ZONE</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#primaryexpression" xlink:title="PrimaryExpression" shape="rect">
+            <rect x="529" y="1096" width="94" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="533" y="1108">PrimaryExpression</text></a><path class="line" d="m17 10 h2 m20 0 h10 m0 0 h26 m-56 0 h20 m36 0 h20 m-76 0 q10 0 10 10 m56 0 q0 -10 10 -10 m-66 10 v1 m56 0 v-1 m-56 1 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m28 0 h4 m-46 -10 v20 m56 0 v-20 m-56 20 v8 m56 0 v-8 m-56 8 q0 10 10 10 m36 0 q10 0 10 -10 m-46 10 h4 m10 0 h4 m0 0 h18 m40 -49 h10 m0 0 h12 m-42 0 h20 m22 0 h20 m-62 0 q10 0 10 10 m42 0 q0 -10 10 -10 m-52 10 v1 m42 0 v-1 m-42 1 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m-32 -10 v20 m42 0 v-20 m-42 20 v8 m42 0 v-8 m-42 8 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m10 0 h4 m0 0 h4 m-32 -10 v20 m42 0 v-20 m-42 20 v8 m42 0 v-8 m-42 8 q0 10 10 10 m22 0 q10 0 10 -10 m-32 10 h4 m14 0 h4 m40 -77 h4 m32 0 h4 m0 0 h258 m-318 0 h20 m298 0 h20 m-338 0 q10 0 10 10 m318 0 q0 -10 10 -10 m-328 10 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m112 0 h4 m0 0 h178 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m108 0 h4 m0 0 h182 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m112 0 h4 m0 0 h178 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m66 0 h4 m0 0 h224 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m66 0 h4 m0 0 h224 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m90 0 h4 m0 0 h200 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m102 0 h4 m0 0 h188 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m86 0 h4 m0 0 h204 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m80 0 h4 m0 0 h210 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m68 0 h4 m0 0 h222 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m116 0 h4 m0 0 h174 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m74 0 h4 m0 0 h216 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m48 0 h4 m20 0 h10 m0 0 h90 m-120 0 h20 m100 0 h20 m-140 0 q10 0 10 10 m120 0 q0 -10 10 -10 m-130 10 v1 m120 0 v-1 m-120 1 q0 10 10 10 m100 0 q10 0 10 -10 m-110 10 h4 m92 0 h4 m20 -21 h102 m-308 -10 v20 m318 0 v-20 m-318 20 v29 m318 0 v-29 m-318 29 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m92 0 h4 m0 0 h198 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m60 0 h4 m0 0 h230 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m48 0 h4 m0 0 h242 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m40 0 h4 m0 0 h250 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m80 0 h4 m0 0 h210 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m88 0 h4 m0 0 h202 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m98 0 h4 m0 0 h192 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m50 0 h4 m0 0 h240 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m128 0 h4 m0 0 h162 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m38 0 h4 m0 0 h4 m86 0 h4 m0 0 h158 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m94 0 h4 m0 0 h196 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m120 0 h4 m0 0 h170 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m24 0 h4 m0 0 h266 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m46 0 h4 m0 0 h244 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m90 0 h4 m0 0 h200 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-288 10 h4 m18 0 h4 m0 0 h2 m-48 0 h20 m28 0 h20 m-68 0 q10 0 10 10 m48 0 q0 -10 10 -10 m-58 10 v8 m48 0 v-8 m-48 8 q0 10 10 10 m28 0 q10 0 10 -10 m-38 10 h4 m16 0 h4 m0 0 h4 m-38 -10 v20 m48 0 v-20 m-48 20 v8 m48 0 v-8 m-48 8 q0 10 10 10 m28 0 q10 0 10 -10 m-38 10 h4 m20 0 h4 m20 -56 h4 m90 0 h4 m0 0 h4 m14 0 h4 m0 0 h110 m-308 -10 v20 m318 0 v-20 m-318 20 v64 m318 0 v-64 m-318 64 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m96 0 h4 m0 0 h194 m-308 -10 v20 m318 0 v-20 m-318 20 v8 m318 0 v-8 m-318 8 q0 10 10 10 m298 0 q10 0 10 -10 m-308 10 h4 m132 0 h4 m20 0 h10 m0 0 h108 m-138 0 h20 m118 0 h20 m-158 0 q10 0 10 10 m138 0 q0 -10 10 -10 m-148 10 v1 m138 0 v-1 m-138 1 q0 10 10 10 m118 0 q10 0 10 -10 m-128 10 h4 m8 0 h4 m0 0 h4 m94 0 h4 m60 -966 h10 m0 0 h128 m-158 0 h20 m138 0 h20 m-178 0 q10 0 10 10 m158 0 q0 -10 10 -10 m-168 10 v1 m158 0 v-1 m-158 1 q0 10 10 10 m138 0 q10 0 10 -10 m-148 10 h4 m48 0 h4 m0 0 h4 m74 0 h4 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-612 1020 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h160 m-190 0 h20 m170 0 h20 m-210 0 q10 0 10 10 m190 0 q0 -10 10 -10 m-200 10 v1 m190 0 v-1 m-190 1 q0 10 10 10 m170 0 q10 0 10 -10 m-180 10 h4 m162 0 h4 m40 -21 h10 m0 0 h80 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v1 m110 0 v-1 m-110 1 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m82 0 h4 m60 -21 h4 m12 0 h4 m0 0 h4 m68 0 h4 m-116 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m96 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-96 0 h10 m0 0 h86 m-136 21 h20 m136 0 h20 m-176 0 q10 0 10 10 m156 0 q0 -10 10 -10 m-166 10 v1 m156 0 v-1 m-156 1 q0 10 10 10 m136 0 q10 0 10 -10 m-146 10 h10 m0 0 h126 m22 -21 l2 0 m2 0 l2 0 m2 0 l2 0 m-322 75 l2 0 m2 0 l2 0 m2 0 l2 0 m42 0 h4 m20 0 h4 m0 0 h4 m104 0 h4 m0 0 h4 m34 0 h4 m0 0 h4 m94 0 h4 m-304 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m284 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-284 0 h10 m0 0 h274 m-324 21 h20 m324 0 h20 m-364 0 q10 0 10 10 m344 0 q0 -10 10 -10 m-354 10 v1 m344 0 v-1 m-344 1 q0 10 10 10 m324 0 q10 0 10 -10 m-334 10 h10 m0 0 h314 m23 -21 h-3"/>
+         <polygon points="677 1105 685 1101 685 1109"/>
+         <polygon points="677 1105 669 1101 669 1109"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#primaryexpression" title="PrimaryExpression" shape="rect">PrimaryExpression</a></div>
-               <div>         ::= ( 'NOT' | '!' )? ( '+' | '-' | '~' )? ( 'NULL' | <a href="#casewhenexpression" title="CaseWhenExpression" shape="rect">CaseWhenExpression</a> | <a href="#simplejdbcparameter" title="SimpleJdbcParameter" shape="rect">SimpleJdbcParameter</a> | <a href="#jdbcnamedparameter" title="JdbcNamedParameter" shape="rect">JdbcNamedParameter</a> | <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#numericbind" title="NumericBind" shape="rect">NumericBind</a> | <a href="#extractexpression" title="ExtractExpression" shape="rect">ExtractExpression</a> | <a href="#mysqlgroupconcat" title="MySQLGroupConcat" shape="rect">MySQLGroupConcat</a> | <a href="#xmlserializeexpr" title="XMLSerializeExpr" shape="rect">XMLSerializeExpr</a> | <a href="#jsonexpression" title="JsonExpression" shape="rect">JsonExpression</a> | <a href="#jsonfunction" title="JsonFunction" shape="rect">JsonFunction</a> | <a href="#jsonaggregatefunction" title="JsonAggregateFunction" shape="rect">JsonAggregateFunction</a> | <a href="#fulltextsearch" title="FullTextSearch" shape="rect">FullTextSearch</a> | <a href="#function" title="Function" shape="rect">Function</a> <a href="#analyticexpression" title="AnalyticExpression" shape="rect">AnalyticExpression</a>? | <a href="#intervalexpression" title="IntervalExpression" shape="rect">IntervalExpression</a> | <a href="#s-double" title="S_DOUBLE" shape="rect">S_DOUBLE</a> | <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> | <a href="#s-hex" title="S_HEX" shape="rect">S_HEX</a> | <a href="#castexpression" title="CastExpression" shape="rect">CastExpression</a> | <a href="#trycastexpression" title="TryCastExpression" shape="rect">TryCastExpression</a> | <a href="#safecastexpression" title="SafeCastExpression" shape="rect">SafeCastExpression</a> | <a href="#k-time-key-expr" title="K_TIME_KEY_EXPR" shape="rect">K_TIME_KEY_EXPR</a> | 'CURRENT' | <a href="#datetimeliteralexpression" title="DateTimeLiteralExpression" shape="rect">DateTimeLiteralExpression</a> | 'ARRAY' <a href="#arrayconstructor" title="ArrayConstructor" shape="rect">ArrayConstructor</a> | <a href="#nextvalexpression" title="NextValExpression" shape="rect">NextValExpression</a> | <a href="#connectbyrootoperator" title="ConnectByRootOperator" shape="rect">ConnectByRootOperator</a> | 'ALL' | <a href="#column" title="Column" shape="rect">Column</a> | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | ( '{d' | '{t' | '{ts' ) <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> '}' | <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> | '(' ( <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ) ')' ( '.' <a href="#relobjectnameext" title="RelObjectNameExt" shape="rect">RelObjectNameExt</a> )? ) ( 'COLLATE' <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> )? <a href="#intervalexpressionwithoutinterval" title="IntervalExpressionWithoutInterval" shape="rect">IntervalExpressionWithoutInterval</a>? <a href="#arrayexpression" title="ArrayExpression" shape="rect">ArrayExpression</a>? ( '::' <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> )* ( 'AT' <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' <a href="#primaryexpression" title="PrimaryExpression" shape="rect">PrimaryExpression</a> )*</div></xhtml:code></xhtml:div>
+               <div>         ::= ( 'NOT' | '!' )? ( '+' | '-' | '~' )? ( 'NULL' | <a href="#casewhenexpression" title="CaseWhenExpression" shape="rect">CaseWhenExpression</a> | <a href="#simplejdbcparameter" title="SimpleJdbcParameter" shape="rect">SimpleJdbcParameter</a> | <a href="#jdbcnamedparameter" title="JdbcNamedParameter" shape="rect">JdbcNamedParameter</a> | <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#numericbind" title="NumericBind" shape="rect">NumericBind</a> | <a href="#extractexpression" title="ExtractExpression" shape="rect">ExtractExpression</a> | <a href="#mysqlgroupconcat" title="MySQLGroupConcat" shape="rect">MySQLGroupConcat</a> | <a href="#xmlserializeexpr" title="XMLSerializeExpr" shape="rect">XMLSerializeExpr</a> | <a href="#jsonexpression" title="JsonExpression" shape="rect">JsonExpression</a> | <a href="#jsonfunction" title="JsonFunction" shape="rect">JsonFunction</a> | <a href="#jsonaggregatefunction" title="JsonAggregateFunction" shape="rect">JsonAggregateFunction</a> | <a href="#fulltextsearch" title="FullTextSearch" shape="rect">FullTextSearch</a> | <a href="#function" title="Function" shape="rect">Function</a> <a href="#analyticexpression" title="AnalyticExpression" shape="rect">AnalyticExpression</a>? | <a href="#intervalexpression" title="IntervalExpression" shape="rect">IntervalExpression</a> | <a href="#s-double" title="S_DOUBLE" shape="rect">S_DOUBLE</a> | <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> | <a href="#s-hex" title="S_HEX" shape="rect">S_HEX</a> | <a href="#castexpression" title="CastExpression" shape="rect">CastExpression</a> | <a href="#characterprimary" title="CharacterPrimary" shape="rect">CharacterPrimary</a> | <a href="#k-time-key-expr" title="K_TIME_KEY_EXPR" shape="rect">K_TIME_KEY_EXPR</a> | 'CURRENT' | <a href="#datetimeliteralexpression" title="DateTimeLiteralExpression" shape="rect">DateTimeLiteralExpression</a> | 'ARRAY' <a href="#arrayconstructor" title="ArrayConstructor" shape="rect">ArrayConstructor</a> | <a href="#nextvalexpression" title="NextValExpression" shape="rect">NextValExpression</a> | <a href="#connectbyrootoperator" title="ConnectByRootOperator" shape="rect">ConnectByRootOperator</a> | 'ALL' | <a href="#column" title="Column" shape="rect">Column</a> | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | ( '{d' | '{t' | '{ts' ) <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> '}' | <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> | <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a> ( '.' <a href="#relobjectnameext" title="RelObjectNameExt" shape="rect">RelObjectNameExt</a> )? ) ( 'COLLATE' <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> )? <a href="#intervalexpressionwithoutinterval" title="IntervalExpressionWithoutInterval" shape="rect">IntervalExpressionWithoutInterval</a>? <a href="#arrayexpression" title="ArrayExpression" shape="rect">ArrayExpression</a>? ( '::' <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> )* ( 'AT' <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> 'ZONE' <a href="#primaryexpression" title="PrimaryExpression" shape="rect">PrimaryExpression</a> )*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>bitwisexor</a></li><li><a>comparisonitem</a></li><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
@@ -5208,18 +5111,18 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="165" height="21">
+        <svg xmlns="http://www.w3.org/2000/svg" width="139" height="21">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="10" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">:</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext2" xlink:title="RelObjectNameExt2" shape="rect">
-            <rect x="41" y="1" width="100" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="45" y="13">RelObjectNameExt2</text></a><path class="line" d="m17 10 h2 m0 0 h4 m10 0 h4 m0 0 h4 m100 0 h4 m3 0 h-3"/>
-         <polygon points="155 10 163 6 163 14"/>
-         <polygon points="155 10 147 6 147 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="27" y="13">:</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#identifierchain" xlink:title="IdentifierChain" shape="rect">
+            <rect x="41" y="1" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="45" y="13">IdentifierChain</text></a><path class="line" d="m17 10 h2 m0 0 h4 m10 0 h4 m0 0 h4 m74 0 h4 m3 0 h-3"/>
+         <polygon points="129 10 137 6 137 14"/>
+         <polygon points="129 10 121 6 121 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#jdbcnamedparameter" title="JdbcNamedParameter" shape="rect">JdbcNamedParameter</a></div>
-               <div>         ::= ':' <a href="#relobjectnameext2" title="RelObjectNameExt2" shape="rect">RelObjectNameExt2</a></div></xhtml:code></xhtml:div>
+               <div>         ::= ':' <a href="#identifierchain" title="IdentifierChain" shape="rect">IdentifierChain</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>intervalexpression</a></li><li><a>jsonexpression</a></li><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
@@ -5257,22 +5160,20 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="261" height="77">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/>
-         <rect x="43" y="29" width="16" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="41">@</text>
-         <rect x="43" y="57" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="69">@@</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext2" xlink:title="RelObjectNameExt2" shape="rect">
-            <rect x="117" y="29" width="100" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="121" y="41">RelObjectNameExt2</text></a><rect x="117" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="121" y="13">.</text>
-         <path class="line" d="m17 38 h2 m20 0 h4 m16 0 h4 m0 0 h10 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v8 m54 0 v-8 m-54 8 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m40 -28 h4 m100 0 h4 m-128 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m108 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-108 0 h4 m8 0 h4 m0 0 h92 m23 28 h-3"/>
-         <polygon points="251 38 259 34 259 42"/>
-         <polygon points="251 38 243 34 243 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="195" height="49">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="43" y="1" width="16" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="13">@</text>
+         <rect x="43" y="29" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="41">@@</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#identifierchain" xlink:title="IdentifierChain" shape="rect">
+            <rect x="97" y="1" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="101" y="13">IdentifierChain</text></a><path class="line" d="m17 10 h2 m20 0 h4 m16 0 h4 m0 0 h10 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v8 m54 0 v-8 m-54 8 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m20 -28 h4 m74 0 h4 m3 0 h-3"/>
+         <polygon points="185 10 193 6 193 14"/>
+         <polygon points="185 10 177 6 177 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a></div>
-               <div>         ::= ( '@' | '@@' ) <a href="#relobjectnameext2" title="RelObjectNameExt2" shape="rect">RelObjectNameExt2</a> ( '.' <a href="#relobjectnameext2" title="RelObjectNameExt2" shape="rect">RelObjectNameExt2</a> )*</div></xhtml:code></xhtml:div>
+               <div>         ::= ( '@' | '@@' ) <a href="#identifierchain" title="IdentifierChain" shape="rect">IdentifierChain</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>declare</a></li><li><a>jsonexpression</a></li><li><a>outputclause</a></li><li><a>primaryexpression</a></li><li><a>set</a></li><li><a>simpleexpression</a></li><li><a>variableexpression</a></li></ul></div></td></tr></tbody></table>
@@ -5363,7 +5264,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="713" height="313">
+        <svg xmlns="http://www.w3.org/2000/svg" width="691" height="313">
          <polygon points="9 22 1 18 1 26"/>
          <polygon points="17 22 9 18 9 26"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#casewhenexpression" xlink:title="CaseWhenExpression" shape="rect">
             <rect x="43" y="13" width="112" height="18" class="nonterminal"/>
@@ -5386,31 +5287,31 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="47" y="249">Column</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
             <rect x="43" y="265" width="90" height="18" class="nonterminal"/>
             <text class="nonterminal" x="47" y="277">S_CHAR_LITERAL</text></a><rect x="43" y="293" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="305">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselectbody" xlink:title="ParenthesedSelectBody" shape="rect">
-            <rect x="63" y="293" width="118" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="67" y="305">ParenthesedSelectBody</text></a><rect x="189" y="293" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="193" y="305">)</text>
-         <rect x="269" y="13" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="273" y="25">::</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
-            <rect x="289" y="13" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="293" y="25">ColDataType</text></a><rect x="465" y="13" width="18" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="469" y="25">-&gt;</text>
-         <rect x="465" y="41" width="26" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="469" y="53">-&gt;&gt;</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="539" y="13" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="543" y="25">S_CHAR_LITERAL</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-long" xlink:title="S_LONG" shape="rect">
-            <rect x="539" y="41" width="48" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="543" y="53">S_LONG</text></a><rect x="465" y="69" width="22" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="469" y="81">#&gt;</text>
-         <rect x="465" y="97" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="469" y="109">#&gt;&gt;</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="523" y="69" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="527" y="81">S_CHAR_LITERAL</text></a><path class="line" d="m17 22 h2 m20 0 h4 m112 0 h4 m0 0 h46 m-186 0 h20 m166 0 h20 m-206 0 q10 0 10 10 m186 0 q0 -10 10 -10 m-196 10 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m108 0 h4 m0 0 h50 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m112 0 h4 m0 0 h46 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m66 0 h4 m0 0 h92 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m68 0 h4 m0 0 h90 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m116 0 h4 m0 0 h42 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m74 0 h4 m0 0 h84 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m78 0 h4 m0 0 h80 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m46 0 h4 m0 0 h112 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m90 0 h4 m0 0 h68 m-176 -10 v20 m186 0 v-20 m-186 20 v8 m186 0 v-8 m-186 8 q0 10 10 10 m166 0 q10 0 10 -10 m-176 10 h4 m12 0 h4 m0 0 h4 m118 0 h4 m0 0 h4 m12 0 h4 m60 -280 h4 m12 0 h4 m0 0 h4 m68 0 h4 m-116 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m96 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-96 0 h10 m0 0 h86 m-136 21 h20 m136 0 h20 m-176 0 q10 0 10 10 m156 0 q0 -10 10 -10 m-166 10 v1 m156 0 v-1 m-156 1 q0 10 10 10 m136 0 q10 0 10 -10 m-146 10 h10 m0 0 h126 m80 -21 h4 m18 0 h4 m0 0 h8 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v8 m54 0 v-8 m-54 8 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m40 -28 h4 m90 0 h4 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v8 m118 0 v-8 m-118 8 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m48 0 h4 m0 0 h42 m-212 -28 h20 m212 0 h20 m-252 0 q10 0 10 10 m232 0 q0 -10 10 -10 m-242 10 v36 m232 0 v-36 m-232 36 q0 10 10 10 m212 0 q10 0 10 -10 m-202 10 h4 m22 0 h4 m0 0 h8 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v8 m58 0 v-8 m-58 8 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m20 -28 h4 m90 0 h4 m0 0 h36 m-252 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m252 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-252 0 h10 m0 0 h242 m23 21 h-3"/>
-         <polygon points="703 22 711 18 711 26"/>
-         <polygon points="703 22 695 18 695 26"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="47" y="305">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedselect" xlink:title="ParenthesedSelect" shape="rect">
+            <rect x="63" y="293" width="96" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="67" y="305">ParenthesedSelect</text></a><rect x="167" y="293" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="171" y="305">)</text>
+         <rect x="247" y="13" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="251" y="25">::</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
+            <rect x="267" y="13" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="271" y="25">ColDataType</text></a><rect x="443" y="13" width="18" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="447" y="25">-&gt;</text>
+         <rect x="443" y="41" width="26" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="447" y="53">-&gt;&gt;</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="517" y="13" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="521" y="25">S_CHAR_LITERAL</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-long" xlink:title="S_LONG" shape="rect">
+            <rect x="517" y="41" width="48" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="521" y="53">S_LONG</text></a><rect x="443" y="69" width="22" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="447" y="81">#&gt;</text>
+         <rect x="443" y="97" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="447" y="109">#&gt;&gt;</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="501" y="69" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="505" y="81">S_CHAR_LITERAL</text></a><path class="line" d="m17 22 h2 m20 0 h4 m112 0 h4 m0 0 h24 m-164 0 h20 m144 0 h20 m-184 0 q10 0 10 10 m164 0 q0 -10 10 -10 m-174 10 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m108 0 h4 m0 0 h28 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m112 0 h4 m0 0 h24 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m66 0 h4 m0 0 h70 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m68 0 h4 m0 0 h68 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m116 0 h4 m0 0 h20 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m74 0 h4 m0 0 h62 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m78 0 h4 m0 0 h58 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m46 0 h4 m0 0 h90 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m90 0 h4 m0 0 h46 m-154 -10 v20 m164 0 v-20 m-164 20 v8 m164 0 v-8 m-164 8 q0 10 10 10 m144 0 q10 0 10 -10 m-154 10 h4 m12 0 h4 m0 0 h4 m96 0 h4 m0 0 h4 m12 0 h4 m60 -280 h4 m12 0 h4 m0 0 h4 m68 0 h4 m-116 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m96 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-96 0 h10 m0 0 h86 m-136 21 h20 m136 0 h20 m-176 0 q10 0 10 10 m156 0 q0 -10 10 -10 m-166 10 v1 m156 0 v-1 m-156 1 q0 10 10 10 m136 0 q10 0 10 -10 m-146 10 h10 m0 0 h126 m80 -21 h4 m18 0 h4 m0 0 h8 m-54 0 h20 m34 0 h20 m-74 0 q10 0 10 10 m54 0 q0 -10 10 -10 m-64 10 v8 m54 0 v-8 m-54 8 q0 10 10 10 m34 0 q10 0 10 -10 m-44 10 h4 m26 0 h4 m40 -28 h4 m90 0 h4 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v8 m118 0 v-8 m-118 8 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m48 0 h4 m0 0 h42 m-212 -28 h20 m212 0 h20 m-252 0 q10 0 10 10 m232 0 q0 -10 10 -10 m-242 10 v36 m232 0 v-36 m-232 36 q0 10 10 10 m212 0 q10 0 10 -10 m-202 10 h4 m22 0 h4 m0 0 h8 m-58 0 h20 m38 0 h20 m-78 0 q10 0 10 10 m58 0 q0 -10 10 -10 m-68 10 v8 m58 0 v-8 m-58 8 q0 10 10 10 m38 0 q10 0 10 -10 m-48 10 h4 m30 0 h4 m20 -28 h4 m90 0 h4 m0 0 h36 m-252 -56 l20 0 m-1 0 q-9 0 -9 -10 l0 -1 q0 -10 10 -10 m252 21 l20 0 m-20 0 q10 0 10 -10 l0 -1 q0 -10 -10 -10 m-252 0 h10 m0 0 h242 m23 21 h-3"/>
+         <polygon points="681 22 689 18 689 26"/>
+         <polygon points="681 22 673 18 673 26"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#jsonexpression" title="JsonExpression" shape="rect">JsonExpression</a></div>
-               <div>         ::= ( <a href="#casewhenexpression" title="CaseWhenExpression" shape="rect">CaseWhenExpression</a> | <a href="#simplejdbcparameter" title="SimpleJdbcParameter" shape="rect">SimpleJdbcParameter</a> | <a href="#jdbcnamedparameter" title="JdbcNamedParameter" shape="rect">JdbcNamedParameter</a> | <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#jsonfunction" title="JsonFunction" shape="rect">JsonFunction</a> | <a href="#jsonaggregatefunction" title="JsonAggregateFunction" shape="rect">JsonAggregateFunction</a> | <a href="#fulltextsearch" title="FullTextSearch" shape="rect">FullTextSearch</a> | <a href="#simplefunction" title="SimpleFunction" shape="rect">SimpleFunction</a> | <a href="#column" title="Column" shape="rect">Column</a> | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | '(' <a href="#parenthesedselectbody" title="ParenthesedSelectBody" shape="rect">ParenthesedSelectBody</a> ')' ) ( '::' <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> )* ( ( '-&gt;' | '-&gt;&gt;' ) ( <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> ) | ( '#&gt;' | '#&gt;&gt;' ) <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> )+</div></xhtml:code></xhtml:div>
+               <div>         ::= ( <a href="#casewhenexpression" title="CaseWhenExpression" shape="rect">CaseWhenExpression</a> | <a href="#simplejdbcparameter" title="SimpleJdbcParameter" shape="rect">SimpleJdbcParameter</a> | <a href="#jdbcnamedparameter" title="JdbcNamedParameter" shape="rect">JdbcNamedParameter</a> | <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> | <a href="#jsonfunction" title="JsonFunction" shape="rect">JsonFunction</a> | <a href="#jsonaggregatefunction" title="JsonAggregateFunction" shape="rect">JsonAggregateFunction</a> | <a href="#fulltextsearch" title="FullTextSearch" shape="rect">FullTextSearch</a> | <a href="#simplefunction" title="SimpleFunction" shape="rect">SimpleFunction</a> | <a href="#column" title="Column" shape="rect">Column</a> | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | '(' <a href="#parenthesedselect" title="ParenthesedSelect" shape="rect">ParenthesedSelect</a> ')' ) ( '::' <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> )* ( ( '-&gt;' | '-&gt;&gt;' ) ( <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> ) | ( '#&gt;' | '#&gt;&gt;' ) <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> )+</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
@@ -5952,93 +5853,38 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="375" height="49">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">CAST</text>
-         <rect x="63" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="67" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="83" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="87" y="13">SimpleExpression</text></a><rect x="181" y="1" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="185" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rowconstructor" xlink:title="RowConstructor" shape="rect">
-            <rect x="229" y="1" width="82" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="233" y="13">RowConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
-            <rect x="229" y="29" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="233" y="41">ColDataType</text></a><rect x="339" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="343" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m32 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m20 0 h4 m20 0 h4 m82 0 h4 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v8 m110 0 v-8 m-110 8 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m68 0 h4 m0 0 h14 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="365 10 373 6 373 14"/>
-         <polygon points="365 10 357 6 357 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="567" height="105">
+         <polygon points="9 38 1 34 1 42"/>
+         <polygon points="17 38 9 34 9 42"/>
+         <rect x="43" y="29" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="41">CAST</text>
+         <rect x="43" y="57" width="60" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="69">SAFE_CAST</text>
+         <rect x="43" y="85" width="54" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="97">TRY_CAST</text>
+         <rect x="131" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="135" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
+            <rect x="151" y="29" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="155" y="41">SimpleExpression</text></a><rect x="249" y="29" width="20" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="253" y="41">AS</text>
+         <rect x="297" y="29" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="301" y="41">ROW</text>
+         <rect x="337" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="341" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#columndefinition" xlink:title="ColumnDefinition" shape="rect">
+            <rect x="377" y="29" width="86" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="381" y="41">ColumnDefinition</text></a><rect x="377" y="1" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="381" y="13">,</text>
+         <rect x="491" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="495" y="41">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
+            <rect x="297" y="57" width="68" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="301" y="69">ColDataType</text></a><rect x="531" y="29" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="535" y="41">)</text>
+         <path class="line" d="m17 38 h2 m20 0 h4 m32 0 h4 m0 0 h28 m-88 0 h20 m68 0 h20 m-108 0 q10 0 10 10 m88 0 q0 -10 10 -10 m-98 10 v8 m88 0 v-8 m-88 8 q0 10 10 10 m68 0 q10 0 10 -10 m-78 10 h4 m60 0 h4 m-78 -10 v20 m88 0 v-20 m-88 20 v8 m88 0 v-8 m-88 8 q0 10 10 10 m68 0 q10 0 10 -10 m-78 10 h4 m54 0 h4 m0 0 h6 m20 -56 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m20 0 h4 m20 0 h4 m32 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m86 0 h4 m-114 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m94 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-94 0 h4 m8 0 h4 m0 0 h78 m20 28 h4 m12 0 h4 m-234 0 h20 m214 0 h20 m-254 0 q10 0 10 10 m234 0 q0 -10 10 -10 m-244 10 v8 m234 0 v-8 m-234 8 q0 10 10 10 m214 0 q10 0 10 -10 m-224 10 h4 m68 0 h4 m0 0 h138 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="557 38 565 34 565 42"/>
+         <polygon points="557 38 549 34 549 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#castexpression" title="CastExpression" shape="rect">CastExpression</a></div>
-               <div>         ::= 'CAST' '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> 'AS' ( <a href="#rowconstructor" title="RowConstructor" shape="rect">RowConstructor</a> | <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> ) ')'</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        TryCastExpression
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="397" height="49">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="54" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">TRY_CAST</text>
-         <rect x="85" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="89" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="105" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="109" y="13">SimpleExpression</text></a><rect x="203" y="1" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="207" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rowconstructor" xlink:title="RowConstructor" shape="rect">
-            <rect x="251" y="1" width="82" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="255" y="13">RowConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
-            <rect x="251" y="29" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="255" y="41">ColDataType</text></a><rect x="361" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="365" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m54 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m20 0 h4 m20 0 h4 m82 0 h4 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v8 m110 0 v-8 m-110 8 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m68 0 h4 m0 0 h14 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="387 10 395 6 395 14"/>
-         <polygon points="387 10 379 6 379 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#trycastexpression" title="TryCastExpression" shape="rect">TryCastExpression</a></div>
-               <div>         ::= 'TRY_CAST' '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> 'AS' ( <a href="#rowconstructor" title="RowConstructor" shape="rect">RowConstructor</a> | <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> ) ')'</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        SafeCastExpression
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="403" height="49">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="60" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">SAFE_CAST</text>
-         <rect x="91" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="95" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpression" xlink:title="SimpleExpression" shape="rect">
-            <rect x="111" y="1" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="115" y="13">SimpleExpression</text></a><rect x="209" y="1" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="213" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rowconstructor" xlink:title="RowConstructor" shape="rect">
-            <rect x="257" y="1" width="82" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="261" y="13">RowConstructor</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#coldatatype" xlink:title="ColDataType" shape="rect">
-            <rect x="257" y="29" width="68" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="261" y="41">ColDataType</text></a><rect x="367" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="371" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m60 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m90 0 h4 m0 0 h4 m20 0 h4 m20 0 h4 m82 0 h4 m-110 0 h20 m90 0 h20 m-130 0 q10 0 10 10 m110 0 q0 -10 10 -10 m-120 10 v8 m110 0 v-8 m-110 8 q0 10 10 10 m90 0 q10 0 10 -10 m-100 10 h4 m68 0 h4 m0 0 h14 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="393 10 401 6 401 14"/>
-         <polygon points="393 10 385 6 385 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#safecastexpression" title="SafeCastExpression" shape="rect">SafeCastExpression</a></div>
-               <div>         ::= 'SAFE_CAST' '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> 'AS' ( <a href="#rowconstructor" title="RowConstructor" shape="rect">RowConstructor</a> | <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> ) ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= ( 'CAST' | 'SAFE_CAST' | 'TRY_CAST' ) '(' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a> 'AS' ( 'ROW' '(' <a href="#columndefinition" title="ColumnDefinition" shape="rect">ColumnDefinition</a> ( ',' <a href="#columndefinition" title="ColumnDefinition" shape="rect">ColumnDefinition</a> )* ')' | <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> ) ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
@@ -6119,27 +5965,21 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="293" height="70">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/>
-         <rect x="43" y="50" width="32" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="62">ROW</text>
-         <rect x="103" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="107" y="41">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#columndefinition" xlink:title="ColumnDefinition" shape="rect">
-            <rect x="143" y="29" width="86" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="147" y="41">ColumnDefinition</text></a><rect x="143" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="147" y="13">,</text>
-         <rect x="257" y="29" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="261" y="41">)</text>
-         <path class="line" d="m17 38 h2 m20 0 h10 m0 0 h30 m-60 0 h20 m40 0 h20 m-80 0 q10 0 10 10 m60 0 q0 -10 10 -10 m-70 10 v1 m60 0 v-1 m-60 1 q0 10 10 10 m40 0 q10 0 10 -10 m-50 10 h4 m32 0 h4 m20 -21 h4 m12 0 h4 m20 0 h4 m86 0 h4 m-114 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m94 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-94 0 h4 m8 0 h4 m0 0 h78 m20 28 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="283 38 291 34 291 42"/>
-         <polygon points="283 38 275 34 275 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="219" height="21">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">ROW</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#parenthesedexpressionlist" xlink:title="ParenthesedExpressionList" shape="rect">
+            <rect x="63" y="1" width="132" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="67" y="13">ParenthesedExpressionList</text></a><path class="line" d="m17 10 h2 m0 0 h4 m32 0 h4 m0 0 h4 m132 0 h4 m3 0 h-3"/>
+         <polygon points="209 10 217 6 217 14"/>
+         <polygon points="209 10 201 6 201 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#rowconstructor" title="RowConstructor" shape="rect">RowConstructor</a></div>
-               <div>         ::= 'ROW'? '(' <a href="#columndefinition" title="ColumnDefinition" shape="rect">ColumnDefinition</a> ( ',' <a href="#columndefinition" title="ColumnDefinition" shape="rect">ColumnDefinition</a> )* ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= 'ROW' <a href="#parenthesedexpressionlist" title="ParenthesedExpressionList" shape="rect">ParenthesedExpressionList</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>castexpression</a></li><li><a>comparisonitem</a></li><li><a>safecastexpression</a></li><li><a>trycastexpression</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>comparisonitem</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -6163,8 +6003,8 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div><a href="#variableexpression" title="VariableExpression" shape="rect">VariableExpression</a></div>
                <div>         ::= <a href="#uservariable" title="UserVariable" shape="rect">UserVariable</a> '=' <a href="#simpleexpression" title="SimpleExpression" shape="rect">SimpleExpression</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>execute</a></li></ul></div></td></tr></tbody></table>
+                                    Not referenced by any.
+                                </div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -6174,31 +6014,23 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="429" height="117">
-         <polygon points="9 38 1 34 1 42"/>
-         <polygon points="17 38 9 34 9 42"/>
-         <rect x="43" y="29" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="41">EXEC</text>
-         <rect x="43" y="57" width="48" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="69">EXECUTE</text>
-         <rect x="43" y="85" width="30" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="47" y="97">CALL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamelist" xlink:title="RelObjectNameList" shape="rect">
-            <rect x="119" y="29" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="123" y="41">RelObjectNameList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#variableexpression" xlink:title="VariableExpression" shape="rect">
-            <rect x="261" y="29" width="94" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="265" y="41">VariableExpression</text></a><rect x="261" y="1" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="265" y="13">,</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="241" y="57" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="245" y="69">SimpleExpressionList</text></a><rect x="241" y="85" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="245" y="97">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="261" y="85" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="265" y="97">SimpleExpressionList</text></a><rect x="373" y="85" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="377" y="97">)</text>
-         <path class="line" d="m17 38 h2 m20 0 h4 m30 0 h4 m0 0 h18 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m-66 -10 v20 m76 0 v-20 m-76 20 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m30 0 h4 m0 0 h18 m20 -56 h4 m94 0 h4 m40 0 h4 m94 0 h4 m-122 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m102 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-102 0 h4 m8 0 h4 m0 0 h86 m20 28 h10 m-172 0 h20 m152 0 h20 m-192 0 q10 0 10 10 m172 0 q0 -10 10 -10 m-182 10 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m104 0 h4 m0 0 h40 m-162 -10 v20 m172 0 v-20 m-172 20 v8 m172 0 v-8 m-172 8 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h4 m12 0 h4 m0 0 h4 m104 0 h4 m0 0 h4 m12 0 h4 m-162 -10 v20 m172 0 v-20 m-172 20 v1 m172 0 v-1 m-172 1 q0 10 10 10 m152 0 q10 0 10 -10 m-162 10 h10 m0 0 h142 m23 -77 h-3"/>
-         <polygon points="419 38 427 34 427 42"/>
-         <polygon points="419 38 411 34 411 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+        <svg xmlns="http://www.w3.org/2000/svg" width="359" height="77">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="43" y="1" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="13">EXEC</text>
+         <rect x="43" y="29" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="41">EXECUTE</text>
+         <rect x="43" y="57" width="30" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="69">CALL</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamelist" xlink:title="RelObjectNameList" shape="rect">
+            <rect x="119" y="1" width="94" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="123" y="13">RelObjectNameList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="241" y="22" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="245" y="34">ExpressionList</text></a><path class="line" d="m17 10 h2 m20 0 h4 m30 0 h4 m0 0 h18 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m-66 -10 v20 m76 0 v-20 m-76 20 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m30 0 h4 m0 0 h18 m20 -56 h4 m94 0 h4 m20 0 h10 m0 0 h72 m-102 0 h20 m82 0 h20 m-122 0 q10 0 10 10 m102 0 q0 -10 10 -10 m-112 10 v1 m102 0 v-1 m-102 1 q0 10 10 10 m82 0 q10 0 10 -10 m-92 10 h4 m74 0 h4 m23 -21 h-3"/>
+         <polygon points="349 10 357 6 357 14"/>
+         <polygon points="349 10 341 6 341 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#execute" title="Execute" shape="rect">Execute</a>  ::= ( 'EXEC' | 'EXECUTE' | 'CALL' ) <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> ( <a href="#variableexpression" title="VariableExpression" shape="rect">VariableExpression</a> ( ',' <a href="#variableexpression" title="VariableExpression" shape="rect">VariableExpression</a> )* | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> | '(' <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ')' )?</div></xhtml:code></xhtml:div>
+               <div><a href="#execute" title="Execute" shape="rect">Execute</a>  ::= ( 'EXEC' | 'EXECUTE' | 'CALL' ) <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
@@ -6283,7 +6115,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>           | <a href="#internalfunction" title="InternalFunction" shape="rect">InternalFunction</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>functionitem</a></li><li><a>inexpression</a></li><li><a>internalfunction</a></li><li><a>intervalexpression</a></li><li><a>primaryexpression</a></li><li><a>tablefunction</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>functionitem</a></li><li><a>inexpression</a></li><li><a>internalfunction</a></li><li><a>intervalexpression</a></li><li><a>lateralview</a></li><li><a>primaryexpression</a></li><li><a>tablefunction</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -6293,27 +6125,23 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="425" height="105">
+        <svg xmlns="http://www.w3.org/2000/svg" width="425" height="49">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#k-string-function-name" xlink:title="K_STRING_FUNCTION_NAME" shape="rect">
             <rect x="23" y="1" width="144" height="18" class="nonterminal"/>
             <text class="nonterminal" x="27" y="13">K_STRING_FUNCTION_NAME</text></a><rect x="175" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="179" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#namedexpressionlist1" xlink:title="NamedExpressionList1" shape="rect">
-            <rect x="215" y="1" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="219" y="13">NamedExpressionList1</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#namedexpressionlistexprfirst" xlink:title="NamedExpressionListExprFirst" shape="rect">
-            <rect x="215" y="29" width="146" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="219" y="41">NamedExpressionListExprFirst</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="215" y="57" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="219" y="69">ComplexExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="215" y="85" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="219" y="97">SimpleExpressionList</text></a><rect x="389" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="179" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#namedexpressionlistexprfirst" xlink:title="NamedExpressionListExprFirst" shape="rect">
+            <rect x="215" y="1" width="146" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="219" y="13">NamedExpressionListExprFirst</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="215" y="29" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="219" y="41">ExpressionList</text></a><rect x="389" y="1" width="12" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="393" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m144 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m114 0 h4 m0 0 h32 m-174 0 h20 m154 0 h20 m-194 0 q10 0 10 10 m174 0 q0 -10 10 -10 m-184 10 v8 m174 0 v-8 m-174 8 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m146 0 h4 m-164 -10 v20 m174 0 v-20 m-174 20 v8 m174 0 v-8 m-174 8 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m114 0 h4 m0 0 h32 m-164 -10 v20 m174 0 v-20 m-174 20 v8 m174 0 v-8 m-174 8 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m104 0 h4 m0 0 h42 m20 -84 h4 m12 0 h4 m3 0 h-3"/>
+         <path class="line" d="m17 10 h2 m0 0 h4 m144 0 h4 m0 0 h4 m12 0 h4 m20 0 h4 m146 0 h4 m-174 0 h20 m154 0 h20 m-194 0 q10 0 10 10 m174 0 q0 -10 10 -10 m-184 10 v8 m174 0 v-8 m-174 8 q0 10 10 10 m154 0 q10 0 10 -10 m-164 10 h4 m74 0 h4 m0 0 h72 m20 -28 h4 m12 0 h4 m3 0 h-3"/>
          <polygon points="415 10 423 6 423 14"/>
          <polygon points="415 10 407 6 407 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#specialstringfunctionwithnamedparameters" title="SpecialStringFunctionWithNamedParameters" shape="rect">SpecialStringFunctionWithNamedParameters</a></div>
-               <div>         ::= <a href="#k-string-function-name" title="K_STRING_FUNCTION_NAME" shape="rect">K_STRING_FUNCTION_NAME</a> '(' ( <a href="#namedexpressionlist1" title="NamedExpressionList1" shape="rect">NamedExpressionList1</a> | <a href="#namedexpressionlistexprfirst" title="NamedExpressionListExprFirst" shape="rect">NamedExpressionListExprFirst</a> | <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ) ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#k-string-function-name" title="K_STRING_FUNCTION_NAME" shape="rect">K_STRING_FUNCTION_NAME</a> '(' ( <a href="#namedexpressionlistexprfirst" title="NamedExpressionListExprFirst" shape="rect">NamedExpressionListExprFirst</a> | <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a> ) ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>function</a></li></ul></div></td></tr></tbody></table>
@@ -6326,7 +6154,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="791" height="240">
+        <svg xmlns="http://www.w3.org/2000/svg" width="711" height="233">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamelist" xlink:title="RelObjectNameList" shape="rect">
             <rect x="23" y="1" width="94" height="18" class="nonterminal"/>
@@ -6341,33 +6169,31 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <rect x="283" y="22" width="14" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="287" y="34">*</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alltablecolumns" xlink:title="AllTableColumns" shape="rect">
             <rect x="283" y="50" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="287" y="62">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#complexexpressionlist" xlink:title="ComplexExpressionList" shape="rect">
-            <rect x="303" y="78" width="114" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="307" y="90">ComplexExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="303" y="106" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="307" y="118">SimpleExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="465" y="99" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="469" y="111">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="283" y="134" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="287" y="146">SelectBody</text></a><rect x="643" y="22" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="647" y="34">IGNORE</text>
-         <rect x="695" y="22" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="699" y="34">NULLS</text>
-         <rect x="761" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="765" y="13">)</text>
-         <rect x="511" y="192" width="8" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="515" y="204">.</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#function" xlink:title="Function" shape="rect">
-            <rect x="547" y="192" width="48" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="551" y="204">Function</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
-            <rect x="547" y="220" width="46" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="551" y="232">Column</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#keepexpression" xlink:title="KeepExpression" shape="rect">
-            <rect x="663" y="192" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="667" y="204">KeepExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m94 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h428 m-458 0 h20 m438 0 h20 m-478 0 q10 0 10 10 m458 0 q0 -10 10 -10 m-468 10 v1 m458 0 v-1 m-458 1 q0 10 10 10 m438 0 q10 0 10 -10 m-428 10 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m44 0 h4 m0 0 h6 m40 -77 h4 m14 0 h4 m0 0 h278 m-320 0 h20 m300 0 h20 m-340 0 q10 0 10 10 m320 0 q0 -10 10 -10 m-330 10 v8 m320 0 v-8 m-320 8 q0 10 10 10 m300 0 q10 0 10 -10 m-310 10 h4 m84 0 h4 m0 0 h208 m-310 -10 v20 m320 0 v-20 m-320 20 v8 m320 0 v-8 m-320 8 q0 10 10 10 m300 0 q10 0 10 -10 m-290 10 h4 m114 0 h4 m-142 0 h20 m122 0 h20 m-162 0 q10 0 10 10 m142 0 q0 -10 10 -10 m-152 10 v8 m142 0 v-8 m-142 8 q0 10 10 10 m122 0 q10 0 10 -10 m-132 10 h4 m104 0 h4 m0 0 h10 m40 -28 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m-290 -31 v20 m320 0 v-20 m-320 20 v36 m320 0 v-36 m-320 36 q0 10 10 10 m300 0 q10 0 10 -10 m-310 10 h4 m60 0 h4 m0 0 h232 m60 -133 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m44 0 h4 m0 0 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-314 170 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m8 0 h4 m20 0 h4 m48 0 h4 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m46 0 h4 m0 0 h2 m60 -49 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m23 -21 h-3"/>
-         <polygon points="781 180 789 176 789 184"/>
-         <polygon points="781 180 773 176 773 184"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="287" y="62">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="283" y="78" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="287" y="90">ExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="385" y="99" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="389" y="111">OrderByElements</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="283" y="127" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="287" y="139">Select</text></a><rect x="563" y="22" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="567" y="34">IGNORE</text>
+         <rect x="615" y="22" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="619" y="34">NULLS</text>
+         <rect x="681" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="685" y="13">)</text>
+         <rect x="431" y="185" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="435" y="197">.</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#function" xlink:title="Function" shape="rect">
+            <rect x="467" y="185" width="48" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="471" y="197">Function</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#column" xlink:title="Column" shape="rect">
+            <rect x="467" y="213" width="46" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="471" y="225">Column</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#keepexpression" xlink:title="KeepExpression" shape="rect">
+            <rect x="583" y="185" width="84" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="587" y="197">KeepExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m94 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h348 m-378 0 h20 m358 0 h20 m-398 0 q10 0 10 10 m378 0 q0 -10 10 -10 m-388 10 v1 m378 0 v-1 m-378 1 q0 10 10 10 m358 0 q10 0 10 -10 m-348 10 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m44 0 h4 m0 0 h6 m40 -77 h4 m14 0 h4 m0 0 h198 m-240 0 h20 m220 0 h20 m-260 0 q10 0 10 10 m240 0 q0 -10 10 -10 m-250 10 v8 m240 0 v-8 m-240 8 q0 10 10 10 m220 0 q10 0 10 -10 m-230 10 h4 m84 0 h4 m0 0 h128 m-230 -10 v20 m240 0 v-20 m-240 20 v8 m240 0 v-8 m-240 8 q0 10 10 10 m220 0 q10 0 10 -10 m-230 10 h4 m74 0 h4 m20 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m-210 -31 v20 m240 0 v-20 m-240 20 v29 m240 0 v-29 m-240 29 q0 10 10 10 m220 0 q10 0 10 -10 m-230 10 h4 m36 0 h4 m0 0 h176 m60 -126 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m44 0 h4 m0 0 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-314 163 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h102 m-132 0 h20 m112 0 h20 m-152 0 q10 0 10 10 m132 0 q0 -10 10 -10 m-142 10 v1 m132 0 v-1 m-132 1 q0 10 10 10 m112 0 q10 0 10 -10 m-122 10 h4 m8 0 h4 m20 0 h4 m48 0 h4 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m46 0 h4 m0 0 h2 m60 -49 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m23 -21 h-3"/>
+         <polygon points="701 173 709 169 709 177"/>
+         <polygon points="701 173 693 169 693 177"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#internalfunction" title="InternalFunction" shape="rect">InternalFunction</a></div>
-               <div>         ::= <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> '(' ( ( 'DISTINCT' | 'ALL' | 'UNIQUE' )? ( '*' | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a> | ( <a href="#complexexpressionlist" title="ComplexExpressionList" shape="rect">ComplexExpressionList</a> | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> ) <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? | <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a> ) )? ( 'IGNORE' 'NULLS' )? ')' ( '.' ( <a href="#function" title="Function" shape="rect">Function</a> | <a href="#column" title="Column" shape="rect">Column</a> ) )? <a href="#keepexpression" title="KeepExpression" shape="rect">KeepExpression</a>?</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> '(' ( ( 'DISTINCT' | 'ALL' | 'UNIQUE' )? ( '*' | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a> | <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a> <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? | <a href="#select" title="Select" shape="rect">Select</a> ) )? ( 'IGNORE' 'NULLS' )? ')' ( '.' ( <a href="#function" title="Function" shape="rect">Function</a> | <a href="#column" title="Column" shape="rect">Column</a> ) )? <a href="#keepexpression" title="KeepExpression" shape="rect">KeepExpression</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>function</a></li></ul></div></td></tr></tbody></table>
@@ -6380,7 +6206,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="741" height="177">
+        <svg xmlns="http://www.w3.org/2000/svg" width="711" height="177">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnamelist" xlink:title="RelObjectNameList" shape="rect">
             <rect x="23" y="1" width="94" height="18" class="nonterminal"/>
@@ -6395,23 +6221,23 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <rect x="283" y="22" width="14" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="287" y="34">*</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#alltablecolumns" xlink:title="AllTableColumns" shape="rect">
             <rect x="283" y="50" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="287" y="62">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="283" y="78" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="287" y="90">SimpleExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="415" y="99" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="419" y="111">OrderByElements</text></a><rect x="593" y="22" width="44" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="597" y="34">IGNORE</text>
-         <rect x="645" y="22" width="38" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="649" y="34">NULLS</text>
-         <rect x="711" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="715" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#keepexpression" xlink:title="KeepExpression" shape="rect">
-            <rect x="613" y="157" width="84" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="617" y="169">KeepExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m94 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h378 m-408 0 h20 m388 0 h20 m-428 0 q10 0 10 10 m408 0 q0 -10 10 -10 m-418 10 v1 m408 0 v-1 m-408 1 q0 10 10 10 m388 0 q10 0 10 -10 m-378 10 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m44 0 h4 m0 0 h6 m40 -77 h4 m14 0 h4 m0 0 h228 m-270 0 h20 m250 0 h20 m-290 0 q10 0 10 10 m270 0 q0 -10 10 -10 m-280 10 v8 m270 0 v-8 m-270 8 q0 10 10 10 m250 0 q10 0 10 -10 m-260 10 h4 m84 0 h4 m0 0 h158 m-260 -10 v20 m270 0 v-20 m-270 20 v8 m270 0 v-8 m-270 8 q0 10 10 10 m250 0 q10 0 10 -10 m-260 10 h4 m104 0 h4 m20 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m80 -98 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m44 0 h4 m0 0 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-162 135 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m23 -21 h-3"/>
-         <polygon points="731 145 739 141 739 149"/>
-         <polygon points="731 145 723 141 723 149"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+            <text class="nonterminal" x="287" y="62">AllTableColumns</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="283" y="78" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="287" y="90">ExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="385" y="99" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="389" y="111">OrderByElements</text></a><rect x="563" y="22" width="44" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="567" y="34">IGNORE</text>
+         <rect x="615" y="22" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="619" y="34">NULLS</text>
+         <rect x="681" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="685" y="13">)</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#keepexpression" xlink:title="KeepExpression" shape="rect">
+            <rect x="583" y="157" width="84" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="587" y="169">KeepExpression</text></a><path class="line" d="m17 10 h2 m0 0 h4 m94 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h348 m-378 0 h20 m358 0 h20 m-398 0 q10 0 10 10 m378 0 q0 -10 10 -10 m-388 10 v1 m378 0 v-1 m-378 1 q0 10 10 10 m358 0 q10 0 10 -10 m-348 10 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m24 0 h4 m0 0 h26 m-68 -10 v20 m78 0 v-20 m-78 20 v8 m78 0 v-8 m-78 8 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m44 0 h4 m0 0 h6 m40 -77 h4 m14 0 h4 m0 0 h198 m-240 0 h20 m220 0 h20 m-260 0 q10 0 10 10 m240 0 q0 -10 10 -10 m-250 10 v8 m240 0 v-8 m-240 8 q0 10 10 10 m220 0 q10 0 10 -10 m-230 10 h4 m84 0 h4 m0 0 h128 m-230 -10 v20 m240 0 v-20 m-240 20 v8 m240 0 v-8 m-240 8 q0 10 10 10 m220 0 q10 0 10 -10 m-230 10 h4 m74 0 h4 m20 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m80 -98 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m44 0 h4 m0 0 h4 m38 0 h4 m20 -21 h4 m12 0 h4 m2 0 l2 0 m2 0 l2 0 m2 0 l2 0 m-162 135 l2 0 m2 0 l2 0 m2 0 l2 0 m22 0 h10 m0 0 h82 m-112 0 h20 m92 0 h20 m-132 0 q10 0 10 10 m112 0 q0 -10 10 -10 m-122 10 v1 m112 0 v-1 m-112 1 q0 10 10 10 m92 0 q10 0 10 -10 m-102 10 h4 m84 0 h4 m23 -21 h-3"/>
+         <polygon points="701 145 709 141 709 149"/>
+         <polygon points="701 145 693 141 693 149"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#simplefunction" title="SimpleFunction" shape="rect">SimpleFunction</a></div>
-               <div>         ::= <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> '(' ( ( 'DISTINCT' | 'ALL' | 'UNIQUE' )? ( '*' | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a> | <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ) )? ( 'IGNORE' 'NULLS' )? ')' <a href="#keepexpression" title="KeepExpression" shape="rect">KeepExpression</a>?</div></xhtml:code></xhtml:div>
+               <div>         ::= <a href="#relobjectnamelist" title="RelObjectNameList" shape="rect">RelObjectNameList</a> '(' ( ( 'DISTINCT' | 'ALL' | 'UNIQUE' )? ( '*' | <a href="#alltablecolumns" title="AllTableColumns" shape="rect">AllTableColumns</a> | <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a> <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ) )? ( 'IGNORE' 'NULLS' )? ')' <a href="#keepexpression" title="KeepExpression" shape="rect">KeepExpression</a>?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>jsonexpression</a></li></ul></div></td></tr></tbody></table>
@@ -6468,7 +6294,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="731" height="42">
+        <svg xmlns="http://www.w3.org/2000/svg" width="701" height="42">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="23" y="1" width="86" height="18" class="terminal" rx="4"/>
@@ -6476,50 +6302,24 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
          <rect x="117" y="1" width="12" height="18" class="terminal" rx="4"/>
          <text class="terminal" x="121" y="13">(</text>
          <rect x="157" y="22" width="50" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="161" y="34">DISTINCT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlist" xlink:title="SimpleExpressionList" shape="rect">
-            <rect x="235" y="1" width="104" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="239" y="13">SimpleExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
-            <rect x="367" y="22" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="371" y="34">OrderByElements</text></a><rect x="505" y="22" width="64" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="509" y="34">SEPARATOR</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
-            <rect x="577" y="22" width="90" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="581" y="34">S_CHAR_LITERAL</text></a><rect x="695" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="699" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m86 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m20 -21 h4 m104 0 h4 m20 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h160 m-190 0 h20 m170 0 h20 m-210 0 q10 0 10 10 m190 0 q0 -10 10 -10 m-200 10 v1 m190 0 v-1 m-190 1 q0 10 10 10 m170 0 q10 0 10 -10 m-180 10 h4 m64 0 h4 m0 0 h4 m90 0 h4 m20 -21 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="721 10 729 6 729 14"/>
-         <polygon points="721 10 713 6 713 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="161" y="34">DISTINCT</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expressionlist" xlink:title="ExpressionList" shape="rect">
+            <rect x="235" y="1" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="239" y="13">ExpressionList</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#orderbyelements" xlink:title="OrderByElements" shape="rect">
+            <rect x="337" y="22" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="341" y="34">OrderByElements</text></a><rect x="475" y="22" width="64" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="479" y="34">SEPARATOR</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#s-char-literal" xlink:title="S_CHAR_LITERAL" shape="rect">
+            <rect x="547" y="22" width="90" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="551" y="34">S_CHAR_LITERAL</text></a><rect x="665" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="669" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m86 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h48 m-78 0 h20 m58 0 h20 m-98 0 q10 0 10 10 m78 0 q0 -10 10 -10 m-88 10 v1 m78 0 v-1 m-78 1 q0 10 10 10 m58 0 q10 0 10 -10 m-68 10 h4 m50 0 h4 m20 -21 h4 m74 0 h4 m20 0 h10 m0 0 h88 m-118 0 h20 m98 0 h20 m-138 0 q10 0 10 10 m118 0 q0 -10 10 -10 m-128 10 v1 m118 0 v-1 m-118 1 q0 10 10 10 m98 0 q10 0 10 -10 m-108 10 h4 m90 0 h4 m40 -21 h10 m0 0 h160 m-190 0 h20 m170 0 h20 m-210 0 q10 0 10 10 m190 0 q0 -10 10 -10 m-200 10 v1 m190 0 v-1 m-190 1 q0 10 10 10 m170 0 q10 0 10 -10 m-180 10 h4 m64 0 h4 m0 0 h4 m90 0 h4 m20 -21 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="691 10 699 6 699 14"/>
+         <polygon points="691 10 683 6 683 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#mysqlgroupconcat" title="MySQLGroupConcat" shape="rect">MySQLGroupConcat</a></div>
-               <div>         ::= 'GROUP_CONCAT' '(' 'DISTINCT'? <a href="#simpleexpressionlist" title="SimpleExpressionList" shape="rect">SimpleExpressionList</a> <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'SEPARATOR' <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> )? ')'</div></xhtml:code></xhtml:div>
+               <div>         ::= 'GROUP_CONCAT' '(' 'DISTINCT'? <a href="#expressionlist" title="ExpressionList" shape="rect">ExpressionList</a> <a href="#orderbyelements" title="OrderByElements" shape="rect">OrderByElements</a>? ( 'SEPARATOR' <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> )? ')'</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
-
-        
-======================================================================================================================
-        ValueListExpression
-======================================================================================================================
-
-        
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="271" height="21">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <rect x="23" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="27" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#simpleexpressionlistatleasttwoitems" xlink:title="SimpleExpressionListAtLeastTwoItems" shape="rect">
-            <rect x="43" y="1" width="184" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="47" y="13">SimpleExpressionListAtLeastTwoItems</text></a><rect x="235" y="1" width="12" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="239" y="13">)</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m12 0 h4 m0 0 h4 m184 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
-         <polygon points="261 10 269 6 269 14"/>
-         <polygon points="261 10 253 6 253 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#valuelistexpression" title="ValueListExpression" shape="rect">ValueListExpression</a></div>
-               <div>         ::= '(' <a href="#simpleexpressionlistatleasttwoitems" title="SimpleExpressionListAtLeastTwoItems" shape="rect">SimpleExpressionListAtLeastTwoItems</a> ')'</div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Referenced by:
-                                    <ul><li><a>comparisonitem</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -6657,7 +6457,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= <a href="#relobjectname" title="RelObjectName" shape="rect">RelObjectName</a> <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> <a href="#createparameter" title="CreateParameter" shape="rect">CreateParameter</a>*</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>createtable</a></li><li><a>declare</a></li><li><a>rowconstructor</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>castexpression</a></li><li><a>createtable</a></li><li><a>declare</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -7010,7 +6810,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
                <div>         ::= ( 'ARRAY' '&lt;' <a href="#coldatatype" title="ColDataType" shape="rect">ColDataType</a> '&gt;' | ( 'BYTES' | 'STRING' | 'JSON' ) '(' ( <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> | <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> ) ')' | ( 'CHARACTER' | 'BIT' ) 'VARYING'? | 'DOUBLE' 'PRECISION'? | ( <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> | <a href="#s-quoted-identifier" title="S_QUOTED_IDENTIFIER" shape="rect">S_QUOTED_IDENTIFIER</a> | <a href="#k-datetimeliteral" title="K_DATETIMELITERAL" shape="rect">K_DATETIMELITERAL</a> | <a href="#k-date-literal" title="K_DATE_LITERAL" shape="rect">K_DATE_LITERAL</a> | 'XML' | 'INTERVAL' | <a href="#dt-zone" title="DT_ZONE" shape="rect">DT_ZONE</a> | 'CHAR' | 'SET' | 'BINARY' | 'JSON' | 'STRING' ) ( '.' ( <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> | <a href="#s-quoted-identifier" title="S_QUOTED_IDENTIFIER" shape="rect">S_QUOTED_IDENTIFIER</a> ) )? | ( 'UNSIGNED' | 'SIGNED' ) <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a>? ) ( '(' ( ( <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a> ( 'BYTE' | 'CHAR' )? | <a href="#s-char-literal" title="S_CHAR_LITERAL" shape="rect">S_CHAR_LITERAL</a> | <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> | 'CHAR' ) ','? )* ')' )? ( '[' <a href="#s-long" title="S_LONG" shape="rect">S_LONG</a>? ']' )* ( 'CHARACTER' 'SET' ( <a href="#s-identifier" title="S_IDENTIFIER" shape="rect">S_IDENTIFIER</a> | 'BINARY' ) )?</div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
-                                    <ul><li><a>alias</a></li><li><a>alterexpressioncolumndatatype</a></li><li><a>castexpression</a></li><li><a>coldatatype</a></li><li><a>columndefinition</a></li><li><a>createparameter</a></li><li><a>declare</a></li><li><a>jsonexpression</a></li><li><a>primaryexpression</a></li><li><a>safecastexpression</a></li><li><a>trycastexpression</a></li><li><a>xmlserializeexpr</a></li></ul></div></td></tr></tbody></table>
+                                    <ul><li><a>alias</a></li><li><a>alterexpressioncolumndatatype</a></li><li><a>castexpression</a></li><li><a>coldatatype</a></li><li><a>columndefinition</a></li><li><a>createparameter</a></li><li><a>declare</a></li><li><a>jsonexpression</a></li><li><a>primaryexpression</a></li><li><a>xmlserializeexpr</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================
@@ -7145,7 +6945,7 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
         
 .. raw:: html
 
-        <svg xmlns="http://www.w3.org/2000/svg" width="461" height="49">
+        <svg xmlns="http://www.w3.org/2000/svg" width="437" height="49">
          <polygon points="9 10 1 6 1 14"/>
          <polygon points="17 10 9 6 9 14"/>
          <rect x="43" y="1" width="36" height="18" class="terminal" rx="4"/>
@@ -7158,14 +6958,14 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
             <text class="nonterminal" x="165" y="13">Table</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#columnsnameslist" xlink:title="ColumnsNamesList" shape="rect">
             <rect x="223" y="22" width="98" height="18" class="nonterminal"/>
             <text class="nonterminal" x="227" y="34">ColumnsNamesList</text></a><rect x="349" y="1" width="20" height="18" class="terminal" rx="4"/>
-         <text class="terminal" x="353" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selectbody" xlink:title="SelectBody" shape="rect">
-            <rect x="377" y="1" width="60" height="18" class="nonterminal"/>
-            <text class="nonterminal" x="381" y="13">SelectBody</text></a><path class="line" d="m17 10 h2 m20 0 h4 m36 0 h4 m0 0 h12 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m20 -28 h4 m34 0 h4 m0 0 h4 m34 0 h4 m20 0 h10 m0 0 h96 m-126 0 h20 m106 0 h20 m-146 0 q10 0 10 10 m126 0 q0 -10 10 -10 m-136 10 v1 m126 0 v-1 m-126 1 q0 10 10 10 m106 0 q10 0 10 -10 m-116 10 h4 m98 0 h4 m20 -21 h4 m20 0 h4 m0 0 h4 m60 0 h4 m3 0 h-3"/>
-         <polygon points="451 10 459 6 459 14"/>
-         <polygon points="451 10 443 6 443 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <text class="terminal" x="353" y="13">AS</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select" xlink:title="Select" shape="rect">
+            <rect x="377" y="1" width="36" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="381" y="13">Select</text></a><path class="line" d="m17 10 h2 m20 0 h4 m36 0 h4 m0 0 h12 m-76 0 h20 m56 0 h20 m-96 0 q10 0 10 10 m76 0 q0 -10 10 -10 m-86 10 v8 m76 0 v-8 m-76 8 q0 10 10 10 m56 0 q10 0 10 -10 m-66 10 h4 m48 0 h4 m20 -28 h4 m34 0 h4 m0 0 h4 m34 0 h4 m20 0 h10 m0 0 h96 m-126 0 h20 m106 0 h20 m-146 0 q10 0 10 10 m126 0 q0 -10 10 -10 m-136 10 v1 m126 0 v-1 m-126 1 q0 10 10 10 m106 0 q10 0 10 -10 m-116 10 h4 m98 0 h4 m20 -21 h4 m20 0 h4 m0 0 h4 m36 0 h4 m3 0 h-3"/>
+         <polygon points="427 10 435 6 435 14"/>
+         <polygon points="427 10 419 6 419 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
          <xhtml:div class="ebnf"><xhtml:code>
                <div><a href="#alterview" title="AlterView" shape="rect">AlterView</a></div>
-               <div>         ::= ( 'ALTER' | 'REPLACE' ) 'VIEW' <a href="#table" title="Table" shape="rect">Table</a> <a href="#columnsnameslist" title="ColumnsNamesList" shape="rect">ColumnsNamesList</a>? 'AS' <a href="#selectbody" title="SelectBody" shape="rect">SelectBody</a></div></xhtml:code></xhtml:div>
+               <div>         ::= ( 'ALTER' | 'REPLACE' ) 'VIEW' <a href="#table" title="Table" shape="rect">Table</a> <a href="#columnsnameslist" title="ColumnsNamesList" shape="rect">ColumnsNamesList</a>? 'AS' <a href="#select" title="Select" shape="rect">Select</a></div></xhtml:code></xhtml:div>
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>singlestatement</a></li></ul></div></td></tr></tbody></table>
@@ -8645,6 +8445,125 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
       </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
                                     Referenced by:
                                     <ul><li><a>statement</a></li><li><a>statements</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        IdentifierChain
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="187" height="49">
+         <polygon points="9 38 1 34 1 42"/>
+         <polygon points="17 38 9 34 9 42"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#relobjectnameext2" xlink:title="RelObjectNameExt2" shape="rect">
+            <rect x="43" y="29" width="100" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="41">RelObjectNameExt2</text></a><rect x="43" y="1" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="47" y="13">.</text>
+         <path class="line" d="m17 38 h2 m20 0 h4 m100 0 h4 m-128 0 l20 0 m-1 0 q-9 0 -9 -10 l0 -8 q0 -10 10 -10 m108 28 l20 0 m-20 0 q10 0 10 -10 l0 -8 q0 -10 -10 -10 m-108 0 h4 m8 0 h4 m0 0 h92 m23 28 h-3"/>
+         <polygon points="177 38 185 34 185 42"/>
+         <polygon points="177 38 169 34 169 42"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#identifierchain" title="IdentifierChain" shape="rect">IdentifierChain</a></div>
+               <div>         ::= <a href="#relobjectnameext2" title="RelObjectNameExt2" shape="rect">RelObjectNameExt2</a> ( '.' <a href="#relobjectnameext2" title="RelObjectNameExt2" shape="rect">RelObjectNameExt2</a> )*</div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>jdbcnamedparameter</a></li><li><a>set</a></li><li><a>transcodingfunction</a></li><li><a>uservariable</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        CharacterPrimary
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="189" height="49">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#transcodingfunction" xlink:title="TranscodingFunction" shape="rect">
+            <rect x="43" y="1" width="102" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="13">TranscodingFunction</text></a><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#trimfunction" xlink:title="TrimFunction" shape="rect">
+            <rect x="43" y="29" width="66" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="47" y="41">TrimFunction</text></a><path class="line" d="m17 10 h2 m20 0 h4 m102 0 h4 m-130 0 h20 m110 0 h20 m-150 0 q10 0 10 10 m130 0 q0 -10 10 -10 m-140 10 v8 m130 0 v-8 m-130 8 q0 10 10 10 m110 0 q10 0 10 -10 m-120 10 h4 m66 0 h4 m0 0 h36 m23 -28 h-3"/>
+         <polygon points="179 10 187 6 187 14"/>
+         <polygon points="179 10 171 6 171 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#characterprimary" title="CharacterPrimary" shape="rect">CharacterPrimary</a></div>
+               <div>         ::= <a href="#transcodingfunction" title="TranscodingFunction" shape="rect">TranscodingFunction</a></div>
+               <div>           | <a href="#trimfunction" title="TrimFunction" shape="rect">TrimFunction</a></div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>primaryexpression</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        TranscodingFunction
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="335" height="21">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">CONVERT</text>
+         <rect x="83" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="87" y="13">(</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+            <rect x="103" y="1" width="60" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="107" y="13">Expression</text></a><rect x="171" y="1" width="38" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="175" y="13">USING</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#identifierchain" xlink:title="IdentifierChain" shape="rect">
+            <rect x="217" y="1" width="74" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="221" y="13">IdentifierChain</text></a><rect x="299" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="303" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m52 0 h4 m0 0 h4 m12 0 h4 m0 0 h4 m60 0 h4 m0 0 h4 m38 0 h4 m0 0 h4 m74 0 h4 m0 0 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="325 10 333 6 333 14"/>
+         <polygon points="325 10 317 6 317 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#transcodingfunction" title="TranscodingFunction" shape="rect">TranscodingFunction</a></div>
+               <div>         ::= 'CONVERT' '(' <a href="#expression" title="Expression" shape="rect">Expression</a> 'USING' <a href="#identifierchain" title="IdentifierChain" shape="rect">IdentifierChain</a> ')'</div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>characterprimary</a></li></ul></div></td></tr></tbody></table>
+
+        
+======================================================================================================================
+        TrimFunction
+======================================================================================================================
+
+        
+.. raw:: html
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="519" height="98">
+         <polygon points="9 10 1 6 1 14"/>
+         <polygon points="17 10 9 6 9 14"/>
+         <rect x="23" y="1" width="32" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="27" y="13">TRIM</text>
+         <rect x="63" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="67" y="13">(</text>
+         <rect x="103" y="22" width="48" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="107" y="34">LEADING</text>
+         <rect x="103" y="50" width="52" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="107" y="62">TRAILING</text>
+         <rect x="103" y="78" width="34" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="107" y="90">BOTH</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+            <rect x="203" y="22" width="60" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="207" y="34">Expression</text></a><rect x="331" y="22" width="8" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="335" y="34">,</text>
+         <rect x="331" y="50" width="36" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="335" y="62">FROM</text><a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#expression" xlink:title="Expression" shape="rect">
+            <rect x="395" y="22" width="60" height="18" class="nonterminal"/>
+            <text class="nonterminal" x="399" y="34">Expression</text></a><rect x="483" y="1" width="12" height="18" class="terminal" rx="4"/>
+         <text class="terminal" x="487" y="13">)</text>
+         <path class="line" d="m17 10 h2 m0 0 h4 m32 0 h4 m0 0 h4 m12 0 h4 m20 0 h10 m0 0 h50 m-80 0 h20 m60 0 h20 m-100 0 q10 0 10 10 m80 0 q0 -10 10 -10 m-90 10 v1 m80 0 v-1 m-80 1 q0 10 10 10 m60 0 q10 0 10 -10 m-70 10 h4 m48 0 h4 m0 0 h4 m-70 -10 v20 m80 0 v-20 m-80 20 v8 m80 0 v-8 m-80 8 q0 10 10 10 m60 0 q10 0 10 -10 m-70 10 h4 m52 0 h4 m-70 -10 v20 m80 0 v-20 m-80 20 v8 m80 0 v-8 m-80 8 q0 10 10 10 m60 0 q10 0 10 -10 m-70 10 h4 m34 0 h4 m0 0 h18 m40 -77 h10 m0 0 h58 m-88 0 h20 m68 0 h20 m-108 0 q10 0 10 10 m88 0 q0 -10 10 -10 m-98 10 v1 m88 0 v-1 m-88 1 q0 10 10 10 m68 0 q10 0 10 -10 m-78 10 h4 m60 0 h4 m40 -21 h10 m0 0 h142 m-172 0 h20 m152 0 h20 m-192 0 q10 0 10 10 m172 0 q0 -10 10 -10 m-182 10 v1 m172 0 v-1 m-172 1 q0 10 10 10 m152 0 q10 0 10 -10 m-142 10 h4 m8 0 h4 m0 0 h28 m-64 0 h20 m44 0 h20 m-84 0 q10 0 10 10 m64 0 q0 -10 10 -10 m-74 10 v8 m64 0 v-8 m-64 8 q0 10 10 10 m44 0 q10 0 10 -10 m-54 10 h4 m36 0 h4 m20 -28 h4 m60 0 h4 m20 -21 h4 m12 0 h4 m3 0 h-3"/>
+         <polygon points="509 10 517 6 517 14"/>
+         <polygon points="509 10 501 6 501 14"/></svg><table xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml">
+         <xhtml:div class="ebnf"><xhtml:code>
+               <div><a href="#trimfunction" title="TrimFunction" shape="rect">TrimFunction</a></div>
+               <div>         ::= 'TRIM' '(' ( 'LEADING' | 'TRAILING' | 'BOTH' )? <a href="#expression" title="Expression" shape="rect">Expression</a>? ( ( ',' | 'FROM' ) <a href="#expression" title="Expression" shape="rect">Expression</a> )? ')'</div></xhtml:code></xhtml:div>
+      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
+                                    Referenced by:
+                                    <ul><li><a>characterprimary</a></li></ul></div></td></tr></tbody></table>
 
         
 ======================================================================================================================

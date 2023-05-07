@@ -142,12 +142,12 @@ public class InsertTest {
         String statement = "INSERT INTO mytable SET col1 = 12, col2 = name1 * name2";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", insert.getTable().getName());
-        assertEquals(2, insert.getSetColumns().size());
-        assertEquals("col1", insert.getSetColumns().get(0).getColumnName());
-        assertEquals("col2", insert.getSetColumns().get(1).getColumnName());
-        assertEquals(2, insert.getSetExpressionList().size());
-        assertEquals("12", insert.getSetExpressionList().get(0).toString());
-        assertEquals("name1 * name2", insert.getSetExpressionList().get(1).toString());
+        assertEquals(2, insert.getSetUpdateSets().size());
+        assertEquals("col1", insert.getSetUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col2", insert.getSetUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("12", insert.getSetUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals("name1 * name2",
+                insert.getSetUpdateSets().get(1).getValues().get(0).toString());
         assertEquals(statement, "" + insert);
     }
 
@@ -167,10 +167,11 @@ public class InsertTest {
         assertEquals(0,
                 ((LongValue) insert.getValues().getExpressions().get(1))
                         .getValue());
-        assertEquals(1, insert.getDuplicateUpdateColumns().size());
-        assertEquals("COUNTER", insert.getDuplicateUpdateColumns().get(0).getColumnName());
-        assertEquals(1, insert.getDuplicateUpdateExpressionList().size());
-        assertEquals("COUNTER + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
+        assertEquals(1, insert.getDuplicateUpdateSets().size());
+        assertEquals("COUNTER",
+                insert.getDuplicateUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("COUNTER + 1",
+                insert.getDuplicateUpdateSets().get(0).getValues().get(0).toString());
         assertFalse(insert.isUseSelectBrackets());
         assertTrue(insert.isUseDuplicate());
         assertEquals(statement, "" + insert);
@@ -182,16 +183,18 @@ public class InsertTest {
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", insert.getTable().getName());
-        assertEquals(1, insert.getSetColumns().size());
-        assertEquals("col1", insert.getSetColumns().get(0).getColumnName());
-        assertEquals(1, insert.getSetExpressionList().size());
-        assertEquals("122", insert.getSetExpressionList().get(0).toString());
-        assertEquals(2, insert.getDuplicateUpdateColumns().size());
-        assertEquals("col2", insert.getDuplicateUpdateColumns().get(0).getColumnName());
-        assertEquals("col3", insert.getDuplicateUpdateColumns().get(1).getColumnName());
-        assertEquals(2, insert.getDuplicateUpdateExpressionList().size());
-        assertEquals("col2 + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
-        assertEquals("'saint'", insert.getDuplicateUpdateExpressionList().get(1).toString());
+        assertEquals(1, insert.getSetUpdateSets().size());
+        assertEquals("col1", insert.getSetUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("122", insert.getSetUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals(2, insert.getDuplicateUpdateSets().size());
+        assertEquals("col2",
+                insert.getDuplicateUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col3",
+                insert.getDuplicateUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("col2 + 1",
+                insert.getDuplicateUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals("'saint'",
+                insert.getDuplicateUpdateSets().get(1).getValues().get(0).toString());
         assertEquals(statement, "" + insert);
     }
 

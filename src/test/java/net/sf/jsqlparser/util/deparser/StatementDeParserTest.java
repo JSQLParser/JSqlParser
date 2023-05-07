@@ -93,12 +93,15 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeparsersWhenDeParsingInsert() {
         Insert insert = new Insert();
         Table table = new Table();
-        List<Column> duplicateUpdateColumns = new ArrayList<Column>();
-        List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
+        List<UpdateSet> duplicateUpdateSets = new ArrayList<>();
         Column duplicateUpdateColumn1 = new Column();
-        Column duplicateUpdateColumn2 = new Column();
         Expression duplicateUpdateExpression1 = mock(Expression.class);
+        duplicateUpdateSets.add(new UpdateSet(duplicateUpdateColumn1, duplicateUpdateExpression1));
+
+        Column duplicateUpdateColumn2 = new Column();
         Expression duplicateUpdateExpression2 = mock(Expression.class);
+        duplicateUpdateSets.add(new UpdateSet(duplicateUpdateColumn2, duplicateUpdateExpression2));
+
         PlainSelect select = mock(PlainSelect.class);
         List<WithItem> withItemsList = new ArrayList<WithItem>();
         WithItem withItem1 = spy(new WithItem());
@@ -109,14 +112,7 @@ public class StatementDeParserTest {
 
         insert.setSelect(select);
         insert.setTable(table);
-        insert.setUseDuplicate(true);
-        insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        duplicateUpdateColumns.add(duplicateUpdateColumn1);
-        duplicateUpdateColumns.add(duplicateUpdateColumn2);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        insert.withDuplicateUpdateSets(duplicateUpdateSets);
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
         withItem1.setSelect(withItem1SubSelect);

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
@@ -48,22 +49,26 @@ public class InsertValidator extends AbstractValidator<Insert> {
             validateOptionalExpressions(insert.getValues().getExpressions());
         }
 
-        if (insert.isUseSet()) {
+        if (insert.getSetUpdateSets() != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             // TODO is this useful?
             // validateModelCondition (insert.getSetColumns().size() !=
             // insert.getSetExpressionList().size(), "model-error");
-            insert.getSetColumns().forEach(c -> c.accept(v));
-            insert.getSetExpressionList().forEach(c -> c.accept(v));
+            for (UpdateSet updateSet : insert.getSetUpdateSets()) {
+                updateSet.getColumns().forEach(c -> c.accept(v));
+                updateSet.getValues().forEach(c -> c.accept(v));
+            }
         }
 
-        if (insert.isUseDuplicate()) {
+        if (insert.getDuplicateUpdateSets() != null) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             // TODO is this useful?
-            // validateModelCondition (insert.getDuplicateUpdateColumns().size() !=
-            // insert.getDuplicateUpdateExpressionList().size(), "model-error");
-            insert.getDuplicateUpdateColumns().forEach(c -> c.accept(v));
-            insert.getDuplicateUpdateExpressionList().forEach(c -> c.accept(v));
+            // validateModelCondition (insert.getSetColumns().size() !=
+            // insert.getSetExpressionList().size(), "model-error");
+            for (UpdateSet updateSet : insert.getDuplicateUpdateSets()) {
+                updateSet.getColumns().forEach(c -> c.accept(v));
+                updateSet.getValues().forEach(c -> c.accept(v));
+            }
         }
 
         if (isNotEmpty(insert.getReturningExpressionList())) {

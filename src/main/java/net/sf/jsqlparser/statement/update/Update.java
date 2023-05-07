@@ -304,6 +304,7 @@ public class Update implements Statement {
             }
         }
 
+        b.append(" SET ");
         UpdateSet.appendUpdateSetsTo(b, updateSets);
 
         if (outputClause != null) {

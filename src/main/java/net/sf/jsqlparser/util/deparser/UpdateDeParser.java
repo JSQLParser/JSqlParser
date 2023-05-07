@@ -17,7 +17,6 @@ import net.sf.jsqlparser.statement.select.OrderByVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 
 import java.util.Iterator;
 
@@ -68,17 +67,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        ExpressionListDeParser expressionListDeParser =
-                new ExpressionListDeParser(expressionVisitor, buffer);
-        int j = 0;
-        for (UpdateSet updateSet : update.getUpdateSets()) {
-            if (j++ > 0) {
-                buffer.append(", ");
-            }
-            expressionListDeParser.deParse(updateSet.getColumns());
-            buffer.append(" = ");
-            expressionListDeParser.deParse(updateSet.getValues());
-        }
+        deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
 
         if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);

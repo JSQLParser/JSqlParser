@@ -44,7 +44,7 @@ public class UpdateSet implements Serializable {
         this.columns = Objects.requireNonNull(columns);
     }
 
-    public ExpressionList getValues() {
+    public ExpressionList<?> getValues() {
         return values;
     }
 
@@ -89,8 +89,6 @@ public class UpdateSet implements Serializable {
 
     public final static StringBuilder appendUpdateSetsTo(StringBuilder builder,
             Collection<UpdateSet> updateSets) {
-        builder.append(" SET ");
-
         int j = 0;
         for (UpdateSet updateSet : updateSets) {
             updateSet.appendTo(builder, j);
