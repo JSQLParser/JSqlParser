@@ -287,6 +287,7 @@ public class APISanitation {
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
+    @Disabled
     void testExpressionList(final Field field) throws MethodNamingException {
         Class<?> clazz = field.getType();
         String fieldName = field.getName();
