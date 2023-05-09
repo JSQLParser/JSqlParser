@@ -39,7 +39,7 @@ interface Visitor<T> {
 
 
 public class APISanitationTest {
-    private final static TreeSet<Class<?>> CLASSES = new TreeSet<>(new Comparator<>() {
+    private final static TreeSet<Class<?>> CLASSES = new TreeSet<>(new Comparator<Class<?>>() {
         @Override
         public int compare(Class o1, Class o2) {
             return o1.getName().compareTo(o2.getName());
@@ -94,7 +94,7 @@ public class APISanitationTest {
 
     @BeforeAll
     static void findRelevantClasses() {
-        findClasses(new Visitor<>() {
+        findClasses(new Visitor<String>() {
             @Override
             public boolean visit(String clazz) {
                 if (clazz.startsWith("net.sf.jsqlparser.statement")
@@ -129,7 +129,7 @@ public class APISanitationTest {
      */
 
     private static Stream<Field> fields() {
-        TreeSet<Field> fields = new TreeSet<>(new Comparator<>() {
+        TreeSet<Field> fields = new TreeSet<>(new Comparator<Field>() {
             @Override
             public int compare(Field o1, Field o2) {
                 return o1.toString().compareTo(o2.toString());

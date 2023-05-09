@@ -112,10 +112,16 @@ java {
     withSourcesJar()
     withJavadocJar()
 
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
     // needed for XML-Doclet to work (since Doclet changed again with Java 13)
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+}
+
+compileJava {
+    options.release = 8
 }
 
 javadoc {
