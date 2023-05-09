@@ -19,10 +19,13 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 interface Visitor<T> {
@@ -240,7 +243,7 @@ public class APISanitationTest {
                     }
                 } catch (Exception ex) {
                     LOGGER.warning(
-                            "Could not find the field " + fieldName + " for " + clazz.getName());
+                            "Could not find the field111 " + fieldName + " for " + clazz.getName());
                 }
 
                 StackTraceElement stackTraceElement = new StackTraceElement(
@@ -287,7 +290,6 @@ public class APISanitationTest {
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
-    @Disabled
     void testExpressionList(final Field field) throws MethodNamingException {
         Class<?> clazz = field.getType();
         String fieldName = field.getName();
@@ -304,18 +306,46 @@ public class APISanitationTest {
             if (isExpressionList) {
                 String message = fieldName + " is an Expression List";
 
+                String pureFieldName = fieldName.lastIndexOf("$") > 0
+                                       ? fieldName.substring(fieldName.lastIndexOf("$"))
+                                       : fieldName;
+
+                Class<?> declaringClazz = field.getDeclaringClass();
+                while (declaringClazz.getDeclaringClass()!=null) {
+                    declaringClazz = declaringClazz.getDeclaringClass();
+                }
+                String pureDeclaringClassName = declaringClazz.getCanonicalName();
+
+
                 File file = new File(
                         "src/main/java/"
-                                + field.getDeclaringClass().getCanonicalName().replace(".", "/")
+                                + pureDeclaringClassName.replace(".", "/")
                                         .concat(".java"));
 
                 int position = 1;
+                Pattern pattern = Pattern.compile("\\s" + field.getType().getSimpleName() + "(<\\w*>)?(\\s*\\w*,?)*\\s*\\W", Pattern.MULTILINE);
                 try (FileReader reader = new FileReader(file)) {
-                    for (String line : IOUtils.readLines(reader)) {
-                        if (line.contains(fieldName)) {
-                            break;
+                    List<String> lines = IOUtils.readLines(reader);
+                    StringBuilder builder = new StringBuilder();
+                    for (String s: lines) {
+                        builder.append(s).append("\n");
+                    }
+                    final Matcher matcher = pattern.matcher(builder);
+                    while (matcher.find()) {
+                        String group0=matcher.group(0);
+                        if ( group0.contains(pureFieldName)
+                             && (group0.endsWith("=") || group0.endsWith(";")) ) {
+                           int pos = matcher.start(0);
+                           int readCharacters = 0;
+                           for (String line : lines) {
+                               readCharacters+=line.length()+1;
+                               if (readCharacters>=pos) {
+                                   break;
+                               }
+                               position++;
+                           }
+                           break;
                         }
-                        position++;
                     }
                 } catch (Exception ex) {
                     LOGGER.warning(
