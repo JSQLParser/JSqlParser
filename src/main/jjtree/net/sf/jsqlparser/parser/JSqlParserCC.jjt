@@ -736,13 +736,11 @@ Block Block() #Block : {
     (<ST_SEMICOLON>)*
     try {
        (
-           (
-                stm = SingleStatement()
-                | stm = Block()
-           )
-           <ST_SEMICOLON>
-           { list.add(stm); }
+            stm = SingleStatement()
+            | stm = Block()
        )
+       <ST_SEMICOLON>
+       { list.add(stm); }
 
         (
              (
@@ -908,7 +906,7 @@ DeclareStatement Declare(): {
 SetStatement Set(): {
     String namePart;
     Object name;
-    ArrayList<Expression> expList;
+    ExpressionList expList;
     boolean useEqual = false;
     SetStatement set;
     Expression exp = null;
@@ -917,43 +915,50 @@ SetStatement Set(): {
 }
 {
     <K_SET>
+    [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
     (
-
-        [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
+        LOOKAHEAD(2)
+        <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+        |
         (
-            LOOKAHEAD(2)
-            <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
-            |
-            (
-                name = UserVariable() ["=" { useEqual=true; } ]
-            )
-            |
-            (
-                name = IdentifierChain()
-                ["=" { useEqual=true; } ]
-            )
+            name = UserVariable() ["=" { useEqual=true; } ]
+        )
+        |
+        (
+            name = IdentifierChain()
+            ["=" { useEqual=true; } ]
         )
     )
     exp=Expression()
-    {expList = new ArrayList<Expression>(); expList.add(exp); }
+    {
+        expList = new ExpressionList();
+        expList.add(exp);
+        set = new SetStatement(name, expList)
+            .withUseEqual(useEqual)
+            .withEffectParameter(effectParameter);
+    }
 
-    { set = new SetStatement(name,expList).withUseEqual(useEqual).withEffectParameter(effectParameter); }
     (
         { useEqual=false; }
         ","
         (LOOKAHEAD(3)
             (
-              ( LOOKAHEAD(2)
-                  <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
-                | (name = RelObjectNameExt() ["=" { useEqual=true; } ])
-              )
-              exp=Expression()
-              {expList = new ArrayList<Expression>();
-                expList.add(exp);
-                set.add(name, expList, useEqual);}
+                ( LOOKAHEAD(2)
+                    <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
+                    |
+                    (name = RelObjectNameExt() ["=" { useEqual=true; } ])
+                )
+                exp=Expression()
+                {
+                    expList = new ExpressionList();
+                    expList.add(exp);
+                    set.add(name, expList, useEqual);
+                }
             )
-            | exp=Expression() { expList.add(exp); }
-         ))*
+            |
+            exp=Expression() { expList.add(exp); }
+         )
+    )*
     { return set; }
 }
 
@@ -964,8 +969,7 @@ ResetStatement Reset(): {
 }
 {
     <K_RESET> ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> {name = "Time Zone"; } | name = RelObjectName() | all = <K_ALL> {name = all.image; } )
-    { reset = new ResetStatement(name); }
-    { return reset; }
+    { reset = new ResetStatement(name);   return reset; }
 }
 
 RenameTableStatement RenameTableStatement(): {
@@ -1503,16 +1507,12 @@ Upsert Upsert():
 {
     Upsert upsert = new Upsert();
     Table table = null;
-    Column tableColumn = null;
-    List<Column> columns = new ArrayList<Column>();
-    List<Expression> primaryExpList = new ArrayList<Expression>();
-    ExpressionList itemsList = null;
-    Expression exp = null;
+    ExpressionList<Column> columns;
+    List<UpdateSet> updateSets;
+
     List<SelectItem> returning = null;
     Select select = null;
-    boolean useDuplicate = false;
-    List<Column> duplicateUpdateColumns = null;
-    List<Expression> duplicateUpdateExpressionList = null;
+    List<UpdateSet> duplicateUpdateSets;
     Token tk = null;
 }
 {
@@ -1525,49 +1525,29 @@ Upsert Upsert():
             <K_INSERT> <K_OR> <K_REPLACE> { upsert.setUpsertType(UpsertType.INSERT_OR_REPLACE); }
         )
     )
-    [ LOOKAHEAD(2) <K_INTO> { upsert.setUsingInto(true); } ] table=Table()
-    [
-        LOOKAHEAD(2) "(" tableColumn=Column() { columns.add(tableColumn); }
-        ("," tableColumn=Column() { columns.add(tableColumn); } )* ")"
-    ]
+    [ LOOKAHEAD(2) <K_INTO> { upsert.setUsingInto(true); } ]
+
+    table=Table() { upsert.setTable(table); }
+
+    [ LOOKAHEAD(2) columns = ParenthesedColumnList() { upsert.setColumns(columns); } ]
     (
         (
-            <K_SET> { upsert.setUpsertType(UpsertType.REPLACE_SET); }
-            tableColumn=Column() "=" exp=SimpleExpression() { columns.add(tableColumn); primaryExpList.add(exp); }
-            ("," tableColumn=Column() "=" exp=SimpleExpression() { columns.add(tableColumn); primaryExpList.add(exp); } )*
-            {
-               itemsList = new ExpressionList(primaryExpList);
-            }
+            <K_SET>
+            updateSets = UpdateSets() { upsert.setUpdateSets(updateSets); }
         )
         |
         (
-            select = Select()
+            select = Select() { upsert.setSelect(select); }
         )
     )
 
-    [ <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-        { useDuplicate = true; }
-      tableColumn=Column() "=" exp=SimpleExpression()
-        {
-            duplicateUpdateColumns = new ArrayList<Column>();
-            duplicateUpdateExpressionList = new ArrayList<Expression>();
-            duplicateUpdateColumns.add(tableColumn);
-            duplicateUpdateExpressionList.add(exp);
-        }
-      ("," tableColumn=Column() "=" exp=SimpleExpression()
-        { duplicateUpdateColumns.add(tableColumn);
-        duplicateUpdateExpressionList.add(exp); } )*]
+    [
+        <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+        duplicateUpdateSets = UpdateSets() { upsert.setDuplicateUpdateSets(duplicateUpdateSets); }
+    ]
 
     {
-		if (columns.size() > 0) {
-            upsert.setColumns(columns);
-        }
-        return upsert.withExpressions(itemsList)
-              .withSelect(select)
-              .withTable(table)
-              .withUseDuplicate(useDuplicate)
-              .withDuplicateUpdateColumns(duplicateUpdateColumns)
-              .withDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        return upsert;
     }
 }
 
@@ -1650,42 +1630,39 @@ Statement Merge( List<WithItem> with ) : {
 }
 
 MergeUpdate MergeUpdateClause() : {
-    MergeUpdate mu = new MergeUpdate();
-    List<Column> columns = new ArrayList<Column>();
-    List<Expression> expList = new ArrayList<Expression>();
-    Column col;
-    Expression exp;
+    MergeUpdate mu;
+    List<UpdateSet> updateSets;
     Expression condition;
 }
 {
-  <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE>
+    <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE>
     <K_SET>
-     col = Column() "=" exp = SimpleExpression()
-            { columns.add(col); expList.add(exp); }
-        ("," col = Column() "=" exp = SimpleExpression() { columns.add(col); expList.add(exp); } )*
+    updateSets = UpdateSets() { mu = new MergeUpdate(updateSets); }
 
-        { mu.withColumns(columns).withValues(expList); }
+    [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
+    [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
 
-        [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
-        [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
-
-        { return mu; }
+    { return mu; }
 }
 
 MergeInsert MergeInsertClause() : {
     MergeInsert mi = new MergeInsert();
-    List<Column> columns = new ArrayList<Column>();
-    List<Expression> expList = new ArrayList<Expression>();
-    Column col;
-    Expression exp;
+    ExpressionList<Column> columns;
+    ExpressionList expList;
     Expression condition;
 }
 {
     <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN>
-        <K_INSERT> ["(" col=Column() { columns.add(col); } ("," col=Column() { columns.add(col); } )* ")"]  <K_VALUES>
-           "(" exp=SimpleExpression() { expList.add(exp); } ("," exp=SimpleExpression() { expList.add(exp); } )* ")"
-
-        { mi.withColumns(columns).withValues(expList); }
+        <K_INSERT>
+        [ "(" columns = ColumnList() ")"
+            {
+                mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
+            }
+        ]
+        <K_VALUES> "(" expList = SimpleExpressionList() ")"
+        {
+            mi.setValues( new ParenthesedExpressionList(expList) );
+        }
 
         [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); }]
 
@@ -1822,10 +1799,9 @@ Select SelectWithWithItems( List<WithItem> withItems):
     Select select;
 }
 {
-    select = Select() { select.setWithItemsList( withItems ); }
-    {
-        return select;
-    }
+    select = Select() { select.setWithItemsList( withItems );
+    return select;
+}
 }
 
 Select Select() #Select:
@@ -2288,17 +2264,16 @@ FunctionItem FunctionItem():
     { return functionItem; }
 }
 
-List<Column> PivotForColumns():
+ExpressionList<Column> PivotForColumns():
 {
-    List<Column> columns = new ArrayList<Column>();
+    ExpressionList<Column> columns;
     Column column;
 }
 {
     (
-        ("(" column = Column() { columns.add(column); }
-         ("," column = Column() { columns.add(column); } )*
-         ")")
-    | column = Column() { columns.add(column); }
+        columns = ParenthesedColumnList()
+        |
+        column = Column() { columns = new ExpressionList<Column>(column); }
     )
     { return columns; }
 }
@@ -2341,7 +2316,7 @@ Pivot Pivot():
 {
     Pivot retval = new Pivot();
     List<FunctionItem> functionItems;
-    List<Column> forColumns;
+    ExpressionList<Column> forColumns;
     List<SelectItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
     Alias alias = null;
@@ -2369,7 +2344,7 @@ PivotXml PivotXml():
 {
     PivotXml retval = new PivotXml();
     List<FunctionItem> functionItems;
-    List<Column> forColumns;
+    ExpressionList<Column> forColumns;
     List<SelectItem> singleInItems = null;
     List<ExpressionListItem> multiInItems = null;
     Select inSelect = null;
@@ -2399,8 +2374,8 @@ PivotXml PivotXml():
 UnPivot UnPivot():
 {
     UnPivot retval = new UnPivot();
-    List<Column> unpivotClause;
-    List<Column> unpivotForClause;
+    ExpressionList<Column> unpivotClause;
+    ExpressionList<Column> unpivotForClause;
     List<SelectItem> unpivotInClause;
     Alias alias = null;
 }
@@ -2862,11 +2837,11 @@ Limit PlainLimit() #PlainLimit:
 Limit LimitBy():
 {
     Limit limit;
-    List<Expression> byExpressions;
+    ExpressionList byExpressions;
 }
 {
     limit = LimitWithOffset()
-    <K_BY> byExpressions = Expressions()  { limit.setByExpressions(byExpressions); }
+    <K_BY> byExpressions = ExpressionList()  { limit.setByExpressions(byExpressions); }
     {
         return limit;
     }
@@ -3383,22 +3358,6 @@ Expression ExistsExpression():
     }
 }
 
-List<Expression> Expressions():
-{
-    ArrayList<Expression> expressions = new ArrayList<Expression>();
-    Expression expression;
-}
-{
-    expression = Expression() { expressions.add(expression); }
-    (
-       LOOKAHEAD(2) "," expression = Expression() { expressions.add(expression); }
-    )*
-
-    {
-        return expressions;
-    }
-}
-
 ExpressionList ExpressionList() #ExpressionList:
 {
     ExpressionList expressionList;
@@ -3477,6 +3436,17 @@ ExpressionList<Column> ColumnList():
     ( LOOKAHEAD(2) "," expr=Column() { expressions.add(expr); } )*
     {
         return expressions;
+    }
+}
+
+ParenthesedExpressionList<Column> ParenthesedColumnList():
+{
+    ExpressionList<Column> expressions;
+}
+{
+    "(" expressions = ColumnList() ")"
+    {
+        return new ParenthesedExpressionList<Column>(expressions);
     }
 }
 

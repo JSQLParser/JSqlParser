@@ -10,10 +10,12 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.Optional;
 public class Pivot implements Serializable {
 
     private List<FunctionItem> functionItems;
-    private List<Column> forColumns;
+    private ExpressionList<Column> forColumns;
     private List<SelectItem> singleInItems;
     private List<ExpressionListItem> multiInItems;
     private Alias alias;
@@ -55,11 +57,11 @@ public class Pivot implements Serializable {
         this.functionItems = functionItems;
     }
 
-    public List<Column> getForColumns() {
+    public ExpressionList<Column> getForColumns() {
         return forColumns;
     }
 
-    public void setForColumns(List<Column> forColumns) {
+    public void setForColumns(ExpressionList<Column> forColumns) {
         this.forColumns = forColumns;
     }
 
@@ -91,7 +93,7 @@ public class Pivot implements Serializable {
         return this;
     }
 
-    public Pivot withForColumns(List<Column> forColumns) {
+    public Pivot withForColumns(ExpressionList<Column> forColumns) {
         this.setForColumns(forColumns);
         return this;
     }
@@ -126,13 +128,12 @@ public class Pivot implements Serializable {
     }
 
     public Pivot addForColumns(Column... forColumns) {
-        List<Column> collection = Optional.ofNullable(getForColumns()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, forColumns);
-        return this.withForColumns(collection);
+        return this.addForColumns(Arrays.asList(forColumns));
     }
 
     public Pivot addForColumns(Collection<? extends Column> forColumns) {
-        List<Column> collection = Optional.ofNullable(getForColumns()).orElseGet(ArrayList::new);
+        ExpressionList<Column> collection =
+                Optional.ofNullable(getForColumns()).orElseGet(ExpressionList::new);
         collection.addAll(forColumns);
         return this.withForColumns(collection);
     }

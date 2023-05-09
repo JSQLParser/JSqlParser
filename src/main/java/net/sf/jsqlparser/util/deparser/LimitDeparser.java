@@ -9,11 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.Limit;
-
-import java.util.List;
 
 public class LimitDeparser extends AbstractDeParser<Limit> {
     private ExpressionVisitor expressionVisitor;
@@ -43,14 +40,9 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
             }
         }
 
-        final List<Expression> byExpressions = limit.getByExpressions();
-        if (byExpressions != null && !byExpressions.isEmpty()) {
-            buffer.append(" BY");
-            int i = 0;
-            for (Expression expression : byExpressions) {
-                buffer.append(i++ > 0 ? ", " : " ");
-                expression.accept(expressionVisitor);
-            }
+        if (limit.getByExpressions() != null) {
+            buffer.append(" BY ");
+            limit.getByExpressions().accept(expressionVisitor);
         }
     }
 

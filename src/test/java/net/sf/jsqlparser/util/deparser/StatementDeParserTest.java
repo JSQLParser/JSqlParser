@@ -38,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.then;
@@ -293,14 +294,10 @@ public class StatementDeParserTest {
 
         upsert.setSelect(select);
         upsert.setTable(table);
-        upsert.setUseDuplicate(true);
-        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        duplicateUpdateColumns.add(duplicateUpdateColumn1);
-        duplicateUpdateColumns.add(duplicateUpdateColumn2);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        upsert.setDuplicateUpdateSets(
+                Arrays.asList(
+                        new UpdateSet(duplicateUpdateColumn1, duplicateUpdateExpression1),
+                        new UpdateSet(duplicateUpdateColumn2, duplicateUpdateExpression2)));
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
         withItem1.setSelect(withItem1SubSelect);

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -28,9 +29,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         validateOptionalExpressions(upsert.getColumns());
         validateOptionalExpressions(upsert.getExpressions());
         validateOptionalSelect(upsert.getSelect());
-        if (upsert.isUseDuplicate()) {
-            validateDuplicate(upsert);
-        }
+        validateDuplicate(upsert);
     }
 
     private void validateOptionalSelect(Select select) {
@@ -41,8 +40,12 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
     }
 
     private void validateDuplicate(Upsert upsert) {
-        validateOptionalExpressions(upsert.getDuplicateUpdateColumns());
-        validateOptionalExpressions(upsert.getDuplicateUpdateExpressionList());
+        if (upsert.getDuplicateUpdateSets() != null) {
+            for (UpdateSet updateSet : upsert.getDuplicateUpdateSets()) {
+                validateOptionalExpressions(updateSet.getColumns());
+                validateOptionalExpressions(updateSet.getValues());
+            }
+        }
     }
 
 }

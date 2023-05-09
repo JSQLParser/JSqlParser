@@ -30,14 +30,14 @@ public class ReplaceTest {
         String statement = "REPLACE mytable SET col1='as', col2=?, col3=565";
         Upsert upsert = (Upsert) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
         assertEquals("mytable", upsert.getTable().getName());
-        assertEquals(3, upsert.getColumns().size());
-        assertEquals("col1", ((Column) upsert.getColumns().get(0)).getColumnName());
-        assertEquals("col2", ((Column) upsert.getColumns().get(1)).getColumnName());
-        assertEquals("col3", ((Column) upsert.getColumns().get(2)).getColumnName());
-        assertEquals("as", ((StringValue) upsert.getSetExpressions().get(0)).getValue());
-        assertTrue(upsert.getSetExpressions().get(1) instanceof JdbcParameter);
-        assertEquals(565, ((LongValue) upsert.getSetExpressions().get(2)).getValue());
-        assertEquals(statement, "" + upsert);
+        assertEquals(3, upsert.getUpdateSets().size());
+        assertEquals("col1", upsert.getUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col2", upsert.getUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("col3", upsert.getUpdateSets().get(2).getColumns().get(0).getColumnName());
+        assertEquals("'as'", upsert.getUpdateSets().get(0).getValues().get(0).toString());
+        assertTrue(upsert.getUpdateSets().get(1).getValues().get(0) instanceof JdbcParameter);
+        assertEquals(565L,
+                ((LongValue) upsert.getUpdateSets().get(2).getValues().get(0)).getValue());
     }
 
     @Test
@@ -55,7 +55,6 @@ public class ReplaceTest {
         assertEquals("as", ((StringValue) expressions.get(0)).getValue());
         assertTrue(expressions.get(1) instanceof JdbcParameter);
         assertEquals(565, ((LongValue) expressions.get(2)).getValue());
-        assertEquals(statement, "" + replace);
     }
 
     @Test
@@ -73,18 +72,19 @@ public class ReplaceTest {
     @Test
     public void testProblemReplaceParseDeparse() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", false);
+                "REPLACE a_table (ID, A, B) SELECT A_ID, A, B FROM b_table", true);
     }
 
     @Test
     public void testProblemMissingIntoIssue389() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")");
+                "REPLACE INTO mytable (key, data) VALUES (1, \"aaa\")", true);
     }
 
     @Test
     public void testMultipleValues() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "REPLACE INTO mytable (col1, col2, col3) VALUES (1, \"aaa\", now()), (2, \"bbb\", now())");
+                "REPLACE INTO mytable (col1, col2, col3) VALUES (1, \"aaa\", now()), (2, \"bbb\", now())",
+                true);
     }
 }

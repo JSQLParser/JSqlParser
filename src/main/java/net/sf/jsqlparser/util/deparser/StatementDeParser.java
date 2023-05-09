@@ -75,8 +75,15 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     public StatementDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser,
             StringBuilder buffer) {
         super(buffer);
+
         this.expressionDeParser = expressionDeParser;
         this.selectDeParser = selectDeParser;
+
+        this.selectDeParser.setBuffer(buffer);
+        this.selectDeParser.setExpressionVisitor(expressionDeParser);
+
+        this.expressionDeParser.setSelectVisitor(selectDeParser);
+        this.expressionDeParser.setBuffer(buffer);
     }
 
     @Override
@@ -105,10 +112,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Delete delete) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         DeleteDeParser deleteDeParser = new DeleteDeParser(expressionDeParser, buffer);
         deleteDeParser.deParse(delete);
     }
@@ -121,10 +124,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Insert insert) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         InsertDeParser insertDeParser =
                 new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
@@ -132,10 +131,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Select select) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         select.accept(selectDeParser);
     }
 
@@ -159,11 +154,7 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Update update) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
         UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         updateDeParser.deParse(update);
 
     }
@@ -186,80 +177,86 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Execute execute) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
         ExecuteDeParser executeDeParser = new ExecuteDeParser(expressionDeParser, buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         executeDeParser.deParse(execute);
     }
 
     @Override
     public void visit(SetStatement set) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
         SetStatementDeParser setStatementDeparser =
                 new SetStatementDeParser(expressionDeParser, buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         setStatementDeparser.deParse(set);
     }
 
     @Override
     public void visit(ResetStatement reset) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
         ResetStatementDeParser setStatementDeparser =
                 new ResetStatementDeParser(expressionDeParser, buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         setStatementDeparser.deParse(reset);
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public void visit(Merge merge) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-
         List<WithItem> withItemsList = merge.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
-                buffer.append(withItem);
+                iter.next().accept(expressionDeParser);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
                 buffer.append(" ");
             }
         }
-        buffer.append("MERGE INTO ");
-        selectDeParser.visit(merge.getTable());
-        buffer.append(" USING ");
 
-        // @todo
-        // selectDeParser.visit(merge.getFromItem());
-        buffer.append(merge.getFromItem());
+        buffer.append("MERGE INTO ");
+        merge.getTable().accept(selectDeParser);
+
+        buffer.append(" USING ");
+        merge.getFromItem().accept(selectDeParser);
+
         buffer.append(" ON (");
-        // @todo
-        // expressionDeParser.visit(merge.getOnCondition());
-        buffer.append(merge.getOnCondition());
+        merge.getOnCondition().accept(expressionDeParser);
         buffer.append(")");
 
         MergeInsert mergeInsert = merge.getMergeInsert();
         MergeUpdate mergeUpdate = merge.getMergeUpdate();
         if (merge.isInsertFirst() && mergeInsert != null) {
-            buffer.append(mergeInsert);
+            deparseMergeInsert(mergeInsert);
         }
 
         if (mergeUpdate != null) {
-            buffer.append(mergeUpdate);
+            buffer.append(" WHEN MATCHED THEN UPDATE SET ");
+            deparseUpdateSets(mergeUpdate.getUpdateSets(), buffer, expressionDeParser);
+
+            if (mergeUpdate.getWhereCondition() != null) {
+                buffer.append(" WHERE ");
+                mergeUpdate.getWhereCondition().accept(expressionDeParser);
+            }
+
+            if (mergeUpdate.getDeleteWhereCondition() != null) {
+                buffer.append(" DELETE WHERE ");
+                mergeUpdate.getDeleteWhereCondition().accept(expressionDeParser);
+            }
         }
 
         if (!merge.isInsertFirst() && mergeInsert != null) {
-            buffer.append(mergeInsert);
+            deparseMergeInsert(mergeInsert);
+        }
+    }
+
+    private void deparseMergeInsert(MergeInsert mergeInsert) {
+        buffer.append(" WHEN NOT MATCHED THEN INSERT ");
+        if (mergeInsert.getColumns() != null) {
+            mergeInsert.getColumns().accept(expressionDeParser);
+        }
+        buffer.append(" VALUES ");
+        mergeInsert.getValues().accept(expressionDeParser);
+
+        if (mergeInsert.getWhereCondition() != null) {
+            buffer.append(" WHERE ");
+            mergeInsert.getWhereCondition().accept(expressionDeParser);
         }
     }
 
@@ -280,10 +277,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(Upsert upsert) {
-        selectDeParser.setBuffer(buffer);
-        expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(buffer);
-        selectDeParser.setExpressionVisitor(expressionDeParser);
         UpsertDeParser upsertDeParser =
                 new UpsertDeParser(expressionDeParser, selectDeParser, buffer);
         upsertDeParser.deParse(upsert);
@@ -353,7 +346,6 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     @Override
     public void visit(DeclareStatement declare) {
-        expressionDeParser.setBuffer(buffer);
         new DeclareStatementDeParser(expressionDeParser, buffer).deParse(declare);
     }
 

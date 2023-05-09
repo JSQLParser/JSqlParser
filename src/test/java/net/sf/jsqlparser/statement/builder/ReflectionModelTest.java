@@ -15,9 +15,11 @@ import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.asList;
@@ -167,7 +169,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.grant.Grant(),
             new net.sf.jsqlparser.statement.insert.Insert(),
             new net.sf.jsqlparser.statement.merge.Merge(),
-            new net.sf.jsqlparser.statement.merge.MergeUpdate(),
+            new net.sf.jsqlparser.statement.merge.MergeUpdate(new ArrayList<UpdateSet>()),
             new net.sf.jsqlparser.statement.select.AllColumns(),
             new net.sf.jsqlparser.statement.select.AllTableColumns(),
             new net.sf.jsqlparser.statement.select.Distinct(),

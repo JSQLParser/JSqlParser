@@ -64,6 +64,11 @@ repositories {
     gradlePluginPortal()
     mavenLocal()
     mavenCentral()
+
+    // Sonatype OSSRH
+    maven {
+        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+    }
 }
 
 configurations {
@@ -92,7 +97,7 @@ dependencies {
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
 
     // Java Doc in XML Format
-    xmlDoclet 'com.github.markusbernhardt:xml-doclet:+'
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
@@ -107,15 +112,11 @@ java {
     withSourcesJar()
     withJavadocJar()
 
-    sourceCompatibility(JavaVersion.VERSION_1_8)
-    targetCompatibility(JavaVersion.VERSION_1_8)
-
     // needed for XML-Doclet to work (since Doclet changed again with Java 13)
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
-
 
 javadoc {
     if(JavaVersion.current().isJava9Compatible()) {

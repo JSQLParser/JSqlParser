@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
 import java.util.Collection;
@@ -79,7 +80,7 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml withForColumns(List<Column> forColumns) {
+    public PivotXml withForColumns(ExpressionList<Column> forColumns) {
         return (PivotXml) super.withForColumns(forColumns);
     }
 

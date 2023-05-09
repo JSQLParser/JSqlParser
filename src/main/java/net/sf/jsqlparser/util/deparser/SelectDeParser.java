@@ -339,13 +339,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     public void visit(Pivot pivot) {
-        List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT (").append(PlainSelect.getStringList(pivot.getFunctionItems()))
-                .append(" FOR ")
-                .append(PlainSelect.getStringList(forColumns, true,
-                        forColumns != null && forColumns.size() > 1))
-                .append(" IN ").append(PlainSelect.getStringList(pivot.getInItems(), true, true))
-                .append(")");
+        // @todo: implement this as Visitor
+        buffer.append(" PIVOT (").append(PlainSelect.getStringList(pivot.getFunctionItems()));
+
+        buffer.append(" FOR ");
+        pivot.getForColumns().accept(expressionVisitor);
+
+        // @todo: implement this as Visitor
+        buffer.append(" IN ").append(PlainSelect.getStringList(pivot.getInItems(), true, true));
+
+        buffer.append(")");
         if (pivot.getAlias() != null) {
             buffer.append(pivot.getAlias().toString());
         }

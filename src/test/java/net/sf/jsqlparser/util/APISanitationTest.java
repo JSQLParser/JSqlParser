@@ -1,6 +1,7 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import org.apache.commons.io.IOUtils;
@@ -286,7 +287,7 @@ public class APISanitationTest {
     }
 
     private final static Class<?>[] EXPRESSION_CLASSES =
-            new Class[] {Expression.class, Column.class};
+            new Class[] {Expression.class, Column.class, Function.class};
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
@@ -307,11 +308,11 @@ public class APISanitationTest {
                 String message = fieldName + " is an Expression List";
 
                 String pureFieldName = fieldName.lastIndexOf("$") > 0
-                                       ? fieldName.substring(fieldName.lastIndexOf("$"))
-                                       : fieldName;
+                        ? fieldName.substring(fieldName.lastIndexOf("$"))
+                        : fieldName;
 
                 Class<?> declaringClazz = field.getDeclaringClass();
-                while (declaringClazz.getDeclaringClass()!=null) {
+                while (declaringClazz.getDeclaringClass() != null) {
                     declaringClazz = declaringClazz.getDeclaringClass();
                 }
                 String pureDeclaringClassName = declaringClazz.getCanonicalName();
@@ -323,28 +324,30 @@ public class APISanitationTest {
                                         .concat(".java"));
 
                 int position = 1;
-                Pattern pattern = Pattern.compile("\\s" + field.getType().getSimpleName() + "(<\\w*>)?(\\s*\\w*,?)*\\s*\\W", Pattern.MULTILINE);
+                Pattern pattern = Pattern.compile(
+                        "\\s" + field.getType().getSimpleName() + "(<\\w*>)?(\\s*\\w*,?)*\\s*\\W",
+                        Pattern.MULTILINE);
                 try (FileReader reader = new FileReader(file)) {
                     List<String> lines = IOUtils.readLines(reader);
                     StringBuilder builder = new StringBuilder();
-                    for (String s: lines) {
+                    for (String s : lines) {
                         builder.append(s).append("\n");
                     }
                     final Matcher matcher = pattern.matcher(builder);
                     while (matcher.find()) {
-                        String group0=matcher.group(0);
-                        if ( group0.contains(pureFieldName)
-                             && (group0.endsWith("=") || group0.endsWith(";")) ) {
-                           int pos = matcher.start(0);
-                           int readCharacters = 0;
-                           for (String line : lines) {
-                               readCharacters+=line.length()+1;
-                               if (readCharacters>=pos) {
-                                   break;
-                               }
-                               position++;
-                           }
-                           break;
+                        String group0 = matcher.group(0);
+                        if (group0.contains(pureFieldName)
+                                && (group0.endsWith("=") || group0.endsWith(";"))) {
+                            int pos = matcher.start(0);
+                            int readCharacters = 0;
+                            for (String line : lines) {
+                                readCharacters += line.length() + 1;
+                                if (readCharacters >= pos) {
+                                    break;
+                                }
+                                position++;
+                            }
+                            break;
                         }
                     }
                 } catch (Exception ex) {
