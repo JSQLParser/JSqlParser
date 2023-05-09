@@ -182,7 +182,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
         validateOptionalExpressions(pivot.getForColumns());
         if (isNotEmpty(pivot.getFunctionItems())) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
-            pivot.getFunctionItems().forEach(f -> f.getFunction().accept(v));
+            pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v));
         }
         if (pivot.getInSelect() != null) {
             pivot.getInSelect().accept(this);

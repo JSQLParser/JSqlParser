@@ -18,21 +18,20 @@ import java.util.Optional;
 
 public class Distinct implements Serializable {
 
-    private List<SelectItem> onSelectItems;
+    private List<SelectItem<?>> onSelectItems;
     private boolean useUnique = false;
 
-    public Distinct() {
-    }
+    public Distinct() {}
 
     public Distinct(boolean useUnique) {
         this.useUnique = useUnique;
     }
 
-    public List<SelectItem> getOnSelectItems() {
+    public List<SelectItem<?>> getOnSelectItems() {
         return onSelectItems;
     }
 
-    public void setOnSelectItems(List<SelectItem> list) {
+    public void setOnSelectItems(List<SelectItem<?>> list) {
         onSelectItems = list;
     }
 
@@ -55,7 +54,7 @@ public class Distinct implements Serializable {
         return sql;
     }
 
-    public Distinct withOnSelectItems(List<SelectItem> onSelectItems) {
+    public Distinct withOnSelectItems(List<SelectItem<?>> onSelectItems) {
         this.setOnSelectItems(onSelectItems);
         return this;
     }
@@ -65,14 +64,16 @@ public class Distinct implements Serializable {
         return this;
     }
 
-    public Distinct addOnSelectItems(SelectItem... onSelectItems) {
-        List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
+    public Distinct addOnSelectItems(SelectItem<?>... onSelectItems) {
+        List<SelectItem<?>> collection =
+                Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
         Collections.addAll(collection, onSelectItems);
         return this.withOnSelectItems(collection);
     }
 
-    public Distinct addOnSelectItems(Collection<? extends SelectItem> onSelectItems) {
-        List<SelectItem> collection = Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
+    public Distinct addOnSelectItems(Collection<? extends SelectItem<?>> onSelectItems) {
+        List<SelectItem<?>> collection =
+                Optional.ofNullable(getOnSelectItems()).orElseGet(ArrayList::new);
         collection.addAll(onSelectItems);
         return this.withOnSelectItems(collection);
     }

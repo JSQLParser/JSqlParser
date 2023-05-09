@@ -74,8 +74,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         List<WithItem> withItemsList = selectBody.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                iter.next().accept((SelectVisitor) this);
+            for (WithItem withItem : withItemsList) {
+                withItem.accept((SelectVisitor) this);
                 buffer.append(" ");
             }
         }
@@ -161,9 +161,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             }
             if (plainSelect.getDistinct().getOnSelectItems() != null) {
                 buffer.append("ON (");
-                for (Iterator<SelectItem> iter =
+                for (Iterator<SelectItem<?>> iter =
                         plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
-                    SelectItem selectItem = iter.next();
+                    SelectItem<?> selectItem = iter.next();
                     selectItem.accept(this);
                     if (iter.hasNext()) {
                         buffer.append(", ");
@@ -187,10 +187,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        final List<SelectItem> selectItems = plainSelect.getSelectItems();
+        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
         if (selectItems != null) {
-            for (Iterator<SelectItem> iter = selectItems.iterator(); iter.hasNext();) {
-                SelectItem selectItem = iter.next();
+            for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
+                SelectItem<?> selectItem = iter.next();
                 selectItem.accept(this);
                 if (iter.hasNext()) {
                     buffer.append(", ");

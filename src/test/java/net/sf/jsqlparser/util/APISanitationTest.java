@@ -39,7 +39,7 @@ interface Visitor<T> {
 
 
 public class APISanitationTest {
-    private final static TreeSet<Class<?>> CLASSES = new TreeSet<>(new Comparator<Class<?>>() {
+    private final static TreeSet<Class<?>> CLASSES = new TreeSet<>(new Comparator<>() {
         @Override
         public int compare(Class o1, Class o2) {
             return o1.getName().compareTo(o2.getName());
@@ -47,6 +47,8 @@ public class APISanitationTest {
     });
 
     private final static Logger LOGGER = Logger.getLogger(APISanitationTest.class.getName());
+    private final static Class<?>[] EXPRESSION_CLASSES =
+            new Class[] {Expression.class, Column.class, Function.class};
 
     public static void findClasses(Visitor<String> visitor) {
         String classpath = System.getProperty("java.class.path");
@@ -85,9 +87,14 @@ public class APISanitationTest {
         return sb.toString();
     }
 
+    /**
+     * find all classes belonging to JSQLParser
+     *
+     */
+
     @BeforeAll
     static void findRelevantClasses() {
-        findClasses(new Visitor<String>() {
+        findClasses(new Visitor<>() {
             @Override
             public boolean visit(String clazz) {
                 if (clazz.startsWith("net.sf.jsqlparser.statement")
@@ -115,15 +122,14 @@ public class APISanitationTest {
         });
     }
 
-    public static class MethodNamingException extends Exception {
-        public MethodNamingException(String message, StackTraceElement stackTrace) {
-            super(message);
-            super.setStackTrace(new StackTraceElement[] {stackTrace});
-        }
-    }
+    /**
+     * find all field declarations for the classes belonging to JSQLParser
+     *
+     * @return the stream of fields
+     */
 
     private static Stream<Field> fields() {
-        TreeSet<Field> fields = new TreeSet<>(new Comparator<Field>() {
+        TreeSet<Field> fields = new TreeSet<>(new Comparator<>() {
             @Override
             public int compare(Field o1, Field o2) {
                 return o1.toString().compareTo(o2.toString());
@@ -144,6 +150,13 @@ public class APISanitationTest {
 
         return fields.stream();
     }
+
+    /**
+     * Checks, if a field has Getters and Setters and Fluent Setter matching the naming conventions
+     *
+     * @param field the field to verify
+     * @throws MethodNamingException a qualified exception pointing on the failing field
+     */
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
@@ -223,38 +236,23 @@ public class APISanitationTest {
             }
 
             if (!(foundGetter && foundSetter && foundFluentSetter)) {
-                // clazz.getName().substring("net.sf.jsqlparser.".length()) + " " + fieldName + ":"
                 String message = fieldName + " "
                         + (!foundGetter ? "[Getter] " : "")
                         + (!foundSetter ? "[Setter] " : "")
                         + (!foundFluentSetter ? "[Fluent Setter] " : "")
                         + "missing";
-
-                File file = new File(
-                        "src/main/java/"
-                                + clazz.getCanonicalName().replace(".", "/").concat(".java"));
-
-                int position = 1;
-                try (FileReader reader = new FileReader(file)) {
-                    for (String line : IOUtils.readLines(reader)) {
-                        if (line.contains(fieldName)) {
-                            break;
-                        }
-                        position++;
-                    }
-                } catch (Exception ex) {
-                    LOGGER.warning(
-                            "Could not find the field111 " + fieldName + " for " + clazz.getName());
-                }
-
-                StackTraceElement stackTraceElement = new StackTraceElement(
-                        clazz.getName(), fieldName, file.toURI().normalize().toASCIIString(),
-                        position);
-
-                throw new MethodNamingException(message, stackTraceElement);
+                throwException(field, clazz, message);
             }
         }
     }
+
+    /**
+     * Test if a field declaration extends a certain class.
+     *
+     * @param field the declared field
+     * @param boundClass the class, which the declaration extends
+     * @return whether the field extends the class
+     */
 
     boolean testGenericType(Field field, Class<?> boundClass) {
         Type listType = field.getGenericType();
@@ -286,11 +284,16 @@ public class APISanitationTest {
         return false;
     }
 
-    private final static Class<?>[] EXPRESSION_CLASSES =
-            new Class[] {Expression.class, Column.class, Function.class};
+    /**
+     * Scan for any occurrence of <code>List<Expression></code> and throw an Exception.
+     *
+     * @param field the field to test for <code>List<Expression></code>
+     * @throws MethodNamingException the Exception pointing on the Class and location of the field
+     */
 
     @ParameterizedTest(name = "{index} Field {0}")
     @MethodSource("fields")
+    @SuppressWarnings({"PMD.NPath"})
     void testExpressionList(final Field field) throws MethodNamingException {
         Class<?> clazz = field.getType();
         String fieldName = field.getName();
@@ -306,62 +309,81 @@ public class APISanitationTest {
 
             if (isExpressionList) {
                 String message = fieldName + " is an Expression List";
+                throwException(field, clazz, message);
+            }
+        }
+    }
 
-                String pureFieldName = fieldName.lastIndexOf("$") > 0
-                        ? fieldName.substring(fieldName.lastIndexOf("$"))
-                        : fieldName;
+    /**
+     * Find the declaration of the offending field and throws a qualified exception.
+     *
+     * @param field the offending field
+     * @param clazz the offending class declaring the field
+     * @param message the information about the offense
+     * @throws MethodNamingException the qualified exception pointing on the location
+     */
 
-                Class<?> declaringClazz = field.getDeclaringClass();
-                while (declaringClazz.getDeclaringClass() != null) {
-                    declaringClazz = declaringClazz.getDeclaringClass();
-                }
-                String pureDeclaringClassName = declaringClazz.getCanonicalName();
+    private static void throwException(Field field, Class<?> clazz, String message)
+            throws MethodNamingException {
+        String fieldName = field.getName();
+        String pureFieldName = fieldName.lastIndexOf("$") > 0
+                ? fieldName.substring(fieldName.lastIndexOf("$"))
+                : fieldName;
+        Class<?> declaringClazz = field.getDeclaringClass();
+        while (declaringClazz.getDeclaringClass() != null) {
+            declaringClazz = declaringClazz.getDeclaringClass();
+        }
+        String pureDeclaringClassName = declaringClazz.getCanonicalName();
 
+        File file = new File(
+                "src/main/java/"
+                        + pureDeclaringClassName.replace(".", "/")
+                                .concat(".java"));
 
-                File file = new File(
-                        "src/main/java/"
-                                + pureDeclaringClassName.replace(".", "/")
-                                        .concat(".java"));
-
-                int position = 1;
-                Pattern pattern = Pattern.compile(
-                        "\\s" + field.getType().getSimpleName() + "(<\\w*>)?(\\s*\\w*,?)*\\s*\\W",
-                        Pattern.MULTILINE);
-                try (FileReader reader = new FileReader(file)) {
-                    List<String> lines = IOUtils.readLines(reader);
-                    StringBuilder builder = new StringBuilder();
-                    for (String s : lines) {
-                        builder.append(s).append("\n");
-                    }
-                    final Matcher matcher = pattern.matcher(builder);
-                    while (matcher.find()) {
-                        String group0 = matcher.group(0);
-                        if (group0.contains(pureFieldName)
-                                && (group0.endsWith("=") || group0.endsWith(";"))) {
-                            int pos = matcher.start(0);
-                            int readCharacters = 0;
-                            for (String line : lines) {
-                                readCharacters += line.length() + 1;
-                                if (readCharacters >= pos) {
-                                    break;
-                                }
-                                position++;
-                            }
+        int position = 1;
+        Pattern pattern = Pattern.compile(
+                "\\s" + field.getType().getSimpleName() + "(<\\w*>)?(\\s*\\w*,?)*\\s*\\W",
+                Pattern.MULTILINE);
+        try (FileReader reader = new FileReader(file)) {
+            List<String> lines = IOUtils.readLines(reader);
+            StringBuilder builder = new StringBuilder();
+            for (String s : lines) {
+                builder.append(s).append("\n");
+            }
+            final Matcher matcher = pattern.matcher(builder);
+            while (matcher.find()) {
+                String group0 = matcher.group(0);
+                if (group0.contains(pureFieldName)
+                        && (group0.endsWith("=") || group0.endsWith(";"))) {
+                    int pos = matcher.start(0);
+                    int readCharacters = 0;
+                    for (String line : lines) {
+                        readCharacters += line.length() + 1;
+                        if (readCharacters >= pos) {
                             break;
                         }
+                        position++;
                     }
-                } catch (Exception ex) {
-                    LOGGER.warning(
-                            "Could not find the field " + fieldName + " for " + clazz.getName());
+                    break;
                 }
-
-                StackTraceElement stackTraceElement = new StackTraceElement(
-                        field.getDeclaringClass().getName(), fieldName,
-                        file.toURI().normalize().toASCIIString(),
-                        position);
-
-                throw new MethodNamingException(message, stackTraceElement);
             }
+        } catch (Exception ex) {
+            LOGGER.warning(
+                    "Could not find the field " + fieldName + " for " + clazz.getName());
+        }
+
+        StackTraceElement stackTraceElement = new StackTraceElement(
+                field.getDeclaringClass().getName(), fieldName,
+                file.toURI().normalize().toASCIIString(),
+                position);
+
+        throw new MethodNamingException(message, stackTraceElement);
+    }
+
+    public static class MethodNamingException extends Exception {
+        public MethodNamingException(String message, StackTraceElement stackTrace) {
+            super(message);
+            super.setStackTrace(new StackTraceElement[] {stackTrace});
         }
     }
 }

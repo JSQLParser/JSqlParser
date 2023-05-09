@@ -17,6 +17,14 @@ import java.util.List;
 
 public class MergeUpdate implements Serializable {
 
+    private List<UpdateSet> updateSets;
+    private Expression whereCondition;
+    private Expression deleteWhereCondition;
+
+    public MergeUpdate(List<UpdateSet> updateSets) {
+        this.updateSets = updateSets;
+    }
+
     public List<UpdateSet> getUpdateSets() {
         return updateSets;
     }
@@ -25,14 +33,6 @@ public class MergeUpdate implements Serializable {
         this.updateSets = updateSets;
         return this;
     }
-
-    public MergeUpdate(List<UpdateSet> updateSets) {
-        this.updateSets = updateSets;
-    }
-
-    private List<UpdateSet> updateSets;
-    private Expression whereCondition;
-    private Expression deleteWhereCondition;
 
     public Expression getWhereCondition() {
         return whereCondition;

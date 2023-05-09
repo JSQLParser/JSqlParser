@@ -721,7 +721,7 @@ public class SelectTest {
         assertTrue(top.hasParenthesis());
         assertTrue(top.isPercentage());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -786,7 +786,7 @@ public class SelectTest {
         assertNull(skip.getJdbcParameter());
         assertNull(skip.getVariable());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -803,7 +803,7 @@ public class SelectTest {
         assertNull(skip2.getJdbcParameter());
         assertEquals("skipVar", skip2.getVariable());
 
-        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        final List<SelectItem<?>> selectItems2 = selectBody2.getSelectItems();
         assertEquals(2, selectItems2.size());
         assertEquals("c1", selectItems2.get(0).toString());
         assertEquals("c2", selectItems2.get(1).toString());
@@ -826,7 +826,7 @@ public class SelectTest {
         assertNull(limit.getJdbcParameter());
         assertEquals(First.Keyword.FIRST, limit.getKeyword());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -843,7 +843,7 @@ public class SelectTest {
         assertNull(first2.getJdbcParameter());
         assertEquals("firstVar", first2.getVariable());
 
-        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        final List<SelectItem<?>> selectItems2 = selectBody2.getSelectItems();
         assertEquals(2, selectItems2.size());
         assertEquals("c1", selectItems2.get(0).toString());
         assertEquals("c2", selectItems2.get(1).toString());
@@ -868,7 +868,7 @@ public class SelectTest {
         assertFalse(limit.getJdbcParameter().isUseFixedIndex());
         assertEquals(First.Keyword.LIMIT, limit.getKeyword());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -894,7 +894,7 @@ public class SelectTest {
         assertNull(first.getRowCount());
         assertEquals("f1", first.getVariable());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals("c1", selectItems.get(0).toString());
         assertEquals("c2", selectItems.get(1).toString());
@@ -909,7 +909,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select;
 
-        final List<SelectItem> selectItems = plainSelect.getSelectItems();
+        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
         assertEquals("MYID", selectItems.get(0).getAlias().getName());
         assertEquals("mycol", ((Column) (selectItems.get(1)).getExpression())
                 .getColumnName());
@@ -3352,7 +3352,7 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getFunction();
+        Function function = fromItem.getExpression();
         assertNotNull(function);
         assertEquals("SOME_FUNCTION", function.getName());
         assertNull(function.getParameters());
@@ -3368,7 +3368,7 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getFunction();
+        Function function = fromItem.getExpression();
         assertNotNull(function);
         assertEquals("SOME_FUNCTION", function.getName());
 
@@ -3399,7 +3399,7 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getFunction();
+        Function function = fromItem.getExpression();
         assertNotNull(function);
 
         assertEquals("SOME_FUNCTION", function.getName());

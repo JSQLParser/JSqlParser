@@ -9,14 +9,6 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
@@ -29,6 +21,15 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import static java.util.stream.Collectors.joining;
 
 public class Delete implements Statement {
 
@@ -45,7 +46,7 @@ public class Delete implements Statement {
     private DeleteModifierPriority modifierPriority;
     private boolean modifierIgnore;
     private boolean modifierQuick;
-    private List<SelectItem> returningExpressionList = null;
+    private List<SelectItem<?>> returningExpressionList = null;
     private OutputClause outputClause;
 
     public OutputClause getOutputClause() {
@@ -56,15 +57,15 @@ public class Delete implements Statement {
         this.outputClause = outputClause;
     }
 
-    public List<SelectItem> getReturningExpressionList() {
+    public List<SelectItem<?>> getReturningExpressionList() {
         return returningExpressionList;
     }
 
-    public void setReturningExpressionList(List<SelectItem> returningExpressionList) {
+    public void setReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
 
-    public Delete withReturningExpressionList(List<SelectItem> returningExpressionList) {
+    public Delete withReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
         return this;
     }
@@ -81,15 +82,17 @@ public class Delete implements Statement {
         this.setWithItemsList(withItemsList);
         return this;
     }
-    
-     public Delete addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+
+    public Delete addWithItemsList(WithItem... withItemsList) {
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
     public Delete addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection =
+                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
     }
@@ -122,7 +125,7 @@ public class Delete implements Statement {
     public void setWhere(Expression expression) {
         where = expression;
     }
-    
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -186,7 +189,7 @@ public class Delete implements Statement {
                 b.append(" ");
             }
         }
-        
+
         b.append("DELETE");
 
         if (modifierPriority != null) {
@@ -206,7 +209,7 @@ public class Delete implements Statement {
                     .collect(joining(", ")));
         }
 
-        if (outputClause!=null) {
+        if (outputClause != null) {
             outputClause.appendTo(b);
         }
 
@@ -216,7 +219,7 @@ public class Delete implements Statement {
         }
         b.append(" ").append(table);
 
-        if (usingList != null && usingList.size()>0) {
+        if (usingList != null && usingList.size() > 0) {
             b.append(" USING ");
             b.append(usingList.stream()
                     .map(Table::toString)
@@ -246,8 +249,8 @@ public class Delete implements Statement {
         }
 
         if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ")
+                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
 
         return b.toString();
@@ -293,17 +296,17 @@ public class Delete implements Statement {
         return this;
     }
 
-    public Delete withModifierPriority(DeleteModifierPriority modifierPriority){
+    public Delete withModifierPriority(DeleteModifierPriority modifierPriority) {
         this.setModifierPriority(modifierPriority);
         return this;
     }
 
-    public Delete withModifierIgnore(boolean modifierIgnore){
+    public Delete withModifierIgnore(boolean modifierIgnore) {
         this.setModifierIgnore(modifierIgnore);
         return this;
     }
 
-    public Delete withModifierQuick(boolean modifierQuick){
+    public Delete withModifierQuick(boolean modifierQuick) {
         this.setModifierQuick(modifierQuick);
         return this;
     }
@@ -369,13 +372,15 @@ public class Delete implements Statement {
     }
 
     public Delete addOrderByElements(OrderByElement... orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
         return this.withOrderByElements(collection);
     }
 
     public Delete addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
         return this.withOrderByElements(collection);
     }

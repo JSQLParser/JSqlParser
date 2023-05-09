@@ -48,8 +48,6 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.ExpressionListItem;
-import net.sf.jsqlparser.statement.select.FunctionItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -465,8 +463,8 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(Pivot pivot) {
-        for (FunctionItem item : pivot.getFunctionItems()) {
-            item.getFunction().accept(this);
+        for (SelectItem<?> item : pivot.getFunctionItems()) {
+            item.getExpression().accept(this);
         }
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
@@ -478,16 +476,16 @@ public class ExpressionVisitorAdapter
         }
 
         if (pivot.getMultiInItems() != null) {
-            for (ExpressionListItem item : pivot.getMultiInItems()) {
-                item.getExpressionList().accept(this);
+            for (SelectItem<ExpressionList> item : pivot.getMultiInItems()) {
+                item.getExpression().accept(this);
             }
         }
     }
 
     @Override
     public void visit(PivotXml pivot) {
-        for (FunctionItem item : pivot.getFunctionItems()) {
-            item.getFunction().accept(this);
+        for (SelectItem<?> item : pivot.getFunctionItems()) {
+            item.getExpression().accept(this);
         }
         for (Column col : pivot.getForColumns()) {
             col.accept(this);

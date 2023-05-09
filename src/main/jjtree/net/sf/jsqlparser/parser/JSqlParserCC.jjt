@@ -1256,7 +1256,7 @@ Update Update( List<WithItem> with ):
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
-    List<SelectItem> returning = null;
+    List<SelectItem<?>> returning = null;
     Token tk = null;
     UpdateModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
@@ -1354,7 +1354,7 @@ Insert Insert( List<WithItem> with ):
     Column tableColumn = null;
     ExpressionList<Column> columns = new ExpressionList<Column>();
     Expression exp = null;
-    List<SelectItem> returning = null;
+    List<SelectItem<?>> returning = null;
     Select select = null;
     boolean useDuplicate = false;
     Token tk = null;
@@ -1479,7 +1479,7 @@ InsertConflictAction InsertConflictAction():
 
 OutputClause OutputClause():
 {
-    List<SelectItem> selectItemList = null;
+    List<SelectItem<?>> selectItemList = null;
     UserVariable tableVariable = null;
     Table outputTable = null;
     List<String> columnList = null;
@@ -1510,7 +1510,7 @@ Upsert Upsert():
     ExpressionList<Column> columns;
     List<UpdateSet> updateSets;
 
-    List<SelectItem> returning = null;
+    List<SelectItem<?>> returning = null;
     Select select = null;
     List<UpdateSet> duplicateUpdateSets;
     Token tk = null;
@@ -1568,7 +1568,7 @@ Delete Delete( List<WithItem> with ):
     boolean modifierIgnore = false;
     boolean modifierQuick = false;
 
-    List<SelectItem> returning = null;
+    List<SelectItem<?>> returning = null;
     OutputClause outputClause = null;
 }
 {
@@ -1915,11 +1915,11 @@ LateralSubSelect LateralSubSelect() #LateralSubSelect:
 PlainSelect PlainSelect() #PlainSelect:
 {
     PlainSelect plainSelect = new PlainSelect();
-    List<SelectItem> selectItems = null;
+    List<SelectItem<?>> selectItems = null;
     FromItem fromItem = null;
     List<LateralView> lateralViews = null;
     List<Join> joins = null;
-    List<SelectItem> distinctOn = null;
+    List<SelectItem<?>> distinctOn = null;
     Expression where = null;
     List<OrderByElement> orderByElements;
     GroupByElement groupBy = null;
@@ -2121,7 +2121,7 @@ WithItem WithItem() #WithItem:
 {
     WithItem withItem = new WithItem();
     String name;
-    List<SelectItem> selectItems;
+    List<SelectItem<?>> selectItems;
     Select select;
 }
 {
@@ -2134,13 +2134,19 @@ WithItem WithItem() #WithItem:
      }
 }
 
-List<SelectItem> SelectItemsList():
+List<SelectItem<?>> SelectItemsList():
 {
-    List<SelectItem> selectItemsList = new ArrayList<SelectItem>();
+    List<SelectItem<?>> selectItemsList = new ArrayList<SelectItem<?>>();
     SelectItem selectItem = null;
 }
 {
-    selectItem=SelectItem() { selectItemsList.add(selectItem); } ( LOOKAHEAD(2) "," selectItem=SelectItem() { selectItemsList.add(selectItem); } )*
+    selectItem=SelectItem() { selectItemsList.add(selectItem); }
+    (
+        LOOKAHEAD(2) "," selectItem=SelectItem()
+        {
+            selectItemsList.add(selectItem);
+        }
+    )*
 
     { return selectItemsList; }
 }
@@ -2252,16 +2258,15 @@ MySQLIndexHint MySQLIndexHint():
 	}
 }
 
-FunctionItem FunctionItem():
+SelectItem<Function> FunctionItem():
 {
     Alias alias = null;
     Function function;
-    FunctionItem functionItem;
 }
 {
-    function=Function() { functionItem = new FunctionItem(); functionItem.setFunction(function); }
-             [alias=Alias() { functionItem.setAlias(alias); }]
-    { return functionItem; }
+    function=Function()
+    [ alias=Alias() ]
+    { return new SelectItem<Function>(function, alias); }
 }
 
 ExpressionList<Column> PivotForColumns():
@@ -2278,10 +2283,10 @@ ExpressionList<Column> PivotForColumns():
     { return columns; }
 }
 
-List<FunctionItem> PivotFunctionItems():
+List<SelectItem<Function>> PivotFunctionItems():
 {
-    List< FunctionItem> functionItems = new ArrayList< FunctionItem>();
-    FunctionItem item;
+    List<SelectItem<Function>> functionItems = new ArrayList<SelectItem<Function>>();
+    SelectItem<Function> item;
 }
 {
     item = FunctionItem() {functionItems.add(item);}
@@ -2289,22 +2294,21 @@ List<FunctionItem> PivotFunctionItems():
     { return functionItems; }
 }
 
-ExpressionListItem ExpressionListItem():
+SelectItem<ExpressionList> ExpressionListItem():
 {
-    ExpressionListItem expressionListItem = null;
-    ExpressionList expressionList = null;
+    ExpressionList expressionList;
     Alias alias = null;
 }
 {
-    expressionList=ParenthesedExpressionList() { expressionListItem = new ExpressionListItem(); expressionListItem.setExpressionList(expressionList); }
-    [alias=Alias() { expressionListItem.setAlias(alias); }]
-    { return expressionListItem; }
+    expressionList=ParenthesedExpressionList()
+    [ alias=Alias() ]
+    { return new SelectItem<ExpressionList>(expressionList, alias); }
 }
 
-List<ExpressionListItem> PivotMultiInItems():
+List<SelectItem<ExpressionList>> PivotMultiInItems():
 {
-   List<ExpressionListItem> retval = new ArrayList<ExpressionListItem>();
-   ExpressionListItem item;
+   List<SelectItem<ExpressionList>> retval = new ArrayList<SelectItem<ExpressionList>>();
+   SelectItem<ExpressionList> item;
 }
 {
    item = ExpressionListItem() {retval.add(item);}
@@ -2315,10 +2319,10 @@ List<ExpressionListItem> PivotMultiInItems():
 Pivot Pivot():
 {
     Pivot retval = new Pivot();
-    List<FunctionItem> functionItems;
+    List<SelectItem<Function>> functionItems;
     ExpressionList<Column> forColumns;
-    List<SelectItem> singleInItems = null;
-    List<ExpressionListItem> multiInItems = null;
+    List<SelectItem<?>> singleInItems = null;
+    List<SelectItem<ExpressionList>> multiInItems = null;
     Alias alias = null;
 }
 {
@@ -2343,10 +2347,10 @@ Pivot Pivot():
 PivotXml PivotXml():
 {
     PivotXml retval = new PivotXml();
-    List<FunctionItem> functionItems;
+    List<SelectItem<Function>> functionItems;
     ExpressionList<Column> forColumns;
-    List<SelectItem> singleInItems = null;
-    List<ExpressionListItem> multiInItems = null;
+    List<SelectItem<?>> singleInItems = null;
+    List<SelectItem<ExpressionList>> multiInItems = null;
     Select inSelect = null;
 }
 {
@@ -2376,7 +2380,7 @@ UnPivot UnPivot():
     UnPivot retval = new UnPivot();
     ExpressionList<Column> unpivotClause;
     ExpressionList<Column> unpivotForClause;
-    List<SelectItem> unpivotInClause;
+    List<SelectItem<?>> unpivotInClause;
     Alias alias = null;
 }
 {
@@ -4757,7 +4761,7 @@ TableFunction TableFunction():
 }
 {
     function=Function() {
-      functionItem = new TableFunction().withFunction(function);
+      functionItem = new TableFunction().withExpression(function);
     }
              [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
     { return functionItem; }

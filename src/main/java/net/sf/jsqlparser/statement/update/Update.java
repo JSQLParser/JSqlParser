@@ -46,7 +46,7 @@ public class Update implements Statement {
     private OracleHint oracleHint = null;
     private List<OrderByElement> orderByElements;
     private Limit limit;
-    private List<SelectItem> returningExpressionList = null;
+    private List<SelectItem<?>> returningExpressionList = null;
     private UpdateModifierPriority modifierPriority;
     private boolean modifierIgnore;
 
@@ -245,11 +245,11 @@ public class Update implements Statement {
         return limit;
     }
 
-    public List<SelectItem> getReturningExpressionList() {
+    public List<SelectItem<?>> getReturningExpressionList() {
         return returningExpressionList;
     }
 
-    public void setReturningExpressionList(List<SelectItem> returningExpressionList) {
+    public void setReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
         this.returningExpressionList = returningExpressionList;
     }
 
@@ -388,7 +388,7 @@ public class Update implements Statement {
         return this;
     }
 
-    public Update withReturningExpressionList(List<SelectItem> returningExpressionList) {
+    public Update withReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
         this.setReturningExpressionList(returningExpressionList);
         return this;
     }
@@ -478,16 +478,16 @@ public class Update implements Statement {
         return this.withOrderByElements(collection);
     }
 
-    public Update addReturningExpressionList(SelectItem... returningExpressionList) {
-        List<SelectItem> collection =
+    public Update addReturningExpressionList(SelectItem<?>... returningExpressionList) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
     public Update addReturningExpressionList(
-            Collection<? extends SelectItem> returningExpressionList) {
-        List<SelectItem> collection =
+            Collection<? extends SelectItem<?>> returningExpressionList) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);

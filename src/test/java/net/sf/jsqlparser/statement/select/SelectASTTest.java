@@ -37,7 +37,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectItem sei = (SelectItem) item;
+            SelectItem<?> sei = (SelectItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -93,7 +93,7 @@ public class SelectASTTest {
         String sql = "SELECT  a,  b FROM  mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -114,7 +114,7 @@ public class SelectASTTest {
                 "SELECT  /* testcomment */ \n a,  b FROM  -- testcomment2 \n mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -137,7 +137,7 @@ public class SelectASTTest {
                 "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
             Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
@@ -75,7 +76,7 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml withFunctionItems(List<FunctionItem> functionItems) {
+    public PivotXml withFunctionItems(List<SelectItem<Function>> functionItems) {
         return (PivotXml) super.withFunctionItems(functionItems);
     }
 
@@ -85,22 +86,22 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml withSingleInItems(List<SelectItem> singleInItems) {
+    public PivotXml withSingleInItems(List<SelectItem<?>> singleInItems) {
         return (PivotXml) super.withSingleInItems(singleInItems);
     }
 
     @Override
-    public PivotXml withMultiInItems(List<ExpressionListItem> multiInItems) {
+    public PivotXml withMultiInItems(List<SelectItem<ExpressionList>> multiInItems) {
         return (PivotXml) super.withMultiInItems(multiInItems);
     }
 
     @Override
-    public PivotXml addFunctionItems(Collection<? extends FunctionItem> functionItems) {
+    public PivotXml addFunctionItems(Collection<? extends SelectItem<Function>> functionItems) {
         return (PivotXml) super.addFunctionItems(functionItems);
     }
 
     @Override
-    public PivotXml addFunctionItems(FunctionItem... functionItems) {
+    public PivotXml addFunctionItems(SelectItem<Function>... functionItems) {
         return (PivotXml) super.addFunctionItems(functionItems);
     }
 
@@ -115,7 +116,7 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml addSingleInItems(Collection<? extends SelectItem> singleInItems) {
+    public PivotXml addSingleInItems(Collection<? extends SelectItem<?>> singleInItems) {
         return (PivotXml) super.addSingleInItems(singleInItems);
     }
 
@@ -125,12 +126,12 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml addMultiInItems(ExpressionListItem... multiInItems) {
+    public PivotXml addMultiInItems(SelectItem<ExpressionList>... multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }
 
     @Override
-    public PivotXml addMultiInItems(Collection<? extends ExpressionListItem> multiInItems) {
+    public PivotXml addMultiInItems(Collection<? extends SelectItem<ExpressionList>> multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }
 

@@ -13,12 +13,12 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class SelectItem extends ASTNodeAccessImpl {
+public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
 
-    private Expression expression;
+    private T expression;
     private Alias alias;
 
-    public SelectItem(Expression expression, Alias alias) {
+    public SelectItem(T expression, Alias alias) {
         this.expression = expression;
         this.alias = alias;
     }
@@ -27,7 +27,7 @@ public class SelectItem extends ASTNodeAccessImpl {
         this(null, null);
     }
 
-    public SelectItem(Expression expression) {
+    public SelectItem(T expression) {
         this(expression, null);
     }
 
@@ -47,11 +47,11 @@ public class SelectItem extends ASTNodeAccessImpl {
         this.alias = alias;
     }
 
-    public Expression getExpression() {
+    public T getExpression() {
         return expression;
     }
 
-    public void setExpression(Expression expression) {
+    public void setExpression(T expression) {
         this.expression = expression;
     }
 
@@ -64,7 +64,7 @@ public class SelectItem extends ASTNodeAccessImpl {
         return expression + ((alias != null) ? alias.toString() : "");
     }
 
-    public SelectItem withExpression(Expression expression) {
+    public SelectItem<T> withExpression(T expression) {
         this.setExpression(expression);
         return this;
     }

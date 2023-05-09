@@ -13,7 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class TableFunction extends FunctionItem implements FromItem {
+public class TableFunction extends SelectItem<Function> implements FromItem {
 
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
@@ -46,8 +46,8 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
-    public TableFunction withFunction(Function function) {
-        return (TableFunction) super.withFunction(function);
+    public TableFunction withExpression(Function function) {
+        return (TableFunction) super.withExpression(function);
     }
 
     @Override

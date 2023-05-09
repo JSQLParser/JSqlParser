@@ -30,7 +30,7 @@ import static java.util.stream.Collectors.joining;
 public class PlainSelect extends Select {
 
     private Distinct distinct = null;
-    private List<SelectItem> selectItems;
+    private List<SelectItem<?>> selectItems;
     private List<Table> intoTables;
     private FromItem fromItem;
     private List<LateralView> lateralViews;
@@ -78,7 +78,7 @@ public class PlainSelect extends Select {
         return intoTables;
     }
 
-    public List<SelectItem> getSelectItems() {
+    public List<SelectItem<?>> getSelectItems() {
         return selectItems;
     }
 
@@ -99,16 +99,16 @@ public class PlainSelect extends Select {
         this.intoTables = intoTables;
     }
 
-    public PlainSelect withSelectItems(List<SelectItem> list) {
+    public PlainSelect withSelectItems(List<SelectItem<?>> list) {
         this.setSelectItems(list);
         return this;
     }
 
-    public void setSelectItems(List<SelectItem> list) {
+    public void setSelectItems(List<SelectItem<?>> list) {
         selectItems = list;
     }
 
-    public PlainSelect addSelectItems(SelectItem... items) {
+    public PlainSelect addSelectItems(SelectItem<?>... items) {
         selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
         selectItems.addAll(Arrays.asList(items));
         return this;
@@ -639,8 +639,8 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect addSelectItems(Collection<? extends SelectItem> selectItems) {
-        List<SelectItem> collection =
+    public PlainSelect addSelectItems(Collection<? extends SelectItem<?>> selectItems) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
         collection.addAll(selectItems);
         return this.withSelectItems(collection);

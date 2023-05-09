@@ -22,7 +22,7 @@ public class UnPivot implements Serializable {
     private boolean includeNullsSpecified = false;
     private ExpressionList<Column> unpivotClause;
     private ExpressionList<Column> unpivotForClause;
-    private List<SelectItem> unpivotInClause;
+    private List<SelectItem<?>> unpivotInClause;
     private Alias alias;
 
     public void accept(PivotVisitor pivotVisitor) {
@@ -58,11 +58,11 @@ public class UnPivot implements Serializable {
         this.unpivotForClause = forColumns;
     }
 
-    public List<SelectItem> getUnPivotInClause() {
+    public List<SelectItem<?>> getUnPivotInClause() {
         return unpivotInClause;
     }
 
-    public void setUnPivotInClause(List<SelectItem> unpivotInClause) {
+    public void setUnPivotInClause(List<SelectItem<?>> unpivotInClause) {
         this.unpivotInClause = unpivotInClause;
     }
 

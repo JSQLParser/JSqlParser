@@ -47,7 +47,7 @@ public class PostgresTest {
     public void testJSonExpressionIssue1696() throws JSQLParserException {
         String sqlStr = "SELECT '{\"key\": \"value\"}'::json -> 'key' AS X";
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        SelectItem selectExpressionItem =
+        SelectItem<?> selectExpressionItem =
                 (SelectItem) plainSelect.getSelectItems().get(0);
         Assertions.assertEquals("'key'",
                 selectExpressionItem.getExpression(JsonExpression.class).getIdents().get(0));

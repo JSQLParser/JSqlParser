@@ -32,6 +32,10 @@ public class Upsert implements Statement {
     private ExpressionList<Column> columns;
     private ExpressionList expressions;
     private Select select;
+    private List<UpdateSet> updateSets;
+    private List<UpdateSet> duplicateUpdateSets;
+    private UpsertType upsertType = UpsertType.UPSERT;
+    private boolean isUsingInto;
 
     public List<UpdateSet> getUpdateSets() {
         return updateSets;
@@ -42,8 +46,6 @@ public class Upsert implements Statement {
         return this;
     }
 
-    private List<UpdateSet> updateSets;
-
     public List<UpdateSet> getDuplicateUpdateSets() {
         return duplicateUpdateSets;
     }
@@ -52,12 +54,6 @@ public class Upsert implements Statement {
         this.duplicateUpdateSets = duplicateUpdateSets;
         return this;
     }
-
-    private List<UpdateSet> duplicateUpdateSets;
-
-    private UpsertType upsertType = UpsertType.UPSERT;
-
-    private boolean isUsingInto;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -90,28 +86,28 @@ public class Upsert implements Statement {
         return this;
     }
 
-    public void setTable(Table name) {
-        table = name;
-    }
-
     public Table getTable() {
         return table;
     }
 
-    public void setColumns(ExpressionList<Column> list) {
-        columns = list;
+    public void setTable(Table name) {
+        table = name;
     }
 
     public ExpressionList<Column> getColumns() {
         return columns;
     }
 
-    public void setExpressions(ExpressionList list) {
-        expressions = list;
+    public void setColumns(ExpressionList<Column> list) {
+        columns = list;
     }
 
     public ExpressionList getExpressions() {
         return expressions;
+    }
+
+    public void setExpressions(ExpressionList list) {
+        expressions = list;
     }
 
     @Deprecated
@@ -119,12 +115,12 @@ public class Upsert implements Statement {
         return expressions;
     }
 
-    public void setSelect(Select select) {
-        this.select = select;
-    }
-
     public Select getSelect() {
         return select;
+    }
+
+    public void setSelect(Select select) {
+        this.select = select;
     }
 
     public Values getValues() {
