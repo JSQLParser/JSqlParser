@@ -344,7 +344,7 @@ public class UpdateTest {
     @Test
     void testIssue() throws JSQLParserException {
         String sqlStr = "SELECT listes[(SELECT cardinality(listes))]";
-        Statement select = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         sqlStr = "update utilisateur set listes[0] = 1";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
