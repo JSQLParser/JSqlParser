@@ -93,6 +93,7 @@ import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -253,6 +254,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public void visit(ExistsExpression existsExpression) {
         existsExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(MemberOfExpression memberOfExpression) {
+        memberOfExpression.getLeftExpression().accept(this);
+        memberOfExpression.getRightExpression().accept(this);
     }
 
     @Override

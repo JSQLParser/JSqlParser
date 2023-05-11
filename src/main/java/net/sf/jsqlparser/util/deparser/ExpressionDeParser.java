@@ -92,6 +92,7 @@ import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -344,6 +345,17 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("EXISTS ");
         }
         existsExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(MemberOfExpression memberOfExpression) {
+        memberOfExpression.getLeftExpression().accept(this);
+        if (memberOfExpression.isNot()) {
+            buffer.append(" NOT MEMBER OF ");
+        } else {
+            buffer.append(" MEMBER OF ");
+        }
+        memberOfExpression.getRightExpression().accept(this);
     }
 
     @Override

@@ -39,6 +39,7 @@ import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -134,6 +135,8 @@ public interface ExpressionVisitor {
     void visit(WhenClause whenClause);
 
     void visit(ExistsExpression existsExpression);
+
+    void visit(MemberOfExpression memberOfExpression);
 
     void visit(AnyComparisonExpression anyComparisonExpression);
 
