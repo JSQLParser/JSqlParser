@@ -150,8 +150,6 @@ test {
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "1G"
-
-    finalizedBy check
 }
 
 jacocoTestReport {
