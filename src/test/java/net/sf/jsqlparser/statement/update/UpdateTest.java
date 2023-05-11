@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.update;
 
-import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -19,13 +18,17 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import static net.sf.jsqlparser.test.TestUtils.*;
+import net.sf.jsqlparser.statement.Statement;
+import org.junit.jupiter.api.Test;
+
+import java.io.StringReader;
+
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
 
@@ -336,5 +339,20 @@ public class UpdateTest {
         // update.getUpdateSets().get(0).add(new Column("y"), new DoubleValue("6"));
 
         assertEquals("UPDATE mytable SET (a, y) = (5, 6) WHERE b = 2", update.toString());
+    }
+
+    @Test
+    void testIssue() throws JSQLParserException {
+        String sqlStr = "SELECT listes[(SELECT cardinality(listes))]";
+        Statement select = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "update utilisateur set listes[0] = 1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "update utilisateur set listes[(select cardinality(listes))] = 1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "update utilisateur set listes[0:3] = (1,2,3,4)";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

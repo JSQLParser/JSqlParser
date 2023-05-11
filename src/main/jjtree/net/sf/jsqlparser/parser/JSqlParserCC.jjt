@@ -1307,7 +1307,7 @@ List<UpdateSet> UpdateSets():
 {
     (
         (
-            tableColumn=Column() "=" valueExpression=SimpleExpression()
+            tableColumn=Column() "=" valueExpression=Expression()
             { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
         )
         |
@@ -1326,7 +1326,7 @@ List<UpdateSet> UpdateSets():
     (
         ","
         (
-            tableColumn=Column() "=" valueExpression=SimpleExpression()
+            tableColumn=Column() "=" valueExpression=Expression()
             { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
         )
         |
@@ -1684,12 +1684,16 @@ List<String> RelObjectNameList() : {
 Column Column() #Column :
 {
     List<String> data = new ArrayList<String>();
+    ArrayConstructor arrayConstructor = null;
 }
 {
     data = RelObjectNameList()
-
+    [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
     {
         Column col = new Column(data);
+        if (arrayConstructor!=null) {
+            col.setArrayConstructor(arrayConstructor);
+        }
         linkAST(col,jjtThis);
         return col;
     }
@@ -3974,17 +3978,39 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
     t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
 }
 
+RangeExpression RangeExpression(Expression startExpression):
+{
+    Expression endExpression;
+}
+{
+    ":" endExpression = Expression()
+    {
+        return new RangeExpression(startExpression, endExpression);
+    }
+}
+
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
     ExpressionList expList = new ExpressionList();
     ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
     Expression exp;
 } {
     "["
-        [ (LOOKAHEAD(3) exp = SimpleExpression() | exp = ArrayConstructor(false))
-          { expList.add(exp); }
-        ("," (exp = SimpleExpression() | exp = ArrayConstructor(false))
-            { expList.add(exp); })*
-        ]
+    [
+        (
+            LOOKAHEAD(3) exp = Expression() [ exp=RangeExpression(exp) ]
+            |
+            exp = ArrayConstructor(false)
+        ) { expList.add(exp); }
+
+        (
+            ","
+            (
+                LOOKAHEAD(3) exp = Expression() [ exp=RangeExpression(exp) ]
+                |
+                exp = ArrayConstructor(false)
+            ){ expList.add(exp); }
+        )*
+    ]
     "]"
     { return array; }
 }

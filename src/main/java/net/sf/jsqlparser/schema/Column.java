@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.schema;
 
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -22,6 +23,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     private Table table;
     private String columnName;
+    private ArrayConstructor arrayConstructor;
 
     public Column() {}
 
@@ -37,6 +39,15 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public Column(String columnName) {
         this(null, columnName);
+    }
+
+    public ArrayConstructor getArrayConstructor() {
+        return arrayConstructor;
+    }
+
+    public Column setArrayConstructor(ArrayConstructor arrayConstructor) {
+        this.arrayConstructor = arrayConstructor;
+        return this;
     }
 
     /**
@@ -102,6 +113,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         if (columnName != null) {
             fqn.append(columnName);
         }
+
+        if (arrayConstructor != null) {
+            fqn.append(arrayConstructor);
+        }
+
         return fqn.toString();
     }
 

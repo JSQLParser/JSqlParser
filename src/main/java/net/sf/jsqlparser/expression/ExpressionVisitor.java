@@ -228,4 +228,6 @@ public interface ExpressionVisitor {
     void visit(TranscodingFunction transcodingFunction);
 
     void visit(TrimFunction trimFunction);
+
+    void visit(RangeExpression rangeExpression);
 }

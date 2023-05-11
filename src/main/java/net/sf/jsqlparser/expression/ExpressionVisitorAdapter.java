@@ -644,4 +644,10 @@ public class ExpressionVisitorAdapter
     public void visit(TrimFunction trimFunction) {
 
     }
+
+    @Override
+    public void visit(RangeExpression rangeExpression) {
+        rangeExpression.getStartExpression().accept(this);
+        rangeExpression.getEndExpression().accept(this);
+    }
 }

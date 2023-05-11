@@ -46,6 +46,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
@@ -471,6 +472,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(RangeExpression rangeExpression) {
+        rangeExpression.getStartExpression().accept(this);
+        buffer.append(":");
+        rangeExpression.getEndExpression().accept(this);
+    }
+
+    @Override
     public void visit(Column tableColumn) {
         final Table table = tableColumn.getTable();
         String tableName = null;
@@ -486,6 +494,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append(tableColumn.getColumnName());
+
+        if (tableColumn.getArrayConstructor() != null) {
+            tableColumn.getArrayConstructor().accept(this);
+        }
     }
 
     @Override
