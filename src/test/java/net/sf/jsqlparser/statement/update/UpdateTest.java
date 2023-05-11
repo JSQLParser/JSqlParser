@@ -18,7 +18,6 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
@@ -344,7 +343,7 @@ public class UpdateTest {
     @Test
     void testIssue() throws JSQLParserException {
         String sqlStr = "SELECT listes[(SELECT cardinality(listes))]";
-        Statement select = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         sqlStr = "update utilisateur set listes[0] = 1";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
