@@ -341,7 +341,7 @@ public class UpdateTest {
     }
 
     @Test
-    void testIssue() throws JSQLParserException {
+    void testArrayColumnsIssue1083() throws JSQLParserException {
         String sqlStr = "SELECT listes[(SELECT cardinality(listes))]";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 

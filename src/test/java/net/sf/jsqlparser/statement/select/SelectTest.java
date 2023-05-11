@@ -5779,4 +5779,13 @@ public class SelectTest {
         assertFalse(join.withRight(true).isInnerJoin());
         assertFalse(join.withInner(true).isRight());
     }
+
+    @Test
+    void testArrayColumnsIssue1757() throws JSQLParserException {
+        String sqlStr = "SELECT my_map['my_key'] FROM my_table WHERE id = 123";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT cast(my_map['my_key'] as int) FROM my_table WHERE id = 123";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
