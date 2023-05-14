@@ -8,6 +8,57 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **test: add unit test for issue #1778**
+    
+    Andreas Reichel, 2023-05-11
+  * **style: appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-05-11
+  * **style: appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: `MEMBER OF` condition as shown at https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#operator_member-of**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: access Elements of Array Columns**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: JdbcNamedParameter allows "&" (instead of ":")**
+    
+    Andreas Reichel, 2023-05-11
+  * **fix: Java Version 8**
+    
+    Andreas Reichel, 2023-05-09
+  * **refactor: generify `SelectItem` and remove `FunctionItem` and `ExpressionListItem`**
+    
+    Andreas Reichel, 2023-05-09
+  * **style: replace all List<Expression> with ExpressionList<> and enforce policy via Acceptance Test**
+    
+    Andreas Reichel, 2023-05-09
+  * **fix: find the correct position when field belongs to an internal class**
+    
+    Andreas Reichel, 2023-05-09
+  * **style: Appease PMD**
+    
+    Andreas Reichel, 2023-05-07
+  * **style: Appease Checkstyle**
+    
+    Andreas Reichel, 2023-05-07
+  * **test: Disable API Sanitation for the moment**
+    
+    Andreas Reichel, 2023-05-07
+  * **refactor: `Insert` uses `ExpressionList` and `UpdateSet`**
+    
+    Andreas Reichel, 2023-05-07
+  * **build: improve Gradle Build**
+    
+    Andreas Reichel, 2023-05-07
+  * **refactor: remove SimpleFunction**
+    
+    Andreas Reichel, 2023-05-06
+  * **doc: RR chart colors cater for Dark Mode**
+    
+    Andreas Reichel, 2023-05-06
   * **doc: Better Sphinx Tabs**
     
     Andreas Reichel, 2023-05-06

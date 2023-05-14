@@ -422,7 +422,7 @@ task sphinx(type: Exec) {
                     , "sphinx-prompt"
                     , "sphinx_substitution_extensions"
                     , "sphinx_issues"
-                    , "sphinx_tabs"
+                    , "sphinx_tabs.tabs"
                     , "sphinx_inline_tabs"
                     , "pygments"
             ]
