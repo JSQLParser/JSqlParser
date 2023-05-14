@@ -11,6 +11,7 @@ Java SQL Parser Library
    syntax
    keywords
    changelog
+   javadoc
 
 .. image:: https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg
     :alt: Maven Repo

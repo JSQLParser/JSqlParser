@@ -133,14 +133,25 @@ javadoc {
 
 tasks.register('xmldoc', Javadoc) {
     source = sourceSets.main.allJava
+    // beware: Gradle deletes this folder automatically and there is no switch-off
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files.asType(List)
     options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
-    //options.addBooleanOption("Xdoclint:none", true)
 
     // @see https://github.com/gradle/gradle/issues/11898#issue-549900869
-    title = null
-    options.noTimestamp(false)
+    //title = null
+    //options.noTimestamp(false)
+
+    options.addBooleanOption("rst", true)
+    options.addStringOption("basePackage", "net.sf.jsqlparser")
+
+    dependsOn(compileJava)
+    doLast {
+        copy {
+            from reporting.file("xmlDoclet/javadoc.rst")
+            into "${projectDir}/src/site/sphinx/"
+        }
+    }
 }
 
 test {
@@ -399,7 +410,7 @@ task updateKeywords(type: JavaExec) {
 }
 
 task sphinx(type: Exec) {
-    dependsOn(gitChangelogTask, renderRR, updateKeywords)
+    dependsOn(gitChangelogTask, renderRR, updateKeywords, xmldoc)
 
     doFirst() {
         exec {
