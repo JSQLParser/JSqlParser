@@ -24,6 +24,7 @@ def getVersion = { boolean considerSnapshot ->
     def major = 0
     def minor = 0
     def patch = 0
+    def build = 0
     def commit = ""
     def snapshot =""
     new ByteArrayOutputStream().withStream { os ->
@@ -40,18 +41,22 @@ def getVersion = { boolean considerSnapshot ->
             standardOutput = os
         }
         def versionStr = os.toString().trim()
-        def matcher = versionStr =~ /jsqlparser-(\d*)\.(\d*)-(\d*)-([a-zA-Z\d]*)/
+        def matcher = versionStr =~ /jsqlparser-(\d*)\.(\d*)(-(\d*)-([a-zA-Z\d]*))?/
         matcher.find()
 
         major = matcher[0][1]
         minor = matcher[0][2]
-        patch = matcher[0][3]
-        commit = matcher[0][4]
+        if (matcher[0].size > 2) {
+            build = matcher[0][4]
+            commit = matcher[0][5]
+        }
 
-        if (considerSnapshot && versionStr.endsWith("SNAPSHOT")) {
+        if (considerSnapshot && ( versionStr.endsWith('SNAPSHOT') || build>0) ) {
             minor++
+            patch = 0
             snapshot =  "-SNAPSHOT"
         }
+        println("Derived Version: $versionStr --> ${major}.${minor}.${patch}${snapshot}")
     }
     return "${major}.${minor}${snapshot}"
 }
