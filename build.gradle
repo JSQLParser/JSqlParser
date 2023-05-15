@@ -21,15 +21,14 @@ plugins {
 }
 
 def getVersion = { boolean considerSnapshot ->
-    def major = 0
-    def minor = 0
-    def patch = 0
-    def build = 0
-    def commit = ""
-    def snapshot =""
+    Integer major = 0
+    Integer minor = 0
+    Integer patch = null
+    Integer build = null
+    def commit = null
+    def snapshot = ""
     new ByteArrayOutputStream().withStream { os ->
-        exec {
-            workingDir "$projectDir"
+        def result = exec {
             args = [
                     "--no-pager"
                     , "describe"
@@ -41,24 +40,25 @@ def getVersion = { boolean considerSnapshot ->
             standardOutput = os
         }
         def versionStr = os.toString().trim()
-        def matcher = versionStr =~ /jsqlparser-(\d*)\.(\d*)(-(\d*)-([a-zA-Z\d]*))?/
-        matcher.find()
-
-        major = matcher[0][1]
-        minor = matcher[0][2]
-        if (matcher[0].size > 2) {
-            build = matcher[0][4]
-            commit = matcher[0][5]
+        def pattern = /(?<major>\d*)\.(?<minor>\d*)(\.(?<patch>\d*))?(-(?<build>\d*)-(?<commit>[a-zA-Z\d]*))?/
+        def matcher = versionStr =~ pattern
+        if (matcher.find()) {
+            major = matcher.group('major') as Integer
+            minor = matcher.group('minor') as Integer
+            patch = matcher.group('patch') as Integer
+            build = matcher.group('build') as Integer
+            commit = matcher.group('commit')
         }
 
-        if (considerSnapshot && ( versionStr.endsWith('SNAPSHOT') || build>0) ) {
+        if (considerSnapshot && ( versionStr.endsWith('SNAPSHOT') || build!=null) ) {
             minor++
-            patch = 0
-            snapshot =  "-SNAPSHOT"
+            if (patch!=null) patch = 0
+            snapshot = "-SNAPSHOT"
         }
-        println("Derived Version: $versionStr --> ${major}.${minor}.${patch}${snapshot}")
     }
-    return "${major}.${minor}${snapshot}"
+    return patch!=null
+            ? "${major}.${minor}.${patch}${snapshot}"
+            :  "${major}.${minor}${snapshot}";
 }
 version = getVersion(true)
 group = 'com.github.jsqlparser'

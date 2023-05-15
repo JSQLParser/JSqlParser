@@ -5446,6 +5446,8 @@ List<String> CreateParameter():
             |
             tk=<K_BINARY> { param.add(tk.image); }
             |
+            tk=<K_START> { param.add(tk.image); }
+            |
             (tk=<K_CHARACTER> tk2=<K_SET>) { param.add(tk.image); param.add(tk2.image);}
             |
             (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
