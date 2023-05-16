@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -71,5 +72,21 @@ public class UnsupportedStatementTest {
 //                CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(false) );
 //            }
 //        });
+    }
+
+    @Test
+    void testAlter() throws JSQLParserException {
+        String sqlStr =
+                "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertTrue( statement instanceof UnsupportedStatement);
+    }
+
+    @Test
+    void testCreate() throws JSQLParserException {
+        String sqlStr =
+                "create trigger stud_marks before INSERT on Student for each row set Student.total = Student.subj1 + Student.subj2, Student.per = Student.total * 60 / 100";
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertTrue( statement instanceof UnsupportedStatement);
     }
 }

@@ -391,7 +391,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SYSTEM:"SYSTEM">
 |   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
-|   <K_TABLESPACE : "TABLESPACE">
+|   <K_TABLESPACE: "TABLESPACE">
+|   <K_TRIGGER: "TRIGGER">
 |   <K_THEN:"THEN">
 |   <K_TEMP:"TEMP">
 |   <K_TEMPORARY:"TEMPORARY">
@@ -635,38 +636,12 @@ Statement SingleStatement() :
             |
             LOOKAHEAD(3) stm = Upsert()
             |
-            LOOKAHEAD(2)
-            stm = AlterTable()
+            LOOKAHEAD(2) stm = Alter()
             |
-            LOOKAHEAD(2)
-            stm = AlterSession()
+            // @todo: merge this into the ALTER TABLE statement
+            stm = RenameTableStatement()
             |
-            LOOKAHEAD(CreateFunctionStatement())
-            stm = CreateFunctionStatement()
-            |
-            LOOKAHEAD(CreateIndex())
-            stm = CreateIndex()
-            |
-            LOOKAHEAD(CreateSchema())
-            stm = CreateSchema()
-            |
-            LOOKAHEAD(CreateSequence())
-            stm = CreateSequence()
-            |
-            LOOKAHEAD(CreateSynonym())
-            stm = CreateSynonym()
-            |
-            LOOKAHEAD(CreateTable())
-            stm = CreateTable()
-            |
-            LOOKAHEAD(CreateView())
-            stm = CreateView()
-            |
-            LOOKAHEAD(AlterView())
-            stm = AlterView()
-            |
-            LOOKAHEAD(AlterSequence())
-            stm = AlterSequence()
+            stm = Create()
             |
             stm = Drop()
             |
@@ -677,8 +652,6 @@ Statement SingleStatement() :
             stm = Execute()
             |
             stm = Set()
-            |
-            stm = RenameTableStatement()
             |
             stm = Reset()
             |
@@ -703,8 +676,6 @@ Statement SingleStatement() :
             stm = Grant()
             |
             stm = PurgeStatement()
-            |
-            stm = AlterSystemStatement()
         )
         { return stm; }
     } catch (ParseException e) {
@@ -1748,7 +1719,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -4908,7 +4879,6 @@ CreateIndex CreateIndex():
     List<String> name;
 }
 {
-    <K_CREATE>
     [ parameter=CreateParameter() ]
 
     <K_INDEX> index = Index() { index.setType(parameter.isEmpty()?null:parameter.get(0)); }
@@ -4967,7 +4937,7 @@ CreateSchema CreateSchema():
     List<Statement> statements = new ArrayList<Statement>();
 }
 {
-    <K_CREATE> <K_SCHEMA>
+    <K_SCHEMA>
     [ ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); } ]
     [ <K_AUTHORIZATION>
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
@@ -4976,13 +4946,14 @@ CreateSchema CreateSchema():
     [schemaPath=PathSpecification() { schema.setSchemaPath(schemaPath); }]
 
     (
-        LOOKAHEAD(3)
-        table = CreateTable()
+        <K_CREATE>
+
+        table = CreateTable(false)
         {
             table.getTable().setSchemaName(schema.getSchemaName());
             schema.addStatement(table);
         }
-        | view = CreateView()
+        | view = CreateView(false)
         {
             view.getView().setSchemaName(schema.getSchemaName());
             schema.addStatement(view);
@@ -5007,7 +4978,7 @@ List<String> PathSpecification():
     }
 }
 
-CreateTable CreateTable():
+CreateTable CreateTable(boolean isUsingOrReplace):
 {
     CreateTable createTable = new CreateTable();
     Table table = null;
@@ -5042,8 +5013,7 @@ CreateTable CreateTable():
     List<String> columns = new ArrayList<String>();
 }
 {
-    <K_CREATE>
-    [ <K_OR> <K_REPLACE> { createTable.setOrReplace(true);} ]
+    { createTable.setOrReplace(isUsingOrReplace);}
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 
     // table options, not required but 1 or none
@@ -5302,7 +5272,7 @@ Analyze Analyze():
     }
 }
 
-CreateView CreateView():
+CreateView CreateView(boolean isUsingOrReplace):
 {
     CreateView createView = new CreateView();
     Table view = null;
@@ -5311,8 +5281,7 @@ CreateView CreateView():
     Token tk = null;
 }
 {
-    <K_CREATE>
-    [ <K_OR> <K_REPLACE> { createView.setOrReplace(true);} ]
+    { createView.setOrReplace(isUsingOrReplace);}
     [
         <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); }
         | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
@@ -5352,7 +5321,7 @@ ReferentialAction.Action Action():
     { return action; }
 }
 
-AlterView AlterView():
+AlterView AlterView(boolean useReplace):
 {
     AlterView alterView = new AlterView();
     Table view = null;
@@ -5360,8 +5329,7 @@ AlterView AlterView():
     List<String> columnNames = null;
 }
 {
-    ( (<K_ALTER> ) | (<K_REPLACE> {alterView.setUseReplace(true);}) )
-    <K_VIEW> view=Table() { alterView.setView(view); }
+    <K_VIEW> view=Table() { alterView.setView(view); alterView.setUseReplace(useReplace); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
     select=Select() { alterView.setSelect(select); }
@@ -6022,6 +5990,49 @@ AlterExpression AlterExpression():
     }
 }
 
+Statement Alter():
+{
+    Statement statement;
+    List<String> captureRest;
+}
+{
+    (
+        (
+            <K_ALTER>
+            (
+                statement = AlterTable()
+                |
+                statement = AlterSession()
+                |
+                statement = AlterView(false)
+                |
+                statement = AlterSystemStatement()
+                |
+                statement = AlterSequence()
+                |
+                captureRest = captureRest()
+                {
+                    statement = new UnsupportedStatement("ALTER", captureRest);
+                }
+            )
+        )
+        |
+        (
+            <K_REPLACE>
+            (
+                statement = AlterView(true)
+                |
+                captureRest = captureRest()
+                {
+                    statement = new UnsupportedStatement("REPLACE", captureRest);
+                }
+            )
+        )
+    )
+    {
+        return statement;
+    }
+}
 
 Alter AlterTable():
 {
@@ -6031,7 +6042,7 @@ Alter AlterTable():
     boolean usingIfExists = false;
 }
 {
-    <K_ALTER> <K_TABLE>
+    <K_TABLE>
     [ <K_ONLY> { alter.setUseOnly(true); } ]
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usingIfExists = true; } ]
 
@@ -6056,7 +6067,7 @@ AlterSession AlterSession():
     Token token;
 }
 {
-    <K_ALTER> <K_SESSION> (
+    <K_SESSION> (
         ( 
            <K_ADVISE>   ( <K_COMMIT> { operation = AlterSessionOperation.ADVISE_COMMIT; }
                         | <K_ROLLBACK> { operation = AlterSessionOperation.ADVISE_ROLLBACK; }
@@ -6122,7 +6133,7 @@ AlterSystemStatement AlterSystemStatement():
     List<String> parameters = new LinkedList<String>();
 }
 {
-    <K_ALTER> <K_SYSTEM> (
+    <K_SYSTEM> (
         ( 
            "ARCHIVE" "LOG" { operation = AlterSystemOperation.ARCHIVE_LOG; }
         )
@@ -6468,7 +6479,6 @@ CreateSequence CreateSequence():
   List<Sequence.Parameter> sequenceParameters;
 }
 {
-  <K_CREATE>
   <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
   sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
   {
@@ -6483,7 +6493,6 @@ AlterSequence AlterSequence():
   List<Sequence.Parameter> sequenceParameters;
 }
 {
-  <K_ALTER>
   <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
   sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
   {
@@ -6491,15 +6500,56 @@ AlterSequence AlterSequence():
   }
 }
 
-CreateFunctionalStatement CreateFunctionStatement():
+Statement Create():
+{
+    boolean isUsingOrReplace=false;
+    Statement statement;
+    List<String> captureRest;
+}
+{
+    <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
+    (
+        statement = CreateFunctionStatement(isUsingOrReplace)
+        |
+        statement = CreateSchema()
+        |
+        statement = CreateSequence()
+        |
+        statement = CreateSynonym(isUsingOrReplace)
+        |
+        LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
+        |
+        LOOKAHEAD(2) statement = CreateView(isUsingOrReplace)
+        |
+        // @fixme: must appear with TRIGGER before INDEX or it will collide with INDEX's CreateParameter() production
+        <K_TRIGGER> captureRest = captureRest()
+        {
+            statement = new UnsupportedStatement("CREATE TRIGGER", captureRest);
+        }
+        |
+        /* @fixme
+         *  Create Index uses CreateParameter() which allows all kind of tokens
+         *  it can conflict with other statements and must be at the end right now
+         */
+        statement = CreateIndex()
+        |
+        captureRest = captureRest()
+        {
+            statement = new UnsupportedStatement("CREATE", captureRest);
+        }
+    )
+    {
+        return statement;
+    }
+}
+
+CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
 {
   CreateFunctionalStatement type = null;
   List<String> tokens = new LinkedList<String>();
   String statementType = null;
-  boolean orReplace = false;
 }
 {
-  <K_CREATE> [<K_OR> <K_REPLACE> { orReplace = true; } ]
   (
    <K_FUNCTION> { statementType = "FUNCTION"; }
    |
@@ -6508,32 +6558,29 @@ CreateFunctionalStatement CreateFunctionStatement():
   tokens=captureRest()
   {
     if(statementType.equals("FUNCTION")) {
-      type = new CreateFunction(orReplace, tokens);
+      type = new CreateFunction(isUsingOrReplace, tokens);
     }
     if(statementType.equals("PROCEDURE")) {
-      type = new CreateProcedure(orReplace, tokens);
+      type = new CreateProcedure(isUsingOrReplace, tokens);
     }
 
     return type;
   }
 }
 
-CreateSynonym CreateSynonym():
+CreateSynonym CreateSynonym(boolean isUsingOrReplace):
 {
   CreateSynonym createSynonym = new CreateSynonym();
   Synonym synonym;
-  boolean orReplace = false;
   boolean publicSynonym = false;
   List<String> data = new ArrayList<String>();
 }
 {
-  <K_CREATE>
-  [<K_OR> <K_REPLACE> { orReplace = true; } ]
   [<K_PUBLIC> { publicSynonym = true; } ]
   <K_SYNONYM> synonym=Synonym() { createSynonym.setSynonym(synonym); }
   <K_FOR> data = RelObjectNameList()
   {
-    createSynonym.setOrReplace(orReplace);
+    createSynonym.setOrReplace(isUsingOrReplace);
     createSynonym.setPublicSynonym(publicSynonym);
     createSynonym.setForList(data);
     return createSynonym;
@@ -6571,10 +6618,14 @@ List<String> captureRest() {
   Token tok;
   while(true) {
     tok = getToken(1);
-    if(tok.kind == EOF) {
+    int l = tokens.size();
+    if( tok.kind == EOF ) {
       break;
+    } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
+        tokens.set(l-1, tokens.get(l-1) + tok.image);
+    } else {
+        tokens.add(tok.image);
     }
-    tokens.add(tok.image);
     tok = getNextToken();
   }
   return tokens;
