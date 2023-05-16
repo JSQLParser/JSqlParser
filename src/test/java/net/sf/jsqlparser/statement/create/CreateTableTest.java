@@ -986,6 +986,36 @@ public class CreateTableTest {
                         + "    actor_id integer DEFAULT nextval('public.actor_actor_id_seq'::regclass) NOT NULL\n"
                         + ")";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                " CREATE TABLE myschema.tableName (\n"
+                        + "                id bigint NOT NULL DEFAULT nextval('myschema.mysequence'::regclass), \n"
+                        + "                bool_col boolean NOT NULL DEFAULT false, \n"
+                        + "                int_col integer NOT NULL DEFAULT 0)";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                " CREATE TABLE t1 (\n"
+                        + "  -- literal defaults\n"
+                        + "  i INT         DEFAULT 0,\n"
+                        + "  c VARCHAR(10) DEFAULT '',\n"
+                        + "  -- expression defaults\n"
+                        + "  f FLOAT       DEFAULT (RAND() * RAND()),\n"
+                        + "  b BINARY(16)  DEFAULT (UUID_TO_BIN(UUID())),\n"
+                        + "  d DATE        DEFAULT (CURRENT_DATE + INTERVAL 1 YEAR),\n"
+                        + "  p POINT       DEFAULT (Point(0,0)),\n"
+                        + "  j JSON        DEFAULT (JSON_ARRAY())\n"
+                        + ")";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                " CREATE TABLE pagila_dev.actor (\n"
+                        + "actor_id integer DEFAULT nextval('pagila_dev.actor_actor_id_seq'::regclass) NOT NULL,\n"
+                        + "first_name text NOT NULL,\n"
+                        + "last_name text NOT NULL,\n"
+                        + "last_update timestamp with time zone DEFAULT now() NOT NULL\n"
+                        + ")";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
 }

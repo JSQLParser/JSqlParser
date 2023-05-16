@@ -5339,13 +5339,11 @@ AlterView AlterView():
 List<String> CreateParameter():
 {
     String retval = "";
-    Token tk = null;
-    Token tk2 = null;
-    StringBuilder identifier = new StringBuilder("");
+    Token tk = null, tk2 = null;
     Expression exp = null;
-    List<String> param = new ArrayList<String>();
     ColDataType colDataType;
-    Function function;
+
+    List<String> param = new ArrayList<String>();
 }
 {
     (
@@ -5357,117 +5355,47 @@ List<String> CreateParameter():
         |
         (
             (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
-            { identifier.append(tk.image); }
+            { retval+=tk.image; }
 
             [
                 "."
                 (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
-                { identifier.append("."); identifier.append(tk2.image); }
+                { retval+="."+tk2.image; }
             ]
-            { param.add(identifier.toString()); }
+            { param.add(retval); }
         )
         |
-        tk=<K_NULL> { param.add(tk.image); }
+        LOOKAHEAD(3) [<K_USING> <K_INDEX> { param.add("USING INDEX"); }] <K_TABLESPACE> retval=RelObjectName()
+        { param.add("TABLESPACE " + retval); }
         |
-        tk=<K_NOT> { param.add(tk.image); }
-        |
-        tk=<K_PRIMARY> { param.add(tk.image); }
-        |
-        tk=<K_DEFAULT> { param.add(tk.image); }
-        |
-        tk=<K_FOREIGN> { param.add(tk.image); }
-        |
-        tk=<K_REFERENCES> { param.add(tk.image); }
-        |
-        tk=<K_KEY> { param.add(tk.image); }
-        |
-        tk=<S_CHAR_LITERAL> { param.add(tk.image); }
-        |
-          ("+" {retval = "+";} | "-" {retval = "-";})?
-          (
-           tk=<S_LONG> { retval += tk.image; }
-           |
-           tk=<S_DOUBLE> { retval += tk.image; }
-          )
-          { param.add(retval); }
-        |
-        tk=<K_AS>  (
-            ("(" exp = Expression() ")") { param.add("AS"); param.add("(" + exp.toString() + ")");}
-            |
-            { param.add(tk.image);}
+        (
+            tk=<S_CHAR_LITERAL> | tk=<K_NULL> | tk=<K_NOT> | tk=<K_PRIMARY> | tk=<K_FOREIGN>
+            | tk=<K_REFERENCES> | tk=<K_KEY> | tk=<K_STORED> | tk=<K_ON> | tk=<K_COMMIT> | tk=<K_DROP>
+            | tk=<K_ROWS> | tk=<K_UNIQUE> | tk=<K_CASCADE> | tk=<K_DELETE> | tk=<K_UPDATE>
+            | tk=<K_CONSTRAINT> | tk=<K_WITH> | tk=<K_EXCLUDE> | tk=<K_WHERE> | tk=<K_UNSIGNED>
+            | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_PARTITION> | tk=<K_BY> | tk=<K_IN>
+            | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
+            | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START>
+            | tk=<K_TIME_KEY_EXPR>
+            | tk="="
         )
+        { param.add(tk.image); }
         |
-        tk=<K_STORED> { param.add(tk.image); }
+        ( tk=<K_DEFAULT> | tk=<K_AS> | tk=<K_CHECK> ) [ LOOKAHEAD(2) "(" exp = Expression() ")" ]
+        {
+            param.add(tk.image);
+            if (exp!=null) {
+                param.add("(" + exp + ")");
+            }
+        }
         |
-        tk=<K_ON> { param.add(tk.image); }
-        |
-        tk=<K_COMMIT> { param.add(tk.image); }
-        |
-        tk=<K_DROP> { param.add(tk.image); }
-        |
-        tk=<K_ROWS> { param.add(tk.image); }
-        |
-        tk=<K_UNIQUE> { param.add(tk.image); }
-        |
-        tk=<K_CASCADE> { param.add(tk.image); }
-        |
-        tk=<K_DELETE> { param.add(tk.image); }
-        |
-        tk=<K_UPDATE> { param.add(tk.image); }
-        |
-        tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
-        |
-        "=" { param.add("="); }
-        |
-        LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
-        |
-        <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
+        (
+            [ ( tk="+" | tk="-" ) { retval = tk.image; } ]
+            tk=<S_LONG> | tk=<S_DOUBLE>
+        )
+        { param.add( retval + tk.image ); }
         |
         retval=AList() { param.add(retval); }
-        |
-        <K_CHECK>  ("(" exp = Expression() ")") { param.add("CHECK"); param.add("(" + exp.toString() + ")");}
-        |
-        tk=<K_CONSTRAINT> { param.add(tk.image); }
-        |
-        tk=<K_WITH> { param.add(tk.image); }
-        |
-        tk=<K_EXCLUDE> { param.add(tk.image); }
-        |
-        tk=<K_WHERE> { param.add(tk.image); }
-        |
-        tk=<K_UNSIGNED> { param.add(tk.image); }
-        |
-        tk=<K_TEMP> { param.add(tk.image); }
-        |
-        tk=<K_TEMPORARY> { param.add(tk.image); }
-        |
-        tk=<K_PARTITION> { param.add(tk.image); }
-        |
-        tk=<K_BY> { param.add(tk.image); }
-        |
-        tk=<K_IN> { param.add(tk.image); }
-        |
-        tk=<K_TYPE> { param.add(tk.image); }
-        |
-        tk=<K_COMMENT> { param.add(tk.image); }
-        |
-        tk=<K_USING> { param.add(tk.image); }
-        |
-        tk=<K_COLLATE> { param.add(tk.image); }
-        |
-        tk=<K_ASC> { param.add(tk.image); }
-        |
-        tk=<K_DESC> { param.add(tk.image); }
-        |
-        tk=<K_TRUE> { param.add(tk.image); }
-        |
-        tk=<K_FALSE> { param.add(tk.image); }
-        |
-        tk=<K_PARALLEL> { param.add(tk.image); }
-        |
-        tk=<K_BINARY> { param.add(tk.image); }
-        |
-        tk=<K_START> { param.add(tk.image); }
         |
         (tk=<K_CHARACTER> tk2=<K_SET>) { param.add(tk.image); param.add(tk2.image);}
         |
