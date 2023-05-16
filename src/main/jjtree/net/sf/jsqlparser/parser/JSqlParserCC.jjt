@@ -297,7 +297,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MOVEMENT: "MOVEMENT">
 |   <K_NATURAL:"NATURAL">
 |   <K_NEXT:"NEXT">
-|   <K_NEXTVAL: (  (("NEXTVAL")(" ")+("FOR"))  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
+|   <K_NEXTVAL: (  (("NEXTVAL")((" ")+("FOR"))?)  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
 |   <K_NO:"NO">
 |   <K_NOCACHE:"NOCACHE">
 |   <K_NOCYCLE:"NOCYCLE">
@@ -1689,6 +1689,10 @@ Column Column() #Column :
 }
 {
     data = RelObjectNameList()
+
+    // @todo: we better should return a SEQUENCE instead of a COLUMN
+    [ "." <K_NEXTVAL> { data.add("nextval"); } ]
+
     [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
     {
         Column col = new Column(data);
@@ -2163,6 +2167,8 @@ SelectItem SelectItem() #SelectItem:
     Alias alias = null;
 }
 {
+    // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
+    // @todo: parse a proper SEQUENCE instead of a COLUMN
     (
         "*" { expression = new AllColumns(); }
         |
@@ -5339,121 +5345,136 @@ List<String> CreateParameter():
     Expression exp = null;
     List<String> param = new ArrayList<String>();
     ColDataType colDataType;
+    Function function;
 }
 {
+    (
+        // Postgres: nextval('public.actor_actor_id_seq'::regclass)
+        ( <K_NEXTVAL> "("  tk=<S_CHAR_LITERAL> "::" colDataType = ColDataType() ")" )
+        {
+            param.add("NextVal( " + tk.image + "::" + colDataType + ")" );
+        }
+        |
         (
-            (((tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { identifier.append(tk.image); }
-                ["." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { identifier.append("."); identifier.append(tk2.image); }])
-                { param.add(identifier.toString()); })
-            |
-            tk=<K_NULL> { param.add(tk.image); }
-            |
-            tk=<K_NOT> { param.add(tk.image); }
-            |
-            tk=<K_PRIMARY> { param.add(tk.image); }
-            |
-            tk=<K_DEFAULT> { param.add(tk.image); }
-            |
-            tk=<K_FOREIGN> { param.add(tk.image); }
-            |
-            tk=<K_REFERENCES> { param.add(tk.image); }
-            |
-            tk=<K_KEY> { param.add(tk.image); }
-            |
-            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
-            |
-              ("+" {retval = "+";} | "-" {retval = "-";})?
-              (
-               tk=<S_LONG> { retval += tk.image; }
-               |
-               tk=<S_DOUBLE> { retval += tk.image; }
-              )
-              { param.add(retval); }
-            |
-            tk=<K_AS>  (
-                ("(" exp = Expression() ")") { param.add("AS"); param.add("(" + exp.toString() + ")");}
-                |
-                { param.add(tk.image);}
-            )
-            |
-            tk=<K_STORED> { param.add(tk.image); }
-            |
-            tk=<K_ON> { param.add(tk.image); }
-            |
-            tk=<K_COMMIT> { param.add(tk.image); }
-            |
-            tk=<K_DROP> { param.add(tk.image); }
-            |
-            tk=<K_ROWS> { param.add(tk.image); }
-            |
-            tk=<K_UNIQUE> { param.add(tk.image); }
-            |
-            tk=<K_CASCADE> { param.add(tk.image); }
-            |
-            tk=<K_DELETE> { param.add(tk.image); }
-            |
-            tk=<K_UPDATE> { param.add(tk.image); }
-            |
-            tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
-            |
-            "=" { param.add("="); }
-            |
-            LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
-            |
-            <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
-            |
-            retval=AList() { param.add(retval); }
-            |
-            <K_CHECK>  ("(" exp = Expression() ")") { param.add("CHECK"); param.add("(" + exp.toString() + ")");}
-            |
-            tk=<K_CONSTRAINT> { param.add(tk.image); }
-            |
-            tk=<K_WITH> { param.add(tk.image); }
-            |
-            tk=<K_EXCLUDE> { param.add(tk.image); }
-            |
-            tk=<K_WHERE> { param.add(tk.image); }
-            |
-            tk=<K_UNSIGNED> { param.add(tk.image); }
-            |
-            tk=<K_TEMP> { param.add(tk.image); }
-            |
-            tk=<K_TEMPORARY> { param.add(tk.image); }
-            |
-            tk=<K_PARTITION> { param.add(tk.image); }
-            |
-            tk=<K_BY> { param.add(tk.image); }
-            |
-            tk=<K_IN> { param.add(tk.image); }
-            |
-            tk=<K_TYPE> { param.add(tk.image); }
-            |
-            tk=<K_COMMENT> { param.add(tk.image); }
-            |
-            tk=<K_USING> { param.add(tk.image); }
-            |
-            tk=<K_COLLATE> { param.add(tk.image); }
-            |
-            tk=<K_ASC> { param.add(tk.image); }
-            |
-            tk=<K_DESC> { param.add(tk.image); }
-            |
-            tk=<K_TRUE> { param.add(tk.image); }
-            |
-            tk=<K_FALSE> { param.add(tk.image); }
-            |
-            tk=<K_PARALLEL> { param.add(tk.image); }
-            |
-            tk=<K_BINARY> { param.add(tk.image); }
-            |
-            tk=<K_START> { param.add(tk.image); }
-            |
-            (tk=<K_CHARACTER> tk2=<K_SET>) { param.add(tk.image); param.add(tk2.image);}
-            |
-            (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
-            |
-	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
+            (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
+            { identifier.append(tk.image); }
+
+            [
+                "."
+                (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
+                { identifier.append("."); identifier.append(tk2.image); }
+            ]
+            { param.add(identifier.toString()); }
         )
+        |
+        tk=<K_NULL> { param.add(tk.image); }
+        |
+        tk=<K_NOT> { param.add(tk.image); }
+        |
+        tk=<K_PRIMARY> { param.add(tk.image); }
+        |
+        tk=<K_DEFAULT> { param.add(tk.image); }
+        |
+        tk=<K_FOREIGN> { param.add(tk.image); }
+        |
+        tk=<K_REFERENCES> { param.add(tk.image); }
+        |
+        tk=<K_KEY> { param.add(tk.image); }
+        |
+        tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+        |
+          ("+" {retval = "+";} | "-" {retval = "-";})?
+          (
+           tk=<S_LONG> { retval += tk.image; }
+           |
+           tk=<S_DOUBLE> { retval += tk.image; }
+          )
+          { param.add(retval); }
+        |
+        tk=<K_AS>  (
+            ("(" exp = Expression() ")") { param.add("AS"); param.add("(" + exp.toString() + ")");}
+            |
+            { param.add(tk.image);}
+        )
+        |
+        tk=<K_STORED> { param.add(tk.image); }
+        |
+        tk=<K_ON> { param.add(tk.image); }
+        |
+        tk=<K_COMMIT> { param.add(tk.image); }
+        |
+        tk=<K_DROP> { param.add(tk.image); }
+        |
+        tk=<K_ROWS> { param.add(tk.image); }
+        |
+        tk=<K_UNIQUE> { param.add(tk.image); }
+        |
+        tk=<K_CASCADE> { param.add(tk.image); }
+        |
+        tk=<K_DELETE> { param.add(tk.image); }
+        |
+        tk=<K_UPDATE> { param.add(tk.image); }
+        |
+        tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
+        |
+        "=" { param.add("="); }
+        |
+        LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
+        |
+        <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
+        |
+        retval=AList() { param.add(retval); }
+        |
+        <K_CHECK>  ("(" exp = Expression() ")") { param.add("CHECK"); param.add("(" + exp.toString() + ")");}
+        |
+        tk=<K_CONSTRAINT> { param.add(tk.image); }
+        |
+        tk=<K_WITH> { param.add(tk.image); }
+        |
+        tk=<K_EXCLUDE> { param.add(tk.image); }
+        |
+        tk=<K_WHERE> { param.add(tk.image); }
+        |
+        tk=<K_UNSIGNED> { param.add(tk.image); }
+        |
+        tk=<K_TEMP> { param.add(tk.image); }
+        |
+        tk=<K_TEMPORARY> { param.add(tk.image); }
+        |
+        tk=<K_PARTITION> { param.add(tk.image); }
+        |
+        tk=<K_BY> { param.add(tk.image); }
+        |
+        tk=<K_IN> { param.add(tk.image); }
+        |
+        tk=<K_TYPE> { param.add(tk.image); }
+        |
+        tk=<K_COMMENT> { param.add(tk.image); }
+        |
+        tk=<K_USING> { param.add(tk.image); }
+        |
+        tk=<K_COLLATE> { param.add(tk.image); }
+        |
+        tk=<K_ASC> { param.add(tk.image); }
+        |
+        tk=<K_DESC> { param.add(tk.image); }
+        |
+        tk=<K_TRUE> { param.add(tk.image); }
+        |
+        tk=<K_FALSE> { param.add(tk.image); }
+        |
+        tk=<K_PARALLEL> { param.add(tk.image); }
+        |
+        tk=<K_BINARY> { param.add(tk.image); }
+        |
+        tk=<K_START> { param.add(tk.image); }
+        |
+        (tk=<K_CHARACTER> tk2=<K_SET>) { param.add(tk.image); param.add(tk2.image);}
+        |
+        (<K_ARRAY_LITERAL> exp=ArrayConstructor(true)) { param.add(exp.toString()); }
+        |
+        tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
+    )
     {return param;}
 }
 

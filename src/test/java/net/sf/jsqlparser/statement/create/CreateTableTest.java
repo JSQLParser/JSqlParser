@@ -979,4 +979,13 @@ public class CreateTableTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+    @Test
+    void testCreateTableWithNextValueFor() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE public.actor (\n"
+                        + "    actor_id integer DEFAULT nextval('public.actor_actor_id_seq'::regclass) NOT NULL\n"
+                        + ")";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
 }
