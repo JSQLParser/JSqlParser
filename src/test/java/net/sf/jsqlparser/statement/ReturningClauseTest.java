@@ -7,19 +7,22 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.expression.operators.relational;
+package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
-class MemberOfExpressionTest {
+class ReturningClauseTest {
     @Test
-    void testMemberOf() throws JSQLParserException {
-        String sqlStr = "SELECT 17 MEMBER OF ( cxr_post_id->'$.value' ) ";
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr = "SELECT 17 MEMBER OF ( '[23, \"abc\", 17, \"ab\", 10]' ) ";
+    void returnIntoTest() throws JSQLParserException {
+        String sqlStr = "  insert into emp\n"
+                + "  (empno, ename)\n"
+                + "  values\n"
+                + "  (seq_emp.nextval, 'morgan')\n"
+                + "  returning empno\n"
+                + "  into x";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
 }

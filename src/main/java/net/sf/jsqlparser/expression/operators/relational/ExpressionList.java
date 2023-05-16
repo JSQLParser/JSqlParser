@@ -11,7 +11,6 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.parser.SimpleNode;
 
 import java.io.Serializable;
@@ -65,7 +64,7 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
         return this;
     }
 
-    public ExpressionList addExpressions(Collection<T> expressions) {
+    public ExpressionList<?> addExpressions(Collection<T> expressions) {
         addAll(expressions);
         return this;
     }
@@ -80,9 +79,19 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
         return addExpressions(expressions);
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        for (int i = 0; i < size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(get(i));
+        }
+        return builder;
+    }
+
     @Override
     public String toString() {
-        return PlainSelect.getStringList(this, true, false);
+        return appendTo(new StringBuilder()).toString();
     }
 
     @Override

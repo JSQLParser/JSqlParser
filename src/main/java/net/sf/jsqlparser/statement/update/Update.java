@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
+import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -22,7 +23,6 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class Update implements Statement {
     private OracleHint oracleHint = null;
     private List<OrderByElement> orderByElements;
     private Limit limit;
-    private List<SelectItem<?>> returningExpressionList = null;
+    private ReturningClause returningClause;
     private UpdateModifierPriority modifierPriority;
     private boolean modifierIgnore;
 
@@ -245,12 +245,13 @@ public class Update implements Statement {
         return limit;
     }
 
-    public List<SelectItem<?>> getReturningExpressionList() {
-        return returningExpressionList;
+    public ReturningClause getReturningClause() {
+        return returningClause;
     }
 
-    public void setReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
+    public Update setReturningClause(ReturningClause returningClause) {
+        this.returningClause = returningClause;
+        return this;
     }
 
     public UpdateModifierPriority getModifierPriority() {
@@ -335,9 +336,8 @@ public class Update implements Statement {
             b.append(limit);
         }
 
-        if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ")
-                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+        if (returningClause != null) {
+            returningClause.appendTo(b);
         }
 
         return b.toString();
@@ -385,11 +385,6 @@ public class Update implements Statement {
 
     public Update withLimit(Limit limit) {
         this.setLimit(limit);
-        return this;
-    }
-
-    public Update withReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.setReturningExpressionList(returningExpressionList);
         return this;
     }
 
@@ -476,21 +471,6 @@ public class Update implements Statement {
                 Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
         return this.withOrderByElements(collection);
-    }
-
-    public Update addReturningExpressionList(SelectItem<?>... returningExpressionList) {
-        List<SelectItem<?>> collection =
-                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, returningExpressionList);
-        return this.withReturningExpressionList(collection);
-    }
-
-    public Update addReturningExpressionList(
-            Collection<? extends SelectItem<?>> returningExpressionList) {
-        List<SelectItem<?>> collection =
-                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
-        collection.addAll(returningExpressionList);
-        return this.withReturningExpressionList(collection);
     }
 
     public <E extends Expression> E getWhere(Class<E> type) {

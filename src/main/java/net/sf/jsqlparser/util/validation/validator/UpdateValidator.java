@@ -28,7 +28,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
             validateFeature(c, update.isUseSelect(), Feature.updateUseSelect);
             validateOptionalFeature(c, update.getOrderByElements(), Feature.updateOrderBy);
             validateOptionalFeature(c, update.getLimit(), Feature.updateLimit);
-            validateOptionalFeature(c, update.getReturningExpressionList(),
+            validateOptionalFeature(c, update.getReturningClause(),
                     Feature.updateReturning);
         }
 
@@ -59,9 +59,9 @@ public class UpdateValidator extends AbstractValidator<Update> {
             getValidator(LimitValidator.class).validate(update.getLimit());
         }
 
-        if (isNotEmpty(update.getReturningExpressionList())) {
+        if (update.getReturningClause() != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            update.getReturningExpressionList().forEach(c -> c.accept(v));
+            update.getReturningClause().forEach(c -> c.accept(v));
         }
     }
 

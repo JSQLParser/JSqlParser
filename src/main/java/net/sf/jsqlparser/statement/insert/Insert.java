@@ -14,17 +14,16 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
+import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,7 +40,7 @@ public class Insert implements Statement {
     private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
-    private List<SelectItem<?>> returningExpressionList = null;
+    private ReturningClause returningClause;
     private List<UpdateSet> setUpdateSets = null;
     private List<WithItem> withItemsList;
     private OutputClause outputClause;
@@ -108,12 +107,13 @@ public class Insert implements Statement {
         return select != null && select instanceof Values;
     }
 
-    public List<SelectItem<?>> getReturningExpressionList() {
-        return returningExpressionList;
+    public ReturningClause getReturningClause() {
+        return returningClause;
     }
 
-    public void setReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
+    public Insert setReturningClause(ReturningClause returningClause) {
+        this.returningClause = returningClause;
+        return this;
     }
 
     public Select getSelect() {
@@ -257,9 +257,8 @@ public class Insert implements Statement {
             conflictAction.appendTo(sql);
         }
 
-        if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ")
-                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+        if (returningClause != null) {
+            returningClause.appendTo(sql);
         }
 
         return sql.toString();
@@ -285,11 +284,6 @@ public class Insert implements Statement {
         return this;
     }
 
-    public Insert withReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.setReturningExpressionList(returningExpressionList);
-        return this;
-    }
-
     public Insert withTable(Table table) {
         this.setTable(table);
         return this;
@@ -309,17 +303,5 @@ public class Insert implements Statement {
                 Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
-    }
-
-    public Insert addReturningExpressionList(SelectItem<?>... returningExpressions) {
-        return this.addReturningExpressionList(Arrays.asList(returningExpressions));
-    }
-
-    public Insert addReturningExpressionList(
-            Collection<? extends SelectItem<?>> returningExpressions) {
-        List<SelectItem<?>> collection =
-                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
-        collection.addAll(returningExpressions);
-        return this.withReturningExpressionList(collection);
     }
 }

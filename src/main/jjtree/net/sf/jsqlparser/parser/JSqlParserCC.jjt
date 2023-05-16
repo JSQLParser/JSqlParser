@@ -1179,7 +1179,7 @@ Statement Show():
         captureRest = captureRest()
         {
             if (captureRest.size()==1) {
-                statement = new ShowStatement(captureRest.get(1));
+                statement = new ShowStatement(captureRest.get(0));
             } else {
                 statement = new UnsupportedStatement("SHOW", captureRest);
             }
@@ -1253,6 +1253,33 @@ Values Values(): {
     }
 }
 
+ReturningClause ReturningClause():
+{
+    Token keyword;
+    List<SelectItem<?>> selectItems;
+    Object dataItem;
+    List<Object> dataItems = null;
+}
+{
+    ( keyword=<K_RETURNING> | keyword="RETURN" )
+    selectItems = SelectItemsList()
+
+    [
+        <K_INTO>
+        ( dataItem = Table() | dataItem = UserVariable() )
+        { dataItems = new ArrayList<Object>(); dataItems.add(dataItem); }
+
+        (
+            ","
+            ( dataItem = Table() | dataItem = UserVariable() ) { dataItems.add(dataItem); }
+        )*
+    ]
+
+    {
+        return new ReturningClause(keyword.image, selectItems, dataItems);
+    }
+}
+
 Update Update( List<WithItem> with ):
 {
     Update update = new Update();
@@ -1266,7 +1293,7 @@ Update Update( List<WithItem> with ):
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
-    List<SelectItem<?>> returning = null;
+    ReturningClause returningClause;
     Token tk = null;
     UpdateModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
@@ -1290,7 +1317,7 @@ Update Update( List<WithItem> with ):
 
     [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
     [ limit = PlainLimit() { update.setLimit(limit); } ]
-    [ <K_RETURNING> returning=SelectItemsList() ]
+    [ returningClause = ReturningClause() { update.setReturningClause(returningClause); } ]
 
     {
         return update.withWithItemsList(with)
@@ -1299,8 +1326,7 @@ Update Update( List<WithItem> with ):
               .withFromItem(fromItem)
               .withJoins(joins)
               .withModifierPriority(modifierPriority)
-              .withModifierIgnore(modifierIgnore)
-              .withReturningExpressionList(returning);
+              .withModifierIgnore(modifierIgnore);
     }
 }
 
@@ -1364,7 +1390,7 @@ Insert Insert( List<WithItem> with ):
     Column tableColumn = null;
     ExpressionList<Column> columns = new ExpressionList<Column>();
     Expression exp = null;
-    List<SelectItem<?>> returning = null;
+    ReturningClause returningClause;
     Select select = null;
     boolean useDuplicate = false;
     Token tk = null;
@@ -1418,7 +1444,7 @@ Insert Insert( List<WithItem> with ):
         conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
     ]
 
-    [ <K_RETURNING> returning=SelectItemsList() ]
+    [ returningClause = ReturningClause() { insert.setReturningClause(returningClause); } ]
 
     {
         if (!columns.isEmpty()) {
@@ -1427,7 +1453,6 @@ Insert Insert( List<WithItem> with ):
         return insert.withWithItemsList(with)
               .withSelect(select)
               .withTable(table)
-              .withReturningExpressionList(returning)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
     }
@@ -1520,7 +1545,6 @@ Upsert Upsert():
     ExpressionList<Column> columns;
     List<UpdateSet> updateSets;
 
-    List<SelectItem<?>> returning = null;
     Select select = null;
     List<UpdateSet> duplicateUpdateSets;
     Token tk = null;
@@ -1578,8 +1602,8 @@ Delete Delete( List<WithItem> with ):
     boolean modifierIgnore = false;
     boolean modifierQuick = false;
 
-    List<SelectItem<?>> returning = null;
-    OutputClause outputClause = null;
+    ReturningClause returningClause;
+    OutputClause outputClause;
 }
 {
     <K_DELETE> { delete.setOracleHint(getOracleHint()); }
@@ -1598,7 +1622,7 @@ Delete Delete( List<WithItem> with ):
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
 
-    [  <K_RETURNING> returning=SelectItemsList() ]
+    [ returningClause = ReturningClause() { delete.setReturningClause(returningClause); } ]
     {
         if (joins != null && joins.size() > 0) {
             delete.setJoins(joins);
@@ -1610,8 +1634,7 @@ Delete Delete( List<WithItem> with ):
               .withUsingList(usingList)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
-              .withModifierQuick(modifierQuick)
-              .withReturningExpressionList(returning);
+              .withModifierQuick(modifierQuick);
     }
 }
 

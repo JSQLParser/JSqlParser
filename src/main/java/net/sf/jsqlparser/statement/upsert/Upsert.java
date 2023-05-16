@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.upsert;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -30,7 +29,7 @@ public class Upsert implements Statement {
 
     private Table table;
     private ExpressionList<Column> columns;
-    private ExpressionList expressions;
+    private ExpressionList<?> expressions;
     private Select select;
     private List<UpdateSet> updateSets;
     private List<UpdateSet> duplicateUpdateSets;
@@ -111,7 +110,7 @@ public class Upsert implements Statement {
     }
 
     @Deprecated
-    public ExpressionList<Expression> getSetExpressions() {
+    public ExpressionList<?> getSetExpressions() {
         return expressions;
     }
 

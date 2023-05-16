@@ -13,13 +13,13 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
+import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
@@ -46,7 +46,8 @@ public class Delete implements Statement {
     private DeleteModifierPriority modifierPriority;
     private boolean modifierIgnore;
     private boolean modifierQuick;
-    private List<SelectItem<?>> returningExpressionList = null;
+
+    private ReturningClause returningClause;
     private OutputClause outputClause;
 
     public OutputClause getOutputClause() {
@@ -57,16 +58,12 @@ public class Delete implements Statement {
         this.outputClause = outputClause;
     }
 
-    public List<SelectItem<?>> getReturningExpressionList() {
-        return returningExpressionList;
+    public ReturningClause getReturningClause() {
+        return returningClause;
     }
 
-    public void setReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
-    }
-
-    public Delete withReturningExpressionList(List<SelectItem<?>> returningExpressionList) {
-        this.returningExpressionList = returningExpressionList;
+    public Delete setReturningClause(ReturningClause returningClause) {
+        this.returningClause = returningClause;
         return this;
     }
 
@@ -248,9 +245,8 @@ public class Delete implements Statement {
             b.append(limit);
         }
 
-        if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ")
-                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+        if (returningClause != null) {
+            returningClause.appendTo(b);
         }
 
         return b.toString();

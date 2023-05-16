@@ -12,7 +12,6 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -104,9 +103,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             insert.getConflictAction().appendTo(buffer);
         }
 
-        if (insert.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ").append(
-                    PlainSelect.getStringList(insert.getReturningExpressionList(), true, false));
+        if (insert.getReturningClause() != null) {
+            insert.getReturningClause().appendTo(buffer);
         }
     }
 

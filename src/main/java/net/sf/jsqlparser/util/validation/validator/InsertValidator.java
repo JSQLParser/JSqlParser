@@ -37,7 +37,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
             validateOptionalFeature(c, insert.getSelect(), Feature.insertFromSelect);
             validateFeature(c, insert.isUseSet(), Feature.insertUseSet);
             validateFeature(c, insert.isUseDuplicate(), Feature.insertUseDuplicateKeyUpdate);
-            validateOptionalFeature(c, insert.getReturningExpressionList(),
+            validateOptionalFeature(c, insert.getReturningClause(),
                     Feature.insertReturningExpressionList);
         }
 
@@ -71,9 +71,9 @@ public class InsertValidator extends AbstractValidator<Insert> {
             }
         }
 
-        if (isNotEmpty(insert.getReturningExpressionList())) {
+        if (insert.getReturningClause() != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            insert.getReturningExpressionList().forEach(c -> c.accept(v));
+            insert.getReturningClause().forEach(c -> c.accept(v));
         }
     }
 

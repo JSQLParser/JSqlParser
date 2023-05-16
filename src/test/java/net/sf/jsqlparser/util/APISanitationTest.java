@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2023 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.Expression;
@@ -272,11 +281,13 @@ public class APISanitationTest {
         ParameterizedType parameterizedType = (ParameterizedType) superclassType;
         if (parameterizedType != null) {
             for (final Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                final TypeVariable<?> typeVariable =
-                        (TypeVariable<?>) actualTypeArgument;
-                for (Type type : typeVariable.getBounds()) {
-                    if (type.getTypeName().equals(boundClass.getTypeName())) {
-                        return true;
+                if (actualTypeArgument instanceof TypeVariable<?>) {
+                    final TypeVariable<?> typeVariable =
+                            (TypeVariable<?>) actualTypeArgument;
+                    for (Type type : typeVariable.getBounds()) {
+                        if (type.getTypeName().equals(boundClass.getTypeName())) {
+                            return true;
+                        }
                     }
                 }
             }
