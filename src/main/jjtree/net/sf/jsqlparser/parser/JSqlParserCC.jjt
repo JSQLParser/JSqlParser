@@ -682,15 +682,6 @@ Statement SingleStatement() :
             |
             stm = Reset()
             |
-            LOOKAHEAD(ShowColumns())
-            stm = ShowColumns()
-            |
-            LOOKAHEAD(ShowIndex())
-            stm = ShowIndex()
-            |
-            LOOKAHEAD(ShowTables())
-            stm = ShowTables()
-            |
             stm = Show()
             |
             stm = Use()
@@ -1170,11 +1161,40 @@ UseStatement Use(): {
     }
 }
 
+Statement Show():
+{
+    Statement statement;
+    List<String> captureRest;
+}
+{
+    <K_SHOW>
+    (
+        LOOKAHEAD(2) statement = ShowColumns()
+        |
+        LOOKAHEAD(2) statement = ShowIndex()
+        |
+        LOOKAHEAD(2) statement = ShowTables()
+        |
+        // any of the RDBMS specific SHOW syntax
+        captureRest = captureRest()
+        {
+            if (captureRest.size()==1) {
+                statement = new ShowStatement(captureRest.get(1));
+            } else {
+                statement = new UnsupportedStatement("SHOW", captureRest);
+            }
+        }
+    )
+    {
+        return statement;
+    }
+}
+
 ShowColumnsStatement ShowColumns(): {
     String tableName;
 }
 {
-    <K_SHOW> <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
+    <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
     {
         return new ShowColumnsStatement(tableName);
     }
@@ -1184,7 +1204,7 @@ ShowIndexStatement ShowIndex(): {
     String tableName;
 }
 {
-    <K_SHOW> <K_INDEX> <K_FROM> tableName = RelObjectNameExt()
+    <K_INDEX> <K_FROM> tableName = RelObjectNameExt()
     {
         return new ShowIndexStatement(tableName);
     }
@@ -1200,7 +1220,6 @@ ShowTablesStatement ShowTables(): {
     Expression whereCondition = null;
 }
 {
-  <K_SHOW>
   [ <K_EXTENDED> { modifiers.add(ShowTablesStatement.Modifiers.EXTENDED); } ]
   [ <K_FULL> { modifiers.add(ShowTablesStatement.Modifiers.FULL); } ]
   <K_TABLES>
@@ -1221,16 +1240,6 @@ ShowTablesStatement ShowTables(): {
     showTablesStatement.setWhereCondition(whereCondition);
     return showTablesStatement;
   }
-}
-
-ShowStatement Show(): {
-    String name;
-}
-{
-    <K_SHOW> name = RelObjectNameExt()
-    {
-        return new ShowStatement(name);
-    }
 }
 
 Values Values(): {
