@@ -737,8 +737,6 @@ Block Block() #Block : {
 
 Statements Statements() #Statements: {
     Statements stmts = new Statements();
-    List<Statement> list = new ArrayList<Statement>();
-    
     IfElseStatement ifElseStatement = null;
     Statement stm = null;
     Statement stm2 = null;
@@ -756,7 +754,7 @@ Statements Statements() #Statements: {
                      <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                  ]
 
-                 { list.add( ifElseStatement ); }
+                 { stmts.add( ifElseStatement ); }
             )
             |
             (
@@ -764,10 +762,10 @@ Statements Statements() #Statements: {
                  | stm = Block()
 
                  [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
-            ) { list.add(stm); }
+            ) { stmts.add(stm); }
             |
             LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
-            { if ( !((UnsupportedStatement) stm).isEmpty() ) list.add(stm); }
+            { if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
         )
 
         (
@@ -784,7 +782,7 @@ Statements Statements() #Statements: {
                         <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                     ]
 
-                    { list.add( ifElseStatement ); }
+                    { stmts.add( ifElseStatement ); }
                )
                |
                (
@@ -792,12 +790,12 @@ Statements Statements() #Statements: {
                     | stm = Block()
 
                     [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
-               ) { list.add(stm); }
+               ) { stmts.add(stm); }
                |
                // For any reason, we can't LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) here
                // As it will result in a Stack Overflow
                stm = UnsupportedStatement()
-               { if ( !((UnsupportedStatement) stm).isEmpty() ) list.add(stm); }
+               { if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
             ]
         )*
         <EOF>
@@ -810,7 +808,7 @@ Statements Statements() #Statements: {
         }
     }
     {
-        return stmts.withStatements(list);
+        return stmts;
     }
 }
 
