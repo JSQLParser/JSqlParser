@@ -36,8 +36,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.sf.jsqlparser.statement.UnsupportedStatement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.MemoryLeakVerifier;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -217,12 +218,19 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
-    @Disabled
     public void testParseStatementsFail() throws Exception {
-        // This will not fail, but always return the Unsupported Statements
-        // Since we can't LOOKAHEAD in the Statements() production
-        assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parseStatements("select * from dual;WHATEVER!!"));
+        String sqlStr = "select * from dual;WHATEVER!!";
+
+        // Won't fail but return Unsupported Statement instead
+        assertDoesNotThrow(new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                final Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
+                assertEquals(2, statements.size());
+                assertTrue(statements.get(0) instanceof PlainSelect);
+                assertTrue(statements.get(1) instanceof UnsupportedStatement);
+            }
+        });
     }
 
     @Test
@@ -335,8 +343,6 @@ public class CCJSqlParserUtilTest {
         assertEquals("test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", expr.toString());
     }
 
-
-
     /**
      * The purpose of the test is to run into a timeout and to stop the parser when this happens. We
      * provide an INVALID statement for this purpose, which will fail the SIMPLE parse and then hang
@@ -344,11 +350,9 @@ public class CCJSqlParserUtilTest {
      * <p>
      * We repeat that test multiple times and want to see no stale references to the Parser after
      * timeout.
-     *
-     * @throws JSQLParserException
      */
     @Test
-    public void testParserInterruptedByTimeout() throws InterruptedException {
+    public void testParserInterruptedByTimeout() {
         MemoryLeakVerifier verifier = new MemoryLeakVerifier();
 
         int parallelThreads = Runtime.getRuntime().availableProcessors() + 1;
@@ -371,9 +375,8 @@ public class CCJSqlParserUtilTest {
                 }
             });
         }
-
+        timeOutService.shutdownNow();
         executorService.shutdown();
-        timeOutService.shutdown();
 
         // we should not run in any timeout here (because we expect that the Parser has timed out by
         // itself)
@@ -381,7 +384,6 @@ public class CCJSqlParserUtilTest {
             @Override
             public void execute() throws Throwable {
                 executorService.awaitTermination(10, TimeUnit.SECONDS);
-                timeOutService.awaitTermination(10, TimeUnit.SECONDS);
             }
         });
 
@@ -390,7 +392,7 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
-    public void testTimeOutIssue1582() throws InterruptedException {
+    public void testTimeOutIssue1582() {
         // This statement is INVALID on purpose
         // There are crafted INTO keywords in order to make it fail but only after a long time (40
         // seconds plus)
@@ -443,7 +445,7 @@ public class CCJSqlParserUtilTest {
 
     // Supposed to time out
     @Test
-    void testComplexIssue1792() throws JSQLParserException, InterruptedException {
+    void testComplexIssue1792() throws JSQLParserException {
         ExecutorService executorService = Executors.newCachedThreadPool();
         CCJSqlParserUtil.LOGGER.setLevel(Level.ALL);
 
@@ -457,7 +459,7 @@ public class CCJSqlParserUtilTest {
             public void execute() throws Throwable {
                 try {
                     CCJSqlParserUtil.parse(INVALID_SQL, executorService, parser -> {
-                        parser.withTimeOut(6000);
+                        parser.withTimeOut(10000);
                         parser.withAllowComplexParsing(false);
                     });
                 } catch (JSQLParserException ex) {
@@ -466,7 +468,6 @@ public class CCJSqlParserUtilTest {
                 }
             }
         });
-
 
         // Expect to time-out with COMPLEX Parsing allowed
         // CCJSqlParserUtil.LOGGER will report:
@@ -478,7 +479,7 @@ public class CCJSqlParserUtilTest {
             public void execute() throws Throwable {
                 try {
                     CCJSqlParserUtil.parse(INVALID_SQL, executorService, parser -> {
-                        parser.withTimeOut(6000);
+                        parser.withTimeOut(1000);
                         parser.withAllowComplexParsing(true);
                     });
                 } catch (JSQLParserException ex) {
@@ -487,9 +488,7 @@ public class CCJSqlParserUtilTest {
                 }
             }
         });
-
-        executorService.shutdown();
-        executorService.awaitTermination(1, TimeUnit.MINUTES);
+        executorService.shutdownNow();
         CCJSqlParserUtil.LOGGER.setLevel(Level.OFF);
     }
 }

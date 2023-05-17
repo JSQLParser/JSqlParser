@@ -296,17 +296,18 @@ public final class CCJSqlParserUtil {
     public static Statement parseStatement(CCJSqlParser parser, ExecutorService executorService)
             throws JSQLParserException {
         Statement statement = null;
+        Future<Statement> future = executorService.submit(new Callable<Statement>() {
+            @Override
+            public Statement call() throws Exception {
+                return parser.Statement();
+            }
+        });
         try {
-            Future<Statement> future = executorService.submit(new Callable<Statement>() {
-                @Override
-                public Statement call() throws Exception {
-                    return parser.Statement();
-                }
-            });
             statement = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
                     TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
+            future.cancel(true);
             throw new JSQLParserException("Time out occurred.", ex);
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
@@ -376,17 +377,18 @@ public final class CCJSqlParserUtil {
     public static Statements parseStatements(CCJSqlParser parser, ExecutorService executorService)
             throws JSQLParserException {
         Statements statements = null;
+        Future<Statements> future = executorService.submit(new Callable<Statements>() {
+            @Override
+            public Statements call() throws Exception {
+                return parser.Statements();
+            }
+        });
         try {
-            Future<Statements> future = executorService.submit(new Callable<Statements>() {
-                @Override
-                public Statements call() throws Exception {
-                    return parser.Statements();
-                }
-            });
             statements = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
                     TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
+            future.cancel(true);
             throw new JSQLParserException("Time out occurred.", ex);
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
