@@ -38,7 +38,7 @@ import net.sf.jsqlparser.statement.Statements;
 public final class CCJSqlParserUtil {
     public final static Logger LOGGER = Logger.getLogger(CCJSqlParserUtil.class.getName());
     static {
-        LOGGER.setLevel(Level.WARNING);
+        LOGGER.setLevel(Level.OFF);
     }
 
     public final static int ALLOWED_NESTING_DEPTH = 10;
