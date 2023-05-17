@@ -14,7 +14,10 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -26,11 +29,14 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.function.Executable;
 
 public class CCJSqlParserUtilTest {
@@ -348,5 +354,73 @@ public class CCJSqlParserUtilTest {
                 }
             }
         });
+    }
+
+
+    @Test
+    @Timeout(2000)
+    void testIssue1792() throws JSQLParserException {
+        String sqlStr =
+                "SELECT ('{\"obj\":{\"field\": \"value\"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT)";
+
+
+        CCJSqlParserUtil.LOGGER.setLevel(Level.ALL);
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        // Expect to fail within 6 seconds
+        Assertions.assertThrows(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                CCJSqlParserUtil.parse(sqlStr, executorService, parser -> {
+                    parser.withTimeOut(6000);
+                    parser.withAllowComplexParsing(true);
+                });
+            }
+        });
+        executorService.shutdown();
+    }
+
+    // Supposed to time out
+    @Test
+    void testComplexIssue1792() throws JSQLParserException {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        String sqlStr =
+                "SELECT\n"
+                        + " CASE\n"
+                        + "    WHEN true\n"
+                        + "    THEN (SELECT ((('{\"obj\":{\"field\": \"value\"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT))))\n"
+                        + " END";
+
+        CCJSqlParserUtil.LOGGER.setLevel(Level.ALL);
+
+        // Expect to fail fast with SIMPLE Parsing only when COMPLEX is not allowed
+        // No TIMEOUT Exception shall be thrown
+        // CCJSqlParserUtil.LOGGER will report:
+        // 1) Allowed Complex Parsing: false
+        // 2) Trying SIMPLE parsing only
+        try {
+            CCJSqlParserUtil.parse(sqlStr, executorService, parser -> {
+                parser.withTimeOut(6000);
+                parser.withAllowComplexParsing(false);
+            });
+        } catch (JSQLParserException ex) {
+            assertFalse(ex.getCause() instanceof TimeoutException);
+        }
+
+        // Expect to time-out with COMPLEX Parsing allowed
+        // CCJSqlParserUtil.LOGGER will report:
+        // 1) Allowed Complex Parsing: true
+        // 2) Trying SIMPLE parsing first
+        // 3) Trying COMPLEX parsing when SIMPLE parsing failed
+        try {
+            CCJSqlParserUtil.parse(sqlStr, executorService, parser -> {
+                parser.withTimeOut(6000);
+                parser.withAllowComplexParsing(true);
+            });
+        } catch (JSQLParserException ex) {
+            assertTrue(ex.getCause() instanceof TimeoutException);
+        }
+        executorService.shutdown();
     }
 }

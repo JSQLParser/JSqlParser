@@ -19,6 +19,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -33,13 +36,25 @@ import net.sf.jsqlparser.statement.Statements;
 
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
+    public final static Logger LOGGER = Logger.getLogger(CCJSqlParserUtil.class.getName());
+    static {
+        LOGGER.setLevel(Level.WARNING);
+    }
+
     public final static int ALLOWED_NESTING_DEPTH = 10;
 
     private CCJSqlParserUtil() {}
 
     public static Statement parse(Reader statementReader) throws JSQLParserException {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Statement statement = null;
         CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
-        return parseStatement(parser);
+        try {
+            statement = parseStatement(parser, executorService);
+        } finally {
+            executorService.shutdown();
+        }
+        return statement;
     }
 
     public static Statement parse(String sql) throws JSQLParserException {
@@ -62,22 +77,41 @@ public final class CCJSqlParserUtil {
      */
     public static Statement parse(String sql, Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Statement statement = null;
+        try {
+            statement = parse(sql, executorService, consumer);
+        } finally {
+            executorService.shutdown();
+        }
+        return statement;
+    }
+
+    public static Statement parse(String sql, ExecutorService executorService,
+            Consumer<CCJSqlParser> consumer)
+            throws JSQLParserException {
         Statement statement = null;
 
         // first, try to parse fast and simple
+        CCJSqlParser parser = newParser(sql);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
+        boolean allowComplex = parser.getConfiguration().getAsBoolean(Feature.allowComplexParsing);
+        LOGGER.info("Allowed Complex Parsing: " + allowComplex);
         try {
-            CCJSqlParser parser = newParser(sql).withAllowComplexParsing(false);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            statement = parseStatement(parser);
+            LOGGER.info("Trying SIMPLE parsing " + (allowComplex ? "first" : "only"));
+            statement = parseStatement(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
-            if (getNestingDepth(sql) <= ALLOWED_NESTING_DEPTH) {
-                CCJSqlParser parser = newParser(sql).withAllowComplexParsing(true);
+            if (allowComplex && getNestingDepth(sql) <= ALLOWED_NESTING_DEPTH) {
+                LOGGER.info("Trying COMPLEX parsing when SIMPLE parsing failed");
+                // beware: the parser must not be reused, but needs to be re-initiated
+                parser = newParser(sql);
                 if (consumer != null) {
                     consumer.accept(parser);
                 }
-                statement = parseStatement(parser);
+                statement = parseStatement(parser.withAllowComplexParsing(true), executorService);
             } else {
                 throw ex;
             }
@@ -252,24 +286,25 @@ public final class CCJSqlParserUtil {
     }
 
     /**
-     * @param parser
-     * @return the statement parsed
-     * @throws JSQLParserException
+     * @param parser the Parser armed with a Statement text
+     * @param executorService the Executor Service for parsing within a Thread
+     * @return the parsed Statement
+     * @throws JSQLParserException when either the Statement can't be parsed or the configured
+     *         timeout is reached
      */
-    public static Statement parseStatement(CCJSqlParser parser) throws JSQLParserException {
+
+    public static Statement parseStatement(CCJSqlParser parser, ExecutorService executorService)
+            throws JSQLParserException {
         Statement statement = null;
         try {
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
             Future<Statement> future = executorService.submit(new Callable<Statement>() {
                 @Override
                 public Statement call() throws Exception {
                     return parser.Statement();
                 }
             });
-            executorService.shutdown();
-
-            statement = future.get( parser.getConfiguration().getAsLong(Feature.timeOut), TimeUnit.MILLISECONDS);
-
+            statement = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
+                    TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);
@@ -288,55 +323,68 @@ public final class CCJSqlParserUtil {
         return parseStatements(sqls, null);
     }
 
+    public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer)
+            throws JSQLParserException {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        final Statements statements = parseStatements(sqls, executorService, consumer);
+        executorService.shutdown();
+
+        return statements;
+    }
+
     /**
      * Parse a statement list.
      *
      * @return the statements parsed
      */
-    public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer)
+    public static Statements parseStatements(String sqls, ExecutorService executorService,
+            Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
         Statements statements = null;
 
+        CCJSqlParser parser = newParser(sqls);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
+        boolean allowComplex = parser.getConfiguration().getAsBoolean(Feature.allowComplexParsing);
+
         // first, try to parse fast and simple
         try {
-            CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(false);
-            if (consumer != null) {
-                consumer.accept(parser);
-            }
-            statements = parseStatements(parser);
+            statements = parseStatements(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
             // when fast simple parsing fails, try complex parsing but only if it has a chance to
             // succeed
-            if (getNestingDepth(sqls) <= ALLOWED_NESTING_DEPTH) {
-                CCJSqlParser parser = newParser(sqls).withAllowComplexParsing(true);
+            if (allowComplex && getNestingDepth(sqls) <= ALLOWED_NESTING_DEPTH) {
+                // beware: parser must not be re-used but needs to be re-initiated
+                parser = newParser(sqls);
                 if (consumer != null) {
                     consumer.accept(parser);
                 }
-                statements = parseStatements(parser);
+                statements = parseStatements(parser.withAllowComplexParsing(true), executorService);
             }
         }
         return statements;
     }
 
     /**
-     * @param parser
-     * @return the statements parsed
-     * @throws JSQLParserException
+     * @param parser the Parser armed with a Statement text
+     * @param executorService the Executor Service for parsing within a Thread
+     * @return the Statements (representing a List of single statements)
+     * @throws JSQLParserException when either the Statement can't be parsed or the configured
+     *         timeout is reached
      */
-    public static Statements parseStatements(CCJSqlParser parser) throws JSQLParserException {
+    public static Statements parseStatements(CCJSqlParser parser, ExecutorService executorService)
+            throws JSQLParserException {
         Statements statements = null;
         try {
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
             Future<Statements> future = executorService.submit(new Callable<Statements>() {
                 @Override
                 public Statements call() throws Exception {
                     return parser.Statements();
                 }
             });
-            executorService.shutdown();
-
-            statements = future.get( parser.getConfiguration().getAsLong(Feature.timeOut) , TimeUnit.MILLISECONDS);
-
+            statements = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
+                    TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             throw new JSQLParserException("Time out occurred.", ex);

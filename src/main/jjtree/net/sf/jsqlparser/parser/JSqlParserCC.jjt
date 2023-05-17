@@ -3081,7 +3081,7 @@ Expression AndExpression() :
 }
 {
     (
-        LOOKAHEAD(Condition())
+        LOOKAHEAD(Condition(), {!interrupted})
         left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -3093,7 +3093,7 @@ Expression AndExpression() :
         { boolean useOperator = false; }
          (<K_AND> | <K_AND_OPERATOR> {useOperator=true;} )
         (
-        LOOKAHEAD(Condition())
+        LOOKAHEAD(Condition(), {!interrupted})
             right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -3216,8 +3216,8 @@ Expression SQLCondition():
 {
     (
     result=ExistsExpression()
-    | LOOKAHEAD(InExpression()) result=InExpression()
-    | LOOKAHEAD(OverlapsCondition()) result=OverlapsCondition()
+    | LOOKAHEAD(InExpression() , {!interrupted}) result=InExpression()
+    | LOOKAHEAD(OverlapsCondition(), {!interrupted}) result=OverlapsCondition()
     | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
@@ -3258,7 +3258,7 @@ Expression InExpression() #InExpression :
     (
         LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
         | LOOKAHEAD(3) rightExpression = Function()
-        | LOOKAHEAD(ParenthesedSelect()) rightExpression = ParenthesedSelect()
+        | LOOKAHEAD(ParenthesedSelect(), {!interrupted}) rightExpression = ParenthesedSelect()
         | LOOKAHEAD(3) rightExpression = ParenthesedExpressionList()
         | rightExpression = SimpleExpression()
     )
@@ -4057,6 +4057,7 @@ JsonExpression JsonExpression() : {
   CastExpression castExpr = null;
 }
 {
+    // LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted})
     (
         LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
         |
@@ -4066,13 +4067,13 @@ JsonExpression JsonExpression() : {
         |
         expr=UserVariable()
         |
-        LOOKAHEAD(JsonFunction(), {!interrupted}) expr = JsonFunction()
+        LOOKAHEAD(JsonFunction(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = JsonFunction()
         |
-        LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) expr = JsonAggregateFunction()
+        LOOKAHEAD(JsonAggregateFunction(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = JsonAggregateFunction()
         |
-        LOOKAHEAD(FullTextSearch(), {!interrupted}) expr = FullTextSearch()
+        LOOKAHEAD(FullTextSearch(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = FullTextSearch()
         |
-        LOOKAHEAD( 3 , {!interrupted && getAsBoolean(Feature.allowComplexParsing) } ) expr=Function()
+        LOOKAHEAD( 3 , {getAsBoolean(Feature.allowComplexParsing) && !interrupted} ) expr=Function()
         |
         LOOKAHEAD( 2, {!interrupted} ) expr=Column()
         |
@@ -4551,9 +4552,14 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     <K_CASE> { caseCounter++; }
     [ switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
-    [<K_ELSE> (LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] elseExp=CaseWhenExpression() [")" { ((CaseExpression) elseExp).setUsingBrackets(true); } ]
-              | elseExp=Expression()
-              )
+    [
+        <K_ELSE>
+        (
+             LOOKAHEAD(3, {!interrupted}) "(" elseExp=CaseWhenExpression() ")" { elseExp = new Parenthesis( elseExp ); }
+              | LOOKAHEAD(3, {!interrupted}) elseExp=CaseWhenExpression()
+              | LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) elseExp=Expression()
+              | elseExp=SimpleExpression()
+        )
     ]
     <K_END>  { caseCounter--; }
     {
@@ -4567,16 +4573,17 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 WhenClause WhenThenSearchCondition():
 {
     WhenClause whenThen = new WhenClause();
-    Expression whenExp = null;
-    Expression thenExp = null;
+    Expression whenExp;
+    Expression thenExp;
 }
 {
     <K_WHEN> whenExp=Expression()
-    <K_THEN> (
-                LOOKAHEAD( ["("] CaseWhenExpression() [")"] ( <K_WHEN> | <K_ELSE> | <K_END> ) ) ["("] thenExp=CaseWhenExpression() [")" { ((CaseExpression) thenExp).setUsingBrackets(true); }]
-                |
-                thenExp=Expression()
-              )
+    <K_THEN>
+    (
+        LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) thenExp=Expression()
+        |
+        thenExp=SimpleExpression()
+    )
     {
        whenThen.setWhenExpression(whenExp);
        whenThen.setThenExpression(thenExp);

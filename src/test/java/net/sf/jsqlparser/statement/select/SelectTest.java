@@ -5504,17 +5504,19 @@ public class SelectTest {
 
         int parallelThreads = Runtime.getRuntime().availableProcessors() + 1;
         ExecutorService executorService = Executors.newFixedThreadPool(parallelThreads);
-
+        ExecutorService timeOutService = Executors.newSingleThreadExecutor();
         for (int i = 0; i < parallelThreads; i++) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
+
                     try {
                         CCJSqlParser parser =
                                 CCJSqlParserUtil.newParser(sqlStr).withAllowComplexParsing(true);
                         verifier.addObject(parser);
 
-                        Statement statement = CCJSqlParserUtil.parseStatement(parser);
+                        Statement statement =
+                                CCJSqlParserUtil.parseStatement(parser, timeOutService);
                     } catch (JSQLParserException ignore) {
                         // We expected that to happen.
                     }
@@ -5522,6 +5524,7 @@ public class SelectTest {
             });
         }
         executorService.shutdown();
+        timeOutService.shutdown();
 
         // we should not run in any timeout here (because we expect that the Parser has timed out by
         // itself)

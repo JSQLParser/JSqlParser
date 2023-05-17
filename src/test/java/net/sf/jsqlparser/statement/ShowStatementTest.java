@@ -43,6 +43,6 @@ public class ShowStatementTest {
         String sqlStr =
                 "show create table my_table";
         Statement statement = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue( statement instanceof UnsupportedStatement);
+        Assertions.assertTrue(statement instanceof UnsupportedStatement);
     }
 }

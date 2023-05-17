@@ -24,12 +24,13 @@ public class UnsupportedStatementTest {
     public void testSingleUnsupportedStatement() throws JSQLParserException {
         String sqlStr = "this is an unsupported statement";
 
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> parser.withUnsupportedStatements(true) );
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withUnsupportedStatements(true));
 
         Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
-                CCJSqlParserUtil.parse(sqlStr, parser -> parser.withUnsupportedStatements(false) );
+                CCJSqlParserUtil.parse(sqlStr, parser -> parser.withUnsupportedStatements(false));
             }
         });
     }
@@ -38,7 +39,8 @@ public class UnsupportedStatementTest {
     public void testUnsupportedStatementsFirstInBlock() throws JSQLParserException {
         String sqlStr = "This is an unsupported statement; Select * from dual; Select * from dual;";
 
-        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(true));
+        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
+                parser -> parser.withUnsupportedStatements(true));
         Assertions.assertEquals(3, statements.getStatements().size());
         Assertions.assertInstanceOf(UnsupportedStatement.class, statements.getStatements().get(0));
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(1));
@@ -47,7 +49,8 @@ public class UnsupportedStatementTest {
         Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
-                CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(false) );
+                CCJSqlParserUtil.parseStatements(sqlStr,
+                        parser -> parser.withUnsupportedStatements(false));
             }
         });
     }
@@ -56,22 +59,24 @@ public class UnsupportedStatementTest {
     public void testUnsupportedStatementsMiddleInBlock() throws JSQLParserException {
         String sqlStr = "Select * from dual; This is an unsupported statement; Select * from dual;";
 
-        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(true));
+        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
+                parser -> parser.withUnsupportedStatements(true));
         Assertions.assertEquals(3, statements.getStatements().size());
 
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(0));
         Assertions.assertInstanceOf(UnsupportedStatement.class, statements.getStatements().get(1));
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(2));
 
-//        This will not fail, but always return the Unsupported Statements
-//        Since we can't LOOKAHEAD in the Statements() production
+        // This will not fail, but always return the Unsupported Statements
+        // Since we can't LOOKAHEAD in the Statements() production
 
-//        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
-//            @Override
-//            public void execute() throws Throwable {
-//                CCJSqlParserUtil.parseStatements(sqlStr, parser -> parser.withUnsupportedStatements(false) );
-//            }
-//        });
+        // Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+        // @Override
+        // public void execute() throws Throwable {
+        // CCJSqlParserUtil.parseStatements(sqlStr, parser ->
+        // parser.withUnsupportedStatements(false) );
+        // }
+        // });
     }
 
     @Test
@@ -79,7 +84,7 @@ public class UnsupportedStatementTest {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue( statement instanceof UnsupportedStatement);
+        Assertions.assertTrue(statement instanceof UnsupportedStatement);
     }
 
     @Test
@@ -87,6 +92,6 @@ public class UnsupportedStatementTest {
         String sqlStr =
                 "create trigger stud_marks before INSERT on Student for each row set Student.total = Student.subj1 + Student.subj2, Student.per = Student.total * 60 / 100";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue( statement instanceof UnsupportedStatement);
+        Assertions.assertTrue(statement instanceof UnsupportedStatement);
     }
 }
