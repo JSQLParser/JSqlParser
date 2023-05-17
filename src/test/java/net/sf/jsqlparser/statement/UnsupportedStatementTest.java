@@ -17,14 +17,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
 public class UnsupportedStatementTest {
     @Test
     public void testSingleUnsupportedStatement() throws JSQLParserException {
         String sqlStr = "this is an unsupported statement";
 
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
                 parser -> parser.withUnsupportedStatements(true));
 
         Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {

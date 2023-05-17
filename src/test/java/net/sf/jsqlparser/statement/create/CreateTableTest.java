@@ -165,13 +165,24 @@ public class CreateTableTest {
     @Test
     public void testCreateTableUniqueConstraint() throws JSQLParserException {
         String sqlStr =
-                "CREATE TABLE Activities (_id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(255),user_id INTEGER,sound_id INTEGER,sound_type INTEGER,comment_id INTEGER,type String,tags VARCHAR(255),created_at INTEGER,content_id INTEGER,sharing_note_text VARCHAR(255),sharing_note_created_at INTEGER,UNIQUE (created_at, type, content_id, sound_id, user_id))";
+                "CREATE TABLE Activities ("
+                        + "_id INTEGER PRIMARY KEY AUTOINCREMENT"
+                        + ",uuid VARCHAR(255)"
+                        + ",user_id INTEGER"
+                        + ",sound_id INTEGER"
+                        + ",sound_type INTEGER"
+                        + ",comment_id INTEGER"
+                        + ",type String,tags VARCHAR(255)"
+                        + ",created_at INTEGER"
+                        + ",content_id INTEGER"
+                        + ",sharing_note_text VARCHAR(255)"
+                        + ",sharing_note_created_at INTEGER"
+                        + ",UNIQUE (created_at, type, content_id, sound_id, user_id)"
+                        + ")";
 
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        CreateTable createTable =
-                (CreateTable) CCJSqlParserUtil.parseStatements(sqlStr).getStatements().get(0);
-
+        assertTrue(CCJSqlParserUtil.parseStatements(sqlStr).getStatements()
+                .get(0) instanceof CreateTable);
     }
 
     @Test

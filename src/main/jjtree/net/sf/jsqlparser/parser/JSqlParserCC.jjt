@@ -4057,7 +4057,6 @@ JsonExpression JsonExpression() : {
   CastExpression castExpr = null;
 }
 {
-    // LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted})
     (
         LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
         |
@@ -4082,19 +4081,65 @@ JsonExpression JsonExpression() : {
         LOOKAHEAD( {!interrupted} ) "(" expr=ParenthesedSelect() ")"
     )
 
-    ( "::" type=ColDataType() {
+    (
+        "::" type=ColDataType()
+        {
             castExpr = new CastExpression();
             castExpr.setUseCastKeyword(false);
             castExpr.setLeftExpression(expr);
             castExpr.setColDataType(type);
             expr=castExpr;
-    } )*
+        }
+    )*
+    {
+            result.setExpression(expr);
+    }
+
     (
-        "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");} |
-        "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");} |
-        "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");} |
-        "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
+        LOOKAHEAD(2) (
+            "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");}
+            |
+            "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");}
+            |
+            "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");}
+            |
+            "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
+        )
     )+
+
+    // chaining JSON Expressions, e.g.
+    // '{"obj":{"field": "value"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT
+    (
+        LOOKAHEAD(2, {!interrupted} ) (
+            LOOKAHEAD(2) (
+                "::" type=ColDataType()
+                {
+                    castExpr = new CastExpression();
+                    castExpr.setUseCastKeyword(false);
+                    castExpr.setLeftExpression(result);
+                    castExpr.setColDataType(type);
+                    expr=castExpr;
+                }
+            )
+        )+
+        {
+            result = new JsonExpression();
+            result.setExpression(expr);
+        }
+
+        (
+            LOOKAHEAD(2) (
+                "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");}
+                |
+                "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");}
+                |
+                "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");}
+                |
+                "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
+            )
+        )*
+    )*
+
     {
         result.setExpression(expr);
         return result;
@@ -5254,7 +5299,7 @@ ColDataType ColDataType():
 
     [LOOKAHEAD(2) "(" {tk2 =null;} ( ( ( tk=<S_LONG> [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ] ) | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
 		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
-    [( "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
+    [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
     {
