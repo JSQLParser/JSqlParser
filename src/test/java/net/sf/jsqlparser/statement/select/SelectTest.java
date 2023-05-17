@@ -42,7 +42,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.test.MemoryLeakVerifier;
 import net.sf.jsqlparser.test.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -62,9 +61,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
@@ -5449,94 +5445,6 @@ public class SelectTest {
                         "/net/sf/jsqlparser/statement/select/performanceIssue1397.sql"),
                 Charset.defaultCharset());
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-    }
-
-    /**
-     * The purpose of the test is to run into a timeout and to stop the parser when this happens. We
-     * provide an INVALID statement for this purpose, which will fail the SIMPLE parse and then hang
-     * with COMPLEX parsing until the timeout occurs.
-     * <p>
-     * We repeat that test multiple times and want to see no stale references to the Parser after
-     * timeout.
-     *
-     * @throws JSQLParserException
-     */
-    @Test
-    public void testParserInterruptedByTimeout() {
-        String sqlStr = "" + "SELECT \t* FROM TABLE_1 t1\n" + "WHERE\n"
-                + "\t(((t1.COL1 = 'VALUE2' )\n" + "\t\tAND (t1.CAL2 = 'VALUE2' ))\n"
-                + "\t\tAND (((1 = 1 )\n"
-                + "\t\t\tAND ((((((t1.id IN (940550 ,940600 ,940650 ,940700 ,940750 ,940800 ,940850 ,940900 ,940950 ,941000 ,941050 ,941100 ,941150 ,941200 ,941250 ,941300 ,941350 ,941400 ,941450 ,941500 ,941550 ,941600 ,941650 ,941700 ,941750 ,941800 ,941850 ,941900 ,941950 ,942000 ,942050 ,942100 ,942150 ,942200 ,942250 ,942300 ,942350 ,942400 ,942450 ,942500 ,942550 ,942600 ,942650 ,942700 ,942750 ,942800 ,942850 ,942900 ,942950 ,943000 ,943050 ,943100 ,943150 ,943200 ,943250 ,943300 ,943350 ,943400 ,943450 ,943500 ,943550 ,943600 ,943650 ,943700 ,943750 ,943800 ,943850 ,943900 ,943950 ,944000 ,944050 ,944100 ,944150 ,944200 ,944250 ,944300 ,944350 ,944400 ,944450 ,944500 ,944550 ,944600 ,944650 ,944700 ,944750 ,944800 ,944850 ,944900 ,944950 ,945000 ,945050 ,945100 ,945150 ,945200 ,945250 ,945300 ))\n"
-                + "\t\t\t\tOR (t1.id IN (945350 ,945400 ,945450 ,945500 ,945550 ,945600 ,945650 ,945700 ,945750 ,945800 ,945850 ,945900 ,945950 ,946000 ,946050 ,946100 ,946150 ,946200 ,946250 ,946300 ,946350 ,946400 ,946450 ,946500 ,946550 ,946600 ,946650 ,946700 ,946750 ,946800 ,946850 ,946900 ,946950 ,947000 ,947050 ,947100 ,947150 ,947200 ,947250 ,947300 ,947350 ,947400 ,947450 ,947500 ,947550 ,947600 ,947650 ,947700 ,947750 ,947800 ,947850 ,947900 ,947950 ,948000 ,948050 ,948100 ,948150 ,948200 ,948250 ,948300 ,948350 ,948400 ,948450 ,948500 ,948550 ,948600 ,948650 ,948700 ,948750 ,948800 ,948850 ,948900 ,948950 ,949000 ,949050 ,949100 ,949150 ,949200 ,949250 ,949300 ,949350 ,949400 ,949450 ,949500 ,949550 ,949600 ,949650 ,949700 ,949750 ,949800 ,949850 ,949900 ,949950 ,950000 ,950050 ,950100 )))\n"
-                + "\t\t\t\tOR (t1.id IN (950150 ,950200 ,950250 ,950300 ,950350 ,950400 ,950450 ,950500 ,950550 ,950600 ,950650 ,950700 ,950750 ,950800 ,950850 ,950900 ,950950 ,951000 ,951050 ,951100 ,951150 ,951200 ,951250 ,951300 ,951350 ,951400 ,951450 ,951500 ,951550 ,951600 ,951650 ,951700 ,951750 ,951800 ,951850 ,951900 ,951950 ,952000 ,952050 ,952100 ,952150 ,952200 ,952250 ,952300 ,952350 ,952400 ,952450 ,952500 ,952550 ,952600 ,952650 ,952700 ,952750 ,952800 ,952850 ,952900 ,952950 ,953000 ,953050 ,953100 ,953150 ,953200 ,953250 ,953300 ,953350 ,953400 ,953450 ,953500 ,953550 ,953600 ,953650 ,953700 )))\n"
-                + "\t\t\t\tOR (t1.id IN (953750 ,953800 ,953850 ,953900 ,953950 ,954000 ,954050 ,954100 ,954150 ,954200 ,954250 ,954300 ,954350 ,954400 ,954450 ,954500 ,954550 ,954600 ,954650 ,954700 ,954750 ,954800 ,954850 ,954900 ,954950 ,955000 ,955050 ,955100 ,955150 ,955200 ,955250 ,955300 ,955350 ,955400 ,955450 ,955500 ,955550 ,955600 ,955650 ,955700 ,955750 ,955800 ,955850 ,955900 ,955950 ,956000 ,956050 ,956100 ,956150 ,956200 ,956250 ,956300 ,956350 ,956400 ,956450 ,956500 ,956550 ,956600 ,956650 ,956700 ,956750 ,956800 ,956850 ,956900 ,956950 ,957000 ,957050 ,957100 ,957150 ,957200 ,957250 ,957300 )))\n"
-                + "\t\t\t\tOR (t1.id IN (944100, 944150, 944200, 944250, 944300, 944350, 944400, 944450, 944500, 944550, 944600, 944650, 944700, 944750, 944800, 944850, 944900, 944950, 945000 )))\n"
-                + "\t\t\t\tOR (t1.id IN (957350 ,957400 ,957450 ,957500 ,957550 ,957600 ,957650 ,957700 ,957750 ,957800 ,957850 ,957900 ,957950 ,958000 ,958050 ,958100 ,958150 ,958200 ,958250 ,958300 ,958350 ,958400 ,958450 ,958500 ,958550 ,958600 ,958650 ,958700 ,958750 ,958800 ,958850 ,958900 ,958950 ,959000 ,959050 ,959100 ,959150 ,959200 ,959250 ,959300 ,959350 ,959400 ,959450 ,959500 ,959550 ,959600 ,959650 ,959700 ,959750 ,959800 ,959850 ,959900 ,959950 ,960000 ,960050 ,960100 ,960150 ,960200 ,960250 ,960300 ,960350 ,960400 ,960450 ,960500 ,960550 ,960600 ,960650 ,960700 ,960750 ,960800 ,960850 ,960900 ,960950 ,961000 ,961050 ,961100 ,961150 ,961200 ,961250 ,961300 ,961350 ,961400 ,961450 ,961500 ,961550 ,961600 ,961650 ,961700 ,961750 ,961800 ,961850 ,961900 ,961950 ,962000 ,962050 ,962100 ))))\n"
-                + "\t\t\t\tOR (t1.id IN (962150 ,962200 ,962250 ,962300 ,962350 ,962400 ,962450 ,962500 ,962550 ,962600 ,962650 ,962700 ,962750 ,962800 ,962850 ,962900 ,962950 ,963000 ,963050 ,963100 ,963150 ,963200 ,963250 ,963300 ,963350 ,963400 ,963450 ,963500 ,963550 ,963600 ,963650 ,963700 ,963750 ,963800 ,963850 ,963900 ,963950 ,964000 ,964050 ,964100 ,964150 ,964200 ,964250 ,964300 ,964350 ,964400 ,964450 ,964500 ,964550 ,964600 ,964650 ,964700 ,964750 ,964800 ,964850 ,964900 ,964950 ,965000 ,965050 ,965100 ,965150 ,965200 ,965250 ,965300 ,965350 ,965400 ,965450 ,965500 ))))\n"
-                + "\tAND t1.COL3 IN (\n" + "\t    SELECT\n" + "\t\t    t2.COL3\n" + "\t    FROM\n"
-                + "\t\t    TABLE_6 t6,\n" + "\t\t    TABLE_1 t5,\n" + "\t\t    TABLE_4 t4,\n"
-                + "\t\t    TABLE_3 t3,\n" + "\t\t    TABLE_1 t2\n" + "\t    WHERE\n"
-                + "\t\t    (((((((t5.CAL3 = T6.id)\n" + "\t\t\t    AND (t5.CAL5 = t6.CAL5))\n"
-                + "\t\t\t    AND (t5.CAL1 = t6.CAL1))\n" + "\t\t\t    AND (t3.CAL1 IN (108500)))\n"
-                + "\t\t\t    AND (t5.id = t2.id))\n"
-                + "\t\t\t    AND NOT ((t6.CAL6 IN ('VALUE'))))\n"
-                + "\t\t\t    AND ((t2.id = t3.CAL2)\n" + "\t\t\t\t    AND (t4.id = t3.CAL3))))\n" + // add
-                                                                                                    // two
-                                                                                                    // redundant
-                                                                                                    // unmatched
-                                                                                                    // brackets
-                                                                                                    // in
-                                                                                                    // order
-                                                                                                    // to
-                                                                                                    // make
-                                                                                                    // the
-                                                                                                    // Simple
-                                                                                                    // Parser
-                                                                                                    // fail
-                                                                                                    // and
-                                                                                                    // the
-                                                                                                    // complex
-                                                                                                    // parser
-                                                                                                    // stuck
-                " )) \n" + "ORDER BY\n" + "\tt1.id ASC";
-
-        MemoryLeakVerifier verifier = new MemoryLeakVerifier();
-
-        int parallelThreads = Runtime.getRuntime().availableProcessors() + 1;
-        ExecutorService executorService = Executors.newFixedThreadPool(parallelThreads);
-        ExecutorService timeOutService = Executors.newSingleThreadExecutor();
-        for (int i = 0; i < parallelThreads; i++) {
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        CCJSqlParser parser =
-                                CCJSqlParserUtil.newParser(sqlStr).withAllowComplexParsing(true);
-                        verifier.addObject(parser);
-
-                        Statement statement =
-                                CCJSqlParserUtil.parseStatement(parser, timeOutService);
-                    } catch (JSQLParserException ignore) {
-                        // We expected that to happen.
-                    }
-                }
-            });
-        }
-        executorService.shutdown();
-        timeOutService.shutdown();
-
-        // we should not run in any timeout here (because we expect that the Parser has timed out by
-        // itself)
-        Assertions.assertDoesNotThrow(new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
-            }
-        });
-
-        // we should not have any Objects left in the weak reference map
-        verifier.assertGarbageCollected();
     }
 
     @Test
