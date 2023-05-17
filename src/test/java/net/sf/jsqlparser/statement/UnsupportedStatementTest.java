@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class UnsupportedStatementTest {
     @Test
     public void testSingleUnsupportedStatement() throws JSQLParserException {
@@ -91,5 +93,10 @@ public class UnsupportedStatementTest {
                 "create trigger stud_marks before INSERT on Student for each row set Student.total = Student.subj1 + Student.subj2, Student.per = Student.total * 60 / 100";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         Assertions.assertTrue(statement instanceof UnsupportedStatement);
+
+        sqlStr =
+                "create domain TNOTIFICATION_ACTION as ENUM ('ADD', 'CHANGE', 'DEL')";
+        statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertTrue(statement instanceof UnsupportedStatement);
     }
 }
