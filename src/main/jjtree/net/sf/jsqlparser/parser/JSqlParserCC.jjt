@@ -4067,7 +4067,6 @@ JsonExpression JsonExpression() : {
   CastExpression castExpr = null;
 }
 {
-    { System.out.println("Complex:" + getAsBoolean(Feature.allowComplexParsing));}
     (
         LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
         |
@@ -4092,7 +4091,6 @@ JsonExpression JsonExpression() : {
         LOOKAHEAD(ParenthesedExpression(), {getAsBoolean(Feature.allowComplexParsing)} ) expr = ParenthesedExpression()
         |
         LOOKAHEAD( 3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr=ParenthesedSelect()
-
     )
 
     (
@@ -6714,6 +6712,9 @@ List<String> captureFunctionBody() {
     tok = getToken(1);
     int l = tokens.size();
     if( tok.kind == EOF || ( foundEnd && tok.kind == ST_SEMICOLON) ) {
+      if (tok.kind == ST_SEMICOLON) {
+        tokens.add(tok.image);
+      }
       break;
     } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
         tokens.set(l-1, tokens.get(l-1) + tok.image);
