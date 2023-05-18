@@ -554,7 +554,7 @@ TOKEN:
             input_stream.backup(image.length() - matchedToken.image.length() );
         }
     }
-| < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
             matchedToken.image = "[";

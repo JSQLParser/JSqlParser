@@ -30,6 +30,10 @@ public class Statements extends ArrayList<Statement> implements Serializable {
         statementVisitor.visit(this);
     }
 
+    public <E extends Statement> E get(Class<E> type, int index) {
+        return type.cast(get(index));
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

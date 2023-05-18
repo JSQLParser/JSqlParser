@@ -85,7 +85,7 @@ public class UnsupportedStatementTest {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue(statement instanceof UnsupportedStatement);
+        assertTrue(statement instanceof UnsupportedStatement);
     }
 
     @Test
