@@ -554,7 +554,7 @@ TOKEN:
             input_stream.backup(image.length() - matchedToken.image.length() );
         }
     }
-| < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | "$$" (~["\n","\r","\""])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
             matchedToken.image = "[";
@@ -4048,6 +4048,17 @@ ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
     { return array; }
 }
 
+Expression ParenthesedExpression():
+{
+    Expression expression;
+}
+{
+    "(" expression = PrimaryExpression()  ")"
+    {
+        return new Parenthesis(expression);
+    }
+}
+
 JsonExpression JsonExpression() : {
   JsonExpression result = new JsonExpression();
   Expression expr;
@@ -4056,6 +4067,7 @@ JsonExpression JsonExpression() : {
   CastExpression castExpr = null;
 }
 {
+    { System.out.println("Complex:" + getAsBoolean(Feature.allowComplexParsing));}
     (
         LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
         |
@@ -4071,13 +4083,16 @@ JsonExpression JsonExpression() : {
         |
         LOOKAHEAD(FullTextSearch(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = FullTextSearch()
         |
-        LOOKAHEAD( 3 , {getAsBoolean(Feature.allowComplexParsing) && !interrupted} ) expr=Function()
+        LOOKAHEAD( Function() , {getAsBoolean(Feature.allowComplexParsing) && !interrupted} ) expr=Function()
         |
         LOOKAHEAD( 2, {!interrupted} ) expr=Column()
         |
         token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
         |
-        LOOKAHEAD( {!interrupted} ) "(" expr=ParenthesedSelect() ")"
+        LOOKAHEAD(ParenthesedExpression(), {getAsBoolean(Feature.allowComplexParsing)} ) expr = ParenthesedExpression()
+        |
+        LOOKAHEAD( 3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr=ParenthesedSelect()
+
     )
 
     (
@@ -6607,7 +6622,7 @@ CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
    |
    <K_PROCEDURE> { statementType = "PROCEDURE"; }
   )
-  tokens=captureRest()
+  tokens=captureFunctionBody()
   {
     if(statementType.equals("FUNCTION")) {
       type = new CreateFunction(isUsingOrReplace, tokens);
@@ -6678,6 +6693,36 @@ List<String> captureRest() {
     } else {
         tokens.add(tok.image);
     }
+    tok = getNextToken();
+  }
+  return tokens;
+}
+
+/**
+* Reads the tokens of a function or procedure body.
+* A function body can end in 2 ways:
+* 1) BEGIN...END;
+* 2) Postgres: $$...$$...;
+*/
+
+JAVACODE
+List<String> captureFunctionBody() {
+  List<String> tokens = new LinkedList<String>();
+  Token tok;
+  boolean foundEnd = false;
+  while(true) {
+    tok = getToken(1);
+    int l = tokens.size();
+    if( tok.kind == EOF || ( foundEnd && tok.kind == ST_SEMICOLON) ) {
+      break;
+    } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
+        tokens.set(l-1, tokens.get(l-1) + tok.image);
+    } else {
+        tokens.add(tok.image);
+    }
+    foundEnd |= (tok.kind == K_END)
+        || ( tok.image.trim().startsWith("$$") && tok.image.trim().endsWith("$$")) ;
+
     tok = getNextToken();
   }
   return tokens;

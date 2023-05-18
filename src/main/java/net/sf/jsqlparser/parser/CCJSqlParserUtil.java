@@ -104,6 +104,7 @@ public final class CCJSqlParserUtil {
             LOGGER.info("Trying SIMPLE parsing " + (allowComplex ? "first" : "only"));
             statement = parseStatement(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
+            LOGGER.info("Nesting Depth" + getNestingDepth(sql));
             if (allowComplex && getNestingDepth(sql) <= ALLOWED_NESTING_DEPTH) {
                 LOGGER.info("Trying COMPLEX parsing when SIMPLE parsing failed");
                 // beware: the parser must not be reused, but needs to be re-initiated

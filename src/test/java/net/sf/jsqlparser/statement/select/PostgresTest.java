@@ -32,14 +32,17 @@ public class PostgresTest {
 
     @Test
     public void testExtractFunctionIssue1582() throws JSQLParserException {
-        String sqlStr = "" + "select\n" + "              t0.operatienr\n" + "            , case\n"
-                + "                when\n"
-                + "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' from t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
-                + "                         else (greatest(((extract('hours' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
-                + "                end = 0 then null\n"
-                + "                    else '25. Meer dan 4 uur'\n"
-                + "                end                                                                                                                                                  \n"
-                + "              as snijtijd_interval";
+        String sqlStr = ""
+                + "select\n"
+                + "  t0.operatienr\n"
+                + "  , case\n"
+                + "    when\n"
+                + "        case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' from t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
+                + "             else (greatest(((extract('hours' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
+                + "    end = 0 then null\n"
+                + "        else '25. Meer dan 4 uur'\n"
+                + "    end\n"
+                + "  as snijtijd_interval";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 

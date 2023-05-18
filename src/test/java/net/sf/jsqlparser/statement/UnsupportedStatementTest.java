@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UnsupportedStatementTest {
@@ -98,5 +99,26 @@ public class UnsupportedStatementTest {
                 "create domain TNOTIFICATION_ACTION as ENUM ('ADD', 'CHANGE', 'DEL')";
         statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         assertTrue(statement instanceof UnsupportedStatement);
+    }
+
+    @Test
+    void testFunctions() throws JSQLParserException {
+        String sqlStr =
+                "CREATE OR REPLACE FUNCTION func_example(foo integer)\n"
+                        + "RETURNS integer AS $$\n"
+                        + "BEGIN\n"
+                        + "  RETURN foo + 1;\n"
+                        + "END\n"
+                        + "$$ LANGUAGE plpgsql;\n"
+                        + "\n"
+                        + "CREATE OR REPLACE FUNCTION func_example2(IN foo integer, OUT bar integer)\n"
+                        + "AS $$\n"
+                        + "BEGIN\n"
+                        + "    SELECT foo + 1 INTO bar;\n"
+                        + "END\n"
+                        + "$$ LANGUAGE plpgsql;";
+
+        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
+        assertEquals(2, statements.size());
     }
 }
