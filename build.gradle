@@ -142,11 +142,6 @@ tasks.register('xmldoc', Javadoc) {
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files.asType(List)
     options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
-
-    // @see https://github.com/gradle/gradle/issues/11898#issue-549900869
-    //title = null
-    //options.noTimestamp(false)
-
     options.addBooleanOption("rst", true)
     options.addStringOption("basePackage", "net.sf.jsqlparser")
 
@@ -303,14 +298,14 @@ spotless {
     }
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required = false
         html.required = true
     }
 }
 
-task renderRR() {
+tasks.register('renderRR') {
     dependsOn(compileJavacc)
     doLast {
         // these WAR files have been provided as a courtesy by Gunther Rademacher
@@ -362,7 +357,7 @@ task renderRR() {
     }
 }
 
-task gitChangelogTask(type: GitChangelogTask) {
+tasks.register('gitChangelogTask', GitChangelogTask) {
     fromRepo = file("$projectDir")
     file = new File("${projectDir}/src/site/sphinx/changelog.rst")
     fromRef = "4.0"
@@ -401,7 +396,7 @@ Version {{name}}
     // @formatter:on
 }
 
-task updateKeywords(type: JavaExec) {
+tasks.register('updateKeywords', JavaExec) {
     group = "Execution"
     description = "Run the main class with JavaExecTask"
     classpath = sourceSets.main.runtimeClasspath
@@ -414,7 +409,7 @@ task updateKeywords(type: JavaExec) {
     dependsOn(compileJava)
 }
 
-task sphinx(type: Exec) {
+tasks.register('sphinx', Exec) {
     dependsOn(gitChangelogTask, renderRR, updateKeywords, xmldoc)
 
     doFirst() {
@@ -547,7 +542,7 @@ signing {
     sign publishing.publications.mavenJava
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -559,11 +554,11 @@ remotes {
     }
 }
 
-task upload {
+tasks.register('upload') {
     doFirst {
-        if( findProperty("${project.name}.host")==null ) {
+        if (findProperty("${project.name}.host") == null) {
             println(
-                """
+                    """
                 Property \"${project.name}.host\' not found.
                 Please define \"${project.name}.host\" in the Gradle configuration (e. g. \$HOME/.gradle/gradle.properties.
                 """
@@ -575,7 +570,9 @@ task upload {
             session(remotes.webServer) {
                 def versionStable = getVersion(false)
                 execute "mkdir -p download/${project.name}-${versionStable}"
-                put from: "${project.buildDir}/libs", into: "download/${project.name}-${versionStable}"
+                for (File file: fileTree(include:['*.jar'], dir:"${project.buildDir}/libs").collect()) {
+                    put from: file, into: "download/${project.name}-${versionStable}"
+                }
             }
         }
     }
