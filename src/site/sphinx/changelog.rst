@@ -8,6 +8,81 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **build: improve Upload task**
+    
+    Andreas Reichel, 2023-05-19
+  * **feat: Quoted Identifiers can contain double-quotes (PostgreSQL)**
+    
+    Andreas Reichel, 2023-05-18
+  * **feat: functions blocks, parenthesed JSON Expressions**
+    
+    Andreas Reichel, 2023-05-18
+  * **feat: functions blocks, parenthesed JSON Expressions**
+    
+    Andreas Reichel, 2023-05-18
+  * **feat: parse CREATE TRIGGER as UnsupportedStatement**
+    
+    Andreas Reichel, 2023-05-17
+  * **build: try to work around the Maven/JDK8 issue on GitHub**
+    
+    Andreas Reichel, 2023-05-17
+  * **refact: Statements extends List<Statement>**
+    
+    Andreas Reichel, 2023-05-17
+  * **style: remove unused imports**
+    
+    Andreas Reichel, 2023-05-17
+  * **feat: chaining JSON Expressions**
+    
+    Andreas Reichel, 2023-05-17
+  * **style: Cosmetic improvements**
+    
+    Andreas Reichel, 2023-05-17
+  * **style: Quieten the logger**
+    
+    Andreas Reichel, 2023-05-17
+  * **fix: Complex Parsing Approach**
+    
+    Andreas Reichel, 2023-05-17
+  * **refactor: CREATE and ALTER productions**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: RETURNING clause**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: SHOW statement, supporting any RDBMS specific implementation**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: simplify production `CreateParameter()`**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1789**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1789**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1791**
+    
+    Andreas Reichel, 2023-05-15
+  * **build: improve the GIT Snapshot detection**
+    
+    Andreas Reichel, 2023-05-15
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **Update sphinx.yml**
+    
+    manticore-projects, 2023-05-14
+  * **feat: Write API documentation to the WebSite via XMLDoclet**
+    
+    Andreas Reichel, 2023-05-14
   * **test: add unit test for issue #1778**
     
     Andreas Reichel, 2023-05-11

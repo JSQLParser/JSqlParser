@@ -9,7 +9,7 @@
   #L%
   -->
 
-<xsl:stylesheet version="1.1"
+<xsl:stylesheet version="2.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 xmlns:svg="http://www.w3.org/2000/svg"
@@ -21,16 +21,31 @@
             omit-xml-declaration="yes"
             indent="no" />
 
+    <xsl:param name="withFloatingToc" select="'true'" />
+
     <!-- a default catch is needed to suppress all unwanted nodes -->
     <xsl:template match="*">
+        <xsl:text disable-output-escaping="yes">
+.. raw:: html
+
+    &lt;div id="floating-toc"&gt;
+        &lt;div class="search-container"&gt;
+            &lt;input type="button" id="toc-hide-show-btn"&gt;&lt;/input&gt;
+            &lt;input type="text" id="toc-search" placeholder="Search" /&gt;
+        &lt;/div&gt;
+        &lt;ul id="toc-list"&gt;&lt;/ul&gt;
+    &lt;/div&gt;
+
+
+</xsl:text>
         <xsl:apply-templates select="/xhtml:html/xhtml:body"/>
     </xsl:template>
 
     <xsl:template match="/xhtml:html/xhtml:body">
         <xsl:text  disable-output-escaping="yes">
-********************
-Supported SQL Syntax
-********************
+*********************************************************************
+SQL Syntax |JSQLPARSER_SNAPSHOT_VERSION|
+*********************************************************************
 
 The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
 
@@ -41,12 +56,10 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
     <xsl:template match="svg:svg[preceding-sibling::*[1]/xhtml:a]">
 <xsl:text  disable-output-escaping="yes">
 ======================================================================================================================
-        </xsl:text>
-        <xsl:value-of select="translate(preceding-sibling::*[1]/xhtml:a/text(),'\:','')"/>
-        <xsl:text  disable-output-escaping="yes">
+</xsl:text><xsl:value-of select="translate(preceding-sibling::*[1]/xhtml:a/text(),'\:','')"/><xsl:text  disable-output-escaping="yes">
 ======================================================================================================================
 
-        </xsl:text>
+</xsl:text>
 
         <xsl:text  disable-output-escaping="yes">
 .. raw:: html
@@ -92,12 +105,12 @@ The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
     <xsl:template match="xhtml:a">
         <li>
             <a>
-                <xsl:attributeExpression name="href">
+                <xsl:attribute name="href">
                     <xsl:value-of select="@href" />
-                </xsl:attributeExpression>
-                <xsl:attributeExpression name="title">
+                </xsl:attribute>
+                <xsl:attribute name="title">
                     <xsl:value-of select="@title" />
-                </xsl:attributeExpression>
+                </xsl:attribute>
                 <xsl:value-of select="text()"/>
             </a>
         </li>

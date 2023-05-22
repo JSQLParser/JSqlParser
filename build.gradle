@@ -18,6 +18,7 @@ plugins {
 
     id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
     id "me.champeau.jmh" version "latest.release"
+    id "com.nwalsh.gradle.saxon.saxon-gradle" version "0.9.6"
 }
 
 def getVersion = { boolean considerSnapshot ->
@@ -28,7 +29,7 @@ def getVersion = { boolean considerSnapshot ->
     def commit = null
     def snapshot = ""
     new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
+        exec {
             args = [
                     "--no-pager"
                     , "describe"
@@ -58,7 +59,7 @@ def getVersion = { boolean considerSnapshot ->
     }
     return patch!=null
             ? "${major}.${minor}.${patch}${snapshot}"
-            :  "${major}.${minor}${snapshot}";
+            :  "${major}.${minor}${snapshot}"
 }
 version = getVersion(true)
 group = 'com.github.jsqlparser'
@@ -137,18 +138,33 @@ javadoc {
 }
 
 tasks.register('xmldoc', Javadoc) {
+    def outFile =  reporting.file(
+            version.endsWith("-SNAPSHOT")
+                    ? "xmlDoclet/javadoc_snapshot.xml"
+                    : "xmlDoclet/javadoc_stable.xml"
+    )
+
+    def rstFile =  reporting.file(
+            version.endsWith("-SNAPSHOT")
+                    ? "xmlDoclet/javadoc_snapshot.rst"
+                    : "xmlDoclet/javadoc_stable.rst"
+    )
+
     source = sourceSets.main.allJava
     // beware: Gradle deletes this folder automatically and there is no switch-off
     destinationDir = reporting.file("xmlDoclet")
-    options.docletpath = configurations.xmlDoclet.files.asType(List)
+    options.docletpath = configurations.xmlDoclet.files as List
     options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
+    title = "API $version"
     options.addBooleanOption("rst", true)
+    options.addBooleanOption("withFloatingToc", true)
     options.addStringOption("basePackage", "net.sf.jsqlparser")
+    options.addStringOption("filename", outFile.getName())
 
     dependsOn(compileJava)
     doLast {
         copy {
-            from reporting.file("xmlDoclet/javadoc.rst")
+            from rstFile
             into "${projectDir}/src/site/sphinx/"
         }
     }
@@ -349,11 +365,6 @@ tasks.register('renderRR') {
                     "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
         }
-
-        //@todo: a Java based solution may be more appropriate here
-        exec {
-            commandLine "sh", "-c", "xsltproc src/main/resources/rr/xhtml2rst.xsl $buildDir/rr/JSqlParserCC.xhtml > src/site/sphinx/syntax.rst"
-        }
     }
 }
 
@@ -409,26 +420,38 @@ tasks.register('updateKeywords', JavaExec) {
     dependsOn(compileJava)
 }
 
-tasks.register('sphinx', Exec) {
-    dependsOn(gitChangelogTask, renderRR, updateKeywords, xmldoc)
+xslt  {
+    def outFile = version.endsWith("-SNAPSHOT")
+            ?   file("src/site/sphinx/syntax_snapshot.rst")
+            :   file("src/site/sphinx/syntax_stable.rst")
 
-    doFirst() {
-        exec {
-            args = [
-                    "install"
-                    , "sphinx_rtd_theme"
-                    , "sphinx-book-theme"
-                    , "myst_parser"
-                    , "sphinx-prompt"
-                    , "sphinx_substitution_extensions"
-                    , "sphinx_issues"
-                    , "sphinx-tabs"
-                    , "sphinx_inline_tabs"
-                    , "pygments"
-            ]
-            executable "pip"
-        }
-    }
+    dependsOn(renderRR)
+    stylesheet 'src/main/resources/rr/xhtml2rst.xsl'
+
+    // Transform every .xml file in the "input" directory.
+    input "$buildDir/rr/JSqlParserCC.xhtml"
+    output outFile
+}
+
+tasks.register('sphinx', Exec) {
+    dependsOn(gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
+
+//    doFirst() {
+//        exec {
+//            args = [
+//                    "install"
+//                    , "sphinx_rtd_theme"
+//                    , "sphinx-book-theme"
+//                    , "myst_parser"
+//                    , "sphinx-prompt"
+//                    , "sphinx_substitution_extensions"
+//                    , "sphinx_issues"
+//                    , "sphinx_inline_tabs"
+//                    , "pygments"
+//            ]
+//            executable "pip"
+//        }
+//    }
 
     String PROLOG = """
 .. |_| unicode:: U+00A0
@@ -487,8 +510,8 @@ publishing {
                 }
             }
             pom {
-                name = 'JSQLParser librar'
-                description = 'JDBC Table or ResultSet to Parquet File Writer'
+                name = 'JSQLParser library'
+                description = 'Parse SQL Statements into Abstract Syntax Trees (AST)'
                 url = 'https://github.com/JSQLParser/JSqlParser'
                 licenses {
                     license {

@@ -1,0 +1,83 @@
+/* Styling for the floating TOC */
+#floating-toc {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(64, 64, 64, 0.2); /* Set the border style */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  height: 66%;
+  overflow-y: hide;
+  overflow-x: auto;
+  width: 240px;
+}
+
+/* Styling for TOC list items */
+#floating-toc ul {
+  list-style-type: none;
+  padding-left: 26px;
+  margin-top: 36px;
+  line-height: 2px;
+}
+
+/* Styling for heading levels in TOC */
+#floating-toc ul li {
+  /* no line breaks please */
+  width: 250%;
+}
+
+#floating-toc ul li a {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+#floating-toc ul li h1 a {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#floating-toc ul li h2 a {
+  font-weight: bold;
+}
+
+#floating-toc ul li h3 a {
+  font-style: italic;
+}
+
+
+/* Styling for search input */
+#floating-toc .search-container {
+  position: sticky;
+  top: 6px;
+  padding: 0px;
+}
+
+#floating-toc input[type="text"] {
+  width: 186px;
+  height: 24px;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 1.00);
+  color: rgba(128, 128, 128, 1.0); /* Set the text color */
+  border: 1px solid rgba(0, 0, 0, 0.2); /* Set the border style */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+#floating-toc input[type="button"] {
+  position: float;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.72);
+  color: rgba(128, 128, 128, 1.0); /* Set the text color */
+  border: 0px solid rgba(0, 0, 0, 0.2); /* Set the border style */
+}
+
+/* Highlighting current caption in TOC */
+#floating-toc ul li a.active {
+  font-weight: bold;
+}

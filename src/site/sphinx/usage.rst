@@ -34,7 +34,7 @@ You will need to have ``JDK 8`` or ``JDK 11`` installed.
 
     git clone https://github.com/JSQLParser/JSqlParser.git
     cd jsqlformatter
-    gradle build
+    gradle publishToMavenLocal
 
 
 

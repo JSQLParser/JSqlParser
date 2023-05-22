@@ -93,7 +93,7 @@ public class UnsupportedStatementTest {
         String sqlStr =
                 "create trigger stud_marks before INSERT on Student for each row set Student.total = Student.subj1 + Student.subj2, Student.per = Student.total * 60 / 100";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue(statement instanceof UnsupportedStatement);
+        assertTrue(statement instanceof UnsupportedStatement);
 
         sqlStr =
                 "create domain TNOTIFICATION_ACTION as ENUM ('ADD', 'CHANGE', 'DEL')";

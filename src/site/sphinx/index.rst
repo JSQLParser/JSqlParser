@@ -1,3 +1,7 @@
+.. meta::
+   :description: Java Software Library for parsing SQL Statements into Abstract Syntax Trees (AST) and manipulation of SQL Statements
+   :keywords: java sql statement parser abstract syntax tree
+
 ###########################
 Java SQL Parser Library
 ###########################
@@ -8,10 +12,12 @@ Java SQL Parser Library
 
    usage
    contribution
-   syntax
+   syntax_stable
+   syntax_snapshot
+   javadoc_stable
+   javadoc_snapshot
    keywords
    changelog
-   javadoc
 
 .. image:: https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg
     :alt: Maven Repo
@@ -34,7 +40,7 @@ Latest stable release: |JSQLPARSER_STABLE_VERSION_LINK|
 
 Development version: |JSQLPARSER_SNAPSHOT_VERSION_LINK|
 
-.. sidebar:: Java SQL Object Hierarchy
+.. sidebar:: Java API Website
 
 	.. image:: _images/JavaAST.png
 
