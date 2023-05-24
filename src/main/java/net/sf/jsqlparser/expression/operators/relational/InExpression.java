@@ -17,6 +17,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
 
     private Expression leftExpression;
     private ItemsList rightItemsList;
+    private boolean global = false;
     private boolean not = false;
     private Expression rightExpression;
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
@@ -69,6 +70,13 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         leftExpression = expression;
     }
 
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean b) {
+        global = b;
+    }
     public boolean isNot() {
         return not;
     }
@@ -100,6 +108,9 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
         statementBuilder.append(getLeftExpressionString());
 
         statementBuilder.append(" ");
+        if (global) {
+            statementBuilder.append("GLOBAL ");
+        }
         if (not) {
             statementBuilder.append("NOT ");
         }
@@ -138,6 +149,11 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     @Override
     public InExpression withOraclePriorPosition(int priorPosition) {
         this.setOraclePriorPosition(priorPosition);
+        return this;
+    }
+
+    public InExpression withGlobal(boolean global) {
+        this.setGlobal(global);
         return this;
     }
 

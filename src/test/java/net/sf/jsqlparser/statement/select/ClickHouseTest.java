@@ -34,4 +34,11 @@ public class ClickHouseTest {
         sql = "SELECT schemaName.f1(arguments).f2(arguments).f3.f4 from dual";
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+
+    @Test
+    public void testGlobalIn() throws JSQLParserException {
+        String sql =
+                "SELECT lo_linenumber,lo_orderkey from lo_linenumber where lo_linenumber global in (1,2,3)";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }

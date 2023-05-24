@@ -3314,7 +3314,7 @@ Expression InExpression() #InExpression :
         leftExpression=SimpleExpression() { result.setLeftExpression(leftExpression); }
         [ "(" "+" ")" { result.setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); } ]
 
-    [<K_NOT> { result.setNot(true); } ] <K_IN>
+    [<K_GLOBAL> { result.setGlobal(true); } ][<K_NOT> { result.setNot(true); } ] <K_IN>
     (
       LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  result.setRightExpression(new StringValue(token.image)); }
       | LOOKAHEAD(3) rightExpression = Function() {  result.setRightExpression(rightExpression); }
