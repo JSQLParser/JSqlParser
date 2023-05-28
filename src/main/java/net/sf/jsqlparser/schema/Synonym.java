@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,9 +17,13 @@ import java.util.List;
 public class Synonym extends ASTNodeAccessImpl implements MultiPartName {
 
     private static final int NAME_IDX = 0;
+
     private static final int SCHEMA_IDX = 1;
+
     private static final int DATABASE_IDX = 2;
+
     private static final int SERVER_IDX = 3;
+
     private List<String> partItems = new ArrayList<>();
 
     public Synonym() {
@@ -92,7 +95,6 @@ public class Synonym extends ASTNodeAccessImpl implements MultiPartName {
     @Override
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
-
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
@@ -103,7 +105,6 @@ public class Synonym extends ASTNodeAccessImpl implements MultiPartName {
                 fqn.append(".");
             }
         }
-
         return fqn.toString();
     }
 

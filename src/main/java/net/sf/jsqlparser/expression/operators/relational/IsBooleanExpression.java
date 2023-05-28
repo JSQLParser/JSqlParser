@@ -16,7 +16,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class IsBooleanExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private boolean not = false;
+
     private boolean isTrue = false;
 
     public Expression getLeftExpression() {

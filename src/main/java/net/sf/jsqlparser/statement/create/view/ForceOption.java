@@ -10,9 +10,6 @@
 package net.sf.jsqlparser.statement.create.view;
 
 public enum ForceOption {
-    NONE,
-    
-    FORCE,
-    
-    NO_FORCE
+
+    NONE, FORCE, NO_FORCE
 }

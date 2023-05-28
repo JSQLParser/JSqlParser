@@ -19,8 +19,11 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class Between extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private boolean not = false;
+
     private Expression betweenExpressionStart;
+
     private Expression betweenExpressionEnd;
 
     public Expression getBetweenExpressionEnd() {
@@ -62,8 +65,7 @@ public class Between extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND "
-                + betweenExpressionEnd;
+        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart + " AND " + betweenExpressionEnd;
     }
 
     public Between withLeftExpression(Expression leftExpression) {

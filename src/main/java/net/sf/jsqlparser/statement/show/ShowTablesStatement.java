@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.show;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-
 import java.util.EnumSet;
 
 /**
@@ -22,9 +21,13 @@ import java.util.EnumSet;
 public class ShowTablesStatement implements Statement {
 
     private EnumSet<Modifiers> modifiers;
+
     private SelectionMode selectionMode;
+
     private String dbName;
+
     private Expression likeExpression;
+
     private Expression whereCondition;
 
     public EnumSet<Modifiers> getModifiers() {
@@ -71,28 +74,22 @@ public class ShowTablesStatement implements Statement {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("SHOW");
-
         if (modifiers.contains(Modifiers.EXTENDED)) {
             builder.append(" EXTENDED");
         }
         if (modifiers.contains(Modifiers.FULL)) {
             builder.append(" FULL");
         }
-
         builder.append(" TABLES");
-
         if (dbName != null) {
             builder.append(" ").append(selectionMode.name()).append(" ").append(dbName);
         }
-
         if (likeExpression != null) {
             builder.append(" ").append("LIKE").append(" ").append(likeExpression);
         }
-
         if (whereCondition != null) {
             builder.append(" ").append("WHERE").append(" ").append(whereCondition);
         }
-
         return builder.toString();
     }
 
@@ -102,10 +99,12 @@ public class ShowTablesStatement implements Statement {
     }
 
     public enum SelectionMode {
+
         FROM, IN
     }
 
     public enum Modifiers {
+
         EXTENDED, FULL
     }
 }

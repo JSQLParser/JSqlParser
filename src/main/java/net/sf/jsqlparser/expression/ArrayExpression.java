@@ -14,10 +14,12 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class ArrayExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression objExpression;
-    private Expression indexExpression;
-    private Expression startIndexExpression;
-    private Expression stopIndexExpression;
 
+    private Expression indexExpression;
+
+    private Expression startIndexExpression;
+
+    private Expression stopIndexExpression;
 
     public ArrayExpression() {
         // empty constructor
@@ -72,11 +74,7 @@ public class ArrayExpression extends ASTNodeAccessImpl implements Expression {
         if (indexExpression != null) {
             return objExpression.toString() + "[" + indexExpression.toString() + "]";
         } else {
-            return objExpression.toString() + "[" +
-                    (startIndexExpression == null ? "" : startIndexExpression.toString()) +
-                    ":" +
-                    (stopIndexExpression == null ? "" : stopIndexExpression.toString()) +
-                    "]";
+            return objExpression.toString() + "[" + (startIndexExpression == null ? "" : startIndexExpression.toString()) + ":" + (stopIndexExpression == null ? "" : stopIndexExpression.toString()) + "]";
         }
     }
 

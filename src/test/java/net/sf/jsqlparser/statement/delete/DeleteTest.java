@@ -31,7 +31,6 @@ public class DeleteTest {
     @Test
     public void testDelete() throws JSQLParserException {
         String statement = "DELETE FROM mytable WHERE mytable.col = 9";
-
         Delete delete = (Delete) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", delete.getTable().getName());
         assertEquals(statement, "" + delete);
@@ -99,24 +98,13 @@ public class DeleteTest {
     @Test
     public void testOracleHint() throws JSQLParserException {
         String sql = "DELETE /*+ SOMEHINT */ FROM mytable WHERE mytable.col = 9";
-
         assertOracleHintExists(sql, true, "SOMEHINT");
-
         //@todo: add a testcase supposed to not finding a misplaced hint
     }
 
     @Test
     public void testWith() throws JSQLParserException {
-        String statement
-                = ""
-                + "WITH a\n"
-                + "     AS (SELECT 1 id_instrument_ref)\n"
-                + "     , b\n"
-                + "       AS (SELECT 1 id_instrument_ref)\n"
-                + "DELETE FROM cfe.instrument_ref\n"
-                + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
-                + "                            FROM   a)";
-
+        String statement = "" + "WITH a\n" + "     AS (SELECT 1 id_instrument_ref)\n" + "     , b\n" + "       AS (SELECT 1 id_instrument_ref)\n" + "DELETE FROM cfe.instrument_ref\n" + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n" + "                            FROM   a)";
         assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
@@ -171,7 +159,6 @@ public class DeleteTest {
         Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(stmt);
         assertEquals(delete.getModifierPriority(), DeleteModifierPriority.LOW_PRIORITY);
         assertTrue(delete.isModifierQuick());
-
         String stmt2 = "DELETE LOW_PRIORITY QUICK IGNORE FROM tablename";
         Delete delete2 = (Delete) assertSqlCanBeParsedAndDeparsed(stmt2);
         assertEquals(delete2.getModifierPriority(), DeleteModifierPriority.LOW_PRIORITY);
@@ -183,37 +170,14 @@ public class DeleteTest {
     public void testDeleteReturningIssue1527() throws JSQLParserException {
         String statement = "delete from t returning *";
         assertSqlCanBeParsedAndDeparsed(statement, true);
-
-        statement = "delete from products\n" +
-                "  WHERE price <= 99.99\n" +
-                "  RETURNING name, price AS new_price";
+        statement = "delete from products\n" + "  WHERE price <= 99.99\n" + "  RETURNING name, price AS new_price";
         assertSqlCanBeParsedAndDeparsed(statement, true);
     }
+
     @Test
     public void testDeleteOutputClause() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "DELETE Sales.ShoppingCartItem OUTPUT DELETED.* FROM Sales"
-                , true
-        );
-
-        assertSqlCanBeParsedAndDeparsed(
-                "DELETE Sales.ShoppingCartItem OUTPUT Sales.ShoppingCartItem FROM Sales"
-                , true
-        );
-
-        assertSqlCanBeParsedAndDeparsed(
-                "DELETE Production.ProductProductPhoto  \n" +
-                        "OUTPUT DELETED.ProductID,  \n" +
-                        "       p.Name,  \n" +
-                        "       p.ProductModelID,  \n" +
-                        "       DELETED.ProductPhotoID  \n" +
-                        "    INTO @MyTableVar  \n" +
-                        "FROM Production.ProductProductPhoto AS ph  \n" +
-                        "JOIN Production.Product as p   \n" +
-                        "    ON ph.ProductID = p.ProductID   \n" +
-                        "    WHERE p.ProductModelID BETWEEN 120 and 130"
-                , true
-        );
-
+        assertSqlCanBeParsedAndDeparsed("DELETE Sales.ShoppingCartItem OUTPUT DELETED.* FROM Sales", true);
+        assertSqlCanBeParsedAndDeparsed("DELETE Sales.ShoppingCartItem OUTPUT Sales.ShoppingCartItem FROM Sales", true);
+        assertSqlCanBeParsedAndDeparsed("DELETE Production.ProductProductPhoto  \n" + "OUTPUT DELETED.ProductID,  \n" + "       p.Name,  \n" + "       p.ProductModelID,  \n" + "       DELETED.ProductPhotoID  \n" + "    INTO @MyTableVar  \n" + "FROM Production.ProductProductPhoto AS ph  \n" + "JOIN Production.Product as p   \n" + "    ON ph.ProductID = p.ProductID   \n" + "    WHERE p.ProductModelID BETWEEN 120 and 130", true);
     }
 }

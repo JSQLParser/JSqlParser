@@ -31,7 +31,8 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
         boolean checkForExists = context.get(MetadataContext.exists, Boolean.class);
         try {
             boolean exists = exists(named);
-            if (exists ^ checkForExists) { // XOR
+            if (exists ^ checkForExists) {
+                // XOR
                 errorConsumer.accept(getErrorMessage(named, checkForExists));
             }
         } catch (ValidationException ve) {
@@ -72,13 +73,11 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @return a new {@link ValidationException}
      */
     default ValidationException getUnexpectedErrorMessage(Named named, Exception cause) {
-        return new UnexpectedValidationException(
-                named.getFqn() + ": cannot validate " + named.getNamedObject() + "-name. detail: " + cause.getMessage(), cause);
+        return new UnexpectedValidationException(named.getFqn() + ": cannot validate " + named.getNamedObject() + "-name. detail: " + cause.getMessage(), cause);
     }
 
     @Override
     default String getName() {
         return NAME;
     }
-
 }

@@ -20,7 +20,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class DropValidator extends AbstractValidator<Drop> {
 
-
     @Override
     public void validate(Drop drop) {
         String type = drop.getType();
@@ -31,22 +30,15 @@ public class DropValidator extends AbstractValidator<Drop> {
             validateFeature(c, NamedObject.view.equalsIgnoreCase(type), Feature.dropView);
             validateFeature(c, NamedObject.schema.equalsIgnoreCase(type), Feature.dropSchema);
             validateFeature(c, NamedObject.sequence.equalsIgnoreCase(type), Feature.dropSequence);
-
-            validateFeature(c, drop.isIfExists() && NamedObject.table.name().equalsIgnoreCase(type),
-                    Feature.dropTableIfExists);
-            validateFeature(c, drop.isIfExists() && NamedObject.index.equalsIgnoreCase(type),
-                    Feature.dropIndexIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.table.name().equalsIgnoreCase(type), Feature.dropTableIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.index.equalsIgnoreCase(type), Feature.dropIndexIfExists);
             validateFeature(c, drop.isIfExists() && NamedObject.view.equalsIgnoreCase(type), Feature.dropViewIfExists);
-            validateFeature(c, drop.isIfExists() && NamedObject.schema.equalsIgnoreCase(type),
-                    Feature.dropSchemaIfExists);
-            validateFeature(c, drop.isIfExists() && NamedObject.sequence.equalsIgnoreCase(type),
-                    Feature.dropSequenceIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.schema.equalsIgnoreCase(type), Feature.dropSchemaIfExists);
+            validateFeature(c, drop.isIfExists() && NamedObject.sequence.equalsIgnoreCase(type), Feature.dropSequenceIfExists);
         }
-
         NamedObject named = NamedObject.forName(type);
         if (Arrays.asList(NamedObject.table, NamedObject.view).contains(named)) {
             validateName(named, drop.getName().getFullyQualifiedName());
         }
     }
-
 }

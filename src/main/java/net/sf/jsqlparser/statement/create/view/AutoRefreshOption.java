@@ -10,9 +10,6 @@
 package net.sf.jsqlparser.statement.create.view;
 
 public enum AutoRefreshOption {
-    NONE,
 
-    YES,
-
-    NO
+    NONE, YES, NO
 }

@@ -10,6 +10,6 @@
 package net.sf.jsqlparser.statement.create.table;
 
 public enum RowMovementMode {
-    ENABLE, DISABLE;
-}
 
+    ENABLE, DISABLE
+}

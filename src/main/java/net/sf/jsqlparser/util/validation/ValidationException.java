@@ -35,7 +35,6 @@ public class ValidationException extends RuntimeException {
         if (this == o) {
             return true;
         }
-
         if (o.getClass().equals(this.getClass())) {
             // exact type match!
             ValidationException ve = (ValidationException) o;
@@ -51,8 +50,7 @@ public class ValidationException extends RuntimeException {
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return getClass().getSimpleName() + ": " + getMessage();
     }
-
 }

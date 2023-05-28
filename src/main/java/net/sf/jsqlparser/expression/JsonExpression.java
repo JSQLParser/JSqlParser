@@ -11,13 +11,14 @@ package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
+
     private Expression expr;
 
     private List<String> idents = new ArrayList<String>();
+
     private List<String> operators = new ArrayList<String>();
 
     @Override

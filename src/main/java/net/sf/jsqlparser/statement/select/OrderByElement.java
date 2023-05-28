@@ -10,19 +10,21 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-
 import java.io.Serializable;
 
 public class OrderByElement implements Serializable {
 
     public enum NullOrdering {
-        NULLS_FIRST,
-        NULLS_LAST
+
+        NULLS_FIRST, NULLS_LAST
     }
 
     private Expression expression;
+
     private boolean asc = true;
+
     private boolean ascDescPresent = false;
+
     private NullOrdering nullOrdering;
 
     public boolean isAsc() {
@@ -65,13 +67,11 @@ public class OrderByElement implements Serializable {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(expression.toString());
-
         if (!asc) {
             b.append(" DESC");
         } else if (ascDescPresent) {
             b.append(" ASC");
         }
-
         if (nullOrdering != null) {
             b.append(' ');
             b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
@@ -102,5 +102,4 @@ public class OrderByElement implements Serializable {
     public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
     }
-
 }

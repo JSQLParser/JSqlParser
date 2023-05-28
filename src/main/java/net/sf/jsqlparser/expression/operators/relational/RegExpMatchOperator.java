@@ -33,7 +33,7 @@ public class RegExpMatchOperator extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        switch (operatorType) {
+        switch(operatorType) {
             case MATCH_CASESENSITIVE:
                 return "~";
             case MATCH_CASEINSENSITIVE:

@@ -23,9 +23,13 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 public final class DeclareStatement implements Statement {
 
     private UserVariable userVariable = null;
+
     private DeclareType declareType = DeclareType.TYPE;
+
     private String typeName;
+
     private List<TypeDefExpr> typeDefExprList = new ArrayList<>();
+
     private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
     public DeclareStatement() {
@@ -93,7 +97,7 @@ public final class DeclareStatement implements Statement {
     }
 
     public List<TypeDefExpr> getTypeDefExprList() {
-        return this.typeDefExprList ;
+        return this.typeDefExprList;
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {
@@ -183,7 +187,6 @@ public final class DeclareStatement implements Statement {
         return this.withColumnDefinitions(collection);
     }
 
-
     public DeclareStatement addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
         List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
@@ -193,7 +196,9 @@ public final class DeclareStatement implements Statement {
     public static class TypeDefExpr implements Serializable {
 
         public final UserVariable userVariable;
+
         public final ColDataType colDataType;
+
         public final Expression defaultExpr;
 
         public TypeDefExpr(ColDataType colDataType, Expression defaultExpr) {

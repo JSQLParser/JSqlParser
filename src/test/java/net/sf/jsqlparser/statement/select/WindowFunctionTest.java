@@ -14,13 +14,10 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 public class WindowFunctionTest {
+
     @Test
     public void testListAggOverIssue1652() throws JSQLParserException {
-        String sqlString =
-                "SELECT\n" +
-                "    LISTAGG (d.COL_TO_AGG, ' / ') WITHIN GROUP (ORDER BY d.COL_TO_AGG) OVER (PARTITION BY d.PART_COL) AS MY_LISTAGG\n" +
-                "FROM cte_dummy_data d";
-
+        String sqlString = "SELECT\n" + "    LISTAGG (d.COL_TO_AGG, ' / ') WITHIN GROUP (ORDER BY d.COL_TO_AGG) OVER (PARTITION BY d.PART_COL) AS MY_LISTAGG\n" + "FROM cte_dummy_data d";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlString, true);
     }
 }

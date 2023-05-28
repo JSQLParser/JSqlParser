@@ -21,8 +21,11 @@ import net.sf.jsqlparser.schema.Column;
 public class MergeUpdate implements Serializable {
 
     private List<Column> columns = null;
+
     private List<Expression> values = null;
+
     private Expression whereCondition;
+
     private Expression deleteWhereCondition;
 
     public List<Column> getColumns() {

@@ -45,5 +45,4 @@ public class ItemsListValidator extends AbstractValidator<ItemsList> implements 
     public void validate(ItemsList statement) {
         statement.accept(this);
     }
-
 }

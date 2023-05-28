@@ -17,9 +17,11 @@ import net.sf.jsqlparser.statement.Statement;
 public class ValidationError {
 
     private final String statements;
+
     private Statement parsedStatement;
 
     private Set<ValidationException> errors = new HashSet<>();
+
     private ValidationCapability capability;
 
     public ValidationError(String statements) {
@@ -84,9 +86,6 @@ public class ValidationError {
 
     @Override
     public String toString() {
-        return "ValidationError [\nstatement=" + statements + "\ncapability="
-                + (capability != null ? capability.getName() : "<null>") + "\nerrors=" + errors + "\n]";
+        return "ValidationError [\nstatement=" + statements + "\ncapability=" + (capability != null ? capability.getName() : "<null>") + "\nerrors=" + errors + "\n]";
     }
-
-
 }

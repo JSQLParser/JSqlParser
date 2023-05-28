@@ -29,7 +29,6 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
                 if (null != limit.getOffset()) {
                     buffer.append(limit.getOffset()).append(", ");
                 }
-
                 if (null != limit.getRowCount()) {
                     buffer.append(limit.getRowCount());
                 }

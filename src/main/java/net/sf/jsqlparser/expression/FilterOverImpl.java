@@ -15,14 +15,18 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- *
  * @author tw
  */
 public class FilterOverImpl extends ASTNodeAccessImpl {
+
     private final OrderByClause orderBy = new OrderByClause();
+
     private final PartitionByClause partitionBy = new PartitionByClause();
+
     private AnalyticType analyticType = AnalyticType.FILTER_ONLY;
+
     private Expression filterExpression = null;
+
     private WindowElement windowElement = null;
 
     public AnalyticType getAnalyticType() {
@@ -32,7 +36,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setAnalyticType(AnalyticType analyticType) {
         this.analyticType = analyticType;
     }
-    
+
     public FilterOverImpl withAnalyticType(AnalyticType analyticType) {
         this.setAnalyticType(analyticType);
         return this;
@@ -45,7 +49,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         orderBy.setOrderByElements(orderByElements);
     }
-    
+
     public FilterOverImpl withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
@@ -66,7 +70,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public boolean isPartitionByBrackets() {
         return partitionBy.isBrackets();
     }
-    
+
     public Expression getFilterExpression() {
         return filterExpression;
     }
@@ -74,7 +78,6 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setFilterExpression(Expression filterExpression) {
         this.filterExpression = filterExpression;
     }
-
 
     public FilterOverImpl withFilterExpression(Expression filterExpression) {
         this.setFilterExpression(filterExpression);
@@ -88,13 +91,13 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setWindowElement(WindowElement windowElement) {
         this.windowElement = windowElement;
     }
-    
+
     public FilterOverImpl withWindowElement(WindowElement windowElement) {
         this.setWindowElement(windowElement);
         return this;
     }
-    
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
+
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch" })
     public StringBuilder append(StringBuilder builder) {
         if (filterExpression != null) {
             builder.append("FILTER (WHERE ");
@@ -104,8 +107,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
                 builder.append(" ");
             }
         }
-
-        switch (analyticType) {
+        switch(analyticType) {
             case FILTER_ONLY:
                 return builder;
             case WITHIN_GROUP:
@@ -115,24 +117,20 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
                 builder.append("OVER");
         }
         builder.append(" (");
-
         partitionBy.toStringPartitionBy(builder);
         orderBy.toStringOrderByElements(builder);
-
         if (windowElement != null) {
             if (orderBy.getOrderByElements() != null) {
                 builder.append(' ');
             }
             builder.append(windowElement);
         }
-
         builder.append(")");
-
         return builder;
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder builder = new StringBuilder();
         return append(builder).toString();

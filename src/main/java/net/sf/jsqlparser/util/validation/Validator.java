@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import java.util.Set;
 
 /**
@@ -49,8 +48,7 @@ public interface Validator<S> {
      * @return the filtered view of requested {@link ValidationCapability}'s mapped to a set
      *         of error-messages
      */
-    default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(
-            ValidationCapability... capabilities) {
+    default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(ValidationCapability... capabilities) {
         return getValidationErrors(Arrays.asList(capabilities));
     }
 
@@ -59,8 +57,7 @@ public interface Validator<S> {
      * @return the filtered view of requested {@link ValidationCapability}'s mapped
      *         to a set of error-messages
      */
-    default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(
-            Collection<ValidationCapability> capabilities) {
+    default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(Collection<ValidationCapability> capabilities) {
         Map<ValidationCapability, Set<ValidationException>> map = new HashMap<>();
         for (Entry<ValidationCapability, Set<ValidationException>> e : getValidationErrors().entrySet()) {
             if (capabilities.contains(e.getKey())) {
@@ -83,7 +80,6 @@ public interface Validator<S> {
     // * @param configuration
     // */
     // public void setConfiguration(FeatureConfiguration configuration);
-
     /**
      * @param ctx
      */
@@ -98,5 +94,4 @@ public interface Validator<S> {
      * @see #getValidationErrors(ValidationCapability...)
      */
     void validate(S statement);
-
 }

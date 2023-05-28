@@ -12,6 +12,7 @@ package net.sf.jsqlparser.schema;
 public final class Database implements MultiPartName {
 
     private Server server;
+
     private String databaseName;
 
     public Database(String databaseName) {
@@ -42,18 +43,15 @@ public final class Database implements MultiPartName {
     @Override
     public String getFullyQualifiedName() {
         String fqn = "";
-
         if (server != null) {
             fqn += server.getFullyQualifiedName();
         }
         if (!fqn.isEmpty()) {
             fqn += ".";
         }
-
         if (databaseName != null) {
             fqn += databaseName;
         }
-
         return fqn;
     }
 

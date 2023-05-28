@@ -47,7 +47,6 @@ public class CommentTest {
     public void testCommentTableDeparse() throws JSQLParserException {
         String statement = "COMMENT ON TABLE table1 IS 'comment1'";
         assertSqlCanBeParsedAndDeparsed(statement);
-
         Comment c = new Comment().withTable(new Table("table1")).withComment(new StringValue("comment1"));
         assertEquals("table1", c.getTable().getName());
         assertEquals("comment1", c.getComment().getValue());
@@ -63,9 +62,7 @@ public class CommentTest {
         assertEquals("column1", column.getColumnName());
         assertEquals("comment1", comment.getComment().getValue());
         assertEquals(statement, "" + comment);
-
-        Comment c = new Comment().withColumn(new Column(new Table("table1"), "column1"))
-                .withComment(new StringValue("comment1"));
+        Comment c = new Comment().withColumn(new Column(new Table("table1"), "column1")).withComment(new StringValue("comment1"));
         assertDeparse(c, statement, false);
     }
 

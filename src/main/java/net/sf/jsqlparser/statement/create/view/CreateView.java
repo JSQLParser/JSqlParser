@@ -23,14 +23,23 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateView implements Statement {
 
     private Table view;
+
     private Select select;
+
     private boolean orReplace = false;
+
     private List<String> columnNames = null;
+
     private boolean materialized = false;
+
     private ForceOption force = ForceOption.NONE;
+
     private TemporaryOption temp = TemporaryOption.NONE;
+
     private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
+
     private boolean withReadOnly = false;
+
     private boolean ifNotExists = false;
 
     @Override
@@ -128,11 +137,9 @@ public class CreateView implements Statement {
             sql.append("OR REPLACE ");
         }
         appendForceOptionIfApplicable(sql);
-
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");
         }
-
         if (isMaterialized()) {
             sql.append("MATERIALIZED ");
         }
@@ -155,7 +162,7 @@ public class CreateView implements Statement {
     }
 
     private void appendForceOptionIfApplicable(StringBuilder sql) {
-        switch (force) {
+        switch(force) {
             case FORCE:
                 sql.append("FORCE ");
                 break;
@@ -163,7 +170,6 @@ public class CreateView implements Statement {
                 sql.append("NO FORCE ");
                 break;
             default:
-                // nothing
         }
     }
 

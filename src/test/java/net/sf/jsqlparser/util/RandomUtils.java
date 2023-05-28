@@ -37,6 +37,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class RandomUtils {
 
     private static final Logger LOG = Logger.getLogger(RandomUtils.class.getName());
+
     private static final Random RANDOM = new Random();
 
     private static final ThreadLocal<Map<Class<?>, Object>> OBJECTS = new ThreadLocal<>();
@@ -63,7 +64,6 @@ public class RandomUtils {
                 }
             }
         });
-
     }
 
     /**
@@ -129,8 +129,7 @@ public class RandomUtils {
                     } else {
                         try {
                             value = type.getConstructor().newInstance();
-                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                             // cannot get default instance with empty constructor
                             LOG.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
                         }
@@ -144,5 +143,4 @@ public class RandomUtils {
         T t = (T) value;
         return t;
     }
-
 }

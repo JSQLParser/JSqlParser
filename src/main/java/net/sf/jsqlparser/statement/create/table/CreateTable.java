@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 import net.sf.jsqlparser.expression.SpannerInterleaveIn;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -25,16 +24,27 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateTable implements Statement {
 
     private Table table;
+
     private boolean unlogged = false;
+
     private List<String> createOptionsStrings;
+
     private List<String> tableOptionsStrings;
+
     private List<ColumnDefinition> columnDefinitions;
+
     private List<String> columns;
+
     private List<Index> indexes;
+
     private Select select;
+
     private Table likeTable;
+
     private boolean selectParenthesis;
+
     private boolean ifNotExists = false;
+
     private boolean orReplace = false;
 
     private RowMovement rowMovement;
@@ -78,7 +88,7 @@ public class CreateTable implements Statement {
     }
 
     public void setColumns(List<String> columns) {
-        this.columns =columns;
+        this.columns = columns;
     }
 
     /**
@@ -164,23 +174,17 @@ public class CreateTable implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         String sql;
         String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
-
-        sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
-                + (!"".equals(createOps) ? createOps + " " : "")
-                + (orReplace ? "OR REPLACE " : "")
-                + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
-
+        sql = "CREATE " + (unlogged ? "UNLOGGED " : "") + (!"".equals(createOps) ? createOps + " " : "") + (orReplace ? "OR REPLACE " : "") + "TABLE " + (ifNotExists ? "IF NOT EXISTS " : "") + table;
         if (columns != null && !columns.isEmpty()) {
             sql += " ";
             sql += PlainSelect.getStringList(columns, true, true);
         }
         if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
-
             sql += PlainSelect.getStringList(columnDefinitions, true, false);
             if (indexes != null && !indexes.isEmpty()) {
                 sql += ", ";
@@ -192,7 +196,6 @@ public class CreateTable implements Statement {
         if (options != null && options.length() > 0) {
             sql += " " + options;
         }
-
         if (rowMovement != null) {
             sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
         }

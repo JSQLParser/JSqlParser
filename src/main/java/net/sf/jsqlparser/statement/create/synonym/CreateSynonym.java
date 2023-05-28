@@ -12,15 +12,17 @@ package net.sf.jsqlparser.statement.create.synonym;
 import net.sf.jsqlparser.schema.Synonym;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class CreateSynonym implements Statement {
 
     private boolean orReplace;
+
     private boolean publicSynonym;
+
     public Synonym synonym;
+
     private List<String> forList = new ArrayList<>();
 
     public void setSynonym(Synonym synonym) {

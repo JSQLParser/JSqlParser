@@ -30,18 +30,12 @@ import org.opentest4j.TestAbortedException;
  */
 public class ReflectionTestUtils {
 
-    public static final Predicate<Method> GETTER_METHODS = m -> !void.class.isAssignableFrom(m.getReturnType())
-            && m.getParameterCount() == 0
-            && (m.getName().startsWith("get") || m.getName().startsWith("is"));
+    public static final Predicate<Method> GETTER_METHODS = m -> !void.class.isAssignableFrom(m.getReturnType()) && m.getParameterCount() == 0 && (m.getName().startsWith("get") || m.getName().startsWith("is"));
 
-    public static final Predicate<Method> SETTER_METHODS = m -> void.class.isAssignableFrom(m.getReturnType())
-            && m.getParameterCount() == 1
-            && m.getName().startsWith("set");
+    public static final Predicate<Method> SETTER_METHODS = m -> void.class.isAssignableFrom(m.getReturnType()) && m.getParameterCount() == 1 && m.getName().startsWith("set");
 
-    public static final Predicate<Method> CHAINING_METHODS = m -> m.getDeclaringClass()
-            .isAssignableFrom(m.getReturnType())
-            // could be prefixed with "with" or not, does not matter
-            && m.getParameterCount() == 1;
+    public static final Predicate<Method> CHAINING_METHODS = m -> m.getDeclaringClass().isAssignableFrom(m.getReturnType()) && // could be prefixed with "with" or not, does not matter
+    m.getParameterCount() == 1;
 
     /**
      * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
@@ -60,12 +54,9 @@ public class ReflectionTestUtils {
     public static void testGetterSetterChaining(List<Object> objs, Predicate<Method>... testMethodFilter) {
         RandomUtils.pushObjects(objs);
         objs.forEach(o -> {
-            testMethodInvocation(o, ReflectionTestUtils::anyReturnType, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, GETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
-            testMethodInvocation(o, ReflectionTestUtils::noReturnTypeValid, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, SETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
-            testMethodInvocation(o, ReflectionTestUtils::returnTypeThis, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, CHAINING_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::anyReturnType, ReflectionTestUtils::reflectiveNonNullArgs, ArrayUtils.insert(0, testMethodFilter, GETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::noReturnTypeValid, ReflectionTestUtils::reflectiveNonNullArgs, ArrayUtils.insert(0, testMethodFilter, SETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::returnTypeThis, ReflectionTestUtils::reflectiveNonNullArgs, ArrayUtils.insert(0, testMethodFilter, CHAINING_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
         });
     }
 
@@ -117,9 +108,7 @@ public class ReflectionTestUtils {
      * @param methodFilters
      */
     @SafeVarargs
-    public static void testMethodInvocation(Object object, BiPredicate<Object, Method> returnTypeCheck,
-            Function<Method, Object[]> argsFunction,
-            Predicate<Method>... methodFilters) {
+    public static void testMethodInvocation(Object object, BiPredicate<Object, Method> returnTypeCheck, Function<Method, Object[]> argsFunction, Predicate<Method>... methodFilters) {
         log(Level.INFO, "testing methods of class " + object.getClass());
         for (Method m : object.getClass().getMethods()) {
             boolean testMethod = true;
@@ -135,10 +124,7 @@ public class ReflectionTestUtils {
                 try {
                     invoke(m, returnTypeCheck, argsFunction, object);
                 } catch (Exception e) {
-                    assertFalse(
-                            false,
-                            String.format("%s throws on invocation on object: %s", m.toGenericString(),
-                                    object.getClass()));
+                    assertFalse(false, String.format("%s throws on invocation on object: %s", m.toGenericString(), object.getClass()));
                 }
             }
         }
@@ -154,15 +140,11 @@ public class ReflectionTestUtils {
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    public static void invoke(Method method, BiPredicate<Object, Method> returnValueCheck,
-            Function<Method, Object[]> argsFunction,
-            Object object)
-            throws IllegalAccessException, InvocationTargetException {
+    public static void invoke(Method method, BiPredicate<Object, Method> returnValueCheck, Function<Method, Object[]> argsFunction, Object object) throws IllegalAccessException, InvocationTargetException {
         try {
             Object returnValue = method.invoke(object, argsFunction.apply(method));
             if (!void.class.isAssignableFrom(method.getReturnType())) {
-                assertTrue(returnValueCheck.test(returnValue, method), "unexpected return-value with type " + returnValue.getClass() + " for method "
-                        + method.toGenericString());
+                assertTrue(returnValueCheck.test(returnValue, method), "unexpected return-value with type " + returnValue.getClass() + " for method " + method.toGenericString());
             }
         } catch (TestAbortedException tae) {
             log(Level.INFO, "skip methods " + method.toGenericString() + ", detail: " + tae.getMessage());
@@ -174,5 +156,4 @@ public class ReflectionTestUtils {
             System.out.println(string);
         }
     }
-
 }

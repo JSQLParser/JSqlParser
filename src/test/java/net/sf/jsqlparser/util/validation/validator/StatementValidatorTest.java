@@ -21,8 +21,7 @@ public class StatementValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateCreateSchema() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE SCHEMA my_schema",
-                "CREATE SCHEMA myschema AUTHORIZATION myauth")) {
+        for (String sql : Arrays.asList("CREATE SCHEMA my_schema", "CREATE SCHEMA myschema AUTHORIZATION myauth")) {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
         }
     }
@@ -46,16 +45,13 @@ public class StatementValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateBlock() throws JSQLParserException {
-        validateNoErrors("BEGIN UPDATE tab SET val = 1 WHERE col = 2; END;", 1, DatabaseType.ORACLE,
-                DatabaseType.SQLSERVER);
+        validateNoErrors("BEGIN UPDATE tab SET val = 1 WHERE col = 2; END;", 1, DatabaseType.ORACLE, DatabaseType.SQLSERVER);
     }
 
     @Test
     public void testValidateComment() throws JSQLParserException {
-        for (String sql : Arrays.asList("COMMENT ON VIEW myschema.myView IS 'myComment'",
-                "COMMENT ON COLUMN myTable.myColumn is 'Some comment'", "COMMENT ON TABLE table1 IS 'comment1'")) {
+        for (String sql : Arrays.asList("COMMENT ON VIEW myschema.myView IS 'myComment'", "COMMENT ON COLUMN myTable.myColumn is 'Some comment'", "COMMENT ON TABLE table1 IS 'comment1'")) {
             validateNoErrors(sql, 1, DatabaseType.H2, DatabaseType.ORACLE, DatabaseType.POSTGRESQL);
         }
     }
-
 }

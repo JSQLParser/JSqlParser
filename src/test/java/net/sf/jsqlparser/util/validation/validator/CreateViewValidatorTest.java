@@ -21,16 +21,14 @@ public class CreateViewValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateCreateView() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE VIEW myview AS SELECT * FROM mytab",
-                "CREATE VIEW myview AS (SELECT * FROM mytab)")) {
+        for (String sql : Arrays.asList("CREATE VIEW myview AS SELECT * FROM mytab", "CREATE VIEW myview AS (SELECT * FROM mytab)")) {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
         }
     }
 
     @Test
     public void testValidateCreateViewNotAllowed() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE VIEW myview AS SELECT * FROM mytab",
-                "CREATE VIEW myview AS (SELECT * FROM mytab)")) {
+        for (String sql : Arrays.asList("CREATE VIEW myview AS SELECT * FROM mytab", "CREATE VIEW myview AS (SELECT * FROM mytab)")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.createView);
         }
     }
@@ -42,8 +40,7 @@ public class CreateViewValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateCreateOrReplaceView() throws JSQLParserException {
-        validateNoErrors("CREATE OR REPLACE VIEW myview AS SELECT * FROM mytab", 1, DatabaseType.ORACLE,
-                DatabaseType.POSTGRESQL, DatabaseType.MYSQL, DatabaseType.MARIADB, DatabaseType.H2);
+        validateNoErrors("CREATE OR REPLACE VIEW myview AS SELECT * FROM mytab", 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL, DatabaseType.MYSQL, DatabaseType.MARIADB, DatabaseType.H2);
     }
 
     @Test
@@ -53,16 +50,14 @@ public class CreateViewValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateCreateTemporaryView() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE TEMPORARY VIEW myview AS SELECT * FROM mytab",
-                "CREATE TEMP VIEW myview AS SELECT * FROM mytab")) {
+        for (String sql : Arrays.asList("CREATE TEMPORARY VIEW myview AS SELECT * FROM mytab", "CREATE TEMP VIEW myview AS SELECT * FROM mytab")) {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
         }
     }
 
     @Test
     public void testValidateCreateViewWith() throws JSQLParserException {
-        for (String sql : Arrays.asList(
-                "CREATE VIEW foo(\"BAR\") AS WITH temp AS (SELECT temp_bar FROM foobar) SELECT bar FROM temp")) {
+        for (String sql : Arrays.asList("CREATE VIEW foo(\"BAR\") AS WITH temp AS (SELECT temp_bar FROM foobar) SELECT bar FROM temp")) {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
         }
     }

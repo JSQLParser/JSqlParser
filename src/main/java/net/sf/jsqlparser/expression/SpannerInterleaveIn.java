@@ -10,22 +10,21 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.schema.Table;
-
 import java.util.Collections;
 import java.util.List;
 
 public class SpannerInterleaveIn {
 
     public enum OnDelete {
-        CASCADE,
-        NO_ACTION
+
+        CASCADE, NO_ACTION
     }
 
     private Table table;
+
     private OnDelete onDelete;
 
     public SpannerInterleaveIn() {
-
     }
 
     public SpannerInterleaveIn(Table table, OnDelete action) {
@@ -59,8 +58,7 @@ public class SpannerInterleaveIn {
 
     @Override
     public String toString() {
-        return "INTERLEAVE IN PARENT " + getTable().getName() +
-               (getOnDelete() == null ? "" : " ON DELETE " + (getOnDelete() == OnDelete.CASCADE ? "CASCADE" : "NO ACTION"));
+        return "INTERLEAVE IN PARENT " + getTable().getName() + (getOnDelete() == null ? "" : " ON DELETE " + (getOnDelete() == OnDelete.CASCADE ? "CASCADE" : "NO ACTION"));
     }
 
     public SpannerInterleaveIn withTable(Table table) {

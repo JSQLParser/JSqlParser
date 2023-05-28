@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.statement;
 
 /**
- *
  * @author tobens
  */
 public enum DeclareType {
+
     TABLE, AS, TYPE
 }

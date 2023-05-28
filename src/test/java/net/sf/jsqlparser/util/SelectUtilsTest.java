@@ -23,10 +23,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,12 +38,10 @@ public class SelectUtilsTest {
         Select select = (Select) CCJSqlParserUtil.parse("select a from mytable");
         SelectUtils.addExpression(select, new Column("b"));
         assertEquals("SELECT a, b FROM mytable", select.toString());
-
         Addition add = new Addition();
         add.setLeftExpression(new LongValue(5));
         add.setRightExpression(new LongValue(6));
         SelectUtils.addExpression(select, add);
-
         assertEquals("SELECT a, b, 5 + 6 FROM mytable", select.toString());
     }
 
@@ -62,8 +58,7 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndExpressions() {
-        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"),
-                new Column("a"), new Column("b"));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), new Column("a"), new Column("b"));
         assertEquals("SELECT a, b FROM mytable", select.toString());
     }
 
@@ -75,12 +70,9 @@ public class SelectUtilsTest {
 
     @Test
     public void testBuildSelectFromTableAndParsedExpression() throws JSQLParserException {
-        PlainSelect select = (PlainSelect) SelectUtils
-                .buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
+        PlainSelect select = (PlainSelect) SelectUtils.buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
         assertEquals("SELECT a + b, test FROM mytable", select.toString());
-
-        assertTrue(((SelectExpressionItem) select
-                .getSelectItems().get(0)).getExpression() instanceof Addition);
+        assertTrue(((SelectExpressionItem) select.getSelectItems().get(0)).getExpression() instanceof Addition);
     }
 
     @Test
@@ -96,29 +88,19 @@ public class SelectUtilsTest {
         table1.setAlias(new Alias("tab1"));
         Table table2 = new Table("mytable2");
         table2.setAlias(new Alias("tab2"));
-
-        List<? extends Expression> colunas = Arrays.asList(new Column(table1, "col1"),
-                new Column(table1, "col2"), new Column(table1, "col3"), new Column(table2, "b1"),
-                new Column(table2, "b2"));
-
-        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1,
-                colunas.toArray(new Expression[colunas.size()]));
-
+        List<? extends Expression> colunas = Arrays.asList(new Column(table1, "col1"), new Column(table1, "col2"), new Column(table1, "col3"), new Column(table2, "b1"), new Column(table2, "b2"));
+        Select select = SelectUtils.buildSelectFromTableAndExpressions(table1, colunas.toArray(new Expression[colunas.size()]));
         final EqualsTo equalsTo = new EqualsTo();
         equalsTo.setLeftExpression(new Column(table1, "col1"));
         equalsTo.setRightExpression(new Column(table2, "b1"));
         Join addJoin = SelectUtils.addJoin(select, table2, equalsTo);
         addJoin.setLeft(true);
-
-        assertEquals(
-                "SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1",
-                select.toString());
+        assertEquals("SELECT tab1.col1, tab1.col2, tab1.col3, tab2.b1, tab2.b2 FROM mytable1 AS tab1 LEFT JOIN mytable2 AS tab2 ON tab1.col1 = tab2.b1", select.toString());
     }
 
     public void testTableAliasIssue311_2() {
         Table table1 = new Table("mytable1");
         table1.setAlias(new Alias("tab1"));
-
         Column col = new Column(table1, "col1");
         assertEquals("tab1.col1", col.toString());
         assertEquals("mytable.col1", col.getFullyQualifiedName());

@@ -18,7 +18,6 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
  */
 public class MergeValidator extends AbstractValidator<Merge> {
 
-
     @Override
     public void validate(Merge merge) {
         for (ValidationCapability c : getCapabilities()) {
@@ -39,5 +38,4 @@ public class MergeValidator extends AbstractValidator<Merge> {
         // validateOptionalFromItems(merge.getTable(), merge.getUsingTable(),
         // merge.getUsingSelect());
     }
-
 }

@@ -14,6 +14,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expression {
 
     private String value;
+
     private DateTime type;
 
     public String getValue() {
@@ -53,6 +54,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
     }
 
     public enum DateTime {
-        DATE, TIME, TIMESTAMP, TIMESTAMPTZ;
+
+        DATE, TIME, TIMESTAMP, TIMESTAMPTZ
     }
 }

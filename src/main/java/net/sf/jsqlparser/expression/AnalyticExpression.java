@@ -25,19 +25,36 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
     private String name;
+
     private Expression expression;
+
     private Expression offset;
+
     private Expression defaultValue;
+
     private boolean allColumns = false;
+
     private KeepExpression keep = null;
+
     private AnalyticType type = AnalyticType.OVER;
+
     private boolean distinct = false;
+
     private boolean unique = false;
-    private boolean ignoreNulls = false;            //IGNORE NULLS inside function parameters
-    private boolean ignoreNullsOutside = false;     //IGNORE NULLS outside function parameters
+
+    //IGNORE NULLS inside function parameters
+    private boolean ignoreNulls = false;
+
+    //IGNORE NULLS outside function parameters
+    private boolean ignoreNullsOutside = false;
+
     private Expression filterExpression = null;
+
     private List<OrderByElement> funcOrderBy = null;
-    private String windowName = null;               // refers to an external window definition (paritionBy, orderBy, windowElement)
+
+    // refers to an external window definition (paritionBy, orderBy, windowElement)
+    private String windowName = null;
+
     private WindowDefinition windowDef = new WindowDefinition();
 
     public AnalyticExpression() {
@@ -49,13 +66,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         distinct = function.isDistinct();
         unique = function.isUnique();
         funcOrderBy = function.getOrderByElements();
-
         ExpressionList list = function.getParameters();
         if (list != null) {
             if (list.getExpressions().size() > 3) {
                 throw new IllegalArgumentException("function object not valid to initialize analytic expression");
             }
-
             expression = list.getExpressions().get(0);
             if (list.getExpressions().size() > 1) {
                 offset = list.getExpressions().get(1);
@@ -202,10 +217,9 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch" })
     public String toString() {
         StringBuilder b = new StringBuilder();
-
         b.append(name).append("(");
         if (isDistinct()) {
             b.append("DISTINCT ");
@@ -228,12 +242,10 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append(" ORDER BY ");
             b.append(funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
         }
-
         b.append(") ");
         if (keep != null) {
             b.append(keep.toString()).append(" ");
         }
-
         if (filterExpression != null) {
             b.append("FILTER (WHERE ");
             b.append(filterExpression.toString());
@@ -242,12 +254,10 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
                 b.append(" ");
             }
         }
-
         if (isIgnoreNullsOutside()) {
             b.append("IGNORE NULLS ");
         }
-
-        switch (type) {
+        switch(type) {
             case FILTER_ONLY:
                 return b.toString();
             case WITHIN_GROUP:
@@ -263,14 +273,12 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             default:
                 b.append("OVER");
         }
-
         if (windowName != null) {
             b.append(" ").append(windowName);
-        } else if (type!=AnalyticType.WITHIN_GROUP_OVER)  {
+        } else if (type != AnalyticType.WITHIN_GROUP_OVER) {
             b.append(" ");
             b.append(windowDef.toString());
         }
-
         return b.toString();
     }
 

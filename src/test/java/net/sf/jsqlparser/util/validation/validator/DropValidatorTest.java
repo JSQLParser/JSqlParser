@@ -33,37 +33,31 @@ public class DropValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationDropIfExists() throws JSQLParserException {
         String sql = "DROP TABLE IF EXISTS tab2;";
-        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB,
-                DatabaseType.POSTGRESQL, DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2);
     }
 
     @Test
     public void testValidationDropIndexIfExists() throws JSQLParserException {
         String sql = "DROP INDEX IF EXISTS idx_tab2_id;";
-        validateNoErrors(sql, 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB,
-                DatabaseType.POSTGRESQL, DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2);
     }
 
     @Test
     public void testValidationDropViewIfExists() throws JSQLParserException {
         String sql = "DROP VIEW IF EXISTS myview;";
-        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB,
-                DatabaseType.POSTGRESQL, DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2);
     }
 
     @Test
     public void testValidationDropSchemaIfExists() throws JSQLParserException {
         String sql = "DROP SCHEMA IF EXISTS myschema;";
-        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB,
-                DatabaseType.POSTGRESQL, DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2);
     }
 
     @Test
     public void testValidationDropSequenceIfExists() throws JSQLParserException {
         String sql = "DROP SEQUENCE IF EXISTS mysequence;";
-        validateNoErrors(sql, 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB,
-                DatabaseType.POSTGRESQL, DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2);
         validateNotSupported(sql, 1, 1, DatabaseType.MYSQL, Feature.dropSequence);
     }
-
 }

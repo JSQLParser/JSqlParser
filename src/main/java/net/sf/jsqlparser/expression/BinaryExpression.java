@@ -18,6 +18,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private Expression rightExpression;
 
     public BinaryExpression() {
@@ -52,7 +53,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
     @Override
     public String toString() {
         return // (not ? "NOT " : "") +
-                getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
+        getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 
     public abstract String getStringExpression();

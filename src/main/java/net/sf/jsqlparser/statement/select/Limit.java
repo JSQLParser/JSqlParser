@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class Limit extends ASTNodeAccessImpl {
 
     private Expression rowCount;
+
     private Expression offset;
 
     public Expression getOffset() {
@@ -62,7 +63,6 @@ public class Limit extends ASTNodeAccessImpl {
     @Override
     public String toString() {
         String retVal = " LIMIT ";
-
         if (rowCount instanceof AllValue || rowCount instanceof NullValue) {
             // no offset allowed
             retVal += rowCount;
@@ -74,7 +74,6 @@ public class Limit extends ASTNodeAccessImpl {
                 retVal += rowCount;
             }
         }
-
         return retVal;
     }
 

@@ -16,6 +16,7 @@ import java.util.List;
 public class SQLServerHints implements Serializable {
 
     private Boolean noLock;
+
     private String indexName;
 
     public SQLServerHints() {
@@ -51,9 +52,7 @@ public class SQLServerHints implements Serializable {
         if (Boolean.TRUE.equals(noLock)) {
             hints.add("NOLOCK");
         }
-        return " WITH ("
-                + String.join(", ", hints)
-                + ")";
+        return " WITH (" + String.join(", ", hints) + ")";
     }
 
     public SQLServerHints withNoLock(Boolean noLock) {

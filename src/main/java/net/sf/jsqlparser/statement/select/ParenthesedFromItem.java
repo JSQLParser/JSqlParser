@@ -10,20 +10,25 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class ParenthesedFromItem implements FromItem {
+
     private FromItem fromItem;
+
     private List<Join> joins;
+
     private Alias alias;
+
     private Pivot pivot;
+
     private UnPivot unPivot;
 
-    public ParenthesedFromItem() {}
+    public ParenthesedFromItem() {
+    }
 
     public ParenthesedFromItem(FromItem fromItem) {
         setFromItem(fromItem);
@@ -74,19 +79,15 @@ public class ParenthesedFromItem implements FromItem {
             }
         }
         builder.append(")");
-
         if (alias != null) {
             builder.append(alias);
         }
-
         if (pivot != null) {
             builder.append(pivot);
         }
-
         if (unPivot != null) {
             builder.append(unPivot);
         }
-
         return builder;
     }
 

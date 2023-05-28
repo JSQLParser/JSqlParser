@@ -27,10 +27,7 @@ package net.sf.jsqlparser.test;
    See the License for the specific language governing permissions and
    limitations under the License.
 ==================================================================== */
-
-
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,18 +38,17 @@ import java.util.List;
  * Usage is something like
  *
  *  private final MemoryLeakVerifier verifier = new MemoryLeakVerifier();
-
- {@literal}After
- void tearDown() {
- verifier.assertGarbageCollected();
- }
-
- {@literal}Test
- void someTest() {
- ...
- verifier.addObject(object);
- }
-
+ *
+ * {@literal}After
+ * void tearDown() {
+ * verifier.assertGarbageCollected();
+ * }
+ *
+ * {@literal}Test
+ * void someTest() {
+ * ...
+ * verifier.addObject(object);
+ * }
  *
  * This will verify at the end of the test if the object is actually removed by the
  * garbage collector or if it lingers in memory for some reason.
@@ -60,8 +56,10 @@ import java.util.List;
  * Idea taken from http://stackoverflow.com/a/7410460/411846
  */
 public class MemoryLeakVerifier {
+
     private static final int MAX_GC_ITERATIONS = 50;
-    private static final int GC_SLEEP_TIME     = 100;
+
+    private static final int GC_SLEEP_TIME = 100;
 
     private final List<WeakReference<Object>> references = new ArrayList<>();
 
@@ -104,13 +102,10 @@ public class MemoryLeakVerifier {
             if (ref.get() == null) {
                 break;
             }
-
             // Pause for a while and then go back around the loop to try again...
             //EventQueue.invokeAndWait(Procedure.NoOp); // Wait for the AWT event queue to have completed processing
             Thread.sleep(GC_SLEEP_TIME);
         }
-
         assertNull(ref.get(), "Object should not exist after " + MAX_GC_ITERATIONS + " collections, but still had: " + ref.get());
     }
 }
-

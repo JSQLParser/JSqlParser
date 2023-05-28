@@ -14,5 +14,6 @@ package net.sf.jsqlparser.util.validation;
  * @see ParseCapability
  */
 enum ParseContext implements ContextKey {
+
     statement
 }

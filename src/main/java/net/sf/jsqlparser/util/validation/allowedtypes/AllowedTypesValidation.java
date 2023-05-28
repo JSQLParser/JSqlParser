@@ -11,7 +11,6 @@ package net.sf.jsqlparser.util.validation.allowedtypes;
 
 import java.util.Collection;
 import java.util.function.Consumer;
-
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
 import net.sf.jsqlparser.util.validation.ValidationException;
@@ -46,5 +45,4 @@ public class AllowedTypesValidation implements ValidationCapability {
     public String getName() {
         return NAME;
     }
-
 }

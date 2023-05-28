@@ -13,14 +13,12 @@ import net.sf.jsqlparser.*;
 import org.junit.jupiter.api.*;
 
 public class UnicodeTest {
+
     @Test
     void testCJKSetIssue1741() throws JSQLParserException {
         String sqlStr = "select c as 中文 from t";
-
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         sqlStr = "select * from t where 中文 = 'abc'";
-
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
@@ -28,6 +26,5 @@ public class UnicodeTest {
     void testCJKSetIssue1747() throws JSQLParserException {
         String sqlStr = "SELECT 가 FROM 나";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
     }
 }

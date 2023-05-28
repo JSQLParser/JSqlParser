@@ -13,8 +13,7 @@ import java.util.regex.*;
 
 public final class Server implements MultiPartName {
 
-    public static final Pattern SERVER_PATTERN = Pattern.
-            compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
+    public static final Pattern SERVER_PATTERN = Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
 
@@ -57,8 +56,7 @@ public final class Server implements MultiPartName {
 
     @Override
     public String getFullyQualifiedName() {
-        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.
-                isEmpty()) {
+        if (serverName != null && !serverName.isEmpty() && instanceName != null && !instanceName.isEmpty()) {
             return String.format("[%s\\%s]", serverName, instanceName);
         } else if (serverName != null && !serverName.isEmpty()) {
             return String.format("[%s]", serverName);

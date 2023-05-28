@@ -46,7 +46,7 @@ public class DropTest {
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
-    
+
     @Test
     public void testDropIndexOnTable() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP INDEX idx ON abc");
@@ -135,7 +135,7 @@ public class DropTest {
 
     @Test
     void dropTemporaryTableTestIssue1712() throws JSQLParserException {
-        String sqlStr="drop temporary table if exists tmp_MwYT8N0z";
+        String sqlStr = "drop temporary table if exists tmp_MwYT8N0z";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

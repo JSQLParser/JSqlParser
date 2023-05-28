@@ -44,5 +44,4 @@ public class CreateProcedure extends CreateFunctionalStatement {
     public CreateProcedure addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
         return (CreateProcedure) super.addFunctionDeclarationParts(functionDeclarationParts);
     }
-
 }

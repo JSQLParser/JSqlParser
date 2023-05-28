@@ -21,7 +21,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class ValueListExpression extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;
-    
+
     public ExpressionList getExpressionList() {
         return expressionList;
     }
@@ -34,7 +34,7 @@ public class ValueListExpression extends ASTNodeAccessImpl implements Expression
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-    
+
     @Override
     public String toString() {
         return expressionList.toString();

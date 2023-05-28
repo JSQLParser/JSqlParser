@@ -14,7 +14,6 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class CastExpressionTest {

@@ -14,6 +14,7 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 public class UnionOp extends SetOperation {
 
     private boolean distinct;
+
     private boolean all;
 
     public UnionOp() {

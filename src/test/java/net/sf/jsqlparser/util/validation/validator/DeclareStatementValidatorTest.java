@@ -20,5 +20,4 @@ public class DeclareStatementValidatorTest extends ValidationTestAsserts {
     public void testValidateDeclare() throws JSQLParserException {
         validateNoErrors("DECLARE @find nvarchar (30)", 1, DatabaseType.SQLSERVER);
     }
-
 }

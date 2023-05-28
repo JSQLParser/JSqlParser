@@ -21,8 +21,11 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expression {
 
     private final ItemsList itemsList;
+
     private boolean useBracketsForValues = false;
+
     private final ParenthesedSelect subSelect;
+
     private final AnyType anyType;
 
     public AnyComparisonExpression(AnyType anyType, ParenthesedSelect subSelect) {
@@ -77,9 +80,7 @@ public class AnyComparisonExpression extends ASTNodeAccessImpl implements Expres
 
     @Override
     public String toString() {
-        String s = anyType.name() + " ("
-                + (subSelect != null ? subSelect.toString() : "VALUES " + itemsList.toString())
-                + " )";
+        String s = anyType.name() + " (" + (subSelect != null ? subSelect.toString() : "VALUES " + itemsList.toString()) + " )";
         return s;
     }
 }

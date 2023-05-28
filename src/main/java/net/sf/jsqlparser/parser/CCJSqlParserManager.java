@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.parser;
 
 import java.io.Reader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.Statement;
 

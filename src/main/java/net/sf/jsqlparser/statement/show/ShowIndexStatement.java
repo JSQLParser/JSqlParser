@@ -1,4 +1,4 @@
-    /*-
+/*-
      * #%L
      * JSQLParser library
      * %%
@@ -13,10 +13,8 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
-*
-* @author Jayant Kumar Yadav
-*/
-
+ * @author Jayant Kumar Yadav
+ */
 public class ShowIndexStatement implements Statement {
 
     private String tableName;

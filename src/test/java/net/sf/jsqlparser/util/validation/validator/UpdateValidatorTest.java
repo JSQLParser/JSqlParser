@@ -65,5 +65,4 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
         String sql = "UPDATE tablename SET col = 'thing' WHERE ref > 10 ORDER BY col LIMIT 10";
         validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
     }
-
 }

@@ -13,7 +13,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,10 +22,11 @@ import java.util.regex.Pattern;
 public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
-    private static final Pattern MULTI_LINE =
-            Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
+
+    private static final Pattern MULTI_LINE = Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
 
     private String value;
+
     private boolean singleLine = false;
 
     public static boolean isHintMatch(String comment) {
@@ -89,7 +89,6 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
     }
 
     public static OracleHint getHintFromSelectBody(Select selectBody) {
-
         if (selectBody instanceof PlainSelect) {
             return ((PlainSelect) selectBody).getOracleHint();
         } else if (selectBody instanceof ParenthesedSelect) {

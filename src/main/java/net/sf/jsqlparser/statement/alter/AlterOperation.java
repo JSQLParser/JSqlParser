@@ -10,5 +10,18 @@
 package net.sf.jsqlparser.statement.alter;
 
 public enum AlterOperation {
-    ADD, ALTER, DROP, DROP_PRIMARY_KEY, DROP_UNIQUE, DROP_FOREIGN_KEY, MODIFY, CHANGE, ALGORITHM, RENAME, RENAME_TABLE, COMMENT, UNSPECIFIC;
+
+    ADD,
+    ALTER,
+    DROP,
+    DROP_PRIMARY_KEY,
+    DROP_UNIQUE,
+    DROP_FOREIGN_KEY,
+    MODIFY,
+    CHANGE,
+    ALGORITHM,
+    RENAME,
+    RENAME_TABLE,
+    COMMENT,
+    UNSPECIFIC
 }

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
  * @author Mathieu Goeminne
  */
 public class CaseExpressionTest {
+
     @Test
     public void testSimpleCase() throws JSQLParserException {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true THEN 1 ELSE 2 END", true);
@@ -84,26 +85,9 @@ public class CaseExpressionTest {
 
     @Test
     public void testCaseInsideBrackets() throws JSQLParserException {
-        String sqlStr = "SELECT ( CASE\n"
-                        + "            WHEN something\n"
-                        + "                THEN CASE\n"
-                        + "                     WHEN something2\n"
-                        + "                         THEN 1\n"
-                        + "                     ELSE 0\n"
-                        + "                     END + 1\n"
-                        + "            ELSE 0\n"
-                        + "        END ) + 1 \n"
-                        + "FROM test";
-
+        String sqlStr = "SELECT ( CASE\n" + "            WHEN something\n" + "                THEN CASE\n" + "                     WHEN something2\n" + "                         THEN 1\n" + "                     ELSE 0\n" + "                     END + 1\n" + "            ELSE 0\n" + "        END ) + 1 \n" + "FROM test";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr = "SELECT\n"
-                 + "(CASE WHEN FIELD_A=0 THEN FIELD_B\n"
-                 + "WHEN FIELD_C >FIELD_D  THEN (CASE WHEN FIELD_A>0 THEN\n"
-                 + "(FIELD_B)/(FIELD_A/(DATEDIFF(DAY,:started,:end)+1))\n"
-                 + "ELSE 0 END)-FIELD_D ELSE 0 END)*FIELD_A/(DATEDIFF(DAY,:started,:end)+1)  AS UNNECESSARY_COMPLEX_EXPRESSION\n"
-                 + "FROM TEST";
-
+        sqlStr = "SELECT\n" + "(CASE WHEN FIELD_A=0 THEN FIELD_B\n" + "WHEN FIELD_C >FIELD_D  THEN (CASE WHEN FIELD_A>0 THEN\n" + "(FIELD_B)/(FIELD_A/(DATEDIFF(DAY,:started,:end)+1))\n" + "ELSE 0 END)-FIELD_D ELSE 0 END)*FIELD_A/(DATEDIFF(DAY,:started,:end)+1)  AS UNNECESSARY_COMPLEX_EXPRESSION\n" + "FROM TEST";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

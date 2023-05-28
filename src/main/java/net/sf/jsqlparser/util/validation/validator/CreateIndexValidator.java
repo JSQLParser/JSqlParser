@@ -30,5 +30,4 @@ public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
             validateOptionalColumnNames(c, index.getColumnsNames(), NamedObject.table);
         }
     }
-
 }

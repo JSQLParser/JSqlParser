@@ -20,5 +20,4 @@ public class UseStatementValidatorTest extends ValidationTestAsserts {
     public void testValidateUse() throws JSQLParserException {
         validateNoErrors("USE my_schema", 1, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
-
 }

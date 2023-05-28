@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author tw
  */
 public class ColumnTest {
@@ -21,13 +20,12 @@ public class ColumnTest {
     @Test
     public void testCheckNonFinalClass() {
         Column myColumn = new Column(null, "myColumn") {
+
             @Override
             public String toString() {
                 return "anonymous class";
             }
-
         };
         assertEquals("anonymous class", myColumn.toString());
     }
-
 }

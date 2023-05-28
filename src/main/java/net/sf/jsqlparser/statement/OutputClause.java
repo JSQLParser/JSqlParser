@@ -13,7 +13,6 @@ import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -39,9 +38,13 @@ import java.util.Objects;
  * </pre>
  */
 public class OutputClause implements Serializable {
+
     List<SelectItem> selectItemList;
+
     UserVariable tableVariable;
+
     Table outputTable;
+
     List<String> columnList;
 
     public OutputClause(List<SelectItem> selectItemList, UserVariable tableVariable, Table outputTable, List<String> columnList) {
@@ -86,15 +89,12 @@ public class OutputClause implements Serializable {
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(" OUTPUT ");
         PlainSelect.appendStringListTo(builder, selectItemList, true, false);
-
         if (tableVariable != null) {
             builder.append(" INTO ").append(tableVariable);
         } else if (outputTable != null) {
             builder.append(" INTO ").append(outputTable);
         }
-
         PlainSelect.appendStringListTo(builder, columnList, true, false);
-
         return builder.append(" ");
     }
 

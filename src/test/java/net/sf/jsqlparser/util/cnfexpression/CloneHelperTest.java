@@ -22,39 +22,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author tw
  */
 public class CloneHelperTest {
 
     @Test
     public void testChangeBack() {
-        MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c"));
+        MultipleExpression ors = transform(Arrays.asList("a>b", "5=a", "b=c", "a>c"));
         Expression expr = CloneHelper.changeBack(true, ors);
         assertThat(expr).isInstanceOf(Parenthesis.class);
         assertThat(expr.toString()).isEqualTo("(a > b OR 5 = a OR b = c OR a > c)");
     }
-    
+
     @Test
     public void testChangeBackOddNumberOfExpressions() {
-        MultipleExpression ors = transform( Arrays.asList("a>b", "5=a", "b=c", "a>c", "e<f"));
+        MultipleExpression ors = transform(Arrays.asList("a>b", "5=a", "b=c", "a>c", "e<f"));
         Expression expr = CloneHelper.changeBack(true, ors);
         assertThat(expr).isInstanceOf(Parenthesis.class);
         assertThat(expr.toString()).isEqualTo("(a > b OR 5 = a OR b = c OR a > c OR e < f)");
     }
-    
-    private static MultipleExpression transform(List<String> expressions) {
-        return new MultiOrExpression(
-                expressions.stream()
-                        .map(expr -> {
-                            try {
-                                return CCJSqlParserUtil.parseCondExpression(expr);
-                            } catch (JSQLParserException ex) {
-                                Logger.getLogger(CloneHelperTest.class.getName()).log(Level.SEVERE, null, ex);
-                                return null;
-                            }
-                        })
-                        .collect(toList()));
-    }
 
+    private static MultipleExpression transform(List<String> expressions) {
+        return new MultiOrExpression(expressions.stream().map(expr -> {
+            try {
+                return CCJSqlParserUtil.parseCondExpression(expr);
+            } catch (JSQLParserException ex) {
+                Logger.getLogger(CloneHelperTest.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }).collect(toList()));
+    }
 }

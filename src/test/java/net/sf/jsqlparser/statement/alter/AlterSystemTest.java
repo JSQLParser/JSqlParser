@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  * @see <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER SESSION</a>
  */
@@ -43,7 +42,6 @@ public class AlterSystemTest {
     @Test
     public void testStatementVisitorAdaptor() throws JSQLParserException {
         String sqlStr = "ALTER SYSTEM KILL SESSION '13, 8'";
-
         CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
     }
 
@@ -56,7 +54,6 @@ public class AlterSystemTest {
     @Test
     public void testTableNamesFinder() throws JSQLParserException {
         String sqlStr = "ALTER SYSTEM KILL SESSION '13, 8'";
-
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         List<String> tables = new TablesNamesFinder().getTableList(statement);
         assertEquals(0, tables.size());
@@ -71,7 +68,6 @@ public class AlterSystemTest {
     @Test
     public void testValidator() throws JSQLParserException {
         String sqlStr = "ALTER SYSTEM KILL SESSION '13, 8'";
-
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
     }
 
@@ -79,7 +75,6 @@ public class AlterSystemTest {
     public void testObjectAccess() throws JSQLParserException {
         String sqlStr = "ALTER SYSTEM KILL SESSION '13, 8'";
         AlterSystemStatement statement = (AlterSystemStatement) CCJSqlParserUtil.parse(sqlStr);
-
         assertEquals(AlterSystemOperation.KILL_SESSION, statement.getOperation());
         assertEquals("'13, 8'", statement.getParameters().get(0));
     }

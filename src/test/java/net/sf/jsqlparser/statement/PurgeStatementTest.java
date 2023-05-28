@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class PurgeStatementTest {
@@ -48,7 +47,6 @@ public class PurgeStatementTest {
     @Test
     public void testStatementVisitorAdaptor() throws JSQLParserException {
         String sqlStr = "PURGE TABLE testtable";
-
         CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
     }
 
@@ -61,7 +59,6 @@ public class PurgeStatementTest {
     @Test
     public void testTableNamesFinder() throws JSQLParserException {
         String sqlStr = "PURGE TABLE testtable";
-
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         List<String> tables = new TablesNamesFinder().getTableList(statement);
         assertEquals(1, tables.size());
@@ -77,7 +74,6 @@ public class PurgeStatementTest {
     @Test
     public void testValidator() throws JSQLParserException {
         String sqlStr = "PURGE TABLE testtable";
-
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
     }
 
@@ -86,7 +82,6 @@ public class PurgeStatementTest {
         String sqlStr = "PURGE TABLESPACE my_table_space USER cfe";
         PurgeStatement purgeStatement = (PurgeStatement) CCJSqlParserUtil.parse(sqlStr);
         purgeStatement.setUserName("common");
-
         assertEquals(PurgeObjectType.TABLESPACE, purgeStatement.getPurgeObjectType());
         assertEquals("my_table_space", purgeStatement.getObject());
         assertEquals("common", purgeStatement.getUserName());

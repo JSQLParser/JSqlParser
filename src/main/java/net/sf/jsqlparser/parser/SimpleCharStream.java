@@ -11,7 +11,7 @@ package net.sf.jsqlparser.parser;
 
 import java.io.IOException;
 
-@SuppressWarnings({"PMD.MethodNamingConventions", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({ "PMD.MethodNamingConventions", "PMD.CyclomaticComplexity" })
 public class SimpleCharStream {
 
     /**
@@ -19,32 +19,46 @@ public class SimpleCharStream {
      */
     @SuppressWarnings("checkstyle:constantname")
     public static final boolean staticFlag = false;
+
     int bufsize;
+
     int available;
+
     int tokenBegin;
+
     /**
      * Position in buffer.
      */
     public int bufpos = -1;
-    protected int bufline[];
-    protected int bufcolumn[];
+
+    protected int[] bufline;
+
+    protected int[] bufcolumn;
 
     protected int column = 0;
+
     protected int line = 1;
 
     protected boolean prevCharIsCR = false;
+
     protected boolean prevCharIsLF = false;
 
     protected Provider inputStream;
+
     private boolean isStringProvider;
 
     protected char[] buffer;
+
     protected int maxNextCharInd = 0;
+
     protected int inBuf = 0;
+
     protected int tabSize = 1;
+
     protected boolean trackLineColumn = true;
 
     protected int totalCharsRead = 0;
+
     protected int absoluteTokenBegin = 0;
 
     public void setTabSize(int i) {
@@ -61,40 +75,32 @@ public class SimpleCharStream {
 
     protected void ExpandBuff(boolean wrapAround) throws IOException {
         char[] newbuffer = new char[bufsize + 2048];
-        int newbufline[] = new int[bufsize + 2048];
-        int newbufcolumn[] = new int[bufsize + 2048];
-
+        int[] newbufline = new int[bufsize + 2048];
+        int[] newbufcolumn = new int[bufsize + 2048];
         try {
             if (wrapAround) {
                 System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
                 System.arraycopy(buffer, 0, newbuffer, bufsize - tokenBegin, bufpos);
                 buffer = newbuffer;
-
                 System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
                 System.arraycopy(bufline, 0, newbufline, bufsize - tokenBegin, bufpos);
                 bufline = newbufline;
-
                 System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
                 System.arraycopy(bufcolumn, 0, newbufcolumn, bufsize - tokenBegin, bufpos);
                 bufcolumn = newbufcolumn;
-
                 maxNextCharInd = bufpos += bufsize - tokenBegin;
             } else {
                 System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
                 buffer = newbuffer;
-
                 System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
                 bufline = newbufline;
-
                 System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
                 bufcolumn = newbufcolumn;
-
                 maxNextCharInd = bufpos -= tokenBegin;
             }
         } catch (Throwable t) {
             throw new IOException("Errow expanding the buffer.", t);
         }
-
         bufsize += 2048;
         available = bufsize;
         tokenBegin = 0;
@@ -119,7 +125,6 @@ public class SimpleCharStream {
                 available = tokenBegin;
             }
         }
-
         int i;
         try {
             if (inputStream instanceof StringProvider) {
@@ -162,7 +167,6 @@ public class SimpleCharStream {
 
     protected void UpdateLineColumn(char c) {
         column++;
-
         if (prevCharIsLF) {
             prevCharIsLF = false;
             line += column = 1;
@@ -174,8 +178,7 @@ public class SimpleCharStream {
                 line += column = 1;
             }
         }
-
-        switch (c) {
+        switch(c) {
             case '\r':
                 prevCharIsCR = true;
                 break;
@@ -189,7 +192,6 @@ public class SimpleCharStream {
             default:
                 break;
         }
-
         bufline[bufpos] = line;
         bufcolumn[bufpos] = column;
     }
@@ -210,28 +212,21 @@ public class SimpleCharStream {
     public char readChar() throws IOException {
         if (inBuf > 0) {
             --inBuf;
-
             if (++bufpos == bufsize) {
                 bufpos = 0;
             }
-
             totalCharsRead++;
             return readChar(bufpos);
         }
-
         if (++bufpos >= maxNextCharInd) {
             FillBuff();
         }
-
         totalCharsRead++;
-
         char c = readChar(bufpos);
-
         UpdateLineColumn(c);
         return c;
     }
 
-    
     /**
      * @return the column
      * @deprecated @see #getEndColumn
@@ -241,7 +236,6 @@ public class SimpleCharStream {
         return bufcolumn[bufpos];
     }
 
-    
     /**
      * @return the line
      * @deprecated @see #getEndLine
@@ -284,7 +278,6 @@ public class SimpleCharStream {
      * @param amount
      */
     public void backup(int amount) {
-
         inBuf += amount;
         totalCharsRead -= amount;
         if ((bufpos -= amount) < 0) {
@@ -299,13 +292,11 @@ public class SimpleCharStream {
      * @param startcolumn
      * @param buffersize
      */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn, int buffersize) {
+    public SimpleCharStream(Provider dstream, int startline, int startcolumn, int buffersize) {
         inputStream = dstream;
         isStringProvider = dstream instanceof StringProvider;
         line = startline;
         column = startcolumn - 1;
-
         if (isStringProvider) {
             int bs = ((StringProvider) inputStream)._string.length();
             available = bufsize = bs;
@@ -325,8 +316,7 @@ public class SimpleCharStream {
      * @param startline
      * @param startcolumn
      */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn) {
+    public SimpleCharStream(Provider dstream, int startline, int startcolumn) {
         this(dstream, startline, startcolumn, 4096);
     }
 
@@ -345,8 +335,7 @@ public class SimpleCharStream {
      * @param startcolumn
      * @param buffersize
      */
-    public void ReInit(Provider dstream, int startline,
-            int startcolumn, int buffersize) {
+    public void ReInit(Provider dstream, int startline, int startcolumn, int buffersize) {
         inputStream = dstream;
         isStringProvider = dstream instanceof StringProvider;
         line = startline;
@@ -375,15 +364,14 @@ public class SimpleCharStream {
      * @param startline
      * @param startcolumn
      */
-    public void ReInit(Provider dstream, int startline,
-            int startcolumn) {
+    public void ReInit(Provider dstream, int startline, int startcolumn) {
         ReInit(dstream, startline, startcolumn, 4096);
     }
 
-   /**
-    * Reinitialise.
-    * @param dstream
-    */
+    /**
+     * Reinitialise.
+     * @param dstream
+     */
     public void ReInit(Provider dstream) {
         ReInit(dstream, 1, 1, 4096);
     }
@@ -397,15 +385,13 @@ public class SimpleCharStream {
             if (bufpos >= tokenBegin) {
                 return data.substring(tokenBegin, bufpos + 1);
             } else {
-                return data.substring(tokenBegin, bufsize)
-                        + data.substring(0, bufpos + 1);
+                return data.substring(tokenBegin, bufsize) + data.substring(0, bufpos + 1);
             }
         } else {
             if (bufpos >= tokenBegin) {
                 return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
             } else {
-                return new String(buffer, tokenBegin, bufsize - tokenBegin)
-                        + new String(buffer, 0, bufpos + 1);
+                return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1);
             }
         }
     }
@@ -415,12 +401,10 @@ public class SimpleCharStream {
      * @return get the suffix.
      */
     public char[] GetSuffix(int len) {
-
         char[] ret = new char[len];
-
         if (isStringProvider) {
             String str = ((StringProvider) inputStream)._string;
-            if ((bufpos + 1) >= len) {            
+            if ((bufpos + 1) >= len) {
                 str.getChars(bufpos - len + 1, bufpos - len + 1 + len, ret, 0);
             } else {
                 str.getChars(bufsize - (len - bufpos - 1), bufsize - (len - bufpos - 1) + len - bufpos - 1, ret, 0);
@@ -430,12 +414,10 @@ public class SimpleCharStream {
             if ((bufpos + 1) >= len) {
                 System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
             } else {
-                System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
-                        len - bufpos - 1);
+                System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0, len - bufpos - 1);
                 System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
             }
         }
-
         return ret;
     }
 
@@ -457,19 +439,16 @@ public class SimpleCharStream {
         int nl = newLine;
         int start = tokenBegin;
         int len;
-
         if (bufpos >= tokenBegin) {
             len = bufpos - tokenBegin + inBuf + 1;
         } else {
             len = bufsize - tokenBegin + bufpos + 1 + inBuf;
         }
-
         int i = 0;
         int j = 0;
         int k = 0;
         int nextColDiff = 0;
         int columnDiff = 0;
-
         while (i < len && bufline[j = start % bufsize] == bufline[k = ++start % bufsize]) {
             bufline[j] = nl;
             nextColDiff = columnDiff + bufcolumn[k] - bufcolumn[j];
@@ -477,11 +456,9 @@ public class SimpleCharStream {
             columnDiff = nextColDiff;
             i++;
         }
-
         if (i < len) {
             bufline[j] = nl++;
             bufcolumn[j] = newCol + columnDiff;
-
             while (i++ < len) {
                 if (bufline[j = start % bufsize] != bufline[++start % bufsize]) {
                     bufline[j] = nl++;
@@ -490,7 +467,6 @@ public class SimpleCharStream {
                 }
             }
         }
-
         line = bufline[j];
         column = bufcolumn[j];
     }

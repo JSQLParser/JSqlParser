@@ -14,16 +14,17 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class KSQLJoinWindow extends ASTNodeAccessImpl {
 
     public enum TimeUnit {
-        DAY ("DAY"),
-        HOUR ("HOUR"),
-        MINUTE ("MINUTE"),
-        SECOND ("SECOND"),
-        MILLISECOND ("MILLISECOND"),
-        DAYS ("DAYS"),
-        HOURS ("HOURS"),
-        MINUTES ("MINUTES"),
-        SECONDS ("SECONDS"),
-        MILLISECONDS ("MILLISECONDS");
+
+        DAY("DAY"),
+        HOUR("HOUR"),
+        MINUTE("MINUTE"),
+        SECOND("SECOND"),
+        MILLISECOND("MILLISECOND"),
+        DAYS("DAYS"),
+        HOURS("HOURS"),
+        MINUTES("MINUTES"),
+        SECONDS("SECONDS"),
+        MILLISECONDS("MILLISECONDS");
 
         private String timeUnit;
 
@@ -37,11 +38,17 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     }
 
     private boolean beforeAfter;
+
     private long duration;
+
     private TimeUnit timeUnit;
+
     private long beforeDuration;
+
     private TimeUnit beforeTimeUnit;
+
     private long afterDuration;
+
     private TimeUnit afterTimeUnit;
 
     public KSQLJoinWindow() {

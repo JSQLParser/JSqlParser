@@ -44,5 +44,4 @@ public interface FeatureSetValidation extends ValidationCapability, FeatureSet {
     default String getName() {
         return DEFAULT_NAME;
     }
-
 }

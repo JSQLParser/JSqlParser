@@ -18,7 +18,6 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,12 +28,19 @@ import java.util.Optional;
 public class Merge implements Statement {
 
     private List<WithItem> withItemsList;
+
     private Table table;
+
     private OracleHint oracleHint = null;
+
     private FromItem fromItem;
+
     private Expression onCondition;
+
     private MergeInsert mergeInsert;
+
     private MergeUpdate mergeUpdate;
+
     private boolean insertFirst = false;
 
     public List<WithItem> getWithItemsList() {
@@ -51,15 +57,13 @@ public class Merge implements Statement {
     }
 
     public Merge addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection =
-                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
     public Merge addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection =
-                Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
+        List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
     }
@@ -156,12 +160,12 @@ public class Merge implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder b = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             b.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext(); ) {
                 WithItem withItem = iter.next();
                 b.append(withItem);
                 if (iter.hasNext()) {
@@ -177,19 +181,15 @@ public class Merge implements Statement {
         b.append(" ON (");
         b.append(onCondition);
         b.append(")");
-
         if (insertFirst && mergeInsert != null) {
             b.append(mergeInsert);
         }
-
         if (mergeUpdate != null) {
             b.append(mergeUpdate);
         }
-
         if (!insertFirst && mergeInsert != null) {
             b.append(mergeInsert);
         }
-
         return b.toString();
     }
 

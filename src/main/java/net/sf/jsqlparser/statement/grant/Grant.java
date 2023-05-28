@@ -21,8 +21,11 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Grant implements Statement {
 
     private String role;
+
     private List<String> privileges;
+
     private List<String> objectName = new ArrayList<>();
+
     private List<String> users;
 
     @Override
@@ -47,11 +50,9 @@ public class Grant implements Statement {
     }
 
     public String getObjectName() {
-        return objectName.size()==0?null:objectName.stream()
-                .map(part -> part==null?"":part)
-                .collect(joining("."));
+        return objectName.size() == 0 ? null : objectName.stream().map(part -> part == null ? "" : part).collect(joining("."));
     }
-    
+
     public List<String> getObjectNameParts() {
         return objectName;
     }
@@ -60,7 +61,7 @@ public class Grant implements Statement {
         this.objectName.clear();
         this.objectName.add(objectName);
     }
-    
+
     public void setObjectName(List<String> objectName) {
         this.objectName.clear();
         this.objectName.addAll(objectName);
@@ -77,7 +78,6 @@ public class Grant implements Statement {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-
         buffer.append("GRANT ");
         if (role != null) {
             buffer.append(role);
@@ -115,7 +115,7 @@ public class Grant implements Statement {
         this.setObjectName(objectName);
         return this;
     }
-    
+
     public Grant withObjectName(List<String> objectName) {
         this.setObjectName(objectName);
         return this;

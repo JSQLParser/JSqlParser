@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 public class UseStatement implements Statement {
 
     private String name;
+
     private boolean schemaKeyword;
 
     public UseStatement() {

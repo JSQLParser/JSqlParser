@@ -14,7 +14,6 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author oshai
  */
 public class ShowColumnsStatementTest {

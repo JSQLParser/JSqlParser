@@ -10,11 +10,12 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-
 import java.io.Serializable;
 
 public class Offset implements Serializable {
+
     private Expression offsetExpression = null;
+
     private String offsetParam = null;
 
     public Expression getOffset() {
@@ -33,10 +34,9 @@ public class Offset implements Serializable {
         offsetParam = s;
     }
 
-
     @Override
     public String toString() {
-        return " OFFSET " +  offsetExpression + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " + offsetExpression + (offsetParam != null ? " " + offsetParam : "");
     }
 
     public Offset withOffset(Expression offsetExpression) {

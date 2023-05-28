@@ -17,10 +17,8 @@ public class ServerTest {
     @Test
     public void testServerNameParsing() throws Exception {
         final String serverName = "LOCALHOST";
-
         final String fullServerName = String.format("[%s]", serverName);
         final Server server = new Server(fullServerName);
-
         assertEquals(serverName, server.getServerName());
         assertEquals(fullServerName, server.toString());
     }
@@ -29,14 +27,11 @@ public class ServerTest {
     public void testServerNameAndInstanceParsing() throws Exception {
         final String serverName = "LOCALHOST";
         final String serverInstanceName = "SQLSERVER";
-
         final String fullServerName = String.format("[%s\\%s]", serverName, serverInstanceName);
         final Server server = new Server(fullServerName);
-
         assertEquals(serverName, server.getServerName());
         assertEquals(serverInstanceName, server.getInstanceName());
         assertEquals(fullServerName, server.toString());
-
     }
 
     @Test

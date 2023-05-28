@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class SignedExpression extends ASTNodeAccessImpl implements Expression {
 
     private char sign;
+
     private Expression expression;
 
     public SignedExpression() {

@@ -27,10 +27,8 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.createView);
             validateFeature(c, createView.isOrReplace(), Feature.createOrReplaceView);
-            validateFeature(c, !ForceOption.NONE.equals(createView.getForce()),
-                    Feature.createViewForce);
-            validateFeature(c, !TemporaryOption.NONE.equals(createView.getTemporary()),
-                    Feature.createViewTemporary);
+            validateFeature(c, !ForceOption.NONE.equals(createView.getForce()), Feature.createViewForce);
+            validateFeature(c, !TemporaryOption.NONE.equals(createView.getTemporary()), Feature.createViewTemporary);
             validateFeature(c, createView.isMaterialized(), Feature.createViewMaterialized);
             validateName(c, NamedObject.view, createView.getView().getFullyQualifiedName(), false);
         }
@@ -38,5 +36,4 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
         Select select = createView.getSelect();
         select.accept(v);
     }
-
 }

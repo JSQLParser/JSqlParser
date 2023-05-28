@@ -14,10 +14,8 @@ import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
-*
-* @author Jayant Kumar Yadav
-*/
-
+ * @author Jayant Kumar Yadav
+ */
 public class ShowIndexStatementValidator extends AbstractValidator<ShowIndexStatement> {
 
     @Override

@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,20 +22,35 @@ import java.util.Optional;
 public class Join extends ASTNodeAccessImpl {
 
     private boolean outer = false;
+
     private boolean right = false;
+
     private boolean left = false;
+
     private boolean natural = false;
+
     private boolean global = false;
+
     private boolean full = false;
+
     private boolean inner = false;
+
     private boolean simple = false;
+
     private boolean cross = false;
+
     private boolean semi = false;
+
     private boolean straight = false;
+
     private boolean apply = false;
+
     private FromItem rightItem;
+
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
+
     private final LinkedList<Column> usingColumns = new LinkedList<>();
+
     private KSQLJoinWindow joinWindow;
 
     public boolean isSimple() {
@@ -293,7 +307,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Return the "WITHIN" join window (if any)
-     * 
+     *
      * @return
      */
     public KSQLJoinWindow getJoinWindow() {
@@ -310,14 +324,12 @@ public class Join extends ASTNodeAccessImpl {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder builder = new StringBuilder();
-
         if (isGlobal()) {
             builder.append("GLOBAL ");
         }
-
         if (isSimple() && isOuter()) {
             builder.append("OUTER ").append(rightItem);
         } else if (isSimple()) {
@@ -326,7 +338,6 @@ public class Join extends ASTNodeAccessImpl {
             if (isNatural()) {
                 builder.append("NATURAL ");
             }
-
             if (isRight()) {
                 builder.append("RIGHT ");
             } else if (isFull()) {
@@ -336,7 +347,6 @@ public class Join extends ASTNodeAccessImpl {
             } else if (isCross()) {
                 builder.append("CROSS ");
             }
-
             if (isOuter()) {
                 builder.append("OUTER ");
             } else if (isInner()) {
@@ -344,7 +354,6 @@ public class Join extends ASTNodeAccessImpl {
             } else if (isSemi()) {
                 builder.append("SEMI ");
             }
-
             if (isStraight()) {
                 builder.append("STRAIGHT_JOIN ");
             } else if (isApply()) {
@@ -352,17 +361,14 @@ public class Join extends ASTNodeAccessImpl {
             } else {
                 builder.append("JOIN ");
             }
-
             builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
-
         for (Expression onExpression : onExpressions) {
             builder.append(" ON ").append(onExpression);
         }
         if (usingColumns.size() > 0) {
             builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
         }
-
         return builder.toString();
     }
 

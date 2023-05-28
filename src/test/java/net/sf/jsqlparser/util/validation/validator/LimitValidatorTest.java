@@ -25,11 +25,8 @@ public class LimitValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationLimitAndOffset() throws JSQLParserException {
-        for (String sql : Arrays.asList("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3",
-                "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ? OFFSET 3",
-                "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?")) {
+        for (String sql : Arrays.asList("SELECT * FROM mytable WHERE mytable.col = 9 LIMIT 3", "SELECT * FROM mytable WHERE mytable.col = 9 LIMIT ? OFFSET 3", "SELECT * FROM mytable WHERE mytable.col = 9 OFFSET ?")) {
             validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL, DatabaseType.POSTGRESQL);
         }
     }
-
 }

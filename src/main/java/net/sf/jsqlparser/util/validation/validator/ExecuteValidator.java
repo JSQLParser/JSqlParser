@@ -20,7 +20,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class ExecuteValidator extends AbstractValidator<Execute> {
 
-
     @Override
     public void validate(Execute execute) {
         for (ValidationCapability c : getCapabilities()) {
@@ -30,8 +29,6 @@ public class ExecuteValidator extends AbstractValidator<Execute> {
             validateFeature(c, ExecType.CALL.equals(execute.getExecType()), Feature.executeCall);
             validateName(NamedObject.procedure, execute.getName());
         }
-
         validateOptionalItemsList(execute.getExprList());
     }
-
 }

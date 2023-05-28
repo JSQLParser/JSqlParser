@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.allowedtypes;
 import net.sf.jsqlparser.util.validation.ContextKey;
 
 public enum AllowedTypesContext implements ContextKey {
+
     /**
      * a collection of allowed {@link Class}es
      */

@@ -11,7 +11,7 @@ package net.sf.jsqlparser.util.validation;
 
 /**
  * can be used on unexpected errors during validation
- * 
+ *
  * @author gitmotte
  */
 public class UnexpectedValidationException extends ValidationException {

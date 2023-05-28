@@ -15,17 +15,20 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
 public class RowConstructor extends ASTNodeAccessImpl implements Expression {
+
     private ExpressionList exprList;
+
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
+
     private String name = null;
 
     public RowConstructor() {
     }
-    
+
     public ArrayList<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
-    
+
     public boolean addColumnDefinition(ColumnDefinition columnDefinition) {
         return columnDefinitions.add(columnDefinition);
     }
@@ -53,12 +56,12 @@ public class RowConstructor extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        if (columnDefinitions.size()>0) {
+        if (columnDefinitions.size() > 0) {
             StringBuilder builder = new StringBuilder(name != null ? name : "");
             builder.append("(");
             int i = 0;
-            for (ColumnDefinition columnDefinition:columnDefinitions) {
-                builder.append(i>0 ? ", " : "").append(columnDefinition.toString());
+            for (ColumnDefinition columnDefinition : columnDefinitions) {
+                builder.append(i > 0 ? ", " : "").append(columnDefinition.toString());
                 i++;
             }
             builder.append(")");

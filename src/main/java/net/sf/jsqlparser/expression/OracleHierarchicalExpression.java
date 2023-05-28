@@ -14,8 +14,11 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression startExpression;
+
     private Expression connectExpression;
+
     private boolean noCycle = false;
+
     boolean connectFirst = false;
 
     public Expression getStartExpression() {

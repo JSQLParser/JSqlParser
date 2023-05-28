@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
 import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -33,19 +32,33 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public class Delete implements Statement {
 
     private List<WithItem> withItemsList;
+
     private Table table;
+
     private OracleHint oracleHint = null;
+
     private List<Table> tables;
+
     private List<Table> usingList;
+
     private List<Join> joins;
+
     private Expression where;
+
     private Limit limit;
+
     private List<OrderByElement> orderByElements;
+
     private boolean hasFrom = true;
+
     private DeleteModifierPriority modifierPriority;
+
     private boolean modifierIgnore;
+
     private boolean modifierQuick;
+
     private List<SelectItem> returningExpressionList = null;
+
     private OutputClause outputClause;
 
     public OutputClause getOutputClause() {
@@ -81,8 +94,8 @@ public class Delete implements Statement {
         this.setWithItemsList(withItemsList);
         return this;
     }
-    
-     public Delete addWithItemsList(WithItem... withItemsList) {
+
+    public Delete addWithItemsList(WithItem... withItemsList) {
         List<WithItem> collection = Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
@@ -122,7 +135,7 @@ public class Delete implements Statement {
     public void setWhere(Expression expression) {
         where = expression;
     }
-    
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -172,12 +185,12 @@ public class Delete implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder b = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             b.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext(); ) {
                 WithItem withItem = iter.next();
                 b.append(withItem);
                 if (iter.hasNext()) {
@@ -186,9 +199,7 @@ public class Delete implements Statement {
                 b.append(" ");
             }
         }
-        
         b.append("DELETE");
-
         if (modifierPriority != null) {
             b.append(" ").append(modifierPriority.name());
         }
@@ -198,31 +209,21 @@ public class Delete implements Statement {
         if (modifierIgnore) {
             b.append(" IGNORE");
         }
-
         if (tables != null && tables.size() > 0) {
             b.append(" ");
-            b.append(tables.stream()
-                    .map(Table::toString)
-                    .collect(joining(", ")));
+            b.append(tables.stream().map(Table::toString).collect(joining(", ")));
         }
-
-        if (outputClause!=null) {
+        if (outputClause != null) {
             outputClause.appendTo(b);
         }
-
-
         if (hasFrom) {
             b.append(" FROM");
         }
         b.append(" ").append(table);
-
-        if (usingList != null && usingList.size()>0) {
+        if (usingList != null && usingList.size() > 0) {
             b.append(" USING ");
-            b.append(usingList.stream()
-                    .map(Table::toString)
-                    .collect(joining(", ")));
+            b.append(usingList.stream().map(Table::toString).collect(joining(", ")));
         }
-
         if (joins != null) {
             for (Join join : joins) {
                 if (join.isSimple()) {
@@ -232,24 +233,18 @@ public class Delete implements Statement {
                 }
             }
         }
-
         if (where != null) {
             b.append(" WHERE ").append(where);
         }
-
         if (orderByElements != null) {
             b.append(PlainSelect.orderByToString(orderByElements));
         }
-
         if (limit != null) {
             b.append(limit);
         }
-
         if (getReturningExpressionList() != null) {
-            b.append(" RETURNING ").append(PlainSelect.
-                    getStringList(getReturningExpressionList(), true, false));
+            b.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
-
         return b.toString();
     }
 
@@ -293,17 +288,17 @@ public class Delete implements Statement {
         return this;
     }
 
-    public Delete withModifierPriority(DeleteModifierPriority modifierPriority){
+    public Delete withModifierPriority(DeleteModifierPriority modifierPriority) {
         this.setModifierPriority(modifierPriority);
         return this;
     }
 
-    public Delete withModifierIgnore(boolean modifierIgnore){
+    public Delete withModifierIgnore(boolean modifierIgnore) {
         this.setModifierIgnore(modifierIgnore);
         return this;
     }
 
-    public Delete withModifierQuick(boolean modifierQuick){
+    public Delete withModifierQuick(boolean modifierQuick) {
         this.setModifierQuick(modifierQuick);
         return this;
     }

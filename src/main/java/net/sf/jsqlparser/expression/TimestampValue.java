@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -20,7 +19,9 @@ import java.util.Objects;
 public final class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
     private Timestamp value;
+
     private String rawValue;
+
     private static final char QUOTATION = '\'';
 
     public TimestampValue() {
@@ -28,12 +29,12 @@ public final class TimestampValue extends ASTNodeAccessImpl implements Expressio
     }
 
     public TimestampValue(String value) {
-    //        if (value == null) {
-    //            throw new IllegalArgumentException("null string");
-    //        } else {
-    //            setRawValue(value);
-    //        }
-              setRawValue(Objects.requireNonNull(value, "The Timestamp string value must not be null."));
+        //        if (value == null) {
+        //            throw new IllegalArgumentException("null string");
+        //        } else {
+        //            setRawValue(value);
+        //        }
+        setRawValue(Objects.requireNonNull(value, "The Timestamp string value must not be null."));
     }
 
     @Override

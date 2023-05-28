@@ -18,6 +18,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class OrderByClause implements Serializable {
+
     private List<OrderByElement> orderByElements;
 
     public List<OrderByElement> getOrderByElements() {

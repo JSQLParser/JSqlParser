@@ -26,5 +26,4 @@ public class ItemsListValidatorTest extends ValidationTestAsserts {
         String sql = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
     }
-
 }

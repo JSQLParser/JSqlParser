@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Alter implements Statement {
 
     private Table table;
+
     private boolean useOnly = false;
 
     private List<AlterExpression> alterExpressions;
@@ -64,31 +65,24 @@ public class Alter implements Statement {
 
     @Override
     public String toString() {
-
         StringBuilder b = new StringBuilder();
         b.append("ALTER TABLE ");
         if (useOnly) {
             b.append("ONLY ");
         }
-
-        if (alterExpressions.size()>0 && alterExpressions.get(0).getOperation()==AlterOperation.RENAME_TABLE && alterExpressions.get(0).isUsingIfExists()) {
+        if (alterExpressions.size() > 0 && alterExpressions.get(0).getOperation() == AlterOperation.RENAME_TABLE && alterExpressions.get(0).isUsingIfExists()) {
             b.append("IF EXISTS ");
         }
-
         b.append(table.getFullyQualifiedName()).append(" ");
-
         Iterator<AlterExpression> altIter = alterExpressions.iterator();
-
         while (altIter.hasNext()) {
             b.append(altIter.next().toString());
-
             // Need to append whitespace after each ADD or DROP statement
             // but not the last one
             if (altIter.hasNext()) {
                 b.append(", ");
             }
         }
-
         return b.toString();
     }
 

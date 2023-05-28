@@ -29,5 +29,4 @@ public class AlterViewValidator extends AbstractValidator<AlterView> {
         }
         alterView.getSelect().accept(getValidator(SelectValidator.class));
     }
-
 }

@@ -19,9 +19,7 @@ public class MemoryTest {
         System.gc();
         System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
         CCJSqlParserManager parserManager = new CCJSqlParserManager();
-
         String longQuery = "select * from k where ID > 4";
-
         /*
          * String longQuery = "select  *  from  (  SELECT  intermediate.id  as  id  ,  intermediate.date  as          "
          * + "date  FROM  (  SELECT  DISTINCT   (  id  )   FROM  (  SELECT                           " +
@@ -29,7 +27,7 @@ public class MemoryTest {
          * "wct_audit_entry  ,  wct_transaction  ,  wct_workflows  WHERE                           " +
          * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " + "'C'  ))))";
          */
- /*
+        /*
          * String longQuery = "select  *  from  d WHERE                           " +
          * "(  wct_audit_entry.privilege  =  'W'  or  wct_audit_entry.privilege  =                 " +
          * "'C'  )  and  wct_audit_entry.outcome  =  't'  and                                      " +
@@ -48,6 +46,5 @@ public class MemoryTest {
         longQuery = null;
         System.gc();
         System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
-
     }
 }

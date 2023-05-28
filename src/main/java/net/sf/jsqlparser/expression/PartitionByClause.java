@@ -11,17 +11,18 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
 import java.io.Serializable;
 
 public class PartitionByClause implements Serializable {
+
     ExpressionList partitionExpressionList;
+
     boolean brackets = false;
 
     public ExpressionList getPartitionExpressionList() {
         return partitionExpressionList;
     }
-    
+
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
@@ -34,12 +35,11 @@ public class PartitionByClause implements Serializable {
     public void toStringPartitionBy(StringBuilder b) {
         if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, brackets));
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true, brackets));
             b.append(" ");
         }
     }
-    
+
     public boolean isBrackets() {
         return brackets;
     }

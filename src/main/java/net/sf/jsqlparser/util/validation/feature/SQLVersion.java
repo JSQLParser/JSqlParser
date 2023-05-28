@@ -24,34 +24,31 @@ import net.sf.jsqlparser.parser.feature.Feature;
  *      "https://en.wikipedia.org/wiki/SQL#Interoperability_and_standardization">https://en.wikipedia.org/wiki/SQL#Interoperability_and_standardization</a>
  */
 public enum SQLVersion implements Version {
-    SQL1986("SQL-86", EnumSet.of(
-            // supported if used with jdbc
-            Feature.jdbcParameter,
-            Feature.jdbcNamedParameter,
-            // common features
-            Feature.setOperation,
-            Feature.select,
-            Feature.selectGroupBy, Feature.function,
-            Feature.insert,
-            Feature.insertFromSelect,
-            Feature.insertValues,
-            Feature.values,
-            Feature.update,
-            Feature.delete,
-            Feature.truncate,
-            Feature.drop,
-            Feature.alterTable)), //
-    SQL1989("SQL-89", SQL1986.copy().getFeatures()), //
-    SQL1992("SQL-92", SQL1989.copy().getFeatures()), //
-    SQL1999("SQL:1999", SQL1992.copy().add(Feature.exprSimilarTo).getFeatures()), //
-    SQL2003("SQL:2003", SQL1999.copy().getFeatures()), //
-    SQL2006("SQL:2006", SQL2003.copy().getFeatures()), //
-    SQL2008("SQL:2008", SQL2006.copy().getFeatures()), //
-    SQL2011("SQL:2011", SQL2008.copy().getFeatures()), //
-    SQL2016("SQL:2016", SQL2011.copy().getFeatures()), //
+
+    SQL1986("SQL-86", EnumSet.of(// supported if used with jdbc
+    Feature.jdbcParameter, Feature.jdbcNamedParameter, // common features
+    Feature.setOperation, Feature.select, Feature.selectGroupBy, Feature.function, Feature.insert, Feature.insertFromSelect, Feature.insertValues, Feature.values, Feature.update, Feature.delete, Feature.truncate, Feature.drop, //
+    Feature.alterTable)),
+    //
+    SQL1989("SQL-89", SQL1986.copy().getFeatures()),
+    //
+    SQL1992("SQL-92", SQL1989.copy().getFeatures()),
+    //
+    SQL1999("SQL:1999", SQL1992.copy().add(Feature.exprSimilarTo).getFeatures()),
+    //
+    SQL2003("SQL:2003", SQL1999.copy().getFeatures()),
+    //
+    SQL2006("SQL:2006", SQL2003.copy().getFeatures()),
+    //
+    SQL2008("SQL:2008", SQL2006.copy().getFeatures()),
+    //
+    SQL2011("SQL:2011", SQL2008.copy().getFeatures()),
+    //
+    SQL2016("SQL:2016", SQL2011.copy().getFeatures()),
     SQL2019("SQL:2019", SQL2016.copy().getFeatures());
 
     private Set<Feature> features;
+
     private String versionString;
 
     /**
@@ -89,5 +86,4 @@ public enum SQLVersion implements Version {
     public String getName() {
         return DatabaseType.SQLSERVER.getName() + " " + getVersionString();
     }
-
 }

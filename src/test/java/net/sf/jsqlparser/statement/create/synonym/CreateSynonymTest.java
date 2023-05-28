@@ -47,12 +47,10 @@ public class CreateSynonymTest {
     @Test
     public void synonymAttributes() throws Exception {
         final CreateSynonym createSynonym = (CreateSynonym) CCJSqlParserUtil.parse("CREATE OR REPLACE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
-
         assertThat(createSynonym.isOrReplace()).isTrue();
         assertThat(createSynonym.isPublicSynonym()).isTrue();
         assertThat(createSynonym.getSynonym().getFullyQualifiedName()).isEqualTo("TBL_TABLE_NAME");
         assertThat(createSynonym.getFor()).isEqualTo("SCHEMA.T_TBL_NAME");
-
         assertEquals(2, createSynonym.getForList().size());
         assertEquals("NEW_TBL_TABLE_NAME", createSynonym.withSynonym(new Synonym().withName("NEW_TBL_TABLE_NAME")).getSynonym().getName());
     }

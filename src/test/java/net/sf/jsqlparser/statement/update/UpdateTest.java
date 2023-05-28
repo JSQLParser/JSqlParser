@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 
 public class UpdateTest {
@@ -43,7 +42,6 @@ public class UpdateTest {
         assertEquals("as", ((StringValue) update.getUpdateSets().get(0).getExpressions().get(0)).getValue());
         assertTrue(update.getUpdateSets().get(1).getExpressions().get(0) instanceof JdbcParameter);
         assertEquals(565, ((LongValue) update.getUpdateSets().get(2).getExpressions().get(0)).getValue());
-
         assertTrue(update.getWhere() instanceof GreaterThanEquals);
     }
 
@@ -81,12 +79,7 @@ public class UpdateTest {
     @Test
     public void testUpdateIssue167_SingleQuotes() throws JSQLParserException {
         String sqlStr = "UPDATE tablename SET NAME = 'Customer 2', ADDRESS = 'Address \\' ddad2', AUTH_KEY = 'samplekey' WHERE ID = 2";
-
-        assertSqlCanBeParsedAndDeparsed(
-                sqlStr
-                , true
-                , parser -> parser.withBackslashEscapeCharacter(true)
-        );
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> parser.withBackslashEscapeCharacter(true));
     }
 
     @Test
@@ -152,13 +145,7 @@ public class UpdateTest {
 
     @Test
     public void testUpdateIssue826() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("update message_topic inner join message_topic_config on\n"
-                + " message_topic.id=message_topic_config.topic_id \n"
-                + "set message_topic_config.enable_flag='N', \n"
-                + "message_topic_config.updated_by='test', \n"
-                + "message_topic_config.update_at='2019-07-16' \n"
-                + "where message_topic.name='test' \n"
-                + "AND message_topic_config.enable_flag='Y'", true);
+        assertSqlCanBeParsedAndDeparsed("update message_topic inner join message_topic_config on\n" + " message_topic.id=message_topic_config.topic_id \n" + "set message_topic_config.enable_flag='N', \n" + "message_topic_config.updated_by='test', \n" + "message_topic_config.update_at='2019-07-16' \n" + "where message_topic.name='test' \n" + "AND message_topic_config.enable_flag='Y'", true);
     }
 
     @Test
@@ -179,79 +166,36 @@ public class UpdateTest {
     @Test
     public void testOracleHint() throws JSQLParserException {
         assertOracleHintExists("UPDATE /*+ SOMEHINT */ mytable set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
-
         //@todo: add a testcase supposed to not finding a misplaced hint
         // assertOracleHintExists("UPDATE  mytable /*+ SOMEHINT */ set col1='as', col2=?, col3=565 Where o >= 3", true, "SOMEHINT");
     }
 
     @Test
     public void testWith() throws JSQLParserException {
-        String statement
-                = ""
-                + "WITH a\n"
-                + "     AS (SELECT 1 id_instrument_ref)\n"
-                + "     , b\n"
-                + "       AS (SELECT 1 id_instrument_ref)\n"
-                + "UPDATE cfe.instrument_ref\n"
-                + "SET id_instrument=null\n"
-                + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
-                + "                            FROM   a)";
-
+        String statement = "" + "WITH a\n" + "     AS (SELECT 1 id_instrument_ref)\n" + "     , b\n" + "       AS (SELECT 1 id_instrument_ref)\n" + "UPDATE cfe.instrument_ref\n" + "SET id_instrument=null\n" + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n" + "                            FROM   a)";
         assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
     @Test
     public void testUpdateSetsIssue1316() throws JSQLParserException {
-        String sqlStr
-                = "update test\n"
-                + "set (a, b) = (select '1', '2')";
+        String sqlStr = "update test\n" + "set (a, b) = (select '1', '2')";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "update test\n"
-                + "set a = '1'"
-                + "    , b = '2'";
+        sqlStr = "update test\n" + "set a = '1'" + "    , b = '2'";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "update test\n"
-                + "set (a, b) = ('1', '2')";
+        sqlStr = "update test\n" + "set (a, b) = ('1', '2')";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "update test\n"
-                + "set (a, b) = (values ('1', '2'))";
+        sqlStr = "update test\n" + "set (a, b) = (values ('1', '2'))";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "update test\n"
-                + "set (a, b) = (1, (select 2))";
+        sqlStr = "update test\n" + "set (a, b) = (1, (select 2))";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "UPDATE prpjpaymentbill b\n"
-                + "SET (   b.packagecode\n"
-                + "        , b.packageremark\n"
-                + "        , b.agentcode ) =   (   SELECT  p.payrefreason\n"
-                + "                                        , p.classcode\n"
-                + "                                        , p.riskcode\n"
-                + "                                FROM prpjcommbill p\n"
-                + "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n"
-                + "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n"
-                + "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n"
-                + "WHERE b.payrefno = 'B370202091026000005'";
-
+        sqlStr = "UPDATE prpjpaymentbill b\n" + "SET (   b.packagecode\n" + "        , b.packageremark\n" + "        , b.agentcode ) =   (   SELECT  p.payrefreason\n" + "                                        , p.classcode\n" + "                                        , p.riskcode\n" + "                                FROM prpjcommbill p\n" + "                                WHERE p.policertiid = 'SDDH200937010330006366' ) -- this is supposed to be UpdateSet 1\n" + "     , b.payrefnotype = '05' -- this is supposed to be UpdateSet 2\n" + "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n" + "WHERE b.payrefno = 'B370202091026000005'";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
         assertEquals(3, update.getUpdateSets().size());
-
         assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
         assertEquals(1, update.getUpdateSets().get(0).getExpressions().size());
-
         assertEquals(1, update.getUpdateSets().get(1).getColumns().size());
         assertEquals(1, update.getUpdateSets().get(1).getExpressions().size());
-
         assertEquals(1, update.getUpdateSets().get(2).getColumns().size());
         assertEquals(1, update.getUpdateSets().get(2).getExpressions().size());
     }
@@ -283,34 +227,8 @@ public class UpdateTest {
 
     @Test
     public void testUpdateOutputClause() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "UPDATE /* TOP (10) */ HumanResources.Employee  \n"
-                + "SET VacationHours = VacationHours * 1.25,  \n"
-                + "    ModifiedDate = GETDATE()   \n"
-                + "OUTPUT inserted.BusinessEntityID,  \n"
-                + "       deleted.VacationHours,  \n"
-                + "       inserted.VacationHours,  \n"
-                + "       inserted.ModifiedDate  \n"
-                + "INTO @MyTableVar",
-                 true
-        );
-
-        assertSqlCanBeParsedAndDeparsed(
-                "UPDATE Production.WorkOrder  \n"
-                + "SET ScrapReasonID = 4  \n"
-                + "OUTPUT deleted.ScrapReasonID,  \n"
-                + "       inserted.ScrapReasonID,   \n"
-                + "       inserted.WorkOrderID,  \n"
-                + "       inserted.ProductID,  \n"
-                + "       p.Name  \n"
-                + "    INTO @MyTestVar  \n"
-                + "FROM Production.WorkOrder AS wo  \n"
-                + "    INNER JOIN Production.Product AS p   \n"
-                + "    ON wo.ProductID = p.ProductID   \n"
-                + "    AND wo.ScrapReasonID= 16  \n"
-                + "    AND p.ProductID = 733",
-                 true
-        );
+        assertSqlCanBeParsedAndDeparsed("UPDATE /* TOP (10) */ HumanResources.Employee  \n" + "SET VacationHours = VacationHours * 1.25,  \n" + "    ModifiedDate = GETDATE()   \n" + "OUTPUT inserted.BusinessEntityID,  \n" + "       deleted.VacationHours,  \n" + "       inserted.VacationHours,  \n" + "       inserted.ModifiedDate  \n" + "INTO @MyTableVar", true);
+        assertSqlCanBeParsedAndDeparsed("UPDATE Production.WorkOrder  \n" + "SET ScrapReasonID = 4  \n" + "OUTPUT deleted.ScrapReasonID,  \n" + "       inserted.ScrapReasonID,   \n" + "       inserted.WorkOrderID,  \n" + "       inserted.ProductID,  \n" + "       p.Name  \n" + "    INTO @MyTestVar  \n" + "FROM Production.WorkOrder AS wo  \n" + "    INNER JOIN Production.Product AS p   \n" + "    ON wo.ProductID = p.ProductID   \n" + "    AND wo.ScrapReasonID= 16  \n" + "    AND p.ProductID = 733", true);
     }
 
     @Test
@@ -321,7 +239,6 @@ public class UpdateTest {
         update.addExpressions(new DoubleValue("6"));
         update.getUpdateSets().get(0).setUsingBracketsForColumns(true);
         update.getUpdateSets().get(0).setUsingBracketsForValues(true);
-
         assertEquals("UPDATE mytable SET (a, y) = (5, 6) WHERE b = 2", update.toString());
     }
 }

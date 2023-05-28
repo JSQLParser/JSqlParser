@@ -28,24 +28,12 @@ public class CreateFunctionalStatementTest {
     public void createFunctionMinimal() throws JSQLParserException {
         String statement = "CREATE FUNCTION foo RETURN 5; END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(
-                new CreateFunction().addFunctionDeclarationParts("foo")
-                        .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;")),
-                statement);
+        assertDeparse(new CreateFunction().addFunctionDeclarationParts("foo").addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;")), statement);
     }
 
     @Test
     public void createFunctionLong() throws JSQLParserException {
-        CreateFunction stm = (CreateFunction) CCJSqlParserUtil.parse("CREATE FUNCTION fun(query_from_time date) RETURNS TABLE(foo double precision, bar double precision)\n"
-                + "    LANGUAGE plpgsql\n"
-                + "    AS $$\n"
-                + "      BEGIN\n"
-                + "       RETURN QUERY\n"
-                + "      WITH bla AS (\n"
-                + "        SELECT * from foo)\n"
-                + "      Select * from bla;\n"
-                + "      END;\n"
-                + "      $$;");
+        CreateFunction stm = (CreateFunction) CCJSqlParserUtil.parse("CREATE FUNCTION fun(query_from_time date) RETURNS TABLE(foo double precision, bar double precision)\n" + "    LANGUAGE plpgsql\n" + "    AS $$\n" + "      BEGIN\n" + "       RETURN QUERY\n" + "      WITH bla AS (\n" + "        SELECT * from foo)\n" + "      Select * from bla;\n" + "      END;\n" + "      $$;");
         assertThat(stm).isNotNull();
         assertThat(stm.formatDeclaration()).contains("fun ( query_from_time date )");
     }
@@ -54,21 +42,12 @@ public class CreateFunctionalStatementTest {
     public void createProcedureMinimal() throws JSQLParserException {
         String statement = "CREATE PROCEDURE foo AS BEGIN END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(
-                new CreateProcedure().addFunctionDeclarationParts("foo", "AS")
-                        .addFunctionDeclarationParts(Arrays.asList("BEGIN", "END;")),
-                statement);
+        assertDeparse(new CreateProcedure().addFunctionDeclarationParts("foo", "AS").addFunctionDeclarationParts(Arrays.asList("BEGIN", "END;")), statement);
     }
 
     @Test
     public void createProcedureLong() throws JSQLParserException {
-        CreateProcedure stm = (CreateProcedure) CCJSqlParserUtil.parse("CREATE PROCEDURE remove_emp (employee_id NUMBER) AS\n"
-                + "   tot_emps NUMBER;\n"
-                + "   BEGIN\n"
-                + "      DELETE FROM employees\n"
-                + "      WHERE employees.employee_id = remove_emp.employee_id;\n"
-                + "   tot_emps := tot_emps - 1;\n"
-                + "   END;");
+        CreateProcedure stm = (CreateProcedure) CCJSqlParserUtil.parse("CREATE PROCEDURE remove_emp (employee_id NUMBER) AS\n" + "   tot_emps NUMBER;\n" + "   BEGIN\n" + "      DELETE FROM employees\n" + "      WHERE employees.employee_id = remove_emp.employee_id;\n" + "   tot_emps := tot_emps - 1;\n" + "   END;");
         assertThat(stm).isNotNull();
         assertThat(stm.formatDeclaration()).contains("remove_emp ( employee_id NUMBER )");
     }
@@ -77,9 +56,7 @@ public class CreateFunctionalStatementTest {
     public void createOrReplaceFunctionMinimal() throws JSQLParserException {
         String statement = "CREATE OR REPLACE FUNCTION foo RETURN 5; END;";
         assertSqlCanBeParsedAndDeparsed(statement);
-        final CreateFunction func = new CreateFunction()
-                .addFunctionDeclarationParts("foo")
-                .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;"));
+        final CreateFunction func = new CreateFunction().addFunctionDeclarationParts("foo").addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;"));
         func.setOrReplace(true);
         assertDeparse(func, statement);
     }

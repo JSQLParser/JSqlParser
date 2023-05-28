@@ -37,10 +37,7 @@ public class AlterViewValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateAlterViewNotAllowed() throws JSQLParserException {
-        validateNotAllowed("ALTER VIEW myview AS SELECT * FROM mytab", 1, 1,
-                FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView);
-        validateNotAllowed("REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab", 1, 1,
-                FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView, Feature.alterViewReplace);
+        validateNotAllowed("ALTER VIEW myview AS SELECT * FROM mytab", 1, 1, FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView);
+        validateNotAllowed("REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab", 1, 1, FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView, Feature.alterViewReplace);
     }
-
 }

@@ -10,9 +10,6 @@
 package net.sf.jsqlparser.statement.create.view;
 
 public enum TemporaryOption {
-    NONE, 
-    
-    TEMP,
-    
-    TEMPORARY
+
+    NONE, TEMP, TEMPORARY
 }

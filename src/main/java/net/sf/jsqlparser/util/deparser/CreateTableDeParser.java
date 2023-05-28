@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -32,7 +31,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public void deParse(CreateTable createTable) {
         buffer.append("CREATE ");
         if (createTable.isOrReplace()) {
@@ -45,13 +44,11 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         if (!"".equals(params)) {
             buffer.append(params).append(' ');
         }
-
         buffer.append("TABLE ");
         if (createTable.isIfNotExists()) {
             buffer.append("IF NOT EXISTS ");
         }
         buffer.append(createTable.getTable().getFullyQualifiedName());
-
         if (createTable.getColumns() != null && !createTable.getColumns().isEmpty()) {
             buffer.append(" (");
             Iterator<String> columnIterator = createTable.getColumns().iterator();
@@ -63,7 +60,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         }
         if (createTable.getColumnDefinitions() != null) {
             buffer.append(" (");
-            for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+            for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext(); ) {
                 ColumnDefinition columnDefinition = iter.next();
                 buffer.append(columnDefinition.getColumnName());
                 buffer.append(" ");
@@ -74,27 +71,22 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
                         buffer.append(s);
                     }
                 }
-
                 if (iter.hasNext()) {
                     buffer.append(", ");
                 }
             }
-
             if (createTable.getIndexes() != null) {
                 for (Index index : createTable.getIndexes()) {
                     buffer.append(", ");
                     buffer.append(index.toString());
                 }
             }
-
             buffer.append(")");
         }
-
         params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
         if (!"".equals(params)) {
             buffer.append(' ').append(params);
         }
-
         if (createTable.getRowMovement() != null) {
             buffer.append(' ').append(createTable.getRowMovement().getMode().toString()).append(" ROW MOVEMENT");
         }
@@ -124,5 +116,4 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             buffer.append(", ").append(createTable.getSpannerInterleaveIn());
         }
     }
-
 }

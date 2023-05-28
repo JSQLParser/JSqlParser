@@ -32,5 +32,4 @@ public class OrderByValidator extends AbstractValidator<OrderByElement> implemen
         }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
     }
-
 }

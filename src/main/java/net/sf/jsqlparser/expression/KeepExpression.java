@@ -20,7 +20,9 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 public class KeepExpression extends ASTNodeAccessImpl implements Expression {
 
     private String name;
+
     private List<OrderByElement> orderByElements;
+
     private boolean first = false;
 
     @Override
@@ -55,14 +57,10 @@ public class KeepExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-
         b.append("KEEP (").append(name);
-
         b.append(" ").append(first ? "FIRST" : "LAST").append(" ");
         toStringOrderByElements(b);
-
         b.append(")");
-
         return b.toString();
     }
 

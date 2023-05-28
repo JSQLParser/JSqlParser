@@ -11,7 +11,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -32,7 +31,7 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public void deParse(GroupByElement groupBy) {
         buffer.append("GROUP BY ");
         if (groupBy.isUsingBrackets()) {
@@ -40,7 +39,7 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
         }
         List<Expression> expressions = groupBy.getGroupByExpressionList().getExpressions();
         if (expressions != null) {
-            for (Iterator<Expression> iter = expressions.iterator(); iter.hasNext();) {
+            for (Iterator<Expression> iter = expressions.iterator(); iter.hasNext(); ) {
                 iter.next().accept(expressionVisitor);
                 if (iter.hasNext()) {
                     buffer.append(", ");
@@ -76,5 +75,4 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
     void setExpressionVisitor(ExpressionVisitor expressionVisitor) {
         this.expressionVisitor = expressionVisitor;
     }
-
 }

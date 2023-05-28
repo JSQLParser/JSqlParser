@@ -43,5 +43,4 @@ public class OrExpression extends BinaryExpression {
     public String getStringExpression() {
         return "OR";
     }
-
 }

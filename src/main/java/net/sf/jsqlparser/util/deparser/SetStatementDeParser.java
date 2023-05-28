@@ -12,7 +12,6 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.SetStatement;
-
 import java.util.List;
 
 public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
@@ -47,7 +46,6 @@ public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
                 expressions.get(j).accept(expressionVisitor);
             }
         }
-
     }
 
     public ExpressionVisitor getExpressionVisitor() {

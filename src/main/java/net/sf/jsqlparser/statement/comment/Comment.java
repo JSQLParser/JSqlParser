@@ -18,8 +18,11 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Comment implements Statement {
 
     private Table table;
+
     private Column column;
+
     private Table view;
+
     private StringValue comment;
 
     @Override

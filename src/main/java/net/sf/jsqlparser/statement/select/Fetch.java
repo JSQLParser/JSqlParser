@@ -10,12 +10,14 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.*;
-
 import java.io.Serializable;
 
 public class Fetch implements Serializable {
+
     private Expression expression = null;
+
     private boolean isFetchParamFirst = false;
+
     private String fetchParam = "ROW";
 
     @Deprecated
@@ -69,8 +71,7 @@ public class Fetch implements Serializable {
 
     @Override
     public String toString() {
-        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + expression.toString()
-                + " " + fetchParam + " ONLY";
+        return " FETCH " + (isFetchParamFirst ? "FIRST" : "NEXT") + " " + expression.toString() + " " + fetchParam + " ONLY";
     }
 
     public Fetch withRowCount(long rowCount) {

@@ -42,8 +42,6 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
             buffer.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
         }
         buffer.append(" AS ");
-
         alterView.getSelect().accept(selectVisitor);
     }
-
 }

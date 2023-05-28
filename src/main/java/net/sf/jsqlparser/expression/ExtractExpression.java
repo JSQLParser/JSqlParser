@@ -20,6 +20,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class ExtractExpression extends ASTNodeAccessImpl implements Expression {
 
     private String name;
+
     private Expression expression;
 
     @Override

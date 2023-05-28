@@ -23,7 +23,6 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
  * MULTI-OR. Since the CNF conversion only change the condition part of the tree.
  *
  * @author messfish
- *
  */
 class CloneHelper {
 
@@ -42,9 +41,9 @@ class CloneHelper {
             list.add(modify(and.getLeftExpression()));
             list.add(modify(and.getRightExpression()));
             MultiAndExpression result = new MultiAndExpression(list);
-//            if (and.isNot()) {
-//                return new NotExpression(result);
-//            }
+            //            if (and.isNot()) {
+            //                return new NotExpression(result);
+            //            }
             return result;
         }
         if (express instanceof OrExpression) {
@@ -53,18 +52,18 @@ class CloneHelper {
             list.add(modify(or.getLeftExpression()));
             list.add(modify(or.getRightExpression()));
             MultiOrExpression result = new MultiOrExpression(list);
-//            if (or.isNot()) {
-//                return new NotExpression(result);
-//            }
+            //            if (or.isNot()) {
+            //                return new NotExpression(result);
+            //            }
             return result;
         }
-//        if (express instanceof BinaryExpression) {
-//            BinaryExpression binary = (BinaryExpression) express;
-//            if (binary.isNot()) {
-//                binary.removeNot();
-//                return new NotExpression(modify(binary));
-//            }
-//        }
+        //        if (express instanceof BinaryExpression) {
+        //            BinaryExpression binary = (BinaryExpression) express;
+        //            if (binary.isNot()) {
+        //                binary.removeNot();
+        //                return new NotExpression(modify(binary));
+        //            }
+        //        }
         return express;
     }
 
@@ -104,14 +103,12 @@ class CloneHelper {
         if (!(exp instanceof MultipleExpression)) {
             return exp;
         }
-
         List<Expression> result = ((MultipleExpression) exp).getList();
         while (result.size() > 1) {
             List<Expression> compressed = new ArrayList<>();
             for (int i = 0; i < result.size(); i = i + 2) {
                 Expression left = result.get(i);
                 Expression right = i + 1 < result.size() ? result.get(i + 1) : null;
-
                 if (isMultiOr) {
                     compressed.add(right != null ? new OrExpression(left, right) : left);
                 } else {
@@ -125,22 +122,20 @@ class CloneHelper {
         } else {
             return result.get(0);
         }
-
-//        MultipleExpression changed = (MultipleExpression) exp;
-//        Expression result = changed.getChild(0);
-//        for (int i = 1; i < changed.size(); i++) {
-//            Expression left = result;
-//            Expression right = changed.getChild(i);
-//            if (isMultiOr) {
-//                result = new OrExpression(left, right);
-//            } else {
-//                result = new AndExpression(left, right);
-//            }
-//        }
-//        if (isMultiOr) {
-//            return new Parenthesis(result);
-//        }
-//        return result;
+        //        MultipleExpression changed = (MultipleExpression) exp;
+        //        Expression result = changed.getChild(0);
+        //        for (int i = 1; i < changed.size(); i++) {
+        //            Expression left = result;
+        //            Expression right = changed.getChild(i);
+        //            if (isMultiOr) {
+        //                result = new OrExpression(left, right);
+        //            } else {
+        //                result = new AndExpression(left, right);
+        //            }
+        //        }
+        //        if (isMultiOr) {
+        //            return new Parenthesis(result);
+        //        }
+        //        return result;
     }
-
 }

@@ -11,11 +11,12 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
 import java.util.List;
 
 public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
+
     private List<Expression> expressions;
+
     private boolean arrayKeyword;
 
     public List<Expression> getExpressions() {

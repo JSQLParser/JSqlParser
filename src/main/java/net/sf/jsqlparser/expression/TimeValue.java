@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.sql.Time;
 
 /**

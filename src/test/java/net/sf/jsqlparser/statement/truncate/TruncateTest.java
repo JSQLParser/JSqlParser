@@ -10,15 +10,12 @@
 package net.sf.jsqlparser.statement.truncate;
 
 import java.io.StringReader;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Table;
-
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 
 public class TruncateTest {
@@ -32,17 +29,14 @@ public class TruncateTest {
         assertEquals("myschema", truncate.getTable().getSchemaName());
         assertEquals("myschema.mytab", truncate.getTable().getFullyQualifiedName());
         assertEquals(statement.toUpperCase(), truncate.toString().toUpperCase());
-
         statement = "TRUncATE   TABLE    mytab";
         String toStringStatement = "TRUncATE TABLE mytab";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals("mytab", truncate.getTable().getName());
         assertEquals(toStringStatement.toUpperCase(), truncate.toString().toUpperCase());
-
         statement = "TRUNCATE TABLE mytab CASCADE";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals(statement, truncate.toString());
-
         statement = "TRUNCATE TABLE ONLY mytab CASCADE";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals(statement, truncate.toString());
@@ -55,12 +49,10 @@ public class TruncateTest {
         assertEquals("myschema", truncate.getTable().getSchemaName());
         assertEquals("myschema.mytab", truncate.getTable().getFullyQualifiedName());
         assertEquals("TRUNCATE MYSCHEMA.MYTAB", truncate.toString().toUpperCase());
-
         statement = "TRUncATE       mytab";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals("mytab", truncate.getTable().getName());
         assertEquals("TRUNCATE MYTAB", truncate.toString().toUpperCase());
-
         statement = "TRUNCATE  mytab CASCADE";
         truncate = (Truncate) parserManager.parse(new StringReader(statement));
         assertEquals("TRUNCATE MYTAB CASCADE", truncate.toString().toUpperCase());
@@ -70,29 +62,20 @@ public class TruncateTest {
     public void testTruncateDeparse() throws JSQLParserException {
         String statement = "TRUNCATE TABLE foo";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Truncate()
-                .withTable(new Table("foo"))
-                .withTableToken(true), statement);
+        assertDeparse(new Truncate().withTable(new Table("foo")).withTableToken(true), statement);
     }
 
     @Test
     public void testTruncateCascadeDeparse() throws JSQLParserException {
         String statement = "TRUNCATE TABLE foo CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Truncate()
-                .withTable(new Table("foo"))
-                .withTableToken(true)
-                .withCascade(true), statement);
+        assertDeparse(new Truncate().withTable(new Table("foo")).withTableToken(true).withCascade(true), statement);
     }
 
     @Test
     public void testTruncateOnlyDeparse() throws JSQLParserException {
         String statement = "TRUNCATE TABLE ONLY foo CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new Truncate()
-                .withTable(new Table("foo"))
-                .withCascade(true)
-                .withTableToken(true)
-                .withOnly(true), statement);
+        assertDeparse(new Truncate().withTable(new Table("foo")).withCascade(true).withTableToken(true).withOnly(true), statement);
     }
 }

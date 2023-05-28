@@ -18,24 +18,21 @@ public class StatementSeparatorTest {
 
     @Test
     void testDoubleNewLine() throws JSQLParserException {
-        String sqlStr =
-                "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\n\n\n\nSELECT * FROM dual\n\n\n\n\nSELECT * FROM dual";
+        String sqlStr = "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\n\n\n\nSELECT * FROM dual\n\n\n\n\nSELECT * FROM dual";
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         Assertions.assertEquals(4, statements.getStatements().size());
     }
 
     @Test
     void testNewLineSlash() throws JSQLParserException {
-        String sqlStr =
-                "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\n/\nSELECT * FROM dual\n/\n\nSELECT * FROM dual";
+        String sqlStr = "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\n/\nSELECT * FROM dual\n/\n\nSELECT * FROM dual";
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         Assertions.assertEquals(4, statements.getStatements().size());
     }
 
     @Test
     void testNewLineGo() throws JSQLParserException {
-        String sqlStr =
-                "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\nGO\nSELECT * FROM dual\ngo\n\nSELECT * FROM dual\ngo";
+        String sqlStr = "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\nGO\nSELECT * FROM dual\ngo\n\nSELECT * FROM dual\ngo";
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         Assertions.assertEquals(4, statements.getStatements().size());
     }
@@ -49,8 +46,7 @@ public class StatementSeparatorTest {
 
     @Test
     void testMSSQLBlock() throws JSQLParserException {
-        String sqlStr = "create view MyView1 as\n" + "select Id,Name from table1\n" + "go\n"
-                + "create view MyView2 as\n" + "select Id,Name from table1\n" + "go";
+        String sqlStr = "create view MyView1 as\n" + "select Id,Name from table1\n" + "go\n" + "create view MyView2 as\n" + "select Id,Name from table1\n" + "go";
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         Assertions.assertEquals(2, statements.getStatements().size());
     }

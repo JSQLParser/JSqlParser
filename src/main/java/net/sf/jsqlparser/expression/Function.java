@@ -24,16 +24,27 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Function extends ASTNodeAccessImpl implements Expression {
 
     private List<String> nameparts;
+
     private ExpressionList parameters;
+
     private NamedExpressionList namedParameters;
+
     private boolean allColumns = false;
+
     private boolean distinct = false;
+
     private boolean unique = false;
+
     private boolean isEscaped = false;
+
     private Expression attributeExpression;
+
     private Column attributeColumn = null;
+
     private List<OrderByElement> orderByElements;
+
     private KeepExpression keep = null;
+
     private boolean ignoreNulls = false;
 
     @Override
@@ -77,7 +88,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     /**
      * This is at the moment only necessary for AnalyticExpression initialization and not for normal
      * functions. Therefore there is no deparsing for it for normal functions.
-     *
      */
     public void setIgnoreNulls(boolean ignoreNulls) {
         this.ignoreNulls = ignoreNulls;
@@ -189,10 +199,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         String params;
-
         if (parameters != null || namedParameters != null) {
             if (parameters != null) {
                 StringBuilder b = new StringBuilder();
@@ -226,23 +235,18 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         } else {
             params = "()";
         }
-
         String ans = getName() + params;
-
         if (attributeExpression != null) {
             ans += "." + attributeExpression;
         } else if (attributeColumn != null) {
             ans += "." + attributeColumn;
         }
-
         if (keep != null) {
             ans += " " + keep;
         }
-
         if (isEscaped) {
             ans = "{fn " + ans + "}";
         }
-
         return ans;
     }
 

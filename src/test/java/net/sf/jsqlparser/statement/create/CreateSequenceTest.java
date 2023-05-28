@@ -31,9 +31,7 @@ public class CreateSequenceTest {
     public void testCreateSequence_withIncrement() throws JSQLParserException {
         String statement = "CREATE SEQUENCE db.schema.my_seq INCREMENT BY 1";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateSequence().withSequence(
-                new Sequence().withDatabase(new Database("db")).withSchemaName("schema").withName("my_seq")
-                        .addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))), statement);
+        assertDeparse(new CreateSequence().withSequence(new Sequence().withDatabase(new Database("db")).withSchemaName("schema").withName("my_seq").addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))), statement);
     }
 
     @Test
@@ -120,13 +118,6 @@ public class CreateSequenceTest {
         assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
         String statement = "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_sec")
-                .addParameters(asList(
-                        new Parameter(ParameterType.START_WITH).withValue(2L),
-                        new Parameter(ParameterType.INCREMENT_BY).withValue(5L),
-                        new Parameter(ParameterType.CACHE).withValue(200L),
-                        new Parameter(ParameterType.CYCLE)))),
-                statement);
+        assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_sec").addParameters(asList(new Parameter(ParameterType.START_WITH).withValue(2L), new Parameter(ParameterType.INCREMENT_BY).withValue(5L), new Parameter(ParameterType.CACHE).withValue(200L), new Parameter(ParameterType.CYCLE)))), statement);
     }
-
 }

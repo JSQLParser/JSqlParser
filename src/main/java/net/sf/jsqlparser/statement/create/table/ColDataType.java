@@ -21,8 +21,11 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColDataType implements Serializable {
 
     private String dataType;
+
     private List<String> argumentsStringList;
+
     private String characterSet;
+
     private List<Integer> arrayData = new ArrayList<Integer>();
 
     public ColDataType() {
@@ -48,7 +51,7 @@ public class ColDataType implements Serializable {
     public void setDataType(String string) {
         dataType = string;
     }
-    
+
     public void setDataType(List<String> list) {
         dataType = list.stream().collect(joining("."));
     }
@@ -79,11 +82,7 @@ public class ColDataType implements Serializable {
             }
             arraySpec.append("]");
         }
-        return dataType
-                + (argumentsStringList != null ? " " + PlainSelect.
-                        getStringList(argumentsStringList, true, true) : "")
-                + arraySpec.toString()
-                + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+        return dataType + (argumentsStringList != null ? " " + PlainSelect.getStringList(argumentsStringList, true, true) : "") + arraySpec.toString() + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
 
     public ColDataType withDataType(String dataType) {

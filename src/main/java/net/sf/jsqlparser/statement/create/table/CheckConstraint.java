@@ -99,5 +99,4 @@ public class CheckConstraint extends NamedConstraint {
     public CheckConstraint withIndexSpec(List<String> idxSpec) {
         return (CheckConstraint) super.withIndexSpec(idxSpec);
     }
-
 }

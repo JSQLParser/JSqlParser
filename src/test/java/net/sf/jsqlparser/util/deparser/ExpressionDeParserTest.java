@@ -61,14 +61,10 @@ public class ExpressionDeParserTest {
     public void shouldDeParseAnalyticExpressionWithExpression() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
         Expression expression = mock(Expression.class);
-
         analyticExpression.setName("name");
         analyticExpression.setExpression(expression);
-
         will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name(expression) OVER ()", buffer.toString());
     }
 
@@ -77,16 +73,12 @@ public class ExpressionDeParserTest {
         AnalyticExpression analyticExpression = new AnalyticExpression();
         Expression expression = mock(Expression.class);
         Expression offset = mock(Expression.class);
-
         analyticExpression.setName("name");
         analyticExpression.setExpression(expression);
         analyticExpression.setOffset(offset);
-
         will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
         will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name(expression, offset) OVER ()", buffer.toString());
     }
 
@@ -96,30 +88,23 @@ public class ExpressionDeParserTest {
         Expression expression = mock(Expression.class);
         Expression offset = mock(Expression.class);
         Expression defaultValue = mock(Expression.class);
-
         analyticExpression.setName("name");
         analyticExpression.setExpression(expression);
         analyticExpression.setOffset(offset);
         analyticExpression.setDefaultValue(defaultValue);
-
         will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
         will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
         will(appendToBuffer("default value")).given(defaultValue).accept(expressionDeParser);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name(expression, offset, default value) OVER ()", buffer.toString());
     }
 
     @Test
     public void shouldDeParseAnalyticExpressionWithAllColumns() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
-
         analyticExpression.setName("name");
         analyticExpression.setAllColumns(true);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name(*) OVER ()", buffer.toString());
     }
 
@@ -127,14 +112,10 @@ public class ExpressionDeParserTest {
     public void shouldDeParseComplexAnalyticExpressionWithKeep() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
         KeepExpression keep = mock(KeepExpression.class);
-
         analyticExpression.setName("name");
         analyticExpression.setKeep(keep);
-
         will(appendToBuffer("keep")).given(keep).accept(expressionDeParser);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name() keep OVER ()", buffer.toString());
     }
 
@@ -145,18 +126,14 @@ public class ExpressionDeParserTest {
         List<Expression> partitionExpressions = new ArrayList<Expression>();
         Expression partitionExpression1 = mock(Expression.class);
         Expression partitionExpression2 = mock(Expression.class);
-
         analyticExpression.setName("name");
         analyticExpression.setPartitionExpressionList(partitionExpressionList);
         partitionExpressionList.setExpressions(partitionExpressions);
         partitionExpressions.add(partitionExpression1);
         partitionExpressions.add(partitionExpression2);
-
         will(appendToBuffer("partition expression 1")).given(partitionExpression1).accept(expressionDeParser);
         will(appendToBuffer("partition expression 2")).given(partitionExpression2).accept(expressionDeParser);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name() OVER (PARTITION BY partition expression 1, partition expression 2 )", buffer.toString());
     }
 
@@ -166,17 +143,13 @@ public class ExpressionDeParserTest {
         List<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
         OrderByElement orderByElement1 = mock(OrderByElement.class);
         OrderByElement orderByElement2 = mock(OrderByElement.class);
-
         analyticExpression.setName("name");
         analyticExpression.setOrderByElements(orderByElements);
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
-
         will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
         will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name() OVER (ORDER BY order by element 1, order by element 2)", buffer.toString());
     }
 
@@ -187,24 +160,21 @@ public class ExpressionDeParserTest {
         OrderByElement orderByElement1 = mock(OrderByElement.class);
         OrderByElement orderByElement2 = mock(OrderByElement.class);
         WindowElement windowElement = mock(WindowElement.class);
-
         analyticExpression.setName("name");
         analyticExpression.setOrderByElements(orderByElements);
         analyticExpression.setWindowElement(windowElement);
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
-
         will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
         will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
         given(windowElement.toString()).willReturn("window element");
-
         expressionDeParser.visit(analyticExpression);
-
         assertEquals("name() OVER (ORDER BY order by element 1, order by element 2 window element)", buffer.toString());
     }
 
     private Answer<Void> appendToBuffer(final String string) {
         return new Answer<Void>() {
+
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 buffer.append(string);

@@ -16,9 +16,13 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class InExpression extends ASTNodeAccessImpl implements Expression, SupportsOldOracleJoinSyntax {
 
     private Expression leftExpression;
+
     private ItemsList rightItemsList;
+
     private boolean not = false;
+
     private Expression rightExpression;
+
     private int oldOracleJoinSyntax = NO_ORACLE_JOIN;
 
     public InExpression() {
@@ -33,8 +37,7 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
-            throw new IllegalArgumentException(
-                    "unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
+            throw new IllegalArgumentException("unexpected join type for oracle found with IN (type=" + oldOracleJoinSyntax + ")");
         }
     }
 
@@ -98,7 +101,6 @@ public class InExpression extends ASTNodeAccessImpl implements Expression, Suppo
     public String toString() {
         StringBuilder statementBuilder = new StringBuilder();
         statementBuilder.append(getLeftExpressionString());
-
         statementBuilder.append(" ");
         if (not) {
             statementBuilder.append("NOT ");

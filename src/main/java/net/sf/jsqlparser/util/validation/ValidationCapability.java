@@ -35,5 +35,4 @@ public interface ValidationCapability {
     default ValidationException toError(String message, Throwable th) {
         return new ValidationException(message, th);
     }
-
 }

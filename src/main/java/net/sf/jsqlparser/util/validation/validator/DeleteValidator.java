@@ -18,39 +18,29 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
  */
 public class DeleteValidator extends AbstractValidator<Delete> {
 
-
     @Override
     public void validate(Delete delete) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.delete);
-
             validateOptionalFeature(c, delete.getTables(), Feature.deleteTables);
             validateOptionalFeature(c, delete.getJoins(), Feature.deleteJoin);
             validateOptionalFeature(c, delete.getLimit(), Feature.deleteLimit);
             validateOptionalFeature(c, delete.getOrderByElements(), Feature.deleteOrderBy);
             validateOptionalFeature(c, delete.getReturningExpressionList(), Feature.deleteReturningExpressionList);
         }
-
         SelectValidator v = getValidator(SelectValidator.class);
         delete.getTable().accept(v);
-
         if (isNotEmpty(delete.getTables())) {
             delete.getTables().forEach(t -> t.accept(v));
         }
-
         validateOptionalExpression(delete.getWhere());
         validateOptionalOrderByElements(delete.getOrderByElements());
-
         v.validateOptionalJoins(delete.getJoins());
-
         if (delete.getLimit() != null) {
             getValidator(LimitValidator.class).validate(delete.getLimit());
         }
-
         if (isNotEmpty(delete.getReturningExpressionList())) {
-            delete.getReturningExpressionList().forEach(c -> c .accept(v));
+            delete.getReturningExpressionList().forEach(c -> c.accept(v));
         }
-
     }
-
 }

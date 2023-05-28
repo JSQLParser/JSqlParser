@@ -37,15 +37,11 @@ public class AssortedFeatureTests {
     public static String cleanStatement(String sql) throws JSQLParserException {
         StringBuilder buffer = new StringBuilder();
         ExpressionDeParser expr = new ReplaceColumnAndLongValues();
-
         SelectDeParser selectDeparser = new SelectDeParser(expr, buffer);
         expr.setSelectVisitor(selectDeparser);
         expr.setBuffer(buffer);
-
         StatementDeParser stmtDeparser = new StatementDeParser(expr, selectDeparser, buffer);
-
         Statement stmt = CCJSqlParserUtil.parse(sql);
-
         stmt.accept(stmtDeparser);
         return stmtDeparser.getBuffer().toString();
     }

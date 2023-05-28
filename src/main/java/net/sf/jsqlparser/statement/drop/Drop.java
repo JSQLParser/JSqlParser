@@ -24,10 +24,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop implements Statement {
 
     private String type;
+
     private Table name;
+
     private List<String> parameters;
+
     private Map<String, List<String>> typeToParameters = new HashMap<>();
+
     private boolean ifExists = false;
+
     private boolean materialized = false;
 
     private boolean isUsingTemporary;
@@ -74,7 +79,7 @@ public class Drop implements Statement {
     }
 
     public void setUsingTemporary(boolean useTemporary) {
-        this.isUsingTemporary=useTemporary;
+        this.isUsingTemporary = useTemporary;
     }
 
     public Drop withUsingTemporary(boolean useTemporary) {
@@ -100,20 +105,13 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP "
-                + (isUsingTemporary ? "TEMPORARY " : "")
-                + (materialized ? "MATERIALIZED " : "")
-                + type + " "
-                + (ifExists ? "IF EXISTS " : "") + name.toString();
-
+        String sql = "DROP " + (isUsingTemporary ? "TEMPORARY " : "") + (materialized ? "MATERIALIZED " : "") + type + " " + (ifExists ? "IF EXISTS " : "") + name.toString();
         if (type.equals("FUNCTION")) {
             sql += formatFuncParams(getParamsByType("FUNCTION"));
         }
-
         if (parameters != null && !parameters.isEmpty()) {
             sql += " " + PlainSelect.getStringList(parameters, false, false);
         }
-
         return sql;
     }
 

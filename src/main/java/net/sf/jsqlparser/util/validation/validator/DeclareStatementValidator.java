@@ -25,5 +25,4 @@ public class DeclareStatementValidator extends AbstractValidator<DeclareStatemen
         }
         validateOptionalExpression(declare.getUserVariable());
     }
-
 }

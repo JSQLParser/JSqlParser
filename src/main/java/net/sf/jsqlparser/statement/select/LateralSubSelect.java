@@ -11,10 +11,11 @@ package net.sf.jsqlparser.statement.select;
 
 /**
  * lateral sub select
- * 
+ *
  * @author tobens
  */
 public class LateralSubSelect extends ParenthesedSelect {
+
     private String prefix;
 
     public LateralSubSelect() {

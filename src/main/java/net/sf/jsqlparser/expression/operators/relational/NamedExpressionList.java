@@ -24,6 +24,7 @@ import net.sf.jsqlparser.expression.Expression;
 public class NamedExpressionList implements ItemsList {
 
     private List<Expression> expressions;
+
     private List<String> names;
 
     public NamedExpressionList() {
@@ -60,7 +61,6 @@ public class NamedExpressionList implements ItemsList {
 
     @Override
     public String toString() {
-
         StringBuilder ret = new StringBuilder();
         ret.append("(");
         for (int i = 0; i < expressions.size(); i++) {
@@ -74,7 +74,6 @@ public class NamedExpressionList implements ItemsList {
             }
         }
         ret.append(")");
-
         return ret.toString();
     }
 

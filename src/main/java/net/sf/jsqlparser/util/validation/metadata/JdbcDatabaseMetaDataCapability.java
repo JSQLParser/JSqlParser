@@ -32,13 +32,15 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  * caching and comparing names by {@link String#equalsIgnoreCase(String)}
  *
  * @author gitmotte
- *
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
 
     private static final String VIEW = "VIEW";
+
     private static final String TABLE = "TABLE";
+
     private static final String COLUMN = "COLUMN";
+
     private static final Logger LOG = Logger.getLogger(JdbcDatabaseMetaDataCapability.class.getName());
 
     /**
@@ -54,39 +56,30 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
      * @param namesLookup  - see {@link NamesLookup}
      * @param cacheResults - whether the results should be cached for later lookups
      */
-    public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
-            boolean cacheResults) {
+    public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup, boolean cacheResults) {
         super(connection, namesLookup, cacheResults);
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     protected boolean columnExists(Map<Named, Boolean> results, Named named) throws ValidationException {
         String[] names = splitAndValidateMinMax(COLUMN, named.getFqnLookup(), 1, 4);
         String columnName = names[names.length - 1];
-
         List<String> possibleParents = null;
-        List<NamedObject> parents = named.getParents().isEmpty() ? Arrays.asList(NamedObject.table)
-                : named.getParents();
-
+        List<NamedObject> parents = named.getParents().isEmpty() ? Arrays.asList(NamedObject.table) : named.getParents();
         int lastIndexOf = named.getFqnLookup().lastIndexOf(".");
         String fqnParent = lastIndexOf != -1 ? named.getFqnLookup().substring(0, lastIndexOf) : null;
-
         // try to match parents in results
         Predicate<? super Named> predicate = null;
         if (fqnParent != null) {
-            predicate = n -> parents.contains(n.getNamedObject())
-                    && (fqnParent.equals(n.getAliasLookup()) || fqnParent.equals(n.getFqnLookup()));
+            predicate = n -> parents.contains(n.getNamedObject()) && (fqnParent.equals(n.getAliasLookup()) || fqnParent.equals(n.getFqnLookup()));
         } else {
             predicate = n -> parents.contains(n.getNamedObject());
         }
-        possibleParents = results.keySet().stream().filter(predicate).map(Named::getFqnLookup)
-                .collect(Collectors.toList());
-
+        possibleParents = results.keySet().stream().filter(predicate).map(Named::getFqnLookup).collect(Collectors.toList());
         if (possibleParents.isEmpty()) {
             possibleParents = Collections.singletonList(fqnParent);
         }
-
         for (String fqn : possibleParents) {
             if (existsFromItem(results, fqn)) {
                 String query = String.format("SELECT * FROM %s", fqn);
@@ -122,10 +115,9 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         return jdbcMetadataTables(named, TABLE);
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     protected boolean jdbcMetadataTables(Named named, String type) throws ValidationException {
         String[] names = splitAndValidateMinMax(type, named.getFqnLookup(), 1, 3);
-
         String catalog = null;
         String schemaPattern = null;
         String tableNamePattern;
@@ -139,11 +131,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         } else {
             tableNamePattern = names[0];
         }
-
-
         List<String> tables = new ArrayList<>();
-        try (ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern,
-                new String[] { type })) {
+        try (ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern, new String[] { type })) {
             while (rs.next()) {
                 String tableCat = rs.getString("TABLE_CAT");
                 String tableSchem = rs.getString("TABLE_SCHEM");
@@ -156,10 +145,10 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                                     tables.add(String.join(".", tableCat, tableSchem, tableName));
                                 }
                             } else {
-                                tables.add(String.join(".",  tableSchem, tableName));
+                                tables.add(String.join(".", tableSchem, tableName));
                             }
                         }
-                    }  else {
+                    } else {
                         tables.add(tableName);
                     }
                 }
@@ -167,7 +156,6 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         } catch (SQLException e) {
             throw createDatabaseException(named.getFqn(), type, e);
         }
-
         return !tables.isEmpty();
     }
 
@@ -183,15 +171,12 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     private String[] splitAndValidateMinMax(String type, String fqn, int min, int max) {
         String[] names = fqn.split("\\.");
         if (names.length < min || names.length > max) {
-            throw new UnexpectedValidationException(String.format(
-                    "%s path-elements count needs to be between %s and %s for %s", fqn, min, max, type));
+            throw new UnexpectedValidationException(String.format("%s path-elements count needs to be between %s and %s for %s", fqn, min, max, type));
         }
         return names;
     }
 
     private DatabaseException createDatabaseException(String fqn, String type, SQLException e) {
-        return new DatabaseException(String.format(
-                "cannot evaluate existence of %s by name '%s'", type, fqn), e);
+        return new DatabaseException(String.format("cannot evaluate existence of %s by name '%s'", type, fqn), e);
     }
-
 }

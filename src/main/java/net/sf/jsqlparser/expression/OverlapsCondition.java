@@ -12,12 +12,11 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class OverlapsCondition extends ASTNodeAccessImpl implements Expression{
-
+public class OverlapsCondition extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList left;
-    private ExpressionList right;
 
+    private ExpressionList right;
 
     public OverlapsCondition(ExpressionList left, ExpressionList right) {
         this.left = left;
@@ -34,14 +33,11 @@ public class OverlapsCondition extends ASTNodeAccessImpl implements Expression{
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
-            expressionVisitor.visit(this);
+        expressionVisitor.visit(this);
     }
 
     @Override
     public String toString() {
-        return String.format("%s OVERLAPS %s"
-                , left.toString()
-                , right.toString()
-        );
+        return String.format("%s OVERLAPS %s", left.toString(), right.toString());
     }
 }

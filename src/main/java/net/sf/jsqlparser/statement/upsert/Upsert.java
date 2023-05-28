@@ -18,7 +18,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,13 +27,21 @@ import java.util.Optional;
 public class Upsert implements Statement {
 
     private Table table;
+
     private List<Column> columns;
+
     private ItemsList itemsList;
+
     private boolean useValues = true;
+
     private Select select;
+
     private boolean useSelectBrackets = true;
+
     private boolean useDuplicate = false;
+
     private List<Column> duplicateUpdateColumns;
+
     private List<Expression> duplicateUpdateExpressionList;
 
     private UpsertType upsertType = UpsertType.UPSERT;
@@ -43,7 +50,7 @@ public class Upsert implements Statement {
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this); 
+        statementVisitor.visit(this);
     }
 
     public UpsertType getUpsertType() {
@@ -51,7 +58,7 @@ public class Upsert implements Statement {
     }
 
     public void setUpsertType(UpsertType upsertType) {
-        this.upsertType=upsertType;
+        this.upsertType = upsertType;
     }
 
     public Upsert withUpsertType(UpsertType upsertType) {
@@ -71,27 +78,27 @@ public class Upsert implements Statement {
         setUsingInto(useInto);
         return this;
     }
-    
+
     public void setTable(Table name) {
         table = name;
     }
-    
+
     public Table getTable() {
         return table;
     }
-    
+
     public void setColumns(List<Column> list) {
         columns = list;
     }
-    
+
     public List<Column> getColumns() {
         return columns;
     }
-    
+
     public void setItemsList(ItemsList list) {
         itemsList = list;
     }
-    
+
     public ItemsList getItemsList() {
         return itemsList;
     }
@@ -100,65 +107,64 @@ public class Upsert implements Statement {
         List<Expression> expressions = null;
         if (itemsList instanceof ExpressionList) {
             ExpressionList expressionList = (ExpressionList) itemsList;
-            expressions= expressionList.getExpressions();
+            expressions = expressionList.getExpressions();
         }
-        return  expressions;
+        return expressions;
     }
-    
+
     public void setUseValues(boolean useValues) {
         this.useValues = useValues;
     }
-    
+
     public boolean isUseValues() {
         return useValues;
     }
-    
+
     public void setSelect(Select select) {
         this.select = select;
     }
-    
+
     public Select getSelect() {
         return select;
     }
-    
+
     public void setUseSelectBrackets(boolean useSelectBrackets) {
         this.useSelectBrackets = useSelectBrackets;
     }
-    
+
     public boolean isUseSelectBrackets() {
         return useSelectBrackets;
     }
-    
+
     public void setUseDuplicate(boolean useDuplicate) {
         this.useDuplicate = useDuplicate;
     }
-    
+
     public boolean isUseDuplicate() {
         return useDuplicate;
     }
-    
+
     public void setDuplicateUpdateColumns(List<Column> duplicateUpdateColumns) {
         this.duplicateUpdateColumns = duplicateUpdateColumns;
     }
-    
+
     public List<Column> getDuplicateUpdateColumns() {
         return duplicateUpdateColumns;
     }
-    
+
     public void setDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
         this.duplicateUpdateExpressionList = duplicateUpdateExpressionList;
     }
-    
+
     public List<Expression> getDuplicateUpdateExpressionList() {
         return duplicateUpdateExpressionList;
     }
-    
+
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
-        switch (upsertType) {
+        switch(upsertType) {
             case REPLACE:
             case REPLACE_SET:
                 sb.append("REPLACE ");
@@ -182,21 +188,17 @@ public class Upsert implements Statement {
             default:
                 sb.append("UPSERT ");
         }
-        
         if (isUsingInto) {
             sb.append("INTO ");
         }
         sb.append(table).append(" ");
-
-        if (upsertType==UpsertType.REPLACE_SET) {
+        if (upsertType == UpsertType.REPLACE_SET) {
             sb.append("SET ");
             // each element from expressions match up with a column from columns.
             List<Expression> expressions = getSetExpressions();
             for (int i = 0, s = columns.size(); i < s; i++) {
                 sb.append(columns.get(i)).append("=").append(expressions.get(i));
-                sb.append( i < s - 1
-                            ? ", "
-                            : "" );
+                sb.append(i < s - 1 ? ", " : "");
             }
         } else {
             if (columns != null) {
@@ -205,7 +207,6 @@ public class Upsert implements Statement {
             if (useValues) {
                 sb.append("VALUES ");
             }
-
             if (itemsList != null) {
                 sb.append(itemsList);
             } else {
@@ -220,7 +221,6 @@ public class Upsert implements Statement {
                 }
             }
         }
-
         if (useDuplicate) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
@@ -231,7 +231,6 @@ public class Upsert implements Statement {
                 sb.append(duplicateUpdateExpressionList.get(i));
             }
         }
-        
         return sb.toString();
     }
 

@@ -11,13 +11,13 @@ package net.sf.jsqlparser.statement;
 
 import java.io.Serializable;
 import java.util.*;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public final class SetStatement implements Statement {
 
     private String effectParameter;
+
     private final List<NameExpr> values = new ArrayList<>();
 
     public SetStatement() {
@@ -67,7 +67,6 @@ public final class SetStatement implements Statement {
         return setUseEqual(0, useEqual);
     }
 
-
     public Object getName() {
         return getName(0);
     }
@@ -101,8 +100,7 @@ public final class SetStatement implements Statement {
     }
 
     private String toString(NameExpr ne) {
-        return ne.name + (ne.useEqual ? " = " : " ")
-                + PlainSelect.getStringList(ne.expressions, true, false);
+        return ne.name + (ne.useEqual ? " = " : " ") + PlainSelect.getStringList(ne.expressions, true, false);
     }
 
     @Override
@@ -120,7 +118,6 @@ public final class SetStatement implements Statement {
             }
             b.append(toString(ne));
         }
-
         return b.toString();
     }
 
@@ -147,8 +144,11 @@ public final class SetStatement implements Statement {
     }
 
     static class NameExpr implements Serializable {
+
         Object name;
+
         List<Expression> expressions;
+
         boolean useEqual;
 
         public Object getName() {

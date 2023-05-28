@@ -19,20 +19,19 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-
 import java.util.Iterator;
 
 public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsListVisitor {
 
     private ExpressionVisitor expressionVisitor;
+
     private SelectVisitor selectVisitor;
 
     public ReplaceDeParser() {
         super(new StringBuilder());
     }
 
-    public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor,
-            StringBuilder buffer) {
+    public ReplaceDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
@@ -59,22 +58,18 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
             } else {
                 buffer.append(" ");
             }
-
         } else {
             buffer.append(" SET ");
             for (int i = 0; i < replace.getColumns().size(); i++) {
                 Column column = replace.getColumns().get(i);
                 buffer.append(column.getFullyQualifiedName()).append("=");
-
                 Expression expression = replace.getExpressions().get(i);
                 expression.accept(expressionVisitor);
                 if (i < replace.getColumns().size() - 1) {
                     buffer.append(", ");
                 }
-
             }
         }
-
         if (replace.getItemsList() != null) {
             // REPLACE mytab SELECT * FROM mytab2
             // or VALUES ('as', ?, 565)
@@ -85,8 +80,7 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
     @Override
     public void visit(ExpressionList expressionList) {
         buffer.append("VALUES (");
-        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter
-                .hasNext();) {
+        for (Iterator<Expression> iter = expressionList.getExpressions().iterator(); iter.hasNext(); ) {
             Expression expression = iter.next();
             expression.accept(expressionVisitor);
             if (iter.hasNext()) {
@@ -125,10 +119,9 @@ public class ReplaceDeParser extends AbstractDeParser<Replace> implements ItemsL
     @Override
     public void visit(MultiExpressionList multiExprList) {
         buffer.append("VALUES ");
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
+        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext(); ) {
             buffer.append("(");
-            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter
-                    .hasNext();) {
+            for (Iterator<Expression> iter = it.next().getExpressions().iterator(); iter.hasNext(); ) {
                 Expression expression = iter.next();
                 expression.accept(expressionVisitor);
                 if (iter.hasNext()) {

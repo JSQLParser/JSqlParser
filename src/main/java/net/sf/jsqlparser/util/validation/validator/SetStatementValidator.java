@@ -18,7 +18,6 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
  */
 public class SetStatementValidator extends AbstractValidator<SetStatement> {
 
-
     @Override
     public void validate(SetStatement set) {
         for (ValidationCapability c : getCapabilities()) {
@@ -28,5 +27,4 @@ public class SetStatementValidator extends AbstractValidator<SetStatement> {
             validateOptionalExpressions(set.getExpressions(i));
         }
     }
-
 }

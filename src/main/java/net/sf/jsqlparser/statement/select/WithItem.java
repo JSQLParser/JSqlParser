@@ -29,7 +29,6 @@ public class WithItem extends ParenthesedSelect {
         this.recursive = recursive;
     }
 
-
     /**
      * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
      *
@@ -44,17 +43,13 @@ public class WithItem extends ParenthesedSelect {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append(recursive ? "RECURSIVE " : "");
         builder.append(alias.getName());
-        builder.append(
-                (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true)
-                        : "");
+        builder.append((withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true) : "");
         builder.append(" AS ");
-
         select.appendTo(builder);
-
         return builder;
     }
 
@@ -62,7 +57,6 @@ public class WithItem extends ParenthesedSelect {
     public void accept(SelectVisitor visitor) {
         visitor.visit(this);
     }
-
 
     public WithItem withWithItemList(List<SelectItem> withItemList) {
         this.setWithItemList(withItemList);
@@ -75,15 +69,13 @@ public class WithItem extends ParenthesedSelect {
     }
 
     public WithItem addWithItemList(SelectItem... withItemList) {
-        List<SelectItem> collection =
-                Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemList);
         return this.withWithItemList(collection);
     }
 
     public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
-        List<SelectItem> collection =
-                Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection = Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
         return this.withWithItemList(collection);
     }

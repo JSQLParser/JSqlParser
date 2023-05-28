@@ -196,28 +196,34 @@ import net.sf.jsqlparser.expression.NotExpression;
  * F H G
  *
  * @author messfish
- *
  */
 public class CNFConverter {
 
     private Expression root;
+
     // the variable that stores the newly generated root.
     private Expression dummy;
+
     // this variable mainly serves as the dummy root of the true root.
     // generally it will be a multi and operator with root as the child.
     private Expression temp1;
+
     private Expression temp2;
+
     private Expression child;
+
     // these two variable mainly serves as nodes that traverse through
     // the expression tree to change the structure of expression tree.
-    // notice temp1 will be settled as the root and temp2 will be 
+    // notice temp1 will be settled as the root and temp2 will be
     // settled as the dummy root.
     private boolean isUsed = false;
 
     private class Mule {
 
         private Expression parent;
+
         private Expression child;
+
         private int level;
 
         private Mule(Expression parent, Expression child, int level) {
@@ -238,8 +244,7 @@ public class CNFConverter {
      *
      * @param express the original expression tree.
      */
-    private Expression convert(Expression express)
-            throws IllegalStateException {
+    private Expression convert(Expression express) throws IllegalStateException {
         if (isUsed) {
             throw new IllegalStateException("The class could only be used once!");
         } else {
@@ -326,7 +331,8 @@ public class CNFConverter {
      */
     private void handleNot(int index) {
         child = ((NotExpression) temp1).getExpression();
-        int nums = 1; // takes down the number of not operators.
+        // takes down the number of not operators.
+        int nums = 1;
         while (child instanceof NotExpression) {
             child = ((NotExpression) child).getExpression();
             nums++;
@@ -343,17 +349,16 @@ public class CNFConverter {
              * that means we reach the leaves of the logical part.
              * set a new not operator whose child is the current one
              * and connect that operator with the parent and return. */
-            if (!(child instanceof MultiAndExpression)
-                    && !(child instanceof MultiOrExpression)) {
-//                if (child instanceof LikeExpression) {
-//                    ((LikeExpression) child).setNot();
-//                } else if (child instanceof BinaryExpression) {
-//                    ((BinaryExpression) child).setNot();
-//                } else {
+            if (!(child instanceof MultiAndExpression) && !(child instanceof MultiOrExpression)) {
+                //                if (child instanceof LikeExpression) {
+                //                    ((LikeExpression) child).setNot();
+                //                } else if (child instanceof BinaryExpression) {
+                //                    ((BinaryExpression) child).setNot();
+                //                } else {
                 child = new NotExpression(child);
-//                }
+                //                }
                 ((MultipleExpression) temp2).setChild(index, child);
-//                return;
+                //                return;
             } else if (child instanceof MultiAndExpression) {
                 MultiAndExpression and = (MultiAndExpression) child;
                 List<Expression> list = new ArrayList<Expression>();
@@ -387,7 +392,7 @@ public class CNFConverter {
      * together. BFS the tree and do it node by node. In the end we will get the tree where all the same multi operators
      * store in the same odd level of the tree or in the same even level of the tree.
      */
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     private void gather() {
         Queue<Expression> queue = new LinkedList<Expression>();
         queue.offer(temp1);
@@ -483,8 +488,7 @@ public class CNFConverter {
                 Mule mule = queue.poll();
                 Expression parent = mule.parent;
                 Expression child = mule.child;
-                if (parent instanceof MultiAndExpression
-                        && child instanceof MultiOrExpression) {
+                if (parent instanceof MultiAndExpression && child instanceof MultiOrExpression) {
                     stack.push(mule);
                 }
                 /* Note the child may not be an instance of multiple expression!. */
@@ -522,7 +526,7 @@ public class CNFConverter {
      *
      * @param stack the stack stores a list of combined data.
      */
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     private void pushAnd(Stack<Mule> stack) {
         int level = 0;
         if (!stack.isEmpty()) {
@@ -591,5 +595,4 @@ public class CNFConverter {
         }
         root = CloneHelper.changeBack(false, temp);
     }
-
 }

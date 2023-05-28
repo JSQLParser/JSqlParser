@@ -15,7 +15,9 @@ import java.util.List;
 public class MySQLIndexHint implements Serializable {
 
     private final String action;
+
     private final String indexQualifier;
+
     private final List<String> indexNames;
 
     public MySQLIndexHint(String action, String indexQualifier, List<String> indexNames) {

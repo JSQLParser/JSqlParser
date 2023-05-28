@@ -22,18 +22,20 @@ import java.util.function.UnaryOperator;
  * exists - methods.
  *
  * @author gitmotte
- *
  */
 public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMetaDataValidation {
 
     protected Connection connection;
+
     protected boolean cacheResults;
+
     protected Map<Named, Boolean> results = new HashMap<>();
+
     protected UnaryOperator<String> namesLookup = NamesLookup.NO_TRANSFORMATION;
 
     /**
      * With caching enabled - see {@link #isCacheResults()}
-     * 
+     *
      * @param connection
      * @param namesLookup - see {@link NamesLookup}
      * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator, boolean)
@@ -48,8 +50,7 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
      * @param cacheResults - whether the results should be cached for later lookups
      * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator)
      */
-    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
-            boolean cacheResults) {
+    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup, boolean cacheResults) {
         this.connection = connection;
         this.namesLookup = namesLookup;
         this.cacheResults = cacheResults;
@@ -73,39 +74,36 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     public final boolean exists(Named named) {
         Objects.requireNonNull(named);
-
         named.setFqnLookup(getNamesLookup().apply(named.getFqn()));
         named.setAliasLookup(getNamesLookup().apply(named.getAlias()));
-
-        switch (named.getNamedObject()) {
-        case table:
-            return cache(named, this::tableExists);
-        case column:
-            return cache(named, this::columnExists);
-        case schema:
-            return cache(named, this::schemaExists);
-        case index:
-            return cache(named, this::indexExists);
-        case database:
-            return cache(named, this::databaseExists);
-        case constraint:
-        case uniqueConstraint:
-            return cache(named, this::constraintExists);
-        case view:
-            return cache(named, this::viewExists);
-        case procedure:
-            return cache(named, this::procedureExists);
-        case user:
-            return cache(named, this::userExists);
-        case role:
-            return cache(named, this::roleExists);
-        default:
+        switch(named.getNamedObject()) {
+            case table:
+                return cache(named, this::tableExists);
+            case column:
+                return cache(named, this::columnExists);
+            case schema:
+                return cache(named, this::schemaExists);
+            case index:
+                return cache(named, this::indexExists);
+            case database:
+                return cache(named, this::databaseExists);
+            case constraint:
+            case uniqueConstraint:
+                return cache(named, this::constraintExists);
+            case view:
+                return cache(named, this::viewExists);
+            case procedure:
+                return cache(named, this::procedureExists);
+            case user:
+                return cache(named, this::userExists);
+            case role:
+                return cache(named, this::roleExists);
+            default:
         }
-        throw new UnsupportedOperationException(
-                named.getFqn() + ": evaluation of " + named.getNamedObject() + "-name not implemented.");
+        throw new UnsupportedOperationException(named.getFqn() + ": evaluation of " + named.getNamedObject() + "-name not implemented.");
     }
 
     protected boolean cache(Named named, BiPredicate<Map<Named, Boolean>, Named> fn) {
@@ -158,8 +156,6 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     protected UnsupportedOperationException unsupported(Named name) {
-        return new UnsupportedOperationException(
-                name.getFqn() + ": evaluation of " + name.getNamedObject() + "-name not supported.");
+        return new UnsupportedOperationException(name.getFqn() + ": evaluation of " + name.getNamedObject() + "-name not supported.");
     }
-
 }

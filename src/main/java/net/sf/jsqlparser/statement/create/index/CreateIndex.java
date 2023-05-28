@@ -12,14 +12,15 @@ package net.sf.jsqlparser.statement.create.index;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
-
 import java.util.*;
 import static java.util.stream.Collectors.joining;
 
 public class CreateIndex implements Statement {
 
     private Table table;
+
     private Index index;
+
     private List<String> tailParameters;
 
     @Override
@@ -54,41 +55,29 @@ public class CreateIndex implements Statement {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-
         buffer.append("CREATE ");
-
         if (index.getType() != null) {
             buffer.append(index.getType());
             buffer.append(" ");
         }
-
         buffer.append("INDEX ");
         buffer.append(index.getName());
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
-
         if (index.getUsing() != null) {
             buffer.append(" USING ");
             buffer.append(index.getUsing());
         }
-
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
-
-            buffer.append(
-                    index.getColumns().stream()
-                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
-            );
-
+            buffer.append(index.getColumns().stream().map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", ")));
             buffer.append(")");
-
             if (tailParameters != null) {
                 for (String param : tailParameters) {
                     buffer.append(" ").append(param);
                 }
             }
         }
-
         return buffer.toString();
     }
 
