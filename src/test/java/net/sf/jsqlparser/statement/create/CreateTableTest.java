@@ -451,15 +451,13 @@ public class CreateTableTest {
                                     }
                                 }
                             }
-                            if (!unique) {
-                                if (columnDefinition.getColumnSpecs() != null) {
-                                    for (Iterator<String> iterator = columnDefinition.getColumnSpecs().iterator(); iterator.hasNext(); ) {
-                                        String par = iterator.next();
-                                        if (par.equals("UNIQUE")) {
-                                            unique = true;
-                                        } else if (par.equals("PRIMARY") && iterator.hasNext() && iterator.next().equals("KEY")) {
-                                            unique = true;
-                                        }
+                            if (!unique && columnDefinition.getColumnSpecs() != null) {
+                                for (Iterator<String> iterator = columnDefinition.getColumnSpecs().iterator(); iterator.hasNext(); ) {
+                                    String par = iterator.next();
+                                    if (par.equals("UNIQUE")) {
+                                        unique = true;
+                                    } else if (par.equals("PRIMARY") && iterator.hasNext() && iterator.next().equals("KEY")) {
+                                        unique = true;
                                     }
                                 }
                             }

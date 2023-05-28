@@ -183,11 +183,8 @@ public class SelectASTTest {
 
             @Override
             public Object visit(SimpleNode node, Object data) {
-                if (node.jjtGetFirstToken().specialToken != null) {
-                    // needed since for different nodes we got the same first token
-                    if (!comments.contains(node.jjtGetFirstToken().specialToken)) {
-                        comments.add(node.jjtGetFirstToken().specialToken);
-                    }
+                if (node.jjtGetFirstToken().specialToken != null && !comments.contains(node.jjtGetFirstToken().specialToken)) {
+                    comments.add(node.jjtGetFirstToken().specialToken);
                 }
                 return super.visit(node, data);
             }
