@@ -120,8 +120,7 @@ public class ExpressionVisitorAdapterTest {
 
             @Override
             public void visit(Column column) {
-                super.visit(column);
-                columnList.add(column.getColumnName());
+                visitAndAddColumnNames(column);
             }
         });
         assertEquals(1, columnList.size());
@@ -137,8 +136,7 @@ public class ExpressionVisitorAdapterTest {
 
             @Override
             public void visit(Column column) {
-                super.visit(column);
-                columnList.add(column.getColumnName());
+                visitAndAddColumnNames(column);
             }
         });
         assertEquals(1, columnList.size());
@@ -217,5 +215,10 @@ public class ExpressionVisitorAdapterTest {
     public void testRowConstructor() throws JSQLParserException {
         ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
         CCJSqlParserUtil.parseExpression("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))").accept(adapter);
+    }
+
+    private void visitAndAddColumnNames(Column column) {
+        super.visit(column);
+        columnList.add(column.getColumnName());
     }
 }

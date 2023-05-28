@@ -116,46 +116,50 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
     }
 
     protected boolean roleExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean userExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean procedureExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean databaseExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean constraintExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean viewExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean indexExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean schemaExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean columnExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected boolean tableExists(Map<Named, Boolean> results, Named name) {
-        throw unsupported(name);
+        return unsupportedMethodNameOne(results, name);
     }
 
     protected UnsupportedOperationException unsupported(Named name) {
         return new UnsupportedOperationException(name.getFqn() + ": evaluation of " + name.getNamedObject() + "-name not supported.");
+    }
+
+    private boolean unsupportedMethodNameOne(Map<Named, Boolean> results, Named name) {
+        throw unsupported(name);
     }
 }

@@ -40,7 +40,7 @@ public class ReferentialAction implements Serializable {
     }
 
     public Action getAction() {
-        return action;
+        return suggestiveAction();
     }
 
     public void setAction(Action action) {
@@ -115,12 +115,16 @@ public class ReferentialAction implements Serializable {
         }
 
         public String getAction() {
-            return action;
+            return suggestiveAction();
         }
 
         @Override
         public String toString() {
-            return action;
+            return suggestiveAction();
         }
+    }
+
+    private Action suggestiveAction() {
+        return action;
     }
 }

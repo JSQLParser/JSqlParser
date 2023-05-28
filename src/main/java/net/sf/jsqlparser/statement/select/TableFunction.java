@@ -22,7 +22,7 @@ public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
     public Pivot getPivot() {
-        return null;
+        return getNullReference();
     }
 
     @Override
@@ -31,7 +31,7 @@ public class TableFunction extends FunctionItem implements FromItem {
 
     @Override
     public UnPivot getUnPivot() {
-        return null;
+        return getNullReference();
     }
 
     @Override
@@ -56,5 +56,9 @@ public class TableFunction extends FunctionItem implements FromItem {
     @Override
     public TableFunction withUnPivot(UnPivot unpivot) {
         return (TableFunction) FromItem.super.withUnPivot(unpivot);
+    }
+
+    private Pivot getNullReference() {
+        return null;
     }
 }

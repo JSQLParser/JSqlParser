@@ -33,7 +33,7 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         }
 
         public String getTimeUnit() {
-            return timeUnit;
+            return getUnitOfTime();
         }
     }
 
@@ -71,7 +71,7 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     }
 
     public TimeUnit getTimeUnit() {
-        return timeUnit;
+        return getUnitOfTime();
     }
 
     public void setTimeUnit(TimeUnit timeUnit) {
@@ -146,5 +146,9 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     public KSQLJoinWindow withAfterTimeUnit(TimeUnit afterTimeUnit) {
         this.setAfterTimeUnit(afterTimeUnit);
         return this;
+    }
+
+    private String getUnitOfTime() {
+        return timeUnit;
     }
 }

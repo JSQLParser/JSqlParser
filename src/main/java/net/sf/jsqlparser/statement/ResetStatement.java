@@ -22,7 +22,7 @@ public final class ResetStatement implements Statement {
     }
 
     public void add(String name) {
-        this.name = name;
+        setNameProperty(name);
     }
 
     public String getName() {
@@ -30,7 +30,7 @@ public final class ResetStatement implements Statement {
     }
 
     public void setName(String name) {
-        this.name = name;
+        setNameProperty(name);
     }
 
     @Override
@@ -42,5 +42,9 @@ public final class ResetStatement implements Statement {
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
+    }
+
+    private void setNameProperty(String name) {
+        this.name = name;
     }
 }
