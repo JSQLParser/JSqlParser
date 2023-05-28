@@ -14,7 +14,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,8 +23,11 @@ import java.util.Optional;
 public class AlterView implements Statement {
 
     private Table view;
+
     private Select select;
+
     private boolean useReplace = false;
+
     private List<String> columnNames = null;
 
     @Override

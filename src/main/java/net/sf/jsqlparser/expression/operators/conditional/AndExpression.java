@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class AndExpression extends BinaryExpression {
+
     private boolean useOperator = false;
 
     public AndExpression() {

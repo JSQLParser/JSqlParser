@@ -24,7 +24,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColumnDefinition implements Serializable {
 
     private String columnName;
+
     private ColDataType colDataType;
+
     private List<String> columnSpecs;
 
     public ColumnDefinition() {
@@ -70,9 +72,7 @@ public class ColumnDefinition implements Serializable {
     }
 
     public String toStringDataTypeAndSpec() {
-        return colDataType + ( columnSpecs != null && !columnSpecs.isEmpty() 
-                                                        ? " " + PlainSelect.getStringList(columnSpecs, false, false) 
-                                                        : "" );
+        return colDataType + (columnSpecs != null && !columnSpecs.isEmpty() ? " " + PlainSelect.getStringList(columnSpecs, false, false) : "");
     }
 
     public ColumnDefinition withColumnName(String columnName) {
@@ -103,6 +103,6 @@ public class ColumnDefinition implements Serializable {
     }
 
     public void accept(ExpressionVisitorAdapter expressionVisitor) {
-       expressionVisitor.visit(this);
-     }
+        expressionVisitor.visit(this);
+    }
 }

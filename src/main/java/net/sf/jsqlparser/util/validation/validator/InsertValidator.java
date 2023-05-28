@@ -18,7 +18,6 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
  */
 public class InsertValidator extends AbstractValidator<Insert> {
 
-
     @Override
     public void validate(Insert insert) {
         for (ValidationCapability c : getCapabilities()) {
@@ -31,15 +30,12 @@ public class InsertValidator extends AbstractValidator<Insert> {
             validateFeature(c, insert.isUseDuplicate(), Feature.insertUseDuplicateKeyUpdate);
             validateOptionalFeature(c, insert.getReturningExpressionList(), Feature.insertReturningExpressionList);
         }
-
         validateOptionalFromItem(insert.getTable());
         validateOptionalExpressions(insert.getColumns());
         validateOptionalItemsList(insert.getItemsList());
-
         if (insert.getSelect() != null) {
             insert.getSelect().accept(getValidator(StatementValidator.class));
         }
-
         if (insert.isUseSet()) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             // TODO is this useful?
@@ -48,7 +44,6 @@ public class InsertValidator extends AbstractValidator<Insert> {
             insert.getSetColumns().forEach(c -> c.accept(v));
             insert.getSetExpressionList().forEach(c -> c.accept(v));
         }
-
         if (insert.isUseDuplicate()) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
             // TODO is this useful?
@@ -57,11 +52,9 @@ public class InsertValidator extends AbstractValidator<Insert> {
             insert.getDuplicateUpdateColumns().forEach(c -> c.accept(v));
             insert.getDuplicateUpdateExpressionList().forEach(c -> c.accept(v));
         }
-
         if (isNotEmpty(insert.getReturningExpressionList())) {
             SelectValidator v = getValidator(SelectValidator.class);
-            insert.getReturningExpressionList().forEach(c -> c .accept(v));
+            insert.getReturningExpressionList().forEach(c -> c.accept(v));
         }
     }
-
 }

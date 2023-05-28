@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class JdbcParameter extends ASTNodeAccessImpl implements Expression {
 
     private Integer index;
+
     private boolean useFixedIndex = false;
 
     public JdbcParameter() {

@@ -10,14 +10,16 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
-
 import java.io.Serializable;
 
 public class Top implements Serializable {
 
     private boolean hasParenthesis = false;
+
     private boolean isPercentage = false;
+
     private boolean isWithTies = false;
+
     private Expression expression;
 
     public Expression getExpression() {
@@ -55,25 +57,19 @@ public class Top implements Serializable {
     @Override
     public String toString() {
         String result = "TOP ";
-
         if (hasParenthesis) {
             result += "(";
         }
-
         result += expression.toString();
-
         if (hasParenthesis) {
             result += ")";
         }
-
         if (isPercentage) {
             result += " PERCENT";
         }
-
         if (isWithTies) {
             result += " WITH TIES";
         }
-
         return result;
     }
 

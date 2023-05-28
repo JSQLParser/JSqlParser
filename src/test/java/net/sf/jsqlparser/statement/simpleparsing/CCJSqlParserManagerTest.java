@@ -24,9 +24,7 @@ public class CCJSqlParserManagerTest {
     @Test
     public void testParse() throws Exception {
         CCJSqlParserManager parserManager = new CCJSqlParserManager();
-        BufferedReader in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(CreateTableTest.class.
-                getResourceAsStream("/simple_parsing.txt"))));
-
+        BufferedReader in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(CreateTableTest.class.getResourceAsStream("/simple_parsing.txt"))));
         String statement = "";
         while (true) {
             try {
@@ -34,7 +32,6 @@ public class CCJSqlParserManagerTest {
                 if (statement == null) {
                     break;
                 }
-
                 parserManager.parse(new StringReader(statement));
             } catch (JSQLParserException e) {
                 throw new TestException("impossible to parse statement: " + statement, e);
@@ -46,22 +43,17 @@ public class CCJSqlParserManagerTest {
         StringBuilder buf = new StringBuilder();
         String line;
         while ((line = CCJSqlParserManagerTest.getLine(in)) != null) {
-
             if (line.length() == 0) {
                 break;
             }
-
             buf.append(line);
             buf.append("\n");
-
         }
-
         if (buf.length() > 0) {
             return buf.toString();
         } else {
             return null;
         }
-
     }
 
     public static String getLine(BufferedReader in) throws Exception {
@@ -69,16 +61,13 @@ public class CCJSqlParserManagerTest {
         while (true) {
             line = in.readLine();
             if (line != null) {
-                if (line.length() < 2 || !(line.charAt(0) == '/' && line.
-                        charAt(1) == '/')) {
+                if (line.length() < 2 || !(line.charAt(0) == '/' && line.charAt(1) == '/')) {
                     break;
                 }
             } else {
                 break;
             }
-
         }
-
         return line;
     }
 }

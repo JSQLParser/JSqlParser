@@ -87,5 +87,4 @@ public class ExcludeConstraint extends Index {
     public ExcludeConstraint withName(String name) {
         return (ExcludeConstraint) super.withName(name);
     }
-
 }

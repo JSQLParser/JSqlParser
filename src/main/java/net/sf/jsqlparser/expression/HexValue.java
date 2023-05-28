@@ -30,7 +30,7 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public String getValue() {
-        return value;
+        return retrieveValue();
     }
 
     public void setValue(String value) {
@@ -44,6 +44,10 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
+        return retrieveValue();
+    }
+
+    private String retrieveValue() {
         return value;
     }
 }

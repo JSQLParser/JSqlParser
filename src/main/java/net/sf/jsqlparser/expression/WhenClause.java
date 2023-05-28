@@ -18,6 +18,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class WhenClause extends ASTNodeAccessImpl implements Expression {
 
     private Expression whenExpression;
+
     private Expression thenExpression;
 
     @Override

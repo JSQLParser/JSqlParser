@@ -17,6 +17,7 @@ import java.util.function.UnaryOperator;
  * database-catalog-metadata
  */
 public enum NamesLookup implements UnaryOperator<String> {
+
     UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
 
     private Function<String, String> strategy;

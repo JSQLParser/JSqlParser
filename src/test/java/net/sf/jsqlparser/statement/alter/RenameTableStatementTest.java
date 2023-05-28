@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class RenameTableStatementTest {
@@ -40,13 +39,10 @@ public class RenameTableStatementTest {
     public void testStatement() throws JSQLParserException {
         String sqlStr = "RENAME oldTableName TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         sqlStr = "RENAME TABLE old_table TO backup_table, new_table TO old_table";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         sqlStr = "RENAME TABLE IF EXISTS old_table WAIT 20 TO backup_table, new_table TO old_table";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         sqlStr = "RENAME TABLE IF EXISTS old_table NOWAIT TO backup_table, new_table TO old_table";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
@@ -60,7 +56,6 @@ public class RenameTableStatementTest {
     @Test
     public void testStatementVisitorAdaptor() throws JSQLParserException {
         String sqlStr = "RENAME oldTableName TO newTableName";
-
         CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
     }
 
@@ -73,7 +68,6 @@ public class RenameTableStatementTest {
     @Test
     public void testTableNamesFinder() throws JSQLParserException {
         String sqlStr = "RENAME oldTableName TO newTableName";
-
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         List<String> tables = new TablesNamesFinder().getTableList(statement);
         assertEquals(2, tables.size());
@@ -91,28 +85,20 @@ public class RenameTableStatementTest {
     public void testValidator() throws JSQLParserException {
         String sqlStr = "RENAME oldTableName TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         // this needs to succeed
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
-
         // this should fail when not supported in Postgres
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
-
         sqlStr = "ALTER TABLE public.oldTableName RENAME TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         // this needs to succeed according to: https://docs.oracle.com/cd/B28359_01/server.111/b28286/statements_3001.htm
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
-
         // this needs to succeed
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
-
         sqlStr = "ALTER TABLE IF EXISTS public.oldTableName RENAME TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
         //  should fail when IF EXISTS is not supported in Oracle 11
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
-
         // this needs to succeed
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
     }
@@ -121,12 +107,10 @@ public class RenameTableStatementTest {
     public void testObjectAccess() {
         Table oldTable = new Table("oldTableName");
         Table newTable = new Table("newTableName");
-
         RenameTableStatement renameTableStatement = new RenameTableStatement(oldTable, newTable);
         renameTableStatement.withUsingTableKeyword(true).setUsingTableKeyword(false);
         renameTableStatement.withUsingIfExistsKeyword(true).setUsingIfExistsKeyword(false);
         renameTableStatement.withWaitDirective("NOWAIT").setWaitDirective("WAIT 20");
-
         assertFalse(renameTableStatement.isTableNamesEmpty());
         assertTrue(renameTableStatement.getTableNamesSize() > 0);
         assertFalse(renameTableStatement.isUsingTableKeyword());

@@ -22,5 +22,4 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
     public void setASTNode(SimpleNode node) {
         this.node = node;
     }
-
 }

@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author schwitters
  */
 public class DatabaseTest {
@@ -44,5 +43,4 @@ public class DatabaseTest {
         assertEquals("[SERVER\\INSTANCE].", database.getFullyQualifiedName());
         assertSame(server, database.getServer());
     }
-
 }

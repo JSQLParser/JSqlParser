@@ -20,7 +20,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class CreateTableValidator extends AbstractValidator<CreateTable> {
 
-
     @Override
     public void validate(CreateTable createTable) {
         for (ValidationCapability c : getCapabilities()) {
@@ -31,17 +30,15 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
             validateFeature(c, createTable.isIfNotExists(), Feature.createTableIfNotExists);
             validateOptionalFeature(c, createTable.getRowMovement(), Feature.createTableRowMovement);
             validateOptionalFeature(c, createTable.getSelect(), Feature.createTableFromSelect);
-            if (isNotEmpty(createTable.getIndexes()) ) {
+            if (isNotEmpty(createTable.getIndexes())) {
                 for (Index i : createTable.getIndexes()) {
                     validateName(c, NamedObject.index, i.getName());
                 }
             }
             validateName(c, NamedObject.table, createTable.getTable().getFullyQualifiedName(), false);
         }
-
         if (createTable.getSelect() != null) {
             getValidator(StatementValidator.class).validate(createTable.getSelect());
         }
     }
-
 }

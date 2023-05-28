@@ -17,7 +17,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class VariableAssignment extends ASTNodeAccessImpl implements Expression {
 
     private UserVariable variable;
+
     private String operation;
+
     private Expression expression;
 
     public UserVariable getVariable() {
@@ -53,6 +55,4 @@ public class VariableAssignment extends ASTNodeAccessImpl implements Expression 
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-
-    
 }

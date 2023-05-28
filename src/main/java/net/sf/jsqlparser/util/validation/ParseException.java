@@ -14,7 +14,7 @@ import net.sf.jsqlparser.JSQLParserException;
 /**
  * wraps a {@link JSQLParserException} to add to the errors collected by
  * validation
- * 
+ *
  * @author gitmotte
  */
 public class ParseException extends ValidationException {
@@ -32,5 +32,4 @@ public class ParseException extends ValidationException {
     public ParseException(Throwable cause) {
         super(cause);
     }
-
 }

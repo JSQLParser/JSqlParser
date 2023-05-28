@@ -21,5 +21,4 @@ public class AlterSessionDeParser extends AbstractDeParser<AlterSession> {
     public void deParse(AlterSession alterSession) {
         buffer.append(alterSession.toString());
     }
-
 }

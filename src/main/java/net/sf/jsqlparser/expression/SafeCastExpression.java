@@ -15,8 +15,11 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 public class SafeCastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private ColDataType type;
+
     private RowConstructor rowConstructor;
+
     private boolean useCastKeyword = true;
 
     public RowConstructor getRowConstructor() {
@@ -66,9 +69,7 @@ public class SafeCastExpression extends ASTNodeAccessImpl implements Expression 
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return rowConstructor!=null
-              ? "SAFE_CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
-              : "SAFE_CAST(" + leftExpression + " AS " + type.toString() + ")";
+            return rowConstructor != null ? "SAFE_CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")" : "SAFE_CAST(" + leftExpression + " AS " + type.toString() + ")";
         } else {
             return leftExpression + "::" + type.toString();
         }

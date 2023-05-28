@@ -15,11 +15,15 @@ import java.util.Objects;
 public class Named {
 
     private final NamedObject namedObject;
+
     private final String fqn;
+
     private String alias;
+
     private List<NamedObject> parents;
 
     private String fqnLookup;
+
     private String aliasLookup;
 
     public Named(NamedObject namedObject, String fqn) {
@@ -123,6 +127,4 @@ public class Named {
     public String toString() {
         return "Named [namedObject=" + namedObject + ", fqn=" + fqn + ", alias=" + alias + ", parents=" + parents + "]";
     }
-
-
 }

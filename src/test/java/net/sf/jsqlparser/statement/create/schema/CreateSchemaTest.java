@@ -15,7 +15,6 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author tw
  */
 public class CreateSchemaTest {

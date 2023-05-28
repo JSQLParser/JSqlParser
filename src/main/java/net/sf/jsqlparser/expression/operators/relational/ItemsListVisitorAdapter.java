@@ -11,22 +11,19 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 
-@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
+@SuppressWarnings({ "PMD.UncommentedEmptyMethodBody" })
 public class ItemsListVisitorAdapter implements ItemsListVisitor {
 
     @Override
     public void visit(ParenthesedSelect subSelect) {
-
     }
 
     @Override
     public void visit(NamedExpressionList namedExpressionList) {
-
     }
 
     @Override
     public void visit(ExpressionList expressionList) {
-
     }
 
     @Override

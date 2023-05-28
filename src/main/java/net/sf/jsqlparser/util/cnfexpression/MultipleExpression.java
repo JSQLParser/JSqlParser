@@ -19,7 +19,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  * This is a helper class that mainly used for handling the CNF conversion.
  *
  * @author messfish
- *
  */
 public abstract class MultipleExpression extends ASTNodeAccessImpl implements Expression {
 
@@ -77,5 +76,4 @@ public abstract class MultipleExpression extends ASTNodeAccessImpl implements Ex
         sb.append(")");
         return sb.toString();
     }
-
 }

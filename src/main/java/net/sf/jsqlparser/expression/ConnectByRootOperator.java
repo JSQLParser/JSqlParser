@@ -22,7 +22,6 @@
  * if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-
 package net.sf.jsqlparser.expression;
 
 import java.util.Objects;
@@ -30,10 +29,10 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
 /**
- *
  * @author are
  */
 public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expression {
+
     private final Column column;
 
     public ConnectByRootOperator(Column column) {
@@ -48,15 +47,14 @@ public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expressi
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-    
+
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("CONNECT_BY_ROOT ").append(column);
         return builder;
     }
-    
+
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();
     }
-
 }

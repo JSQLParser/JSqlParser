@@ -25,7 +25,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ForeignKeyIndex extends NamedConstraint {
 
     private Table table;
+
     private List<String> referencedColumnNames;
+
     private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
     public Table getTable() {
@@ -117,8 +119,7 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
-                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
+        StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table).append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
         referentialActions.forEach(b::append);
         return b.toString();
     }
@@ -199,5 +200,4 @@ public class ForeignKeyIndex extends NamedConstraint {
     public ForeignKeyIndex withIndexSpec(List<String> idxSpec) {
         return (ForeignKeyIndex) super.withIndexSpec(idxSpec);
     }
-
 }

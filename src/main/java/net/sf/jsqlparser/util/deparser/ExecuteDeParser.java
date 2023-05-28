@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.execute.Execute;

@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class OracleNamedFunctionParameterTest {
@@ -36,20 +35,9 @@ public class OracleNamedFunctionParameterTest {
      */
     @Test
     public void testExpression() throws JSQLParserException {
-        String sqlStr
-                = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
-
+        String sqlStr = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr
-                = "exec dbms_stats.gather_schema_stats(\n"
-                + "      ownname          => 'COMMON', \n"
-                + "      estimate_percent => dbms_stats.auto_sample_size, \n"
-                + "      method_opt       => 'for all columns size auto', \n"
-                + "      degree           => DBMS_STATS.DEFAULT_DEGREE,\n"
-                + "      cascade          => DBMS_STATS.AUTO_CASCADE,\n"
-                + "      options          => 'GATHER AUTO'\n"
-                + "   )";
+        sqlStr = "exec dbms_stats.gather_schema_stats(\n" + "      ownname          => 'COMMON', \n" + "      estimate_percent => dbms_stats.auto_sample_size, \n" + "      method_opt       => 'for all columns size auto', \n" + "      degree           => DBMS_STATS.DEFAULT_DEGREE,\n" + "      cascade          => DBMS_STATS.AUTO_CASCADE,\n" + "      options          => 'GATHER AUTO'\n" + "   )";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
@@ -61,11 +49,8 @@ public class OracleNamedFunctionParameterTest {
      */
     @Test
     public void testExpressionVisitorAdaptor() throws JSQLParserException {
-        String sqlStr
-                = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
-
+        String sqlStr = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
         CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
-
         // alternatively, for the Expression only
         CCJSqlParserUtil.parseExpression("p_1 => r.param1").accept(new ExpressionVisitorAdapter());
     }
@@ -78,9 +63,7 @@ public class OracleNamedFunctionParameterTest {
      */
     @Test
     public void testTableNamesFinder() throws JSQLParserException {
-        String sqlStr
-                = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2 from test_table";
-
+        String sqlStr = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2 from test_table";
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         List<String> tables = new TablesNamesFinder().getTableList(statement);
         assertEquals(1, tables.size());
@@ -95,9 +78,7 @@ public class OracleNamedFunctionParameterTest {
      */
     @Test
     public void testValidator() throws JSQLParserException {
-        String sqlStr
-                = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
-
+        String sqlStr = "select r.*, test.numeric_function ( p_1 => r.param1, p_2 => r.param2 ) as resultaat2";
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
     }
 }

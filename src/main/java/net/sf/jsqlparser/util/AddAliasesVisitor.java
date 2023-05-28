@@ -23,7 +23,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,9 +36,13 @@ import java.util.List;
 public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
+
     private List<String> aliases = new LinkedList<String>();
+
     private boolean firstRun = true;
+
     private int counter = 0;
+
     private String prefix = "A";
 
     @Override
@@ -70,7 +73,6 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(AllTableColumns allTableColumns) {
-
     }
 
     @Override
@@ -81,7 +83,6 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
             }
         } else {
             if (selectExpressionItem.getAlias() == null) {
-
                 while (true) {
                     String alias = getNextAlias().toUpperCase();
                     if (!aliases.contains(alias)) {
@@ -105,23 +106,26 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
-                                                                    // methods, choose Tools |
-                                                                    // Templates.
+        // To change body of generated
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        // methods, choose Tools |
+        // Templates.
     }
 
     @Override
     public void visit(AllColumns allColumns) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
-                                                                    // methods, choose Tools |
-                                                                    // Templates.
+        // To change body of generated
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        // methods, choose Tools |
+        // Templates.
     }
 
     @Override
     public void visit(Values aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of
-                                                                       // generated methods, choose
-                                                                       // Tools | Templates.
+        // To change body of
+        throw new UnsupportedOperationException("Not supported yet.");
+        // generated methods, choose
+        // Tools | Templates.
     }
 
     @Override

@@ -34,9 +34,7 @@ public class GroupByValidator extends AbstractValidator<GroupByElement> implemen
                 validateFeature(c, Feature.selectGroupByGroupingSets);
             }
         }
-
         validateOptionalExpressions(groupBy.getGroupByExpressions());
-
         if (isNotEmpty(groupBy.getGroupingSets())) {
             for (Object o : groupBy.getGroupingSets()) {
                 if (o instanceof Expression) {
@@ -47,5 +45,4 @@ public class GroupByValidator extends AbstractValidator<GroupByElement> implemen
             }
         }
     }
-
 }

@@ -21,7 +21,9 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 public class Alias implements Serializable {
 
     private String name;
+
     private boolean useAs = true;
+
     private List<AliasColumn> aliasColumns;
 
     public Alias(String name) {
@@ -60,7 +62,6 @@ public class Alias implements Serializable {
     @Override
     public String toString() {
         String alias = (useAs ? " AS " : " ") + name;
-
         if (aliasColumns != null && !aliasColumns.isEmpty()) {
             String ac = "";
             for (AliasColumn col : aliasColumns) {
@@ -74,7 +75,6 @@ public class Alias implements Serializable {
             }
             alias += "(" + ac + ")";
         }
-
         return alias;
     }
 
@@ -108,6 +108,7 @@ public class Alias implements Serializable {
     public static class AliasColumn implements Serializable {
 
         public final String name;
+
         public final ColDataType colDataType;
 
         public AliasColumn(String name, ColDataType colDataType) {

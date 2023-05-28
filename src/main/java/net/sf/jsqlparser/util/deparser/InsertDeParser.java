@@ -22,33 +22,31 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
-
 import java.util.Iterator;
 import java.util.List;
 
 public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsListVisitor {
 
     private ExpressionVisitor expressionVisitor;
+
     private SelectVisitor selectVisitor;
 
     public InsertDeParser() {
         super(new StringBuilder());
     }
 
-    public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor,
-            StringBuilder buffer) {
+    public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
-            "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity" })
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = insert.getWithItemsList().iterator(); iter.hasNext();) {
+            for (Iterator<WithItem> iter = insert.getWithItemsList().iterator(); iter.hasNext(); ) {
                 WithItem withItem = iter.next();
                 withItem.accept(this.selectVisitor);
                 if (iter.hasNext()) {
@@ -57,7 +55,6 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 buffer.append(" ");
             }
         }
-
         buffer.append("INSERT ");
         if (insert.getModifierPriority() != null) {
             buffer.append(insert.getModifierPriority()).append(" ");
@@ -66,12 +63,10 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             buffer.append("IGNORE ");
         }
         buffer.append("INTO ");
-
         buffer.append(insert.getTable().toString());
-
         if (insert.getColumns() != null) {
             buffer.append(" (");
-            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
+            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext(); ) {
                 Column column = iter.next();
                 buffer.append(column.getColumnName());
                 if (iter.hasNext()) {
@@ -80,25 +75,20 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             }
             buffer.append(")");
         }
-
         if (insert.getOutputClause() != null) {
             buffer.append(insert.getOutputClause().toString());
         }
-
         if (insert.getSelect() != null) {
             buffer.append(" ");
             Select select = insert.getSelect();
             select.accept(selectVisitor);
         }
-
         if (insert.isUseSet()) {
             buffer.append(" SET ");
             for (int i = 0; i < insert.getSetColumns().size(); i++) {
                 Column column = insert.getSetColumns().get(i);
                 column.accept(expressionVisitor);
-
                 buffer.append(" = ");
-
                 Expression expression = insert.getSetExpressionList().get(i);
                 expression.accept(expressionVisitor);
                 if (i < insert.getSetColumns().size() - 1) {
@@ -106,13 +96,11 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 }
             }
         }
-
         if (insert.isUseDuplicate()) {
             buffer.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
                 Column column = insert.getDuplicateUpdateColumns().get(i);
                 buffer.append(column.getFullyQualifiedName()).append(" = ");
-
                 Expression expression = insert.getDuplicateUpdateExpressionList().get(i);
                 expression.accept(expressionVisitor);
                 if (i < insert.getDuplicateUpdateColumns().size() - 1) {
@@ -120,27 +108,22 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
                 }
             }
         }
-
         // @todo: Accept some Visitors for the involved Expressions
         if (insert.getConflictAction() != null) {
             buffer.append(" ON CONFLICT");
-
             if (insert.getConflictTarget() != null) {
                 insert.getConflictTarget().appendTo(buffer);
             }
             insert.getConflictAction().appendTo(buffer);
         }
-
         if (insert.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ").append(
-                    PlainSelect.getStringList(insert.getReturningExpressionList(), true, false));
+            buffer.append(" RETURNING ").append(PlainSelect.getStringList(insert.getReturningExpressionList(), true, false));
         }
     }
 
     @Override
     public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                true).deParse(expressionList.getExpressions());
+        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
     }
 
     @Override
@@ -154,8 +137,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
         int n = expressionLists.size() - 1;
         int i = 0;
         for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                    true).deParse(expressionList.getExpressions());
+            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(), true).deParse(expressionList.getExpressions());
             if (i < n) {
                 buffer.append(", ");
             }
@@ -183,6 +165,4 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     public void setSelectVisitor(SelectVisitor visitor) {
         selectVisitor = visitor;
     }
-
-
 }

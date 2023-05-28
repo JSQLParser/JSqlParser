@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -28,7 +27,6 @@ import net.sf.jsqlparser.statement.Statements;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -58,7 +56,6 @@ public class CCJSqlParserUtilTest {
     @Test
     public void testParseExpressionNonPartial() throws Exception {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseExpression("a+", false));
-
     }
 
     @Test
@@ -90,16 +87,12 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseFromStreamFail() throws Exception {
-        assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
-
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8))));
     }
 
     @Test
     public void testParseFromStreamWithEncodingFail() throws Exception {
-        assertThrows(JSQLParserException.class,
-                () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name()));
-
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(new ByteArrayInputStream("BLA".getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8.name()));
     }
 
     @Test
@@ -127,40 +120,20 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementsIssue691() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements(
-                "select * from dual;\n"
-                + "\n"
-                + "select\n"
-                + "*\n"
-                + "from\n"
-                + "dual;\n"
-                + "\n"
-                + "select *\n"
-                + "from dual;");
-        assertEquals("SELECT * FROM dual;\n"
-                + "SELECT * FROM dual;\n"
-                + "SELECT * FROM dual;\n", result.toString());
+        Statements result = CCJSqlParserUtil.parseStatements("select * from dual;\n" + "\n" + "select\n" + "*\n" + "from\n" + "dual;\n" + "\n" + "select *\n" + "from dual;");
+        assertEquals("SELECT * FROM dual;\n" + "SELECT * FROM dual;\n" + "SELECT * FROM dual;\n", result.toString());
     }
 
     @Test
     public void testStreamStatementsIssue777() throws Exception {
         final List<Statement> list = new ArrayList<>();
-
         CCJSqlParserUtil.streamStatements(new StatementListener() {
+
             @Override
             public void accept(Statement statement) {
                 list.add(statement);
             }
-        }, new ByteArrayInputStream(("select * from dual;\n"
-                + "select\n"
-                + "*\n"
-                + "from\n"
-                + "dual;\n"
-                + "\n"
-                + "-- some comment\n"
-                + "select *\n"
-                + "from dual;").getBytes(StandardCharsets.UTF_8)), "UTF-8");
-
+        }, new ByteArrayInputStream(("select * from dual;\n" + "select\n" + "*\n" + "from\n" + "dual;\n" + "\n" + "-- some comment\n" + "select *\n" + "from dual;").getBytes(StandardCharsets.UTF_8)), "UTF-8");
         assertEquals(list.size(), 3);
     }
 
@@ -179,23 +152,14 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseStatementsIssue691_2() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements(
-                "select * from dual;\n"
-                + "---test");
+        Statements result = CCJSqlParserUtil.parseStatements("select * from dual;\n" + "---test");
         assertEquals("SELECT * FROM dual;\n", result.toString());
     }
 
     @Test
     public void testParseStatementIssue742() throws Exception {
-        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n"
-                + "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n"
-                + "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n"
-                + "  PRIMARY KEY (`id`),\n"
-                + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n"
-                + ")");
-        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` "
-                + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` "
-                + "(`another_column_id`));\n", result.toString());
+        Statements result = CCJSqlParserUtil.parseStatements("CREATE TABLE `table_name` (\n" + "  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n" + "  `another_column_id` bigint(20) NOT NULL COMMENT 'column id as sent by SYSTEM',\n" + "  PRIMARY KEY (`id`),\n" + "  UNIQUE KEY `uk_another_column_id` (`another_column_id`)\n" + ")");
+        assertEquals("CREATE TABLE `table_name` (`id` bigint (20) NOT NULL AUTO_INCREMENT, `another_column_id` " + "bigint (20) NOT NULL COMMENT 'column id as sent by SYSTEM', PRIMARY KEY (`id`), UNIQUE KEY `uk_another_column_id` " + "(`another_column_id`));\n", result.toString());
     }
 
     @Test
@@ -206,54 +170,21 @@ public class CCJSqlParserUtilTest {
 
     @Test
     public void testParseExpressionWithBracketsIssue1159() throws Exception {
-        Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false,
-                parser -> parser.withSquareBracketQuotation(true));
+        Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false, parser -> parser.withSquareBracketQuotation(true));
         assertEquals("[travel_data].[travel_id]", result.toString());
     }
 
     @Test
     public void testParseExpressionWithBracketsIssue1159_2() throws Exception {
-        Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false,
-                parser -> parser.withSquareBracketQuotation(true));
+        Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false, parser -> parser.withSquareBracketQuotation(true));
         assertEquals("[travel_data].[travel_id]", result.toString());
     }
 
     @Test
     public void testNestingDepth() throws Exception {
-        assertEquals(2,
-                CCJSqlParserUtil.getNestingDepth("SELECT concat(concat('A','B'),'B') FROM mytbl"));
-        assertEquals(20, CCJSqlParserUtil.getNestingDepth(
-                "concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('A','B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B') FROM mytbl"));
-        assertEquals(4, CCJSqlParserUtil.getNestingDepth(""
-                + "-- MERGE 1\n"
-                + "MERGE INTO cfe.impairment imp\n" + "    USING ( WITH x AS (\n"
-                + "                    SELECT  a.id_instrument\n"
-                + "                            , a.id_currency\n"
-                + "                            , a.id_instrument_type\n"
-                + "                            , b.id_portfolio\n"
-                + "                            , c.attribute_value product_code\n"
-                + "                            , t.valid_date\n" + "                            , t.ccf\n"
-                + "                    FROM cfe.instrument a\n"
-                + "                        INNER JOIN cfe.impairment b\n"
-                + "                            ON a.id_instrument = b.id_instrument\n"
-                + "                        LEFT JOIN cfe.instrument_attribute c\n"
-                + "                            ON a.id_instrument = c.id_instrument\n"
-                + "                                AND c.id_attribute = 'product'\n"
-                + "                        INNER JOIN cfe.ext_ccf t\n"
-                + "                            ON ( a.id_currency LIKE t.id_currency )\n"
-                + "                                AND ( a.id_instrument_type LIKE t.id_instrument_type )\n"
-                + "                                AND ( b.id_portfolio LIKE t.id_portfolio\n"
-                + "                                        OR ( b.id_portfolio IS NULL\n"
-                + "                                                AND t.id_portfolio = '%' ) )\n"
-                + "                                AND ( c.attribute_value LIKE t.product_code\n"
-                + "                                        OR ( c.attribute_value IS NULL\n"
-                + "                                                AND t.product_code = '%' ) ) )\n"
-                + "SELECT /*+ PARALLEL */ *\n" + "            FROM x x1\n"
-                + "            WHERE x1.valid_date = ( SELECT max\n"
-                + "                                    FROM x\n"
-                + "                                    WHERE id_instrument = x1.id_instrument ) ) s\n"
-                + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n"
-                + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
+        assertEquals(2, CCJSqlParserUtil.getNestingDepth("SELECT concat(concat('A','B'),'B') FROM mytbl"));
+        assertEquals(20, CCJSqlParserUtil.getNestingDepth("concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('A','B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B'),'B') FROM mytbl"));
+        assertEquals(4, CCJSqlParserUtil.getNestingDepth("" + "-- MERGE 1\n" + "MERGE INTO cfe.impairment imp\n" + "    USING ( WITH x AS (\n" + "                    SELECT  a.id_instrument\n" + "                            , a.id_currency\n" + "                            , a.id_instrument_type\n" + "                            , b.id_portfolio\n" + "                            , c.attribute_value product_code\n" + "                            , t.valid_date\n" + "                            , t.ccf\n" + "                    FROM cfe.instrument a\n" + "                        INNER JOIN cfe.impairment b\n" + "                            ON a.id_instrument = b.id_instrument\n" + "                        LEFT JOIN cfe.instrument_attribute c\n" + "                            ON a.id_instrument = c.id_instrument\n" + "                                AND c.id_attribute = 'product'\n" + "                        INNER JOIN cfe.ext_ccf t\n" + "                            ON ( a.id_currency LIKE t.id_currency )\n" + "                                AND ( a.id_instrument_type LIKE t.id_instrument_type )\n" + "                                AND ( b.id_portfolio LIKE t.id_portfolio\n" + "                                        OR ( b.id_portfolio IS NULL\n" + "                                                AND t.id_portfolio = '%' ) )\n" + "                                AND ( c.attribute_value LIKE t.product_code\n" + "                                        OR ( c.attribute_value IS NULL\n" + "                                                AND t.product_code = '%' ) ) )\n" + "SELECT /*+ PARALLEL */ *\n" + "            FROM x x1\n" + "            WHERE x1.valid_date = ( SELECT max\n" + "                                    FROM x\n" + "                                    WHERE id_instrument = x1.id_instrument ) ) s\n" + "        ON ( imp.id_instrument = s.id_instrument )\n" + "WHEN MATCHED THEN\n" + "    UPDATE SET  imp.ccf = s.ccf\n" + ";"));
     }
 
     @Test
@@ -278,22 +209,11 @@ public class CCJSqlParserUtilTest {
     public void testTimeOutIssue1582() throws InterruptedException {
         // This statement is INVALID on purpose
         // There are crafted INTO keywords in order to make it fail but only after a long time (40 seconds plus)
-
-        String sqlStr = ""
-                + "select\n"
-                + "              t0.operatienr\n"
-                + "            , case\n"
-                + "                when\n"
-                + "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
-                + "                         else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
-                + "                end = 0 then null\n"
-                + "                    else '25. Meer dan 4 uur'\n"
-                + "                end                                                                                                                                                  \n"
-                + "              as snijtijd_interval";
-
+        String sqlStr = "" + "select\n" + "              t0.operatienr\n" + "            , case\n" + "                when\n" + "                    case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n" + "                         else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n" + "                end = 0 then null\n" + "                    else '25. Meer dan 4 uur'\n" + "                end                                                                                                                                                  \n" + "              as snijtijd_interval";
         // With DEFAULT TIMEOUT 6 Seconds, we expect the statement to timeout normally
         // A TimeoutException wrapped into a Parser Exception should be thrown
         assertThrows(TimeoutException.class, new Executable() {
+
             @Override
             public void execute() throws Throwable {
                 try {
@@ -308,11 +228,11 @@ public class CCJSqlParserUtilTest {
                 }
             }
         });
-
         // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail instead
         // No TimeoutException wrapped into a Parser Exception must be thrown
         // Instead we expect a Parser Exception only
         assertThrows(JSQLParserException.class, new Executable() {
+
             @Override
             public void execute() throws Throwable {
                 try {

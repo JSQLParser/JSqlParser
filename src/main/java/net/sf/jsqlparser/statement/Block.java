@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 public class Block implements Statement {
+
     private boolean hasSemicolonAfterEnd = false;
 
     private Statements statements;

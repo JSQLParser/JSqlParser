@@ -10,9 +10,8 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 @Deprecated
-/**
+public class /**
  * @author gitmotte
  */
-public class ReplaceValidator extends UpsertValidator {
-
+ReplaceValidator extends UpsertValidator {
 }

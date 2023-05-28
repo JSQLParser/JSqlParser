@@ -16,10 +16,12 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class WindowDefinition implements Serializable {
 
-
     final OrderByClause orderBy = new OrderByClause();
+
     final PartitionByClause partitionBy = new PartitionByClause();
+
     WindowElement windowElement = null;
+
     private String windowName;
 
     public OrderByClause getOrderBy() {
@@ -65,7 +67,7 @@ public class WindowDefinition implements Serializable {
     public void setWindowName(String windowName) {
         this.windowName = windowName;
     }
-    
+
     public WindowDefinition withWindowName(String windowName) {
         setWindowName(windowName);
         return this;
@@ -80,7 +82,6 @@ public class WindowDefinition implements Serializable {
         b.append("(");
         partitionBy.toStringPartitionBy(b);
         orderBy.toStringOrderByElements(b);
-
         if (windowElement != null) {
             if (orderBy.getOrderByElements() != null) {
                 b.append(' ');

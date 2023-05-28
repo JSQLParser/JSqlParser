@@ -11,7 +11,5 @@ package net.sf.jsqlparser.expression;
 
 public enum AnyType {
 
-    ANY,
-    SOME,
-    ALL
+    ANY, SOME, ALL
 }

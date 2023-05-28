@@ -14,7 +14,6 @@ import static net.sf.jsqlparser.test.TestUtils.*;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author toben
  */
 public class ExecuteTest {

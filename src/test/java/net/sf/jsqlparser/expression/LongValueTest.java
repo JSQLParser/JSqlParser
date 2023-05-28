@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author tw
  */
 public class LongValueTest {
@@ -23,7 +22,6 @@ public class LongValueTest {
     @Test
     public void testSimpleNumber() {
         LongValue value = new LongValue("123");
-
         assertEquals("123", value.getStringValue());
         assertEquals(123L, value.getValue());
         assertEquals(new BigInteger("123"), value.getBigIntegerValue());
@@ -33,7 +31,6 @@ public class LongValueTest {
     public void testLargeNumber() {
         final String largeNumber = "20161114000000035001";
         LongValue value = new LongValue(largeNumber);
-
         assertEquals(largeNumber, value.getStringValue());
         try {
             value.getValue();

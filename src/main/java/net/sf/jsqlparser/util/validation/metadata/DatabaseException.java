@@ -31,5 +31,4 @@ public class DatabaseException extends ValidationException {
     public DatabaseException(Throwable cause) {
         super(cause);
     }
-
 }

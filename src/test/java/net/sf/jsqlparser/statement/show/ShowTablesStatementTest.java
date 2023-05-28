@@ -53,11 +53,9 @@ public class ShowTablesStatementTest {
         ShowTablesStatement showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW TABLES WHERE table_name = 'FOO'");
         assertEquals(0, showTablesStatement.getModifiers().size());
         TestUtils.assertExpressionCanBeDeparsedAs(showTablesStatement.getWhereCondition(), "table_name = 'FOO'");
-
         showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW FULL TABLES IN db_name");
         assertEquals(1, showTablesStatement.getModifiers().size());
         assertEquals(ShowTablesStatement.SelectionMode.IN, showTablesStatement.getSelectionMode());
-
         showTablesStatement = (ShowTablesStatement) CCJSqlParserUtil.parse("SHOW TABLES LIKE '%FOO%'");
         TestUtils.assertExpressionCanBeDeparsedAs(showTablesStatement.getLikeExpression(), "'%FOO%'");
     }

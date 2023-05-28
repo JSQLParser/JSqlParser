@@ -23,7 +23,6 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author tw
  */
 public class DeclareStatementTest {
@@ -35,11 +34,7 @@ public class DeclareStatementTest {
     public void testDeclareType() throws JSQLParserException {
         String statement = "DECLARE @find nvarchar (30)";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        DeclareStatement created = new DeclareStatement()
-                .addTypeDefExprList(
-                        new TypeDefExpr(new UserVariable().withName("find"),
-                                new ColDataType().withDataType("nvarchar").addArgumentsStringList("30"), null))
-                .withDeclareType(DeclareType.TYPE);
+        DeclareStatement created = new DeclareStatement().addTypeDefExprList(new TypeDefExpr(new UserVariable().withName("find"), new ColDataType().withDataType("nvarchar").addArgumentsStringList("30"), null)).withDeclareType(DeclareType.TYPE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -48,11 +43,7 @@ public class DeclareStatementTest {
     public void testDeclareTypeWithDefault() throws JSQLParserException {
         String statement = "DECLARE @find varchar (30) = 'Man%'";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        DeclareStatement created = new DeclareStatement()
-                .addTypeDefExprList(new TypeDefExpr(new UserVariable().withName("find"),
-                        new ColDataType().withDataType("varchar").addArgumentsStringList("30"),
-                        new StringValue().withValue("Man%")))
-                .withDeclareType(DeclareType.TYPE);
+        DeclareStatement created = new DeclareStatement().addTypeDefExprList(new TypeDefExpr(new UserVariable().withName("find"), new ColDataType().withDataType("varchar").addArgumentsStringList("30"), new StringValue().withValue("Man%"))).withDeclareType(DeclareType.TYPE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -61,14 +52,8 @@ public class DeclareStatementTest {
     public void testDeclareTypeList() throws JSQLParserException {
         String statement = "DECLARE @group nvarchar (50), @sales money";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        DeclareStatement created = new DeclareStatement().addTypeDefExprList(asList( //
-                new TypeDefExpr(
-                        new UserVariable().withName("group"),
-                        new ColDataType().withDataType("nvarchar").addArgumentsStringList("50"),
-                        null),
-                new TypeDefExpr(new UserVariable().withName("sales"),
-                        new ColDataType().withDataType("money"), null)))
-                .withDeclareType(DeclareType.TYPE);
+        DeclareStatement created = new DeclareStatement().addTypeDefExprList(//
+        asList(new TypeDefExpr(new UserVariable().withName("group"), new ColDataType().withDataType("nvarchar").addArgumentsStringList("50"), null), new TypeDefExpr(new UserVariable().withName("sales"), new ColDataType().withDataType("money"), null))).withDeclareType(DeclareType.TYPE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -82,17 +67,7 @@ public class DeclareStatementTest {
     public void testDeclareTable() throws JSQLParserException {
         String statement = "DECLARE @MyTableVar TABLE (EmpID int NOT NULL, OldVacationHours int, NewVacationHours int, ModifiedDate datetime)";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        DeclareStatement created = new DeclareStatement().withUserVariable(new UserVariable("MyTableVar"))
-                .withColumnDefinitions(new ArrayList<>())
-                .addColumnDefinitions(
-                        new ColumnDefinition("EmpID", new ColDataType().withDataType("int"),
-                                asList("NOT", "NULL")),
-                        new ColumnDefinition("OldVacationHours", new ColDataType("int")))
-                .addColumnDefinitions(
-                        asList(
-                                new ColumnDefinition("NewVacationHours", new ColDataType("int")),
-                                new ColumnDefinition("ModifiedDate", new ColDataType("datetime"))))
-                .withDeclareType(DeclareType.TABLE);
+        DeclareStatement created = new DeclareStatement().withUserVariable(new UserVariable("MyTableVar")).withColumnDefinitions(new ArrayList<>()).addColumnDefinitions(new ColumnDefinition("EmpID", new ColDataType().withDataType("int"), asList("NOT", "NULL")), new ColumnDefinition("OldVacationHours", new ColDataType("int"))).addColumnDefinitions(asList(new ColumnDefinition("NewVacationHours", new ColDataType("int")), new ColumnDefinition("ModifiedDate", new ColDataType("datetime")))).withDeclareType(DeclareType.TABLE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }

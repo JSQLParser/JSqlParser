@@ -26,11 +26,8 @@ public class AlterSequenceTest {
     public void testCreateSequence_withIncrement() throws JSQLParserException {
         String statement = "ALTER SEQUENCE my_seq CACHE 100";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        AlterSequence created = new AlterSequence().withSequence(
-                new Sequence().withName("my_seq")
-                        .addParameters(new Parameter(ParameterType.CACHE).withValue(100L)));
+        AlterSequence created = new AlterSequence().withSequence(new Sequence().withName("my_seq").addParameters(new Parameter(ParameterType.CACHE).withValue(100L)));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
-
 }

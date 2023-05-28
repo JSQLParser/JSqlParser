@@ -11,11 +11,10 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.schema.Table;
 
-@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
+@SuppressWarnings({ "PMD.UncommentedEmptyMethodBody" })
 public class IntoTableVisitorAdapter implements IntoTableVisitor {
 
     @Override
     public void visit(Table tableName) {
-
     }
 }

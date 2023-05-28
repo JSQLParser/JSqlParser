@@ -30,10 +30,7 @@ public class AlterViewTest {
     public void testAlterView() throws JSQLParserException {
         String statement = "ALTER VIEW myview AS SELECT * FROM mytab";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        AlterView created = new AlterView().withView(new Table("myview"))
-                .withSelect(new PlainSelect()
-                        .addSelectItems(Collections.singleton(new AllColumns()))
-                        .withFromItem(new Table("mytab")));
+        AlterView created = new AlterView().withView(new Table("myview")).withSelect(new PlainSelect().addSelectItems(Collections.singleton(new AllColumns())).withFromItem(new Table("mytab")));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -42,13 +39,7 @@ public class AlterViewTest {
     public void testReplaceView() throws JSQLParserException {
         String statement = "REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
-        AlterView alterView = new AlterView().withUseReplace(true).addColumnNames("a")
-                .addColumnNames(Collections.singleton("b"))
-                .withView(new Table("myview"))
-                .withSelect(new PlainSelect()
-                        .addSelectItems(new SelectExpressionItem(new Column("a")),
-                                new SelectExpressionItem(new Column("b")))
-                        .withFromItem(new Table("mytab")));
+        AlterView alterView = new AlterView().withUseReplace(true).addColumnNames("a").addColumnNames(Collections.singleton("b")).withView(new Table("myview")).withSelect(new PlainSelect().addSelectItems(new SelectExpressionItem(new Column("a")), new SelectExpressionItem(new Column("b"))).withFromItem(new Table("mytab")));
         assertTrue(alterView.getSelectBody(PlainSelect.class) instanceof PlainSelect);
         assertDeparse(alterView, statement);
         assertEqualsObjectTree(parsed, alterView);

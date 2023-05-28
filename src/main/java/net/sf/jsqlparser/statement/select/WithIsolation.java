@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-
 import java.io.Serializable;
 
 public class WithIsolation implements Serializable {
@@ -19,6 +18,7 @@ public class WithIsolation implements Serializable {
     public String getIsolation() {
         return this.isolation;
     }
+
     public void setIsolation(String s) {
         this.isolation = s;
     }

@@ -18,7 +18,6 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
  */
 public class LimitValidator extends AbstractValidator<Limit> {
 
-
     @Override
     public void validate(Limit limit) {
         for (ValidationCapability c : getCapabilities()) {

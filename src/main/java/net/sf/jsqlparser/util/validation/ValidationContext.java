@@ -12,14 +12,15 @@ package net.sf.jsqlparser.util.validation;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 
 public class ValidationContext {
 
     private Collection<ValidationCapability> capabilities;
+
     private FeatureConfiguration configuration = new FeatureConfiguration();
+
     private Map<ContextKey, Object> contextMap = new HashMap<>();
 
     public ValidationContext put(ContextKey key, Object value) {
@@ -71,5 +72,4 @@ public class ValidationContext {
         this.capabilities = capabilities;
         return this;
     }
-
 }

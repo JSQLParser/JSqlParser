@@ -19,7 +19,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class CreateSequenceValidator extends AbstractValidator<CreateSequence> {
 
-
     @Override
     public void validate(CreateSequence statement) {
         for (ValidationCapability c : getCapabilities()) {

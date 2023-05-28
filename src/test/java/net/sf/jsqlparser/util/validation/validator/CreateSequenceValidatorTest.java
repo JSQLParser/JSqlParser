@@ -19,23 +19,18 @@ import org.junit.jupiter.api.Test;
 
 public class CreateSequenceValidatorTest extends ValidationTestAsserts {
 
-    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[]{DatabaseType.ORACLE,
-        DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2};
+    private static final DatabaseType[] DATABASES_SUPPORTING_SEQUENCES = new DatabaseType[] { DatabaseType.ORACLE, DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2 };
 
     @Test
     public void testValidateCreateSequence() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE SEQUENCE my_sec INCREMENT BY 2 START WITH 10",
-                "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE",
-                "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) {
+        for (String sql : Arrays.asList("CREATE SEQUENCE my_sec INCREMENT BY 2 START WITH 10", "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE", "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) {
             validateNoErrors(sql, 1, DATABASES_SUPPORTING_SEQUENCES);
         }
     }
 
     @Test
     public void testValidateCreateSequenceNotAllowed() throws JSQLParserException {
-        for (String sql : Arrays.asList("CREATE SEQUENCE my_sec INCREMENT BY 2 START WITH 10",
-                "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE",
-                "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) {
+        for (String sql : Arrays.asList("CREATE SEQUENCE my_sec INCREMENT BY 2 START WITH 10", "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE", "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.createSequence);
         }
     }

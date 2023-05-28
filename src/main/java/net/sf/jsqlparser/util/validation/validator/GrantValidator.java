@@ -29,9 +29,7 @@ public class GrantValidator extends AbstractValidator<Grant> {
             if (grant.getRole() != null) {
                 validateName(NamedObject.role, grant.getRole());
             }
-
             // can't validate grant.getObjectName() - don't know the kind of this object.
         }
     }
-
 }

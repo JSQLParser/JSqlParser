@@ -12,7 +12,9 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public final class RowGetExpression extends ASTNodeAccessImpl implements Expression {
+
     private Expression expression;
+
     private String columnName;
 
     public RowGetExpression(Expression expression, String columnName) {

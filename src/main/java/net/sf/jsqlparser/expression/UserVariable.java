@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class UserVariable extends ASTNodeAccessImpl implements Expression {
 
     private String name;
+
     private boolean doubleAdd = false;
 
     public UserVariable() {

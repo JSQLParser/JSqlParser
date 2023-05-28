@@ -14,9 +14,10 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 public class SQLiteTest {
+
     @Test
     void testInsertOrReplaceUpsert() throws JSQLParserException {
-        String sqlString="INSERT OR REPLACE INTO kjobLocks VALUES (?, ?, ?)";
+        String sqlString = "INSERT OR REPLACE INTO kjobLocks VALUES (?, ?, ?)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlString, true);
     }
 }

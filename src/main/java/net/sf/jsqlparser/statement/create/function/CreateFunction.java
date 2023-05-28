@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.create.function;
 
 import java.util.Collection;
 import java.util.List;
-
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 
 /**
@@ -26,7 +25,7 @@ public class CreateFunction extends CreateFunctionalStatement {
     public CreateFunction(List<String> functionDeclarationParts) {
         this(false, functionDeclarationParts);
     }
-    
+
     public CreateFunction(boolean orReplace, List<String> functionDeclarationParts) {
         super(orReplace, "FUNCTION", functionDeclarationParts);
     }
@@ -45,5 +44,4 @@ public class CreateFunction extends CreateFunctionalStatement {
     public CreateFunction addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
         return (CreateFunction) super.addFunctionDeclarationParts(functionDeclarationParts);
     }
-
 }

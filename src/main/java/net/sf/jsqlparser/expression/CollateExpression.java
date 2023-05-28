@@ -14,6 +14,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class CollateExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private String collate;
 
     public CollateExpression() {

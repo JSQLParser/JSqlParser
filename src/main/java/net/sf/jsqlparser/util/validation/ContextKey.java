@@ -14,5 +14,4 @@ package net.sf.jsqlparser.util.validation;
  * context - values needed for validation.
  */
 public interface ContextKey {
-
 }

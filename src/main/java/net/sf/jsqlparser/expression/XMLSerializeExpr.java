@@ -18,7 +18,9 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;
+
     private List<OrderByElement> orderByElements;
+
     private ColDataType dataType;
 
     @Override
@@ -49,11 +51,9 @@ public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
     public void setDataType(ColDataType dataType) {
         this.dataType = dataType;
     }
-    
+
     @Override
     public String toString() {
-        return "xmlserialize(xmlagg(xmltext(" + expression + ")"
-                + (orderByElements != null ? " ORDER BY " + orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) : "")
-                + ") AS " + dataType + ")";
+        return "xmlserialize(xmlagg(xmltext(" + expression + ")" + (orderByElements != null ? " ORDER BY " + orderByElements.stream().map(item -> item.toString()).collect(joining(", ")) : "") + ") AS " + dataType + ")";
     }
 }

@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import net.sf.jsqlparser.expression.Expression;
 
 /**
@@ -54,8 +53,7 @@ public class MultiExpressionList implements ItemsList {
     }
 
     public void addExpressionList(ExpressionList el) {
-        if (!expressionLists.isEmpty()
-                && expressionLists.get(0).getExpressions().size() != el.getExpressions().size()) {
+        if (!expressionLists.isEmpty() && expressionLists.get(0).getExpressions().size() != el.getExpressions().size()) {
             throw new IllegalArgumentException("different count of parameters");
         }
         expressionLists.add(el);

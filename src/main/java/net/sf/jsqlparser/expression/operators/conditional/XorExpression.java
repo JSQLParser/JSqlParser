@@ -43,5 +43,4 @@ public class XorExpression extends BinaryExpression {
     public String getStringExpression() {
         return "XOR";
     }
-
 }

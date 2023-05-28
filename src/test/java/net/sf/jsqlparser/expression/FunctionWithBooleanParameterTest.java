@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
  * Test some cases linked to a boolean (condition) argument as function parameter.
  *
  * @author Denis Fulachier
- *
  */
 public class FunctionWithBooleanParameterTest {
 

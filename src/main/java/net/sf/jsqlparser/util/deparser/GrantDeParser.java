@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
-
 import net.sf.jsqlparser.statement.grant.Grant;
 
 public class GrantDeParser extends AbstractDeParser<Grant> {
@@ -25,7 +24,7 @@ public class GrantDeParser extends AbstractDeParser<Grant> {
         if (grant.getRole() != null) {
             buffer.append(grant.getRole());
         } else {
-            for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext();) {
+            for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext(); ) {
                 String privilege = iter.next();
                 buffer.append(privilege);
                 if (iter.hasNext()) {
@@ -36,7 +35,7 @@ public class GrantDeParser extends AbstractDeParser<Grant> {
             buffer.append(grant.getObjectName());
         }
         buffer.append(" TO ");
-        for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext();) {
+        for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext(); ) {
             String user = iter.next();
             buffer.append(user);
             if (iter.hasNext()) {
@@ -44,5 +43,4 @@ public class GrantDeParser extends AbstractDeParser<Grant> {
             }
         }
     }
-
 }

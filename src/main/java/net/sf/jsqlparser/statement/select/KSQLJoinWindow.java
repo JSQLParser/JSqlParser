@@ -14,16 +14,17 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class KSQLJoinWindow extends ASTNodeAccessImpl {
 
     public enum TimeUnit {
-        DAY ("DAY"),
-        HOUR ("HOUR"),
-        MINUTE ("MINUTE"),
-        SECOND ("SECOND"),
-        MILLISECOND ("MILLISECOND"),
-        DAYS ("DAYS"),
-        HOURS ("HOURS"),
-        MINUTES ("MINUTES"),
-        SECONDS ("SECONDS"),
-        MILLISECONDS ("MILLISECONDS");
+
+        DAY("DAY"),
+        HOUR("HOUR"),
+        MINUTE("MINUTE"),
+        SECOND("SECOND"),
+        MILLISECOND("MILLISECOND"),
+        DAYS("DAYS"),
+        HOURS("HOURS"),
+        MINUTES("MINUTES"),
+        SECONDS("SECONDS"),
+        MILLISECONDS("MILLISECONDS");
 
         private String timeUnit;
 
@@ -32,16 +33,22 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
         }
 
         public String getTimeUnit() {
-            return timeUnit;
+            return getUnitOfTime();
         }
     }
 
     private boolean beforeAfter;
+
     private long duration;
+
     private TimeUnit timeUnit;
+
     private long beforeDuration;
+
     private TimeUnit beforeTimeUnit;
+
     private long afterDuration;
+
     private TimeUnit afterTimeUnit;
 
     public KSQLJoinWindow() {
@@ -64,7 +71,7 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     }
 
     public TimeUnit getTimeUnit() {
-        return timeUnit;
+        return getUnitOfTime();
     }
 
     public void setTimeUnit(TimeUnit timeUnit) {
@@ -139,5 +146,9 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     public KSQLJoinWindow withAfterTimeUnit(TimeUnit afterTimeUnit) {
         this.setAfterTimeUnit(afterTimeUnit);
         return this;
+    }
+
+    private String getUnitOfTime() {
+        return timeUnit;
     }
 }

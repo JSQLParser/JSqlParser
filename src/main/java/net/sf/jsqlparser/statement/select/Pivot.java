@@ -21,9 +21,13 @@ import net.sf.jsqlparser.schema.Column;
 public class Pivot implements Serializable {
 
     private List<FunctionItem> functionItems;
+
     private List<Column> forColumns;
+
     private List<SelectExpressionItem> singleInItems;
+
     private List<ExpressionListItem> multiInItems;
+
     private Alias alias;
 
     public void accept(PivotVisitor pivotVisitor) {
@@ -76,12 +80,7 @@ public class Pivot implements Serializable {
 
     @Override
     public String toString() {
-        return "PIVOT ("
-                + PlainSelect.getStringList(functionItems)
-                + " FOR " + PlainSelect.
-                        getStringList(forColumns, true, forColumns != null && forColumns.size() > 1)
-                + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
-                + (alias!=null?alias.toString():"");
+        return "PIVOT (" + PlainSelect.getStringList(functionItems) + " FOR " + PlainSelect.getStringList(forColumns, true, forColumns != null && forColumns.size() > 1) + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")" + (alias != null ? alias.toString() : "");
     }
 
     public Pivot withFunctionItems(List<FunctionItem> functionItems) {

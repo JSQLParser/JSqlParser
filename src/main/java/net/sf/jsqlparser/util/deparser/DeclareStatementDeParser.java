@@ -23,20 +23,17 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     public void deParse(DeclareStatement declare) {
         buffer.append("DECLARE ");
-
         if (declare.getUserVariable() != null) {
             declare.getUserVariable().accept(expressionVisitor);
         }
-
         if (declare.getType() == DeclareType.AS) {
             buffer.append(" AS ");
             buffer.append(declare.getTypeName());
             return;
         }
-
         if (declare.getType() == DeclareType.TABLE) {
             buffer.append(" TABLE (");
             for (int i = 0; i < declare.getColumnDefinitions().size(); i++) {

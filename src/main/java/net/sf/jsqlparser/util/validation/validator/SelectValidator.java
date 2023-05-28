@@ -43,93 +43,71 @@ import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
-
 import java.util.List;
 
 /**
  * @author gitmotte
  */
-public class SelectValidator extends AbstractValidator<SelectItem>
-        implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
+public class SelectValidator extends AbstractValidator<SelectItem> implements SelectVisitor, SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     @Override
     public void visit(PlainSelect plainSelect) {
         if (isNotEmpty(plainSelect.getWithItemsList())) {
-            plainSelect.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+            plainSelect.getWithItemsList().forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
-
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.select);
-            validateFeature(c, plainSelect.getMySqlHintStraightJoin(),
-                    Feature.mySqlHintStraightJoin);
+            validateFeature(c, plainSelect.getMySqlHintStraightJoin(), Feature.mySqlHintStraightJoin);
             validateOptionalFeature(c, plainSelect.getOracleHint(), Feature.oracleHint);
             validateOptionalFeature(c, plainSelect.getSkip(), Feature.skip);
             validateOptionalFeature(c, plainSelect.getFirst(), Feature.first);
-
             if (plainSelect.getDistinct() != null) {
                 if (plainSelect.getDistinct().isUseUnique()) {
                     validateFeature(c, Feature.selectUnique);
                 } else {
                     validateFeature(c, Feature.distinct);
                 }
-                validateOptionalFeature(c, plainSelect.getDistinct().getOnSelectItems(),
-                        Feature.distinctOn);
+                validateOptionalFeature(c, plainSelect.getDistinct().getOnSelectItems(), Feature.distinctOn);
             }
-
             validateOptionalFeature(c, plainSelect.getTop(), Feature.top);
-            validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null,
-                    Feature.mysqlSqlCacheFlag);
+            validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null, Feature.mysqlSqlCacheFlag);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
-            validateFeature(c,
-                    isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
-                    Feature.oracleOrderBySiblings);
-
+            validateFeature(c, isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(), Feature.oracleOrderBySiblings);
             if (plainSelect.isForUpdate()) {
                 validateFeature(c, Feature.selectForUpdate);
-                validateOptionalFeature(c, plainSelect.getForUpdateTable(),
-                        Feature.selectForUpdateOfTable);
+                validateOptionalFeature(c, plainSelect.getForUpdateTable(), Feature.selectForUpdateOfTable);
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
                 validateFeature(c, plainSelect.isSkipLocked(), Feature.selectForUpdateSkipLocked);
             }
-
             validateOptionalFeature(c, plainSelect.getForXmlPath(), Feature.selectForXmlPath);
             validateOptionalFeature(c, plainSelect.getOptimizeFor(), Feature.optimizeFor);
-        } // end for
-
+        }
+        // end for
         validateOptionalFromItem(plainSelect.getFromItem());
         validateOptionalFromItems(plainSelect.getIntoTables());
         validateOptionalJoins(plainSelect.getJoins());
-
         // to correctly recognize aliased tables
         validateOptionalList(plainSelect.getSelectItems(), () -> this, (e, v) -> e.accept(v));
-
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
-
         if (plainSelect.getGroupBy() != null) {
             plainSelect.getGroupBy().accept(getValidator(GroupByValidator.class));
         }
-
         validateOptionalExpression(plainSelect.getHaving());
         validateOptionalOrderByElements(plainSelect.getOrderByElements());
-
         if (plainSelect.getLimit() != null) {
             getValidator(LimitValidator.class).validate(plainSelect.getLimit());
         }
-
         if (plainSelect.getOffset() != null) {
             validateOffset(plainSelect.getOffset());
         }
-
         if (plainSelect.getFetch() != null) {
             validateFetch(plainSelect.getFetch());
         }
-
     }
 
     @Override
@@ -151,8 +129,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     @Override
     public void visit(ParenthesedSelect selectBody) {
         if (isNotEmpty(selectBody.getWithItemsList())) {
-            selectBody.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+            selectBody.getWithItemsList().forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
         selectBody.getSelect().accept(this);
         validateOptional(selectBody.getPivot(), p -> p.accept(this));
@@ -160,12 +137,9 @@ public class SelectValidator extends AbstractValidator<SelectItem>
 
     @Override
     public void visit(Table table) {
-        validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
-                ValidationUtil.getAlias(table.getAlias()));
-
+        validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(), ValidationUtil.getAlias(table.getAlias()));
         validateOptional(table.getPivot(), p -> p.accept(this));
         validateOptional(table.getUnPivot(), up -> up.accept(this));
-
         MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null && isNotEmpty(indexHint.getIndexNames())) {
             indexHint.getIndexNames().forEach(i -> validateName(NamedObject.index, i));
@@ -185,7 +159,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     @Override
     public void visit(UnPivot unpivot) {
         validateFeature(Feature.unpivot);
-
         validateOptionalExpressions(unpivot.getUnPivotForClause());
         validateOptionalExpressions(unpivot.getUnPivotClause());
     }
@@ -216,7 +189,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
             validateFeature(c, fetch.isFetchParamFirst(), Feature.fetchFirst);
             validateFeature(c, !fetch.isFetchParamFirst(), Feature.fetchNext);
         }
-
         validateOptionalExpression(fetch.getFetchJdbcParameter());
     }
 
@@ -246,7 +218,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
             validateFeature(c, join.isWindowJoin(), Feature.joinWindow);
             validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);
         }
-
         validateOptionalFromItem(join.getRightItem());
         for (Expression onExpression : join.getOnExpressions()) {
             validateOptionalExpression(onExpression);
@@ -257,39 +228,25 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     @Override
     public void visit(SetOperationList setOperation) {
         if (isNotEmpty(setOperation.getWithItemsList())) {
-            setOperation.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+            setOperation.getWithItemsList().forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
-            validateFeature(c,
-                    setOperation.getOperations().stream().anyMatch(o -> o instanceof UnionOp),
-                    Feature.setOperationUnion);
-            validateFeature(c,
-                    setOperation.getOperations().stream().anyMatch(o -> o instanceof IntersectOp),
-                    Feature.setOperationIntersect);
-            validateFeature(c,
-                    setOperation.getOperations().stream().anyMatch(o -> o instanceof ExceptOp),
-                    Feature.setOperationExcept);
-            validateFeature(c,
-                    setOperation.getOperations().stream().anyMatch(o -> o instanceof MinusOp),
-                    Feature.setOperationMinus);
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof UnionOp), Feature.setOperationUnion);
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof IntersectOp), Feature.setOperationIntersect);
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof ExceptOp), Feature.setOperationExcept);
+            validateFeature(c, setOperation.getOperations().stream().anyMatch(o -> o instanceof MinusOp), Feature.setOperationMinus);
         }
-
         if (isNotEmpty(setOperation.getSelects())) {
             setOperation.getSelects().forEach(s -> s.accept(this));
         }
-
         validateOptionalOrderByElements(setOperation.getOrderByElements());
-
         if (setOperation.getLimit() != null) {
             getValidator(LimitValidator.class).validate(setOperation.getLimit());
         }
-
         if (setOperation.getOffset() != null) {
             validateOffset(setOperation.getOffset());
         }
-
         if (setOperation.getFetch() != null) {
             validateFetch(setOperation.getFetch());
         }
@@ -310,10 +267,8 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
         if (isNotEmpty(lateralSubSelect.getWithItemsList())) {
-            lateralSubSelect.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor) this));
+            lateralSubSelect.getWithItemsList().forEach(withItem -> withItem.accept((SelectVisitor) this));
         }
-
         validateFeature(Feature.lateralSubSelect);
         validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this));
         validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this));
@@ -323,7 +278,6 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     @Override
     public void visit(TableFunction tableFunction) {
         validateFeature(Feature.tableFunction);
-
         validateOptional(tableFunction.getPivot(), p -> p.accept(this));
         validateOptional(tableFunction.getUnPivot(), up -> up.accept(this));
     }
@@ -342,5 +296,4 @@ public class SelectValidator extends AbstractValidator<SelectItem>
     public void validate(SelectItem statement) {
         statement.accept(this);
     }
-
 }

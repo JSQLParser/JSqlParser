@@ -10,5 +10,6 @@
 package net.sf.jsqlparser.statement.update;
 
 public enum UpdateModifierPriority {
+
     LOW_PRIORITY
 }

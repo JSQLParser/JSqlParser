@@ -20,9 +20,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.jupiter.api.Test;
-
 import java.util.Stack;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AdaptersTest {
@@ -34,15 +32,17 @@ public class AdaptersTest {
     public void testAdapters() throws JSQLParserException {
         String sql = "SELECT * FROM MYTABLE WHERE COLUMN_A = :paramA AND COLUMN_B <> :paramB";
         Statement stmnt = CCJSqlParserUtil.parse(sql);
-
         final Stack<Pair<String, String>> params = new Stack<>();
         stmnt.accept(new StatementVisitorAdapter() {
+
             @Override
             public void visit(Select select) {
                 select.accept(new SelectVisitorAdapter() {
+
                     @Override
                     public void visit(PlainSelect plainSelect) {
                         plainSelect.getWhere().accept(new ExpressionVisitorAdapter() {
+
                             @Override
                             protected void visitBinaryExpression(BinaryExpression expr) {
                                 if (!(expr instanceof AndExpression)) {
@@ -53,21 +53,18 @@ public class AdaptersTest {
 
                             @Override
                             public void visit(Column column) {
-                                params.push(new Pair<>(column.getColumnName(),
-                                        params.pop().getRight()));
+                                params.push(new Pair<>(column.getColumnName(), params.pop().getRight()));
                             }
 
                             @Override
                             public void visit(JdbcNamedParameter parameter) {
-                                params.push(new Pair<>(params.pop().getLeft(),
-                                        parameter.getName()));
+                                params.push(new Pair<>(params.pop().getLeft(), parameter.getName()));
                             }
                         });
                     }
                 });
             }
         });
-
         assertEquals(2, params.size());
         Pair<String, String> param2 = params.pop();
         assertEquals("COLUMN_B", param2.getLeft());
@@ -80,6 +77,7 @@ public class AdaptersTest {
     private static class Pair<L, R> {
 
         private final L left;
+
         private final R right;
 
         private Pair(L left, R right) {
@@ -105,9 +103,7 @@ public class AdaptersTest {
 
         @Override
         public String toString() {
-            String sb = "Pair{" + "left=" + left +
-                    ", right=" + right +
-                    '}';
+            String sb = "Pair{" + "left=" + left + ", right=" + right + '}';
             return sb;
         }
     }

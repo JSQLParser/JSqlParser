@@ -28,5 +28,4 @@ public class ValidationUtil {
     public static String getAlias(Alias alias) {
         return Optional.ofNullable(alias).map(Alias::getName).orElse(null);
     }
-
 }

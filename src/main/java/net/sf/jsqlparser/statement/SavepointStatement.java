@@ -7,16 +7,15 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class SavepointStatement implements Statement {
+
     private String savepointName;
 
     public String getSavepointName() {
@@ -38,6 +37,6 @@ public class SavepointStatement implements Statement {
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
-         statementVisitor.visit(this);
+        statementVisitor.visit(this);
     }
 }

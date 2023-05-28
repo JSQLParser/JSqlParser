@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 public class SimilarToExpression extends BinaryExpression {
 
     private boolean not = false;
+
     private String escape = null;
 
     public boolean isNot() {
@@ -42,7 +43,6 @@ public class SimilarToExpression extends BinaryExpression {
         if (escape != null) {
             retval += " ESCAPE " + "'" + escape + "'";
         }
-
         return retval;
     }
 

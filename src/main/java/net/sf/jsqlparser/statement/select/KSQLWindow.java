@@ -14,16 +14,17 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class KSQLWindow extends ASTNodeAccessImpl {
 
     public enum TimeUnit {
-        DAY ("DAY"),
-        HOUR ("HOUR"),
-        MINUTE ("MINUTE"),
-        SECOND ("SECOND"),
-        MILLISECOND ("MILLISECOND"),
-        DAYS ("DAYS"),
-        HOURS ("HOURS"),
-        MINUTES ("MINUTES"),
-        SECONDS ("SECONDS"),
-        MILLISECONDS ("MILLISECONDS");
+
+        DAY("DAY"),
+        HOUR("HOUR"),
+        MINUTE("MINUTE"),
+        SECOND("SECOND"),
+        MILLISECOND("MILLISECOND"),
+        DAYS("DAYS"),
+        HOURS("HOURS"),
+        MINUTES("MINUTES"),
+        SECONDS("SECONDS"),
+        MILLISECONDS("MILLISECONDS");
 
         private String timeUnit;
 
@@ -37,9 +38,8 @@ public class KSQLWindow extends ASTNodeAccessImpl {
     }
 
     public enum WindowType {
-        HOPPING ("HOPPING"),
-        SESSION ("SESSION"),
-        TUMBLING ("TUMBLING");
+
+        HOPPING("HOPPING"), SESSION("SESSION"), TUMBLING("TUMBLING");
 
         private String windowType;
 
@@ -53,11 +53,17 @@ public class KSQLWindow extends ASTNodeAccessImpl {
     }
 
     private boolean hopping;
+
     private boolean tumbling;
+
     private boolean session;
+
     private long sizeDuration;
+
     private TimeUnit sizeTimeUnit;
+
     private long advanceDuration;
+
     private TimeUnit advanceTimeUnit;
 
     public boolean isHoppingWindow() {
@@ -122,8 +128,7 @@ public class KSQLWindow extends ASTNodeAccessImpl {
     @Override
     public String toString() {
         if (isHoppingWindow()) {
-            return "HOPPING (" + "SIZE " + sizeDuration + " " + sizeTimeUnit + ", " +
-                    "ADVANCE BY " + advanceDuration + " " + advanceTimeUnit + ")";
+            return "HOPPING (" + "SIZE " + sizeDuration + " " + sizeTimeUnit + ", " + "ADVANCE BY " + advanceDuration + " " + advanceTimeUnit + ")";
         } else if (isSessionWindow()) {
             return "SESSION (" + sizeDuration + " " + sizeTimeUnit + ")";
         } else {
@@ -150,5 +155,4 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         this.setAdvanceTimeUnit(advanceTimeUnit);
         return this;
     }
-
 }

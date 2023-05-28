@@ -10,43 +10,41 @@
 package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
-
 import java.io.Serializable;
 import java.util.*;
 
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
- * 
+ *
  * <pre>
  * conflict_target can be one of:
  *
  *     ( { index_column_name | ( index_expression ) } [ COLLATE collation ] [ opclass ] [, ...] ) [ WHERE index_predicate ]
  *     ON CONSTRAINT constraint_name
  * </pre>
- * 
+ *
  * Currently, COLLATE is not supported yet.
  */
 public class InsertConflictTarget implements Serializable {
 
     ArrayList<String> indexColumnNames = new ArrayList<>();
+
     Expression indexExpression;
+
     Expression whereExpression;
+
     String constraintName;
 
-    public InsertConflictTarget(String indexColumnName, Expression indexExpression,
-            Expression whereExpression, String constraintName) {
+    public InsertConflictTarget(String indexColumnName, Expression indexExpression, Expression whereExpression, String constraintName) {
         this.indexColumnNames.add(indexColumnName);
         this.indexExpression = indexExpression;
-
         this.whereExpression = whereExpression;
         this.constraintName = constraintName;
     }
 
-    public InsertConflictTarget(Collection<String> indexColumnName, Expression indexExpression,
-            Expression whereExpression, String constraintName) {
+    public InsertConflictTarget(Collection<String> indexColumnName, Expression indexExpression, Expression whereExpression, String constraintName) {
         this.indexColumnNames.addAll(indexColumnName);
         this.indexExpression = indexExpression;
-
         this.whereExpression = whereExpression;
         this.constraintName = constraintName;
     }
@@ -79,7 +77,6 @@ public class InsertConflictTarget implements Serializable {
         this.indexExpression = null;
         return this.indexColumnNames.addAll(indexColumnName);
     }
-
 
     public Expression getIndexExpression() {
         return indexExpression;
@@ -124,7 +121,6 @@ public class InsertConflictTarget implements Serializable {
     public StringBuilder appendTo(StringBuilder builder) {
         if (constraintName == null) {
             builder.append(" ( ");
-
             // @todo: Index Expression is not supported yet
             if (!indexColumnNames.isEmpty()) {
                 boolean insertComma = false;
@@ -136,11 +132,8 @@ public class InsertConflictTarget implements Serializable {
                 builder.append(" ( ").append(indexExpression).append(" )");
             }
             builder.append(" ");
-
             // @todo: Collate is not supported yet
-
             builder.append(") ");
-
             if (whereExpression != null) {
                 builder.append(" WHERE ").append(whereExpression);
             }

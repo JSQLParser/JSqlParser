@@ -21,5 +21,4 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
     public void deParse(Alter alter) {
         buffer.append(alter.toString());
     }
-
 }

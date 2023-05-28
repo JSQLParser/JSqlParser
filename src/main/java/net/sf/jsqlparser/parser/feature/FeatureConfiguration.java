@@ -23,8 +23,7 @@ public class FeatureConfiguration {
 
     public FeatureConfiguration() {
         // set default-value for all switchable features
-        EnumSet.allOf(Feature.class).stream().filter(Feature::isConfigurable)
-        .forEach(f -> setValue(f, f.getDefaultValue()));
+        EnumSet.allOf(Feature.class).stream().filter(Feature::isConfigurable).forEach(f -> setValue(f, f.getDefaultValue()));
     }
 
     /**
@@ -69,5 +68,4 @@ public class FeatureConfiguration {
         Object value = getValue(f);
         return value == null ? null : String.valueOf(value);
     }
-
 }

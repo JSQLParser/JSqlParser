@@ -19,8 +19,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 public class GroupByElement implements Serializable {
+
     // ExpressionList has 'usingBrackets = true' and so we need to switch it off explicitly
     private ExpressionList groupByExpressions = new ExpressionList().withUsingBrackets(false);
+
     private List groupingSets = new ArrayList();
 
     public boolean isUsingBrackets() {
@@ -39,15 +41,15 @@ public class GroupByElement implements Serializable {
     public void accept(GroupByVisitor groupByVisitor) {
         groupByVisitor.visit(this);
     }
-    
+
     public ExpressionList getGroupByExpressionList() {
         return groupByExpressions;
     }
-    
+
     public void setGroupByExpressionList(ExpressionList groupByExpressions) {
-        this.groupByExpressions=groupByExpressions;
+        this.groupByExpressions = groupByExpressions;
     }
-    
+
     @Deprecated
     public List<Expression> getGroupByExpressions() {
         return groupByExpressions.getExpressions();
@@ -60,7 +62,7 @@ public class GroupByElement implements Serializable {
 
     @Deprecated
     public void addGroupByExpression(Expression groupByExpression) {
-        if (groupByExpressions.getExpressions()==null) {
+        if (groupByExpressions.getExpressions() == null) {
             groupByExpressions.setExpressions(new ArrayList());
         }
         groupByExpressions.getExpressions().add(groupByExpression);
@@ -83,12 +85,11 @@ public class GroupByElement implements Serializable {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity" })
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("GROUP BY ");
-
-        if (groupByExpressions.getExpressions()!=null && groupByExpressions.getExpressions().size() > 0) {
+        if (groupByExpressions.getExpressions() != null && groupByExpressions.getExpressions().size() > 0) {
             if (groupByExpressions.isUsingBrackets()) {
                 b.append("( ");
             }
@@ -99,7 +100,6 @@ public class GroupByElement implements Serializable {
         } else if (groupByExpressions.isUsingBrackets()) {
             b.append("()");
         }
-
         if (groupingSets.size() > 0) {
             if (b.charAt(b.length() - 1) != ' ') {
                 b.append(' ');
@@ -121,7 +121,6 @@ public class GroupByElement implements Serializable {
             }
             b.append(")");
         }
-
         return b.toString();
     }
 
@@ -136,15 +135,13 @@ public class GroupByElement implements Serializable {
     }
 
     public GroupByElement addGroupByExpressions(Expression... groupByExpressions) {
-        List<Expression> collection
-                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, groupByExpressions);
         return this.withGroupByExpressions(collection);
     }
 
     public GroupByElement addGroupByExpressions(Collection<? extends Expression> groupByExpressions) {
-        List<Expression> collection
-                = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
+        List<Expression> collection = Optional.ofNullable(getGroupByExpressions()).orElseGet(ArrayList::new);
         collection.addAll(groupByExpressions);
         return this.withGroupByExpressions(collection);
     }

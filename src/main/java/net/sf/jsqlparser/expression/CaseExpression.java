@@ -39,13 +39,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
  * [ELSE expression]
  * END
  * </code></pre>
- *
  */
 public class CaseExpression extends ASTNodeAccessImpl implements Expression {
 
     private boolean usingBrackets = false;
+
     private Expression switchExpression;
+
     private List<WhenClause> whenClauses;
+
     private Expression elseExpression;
 
     @Override
@@ -91,9 +93,7 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return (usingBrackets ? "(" : "") + "CASE " + ((switchExpression != null) ? switchExpression + " " : "")
-                + PlainSelect.getStringList(whenClauses, false, false) + " "
-                + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END" + (usingBrackets ? ")" : "");
+        return (usingBrackets ? "(" : "") + "CASE " + ((switchExpression != null) ? switchExpression + " " : "") + PlainSelect.getStringList(whenClauses, false, false) + " " + ((elseExpression != null) ? "ELSE " + elseExpression + " " : "") + "END" + (usingBrackets ? ")" : "");
     }
 
     public CaseExpression withSwitchExpression(Expression switchExpression) {
@@ -131,25 +131,25 @@ public class CaseExpression extends ASTNodeAccessImpl implements Expression {
         return type.cast(getElseExpression());
     }
 
-  /**
-   * @return the usingBrackets
-   */
-  public boolean isUsingBrackets() {
-    return usingBrackets;
-  }
+    /**
+     * @return the usingBrackets
+     */
+    public boolean isUsingBrackets() {
+        return usingBrackets;
+    }
 
-  /**
-   * @param usingBrackets the usingBrackets to set
-   */
-  public void setUsingBrackets(boolean usingBrackets) {
-    this.usingBrackets = usingBrackets;
-  }
-  
-  /**
-   * @param usingBrackets the usingBrackets to set
-   */
-  public CaseExpression withUsingBrackets(boolean usingBrackets) {
-    this.usingBrackets=usingBrackets;
-    return this;
+    /**
+     * @param usingBrackets the usingBrackets to set
+     */
+    public void setUsingBrackets(boolean usingBrackets) {
+        this.usingBrackets = usingBrackets;
+    }
+
+    /**
+     * @param usingBrackets the usingBrackets to set
+     */
+    public CaseExpression withUsingBrackets(boolean usingBrackets) {
+        this.usingBrackets = usingBrackets;
+        return this;
     }
 }

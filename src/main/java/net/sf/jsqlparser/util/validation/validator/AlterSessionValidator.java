@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
  * @author gitmotte
  */
 public class AlterSessionValidator extends AbstractValidator<AlterSession> {
+
     @Override
     public void validate(AlterSession statement) {
         //@todo: implement this method

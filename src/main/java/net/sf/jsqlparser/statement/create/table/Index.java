@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import static java.util.stream.Collectors.toList;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,15 +21,17 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index implements Serializable {
 
     private String type;
+
     private String using;
+
     private List<ColumnParams> columns;
+
     private final List<String> name = new ArrayList<>();
+
     private List<String> idxSpec;
 
     public List<String> getColumnsNames() {
-        return columns.stream()
-                .map(col -> col.columnName)
-                .collect(toList());
+        return columns.stream().map(col -> col.columnName).collect(toList());
     }
 
     @Deprecated
@@ -135,8 +136,7 @@ public class Index implements Serializable {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return ( type!=null ? type : "") + (!name.isEmpty() ? " " + getName() : "") + " " + PlainSelect.
-                getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+        return (type != null ? type : "") + (!name.isEmpty() ? " " + getName() : "") + " " + PlainSelect.getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
     }
 
     public Index withType(String type) {
@@ -160,7 +160,9 @@ public class Index implements Serializable {
     }
 
     public static class ColumnParams implements Serializable {
+
         public final String columnName;
+
         public final List<String> params;
 
         public ColumnParams(String columnName) {

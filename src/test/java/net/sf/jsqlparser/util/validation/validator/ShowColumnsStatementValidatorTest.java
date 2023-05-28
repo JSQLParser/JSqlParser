@@ -31,5 +31,4 @@ public class ShowColumnsStatementValidatorTest extends ValidationTestAsserts {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.showColumns);
         }
     }
-
 }

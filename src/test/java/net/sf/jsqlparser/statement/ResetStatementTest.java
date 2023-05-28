@@ -31,10 +31,8 @@ public class ResetStatementTest {
     public void testObject() {
         ResetStatement resetStatement = new ResetStatement();
         assertNotNull(resetStatement.getName());
-
         resetStatement.add("something");
         resetStatement.setName("somethingElse");
         assertEquals("somethingElse", resetStatement.getName());
     }
-
 }

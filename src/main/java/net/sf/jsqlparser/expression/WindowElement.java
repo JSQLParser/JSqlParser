@@ -15,12 +15,13 @@ public class WindowElement implements Serializable {
 
     public enum Type {
 
-        ROWS,
-        RANGE
+        ROWS, RANGE
     }
 
     private Type type;
+
     private WindowOffset offset;
+
     private WindowRange range;
 
     public Type getType() {
@@ -50,13 +51,11 @@ public class WindowElement implements Serializable {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder(type.toString());
-
         if (offset != null) {
             buffer.append(offset.toString());
         } else if (range != null) {
             buffer.append(range.toString());
         }
-
         return buffer.toString();
     }
 
@@ -74,5 +73,4 @@ public class WindowElement implements Serializable {
         this.setRange(range);
         return this;
     }
-
 }

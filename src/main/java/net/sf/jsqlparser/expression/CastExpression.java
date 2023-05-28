@@ -15,19 +15,22 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
+
     private ColDataType type;
+
     private RowConstructor rowConstructor;
+
     private boolean useCastKeyword = true;
-    
+
     public RowConstructor getRowConstructor() {
         return rowConstructor;
     }
-    
+
     public void setRowConstructor(RowConstructor rowConstructor) {
         this.rowConstructor = rowConstructor;
         this.type = null;
     }
-    
+
     public CastExpression withRowConstructor(RowConstructor rowConstructor) {
         setRowConstructor(rowConstructor);
         return this;
@@ -66,9 +69,7 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         if (useCastKeyword) {
-            return rowConstructor!=null
-              ? "CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")"
-              : "CAST(" + leftExpression + " AS " + type.toString() + ")";
+            return rowConstructor != null ? "CAST(" + leftExpression + " AS " + rowConstructor.toString() + ")" : "CAST(" + leftExpression + " AS " + type.toString() + ")";
         } else {
             return leftExpression + "::" + type.toString();
         }

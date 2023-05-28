@@ -18,12 +18,8 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class AlterSequenceValidator extends AbstractValidator<AlterSequence> {
 
-
     @Override
     public void validate(AlterSequence statement) {
-        validateFeatureAndName(Feature.alterSequence, NamedObject.sequence,
-                statement.getSequence().getFullyQualifiedName());
+        validateFeatureAndName(Feature.alterSequence, NamedObject.sequence, statement.getSequence().getFullyQualifiedName());
     }
-
-
 }

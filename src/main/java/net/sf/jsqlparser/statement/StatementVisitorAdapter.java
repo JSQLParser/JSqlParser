@@ -37,75 +37,63 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
-@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
+@SuppressWarnings({ "PMD.UncommentedEmptyMethodBody" })
 public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Comment comment) {
-
     }
 
     @Override
     public void visit(Commit commit) {
-
     }
 
     @Override
     public void visit(Select select) {
-
     }
 
     @Override
     public void visit(Delete delete) {
-
     }
 
     @Override
     public void visit(Update update) {
-
     }
 
     @Override
     public void visit(Insert insert) {
-
     }
 
     @Override
     public void visit(Replace replace) {
-
     }
 
     @Override
     public void visit(Drop drop) {
-
     }
 
     @Override
     public void visit(Truncate truncate) {
-
     }
 
     @Override
     public void visit(CreateIndex createIndex) {
-
     }
 
     @Override
-    public void visit(CreateSchema aThis) {}
+    public void visit(CreateSchema aThis) {
+    }
 
     @Override
     public void visit(CreateTable createTable) {
-
     }
 
     @Override
     public void visit(CreateView createView) {
-
     }
 
     @Override
     public void visit(Alter alter) {
-
     }
 
     @Override
@@ -117,75 +105,86 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(Execute execute) {
-
     }
 
     @Override
     public void visit(SetStatement set) {
-
     }
 
     @Override
     public void visit(ResetStatement reset) {
-
     }
 
     @Override
     public void visit(Merge merge) {
-
     }
 
     @Override
-    public void visit(AlterView alterView) {}
+    public void visit(AlterView alterView) {
+    }
 
     @Override
-    public void visit(Upsert upsert) {}
+    public void visit(Upsert upsert) {
+    }
 
     @Override
-    public void visit(UseStatement use) {}
+    public void visit(UseStatement use) {
+    }
 
     @Override
-    public void visit(Block block) {}
+    public void visit(Block block) {
+    }
 
     @Override
-    public void visit(DescribeStatement describe) {}
+    public void visit(DescribeStatement describe) {
+    }
 
     @Override
-    public void visit(ExplainStatement aThis) {}
+    public void visit(ExplainStatement aThis) {
+    }
 
     @Override
-    public void visit(ShowStatement aThis) {}
+    public void visit(ShowStatement aThis) {
+    }
 
     @Override
-    public void visit(ShowColumnsStatement set) {}
+    public void visit(ShowColumnsStatement set) {
+    }
 
     @Override
-    public void visit(ShowIndexStatement set) {}
+    public void visit(ShowIndexStatement set) {
+    }
 
     @Override
-    public void visit(ShowTablesStatement showTables) {}
+    public void visit(ShowTablesStatement showTables) {
+    }
 
     @Override
-    public void visit(DeclareStatement aThis) {}
+    public void visit(DeclareStatement aThis) {
+    }
 
     @Override
-    public void visit(Grant grant) {}
+    public void visit(Grant grant) {
+    }
 
     @Override
-    public void visit(CreateSequence createSequence) {}
+    public void visit(CreateSequence createSequence) {
+    }
 
     @Override
-    public void visit(AlterSequence alterSequence) {}
+    public void visit(AlterSequence alterSequence) {
+    }
 
     @Override
-    public void visit(CreateFunctionalStatement createFunctionalStatement) {}
+    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+    }
 
     @Override
-    public void visit(CreateSynonym createSynonym) {}
+    public void visit(CreateSynonym createSynonym) {
+    }
 
     @Override
     public void visit(Analyze analyze) {
-
     }
 
     @Override
@@ -222,10 +221,10 @@ public class StatementVisitorAdapter implements StatementVisitor {
     }
 
     @Override
-    public void visit(AlterSystemStatement alterSystemStatement) {}
+    public void visit(AlterSystemStatement alterSystemStatement) {
+    }
 
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
-
     }
 }

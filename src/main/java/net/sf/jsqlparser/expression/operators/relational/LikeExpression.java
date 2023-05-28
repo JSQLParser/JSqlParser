@@ -16,7 +16,9 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 public class LikeExpression extends BinaryExpression {
 
     private boolean not = false;
+
     private Expression escapeExpression = null;
+
     private boolean caseInsensitive = false;
 
     public boolean isNot() {
@@ -41,9 +43,8 @@ public class LikeExpression extends BinaryExpression {
     public String toString() {
         String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression() + " " + getRightExpression();
         if (escapeExpression != null) {
-            retval += " ESCAPE "  + escapeExpression ;
+            retval += " ESCAPE " + escapeExpression;
         }
-
         return retval;
     }
 

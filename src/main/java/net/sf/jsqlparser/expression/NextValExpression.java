@@ -16,7 +16,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class NextValExpression extends ASTNodeAccessImpl implements Expression {
 
     public static final Pattern NEXT_VALUE_PATTERN = Pattern.compile("NEXT\\s+VALUE\\s+FOR", Pattern.CASE_INSENSITIVE);
+
     private final List<String> nameList;
+
     private boolean usingNextValueFor = false;
 
     public NextValExpression(List<String> nameList, String image) {
@@ -57,9 +59,7 @@ public class NextValExpression extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return (usingNextValueFor
-                ? "NEXT VALUE FOR "
-                : "NEXTVAL FOR ") + getName();
+        return (usingNextValueFor ? "NEXT VALUE FOR " : "NEXTVAL FOR ") + getName();
     }
 
     @Override

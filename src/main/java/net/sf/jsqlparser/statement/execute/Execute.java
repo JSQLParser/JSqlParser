@@ -18,8 +18,11 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Execute implements Statement {
 
     private ExecType execType = ExecType.EXECUTE;
+
     private String name;
+
     private ExpressionList exprList;
+
     private boolean parenthesis = false;
 
     public String getName() {
@@ -71,9 +74,7 @@ public class Execute implements Statement {
 
     @Override
     public String toString() {
-        return execType.name() + " " + name
-                + (exprList != null && exprList.getExpressions() != null ? " "
-                + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
+        return execType.name() + " " + name + (exprList != null && exprList.getExpressions() != null ? " " + PlainSelect.getStringList(exprList.getExpressions(), true, parenthesis) : "");
     }
 
     public Execute withExecType(ExecType execType) {
@@ -97,8 +98,7 @@ public class Execute implements Statement {
     }
 
     public enum ExecType {
-        EXECUTE,
-        EXEC,
-        CALL
+
+        EXECUTE, EXEC, CALL
     }
 }

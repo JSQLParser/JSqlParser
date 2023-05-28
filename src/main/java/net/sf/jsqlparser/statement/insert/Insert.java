@@ -24,7 +24,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,28 +31,41 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-@SuppressWarnings({"PMD.CyclomaticComplexity"})
+@SuppressWarnings({ "PMD.CyclomaticComplexity" })
 public class Insert implements Statement {
 
     private Table table;
+
     private OracleHint oracleHint = null;
+
     private List<Column> columns;
+
     private Select select;
+
     private boolean useDuplicate = false;
+
     private List<Column> duplicateUpdateColumns;
+
     private List<Expression> duplicateUpdateExpressionList;
+
     private InsertModifierPriority modifierPriority = null;
+
     private boolean modifierIgnore = false;
 
     private List<SelectItem> returningExpressionList = null;
 
     private boolean useSet = false;
+
     private List<Column> setColumns;
+
     private List<Expression> setExpressionList;
+
     private List<WithItem> withItemsList;
 
     private OutputClause outputClause;
+
     private InsertConflictTarget conflictTarget;
+
     private InsertConflictAction conflictAction;
 
     public OutputClause getOutputClause() {
@@ -103,13 +115,9 @@ public class Insert implements Statement {
         if (select instanceof Values) {
             Values valuesStatement = (Values) select;
             if (valuesStatement.getExpressions() instanceof ExpressionList) {
-                ExpressionList expressionList =
-                        (ExpressionList) valuesStatement.getExpressions();
-
-                if (expressionList.getExpressions().size() == 1
-                        && expressionList.getExpressions().get(0) instanceof RowConstructor) {
-                    RowConstructor rowConstructor =
-                            (RowConstructor) expressionList.getExpressions().get(0);
+                ExpressionList expressionList = (ExpressionList) valuesStatement.getExpressions();
+                if (expressionList.getExpressions().size() == 1 && expressionList.getExpressions().get(0) instanceof RowConstructor) {
+                    RowConstructor rowConstructor = (RowConstructor) expressionList.getExpressions().get(0);
                     return rowConstructor.getExprList();
                 } else {
                     return expressionList;
@@ -120,7 +128,6 @@ public class Insert implements Statement {
         }
         return null;
     }
-
 
     @Deprecated
     public boolean isUseValues() {
@@ -247,12 +254,12 @@ public class Insert implements Statement {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPathComplexity" })
     public String toString() {
         StringBuilder sql = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             sql.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext(); ) {
                 WithItem withItem = iter.next();
                 sql.append(withItem);
                 if (iter.hasNext()) {
@@ -273,15 +280,12 @@ public class Insert implements Statement {
         if (columns != null) {
             sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
         }
-
         if (outputClause != null) {
             sql.append(outputClause.toString());
         }
-
         if (select != null) {
             sql.append(select);
         }
-
         if (useSet) {
             sql.append("SET ");
             for (int i = 0; i < getSetColumns().size(); i++) {
@@ -292,7 +296,6 @@ public class Insert implements Statement {
                 sql.append(setExpressionList.get(i));
             }
         }
-
         if (useDuplicate) {
             sql.append(" ON DUPLICATE KEY UPDATE ");
             for (int i = 0; i < getDuplicateUpdateColumns().size(); i++) {
@@ -303,21 +306,16 @@ public class Insert implements Statement {
                 sql.append(duplicateUpdateExpressionList.get(i));
             }
         }
-
         if (conflictAction != null) {
             sql.append(" ON CONFLICT");
-
             if (conflictTarget != null) {
                 conflictTarget.appendTo(sql);
             }
             conflictAction.appendTo(sql);
         }
-
         if (getReturningExpressionList() != null) {
-            sql.append(" RETURNING ")
-                    .append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
+            sql.append(" RETURNING ").append(PlainSelect.getStringList(getReturningExpressionList(), true, false));
         }
-
         return sql.toString();
     }
 
@@ -341,8 +339,7 @@ public class Insert implements Statement {
         return this;
     }
 
-    public Insert withDuplicateUpdateExpressionList(
-            List<Expression> duplicateUpdateExpressionList) {
+    public Insert withDuplicateUpdateExpressionList(List<Expression> duplicateUpdateExpressionList) {
         this.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
         return this;
     }
@@ -405,45 +402,37 @@ public class Insert implements Statement {
     }
 
     public Insert addDuplicateUpdateColumns(Column... duplicateUpdateColumns) {
-        List<Column> collection =
-                Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateColumns);
         return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateColumns(Collection<? extends Column> duplicateUpdateColumns) {
-        List<Column> collection =
-                Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
+        List<Column> collection = Optional.ofNullable(getDuplicateUpdateColumns()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateColumns);
         return this.withDuplicateUpdateColumns(collection);
     }
 
     public Insert addDuplicateUpdateExpressionList(Expression... duplicateUpdateExpressionList) {
-        List<Expression> collection =
-                Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, duplicateUpdateExpressionList);
         return this.withDuplicateUpdateExpressionList(collection);
     }
 
-    public Insert addDuplicateUpdateExpressionList(
-            Collection<? extends Expression> duplicateUpdateExpressionList) {
-        List<Expression> collection =
-                Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
+    public Insert addDuplicateUpdateExpressionList(Collection<? extends Expression> duplicateUpdateExpressionList) {
+        List<Expression> collection = Optional.ofNullable(getDuplicateUpdateExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(duplicateUpdateExpressionList);
         return this.withDuplicateUpdateExpressionList(collection);
     }
 
     public Insert addReturningExpressionList(SelectItem... returningExpressionList) {
-        List<SelectItem> collection =
-                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
 
-    public Insert addReturningExpressionList(
-            Collection<? extends SelectItem> returningExpressionList) {
-        List<SelectItem> collection =
-                Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
+    public Insert addReturningExpressionList(Collection<? extends SelectItem> returningExpressionList) {
+        List<SelectItem> collection = Optional.ofNullable(getReturningExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(returningExpressionList);
         return this.withReturningExpressionList(collection);
     }
@@ -461,15 +450,13 @@ public class Insert implements Statement {
     }
 
     public Insert addSetExpressionList(Expression... setExpressionList) {
-        List<Expression> collection =
-                Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, setExpressionList);
         return this.withSetExpressionList(collection);
     }
 
     public Insert addSetExpressionList(Collection<? extends Expression> setExpressionList) {
-        List<Expression> collection =
-                Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
+        List<Expression> collection = Optional.ofNullable(getSetExpressionList()).orElseGet(ArrayList::new);
         collection.addAll(setExpressionList);
         return this.withSetExpressionList(collection);
     }

@@ -77,12 +77,9 @@ public class AlterSessionTest {
     public void testObject() {
         AlterSession alterSession = new AlterSession(AlterSessionOperation.FORCE_PARALLEL_QUERY, Collections.emptyList());
         assertEquals(AlterSessionOperation.FORCE_PARALLEL_QUERY, alterSession.getOperation());
-
         alterSession.setOperation(AlterSessionOperation.DISABLE_PARALLEL_DML);
         assertEquals(AlterSessionOperation.DISABLE_PARALLEL_DML, alterSession.getOperation());
-
         assertEquals(0, alterSession.getParameters().size());
-
         alterSession.setParameters(Arrays.asList("PARALLEL", "6"));
         assertEquals(2, alterSession.getParameters().size());
     }

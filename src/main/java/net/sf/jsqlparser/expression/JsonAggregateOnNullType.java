@@ -22,14 +22,12 @@
  * if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-
 package net.sf.jsqlparser.expression;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum JsonAggregateOnNullType {
-    NULL
-    , ABSENT
+
+    NULL, ABSENT
 }

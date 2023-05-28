@@ -24,8 +24,6 @@ public class OrderByValidatorTest extends ValidationTestAsserts {
     @Test
     public void testOrderByNullOrdering() {
         String sql = "SELECT * FROM tab ORDER BY a ASC NULLS FIRST, b DESC NULLS LAST";
-        validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL,
-                DatabaseType.H2);
+        validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL, DatabaseType.H2);
     }
-
 }

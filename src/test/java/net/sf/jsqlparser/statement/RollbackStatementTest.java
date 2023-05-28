@@ -17,15 +17,9 @@ public class RollbackStatementTest {
 
     @Test
     public void testObject() {
-        RollbackStatement rollbackStatement = new RollbackStatement()
-                .withUsingWorkKeyword(true)
-                .withUsingSavepointKeyword(true)
-                .withSavepointName("mySavePoint")
-                .withForceDistributedTransactionIdentifier("$ForceDistributedTransactionIdentifier");
-
+        RollbackStatement rollbackStatement = new RollbackStatement().withUsingWorkKeyword(true).withUsingSavepointKeyword(true).withSavepointName("mySavePoint").withForceDistributedTransactionIdentifier("$ForceDistributedTransactionIdentifier");
         assertTrue(rollbackStatement.isUsingSavepointKeyword());
         assertEquals("mySavePoint", rollbackStatement.getSavepointName());
         assertEquals("$ForceDistributedTransactionIdentifier", rollbackStatement.getForceDistributedTransactionIdentifier());
     }
-
 }

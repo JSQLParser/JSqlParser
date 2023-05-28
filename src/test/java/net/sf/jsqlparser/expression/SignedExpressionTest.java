@@ -15,16 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author toben
  */
 public class SignedExpressionTest {
 
     @Test
     public void testGetSign() throws JSQLParserException {
-        assertThrows(IllegalArgumentException.class,
-                () -> new SignedExpression('*', CCJSqlParserUtil.parseExpression("a")),
-                "must not work");
-
+        assertThrows(IllegalArgumentException.class, () -> new SignedExpression('*', CCJSqlParserUtil.parseExpression("a")), "must not work");
     }
 }

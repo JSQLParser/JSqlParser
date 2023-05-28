@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.metadata;
 
 public enum NamedObject {
+
     /**
      * a name constisting of max. 1 identifiers, i.e. [database]
      */

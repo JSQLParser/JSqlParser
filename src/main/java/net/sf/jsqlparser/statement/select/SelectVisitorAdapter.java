@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-@SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
+@SuppressWarnings({ "PMD.UncommentedEmptyMethodBody" })
 public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
@@ -19,26 +19,21 @@ public class SelectVisitorAdapter implements SelectVisitor {
 
     @Override
     public void visit(PlainSelect plainSelect) {
-
     }
 
     @Override
     public void visit(SetOperationList setOpList) {
-
     }
 
     @Override
     public void visit(WithItem withItem) {
-
     }
 
     @Override
     public void visit(Values aThis) {
-
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-
     }
 }

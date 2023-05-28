@@ -104,10 +104,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public String getName() {
         String name = getIndex(NAME_IDX);
-        if (name!=null && name.contains("@")) {
+        if (name != null && name.contains("@")) {
             int pos = name.lastIndexOf('@');
-            if (pos>0) {
-                name = name.substring(0, pos );
+            if (pos > 0) {
+                name = name.substring(0, pos);
             }
         }
         return name;
@@ -115,10 +115,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public String getDBLinkName() {
         String name = getIndex(NAME_IDX);
-        if (name!=null && name.contains("@")) {
+        if (name != null && name.contains("@")) {
             int pos = name.lastIndexOf('@');
-            if (pos>0 && name.length()>1) {
-                name = name.substring(pos+1);
+            if (pos > 0 && name.length() > 1) {
+                name = name.substring(pos + 1);
             }
         }
         return name;
@@ -148,7 +148,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         for (int i = 0; i < idx - size + 1; i++) {
             partItems.add(null);
         }
-
         if (value == null && idx == partItems.size() - 1) {
             partItems.remove(idx);
         } else {
@@ -167,7 +166,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     @Override
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
-
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
@@ -178,7 +176,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                 fqn.append(".");
             }
         }
-
         return fqn.toString();
     }
 
@@ -234,10 +231,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     @Override
     public String toString() {
-        return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "")
-                + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "")
-                + ((mysqlHints != null) ? mysqlHints.toString() : "")
-                + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
+        return getFullyQualifiedName() + ((alias != null) ? alias.toString() : "") + ((pivot != null) ? " " + pivot : "") + ((unpivot != null) ? " " + unpivot : "") + ((mysqlHints != null) ? mysqlHints.toString() : "") + ((sqlServerHints != null) ? sqlServerHints.toString() : "");
     }
 
     @Override

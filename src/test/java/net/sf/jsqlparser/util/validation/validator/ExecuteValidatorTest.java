@@ -27,8 +27,7 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationExec() throws Exception {
-        for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1",
-                "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
+        for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1", "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
             validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
         }
     }
@@ -56,8 +55,7 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationExecNotAllowed() throws Exception {
-        for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1",
-                "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
+        for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1", "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute, Feature.executeExec);
         }
     }
@@ -68,5 +66,4 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute, Feature.executeCall);
         }
     }
-
 }

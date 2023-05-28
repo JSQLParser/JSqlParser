@@ -16,9 +16,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
-
 import java.io.StringReader;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectExpressionsVisitorTest {
@@ -30,13 +28,13 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Concat();
             }
         };
         select.accept(instance);
-
         assertEquals("SELECT a || b || c AS expr FROM test", select.toString());
     }
 
@@ -45,13 +43,13 @@ public class ConnectExpressionsVisitorTest {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
         ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
+
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Addition();
             }
         };
         select.accept(instance);
-
         assertEquals("SELECT a + b + c AS testexpr FROM test", select.toString());
     }
 }

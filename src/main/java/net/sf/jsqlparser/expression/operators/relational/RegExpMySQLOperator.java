@@ -17,13 +17,15 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 public class RegExpMySQLOperator extends BinaryExpression {
 
     private RegExpMatchOperatorType operatorType;
+
     private boolean useRLike = false;
+
     private boolean not = false;
 
     public RegExpMySQLOperator(RegExpMatchOperatorType operatorType) {
-        this(false, operatorType); 
+        this(false, operatorType);
     }
-    
+
     public RegExpMySQLOperator(boolean not, RegExpMatchOperatorType operatorType) {
         this.operatorType = Objects.requireNonNull(operatorType, "The provided RegExpMatchOperatorType must not be NULL.");
         this.not = not;
@@ -57,9 +59,7 @@ public class RegExpMySQLOperator extends BinaryExpression {
 
     @Override
     public String getStringExpression() {
-        return (not?"NOT ":"") 
-                + (useRLike ? "RLIKE" : "REGEXP")
-                + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
+        return (not ? "NOT " : "") + (useRLike ? "RLIKE" : "REGEXP") + (operatorType == RegExpMatchOperatorType.MATCH_CASESENSITIVE ? " BINARY" : "");
     }
 
     @Override

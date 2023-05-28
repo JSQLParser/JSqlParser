@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author schwitters
  */
 public class JSQLParserExceptionTest {
@@ -47,7 +46,6 @@ public class JSQLParserExceptionTest {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ex1.printStackTrace(new PrintStream(bos, true));
         assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("BRATKARTOFFEL"));
-
     }
 
     @Test
@@ -68,5 +66,4 @@ public class JSQLParserExceptionTest {
         ex1 = new JSQLParserException((Throwable) null);
         assertNull(ex1.getCause());
     }
-
 }

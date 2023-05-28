@@ -19,6 +19,7 @@ import java.util.Optional;
 public class Distinct implements Serializable {
 
     private List<SelectItem> onSelectItems;
+
     private boolean useUnique = false;
 
     public Distinct() {
@@ -47,11 +48,9 @@ public class Distinct implements Serializable {
     @Override
     public String toString() {
         String sql = useUnique ? "UNIQUE" : "DISTINCT";
-
         if (onSelectItems != null && !onSelectItems.isEmpty()) {
             sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";
         }
-
         return sql;
     }
 

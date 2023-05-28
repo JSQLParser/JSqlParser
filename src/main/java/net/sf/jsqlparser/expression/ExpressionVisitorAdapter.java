@@ -66,9 +66,8 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-@SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
-public class ExpressionVisitorAdapter
-        implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
+@SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody" })
+public class ExpressionVisitorAdapter implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
 
@@ -82,7 +81,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(NullValue value) {
-
     }
 
     @Override
@@ -107,37 +105,30 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(JdbcParameter parameter) {
-
     }
 
     @Override
     public void visit(JdbcNamedParameter parameter) {
-
     }
 
     @Override
     public void visit(DoubleValue value) {
-
     }
 
     @Override
     public void visit(LongValue value) {
-
     }
 
     @Override
     public void visit(DateValue value) {
-
     }
 
     @Override
     public void visit(TimeValue value) {
-
     }
 
     @Override
     public void visit(TimestampValue value) {
-
     }
 
     @Override
@@ -147,7 +138,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(StringValue value) {
-
     }
 
     @Override
@@ -201,7 +191,6 @@ public class ExpressionVisitorAdapter
         overlapsCondition.getLeft().accept(this);
         overlapsCondition.getRight().accept(this);
     }
-
 
     @Override
     public void visit(EqualsTo expr) {
@@ -269,7 +258,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(Column column) {
-
     }
 
     @Override
@@ -313,7 +301,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(AnyComparisonExpression expr) {
-
     }
 
     @Override
@@ -378,7 +365,6 @@ public class ExpressionVisitorAdapter
         for (OrderByElement element : expr.getOrderByElements()) {
             element.getExpression().accept(this);
         }
-
         if (expr.getWindowElement() != null) {
             expr.getWindowElement().getRange().getStart().getExpression().accept(this);
             expr.getWindowElement().getRange().getEnd().getExpression().accept(this);
@@ -392,7 +378,8 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(IntervalExpression expr) {}
+    public void visit(IntervalExpression expr) {
+    }
 
     @Override
     public void visit(OracleHierarchicalExpression expr) {
@@ -463,12 +450,10 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(UserVariable var) {
-
     }
 
     @Override
     public void visit(NumericBind bind) {
-
     }
 
     @Override
@@ -510,7 +495,6 @@ public class ExpressionVisitorAdapter
                 item.accept(this);
             }
         }
-
         if (pivot.getMultiInItems() != null) {
             for (ExpressionListItem item : pivot.getMultiInItems()) {
                 item.getExpressionList().accept(this);
@@ -537,13 +521,16 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(AllColumns allColumns) {}
+    public void visit(AllColumns allColumns) {
+    }
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {}
+    public void visit(AllTableColumns allTableColumns) {
+    }
 
     @Override
-    public void visit(AllValue allValue) {}
+    public void visit(AllValue allValue) {
+    }
 
     @Override
     public void visit(IsDistinctExpression isDistinctExpression) {
@@ -575,24 +562,23 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(HexValue hexValue) {
-
     }
 
     @Override
     public void visit(OracleHint hint) {
-
     }
 
     @Override
     public void visit(TimeKeyExpression timeKeyExpression) {
-
     }
 
     @Override
-    public void visit(DateTimeLiteralExpression literal) {}
+    public void visit(DateTimeLiteralExpression literal) {
+    }
 
     @Override
-    public void visit(NextValExpression nextVal) {}
+    public void visit(NextValExpression nextVal) {
+    }
 
     @Override
     public void visit(CollateExpression col) {
@@ -650,7 +636,6 @@ public class ExpressionVisitorAdapter
         if (expr != null) {
             expr.accept(this);
         }
-
         expr = expression.getFilterExpression();
         if (expr != null) {
             expr.accept(this);
@@ -681,7 +666,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(Select selectBody) {
-
     }
 
     public void visit(ColumnDefinition columnDefinition) {

@@ -12,20 +12,22 @@ package net.sf.jsqlparser.statement.update;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 public class UpdateSet implements Serializable {
+
     protected boolean usingBracketsForColumns = false;
+
     protected boolean usingBracketsForValues = false;
+
     protected ArrayList<Column> columns = new ArrayList<>();
+
     protected ArrayList<Expression> expressions = new ArrayList<>();
 
     public UpdateSet() {
-
     }
 
     public UpdateSet(Column column) {
@@ -88,7 +90,6 @@ public class UpdateSet implements Serializable {
 
     public final static StringBuilder appendUpdateSetsTo(StringBuilder builder, Collection<UpdateSet> updateSets) {
         builder.append(" SET ");
-
         int j = 0;
         for (UpdateSet updateSet : updateSets) {
             updateSet.appendTo(builder, j);
@@ -97,33 +98,27 @@ public class UpdateSet implements Serializable {
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
+    @SuppressWarnings({ "PMD.CyclomaticComplexity", "PMD.NPath" })
     StringBuilder appendTo(StringBuilder builder, int j) {
         if (j > 0) {
             builder.append(", ");
         }
-
         if (usingBracketsForColumns) {
             builder.append("(");
         }
-
         for (int i = 0; i < columns.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
             }
             builder.append(columns.get(i));
         }
-
         if (usingBracketsForColumns) {
             builder.append(")");
         }
-
         builder.append(" = ");
-
         if (usingBracketsForValues) {
             builder.append("(");
         }
-
         for (int i = 0; i < expressions.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
@@ -133,8 +128,6 @@ public class UpdateSet implements Serializable {
         if (usingBracketsForValues) {
             builder.append(")");
         }
-
         return builder;
     }
-
 }

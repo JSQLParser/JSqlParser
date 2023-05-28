@@ -21,8 +21,7 @@ public class DeleteValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationDelete() throws JSQLParserException {
-        String sql = "DELETE FROM tab1 WHERE ref IN (SELECT id FROM tab2 WHERE criteria = ?); "
-                + "DELETE FROM tab2 t2 WHERE t2.criteria = ?;";
+        String sql = "DELETE FROM tab1 WHERE ref IN (SELECT id FROM tab2 WHERE criteria = ?); " + "DELETE FROM tab2 t2 WHERE t2.criteria = ?;";
         validateNoErrors(sql, 2, DatabaseType.DATABASES);
     }
 
@@ -44,5 +43,4 @@ public class DeleteValidatorTest extends ValidationTestAsserts {
         String sql = "DELETE FROM table t WHERE t.criteria > 5 ORDER BY t.criteria LIMIT 1;";
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
-
 }

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class DoubleValue extends ASTNodeAccessImpl implements Expression {
 
     private double value;
+
     private String stringValue;
 
     public DoubleValue() {

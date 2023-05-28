@@ -26,6 +26,4 @@ public interface Version extends FeatureSetValidation {
     default ValidationException getMessage(Feature feature) {
         return toError(feature.name() + " not supported.");
     }
-
-
 }

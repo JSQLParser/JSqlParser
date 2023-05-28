@@ -29,13 +29,7 @@ public abstract class OldOracleJoinBinaryExpression extends BinaryExpression imp
     @Override
     public String toString() {
         return //(isNot() ? "NOT " : "")
-                (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
-                + getLeftExpression()
-                + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " "
-                + getStringExpression() + " "
-                + (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "")
-                + getRightExpression()
-                + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
+        (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "") + getLeftExpression() + (oldOracleJoinSyntax == ORACLE_JOIN_RIGHT ? "(+)" : "") + " " + getStringExpression() + " " + (oraclePriorPosition == ORACLE_PRIOR_END ? "PRIOR " : "") + getRightExpression() + (oldOracleJoinSyntax == ORACLE_JOIN_LEFT ? "(+)" : "");
     }
 
     @Override

@@ -14,7 +14,8 @@ import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
-public class AnalyzeValidator  extends AbstractValidator<Analyze>{
+public class AnalyzeValidator extends AbstractValidator<Analyze> {
+
     @Override
     public void validate(Analyze analyze) {
         for (ValidationCapability c : getCapabilities()) {

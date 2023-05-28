@@ -44,5 +44,4 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
         validateOptionalExpressions(upsert.getDuplicateUpdateColumns());
         validateOptionalExpressions(upsert.getDuplicateUpdateExpressionList());
     }
-
 }

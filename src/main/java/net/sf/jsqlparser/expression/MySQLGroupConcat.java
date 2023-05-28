@@ -22,8 +22,11 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
 
     private ExpressionList expressionList;
+
     private boolean distinct = false;
+
     private List<OrderByElement> orderByElements;
+
     private String separator;
 
     public ExpressionList getExpressionList() {

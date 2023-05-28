@@ -15,6 +15,7 @@ package net.sf.jsqlparser.util.deparser;
  * @param <S> the type of statement this DeParser supports
  */
 abstract class AbstractDeParser<S> {
+
     protected StringBuilder buffer;
 
     protected AbstractDeParser(StringBuilder buffer) {

@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.Function;
 public class FunctionItem implements Model {
 
     private Function function;
+
     private Alias alias;
 
     public Alias getAlias() {

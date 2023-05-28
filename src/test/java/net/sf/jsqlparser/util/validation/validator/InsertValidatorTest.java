@@ -14,7 +14,6 @@ import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 
 public class InsertValidatorTest extends ValidationTestAsserts {
@@ -28,8 +27,7 @@ public class InsertValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationInsertNotAllowed() {
         String sql = "INSERT INTO tab1 (a, b, c) VALUES (5, 'val', ?)";
-        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC),
-                Feature.insertValues, Feature.insertFromSelect, Feature.values, Feature.insert);
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC), Feature.insertValues, Feature.insertFromSelect, Feature.values, Feature.insert);
     }
 
     @Test
@@ -40,8 +38,7 @@ public class InsertValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testInsertWithReturning() {
-        for (String sql : Arrays.asList("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id",
-                "INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id AS a1, id2 AS a2")) {
+        for (String sql : Arrays.asList("INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id", "INSERT INTO mytable (mycolumn) VALUES ('1') RETURNING id AS a1, id2 AS a2")) {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL, DatabaseType.MARIADB);
         }
     }
@@ -54,8 +51,7 @@ public class InsertValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testDuplicateKey() {
-        String sql =
-                "INSERT INTO Users0 (UserId, Key, Value) VALUES (51311, 'T_211', 18) ON DUPLICATE KEY UPDATE Value = 18";
+        String sql = "INSERT INTO Users0 (UserId, Key, Value) VALUES (51311, 'T_211', 18) ON DUPLICATE KEY UPDATE Value = 18";
         validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL);
     }
 
@@ -70,5 +66,4 @@ public class InsertValidatorTest extends ValidationTestAsserts {
         String sql = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
     }
-
 }

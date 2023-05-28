@@ -13,11 +13,12 @@ import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements Expression {
+
     private final String name;
+
     private final Expression expression;
 
     public OracleNamedFunctionParameter(String name, Expression expression) {
@@ -37,15 +38,12 @@ public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements E
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-    
+
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append(name)
-          .append(" => ")
-          .append(expression);
-        
+        builder.append(name).append(" => ").append(expression);
         return builder;
     }
-    
+
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();

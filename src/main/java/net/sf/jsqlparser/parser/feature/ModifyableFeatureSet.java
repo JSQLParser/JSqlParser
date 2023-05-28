@@ -56,5 +56,4 @@ public interface ModifyableFeatureSet extends FeatureSet {
      * @see #copy()
      */
     FeatureSet unmodifyable();
-
 }

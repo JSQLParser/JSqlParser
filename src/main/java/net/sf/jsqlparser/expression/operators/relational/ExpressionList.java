@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ExpressionList implements ItemsList, Serializable {
 
     private List<Expression> expressions;
+
     private boolean usingBrackets = true;
 
     public boolean isUsingBrackets() {
@@ -34,7 +35,7 @@ public class ExpressionList implements ItemsList, Serializable {
     public void setUsingBrackets(boolean usingBrackets) {
         this.usingBrackets = usingBrackets;
     }
-    
+
     public ExpressionList withUsingBrackets(boolean usingBrackets) {
         setUsingBrackets(usingBrackets);
         return this;

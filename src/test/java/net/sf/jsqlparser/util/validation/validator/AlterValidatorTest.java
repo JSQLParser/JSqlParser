@@ -60,41 +60,32 @@ public class AlterValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testAlterTablePrimaryKeyDeferrableDisableNoValidate() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableUniqueKey() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableForgeignKey() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableAddConstraint() throws JSQLParserException {
-        validateNoErrors(
-                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY)",
-                1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY)", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableAddConstraintWithConstraintState() throws JSQLParserException {
-        validateNoErrors(
-                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY) DEFERRABLE DISABLE NOVALIDATE",
-                1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT FK_RESOURCELINKTYPE_PARENTTYPE_PRIMARYKEY FOREIGN KEY (PARENTTYPE_PRIMARYKEY) REFERENCES RESOURCETYPE(PRIMARYKEY) DEFERRABLE DISABLE NOVALIDATE", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableAddConstraintWithConstraintState2() throws JSQLParserException {
-        validateNoErrors(
-                "ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE",
-                1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE RESOURCELINKTYPE ADD CONSTRAINT RESOURCELINKTYPE_PRIMARYKEY PRIMARY KEY (PRIMARYKEY) DEFERRABLE NOVALIDATE", 1, DatabaseType.DATABASES);
     }
 
     @Test
@@ -104,20 +95,17 @@ public class AlterValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testAlterTableForgeignKey2() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id)", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id)", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableForgeignKey3() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT", 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableForgeignKey4() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL", 1,
-                DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL", 1, DatabaseType.DATABASES);
     }
 
     @Test
@@ -129,5 +117,4 @@ public class AlterValidatorTest extends ValidationTestAsserts {
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
         validateNoErrors("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL", 1, DatabaseType.DATABASES);
     }
-
 }

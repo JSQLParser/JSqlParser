@@ -10,14 +10,12 @@
 package net.sf.jsqlparser.util.cnfexpression;
 
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 
 /**
  * This helper class is mainly used for handling the CNF conversion.
  *
  * @author messfish
- *
  */
 public final class MultiAndExpression extends MultipleExpression {
 
@@ -29,5 +27,4 @@ public final class MultiAndExpression extends MultipleExpression {
     public String getStringExpression() {
         return "AND";
     }
-
 }

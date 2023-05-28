@@ -16,10 +16,15 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class Truncate implements Statement {
 
     private Table table;
-    boolean cascade;  // to support TRUNCATE TABLE ... CASCADE
 
-    boolean tableToken;  // to support TRUNCATE without TABLE
-    boolean only; // to support TRUNCATE with ONLY
+    // to support TRUNCATE TABLE ... CASCADE
+    boolean cascade;
+
+    // to support TRUNCATE without TABLE
+    boolean tableToken;
+
+    // to support TRUNCATE with ONLY
+    boolean only;
 
     @Override
     public void accept(StatementVisitor statementVisitor) {
@@ -54,9 +59,8 @@ public class Truncate implements Statement {
         }
         sb.append(" ");
         sb.append(table);
-
         if (cascade) {
-            sb.append( " CASCADE");
+            sb.append(" CASCADE");
         }
         return sb.toString();
     }
@@ -77,7 +81,7 @@ public class Truncate implements Statement {
         this.only = only;
     }
 
-    public Truncate withTableToken(boolean hasTableToken){
+    public Truncate withTableToken(boolean hasTableToken) {
         this.setTableToken(hasTableToken);
         return this;
     }
@@ -91,9 +95,9 @@ public class Truncate implements Statement {
         this.setCascade(cascade);
         return this;
     }
+
     public Truncate withOnly(boolean only) {
         this.setOnly(only);
         return this;
     }
 }
-

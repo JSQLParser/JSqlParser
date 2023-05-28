@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.select.Select;
-
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 public class ExplainStatement implements Statement {
 
     private Select select;
+
     private LinkedHashMap<OptionType, Option> options;
 
     public ExplainStatement() {
@@ -47,7 +47,6 @@ public class ExplainStatement implements Statement {
         if (options == null) {
             options = new LinkedHashMap<>();
         }
-
         options.put(option.getType(), option);
     }
 
@@ -70,7 +69,6 @@ public class ExplainStatement implements Statement {
             statementBuilder.append(" ");
             statementBuilder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
         }
-
         statementBuilder.append(" ");
         statementBuilder.append(select.toString());
         return statementBuilder.toString();
@@ -82,16 +80,14 @@ public class ExplainStatement implements Statement {
     }
 
     public enum OptionType {
-        ANALYZE,
-        VERBOSE,
-        COSTS,
-        BUFFERS,
-        FORMAT
+
+        ANALYZE, VERBOSE, COSTS, BUFFERS, FORMAT
     }
 
     public static class Option implements Serializable {
 
         private final OptionType type;
+
         private String value;
 
         public Option(OptionType type) {
@@ -111,9 +107,7 @@ public class ExplainStatement implements Statement {
         }
 
         public String formatOption() {
-            return type.name() + ( value != null 
-                                                        ? " " + value 
-                                                        : "" );
+            return type.name() + (value != null ? " " + value : "");
         }
 
         public Option withValue(String value) {

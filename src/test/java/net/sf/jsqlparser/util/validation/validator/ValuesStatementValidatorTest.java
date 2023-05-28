@@ -17,9 +17,6 @@ public class ValuesStatementValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateValuesStatement() {
-        validateNoErrors(
-                "WITH w (col1, col2, col3) AS (VALUES ('Header1', 'Header2', 'Header3') UNION ALL SELECT a, b, c FROM tab) SELECT * FROM w",
-                1, DatabaseType.SQLSERVER);
+        validateNoErrors("WITH w (col1, col2, col3) AS (VALUES ('Header1', 'Header2', 'Header3') UNION ALL SELECT a, b, c FROM tab) SELECT * FROM w", 1, DatabaseType.SQLSERVER);
     }
-
 }

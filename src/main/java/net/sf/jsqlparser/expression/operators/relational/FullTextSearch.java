@@ -26,11 +26,12 @@ import net.sf.jsqlparser.schema.Column;
 public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
     private List<Column> _matchColumns;
+
     private Expression _againstValue;
+
     private String _searchModifier;
 
     public FullTextSearch() {
-
     }
 
     public void setMatchColumns(List<Column> columns) {
@@ -44,11 +45,11 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
     public void setAgainstValue(StringValue val) {
         this._againstValue = val;
     }
-    
+
     public void setAgainstValue(JdbcNamedParameter val) {
         this._againstValue = val;
     }
-    
+
     public void setAgainstValue(JdbcParameter val) {
         this._againstValue = val;
     }
@@ -82,9 +83,7 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
                 columnsListCommaSeperated += ",";
             }
         }
-
-        return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue +
-                (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
+        return "MATCH (" + columnsListCommaSeperated + ") AGAINST (" + this._againstValue + (this._searchModifier != null ? " " + this._searchModifier : "") + ")";
     }
 
     public FullTextSearch withMatchColumns(List<Column> matchColumns) {
