@@ -299,7 +299,7 @@ public final class CCJSqlParserUtil {
         Statement statement = null;
         Future<Statement> future = executorService.submit(new Callable<Statement>() {
             @Override
-            public Statement call() throws Exception {
+            public Statement call() throws ParseException {
                 return parser.Statement();
             }
         });
@@ -380,7 +380,7 @@ public final class CCJSqlParserUtil {
         Statements statements = null;
         Future<Statements> future = executorService.submit(new Callable<Statements>() {
             @Override
-            public Statements call() throws Exception {
+            public Statements call() throws ParseException {
                 return parser.Statements();
             }
         });
