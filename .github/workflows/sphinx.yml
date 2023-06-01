@@ -9,7 +9,7 @@ jobs:
       - name: Install XSLT Processor
         run: sudo apt-get install xsltproc sphinx-common
       - name: Install dependencies
-        run: pip install sphinx_rtd_theme sphinx-book-theme myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx-tabs sphinx_inline_tabs pygments
+        run: pip install furo sphinx_rtd_theme sphinx-book-theme myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
       - name: Checkout project sources
         uses: actions/checkout@v2
         with:
