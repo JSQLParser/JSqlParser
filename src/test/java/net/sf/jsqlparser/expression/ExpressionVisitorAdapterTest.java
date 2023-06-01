@@ -45,11 +45,11 @@ public class ExpressionVisitorAdapterTest {
             public void visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
-                exprList.add(expr.getRightItemsList());
+                exprList.add(expr.getRightExpression());
             }
         });
 
-        assertTrue(exprList.get(0) instanceof Expression);
+        assertTrue(exprList.get(0) instanceof Column);
         assertTrue(exprList.get(1) instanceof ExpressionList);
     }
 
@@ -69,7 +69,7 @@ public class ExpressionVisitorAdapterTest {
             }
         });
 
-        assertTrue(exprList.get(0) instanceof RowConstructor);
+        assertTrue(exprList.get(0) instanceof ExpressionList<?>);
         assertTrue(exprList.get(1) instanceof Select);
     }
 

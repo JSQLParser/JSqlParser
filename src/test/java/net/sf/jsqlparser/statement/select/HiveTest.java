@@ -44,4 +44,14 @@ public class HiveTest {
                 + "GROUP BY C1, C2, C3 GROUPING SETS ((C1, C2), (C1, C2, C3), ())";
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
+
+    @Test
+    public void testGroupSimplified() throws Exception {
+        String sql = "SELECT\n"
+                + "    * \n"
+                + "FROM\n"
+                + "    Sometable\n"
+                + "GROUP BY GROUPING SETS (())";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }

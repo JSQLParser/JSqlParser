@@ -10,8 +10,10 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 /**
  *
@@ -27,5 +29,20 @@ public class ShowStatementTest {
     @Test
     public void testSimpleUse2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SHOW transaction_isolation");
+    }
+
+    @Test
+    void testShowIndexesFromTable() throws JSQLParserException {
+        String sqlStr =
+                "show indexes from my_table";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testShowCreateTable() throws JSQLParserException {
+        String sqlStr =
+                "show create table my_table";
+        Statement statement = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertTrue(statement instanceof UnsupportedStatement);
     }
 }

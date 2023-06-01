@@ -11,5 +11,9 @@ package net.sf.jsqlparser.statement.create.table;
 
 public enum RowMovementMode {
     ENABLE, DISABLE;
+
+    public static RowMovementMode from(String mode) {
+        return Enum.valueOf(RowMovementMode.class, mode.toUpperCase());
+    }
 }
 

@@ -1,10 +1,10 @@
 import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
 
-import java.nio.charset.Charset
-
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'signing'
+
     id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
     id "com.github.spotbugs" version "latest.release"
@@ -17,21 +17,19 @@ plugins {
     id 'org.hidetake.ssh' version "latest.release"
 
     id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
+    id "me.champeau.jmh" version "latest.release"
+    id "com.nwalsh.gradle.saxon.saxon-gradle" version "0.9.6"
 }
 
-
-
-group = 'com.github.jsqlparser'
-
 def getVersion = { boolean considerSnapshot ->
-    def major = 0
-    def minor = 0
-    def patch = 0
-    def commit = ""
-    def snapshot =""
+    Integer major = 0
+    Integer minor = 0
+    Integer patch = null
+    Integer build = null
+    def commit = null
+    def snapshot = ""
     new ByteArrayOutputStream().withStream { os ->
         exec {
-            workingDir "$projectDir"
             args = [
                     "--no-pager"
                     , "describe"
@@ -42,30 +40,45 @@ def getVersion = { boolean considerSnapshot ->
             executable "git"
             standardOutput = os
         }
-        def matcher = os.toString() =~ /jsqlparser-(\d*)\.(\d*)-(\d*)-([a-zA-Z\d]*)/
-        matcher.find()
+        def versionStr = os.toString().trim()
+        def pattern = /(?<major>\d*)\.(?<minor>\d*)(\.(?<patch>\d*))?(-(?<build>\d*)-(?<commit>[a-zA-Z\d]*))?/
+        def matcher = versionStr =~ pattern
+        if (matcher.find()) {
+            major = matcher.group('major') as Integer
+            minor = matcher.group('minor') as Integer
+            patch = matcher.group('patch') as Integer
+            build = matcher.group('build') as Integer
+            commit = matcher.group('commit')
+        }
 
-        major = matcher[0][1]
-        minor = matcher[0][2]
-        patch = matcher[0][3]
-        commit = matcher[0][4]
-
-        if (considerSnapshot) {
+        if (considerSnapshot && ( versionStr.endsWith('SNAPSHOT') || build!=null) ) {
             minor++
-            snapshot =  "-SNAPSHOT"
+            if (patch!=null) patch = 0
+            snapshot = "-SNAPSHOT"
         }
     }
-    return "${major}.${minor}${snapshot}"
+    return patch!=null
+            ? "${major}.${minor}.${patch}${snapshot}"
+            :  "${major}.${minor}${snapshot}"
 }
 version = getVersion(true)
-
+group = 'com.github.jsqlparser'
 description = 'JSQLParser library'
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+archivesBaseName = "JSQLParser"
 
 repositories {
     gradlePluginPortal()
     mavenLocal()
     mavenCentral()
+
+    // Sonatype OSSRH
+    maven {
+        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+    }
+}
+
+configurations {
+    xmlDoclet
 }
 
 dependencies {
@@ -83,7 +96,14 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:+'
+
+    // Performance Benchmark
+    testImplementation 'org.openjdk.jmh:jmh-core:+'
+    testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
+
+    // Java Doc in XML Format
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
@@ -97,11 +117,57 @@ compileJavacc {
 java {
     withSourcesJar()
     withJavadocJar()
+
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+    // needed for XML-Doclet to work (since Doclet changed again with Java 13)
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+compileJava {
+    options.release = 8
 }
 
 javadoc {
-    options.addBooleanOption('html5', true)
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
     options.addBooleanOption("Xdoclint:none", true)
+}
+
+tasks.register('xmldoc', Javadoc) {
+    def outFile =  reporting.file(
+            version.endsWith("-SNAPSHOT")
+                    ? "xmlDoclet/javadoc_snapshot.xml"
+                    : "xmlDoclet/javadoc_stable.xml"
+    )
+
+    def rstFile =  reporting.file(
+            version.endsWith("-SNAPSHOT")
+                    ? "xmlDoclet/javadoc_snapshot.rst"
+                    : "xmlDoclet/javadoc_stable.rst"
+    )
+
+    source = sourceSets.main.allJava
+    // beware: Gradle deletes this folder automatically and there is no switch-off
+    destinationDir = reporting.file("xmlDoclet")
+    options.docletpath = configurations.xmlDoclet.files as List
+    options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
+    title = "API $version"
+    options.addBooleanOption("rst", true)
+    options.addBooleanOption("withFloatingToc", true)
+    options.addStringOption("basePackage", "net.sf.jsqlparser")
+    options.addStringOption("filename", outFile.getName())
+
+    dependsOn(compileJava)
+    doLast {
+        copy {
+            from rstFile
+            into "${projectDir}/src/site/sphinx/"
+        }
+    }
 }
 
 test {
@@ -111,8 +177,6 @@ test {
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "1G"
-
-    finalizedBy check
 }
 
 jacocoTestReport {
@@ -250,14 +314,14 @@ spotless {
     }
 }
 
-tasks.withType(Checkstyle) {
+tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required = false
         html.required = true
     }
 }
 
-task renderRR() {
+tasks.register('renderRR') {
     dependsOn(compileJavacc)
     doLast {
         // these WAR files have been provided as a courtesy by Gunther Rademacher
@@ -301,15 +365,10 @@ task renderRR() {
                     "${buildDir}/rr/JSqlParserCC.ebnf"
             ]
         }
-
-        //@todo: a Java based solution may be more appropriate here
-        exec {
-            commandLine "sh", "-c", "xsltproc src/main/resources/rr/xhtml2rst.xsl $buildDir/rr/JSqlParserCC.xhtml > src/site/sphinx/syntax.rst"
-        }
     }
 }
 
-task gitChangelogTask(type: GitChangelogTask) {
+tasks.register('gitChangelogTask', GitChangelogTask) {
     fromRepo = file("$projectDir")
     file = new File("${projectDir}/src/site/sphinx/changelog.rst")
     fromRef = "4.0"
@@ -348,7 +407,7 @@ Version {{name}}
     // @formatter:on
 }
 
-task updateKeywords(type: JavaExec) {
+tasks.register('updateKeywords', JavaExec) {
     group = "Execution"
     description = "Run the main class with JavaExecTask"
     classpath = sourceSets.main.runtimeClasspath
@@ -361,8 +420,38 @@ task updateKeywords(type: JavaExec) {
     dependsOn(compileJava)
 }
 
-task sphinx(type: Exec) {
-    dependsOn(gitChangelogTask, renderRR, updateKeywords)
+xslt  {
+    def outFile = version.endsWith("-SNAPSHOT")
+            ?   file("src/site/sphinx/syntax_snapshot.rst")
+            :   file("src/site/sphinx/syntax_stable.rst")
+
+    dependsOn(renderRR)
+    stylesheet 'src/main/resources/rr/xhtml2rst.xsl'
+
+    // Transform every .xml file in the "input" directory.
+    input "$buildDir/rr/JSqlParserCC.xhtml"
+    output outFile
+}
+
+tasks.register('sphinx', Exec) {
+    dependsOn(gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
+
+//    doFirst() {
+//        exec {
+//            args = [
+//                    "install"
+//                    , "sphinx_rtd_theme"
+//                    , "sphinx-book-theme"
+//                    , "myst_parser"
+//                    , "sphinx-prompt"
+//                    , "sphinx_substitution_extensions"
+//                    , "sphinx_issues"
+//                    , "sphinx_inline_tabs"
+//                    , "pygments"
+//            ]
+//            executable "pip"
+//        }
+//    }
 
     String PROLOG = """
 .. |_| unicode:: U+00A0
@@ -402,33 +491,81 @@ task sphinx(type: Exec) {
     }
 }
 
+publish {
+    dependsOn(check)
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId 'jsqlparser'
-            from(components.java)
+            artifactId = 'jsqlparser'
+
+            from components.java
             versionMapping {
                 usage('java-api') {
-                    fromResolutionOf('testFixturesRuntimeClasspath')
+                    fromResolutionOf('runtimeClasspath')
                 }
                 usage('java-runtime') {
                     fromResolutionResult()
                 }
             }
+            pom {
+                name = 'JSQLParser library'
+                description = 'Parse SQL Statements into Abstract Syntax Trees (AST)'
+                url = 'https://github.com/JSQLParser/JSqlParser'
+                licenses {
+                    license {
+                        name = 'GNU Library or Lesser General Public License (LGPL) V2.1'
+                        url = 'http://www.gnu.org/licenses/lgpl-2.1.html'
+                    }
+                    license {
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'twa'
+                        name = 'Tobias Warneke'
+                        email = 't.warneke@gmx.net'
+                    }
+                    developer {
+                        id = 'are'
+                        name = 'Andreas Reichel'
+                        email = 'andreas@manticore-projects.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/JSQLParser/JSqlParser.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git'
+                    url = 'https://github.com/JSQLParser/JSqlParser.git'
+                }
+            }
         }
     }
     repositories {
-
         maven {
-            // Username and Password are defined in ~/.gradle/gradle.properties
             name "ossrh"
-            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+            def releasesRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+            def snapshotsRepoUrl= "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials(PasswordCredentials)
+        }
+        maven {
+            name = "GitHubPackages"
+
+            url = uri("https://maven.pkg.github.com/manticore-projects/jsqlparser")
             credentials(PasswordCredentials)
         }
     }
 }
 
-tasks.withType(JavaCompile) {
+signing {
+    sign publishing.publications.mavenJava
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -440,11 +577,11 @@ remotes {
     }
 }
 
-task upload {
+tasks.register('upload') {
     doFirst {
-        if( findProperty("${project.name}.host")==null ) {
+        if (findProperty("${project.name}.host") == null) {
             println(
-                """
+                    """
                 Property \"${project.name}.host\' not found.
                 Please define \"${project.name}.host\" in the Gradle configuration (e. g. \$HOME/.gradle/gradle.properties.
                 """
@@ -456,7 +593,9 @@ task upload {
             session(remotes.webServer) {
                 def versionStable = getVersion(false)
                 execute "mkdir -p download/${project.name}-${versionStable}"
-                put from: "${project.buildDir}/libs", into: "download/${project.name}-${versionStable}"
+                for (File file: fileTree(include:['*.jar'], dir:"${project.buildDir}/libs").collect()) {
+                    put from: file, into: "download/${project.name}-${versionStable}"
+                }
             }
         }
     }

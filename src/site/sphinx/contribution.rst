@@ -92,19 +92,18 @@ There is a task ``updateKeywords`` for Gradle and Maven, which will:
     5) Run two special Unit Tests to verify parsing of all ``White-Listed Keywords`` (as `Schema`, `Table`, `Column`, `Function` or `Alias`)
     6) Update the web page about the Reserved Keywords
 
-.. tabs::
 
-  .. tab:: Gradle
-        .. code-block:: shell
-            :caption: Gradle `updateKeywords` Task
+.. tab:: Gradle
+    .. code-block:: shell
+        :caption: Gradle `updateKeywords` Task
 
-                gradle updateKeywords
+            gradle updateKeywords
 
-  .. tab:: Maven
-        .. code-block:: shell
-            :caption: Maven `updateKeywords` Task
+.. tab:: Maven
+    .. code-block:: shell
+        :caption: Maven `updateKeywords` Task
 
-                mvn exec:java
+            mvn exec:java
 
 
 Without this Gradle Task, any new Token or Production will become a ``Reserved Keyword`` automatically and can't be used for Object Names without quoting.

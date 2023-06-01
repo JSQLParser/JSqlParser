@@ -54,5 +54,9 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
 
     public enum DateTime {
         DATE, TIME, TIMESTAMP, TIMESTAMPTZ;
+
+        public static DateTime from(String dateTimeStr) {
+            return Enum.valueOf(DateTime.class, dateTimeStr.toUpperCase());
+        }
     }
 }

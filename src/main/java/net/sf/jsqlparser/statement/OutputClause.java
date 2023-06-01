@@ -21,9 +21,11 @@ import java.util.Objects;
 /**
  * T-SQL Output Clause
  *
- * @see <a href="https://docs.microsoft.com/en-us/sql/t-sql/queries/output-clause-transact-sql?view=sql-server-ver15">OUTPUT Clause (Transact-SQL)</a>
+ * @see <a href=
+ *      "https://docs.microsoft.com/en-us/sql/t-sql/queries/output-clause-transact-sql?view=sql-server-ver15">OUTPUT
+ *      Clause (Transact-SQL)</a>
  *
- * <pre>
+ *      <pre>
  * &lt;OUTPUT_CLAUSE&gt; ::=
  * {
  *     [ OUTPUT &lt;dml_select_list&gt; INTO { @table_variable | output_table } [ ( column_list ) ] ]
@@ -36,26 +38,28 @@ import java.util.Objects;
  * &lt;column_name&gt; ::=
  * { DELETED | INSERTED | from_table_name } . { * | column_name }
  *     | $action
- * </pre>
+ *      </pre>
  */
 public class OutputClause implements Serializable {
-    List<SelectItem> selectItemList;
+    List<SelectItem<?>> selectItemList;
     UserVariable tableVariable;
     Table outputTable;
     List<String> columnList;
 
-    public OutputClause(List<SelectItem> selectItemList, UserVariable tableVariable, Table outputTable, List<String> columnList) {
-        this.selectItemList = Objects.requireNonNull(selectItemList, "The Select List of the Output Clause must not be null.");
+    public OutputClause(List<SelectItem<?>> selectItemList, UserVariable tableVariable,
+            Table outputTable, List<String> columnList) {
+        this.selectItemList = Objects.requireNonNull(selectItemList,
+                "The Select List of the Output Clause must not be null.");
         this.tableVariable = tableVariable;
         this.outputTable = outputTable;
         this.columnList = columnList;
     }
 
-    public List<SelectItem> getSelectItemList() {
+    public List<SelectItem<?>> getSelectItemList() {
         return selectItemList;
     }
 
-    public void setSelectItemList(List<SelectItem> selectItemList) {
+    public void setSelectItemList(List<SelectItem<?>> selectItemList) {
         this.selectItemList = selectItemList;
     }
 

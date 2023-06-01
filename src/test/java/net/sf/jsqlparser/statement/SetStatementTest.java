@@ -9,14 +9,14 @@
  */
 package net.sf.jsqlparser.statement;
 
-import java.util.*;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.*;
-
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import org.junit.jupiter.api.Test;
+
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -67,14 +67,14 @@ public class SetStatementTest {
     @Test
     public void testObject() {
         SetStatement setStatement = new SetStatement();
-        setStatement.add("standard_conforming_strings",
-                Collections.singletonList(new StringValue("ON")), false);
+        setStatement.add("standard_conforming_strings", new ExpressionList(new StringValue("ON")),
+                false);
         setStatement.withUseEqual(0, true).remove(0);
 
         assertEquals(0, setStatement.getCount());
 
         setStatement.addKeyValuePairs(
-                new SetStatement.NameExpr("test", Arrays.asList(new StringValue("1")), false));
+                new SetStatement.NameExpr("test", new ExpressionList(new StringValue("1")), false));
         setStatement.getKeyValuePairs().get(0).setUseEqual(true);
 
         assertEquals("test", setStatement.getKeyValuePairs().get(0).getName());
@@ -91,6 +91,12 @@ public class SetStatementTest {
 
         // issue #1237
         sqlStr = "SET @@global.time_zone = '01:00'";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testMultiPartVariables() throws JSQLParserException {
+        String sqlStr = "set a.b.c=false";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

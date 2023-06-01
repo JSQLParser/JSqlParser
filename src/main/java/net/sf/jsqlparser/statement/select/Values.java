@@ -11,28 +11,29 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class Values extends Select {
 
-    private ItemsList expressions;
+    private ExpressionList expressions;
 
     public Values() {
         // empty constructor
     }
 
-    public Values(ItemsList expressions) {
+    public Values(ExpressionList expressions) {
         this.expressions = expressions;
     }
 
-    public ItemsList getExpressions() {
+    public ExpressionList getExpressions() {
         return expressions;
     }
 
-    public void setExpressions(ItemsList expressions) {
+
+    public void setExpressions(ExpressionList expressions) {
         this.expressions = expressions;
     }
 
@@ -48,26 +49,20 @@ public class Values extends Select {
         selectVisitor.visit(this);
     }
 
-    public Values withExpressions(ItemsList expressions) {
+    public Values withExpressions(ExpressionList expressions) {
         this.setExpressions(expressions);
         return this;
     }
 
-    public Values addExpressions(Expression... addExpressions) {
-        if (expressions != null && expressions instanceof ExpressionList) {
-            ((ExpressionList) expressions).addExpressions(addExpressions);
-            return this;
-        } else {
-            return this.withExpressions(new ExpressionList(addExpressions));
-        }
+    public Values addExpressions(Expression... expressions) {
+        return this.addExpressions(Arrays.asList(expressions));
     }
 
-    public Values addExpressions(Collection<? extends Expression> addExpressions) {
-        if (expressions != null && expressions instanceof ExpressionList) {
-            ((ExpressionList) expressions).addExpressions(addExpressions);
-            return this;
-        } else {
-            return this.withExpressions(new ExpressionList(new ArrayList<>(addExpressions)));
+    public Values addExpressions(Collection<? extends Expression> expressions) {
+        if (this.expressions == null) {
+            this.expressions = new ParenthesedExpressionList();
         }
+        this.expressions.addAll(expressions);
+        return this;
     }
 }

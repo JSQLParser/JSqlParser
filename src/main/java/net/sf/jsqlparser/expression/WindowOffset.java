@@ -14,11 +14,11 @@ import java.io.Serializable;
 public class WindowOffset implements Serializable {
 
     public enum Type {
+        PRECEDING, FOLLOWING, CURRENT, EXPR;
 
-        PRECEDING,
-        FOLLOWING,
-        CURRENT,
-        EXPR
+        public static Type from(String type) {
+            return Enum.valueOf(Type.class, type.toUpperCase());
+        }
     }
 
     private Expression expression;

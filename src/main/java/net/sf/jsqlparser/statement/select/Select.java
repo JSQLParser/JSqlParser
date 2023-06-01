@@ -24,6 +24,7 @@ import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression {
     List<WithItem> withItemsList;
+    Limit limitBy;
     Limit limit;
     Offset offset;
     Fetch fetch;
@@ -190,6 +191,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
+    public Limit getLimitBy() {
+        return limitBy;
+    }
+
+    public void setLimitBy(Limit limitBy) {
+        this.limitBy = limitBy;
+    }
+
+    public <E extends Select> E withLimitBy(Class<E> type, Limit limitBy) {
+        this.setLimitBy(limitBy);
+        return type.cast(this);
+    }
+
     public Offset getOffset() {
         return offset;
     }
@@ -231,6 +245,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
             builder.append("WITH ");
@@ -248,6 +263,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         builder.append(orderByToString(oracleSiblings, orderByElements));
 
+        if (limitBy != null) {
+            builder.append(limitBy);
+        }
         if (limit != null) {
             builder.append(limit);
         }
@@ -285,8 +303,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
-    @Deprecated
-    public <E extends Select> E getSelectBody(Class<E> type) {
+    public Values getValues() {
+        return (Values) this;
+    }
+
+    public PlainSelect getPlainSelect() {
+        return (PlainSelect) this;
+    }
+
+    public SetOperationList getSetOperationList() {
+        return (SetOperationList) this;
+    }
+
+    public <E extends Select> E as(Class<E> type) {
         return type.cast(this);
     }
 }

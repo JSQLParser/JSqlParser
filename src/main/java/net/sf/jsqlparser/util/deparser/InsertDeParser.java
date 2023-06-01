@@ -9,24 +9,16 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.Iterator;
-import java.util.List;
 
-public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsListVisitor {
+public class InsertDeParser extends AbstractDeParser<Insert> {
 
     private ExpressionVisitor expressionVisitor;
     private SelectVisitor selectVisitor;
@@ -91,34 +83,14 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             select.accept(selectVisitor);
         }
 
-        if (insert.isUseSet()) {
+        if (insert.getSetUpdateSets() != null) {
             buffer.append(" SET ");
-            for (int i = 0; i < insert.getSetColumns().size(); i++) {
-                Column column = insert.getSetColumns().get(i);
-                column.accept(expressionVisitor);
-
-                buffer.append(" = ");
-
-                Expression expression = insert.getSetExpressionList().get(i);
-                expression.accept(expressionVisitor);
-                if (i < insert.getSetColumns().size() - 1) {
-                    buffer.append(", ");
-                }
-            }
+            deparseUpdateSets(insert.getSetUpdateSets(), buffer, expressionVisitor);
         }
 
-        if (insert.isUseDuplicate()) {
+        if (insert.getDuplicateUpdateSets() != null) {
             buffer.append(" ON DUPLICATE KEY UPDATE ");
-            for (int i = 0; i < insert.getDuplicateUpdateColumns().size(); i++) {
-                Column column = insert.getDuplicateUpdateColumns().get(i);
-                buffer.append(column.getFullyQualifiedName()).append(" = ");
-
-                Expression expression = insert.getDuplicateUpdateExpressionList().get(i);
-                expression.accept(expressionVisitor);
-                if (i < insert.getDuplicateUpdateColumns().size() - 1) {
-                    buffer.append(", ");
-                }
-            }
+            deparseUpdateSets(insert.getDuplicateUpdateSets(), buffer, expressionVisitor);
         }
 
         // @todo: Accept some Visitors for the involved Expressions
@@ -131,41 +103,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
             insert.getConflictAction().appendTo(buffer);
         }
 
-        if (insert.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ").append(
-                    PlainSelect.getStringList(insert.getReturningExpressionList(), true, false));
+        if (insert.getReturningClause() != null) {
+            insert.getReturningClause().appendTo(buffer);
         }
-    }
-
-    @Override
-    public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                true).deParse(expressionList.getExpressions());
-    }
-
-    @Override
-    public void visit(NamedExpressionList NamedExpressionList) {
-        // not used in a top-level insert statement
-    }
-
-    @Override
-    public void visit(MultiExpressionList multiExprList) {
-        List<ExpressionList> expressionLists = multiExprList.getExpressionLists();
-        int n = expressionLists.size() - 1;
-        int i = 0;
-        for (ExpressionList expressionList : expressionLists) {
-            new ExpressionListDeParser(expressionVisitor, buffer, expressionList.isUsingBrackets(),
-                    true).deParse(expressionList.getExpressions());
-            if (i < n) {
-                buffer.append(", ");
-            }
-            i++;
-        }
-    }
-
-    @Override
-    public void visit(ParenthesedSelect selectBody) {
-        selectBody.accept(selectVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {
@@ -183,6 +123,4 @@ public class InsertDeParser extends AbstractDeParser<Insert> implements ItemsLis
     public void setSelectVisitor(SelectVisitor visitor) {
         selectVisitor = visitor;
     }
-
-
 }

@@ -9,14 +9,14 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.Arrays;
-import java.util.List;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.*;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A function as MAX,COUNT...
@@ -128,7 +128,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return the list of named parameters of the function (if any, else null)
      */
-    public NamedExpressionList getNamedParameters() {
+    public NamedExpressionList<?> getNamedParameters() {
         return namedParameters;
     }
 
@@ -205,7 +205,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                 if (isAllColumns()) {
                     b.append("ALL ");
                 }
-                b.append(PlainSelect.getStringList(parameters.getExpressions(), true, false));
+                b.append(parameters);
                 if (orderByElements != null) {
                     b.append(" ORDER BY ");
                     boolean comma = false;
@@ -270,6 +270,10 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function withParameters(ExpressionList parameters) {
         this.setParameters(parameters);
         return this;
+    }
+
+    public Function withParameters(Expression... parameters) {
+        return withParameters(new ExpressionList(parameters));
     }
 
     public Function withNamedParameters(NamedExpressionList namedParameters) {

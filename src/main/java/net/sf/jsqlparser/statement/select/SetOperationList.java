@@ -109,6 +109,10 @@ public class SetOperationList extends Select {
     }
 
     public enum SetOperationType {
-        INTERSECT, EXCEPT, MINUS, UNION
+        INTERSECT, EXCEPT, MINUS, UNION;
+
+        public static SetOperationType from(String type) {
+            return Enum.valueOf(SetOperationType.class, type.toUpperCase());
+        }
     }
 }

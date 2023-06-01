@@ -10,10 +10,5 @@
 package net.sf.jsqlparser.statement.select;
 
 public interface SelectItemVisitor {
-
-    void visit(AllColumns allColumns);
-
-    void visit(AllTableColumns allTableColumns);
-
-    void visit(SelectExpressionItem selectExpressionItem);
+    void visit(SelectItem selectItem);
 }

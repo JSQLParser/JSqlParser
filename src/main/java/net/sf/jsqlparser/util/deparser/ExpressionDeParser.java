@@ -46,18 +46,18 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
-import net.sf.jsqlparser.expression.SafeCastExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.TimezoneExpression;
-import net.sf.jsqlparser.expression.TryCastExpression;
+import net.sf.jsqlparser.expression.TranscodingFunction;
+import net.sf.jsqlparser.expression.TrimFunction;
 import net.sf.jsqlparser.expression.UserVariable;
-import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
@@ -89,14 +89,12 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
@@ -105,12 +103,10 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -123,7 +119,7 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
-        implements ExpressionVisitor, ItemsListVisitor {
+        implements ExpressionVisitor {
 
     private static final String NOT = "NOT ";
     private SelectVisitor selectVisitor;
@@ -256,11 +252,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" NOT");
         }
         buffer.append(" IN ");
-        if (inExpression.getRightExpression() != null) {
-            inExpression.getRightExpression().accept(this);
-        } else {
-            inExpression.getRightItemsList().accept(this);
-        }
+        inExpression.getRightExpression().accept(this);
     }
 
     @Override
@@ -353,6 +345,17 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("EXISTS ");
         }
         existsExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(MemberOfExpression memberOfExpression) {
+        memberOfExpression.getLeftExpression().accept(this);
+        if (memberOfExpression.isNot()) {
+            buffer.append(" NOT MEMBER OF ");
+        } else {
+            buffer.append(" MEMBER OF ");
+        }
+        memberOfExpression.getRightExpression().accept(this);
     }
 
     @Override
@@ -453,6 +456,41 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public void visit(TranscodingFunction transcodingFunction) {
+        buffer.append("CONVERT( ");
+        transcodingFunction.getExpression().accept(this);
+        buffer.append(" USING ")
+                .append(transcodingFunction.getTranscodingName())
+                .append(" )");
+    }
+
+    public void visit(TrimFunction trimFunction) {
+        buffer.append("Trim(");
+
+        if (trimFunction.getTrimSpecification() != null) {
+            buffer.append(" ").append(trimFunction.getTrimSpecification());
+        }
+
+        if (trimFunction.getExpression() != null) {
+            buffer.append(" ");
+            trimFunction.getExpression().accept(this);
+        }
+
+        if (trimFunction.getFromExpression() != null) {
+            buffer.append(trimFunction.isUsingFromKeyword() ? " FROM " : ", ");
+            trimFunction.getFromExpression().accept(this);
+        }
+        buffer.append(" )");
+    }
+
+    @Override
+    public void visit(RangeExpression rangeExpression) {
+        rangeExpression.getStartExpression().accept(this);
+        buffer.append(":");
+        rangeExpression.getEndExpression().accept(this);
+    }
+
+    @Override
     public void visit(Column tableColumn) {
         final Table table = tableColumn.getTable();
         String tableName = null;
@@ -468,6 +506,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append(tableColumn.getColumnName());
+
+        if (tableColumn.getArrayConstructor() != null) {
+            tableColumn.getArrayConstructor().accept(this);
+        }
     }
 
     @Override
@@ -490,10 +532,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append("UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
-                visit(function.getNamedParameters());
+                function.getNamedParameters().accept(this);
             }
             if (function.getParameters() != null) {
-                visit(function.getParameters());
+                function.getParameters().accept(this);
             }
             if (function.getOrderByElements() != null) {
                 buffer.append(" ORDER BY ");
@@ -527,29 +569,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(ParenthesedSelect selectBody) {
         selectBody.getSelect().accept(this);
-    }
-
-    @Override
-    public void visit(ExpressionList expressionList) {
-        new ExpressionListDeParser(this, buffer, expressionList.isUsingBrackets(), true)
-                .deParse(expressionList.getExpressions());
-    }
-
-    @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        List<String> names = namedExpressionList.getNames();
-        List<Expression> expressions = namedExpressionList.getExpressions();
-        for (int i = 0; i < names.size(); i++) {
-            if (i > 0) {
-                buffer.append(" ");
-            }
-            String name = names.get(i);
-            if (!name.equals("")) {
-                buffer.append(name);
-                buffer.append(" ");
-            }
-            expressions.get(i).accept(this);
-        }
     }
 
     public SelectVisitor getSelectVisitor() {
@@ -609,17 +628,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        buffer.append(anyComparisonExpression.getAnyType().name()).append(" ( ");
-        ParenthesedSelect subSelect = anyComparisonExpression.getSubSelect();
-        if (subSelect != null) {
-            subSelect.accept((ExpressionVisitor) this);
-        } else {
-            ExpressionList expressionList = (ExpressionList) anyComparisonExpression.getItemsList();
-            buffer.append("VALUES ");
-            buffer.append(PlainSelect.getStringList(expressionList.getExpressions(), true,
-                    anyComparisonExpression.isUsingBracketsForValues()));
-        }
-        buffer.append(" ) ");
+        buffer.append(anyComparisonExpression.getAnyType().name());
+
+        // VALUES or SELECT
+        anyComparisonExpression.getSelect().accept((ExpressionVisitor) this);
     }
 
     @Override
@@ -650,50 +662,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(CastExpression cast) {
         if (cast.isUseCastKeyword()) {
-            buffer.append("CAST(");
+            buffer.append(cast.keyword).append("(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
             buffer.append(
-                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
+                    cast.getColumnDefinitions().size() > 1
+                            ? "ROW(" + Select.getStringList(cast.getColumnDefinitions()) + ")"
+                            : cast.getColDataType().toString());
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);
             buffer.append("::");
-            buffer.append(cast.getType());
+            buffer.append(cast.getColDataType());
         }
-    }
-
-    @Override
-    public void visit(TryCastExpression cast) {
-        if (cast.isUseCastKeyword()) {
-            buffer.append("TRY_CAST(");
-            cast.getLeftExpression().accept(this);
-            buffer.append(" AS ");
-            buffer.append(
-                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
-            buffer.append(")");
-        } else {
-            cast.getLeftExpression().accept(this);
-            buffer.append("::");
-            buffer.append(cast.getType());
-        }
-    }
-
-    @Override
-    public void visit(SafeCastExpression cast) {
-        if (cast.isUseCastKeyword()) {
-            buffer.append("SAFE_CAST(");
-            cast.getLeftExpression().accept(this);
-            buffer.append(" AS ");
-            buffer.append(
-                    cast.getRowConstructor() != null ? cast.getRowConstructor() : cast.getType());
-            buffer.append(")");
-        } else {
-            cast.getLeftExpression().accept(this);
-            buffer.append("::");
-            buffer.append(cast.getType());
-        }
-
     }
 
     @Override
@@ -835,16 +816,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (Iterator<ExpressionList> it = multiExprList.getExprList().iterator(); it.hasNext();) {
-            it.next().accept(this);
-            if (it.hasNext()) {
-                buffer.append(", ");
-            }
-        }
-    }
-
-    @Override
     public void visit(IntervalExpression iexpr) {
         buffer.append(iexpr.toString());
     }
@@ -900,9 +871,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(ValueListExpression valueList) {
-        ExpressionList expressionList = valueList.getExpressionList();
-        expressionList.accept(this);
+    public void visit(ExpressionList<?> expressionList) {
+        ExpressionListDeParser<?> expressionListDeParser =
+                new ExpressionListDeParser<>(this, buffer);
+        expressionListDeParser.deParse(expressionList);
     }
 
     @Override
@@ -910,28 +882,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (rowConstructor.getName() != null) {
             buffer.append(rowConstructor.getName());
         }
-        buffer.append("(");
-
-        if (rowConstructor.getColumnDefinitions().size() > 0) {
-            buffer.append("(");
-            int i = 0;
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
-                buffer.append(i > 0 ? ", " : "").append(columnDefinition.toString());
-                i++;
-            }
-            buffer.append(")");
-        } else {
-            boolean first = true;
-            for (Expression expr : rowConstructor.getExprList().getExpressions()) {
-                if (first) {
-                    first = false;
-                } else {
-                    buffer.append(", ");
-                }
-                expr.accept(this);
-            }
-        }
-        buffer.append(")");
+        ExpressionListDeParser<?> expressionListDeParser =
+                new ExpressionListDeParser<>(this, buffer);
+        expressionListDeParser.deParse(rowConstructor);
     }
 
     @Override

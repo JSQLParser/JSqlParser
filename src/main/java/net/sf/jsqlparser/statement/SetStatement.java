@@ -9,11 +9,15 @@
  */
 package net.sf.jsqlparser.statement;
 
-import java.io.Serializable;
-import java.util.*;
-
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public final class SetStatement implements Statement {
 
@@ -24,11 +28,11 @@ public final class SetStatement implements Statement {
         // empty constructor
     }
 
-    public SetStatement(Object name, List<Expression> value) {
+    public SetStatement(Object name, ExpressionList<?> value) {
         add(name, value, true);
     }
 
-    public void add(Object name, List<Expression> value, boolean useEqual) {
+    public void add(Object name, ExpressionList<?> value, boolean useEqual) {
         values.add(new NameExpr(name, value, useEqual));
     }
 
@@ -92,11 +96,11 @@ public final class SetStatement implements Statement {
         return getExpressions(0);
     }
 
-    public void setExpressions(int idx, List<Expression> expressions) {
+    public void setExpressions(int idx, ExpressionList<?> expressions) {
         values.get(idx).expressions = expressions;
     }
 
-    public void setExpressions(List<Expression> expressions) {
+    public void setExpressions(ExpressionList<?> expressions) {
         setExpressions(0, expressions);
     }
 
@@ -148,7 +152,7 @@ public final class SetStatement implements Statement {
 
     static class NameExpr implements Serializable {
         Object name;
-        List<Expression> expressions;
+        ExpressionList expressions;
         boolean useEqual;
 
         public Object getName() {
@@ -159,11 +163,11 @@ public final class SetStatement implements Statement {
             this.name = name;
         }
 
-        public List<Expression> getExpressions() {
+        public ExpressionList<?> getExpressions() {
             return expressions;
         }
 
-        public void setExpressions(List<Expression> expressions) {
+        public void setExpressions(ExpressionList<?> expressions) {
             this.expressions = expressions;
         }
 
@@ -175,7 +179,7 @@ public final class SetStatement implements Statement {
             this.useEqual = useEqual;
         }
 
-        public NameExpr(Object name, List<Expression> expressions, boolean useEqual) {
+        public NameExpr(Object name, ExpressionList<?> expressions, boolean useEqual) {
             this.name = name;
             this.expressions = expressions;
             this.useEqual = useEqual;

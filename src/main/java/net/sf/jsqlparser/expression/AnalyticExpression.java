@@ -9,16 +9,19 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.List;
-import static java.util.stream.Collectors.joining;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
+
 /**
- * Analytic function. The name of the function is variable but the parameters following the special analytic function
- * path. e.g. row_number() over (order by test). Additional there can be an expression for an analytical aggregate like
- * sum(col) or the "all collumns" wildcard like count(*).
+ * Analytic function. The name of the function is variable but the parameters following the special
+ * analytic function path. e.g. row_number() over (order by test). Additional there can be an
+ * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
+ * count(*).
  *
  * @author tw
  */
@@ -33,15 +36,15 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean unique = false;
-    private boolean ignoreNulls = false;            //IGNORE NULLS inside function parameters
-    private boolean ignoreNullsOutside = false;     //IGNORE NULLS outside function parameters
+    private boolean ignoreNulls = false; // IGNORE NULLS inside function parameters
+    private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
     private List<OrderByElement> funcOrderBy = null;
-    private String windowName = null;               // refers to an external window definition (paritionBy, orderBy, windowElement)
+    private String windowName = null; // refers to an external window definition (paritionBy,
+                                      // orderBy, windowElement)
     private WindowDefinition windowDef = new WindowDefinition();
 
-    public AnalyticExpression() {
-    }
+    public AnalyticExpression() {}
 
     public AnalyticExpression(Function function) {
         name = function.getName();
@@ -50,18 +53,19 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         unique = function.isUnique();
         funcOrderBy = function.getOrderByElements();
 
-        ExpressionList list = function.getParameters();
+        ExpressionList<Expression> list = function.getParameters();
         if (list != null) {
             if (list.getExpressions().size() > 3) {
-                throw new IllegalArgumentException("function object not valid to initialize analytic expression");
+                throw new IllegalArgumentException(
+                        "function object not valid to initialize analytic expression");
             }
 
-            expression = list.getExpressions().get(0);
+            expression = list.get(0);
             if (list.getExpressions().size() > 1) {
-                offset = list.getExpressions().get(1);
+                offset = list.get(1);
             }
             if (list.getExpressions().size() > 2) {
-                defaultValue = list.getExpressions().get(2);
+                defaultValue = list.get(2);
             }
         }
         ignoreNulls = function.isIgnoreNulls();
@@ -97,7 +101,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+            boolean brackets) {
         windowDef.partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
     }
 
@@ -202,7 +207,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.MissingBreakInSwitch"})
     public String toString() {
         StringBuilder b = new StringBuilder();
 
@@ -266,7 +272,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
         if (windowName != null) {
             b.append(" ").append(windowName);
-        } else if (type!=AnalyticType.WITHIN_GROUP_OVER)  {
+        } else if (type != AnalyticType.WITHIN_GROUP_OVER) {
             b.append(" ");
             b.append(windowDef.toString());
         }

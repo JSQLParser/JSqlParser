@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.test;
 
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -19,9 +22,9 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import net.sf.jsqlparser.util.deparser.*;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +34,8 @@ public class HowToUseSample {
     /*
      SQL Text
       └─Statements: net.sf.jsqlparser.statement.select.Select
-          ├─selectItems -> Collection<SelectExpressionItem>
-          │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
-          │     └─LongValue: 1
+          ├─selectItems -> Collection<SelectItem>
+          │  └─LongValue: 1
           ├─Table: dual
           └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
              ├─Column: a
@@ -46,9 +48,6 @@ public class HowToUseSample {
         String expectedSQLStr = "SELECT 1 FROM dual t WHERE a = b";
 
         // Step 1: generate the Java Object Hierarchy for
-        SelectExpressionItem selectExpressionItem =
-                new SelectExpressionItem().withExpression(new LongValue().withValue(1));
-
         Table table = new Table().withName("dual").withAlias(new Alias("t", false));
 
         Column columnA = new Column().withColumnName("a");
@@ -56,7 +55,7 @@ public class HowToUseSample {
         Expression whereExpression =
                 new EqualsTo().withLeftExpression(columnA).withRightExpression(columnB);
 
-        PlainSelect select = new PlainSelect().addSelectItems(selectExpressionItem)
+        PlainSelect select = new PlainSelect().addSelectItem(new LongValue(1))
                 .withFromItem(table).withWhere(whereExpression);
 
         // Step 2a: Print into a SQL Statement
@@ -79,8 +78,8 @@ public class HowToUseSample {
             Select select = (Select) statement;
             PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
-            SelectExpressionItem selectExpressionItem =
-                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+            SelectItem selectItem =
+                    (SelectItem) plainSelect.getSelectItems().get(0);
 
             Table table = (Table) plainSelect.getFromItem();
 
@@ -94,23 +93,21 @@ public class HowToUseSample {
     public void howToParseStatement() throws JSQLParserException {
         String sqlStr = "select 1 from dual where a=b";
 
-        Statement statement = CCJSqlParserUtil.parse(sqlStr);
-        if (statement instanceof Select) {
-            PlainSelect plainSelect = (PlainSelect) statement;
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
-            SelectExpressionItem selectExpressionItem =
-                    (SelectExpressionItem) plainSelect.getSelectItems().get(0);
-            Assertions.assertEquals(new LongValue(1), selectExpressionItem.getExpression());
+        SelectItem selectItem =
+                select.getSelectItems().get(0);
+        Assertions.assertEquals(
+                new LongValue(1), selectItem.getExpression());
 
-            Table table = (Table) plainSelect.getFromItem();
-            Assertions.assertEquals("dual", table.getName());
+        Table table = (Table) select.getFromItem();
+        Assertions.assertEquals("dual", table.getName());
 
-            EqualsTo equalsTo = (EqualsTo) plainSelect.getWhere();
-            Column a = (Column) equalsTo.getLeftExpression();
-            Column b = (Column) equalsTo.getRightExpression();
-            Assertions.assertEquals("a", a.getColumnName());
-            Assertions.assertEquals("b", b.getColumnName());
-        }
+        EqualsTo equalsTo = (EqualsTo) select.getWhere();
+        Column a = (Column) equalsTo.getLeftExpression();
+        Column b = (Column) equalsTo.getRightExpression();
+        Assertions.assertEquals("a", a.getColumnName());
+        Assertions.assertEquals("b", b.getColumnName());
     }
 
     @Test
@@ -168,5 +165,14 @@ public class HowToUseSample {
         // Allow Complex Parsing (which allows nested Expressions, but is much slower)
         Statement stmt2 = CCJSqlParserUtil.parse(sqlStr, parser -> parser
                 .withSquareBracketQuotation(true).withAllowComplexParsing(true).withTimeOut(6000));
+    }
+
+    @Test
+    public void showBracketHandling() throws JSQLParserException {
+        String sqlStr = " ( (values(1,2), (3,4)) UNION (values((1,2), (3,4))) )";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        final String reflectionString = TestUtils.toReflectionString(statement);
+
+        System.out.println(reflectionString);
     }
 }

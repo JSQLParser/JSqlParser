@@ -16,8 +16,11 @@ import java.io.Serializable;
 public class First implements Serializable {
 
     public enum Keyword {
-        FIRST,
-        LIMIT
+        FIRST, LIMIT;
+
+        public static Keyword from(String keyword) {
+            return Enum.valueOf(Keyword.class, keyword.toUpperCase());
+        }
     }
 
     private Keyword keyword;
@@ -71,7 +74,7 @@ public class First implements Serializable {
 
         return result;
     }
-    
+
     public First withKeyword(Keyword keyword) {
         this.setKeyword(keyword);
         return this;

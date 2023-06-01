@@ -16,7 +16,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -24,14 +24,13 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.io.StringReader;
-import java.util.Arrays;
 
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
@@ -40,7 +39,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,25 +57,23 @@ public class InsertTest {
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
         assertEquals("col2", insert.getColumns().get(1).getColumnName());
         assertEquals("col3", insert.getColumns().get(2).getColumnName());
-        assertEquals(3, ((ExpressionList) insert.getItemsList()).getExpressions().size());
-        assertTrue(((ExpressionList) insert.getItemsList()).getExpressions()
-                .get(0) instanceof JdbcParameter);
-        assertEquals("sadfsd",
-                ((StringValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1))
-                        .getValue());
-        assertEquals(234,
-                ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(2))
-                        .getValue());
+
+        Values values = insert.getValues();
+        assertEquals(3, values.getExpressions().size());
+        assertTrue(values.getExpressions().get(0) instanceof JdbcParameter);
+        assertEquals("sadfsd", ((StringValue) values.getExpressions().get(1)).getValue());
+        assertEquals(234, ((LongValue) values.getExpressions().get(2)).getValue());
         assertEquals(statement, insert.toString());
 
-        ExpressionList expressionList = new ExpressionList(new JdbcParameter(),
+        ExpressionList expressionList = new ParenthesedExpressionList(new JdbcParameter(),
                 new StringValue("sadfsd"), new LongValue().withValue(234));
 
         Select select = new Values().withExpressions(expressionList);
 
         Insert insert2 = new Insert().withTable(new Table("mytable"))
                 .withColumns(
-                        Arrays.asList(new Column("col1"), new Column("col2"), new Column("col3")))
+                        new ExpressionList<>(new Column("col1"), new Column("col2"),
+                                new Column("col3")))
                 .withSelect(select);
 
         assertDeparse(insert2, statement);
@@ -84,11 +81,10 @@ public class InsertTest {
         statement = "INSERT INTO myschema.mytable VALUES (?, ?, 2.3)";
         insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("myschema.mytable", insert.getTable().getFullyQualifiedName());
-        assertEquals(3, insert.getItemsList(ExpressionList.class).getExpressions().size());
-        assertTrue(((ExpressionList) insert.getItemsList()).getExpressions()
-                .get(0) instanceof JdbcParameter);
+        assertEquals(3, insert.getValues().getExpressions().size());
+        assertTrue(insert.getValues().getExpressions().get(0) instanceof JdbcParameter);
         assertEquals(2.3,
-                ((DoubleValue) insert.getItemsList(ExpressionList.class).getExpressions().get(2))
+                ((DoubleValue) insert.getValues().getExpressions().get(2))
                         .getValue(),
                 0.0);
         assertEquals(statement, "" + insert);
@@ -103,7 +99,7 @@ public class InsertTest {
         assertEquals(1, insert.getColumns().size());
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
         assertEquals("('val1')",
-                (((ExpressionList) insert.getItemsList()).getExpressions().get(0)).toString());
+                (insert.getValues().getExpressions().get(0)).toString());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
 
     }
@@ -117,11 +113,18 @@ public class InsertTest {
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
         assertEquals("col2", insert.getColumns().get(1).getColumnName());
         assertEquals("col3", insert.getColumns().get(2).getColumnName());
-        assertNull(insert.getItemsList());
+
+        // throw a NPE since its a PlainSelect statement
+        assertThrows(Exception.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                insert.getValues();
+            }
+        });
+
         assertNotNull(insert.getSelect());
         assertEquals("mytable2",
-                ((Table) ((PlainSelect) insert.getSelect()).getFromItem())
-                        .getName());
+                ((Table) insert.getPlainSelect().getFromItem()).getName());
 
         // toString uses brackets
         String statementToString = "INSERT INTO mytable (col1, col2, col3) SELECT * FROM mytable2";
@@ -139,12 +142,12 @@ public class InsertTest {
         String statement = "INSERT INTO mytable SET col1 = 12, col2 = name1 * name2";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", insert.getTable().getName());
-        assertEquals(2, insert.getSetColumns().size());
-        assertEquals("col1", insert.getSetColumns().get(0).getColumnName());
-        assertEquals("col2", insert.getSetColumns().get(1).getColumnName());
-        assertEquals(2, insert.getSetExpressionList().size());
-        assertEquals("12", insert.getSetExpressionList().get(0).toString());
-        assertEquals("name1 * name2", insert.getSetExpressionList().get(1).toString());
+        assertEquals(2, insert.getSetUpdateSets().size());
+        assertEquals("col1", insert.getSetUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col2", insert.getSetUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("12", insert.getSetUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals("name1 * name2",
+                insert.getSetUpdateSets().get(1).getValues().get(0).toString());
         assertEquals(statement, "" + insert);
     }
 
@@ -157,17 +160,18 @@ public class InsertTest {
         assertEquals(2, insert.getColumns().size());
         assertEquals("ID", insert.getColumns().get(0).getColumnName());
         assertEquals("COUNTER", insert.getColumns().get(1).getColumnName());
-        assertEquals(2, ((ExpressionList) insert.getItemsList()).getExpressions().size());
+        assertEquals(2, insert.getValues().getExpressions().size());
         assertEquals(123,
-                ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(0))
+                ((LongValue) insert.getValues().getExpressions().get(0))
                         .getValue());
         assertEquals(0,
-                ((LongValue) ((ExpressionList) insert.getItemsList()).getExpressions().get(1))
+                ((LongValue) insert.getValues().getExpressions().get(1))
                         .getValue());
-        assertEquals(1, insert.getDuplicateUpdateColumns().size());
-        assertEquals("COUNTER", insert.getDuplicateUpdateColumns().get(0).getColumnName());
-        assertEquals(1, insert.getDuplicateUpdateExpressionList().size());
-        assertEquals("COUNTER + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
+        assertEquals(1, insert.getDuplicateUpdateSets().size());
+        assertEquals("COUNTER",
+                insert.getDuplicateUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("COUNTER + 1",
+                insert.getDuplicateUpdateSets().get(0).getValues().get(0).toString());
         assertFalse(insert.isUseSelectBrackets());
         assertTrue(insert.isUseDuplicate());
         assertEquals(statement, "" + insert);
@@ -179,16 +183,18 @@ public class InsertTest {
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'";
         Insert insert = (Insert) parserManager.parse(new StringReader(statement));
         assertEquals("mytable", insert.getTable().getName());
-        assertEquals(1, insert.getSetColumns().size());
-        assertEquals("col1", insert.getSetColumns().get(0).getColumnName());
-        assertEquals(1, insert.getSetExpressionList().size());
-        assertEquals("122", insert.getSetExpressionList().get(0).toString());
-        assertEquals(2, insert.getDuplicateUpdateColumns().size());
-        assertEquals("col2", insert.getDuplicateUpdateColumns().get(0).getColumnName());
-        assertEquals("col3", insert.getDuplicateUpdateColumns().get(1).getColumnName());
-        assertEquals(2, insert.getDuplicateUpdateExpressionList().size());
-        assertEquals("col2 + 1", insert.getDuplicateUpdateExpressionList().get(0).toString());
-        assertEquals("'saint'", insert.getDuplicateUpdateExpressionList().get(1).toString());
+        assertEquals(1, insert.getSetUpdateSets().size());
+        assertEquals("col1", insert.getSetUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("122", insert.getSetUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals(2, insert.getDuplicateUpdateSets().size());
+        assertEquals("col2",
+                insert.getDuplicateUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col3",
+                insert.getDuplicateUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("col2 + 1",
+                insert.getDuplicateUpdateSets().get(0).getValues().get(0).toString());
+        assertEquals("'saint'",
+                insert.getDuplicateUpdateSets().get(1).getValues().get(0).toString());
         assertEquals(statement, "" + insert);
     }
 
@@ -197,16 +203,16 @@ public class InsertTest {
         String statement = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        MultiExpressionList multiExpressionList = new MultiExpressionList()
-                .addExpressionLists(new ExpressionList().addExpressions(new Column("a"))
-                        .addExpressions(new Column("b")))
-                .addExpressionLists(new ExpressionList().addExpressions(new Column("d"))
-                        .addExpressions(new Column("e")));
+        ExpressionList<Column> multiExpressionList = new ExpressionList<>()
+                .addExpression(
+                        new ParenthesedExpressionList<Column>(new Column("a"), new Column("b")))
+                .addExpression(
+                        new ParenthesedExpressionList<Column>(new Column("d"), new Column("e")));
 
         Select select = new Values().withExpressions(multiExpressionList);
 
         Insert insert = new Insert().withTable(new Table("mytable"))
-                .withColumns(Arrays.asList(new Column("col1"), new Column("col2")))
+                .withColumns(new ExpressionList<>(new Column("col1"), new Column("col2")))
                 .withSelect(select);
 
         assertDeparse(insert, statement);

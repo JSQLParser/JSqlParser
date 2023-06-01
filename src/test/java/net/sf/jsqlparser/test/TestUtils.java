@@ -108,7 +108,8 @@ public class TestUtils {
         String sanitizedInputSqlStr = buildSqlString(parsed.toString(), laxDeparsingCheck);
         String sanitizedStatementStr = buildSqlString(statement, laxDeparsingCheck);
 
-        assertEquals(sanitizedStatementStr, sanitizedInputSqlStr);
+        assertEquals(sanitizedStatementStr, sanitizedInputSqlStr,
+                "Output from toString() does not match.");
 
         // Export all the Test SQLs to /tmp/net/sf/jsqlparser
         boolean exportToFile = Boolean.parseBoolean(System.getenv("EXPORT_TEST_TO_FILE"));
@@ -121,7 +122,8 @@ public class TestUtils {
 
         String sanitizedDeparsedStr = buildSqlString(builder.toString(), laxDeparsingCheck);
 
-        assertEquals(sanitizedStatementStr, sanitizedDeparsedStr);
+        assertEquals(sanitizedStatementStr, sanitizedDeparsedStr,
+                "Output from Deparser does not match.");
     }
 
     private static void writeTestToFile(String sanitizedInputSqlStr) {

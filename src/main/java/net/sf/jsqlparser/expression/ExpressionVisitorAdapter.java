@@ -36,31 +36,26 @@ import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
-import net.sf.jsqlparser.statement.select.ExpressionListItem;
-import net.sf.jsqlparser.statement.select.FunctionItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
@@ -68,7 +63,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter
-        implements ExpressionVisitor, ItemsListVisitor, PivotVisitor, SelectItemVisitor {
+        implements ExpressionVisitor, PivotVisitor, SelectItemVisitor {
 
     private SelectVisitor selectVisitor;
 
@@ -220,14 +215,8 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(InExpression expr) {
-        if (expr.getLeftExpression() != null) {
-            expr.getLeftExpression().accept(this);
-        }
-        if (expr.getRightExpression() != null) {
-            expr.getRightExpression().accept(this);
-        } else if (expr.getRightItemsList() != null) {
-            expr.getRightItemsList().accept(this);
-        }
+        expr.getLeftExpression().accept(this);
+        expr.getRightExpression().accept(this);
     }
 
     @Override
@@ -312,6 +301,11 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
+    public void visit(MemberOfExpression memberOfExpression) {
+        memberOfExpression.getRightExpression().accept(this);
+    }
+
+    @Override
     public void visit(AnyComparisonExpression expr) {
 
     }
@@ -343,16 +337,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(CastExpression expr) {
-        expr.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(TryCastExpression expr) {
-        expr.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(SafeCastExpression expr) {
         expr.getLeftExpression().accept(this);
     }
 
@@ -406,23 +390,16 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(ExpressionList expressionList) {
-        for (Expression expr : expressionList.getExpressions()) {
+    public void visit(ExpressionList<?> expressionList) {
+        for (Expression expr : expressionList) {
             expr.accept(this);
         }
     }
 
     @Override
-    public void visit(NamedExpressionList namedExpressionList) {
-        for (Expression expr : namedExpressionList.getExpressions()) {
+    public void visit(RowConstructor<?> rowConstructor) {
+        for (Expression expr : rowConstructor) {
             expr.accept(this);
-        }
-    }
-
-    @Override
-    public void visit(MultiExpressionList multiExprList) {
-        for (ExpressionList list : multiExprList.getExprList()) {
-            visit(list);
         }
     }
 
@@ -491,37 +468,30 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(ValueListExpression valueListExpression) {
-        for (Expression expr : valueListExpression.getExpressionList().getExpressions()) {
-            expr.accept(this);
-        }
-    }
-
-    @Override
     public void visit(Pivot pivot) {
-        for (FunctionItem item : pivot.getFunctionItems()) {
-            item.getFunction().accept(this);
+        for (SelectItem<?> item : pivot.getFunctionItems()) {
+            item.getExpression().accept(this);
         }
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
         }
         if (pivot.getSingleInItems() != null) {
-            for (SelectExpressionItem item : pivot.getSingleInItems()) {
-                item.accept(this);
+            for (SelectItem item : pivot.getSingleInItems()) {
+                item.getExpression().accept(this);
             }
         }
 
         if (pivot.getMultiInItems() != null) {
-            for (ExpressionListItem item : pivot.getMultiInItems()) {
-                item.getExpressionList().accept(this);
+            for (SelectItem<ExpressionList> item : pivot.getMultiInItems()) {
+                item.getExpression().accept(this);
             }
         }
     }
 
     @Override
     public void visit(PivotXml pivot) {
-        for (FunctionItem item : pivot.getFunctionItems()) {
-            item.getFunction().accept(this);
+        for (SelectItem<?> item : pivot.getFunctionItems()) {
+            item.getExpression().accept(this);
         }
         for (Column col : pivot.getForColumns()) {
             col.accept(this);
@@ -551,21 +521,8 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(SelectExpressionItem selectExpressionItem) {
+    public void visit(SelectItem selectExpressionItem) {
         selectExpressionItem.getExpression().accept(this);
-    }
-
-    @Override
-    public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getColumnDefinitions().isEmpty()) {
-            for (Expression expression : rowConstructor.getExprList().getExpressions()) {
-                expression.accept(this);
-            }
-        } else {
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
-                columnDefinition.accept(this);
-            }
-        }
     }
 
     @Override
@@ -684,7 +641,19 @@ public class ExpressionVisitorAdapter
 
     }
 
-    public void visit(ColumnDefinition columnDefinition) {
-        columnDefinition.accept(this);
+    @Override
+    public void visit(TranscodingFunction transcodingFunction) {
+
+    }
+
+    @Override
+    public void visit(TrimFunction trimFunction) {
+
+    }
+
+    @Override
+    public void visit(RangeExpression rangeExpression) {
+        rangeExpression.getStartExpression().accept(this);
+        rangeExpression.getEndExpression().accept(this);
     }
 }

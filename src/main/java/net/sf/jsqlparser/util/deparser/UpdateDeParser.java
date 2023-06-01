@@ -9,17 +9,15 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.Iterator;
-
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateSet;
+
+import java.util.Iterator;
 
 public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
@@ -35,9 +33,10 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.ExcessiveMethodLength"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.ExcessiveMethodLength"})
     public void deParse(Update update) {
-         if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
+        if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = update.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
@@ -67,44 +66,9 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        int j=0;
-        for (UpdateSet updateSet:update.getUpdateSets()) {
-            if (j > 0) {
-                buffer.append(", ");
-            }
+        deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
 
-            if (updateSet.isUsingBracketsForColumns()) {
-                buffer.append("(");
-            }
-            for (int i = 0; i < updateSet.getColumns().size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                updateSet.getColumns().get(i).accept(expressionVisitor);
-            }
-            if (updateSet.isUsingBracketsForColumns()) {
-                buffer.append(")");
-            }
-
-            buffer.append(" = ");
-
-            if (updateSet.isUsingBracketsForValues()) {
-                buffer.append("(");
-            }
-            for (int i = 0; i < updateSet.getExpressions().size(); i++) {
-                if (i > 0) {
-                    buffer.append(", ");
-                }
-                updateSet.getExpressions().get(i).accept(expressionVisitor);
-            }
-            if (updateSet.isUsingBracketsForValues()) {
-                buffer.append(")");
-            }
-
-            j++;
-        }
-
-        if (update.getOutputClause()!=null) {
+        if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);
         }
 
@@ -129,12 +93,11 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
         }
         if (update.getLimit() != null) {
-            new LimitDeparser(buffer).deParse(update.getLimit());
+            new LimitDeparser(expressionVisitor, buffer).deParse(update.getLimit());
         }
 
-        if (update.getReturningExpressionList() != null) {
-            buffer.append(" RETURNING ").append(PlainSelect.
-                    getStringList(update.getReturningExpressionList(), true, false));
+        if (update.getReturningClause() != null) {
+            update.getReturningClause().appendTo(buffer);
         }
     }
 
@@ -156,7 +119,8 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST
+                    ? "NULLS FIRST"
                     : "NULLS LAST");
         }
     }

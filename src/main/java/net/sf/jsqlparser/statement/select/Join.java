@@ -52,6 +52,29 @@ public class Join extends ASTNodeAccessImpl {
         simple = b;
     }
 
+    /**
+     * A JOIN means INNER when the INNER keyword is set or when no other qualifier has been set.
+     *
+     * @return Tells, if a JOIN means a qualified INNER JOIN.
+     *
+     */
+    public boolean isInnerJoin() {
+        return inner
+                || !(
+                /* Qualified Joins */
+                left || right || full || outer
+
+                /* Cross Join */
+                        || cross
+
+                        /* Natural Join */
+                        || natural);
+    }
+
+    /**
+     *
+     * @return Tells, if the INNER keyword has been set.
+     */
     public boolean isInner() {
         return inner;
     }
@@ -61,7 +84,18 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * @return Sets the INNER keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setInner(boolean b) {
+        if (b) {
+            left = false;
+            right = false;
+            outer = false;
+            cross = false;
+            natural = false;
+        }
         inner = b;
     }
 
@@ -92,7 +126,14 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * @return Sets the OUTER keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setOuter(boolean b) {
+        if (b) {
+            inner = false;
+        }
         outer = b;
     }
 
@@ -141,7 +182,15 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * @return Sets the LEFT keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setLeft(boolean b) {
+        if (b) {
+            inner = false;
+            right = false;
+        }
         left = b;
     }
 
@@ -159,7 +208,15 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * @return Sets the RIGHT keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setRight(boolean b) {
+        if (b) {
+            inner = false;
+            left = false;
+        }
         right = b;
     }
 

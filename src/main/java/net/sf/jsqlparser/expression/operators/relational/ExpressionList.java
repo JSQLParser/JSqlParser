@@ -9,85 +9,103 @@
  */
 package net.sf.jsqlparser.expression.operators.relational;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.parser.SimpleNode;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * A list of expressions, as in SELECT A FROM TAB WHERE B IN (expr1,expr2,expr3)
  */
-public class ExpressionList implements ItemsList, Serializable {
+public class ExpressionList<T extends Expression> extends ArrayList<T>
+        implements Expression, Serializable {
+    private transient SimpleNode node;
 
-    private List<Expression> expressions;
-    private boolean usingBrackets = true;
-
-    public boolean isUsingBrackets() {
-        return usingBrackets;
+    public ExpressionList(Collection<? extends T> expressions) {
+        addAll(expressions);
     }
 
-    public void setUsingBrackets(boolean usingBrackets) {
-        this.usingBrackets = usingBrackets;
-    }
-    
-    public ExpressionList withUsingBrackets(boolean usingBrackets) {
-        setUsingBrackets(usingBrackets);
-        return this;
+    public ExpressionList(List<T> expressions) {
+        super(expressions);
     }
 
-    public ExpressionList() {
-    }
-
-    public ExpressionList(List<Expression> expressions) {
-        this.expressions = expressions;
-    }
-
-    public ExpressionList(Expression... expressions) {
-        this.expressions = new ArrayList<>(Arrays.asList(expressions));
-    }
-
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
-
-    public ExpressionList addExpressions(Expression... elements) {
-        List<Expression> list = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
-        Collections.addAll(list, elements);
-        return withExpressions(list);
-    }
-
-    public ExpressionList withExpressions(List<Expression> expressions) {
-        this.setExpressions(expressions);
-        return this;
-    }
-
-    public void setExpressions(List<Expression> expressions) {
-        this.expressions = expressions;
+    public ExpressionList(T... expressions) {
+        this(Arrays.asList(expressions));
     }
 
     @Deprecated
-    public ExpressionList withBrackets(boolean brackets) {
-        return withUsingBrackets(brackets);
+    public boolean isUsingBrackets() {
+        return false;
     }
 
-    @Override
-    public void accept(ItemsListVisitor itemsListVisitor) {
-        itemsListVisitor.visit(this);
+    @Deprecated
+    public List<T> getExpressions() {
+        return this;
+    }
+
+    @Deprecated
+    public void setExpressions(List<T> expressions) {
+        this.clear();
+        this.addAll(expressions);
+    }
+
+    public ExpressionList addExpression(T expression) {
+        this.add(expression);
+        return this;
+    }
+
+    public ExpressionList addExpressions(T... expressions) {
+        addAll(Arrays.asList(expressions));
+        return this;
+    }
+
+    public ExpressionList<?> addExpressions(Collection<T> expressions) {
+        addAll(expressions);
+        return this;
+    }
+
+    public ExpressionList withExpressions(T... expressions) {
+        this.clear();
+        return addExpressions(expressions);
+    }
+
+    public ExpressionList withExpressions(Collection<T> expressions) {
+        this.clear();
+        return addExpressions(expressions);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder) {
+        for (int i = 0; i < size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(get(i));
+        }
+        return builder;
     }
 
     @Override
     public String toString() {
-        return PlainSelect.getStringList(expressions, true, usingBrackets);
+        return appendTo(new StringBuilder()).toString();
     }
 
-    public ExpressionList addExpressions(Collection<? extends Expression> expressions) {
-        List<Expression> collection = Optional.ofNullable(getExpressions()).orElseGet(ArrayList::new);
-        collection.addAll(expressions);
-        return this.withExpressions(collection);
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
+    }
+
+    @Override
+    public SimpleNode getASTNode() {
+        return node;
+    }
+
+    @Override
+    public void setASTNode(SimpleNode node) {
+        this.node = node;
     }
 }

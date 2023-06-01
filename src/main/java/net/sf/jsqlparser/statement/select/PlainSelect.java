@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
@@ -16,6 +17,7 @@ import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -28,9 +30,10 @@ import static java.util.stream.Collectors.joining;
 public class PlainSelect extends Select {
 
     private Distinct distinct = null;
-    private List<SelectItem> selectItems;
+    private List<SelectItem<?>> selectItems;
     private List<Table> intoTables;
     private FromItem fromItem;
+    private List<LateralView> lateralViews;
     private List<Join> joins;
     private Expression where;
     private GroupByElement groupBy;
@@ -55,6 +58,13 @@ public class PlainSelect extends Select {
 
     private List<WindowDefinition> windowDefinitions;
 
+    /**
+     * @see <a href=
+     *      'https://clickhouse.com/docs/en/sql-reference/statements/select/from#final-modifier'>Clickhouse
+     *      FINAL</a>
+     */
+    private boolean isUsingFinal = false;
+
     @Deprecated
     public boolean isUseBrackets() {
         return false;
@@ -68,7 +78,7 @@ public class PlainSelect extends Select {
         return intoTables;
     }
 
-    public List<SelectItem> getSelectItems() {
+    public List<SelectItem<?>> getSelectItems() {
         return selectItems;
     }
 
@@ -89,23 +99,73 @@ public class PlainSelect extends Select {
         this.intoTables = intoTables;
     }
 
-    public PlainSelect withSelectItems(List<SelectItem> list) {
+    public PlainSelect withSelectItems(List<SelectItem<?>> list) {
         this.setSelectItems(list);
         return this;
     }
 
-    public void setSelectItems(List<SelectItem> list) {
+    public void setSelectItems(List<SelectItem<?>> list) {
         selectItems = list;
     }
 
-    public PlainSelect addSelectItems(SelectItem... items) {
-        List<SelectItem> list = Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
-        Collections.addAll(list, items);
-        return withSelectItems(list);
+    public PlainSelect addSelectItems(SelectItem<?>... items) {
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        selectItems.addAll(Arrays.asList(items));
+        return this;
+    }
+
+    public PlainSelect addSelectItems(Expression... expressions) {
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        for (Expression expression : expressions) {
+            selectItems.add(SelectItem.from(expression));
+        }
+        return this;
+    }
+
+    public PlainSelect addSelectItem(Expression expression, Alias alias) {
+        selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
+        selectItems.add(new SelectItem(expression, alias));
+        return this;
+    }
+
+    public PlainSelect addSelectItem(Expression expression) {
+        return addSelectItem(expression, null);
     }
 
     public void setWhere(Expression where) {
         this.where = where;
+    }
+
+    public List<LateralView> getLateralViews() {
+        return lateralViews;
+    }
+
+    public void setLateralViews(Collection<LateralView> lateralViews) {
+        if (this.lateralViews == null && lateralViews != null) {
+            this.lateralViews = new ArrayList<>();
+        } else {
+            this.lateralViews.clear();
+        }
+
+        if (lateralViews != null) {
+            this.lateralViews.addAll(lateralViews);
+        } else {
+            this.lateralViews = null;
+        }
+    }
+
+    public PlainSelect addLateralView(LateralView lateralView) {
+        if (this.lateralViews == null) {
+            this.lateralViews = new ArrayList<>();
+        }
+
+        this.lateralViews.add(lateralView);
+        return this;
+    }
+
+    public PlainSelect withLateralViews(Collection<LateralView> lateralViews) {
+        this.setLateralViews(lateralViews);
+        return this;
     }
 
     /**
@@ -130,6 +190,19 @@ public class PlainSelect extends Select {
 
     public void setJoins(List<Join> list) {
         joins = list;
+    }
+
+    public boolean isUsingFinal() {
+        return isUsingFinal;
+    }
+
+    public void setUsingFinal(boolean usingFinal) {
+        this.isUsingFinal = usingFinal;
+    }
+
+    public PlainSelect withUsingFinal(boolean usingFinal) {
+        this.setUsingFinal(usingFinal);
+        return this;
     }
 
     @Override
@@ -208,8 +281,8 @@ public class PlainSelect extends Select {
     }
 
     public PlainSelect addGroupByColumnReference(Expression expr) {
-        groupBy = Optional.ofNullable(groupBy).orElseGet(GroupByElement::new);
-        groupBy.addGroupByExpression(expr);
+        this.groupBy = Optional.ofNullable(groupBy).orElseGet(GroupByElement::new);
+        this.groupBy.addGroupByExpression(expr);
         return this;
     }
 
@@ -350,6 +423,11 @@ public class PlainSelect extends Select {
 
         if (fromItem != null) {
             builder.append(" FROM ").append(fromItem);
+            if (lateralViews != null) {
+                for (LateralView lateralView : lateralViews) {
+                    builder.append(" ").append(lateralView);
+                }
+            }
             if (joins != null) {
                 for (Join join : joins) {
                     if (join.isSimple()) {
@@ -358,6 +436,10 @@ public class PlainSelect extends Select {
                         builder.append(" ").append(join);
                     }
                 }
+            }
+
+            if (isUsingFinal) {
+                builder.append(" FINAL");
             }
 
             if (ksqlWindow != null) {
@@ -557,8 +639,8 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect addSelectItems(Collection<? extends SelectItem> selectItems) {
-        List<SelectItem> collection =
+    public PlainSelect addSelectItems(Collection<? extends SelectItem<?>> selectItems) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getSelectItems()).orElseGet(ArrayList::new);
         collection.addAll(selectItems);
         return this.withSelectItems(collection);

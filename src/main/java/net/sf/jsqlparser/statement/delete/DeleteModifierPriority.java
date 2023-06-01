@@ -10,5 +10,9 @@
 package net.sf.jsqlparser.statement.delete;
 
 public enum DeleteModifierPriority {
-    LOW_PRIORITY
+    LOW_PRIORITY;
+
+    public static DeleteModifierPriority from(String priority) {
+        return Enum.valueOf(DeleteModifierPriority.class, priority.toUpperCase());
+    }
 }
