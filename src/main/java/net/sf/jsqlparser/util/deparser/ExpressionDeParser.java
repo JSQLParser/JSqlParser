@@ -816,8 +816,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(IntervalExpression iexpr) {
-        buffer.append(iexpr.toString());
+    public void visit(IntervalExpression intervalExpression) {
+        if (intervalExpression.isUsingIntervalKeyword()) {
+            buffer.append("INTERVAL ");
+        }
+        if (intervalExpression.getExpression()!=null) {
+            intervalExpression.getExpression().accept(this);
+        } else {
+            buffer.append(intervalExpression.getParameter());
+        }
+        if (intervalExpression.getIntervalType()!=null) {
+            buffer.append(" ").append(intervalExpression.getIntervalType());
+        }
     }
 
     @Override
