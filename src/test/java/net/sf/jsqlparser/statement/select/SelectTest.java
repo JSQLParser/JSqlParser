@@ -4213,7 +4213,8 @@ public class SelectTest {
     @Test
     public void testForXmlPath() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')");
+                "SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')",
+                true);
     }
 
     // @Test

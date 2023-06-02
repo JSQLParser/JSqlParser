@@ -23,4 +23,15 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
         this.node = node;
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        SimpleNode simpleNode = getASTNode();
+        Token token = simpleNode.jjtGetFirstToken();
+        Token lastToken = simpleNode.jjtGetLastToken();
+        while (token.next != null && token.absoluteEnd <= lastToken.absoluteEnd) {
+            builder.append(" ").append(token.image);
+            token = token.next;
+        }
+        return builder;
+    }
+
 }

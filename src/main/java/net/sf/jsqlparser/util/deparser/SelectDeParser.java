@@ -272,6 +272,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                 buffer.append(" SKIP LOCKED");
             }
         }
+        if (plainSelect.getForClause() != null) {
+            plainSelect.getForClause().appendTo(buffer);
+        }
+
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
