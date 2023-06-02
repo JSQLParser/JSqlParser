@@ -18,14 +18,14 @@ SELECT 1 FROM dual WHERE a = b
 ```
 
 ```text
- SQL Text
-   └─Statements: net.sf.jsqlparser.statement.select.Select
-       ├─selectItems -> Collection<SelectItem>
-       │  └─LongValue: 1
-       ├─Table: dual
-       └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
-          ├─Column: a
-          └─Column: b
+SQL Text
+ └─Statements: statement.select.PlainSelect
+    ├─selectItems: statement.select.SelectItem
+    │  └─LongValue: 1
+    ├─Table: dual
+    └─where: expression.operators.relational.EqualsTo
+       ├─Column: a
+       └─Column: b
 ```
 
 ```java
@@ -60,9 +60,6 @@ Assertions.assertEquals("b", b.getColumnName());
 
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
-
-## Alternatives to JSqlParser?
-[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
 

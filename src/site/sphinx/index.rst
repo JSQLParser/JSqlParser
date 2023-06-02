@@ -12,6 +12,7 @@ Java SQL Parser Library
 
    usage
    contribution
+   migration
    syntax_stable
    syntax_snapshot
    javadoc_stable
