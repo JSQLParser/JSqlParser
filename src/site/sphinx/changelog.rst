@@ -8,12 +8,39 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **feat: T-SQL `FOR ...` clause**
+    
+    Andreas Reichel, 2023-06-02
+  * **doc: migration guide**
+    
+    Andreas Reichel, 2023-06-02
+  * **fix: expose IntervalExpression attributes and use DeParser**
+    
+    Andreas Reichel, 2023-06-01
+  * **Update sphinx.yml**
+    
+    manticore-projects, 2023-06-01
+  * **doc: write migration guide**
+    
+    Andreas Reichel, 2023-05-29
+  * **fix: throw the specific exception**
+    
+    Andreas Reichel, 2023-05-29
+  * **doc: Website, fix tabs**
+    
+    Andreas Reichel, 2023-05-24
+  * **doc: Website improvements**
+    
+    Andreas Reichel, 2023-05-22
   * **build: improve Upload task**
     
     Andreas Reichel, 2023-05-19
   * **feat: Quoted Identifiers can contain double-quotes (PostgreSQL)**
     
     Andreas Reichel, 2023-05-18
+  * **Create gradle.yml**
+    
+    manticore-projects, 2023-05-18
   * **feat: functions blocks, parenthesed JSON Expressions**
     
     Andreas Reichel, 2023-05-18
@@ -164,6 +191,9 @@ Latest Changes since |JSQLPARSER_VERSION|
   * **feat: Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions**
     
     Andreas Reichel, 2023-05-03
+  * **Revert "fix: assign Enum case insensitive"**
+    
+    Andreas Reichel, 2023-05-02
   * **fix: assign Enum case insensitive**
     
     Andreas Reichel, 2023-05-02
