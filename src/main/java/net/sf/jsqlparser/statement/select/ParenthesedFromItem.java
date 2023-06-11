@@ -41,6 +41,10 @@ public class ParenthesedFromItem implements FromItem {
         return joins;
     }
 
+    public Join getJoin(int index) {
+        return joins.get(index);
+    }
+
     public FromItem addJoins(Join... joins) {
         List<Join> list = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         Collections.addAll(list, joins);

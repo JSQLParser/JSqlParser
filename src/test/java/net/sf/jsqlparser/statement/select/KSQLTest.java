@@ -31,7 +31,7 @@ public class KSQLTest {
 
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("table2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
         assertEquals(5L, plainSelect.getJoins().get(0).getJoinWindow().getDuration());
         assertEquals("HOURS",
@@ -51,7 +51,7 @@ public class KSQLTest {
 
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("table2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isWindowJoin());
         assertEquals(1L, plainSelect.getJoins().get(0).getJoinWindow().getBeforeDuration());
         assertEquals("MINUTE",

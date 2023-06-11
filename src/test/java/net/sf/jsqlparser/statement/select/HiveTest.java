@@ -30,7 +30,7 @@ public class HiveTest {
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("Othertable",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertTrue(plainSelect.getJoins().get(0).isLeft());
         assertTrue(plainSelect.getJoins().get(0).isSemi());
     }

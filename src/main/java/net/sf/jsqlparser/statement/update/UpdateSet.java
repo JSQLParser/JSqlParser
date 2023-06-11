@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class UpdateSet implements Serializable {
     protected ExpressionList<Column> columns = new ExpressionList<>();
-    protected ExpressionList values = new ExpressionList();
+    protected ExpressionList<Expression> values = new ExpressionList<>();
 
     public UpdateSet() {
 
@@ -40,12 +40,20 @@ public class UpdateSet implements Serializable {
         return columns;
     }
 
+    public Column getColumn(int index) {
+        return columns.get(index);
+    }
+
     public void setColumns(ExpressionList<Column> columns) {
         this.columns = Objects.requireNonNull(columns);
     }
 
     public ExpressionList<?> getValues() {
         return values;
+    }
+
+    public Expression getValue(int index) {
+        return values.get(index);
     }
 
     public void setValues(ExpressionList values) {
@@ -83,8 +91,8 @@ public class UpdateSet implements Serializable {
         values.add(expression);
     }
 
-    public void add(ExpressionList expressionList) {
-        values.addAll(expressionList.getExpressions());
+    public void add(ExpressionList<?> expressionList) {
+        values.addAll(expressionList);
     }
 
     public final static StringBuilder appendUpdateSetsTo(StringBuilder builder,

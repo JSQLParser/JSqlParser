@@ -266,7 +266,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (plainSelect.getJoins() != null) {
             for (Join join : plainSelect.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
         if (plainSelect.getWhere() != null) {
@@ -732,7 +732,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (delete.getJoins() != null) {
             for (Join join : delete.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
 
@@ -746,7 +746,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         visit(update.getTable());
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
         if (update.getExpressions() != null) {
@@ -761,7 +761,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (update.getJoins() != null) {
             for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
 

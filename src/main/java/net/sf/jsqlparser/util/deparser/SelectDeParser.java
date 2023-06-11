@@ -468,7 +468,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         }
 
-        FromItem fromItem = join.getRightItem();
+        FromItem fromItem = join.getFromItem();
         fromItem.accept(this);
         if (join.isWindowJoin()) {
             buffer.append(" WITHIN ");

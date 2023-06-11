@@ -1100,10 +1100,10 @@ public class SelectTest {
         assertEquals(3, plainSelect.getJoins().size());
         assertEquals("mytable0", plainSelect.getFromItem().getAlias().getName());
         assertEquals("alias_tab1",
-                plainSelect.getJoins().get(0).getRightItem().getAlias().getName());
+                plainSelect.getJoins().get(0).getFromItem().getAlias().getName());
         assertEquals("alias_tab2",
-                plainSelect.getJoins().get(1).getRightItem().getAlias().getName());
-        assertEquals("mytable4", plainSelect.getJoins().get(2).getRightItem().getAlias().getName());
+                plainSelect.getJoins().get(1).getFromItem().getAlias().getName());
+        assertEquals("mytable4", plainSelect.getJoins().get(2).getFromItem().getAlias().getName());
     }
 
     @Test
@@ -1113,7 +1113,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select;
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("tab2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertEquals("tab1.id",
                 ((Column) ((EqualsTo) plainSelect.getJoins().get(0).getOnExpression())
                         .getLeftExpression()).getFullyQualifiedName());
@@ -1124,7 +1124,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(2, plainSelect.getJoins().size());
         assertEquals("tab3",
-                ((Table) plainSelect.getJoins().get(1).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(1).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(1).isOuter());
 
         statement = "SELECT * FROM tab1 LEFT OUTER JOIN tab2 ON tab1.id = tab2.id JOIN tab3";
@@ -1132,7 +1132,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(2, plainSelect.getJoins().size());
         assertEquals("tab3",
-                ((Table) plainSelect.getJoins().get(1).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(1).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(1).isOuter());
 
         // implicit INNER
@@ -1148,7 +1148,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("tab2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(0).isOuter());
         assertEquals(2, plainSelect.getJoins().get(0).getUsingColumns().size());
         assertEquals("id2",
@@ -1168,8 +1168,8 @@ public class SelectTest {
         assertTrue(plainSelect.getJoins().get(0).isOuter());
         assertTrue(plainSelect.getJoins().get(0).isSimple());
         assertEquals("bar",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
-        assertEquals("b", plainSelect.getJoins().get(0).getRightItem().getAlias().getName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
+        assertEquals("b", plainSelect.getJoins().get(0).getFromItem().getAlias().getName());
     }
 
     @Test

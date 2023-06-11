@@ -54,6 +54,18 @@ public class ParenthesedSelect extends Select implements FromItem {
         return select;
     }
 
+    public Values getValues() {
+        return (Values) select;
+    }
+
+    public PlainSelect getPlainSelect() {
+        return (PlainSelect) select;
+    }
+
+    public SetOperationList getSetOperationList() {
+        return (SetOperationList) select;
+    }
+
     public void setSelect(Select select) {
         this.select = select;
     }

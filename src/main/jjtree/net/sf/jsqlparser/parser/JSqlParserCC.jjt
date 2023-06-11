@@ -79,11 +79,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         token_source.configuration = configuration;
         return this;
     }
-    
+
     public FeatureConfiguration getConfiguration() {
         return token_source.configuration;
     }
-    
+
     public CCJSqlParser me () {
     	return this;
     }
@@ -2570,10 +2570,10 @@ Join JoinerExpression() #JoinerExpression:
                     )
     ]
   {
-      linkAST(join,jjtThis);
-      join.setRightItem(right);
-    return join;
-  }
+    linkAST(join,jjtThis);
+    join.setFromItem(right);
+  return join;
+}
 
 }
 
@@ -2587,8 +2587,8 @@ KSQLJoinWindow JoinWindow():
     Token afterTimeUnitToken = null;
 }
 {
-    (beforeDurationToken=<S_LONG> (beforeTimeUnitToken=<S_IDENTIFIER> | beforeTimeUnitToken=<K_DATE_LITERAL>)
-        [ "," afterDurationToken=<S_LONG> (afterTimeUnitToken=<S_IDENTIFIER> | afterTimeUnitToken=<K_DATE_LITERAL>) ]
+    beforeDurationToken=<S_LONG> (beforeTimeUnitToken=<S_IDENTIFIER> | beforeTimeUnitToken=<K_DATE_LITERAL>)
+    [ "," afterDurationToken=<S_LONG> (afterTimeUnitToken=<S_IDENTIFIER> | afterTimeUnitToken=<K_DATE_LITERAL>) ]
     {
         if (afterDurationToken == null) {
             retval.setDuration(Long.parseLong(beforeDurationToken.image));
@@ -2602,7 +2602,7 @@ KSQLJoinWindow JoinWindow():
         retval.setAfterTimeUnit(KSQLWindow.TimeUnit.from(afterTimeUnitToken.image));
         retval.setBeforeAfterWindow(true);
         return retval;
-    })
+    }
 }
 
 KSQLWindow KSQLWindowClause():

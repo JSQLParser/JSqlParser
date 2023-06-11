@@ -13,17 +13,28 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -174,5 +185,142 @@ public class HowToUseSample {
         final String reflectionString = TestUtils.toReflectionString(statement);
 
         System.out.println(reflectionString);
+    }
+
+    @Test
+    void migrationTest1() throws JSQLParserException {
+        String sqlStr = "VALUES ( 1, 2, 3 )";
+
+        Values values = (Values) CCJSqlParserUtil.parse(sqlStr);
+        Assertions.assertEquals(3, values.getExpressions().size());
+    }
+
+    @Test
+    void migrationTest2() throws JSQLParserException {
+        String sqlStr = "SELECT *\n" +
+                "        FROM ( VALUES 1, 2, 3 )";
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        ParenthesedSelect subSelect = (ParenthesedSelect) select.getFromItem();
+        Values values = (Values) subSelect.getSelect();
+        Assertions.assertEquals(3, values.getExpressions().size());
+    }
+
+    @Test
+    void migrationTest3() throws JSQLParserException {
+        String sqlStr = "UPDATE test\n" +
+                "        SET (   a\n" +
+                "                , b\n" +
+                "                , c ) = ( VALUES 1, 2, 3 )";
+
+        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        UpdateSet updateSet = update.getUpdateSets().get(0);
+        ParenthesedSelect subSelect = (ParenthesedSelect) updateSet.getValues().get(0);
+        Values values = (Values) subSelect.getSelect();
+        Assertions.assertEquals(3, values.getExpressions().size());
+    }
+
+    @Test
+    void migrationTest4() throws JSQLParserException {
+        String sqlStr = "INSERT INTO test\n" +
+                "        VALUES ( 1, 2, 3 )\n" +
+                "        ;";
+
+        Insert insert = (Insert) CCJSqlParserUtil.parse(sqlStr);
+        Values values = (Values) insert.getSelect();
+        Assertions.assertEquals(3, values.getExpressions().size());
+    }
+
+    @Test
+    void migrationTest5() throws JSQLParserException {
+        String sqlStr = "SELECT Function( a, b, c )\n" +
+                "        FROM dual\n" +
+                "        GROUP BY    a\n" +
+                "                    , b\n" +
+                "                    , c";
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        Function function = (Function) select.getSelectItem(0).getExpression();
+        Assertions.assertEquals(3, function.getParameters().size());
+
+        ExpressionList<?> groupByExpressions = select.getGroupBy().getGroupByExpressionList();
+        Assertions.assertEquals(3, groupByExpressions.size());
+    }
+
+    @Test
+    void migrationTest6() throws JSQLParserException {
+        String sqlStr = "(\n" +
+                "    SELECT *\n" +
+                "    FROM (  SELECT 1 )\n" +
+                "    UNION ALL\n" +
+                "    SELECT *\n" +
+                "    FROM ( VALUES 1, 2, 3 )\n" +
+                "    UNION ALL\n" +
+                "    VALUES ( 1, 2, 3 ) )";
+
+        ParenthesedSelect parenthesedSelect = (ParenthesedSelect) CCJSqlParserUtil.parse(sqlStr);
+        SetOperationList setOperationList = parenthesedSelect.getSetOperationList();
+
+        PlainSelect select1 = (PlainSelect) setOperationList.getSelect(0);
+        PlainSelect subSelect1 = ((ParenthesedSelect) select1.getFromItem()).getPlainSelect();
+        Assertions.assertEquals(1L,
+                subSelect1.getSelectItem(0).getExpression(LongValue.class).getValue());
+
+        Values values = (Values) setOperationList.getSelect(2);
+        Assertions.assertEquals(3, values.getExpressions().size());
+    }
+
+    @Test
+    void migrationTest7() throws JSQLParserException {
+        String sqlStr = "SELECT *\n" +
+                "FROM a\n" +
+                "  INNER JOIN (  b\n" +
+                "                  LEFT JOIN c\n" +
+                "                    ON b.d = c.d )\n" +
+                "    ON a.e = b.e";
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        Table aTable = (Table) select.getFromItem();
+
+        ParenthesedFromItem fromItem = (ParenthesedFromItem) select.getJoin(0).getFromItem();
+        Table bTable = (Table) fromItem.getFromItem();
+
+        Join join = fromItem.getJoin(0);
+        Table cTable = (Table) join.getFromItem();
+
+        Assertions.assertEquals("c", cTable.getName());
+    }
+
+    @Test
+    void migrationTest8() throws JSQLParserException {
+        String sqlStr = "SELECT ( ( 1, 2, 3 ), ( 4, 5, 6 ), ( 7, 8, 9 ) )";
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        ParenthesedExpressionList<?> expressionList =
+                (ParenthesedExpressionList<?>) select.getSelectItem(0).getExpression();
+
+        ParenthesedExpressionList<?> expressionList1 =
+                (ParenthesedExpressionList<?>) expressionList.get(0);
+        Assertions.assertEquals(3, expressionList1.size());
+    }
+
+    @Test
+    void migrationTest9() throws JSQLParserException {
+        String sqlStr = "UPDATE a\n" +
+                "SET (   a\n" +
+                "        , b\n" +
+                "        , c ) = (   1\n" +
+                "                    , 2\n" +
+                "                    , 3 )\n" +
+                "    , d = 4";
+
+        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        UpdateSet updateSet1 = update.getUpdateSet(0);
+        Assertions.assertEquals(3, updateSet1.getColumns().size());
+        Assertions.assertEquals(3, updateSet1.getValues().size());
+
+        UpdateSet updateSet2 = update.getUpdateSet(1);
+        Assertions.assertEquals("d", updateSet2.getColumn(0).getColumnName());
+        Assertions.assertEquals(4L, ((LongValue) updateSet2.getValue(0)).getValue());
     }
 }

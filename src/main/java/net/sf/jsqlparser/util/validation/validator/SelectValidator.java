@@ -233,7 +233,7 @@ public class SelectValidator extends AbstractValidator<SelectItem>
             validateOptionalFeature(c, join.getUsingColumns(), Feature.joinUsingColumns);
         }
 
-        validateOptionalFromItem(join.getRightItem());
+        validateOptionalFromItem(join.getFromItem());
         for (Expression onExpression : join.getOnExpressions()) {
             validateOptionalExpression(onExpression);
         }
