@@ -820,12 +820,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (intervalExpression.isUsingIntervalKeyword()) {
             buffer.append("INTERVAL ");
         }
-        if (intervalExpression.getExpression()!=null) {
+        if (intervalExpression.getExpression() != null) {
             intervalExpression.getExpression().accept(this);
         } else {
             buffer.append(intervalExpression.getParameter());
         }
-        if (intervalExpression.getIntervalType()!=null) {
+        if (intervalExpression.getIntervalType() != null) {
             buffer.append(" ").append(intervalExpression.getIntervalType());
         }
     }

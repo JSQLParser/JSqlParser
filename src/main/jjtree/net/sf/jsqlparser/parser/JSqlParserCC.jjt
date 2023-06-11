@@ -148,11 +148,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ASC:"ASC">
 |   <K_AUTHORIZATION:"AUTHORIZATION">
 |   <K_AUTO:"AUTO">
+|   <K_BASE64:"BASE64">
 |   <K_BEGIN:"BEGIN">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">
 |   <K_BIT:"BIT">
 |   <K_BOTH:"BOTH">
+|   <K_BROWSE:"BROWSE">
 |   <K_BY:"BY">
 |   <K_BYTES: "BYTES">
 |   <K_CACHE: "CACHE">
@@ -209,6 +211,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DROP:"DROP">
 |   <K_DUMP:"DUMP">
 |   <K_DUPLICATE: "DUPLICATE">
+|   <K_ELEMENTS: "ELEMENTS">
 |   <K_ELSE:"ELSE">
 |   <K_EMIT : "EMIT">
 |   <K_ENABLE : "ENABLE">
@@ -220,6 +223,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
 |   <K_EXPLAIN:"EXPLAIN">
+|   <K_EXPLICIT:"EXPLICIT">
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
@@ -254,6 +258,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ILIKE:"ILIKE">
 |   <K_IN:"IN">
 |   <K_INCLUDE:"INCLUDE">
+|   <K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
 |   <K_INCREMENT:"INCREMENT">
 |   <K_INDEX: "INDEX">
 |   <K_INNER:"INNER">
@@ -345,6 +350,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_QUICK : "QUICK">
 |   <K_QUIESCE: "QUIESCE">
 |   <K_RANGE: "RANGE">
+|   <K_RAW: "RAW">
 |   <K_READ: "READ" >
 |   <K_RECYCLEBIN: "RECYCLEBIN">
 |   <K_RECURSIVE:"RECURSIVE">
@@ -364,6 +370,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
 |   <K_ROLLBACK:"ROLLBACK">
+|   <K_ROOT:"ROOT">
 |   <K_ROW: "ROW">
 |   <K_ROWS: "ROWS">
 |   <K_SAFE_CAST: "SAFE_CAST">
@@ -443,12 +450,16 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITH_TIES:"WITH TIES">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
+|   <K_WITHOUT_ARRAY_WRAPPER:"WITHOUT_ARRAY_WRAPPER">
 |   <K_WORK:"WORK">
 |   <K_XML:"XML">
 |   <K_XOR:"XOR">
 |   <K_XMLSERIALIZE:"XMLSERIALIZE">
 |   <K_XMLAGG:"XMLAGG">
+|   <K_XMLDATA:"XMLDATA">
+|   <K_XMLSCHEMA:"XMLSCHEMA">
 |   <K_XMLTEXT:"XMLTEXT">
+|   <K_XSINIL:"XSINIL">
 |   <K_YAML:"YAML">
 |   <K_YES:"YES">
 |   <K_ZONE:"ZONE">
@@ -1718,7 +1729,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLTEXT" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -1826,24 +1837,22 @@ Select Select() #Select:
     WithIsolation withIsolation = null;
 }
 {
+    [ with=WithList() ]
     (
-        [ with=WithList() ]
-        (
-            LOOKAHEAD(3) select = PlainSelect()
-            |
-            LOOKAHEAD(3) select = Values()
-            |
-            LOOKAHEAD(3) select = ParenthesedSelect()
-        )
-        [ LOOKAHEAD(2) select = SetOperationList(select) ]
-
-        [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
-
-        [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
-        [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
-        [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
-        [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
+        LOOKAHEAD(3) select = PlainSelect()
+        |
+        LOOKAHEAD(3) select = Values()
+        |
+        LOOKAHEAD(3) select = ParenthesedSelect()
     )
+    [ LOOKAHEAD(2) select = SetOperationList(select) ]
+
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
+
+    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
+    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
+    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
 
     {
         linkAST(select, jjtThis);
@@ -1896,6 +1905,80 @@ LateralView LateralView() #LateralView:
     }
 }
 
+ForClause ForClause() #ForClause:
+{
+    Token token = null;
+    ForClause forClause = new ForClause();
+}
+{
+    <K_FOR>
+    (
+        token = <K_BROWSE>
+        |
+        token = <K_XML>
+        (
+            (
+                ( <K_RAW> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ] | <K_AUTO> )
+                (
+                    LOOKAHEAD(2) ","
+                    (
+                        <K_BINARY> <K_BASE64>
+                        | <K_TYPE>
+                        | <K_ROOT> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ]
+                        | <K_XMLDATA>
+                        | <K_XMLSCHEMA> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")"  ]
+                        | <K_ELEMENTS> [ LOOKAHEAD(2) ( <K_XSINIL> | <K_ABSENT> ) ]
+                    )
+                )*
+            )
+            |
+            (
+                <K_EXPLICIT>
+                (
+                    LOOKAHEAD(2) ","
+                    (
+                        <K_BINARY> <K_BASE64>
+                        | <K_TYPE>
+                        | <K_ROOT> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ]
+                        | <K_XMLDATA>
+                    )
+                )*
+            )
+            |
+            (
+                <K_PATH> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ]
+                (
+                    LOOKAHEAD(2) ","
+                    (
+                        <K_BINARY> <K_BASE64>
+                        | <K_TYPE>
+                        | <K_ROOT> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ]
+                        | <K_ELEMENTS> [ LOOKAHEAD(2) ( <K_XSINIL> | <K_ABSENT> ) ]
+                    )
+                )*
+            )
+        )
+        |
+        (
+            token = <K_JSON> ( <K_AUTO> | <K_PATH> )
+            (
+                LOOKAHEAD(2) ","
+                (
+                    <K_ROOT> [ LOOKAHEAD(2) "(" <S_CHAR_LITERAL> ")" ]
+                    | <K_INCLUDE_NULL_VALUES>
+                    | <K_WITHOUT_ARRAY_WRAPPER>
+                )
+            )*
+        )
+    )
+    {
+        forClause.setForOption(token.image);
+        linkAST(forClause,jjtThis);
+        return forClause;
+    }
+}
+
+
 List<LateralView> LateralViews():
 {
     ArrayList<LateralView> lateralViews = new ArrayList<LateralView>();
@@ -1932,6 +2015,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<Join> joins = null;
     List<SelectItem<?>> distinctOn = null;
     Expression where = null;
+    ForClause forClause = null;
     List<OrderByElement> orderByElements;
     GroupByElement groupBy = null;
     Expression having = null;
@@ -2005,6 +2089,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
+    [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [ LOOKAHEAD(2) <K_WINDOW>
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
@@ -2027,9 +2112,6 @@ PlainSelect PlainSelect() #PlainSelect:
     ]
 
     [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
-
-    [ LOOKAHEAD(3) <K_FOR> <K_XML> <K_PATH> "(" token = <S_CHAR_LITERAL> ")" { plainSelect.setForXmlPath(token.image); } ]
-
     {
         plainSelect.setSelectItems(selectItems);
         plainSelect.setFromItem(fromItem);
@@ -2858,8 +2940,9 @@ Limit LimitBy():
 }
 {
     limit = LimitWithOffset()
-    <K_BY> byExpressions = ExpressionList()  { limit.setByExpressions(byExpressions); }
+    <K_BY> byExpressions = ExpressionList()
     {
+        limit.setByExpressions(byExpressions);
         return limit;
     }
 }
@@ -2926,8 +3009,9 @@ OptimizeFor OptimizeFor():
     LongValue value;
 }
 {
-    <K_OPTIMIZE> <K_FOR> token=<S_LONG> <K_ROWS> { value = new LongValue(token.image); }
+    <K_OPTIMIZE> <K_FOR> token=<S_LONG> <K_ROWS>
     {
+        value = new LongValue(token.image);
         return new OptimizeFor(value.getValue());
     }
 }
@@ -2951,9 +3035,12 @@ Top Top():
        ":"                                  { top.setExpression(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
        |
        "("
-            expr=AdditiveExpression()   { top.setExpression(expr); }
-            { top.setParenthesis(true);}
-       ")"
+        expr=AdditiveExpression()
+        {
+            top.setExpression(expr);
+            top.setParenthesis(true);
+        }
+        ")"
     ) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ]
       [ LOOKAHEAD(2) <K_WITH_TIES>            { top.setWithTies(true); }]
     {
@@ -4398,8 +4485,9 @@ IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
         interval = new IntervalExpression(false);
         interval.setExpression(expr);
     }
-    token = <K_DATE_LITERAL> { interval.setIntervalType(token.image); }
+    token = <K_DATE_LITERAL>
     {
+        interval.setIntervalType(token.image);
         return interval;
     }
 }
@@ -5396,8 +5484,11 @@ AlterView AlterView(boolean useReplace):
     <K_VIEW> view=Table() { alterView.setView(view); alterView.setUseReplace(useReplace); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
-    select=Select() { alterView.setSelect(select); }
-    { return alterView; }
+    select=Select()
+    {
+        alterView.setSelect(select);
+        return alterView;
+    }
 }
 
 List<String> CreateParameter():
@@ -6287,9 +6378,9 @@ Wait Wait():
 {
     // sqlserver-oracle-> WAIT (TIMEOUT)
     // https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_10002.htm#i2126016
-    <K_WAIT> token=<S_LONG> { wait.setTimeout(Long.parseLong(token.image)); }
-
+    <K_WAIT> token=<S_LONG>
     {
+        wait.setTimeout(Long.parseLong(token.image));
         return wait;
     }
 }
@@ -6299,10 +6390,11 @@ SavepointStatement SavepointStatement():
   SavepointStatement savepointStatement;
 }
 {
-  <K_SAVEPOINT> token=<S_IDENTIFIER> { savepointStatement = new SavepointStatement(token.image); }
-  {
-    return savepointStatement;
-  }
+    <K_SAVEPOINT> token=<S_IDENTIFIER>
+    {
+        savepointStatement = new SavepointStatement(token.image);
+        return savepointStatement;
+    }
 }
 
 RollbackStatement RollbackStatement():
@@ -6364,8 +6456,9 @@ Comment Comment():
             <K_VIEW> view = Table() { result.setView(view); }
         )
     )
-    <K_IS> comment=<S_CHAR_LITERAL> { result.setComment(new StringValue(comment.image)); }
+    <K_IS> comment=<S_CHAR_LITERAL>
     {
+        result.setComment(new StringValue(comment.image));
         return result;
     }
 }
@@ -6544,10 +6637,11 @@ CreateSequence CreateSequence():
 }
 {
   <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
-  sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
-  {
-    return createSequence;
-  }
+  sequenceParameters = SequenceParameters()
+    {
+        sequence.setParameters(sequenceParameters);
+        return createSequence;
+    }
 }
 
 AlterSequence AlterSequence():
@@ -6557,11 +6651,12 @@ AlterSequence AlterSequence():
   List<Sequence.Parameter> sequenceParameters;
 }
 {
-  <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
-  sequenceParameters = SequenceParameters() { sequence.setParameters(sequenceParameters); }
-  {
-    return alterSequence;
-  }
+    <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
+    sequenceParameters = SequenceParameters()
+    {
+        sequence.setParameters(sequenceParameters);
+        return alterSequence;
+    }
 }
 
 Statement Create():
