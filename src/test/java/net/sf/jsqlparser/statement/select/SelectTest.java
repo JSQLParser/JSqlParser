@@ -5710,4 +5710,16 @@ public class SelectTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    public void testNotNullInFilter() throws JSQLParserException {
+        String stmt = "SELECT count(*) FILTER (WHERE i NOTNULL) AS filtered FROM tasks";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testNotIsNullInFilter() throws JSQLParserException {
+        String stmt = "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }

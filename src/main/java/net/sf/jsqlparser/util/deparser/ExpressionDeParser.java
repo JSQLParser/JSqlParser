@@ -284,7 +284,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(IsNullExpression isNullExpression) {
         isNullExpression.getLeftExpression().accept(this);
-        if (isNullExpression.isUseIsNull()) {
+        if (isNullExpression.isUseNotNull()) {
+            buffer.append(" NOTNULL");
+        } else if (isNullExpression.isUseIsNull()) {
             if (isNullExpression.isNot()) {
                 buffer.append(" NOT ISNULL");
             } else {
