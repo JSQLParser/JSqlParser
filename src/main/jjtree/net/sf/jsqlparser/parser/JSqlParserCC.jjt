@@ -3270,8 +3270,6 @@ Expression RegularCondition() #RegularCondition:
     | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
     | "@@" { result = new Matches(); }
     | "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
-    | [<K_NOT> { not=true; } ] <K_REGEXP> [ LOOKAHEAD(2) <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(not, binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-    | <K_RLIKE> [ LOOKAHEAD(2) <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE).useRLike(); }
     | "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
     | "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
     | "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
@@ -3400,7 +3398,15 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     Token token;
 }
 {
-    [<K_NOT> { result.setNot(true); } ] ( <K_LIKE> | <K_ILIKE> { result.setCaseInsensitive(true); } ) rightExpression=SimpleExpression()
+    [<K_NOT> { result.setNot(true); } ]
+    (
+        token = <K_LIKE>
+        | token = <K_ILIKE>
+        | token = <K_RLIKE>
+        | token = <K_REGEXP>
+    ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
+    [ <K_BINARY> {result.setUseBinary(true); } ]
+    rightExpression=SimpleExpression()
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
             LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }

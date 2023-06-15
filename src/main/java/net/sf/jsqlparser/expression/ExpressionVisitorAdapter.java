@@ -44,7 +44,6 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -430,11 +429,6 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(JsonOperator expr) {
-        visitBinaryExpression(expr);
-    }
-
-    @Override
-    public void visit(RegExpMySQLOperator expr) {
         visitBinaryExpression(expr);
     }
 

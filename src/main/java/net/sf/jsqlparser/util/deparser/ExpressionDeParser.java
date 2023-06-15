@@ -98,7 +98,6 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.schema.Column;
@@ -330,8 +329,17 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(LikeExpression likeExpression) {
-        visitBinaryExpression(likeExpression, (likeExpression.isNot() ? " NOT" : "")
-                + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
+        likeExpression.getLeftExpression().accept(this);
+        buffer.append(" ");
+        if (likeExpression.isNot()) {
+            buffer.append("NOT ");
+        }
+        buffer.append(likeExpression.getLikeKeyWord()).append(" ");
+        if (likeExpression.isUseBinary()) {
+            buffer.append("BINARY ");
+        }
+        likeExpression.getRightExpression().accept(this);
+
         Expression escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE ");
@@ -847,10 +855,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
     }
 
-    @Override
-    public void visit(RegExpMySQLOperator rexpr) {
-        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
-    }
 
     @Override
     public void visit(JsonExpression jsonExpr) {

@@ -118,8 +118,6 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.relational.NotEqualsTo(),
             new net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator(
                     RegExpMatchOperatorType.MATCH_CASEINSENSITIVE),
-            new net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator(
-                    RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE),
             new net.sf.jsqlparser.expression.operators.relational.SimilarToExpression(),
             new net.sf.jsqlparser.schema.Column(), new net.sf.jsqlparser.schema.Database("db"),
             new net.sf.jsqlparser.schema.Sequence(),
