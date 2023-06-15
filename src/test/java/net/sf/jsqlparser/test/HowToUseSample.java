@@ -19,11 +19,15 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -38,6 +42,14 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("PMD")
 public class HowToUseSample {
@@ -322,5 +334,177 @@ public class HowToUseSample {
         UpdateSet updateSet2 = update.getUpdateSet(1);
         Assertions.assertEquals("d", updateSet2.getColumn(0).getColumnName());
         Assertions.assertEquals(4L, ((LongValue) updateSet2.getValue(0)).getValue());
+    }
+
+    @Test
+    void migrationTest10() throws JSQLParserException {
+        String sqlStr = "INSERT INTO target SELECT * FROM source";
+
+        PlainSelect select = new PlainSelect()
+                .addSelectItem(new AllColumns())
+                .withFromItem(new Table("source"));
+
+        Insert insert = new Insert()
+                .withTable(new Table("target"))
+                .withSelect(select);
+
+        TestUtils.assertStatementCanBeDeparsedAs(insert, sqlStr);
+    }
+
+    @Test
+    void migrationTest11() throws JSQLParserException {
+        String sqlStr = "INSERT INTO target VALUES (1, 2, 3)";
+
+        Values values = new Values()
+                .addExpressions(
+                        new LongValue(1), new LongValue(2), new LongValue(3));
+
+        Insert insert = new Insert()
+                .withTable(new Table("target"))
+                .withSelect(values);
+
+        TestUtils.assertStatementCanBeDeparsedAs(insert, sqlStr);
+    }
+
+    @Test
+    void testComplexParsingOnly() throws Exception {
+        String sqlStr = "SELECT  e.id\n" +
+                "        , e.code\n" +
+                "        , e.review_type\n" +
+                "        , e.review_object\n" +
+                "        , e.review_first_datetime AS reviewfirsttime\n" +
+                "        , e.review_latest_datetime AS reviewnewtime\n" +
+                "        , e.risk_event\n" +
+                "        , e.risk_detail\n" +
+                "        , e.risk_grade\n" +
+                "        , e.risk_status\n" +
+                "        , If( e.deal_type IS NULL\n" +
+                "            OR e.deal_type = '', '--', e.deal_type ) AS dealtype\n" +
+                "        , e.deal_result\n" +
+                "        , If( e.deal_remark IS NULL\n" +
+                "            OR e.deal_remark = '', '--', e.deal_remark ) AS dealremark\n" +
+                "        , e.is_deleted\n" +
+                "        , e.review_object_id\n" +
+                "        , e.archive_id\n" +
+                "        , e.feature AS featurename\n" +
+                "        , Ifnull( ( SELECT real_name\n" +
+                "                    FROM bladex.blade_user\n" +
+                "                    WHERE id = e.review_first_user ), ( SELECT DISTINCT\n" +
+                "                                                            real_name\n" +
+                "                                                        FROM app_sys.asys_uniapp_rn_auth\n"
+                +
+                "                                                        WHERE uniapp_user_id = e.review_first_user\n"
+                +
+                "                                                            AND is_disable = 0 ) ) AS reviewfirstuser\n"
+                +
+                "        , Ifnull( ( SELECT real_name\n" +
+                "                    FROM bladex.blade_user\n" +
+                "                    WHERE id = e.review_latest_user ), (    SELECT DISTINCT\n" +
+                "                                                                real_name\n" +
+                "                                                            FROM app_sys.asys_uniapp_rn_auth\n"
+                +
+                "                                                            WHERE uniapp_user_id = e.review_latest_user\n"
+                +
+                "                                                                AND is_disable = 0 ) ) AS reviewnewuser\n"
+                +
+                "        , If( ( SELECT real_name\n" +
+                "                FROM bladex.blade_user\n" +
+                "                WHERE id = e.deal_user ) IS NOT NULL\n" +
+                "            AND e.deal_user != - 9999, (    SELECT real_name\n" +
+                "                                            FROM bladex.blade_user\n" +
+                "                                            WHERE id = e.deal_user ), '--' ) AS dealuser\n"
+                +
+                "        , CASE\n" +
+                "                WHEN 'COMPANY'\n" +
+                "                    THEN Concat( (  SELECT ar.customer_name\n" +
+                "                                    FROM mtp_cs.mtp_rsk_cust_archive ar\n" +
+                "                                    WHERE ar.is_deleted = 0\n" +
+                "                                        AND ar.id = e.archive_id ), If( (   SELECT alias\n"
+                +
+                "                                                                            FROM web_crm.wcrm_customer\n"
+                +
+                "                                                                            WHERE id = e.customer_id ) = ''\n"
+                +
+                "                OR (    SELECT alias\n" +
+                "                        FROM web_crm.wcrm_customer\n" +
+                "                        WHERE id = e.customer_id ) IS NULL, ' ', Concat( '（', ( SELECT alias\n"
+                +
+                "                                                                                FROM web_crm.wcrm_customer\n"
+                +
+                "                                                                                WHERE id = e.customer_id ), '）' ) ) )\n"
+                +
+                "                WHEN 'EMPLOYEE'\n" +
+                "                    THEN (  SELECT Concat( auth.real_name, ' ', auth.phone )\n" +
+                "                            FROM app_sys.asys_uniapp_rn_auth auth\n" +
+                "                            WHERE auth.is_disable = 0\n" +
+                "                                AND auth.uniapp_user_id = e.uniapp_user_id )\n" +
+                "                WHEN 'DEAL'\n" +
+                "                    THEN (  SELECT DISTINCT\n" +
+                "                                Concat( batch.code, '-', detail.line_seq\n" +
+                "                                        , ' ', Ifnull( (    SELECT DISTINCT\n" +
+                "                                                                auth.real_name\n" +
+                "                                                            FROM app_sys.asys_uniapp_rn_auth auth\n"
+                +
+                "                                                            WHERE auth.uniapp_user_id = e.uniapp_user_id\n"
+                +
+                "                                                                AND auth.is_disable = 0 ), ' ' ) )\n"
+                +
+                "                            FROM web_pym.wpym_payment_batch_detail detail\n" +
+                "                                LEFT JOIN web_pym.wpym_payment_batch batch\n" +
+                "                                    ON detail.payment_batch_id = batch.id\n" +
+                "                            WHERE detail.id = e.review_object_id )\n" +
+                "                WHEN 'TASK'\n" +
+                "                    THEN (  SELECT code\n" +
+                "                            FROM web_tm.wtm_task task\n" +
+                "                            WHERE e.review_object_id = task.id )\n" +
+                "                ELSE NULL\n" +
+                "            END AS reviewobjectname\n" +
+                "        , CASE\n" +
+                "                WHEN 4\n" +
+                "                    THEN 'HIGH_LEVEL'\n" +
+                "                WHEN 3\n" +
+                "                    THEN 'MEDIUM_LEVEL'\n" +
+                "                WHEN 2\n" +
+                "                    THEN 'LOW_LEVEL'\n" +
+                "                ELSE 'HEALTHY'\n" +
+                "            END AS risklevel\n" +
+                "FROM mtp_cs.mtp_rsk_event e\n" +
+                "WHERE e.is_deleted = 0\n" +
+                "ORDER BY e.review_latest_datetime DESC\n" +
+                "LIMIT 30\n" +
+                ";";
+
+        long startMillis = System.currentTimeMillis();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        for (int i = 1; i < 1; i++) {
+            final CCJSqlParser parser = new CCJSqlParser(sqlStr)
+                    .withSquareBracketQuotation(false)
+                    .withAllowComplexParsing(true)
+                    .withBackslashEscapeCharacter(false);
+            Future<Statements> future = executorService.submit(new Callable<Statements>() {
+                @Override
+                public Statements call() throws ParseException {
+                    return parser.Statements();
+                }
+            });
+            try {
+                future.get(6000, TimeUnit.MILLISECONDS);
+                long endMillis = System.currentTimeMillis();
+
+                System.out.println("Time to parse [ms]: " + (endMillis - startMillis) / i);
+            } catch (TimeoutException | InterruptedException ex2) {
+                parser.interrupted = true;
+                future.cancel(true);
+                throw new JSQLParserException("Failed to within reasonable time ", ex2);
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof ParseException) {
+                    ParseException parseException = (ParseException) e.getCause();
+                    net.sf.jsqlparser.parser.Token token = parseException.currentToken.next;
+                    throw new JSQLParserException(
+                            "Failed to parse statement at Token " + token.image);
+                }
+            }
+        }
+        executorService.shutdown();
     }
 }

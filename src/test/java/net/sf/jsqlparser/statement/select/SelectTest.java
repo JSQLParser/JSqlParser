@@ -31,6 +31,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -3370,7 +3371,7 @@ public class SelectTest {
 
         // verify params
         assertNotNull(function.getParameters());
-        List<Expression> expressions = function.getParameters().getExpressions();
+        ExpressionList<?> expressions = function.getParameters();
         assertEquals(2, expressions.size());
 
         Expression firstParam = expressions.get(0);
@@ -5699,5 +5700,14 @@ public class SelectTest {
 
         sqlStr = "SELECT cast(my_map['my_key'] as int) FROM my_table WHERE id = 123";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testQualifyClauseIssue1805() throws JSQLParserException {
+        String sqlStr = "SELECT i, p, o\n" +
+                "    FROM qt\n" +
+                "    QUALIFY ROW_NUMBER() OVER (PARTITION BY p ORDER BY o) = 1";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

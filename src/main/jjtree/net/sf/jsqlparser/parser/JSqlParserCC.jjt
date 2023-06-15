@@ -346,6 +346,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
 |   <K_PURGE:"PURGE">
+|   <K_QUALIFY: "QUALIFY">
 |   <K_QUERY:"QUERY">
 |   <K_QUICK : "QUICK">
 |   <K_QUIESCE: "QUIESCE">
@@ -1742,7 +1743,9 @@ String RelObjectName() :
 {
     (result = RelObjectNameWithoutValue()
         | tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON>  | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE>
-        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> | tk=<K_CONNECT> | tk=<K_IGNORE > )
+        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> | tk=<K_CONNECT> | tk=<K_IGNORE >
+        | tk=<K_QUALIFY>
+        )
 
     { return tk!=null ? tk.image : result; }
 }
@@ -2019,6 +2022,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<OrderByElement> orderByElements;
     GroupByElement groupBy = null;
     Expression having = null;
+    Expression qualify;
     Limit limitBy = null;
     Limit limit = null;
     Offset offset = null;
@@ -2089,6 +2093,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
+    [ LOOKAHEAD(2) qualify=Qualify() {plainSelect.setQualify(qualify); }]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [ LOOKAHEAD(2) <K_WINDOW>
@@ -2825,6 +2830,17 @@ Expression Having():
     <K_HAVING> having=Expression()
     {
         return having;
+    }
+}
+
+Expression Qualify():
+{
+    Expression qualify = null;
+}
+{
+    <K_QUALIFY> qualify=Expression()
+    {
+        return qualify;
     }
 }
 

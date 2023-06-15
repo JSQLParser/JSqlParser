@@ -252,6 +252,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(" HAVING ");
             plainSelect.getHaving().accept(expressionVisitor);
         }
+        if (plainSelect.getQualify() != null) {
+            buffer.append(" QUALIFY ");
+            plainSelect.getQualify().accept(expressionVisitor);
+        }
         if (plainSelect.getWindowDefinitions() != null) {
             buffer.append(" WINDOW ");
             buffer.append(plainSelect.getWindowDefinitions().stream()

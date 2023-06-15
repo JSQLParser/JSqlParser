@@ -7,6 +7,7 @@ plugins {
 
     id "ca.coglinc2.javacc" version "latest.release"
     id 'jacoco'
+    id 'com.github.kt3k.coveralls' version "latest.release"
     id "com.github.spotbugs" version "latest.release"
     id "com.diffplug.spotless" version "latest.release"
     id 'pmd'
@@ -179,6 +180,10 @@ test {
     maxHeapSize = "1G"
 }
 
+coveralls {
+    jacocoReportPath 'build/reports/jacoco/test/jacocoTestReport.xml'
+}
+
 jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
     reports {
@@ -272,9 +277,7 @@ spotbugs {
 }
 
 pmd {
-    consoleOutput = false
-    //toolVersion = "6.46.0"
-
+    consoleOutput = true
     sourceSets = [sourceSets.main]
 
     // clear the ruleset in order to use configured rules only
@@ -436,23 +439,6 @@ xslt  {
 tasks.register('sphinx', Exec) {
     dependsOn(gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
 
-//    doFirst() {
-//        exec {
-//            args = [
-//                    "install"
-//                    , "sphinx_rtd_theme"
-//                    , "sphinx-book-theme"
-//                    , "myst_parser"
-//                    , "sphinx-prompt"
-//                    , "sphinx_substitution_extensions"
-//                    , "sphinx_issues"
-//                    , "sphinx_inline_tabs"
-//                    , "pygments"
-//            ]
-//            executable "pip"
-//        }
-//    }
-
     String PROLOG = """
 .. |_| unicode:: U+00A0
     :trim:
@@ -555,7 +541,7 @@ publishing {
         maven {
             name = "GitHubPackages"
 
-            url = uri("https://maven.pkg.github.com/manticore-projects/jsqlparser")
+            url = uri("https://maven.pkg.github.com/JSQLParser/jsqlparser")
             credentials(PasswordCredentials)
         }
     }

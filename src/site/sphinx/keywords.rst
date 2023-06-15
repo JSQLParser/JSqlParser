@@ -65,6 +65,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | GROUPING             | Yes         |           | 
 +----------------------+-------------+-----------+
+| QUALIFY              | Yes         |           | 
++----------------------+-------------+-----------+
 | HAVING               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IF                   | Yes         | Yes       | 

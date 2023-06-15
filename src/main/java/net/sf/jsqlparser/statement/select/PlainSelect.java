@@ -38,6 +38,7 @@ public class PlainSelect extends Select {
     private Expression where;
     private GroupByElement groupBy;
     private Expression having;
+    private Expression qualify;
     private OptimizeFor optimizeFor;
     private Skip skip;
     private boolean mySqlHintStraightJoin;
@@ -274,6 +275,15 @@ public class PlainSelect extends Select {
         having = expression;
     }
 
+    public Expression getQualify() {
+        return qualify;
+    }
+
+    public PlainSelect setQualify(Expression qualify) {
+        this.qualify = qualify;
+        return this;
+    }
+
     /**
      * A list of {@link Expression}s of the GROUP BY clause. It is null in case there is no GROUP BY
      * clause
@@ -464,6 +474,9 @@ public class PlainSelect extends Select {
             }
             if (having != null) {
                 builder.append(" HAVING ").append(having);
+            }
+            if (qualify != null) {
+                builder.append(" QUALIFY ").append(qualify);
             }
             if (windowDefinitions != null) {
                 builder.append(" WINDOW ");
