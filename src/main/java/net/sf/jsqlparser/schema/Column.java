@@ -94,10 +94,10 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     @Override
     public String getFullyQualifiedName() {
-        return getName(false);
+        return getFullyQualifiedName(false);
     }
 
-    public String getName(boolean aliases) {
+    public String getFullyQualifiedName(boolean aliases) {
         StringBuilder fqn = new StringBuilder();
 
         if (table != null) {
@@ -121,6 +121,12 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return fqn.toString();
     }
 
+    // old and confusing, don't use it!
+    @Deprecated
+    public String getName(boolean aliases) {
+        return columnName;
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
@@ -128,7 +134,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     @Override
     public String toString() {
-        return getName(true);
+        return getFullyQualifiedName(true);
     }
 
     public Column withTable(Table table) {

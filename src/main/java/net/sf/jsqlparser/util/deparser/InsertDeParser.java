@@ -60,7 +60,6 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         buffer.append("INTO ");
 
         buffer.append(insert.getTable().toString());
-
         if (insert.getColumns() != null) {
             buffer.append(" (");
             for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {

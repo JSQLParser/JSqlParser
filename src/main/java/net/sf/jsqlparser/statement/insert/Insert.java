@@ -226,12 +226,21 @@ public class Insert implements Statement {
         }
         sql.append("INTO ");
         sql.append(table).append(" ");
+
         if (columns != null) {
-            sql.append(PlainSelect.getStringList(columns, true, true)).append(" ");
+            sql.append("(");
+            for (int i = 0; i < columns.size(); i++) {
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                // only plain names, but not fully qualified names allowed
+                sql.append(columns.get(i).getColumnName());
+            }
+            sql.append(") ");
         }
 
         if (outputClause != null) {
-            sql.append(outputClause.toString());
+            sql.append(outputClause);
         }
 
         if (select != null) {
