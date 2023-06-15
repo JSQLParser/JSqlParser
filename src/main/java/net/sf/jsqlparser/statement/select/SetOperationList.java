@@ -34,6 +34,10 @@ public class SetOperationList extends Select {
         return selects;
     }
 
+    public Select getSelect(int index) {
+        return selects.get(index);
+    }
+
     public void setSelects(List<Select> selects) {
         this.selects = selects;
     }
@@ -46,7 +50,9 @@ public class SetOperationList extends Select {
         return operations;
     }
 
-
+    public SetOperation getOperation(int index) {
+        return operations.get(index);
+    }
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;

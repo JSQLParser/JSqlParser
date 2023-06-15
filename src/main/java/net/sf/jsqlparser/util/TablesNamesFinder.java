@@ -96,7 +96,6 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -266,7 +265,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (plainSelect.getJoins() != null) {
             for (Join join : plainSelect.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
         if (plainSelect.getWhere() != null) {
@@ -660,11 +659,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(RegExpMySQLOperator rexpr) {
-        visitBinaryExpression(rexpr);
-    }
-
-    @Override
     public void visit(JsonExpression jsonExpr) {
 
     }
@@ -732,7 +726,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (delete.getJoins() != null) {
             for (Join join : delete.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
 
@@ -746,7 +740,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         visit(update.getTable());
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
         if (update.getExpressions() != null) {
@@ -761,7 +755,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
         if (update.getJoins() != null) {
             for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getFromItem().accept(this);
             }
         }
 

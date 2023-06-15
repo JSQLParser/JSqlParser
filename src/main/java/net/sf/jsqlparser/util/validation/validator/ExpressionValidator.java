@@ -99,7 +99,6 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -478,11 +477,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public void visit(RegExpMatchOperator rexpr) {
-        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
-    }
-
-    @Override
-    public void visit(RegExpMySQLOperator rexpr) {
         visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
     }
 

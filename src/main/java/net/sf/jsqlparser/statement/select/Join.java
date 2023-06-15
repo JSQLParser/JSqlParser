@@ -34,7 +34,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean semi = false;
     private boolean straight = false;
     private boolean apply = false;
-    private FromItem rightItem;
+    private FromItem fromItem;
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
     private final LinkedList<Column> usingColumns = new LinkedList<>();
     private KSQLJoinWindow joinWindow;
@@ -279,18 +279,29 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Returns the right item of the join
+     *
      */
     public FromItem getRightItem() {
-        return rightItem;
+        return fromItem;
     }
 
+    @Deprecated
     public Join withRightItem(FromItem item) {
-        this.setRightItem(item);
+        this.setFromItem(item);
         return this;
     }
 
     public void setRightItem(FromItem item) {
-        rightItem = item;
+        fromItem = item;
+    }
+
+    public FromItem getFromItem() {
+        return fromItem;
+    }
+
+    public Join setFromItem(FromItem fromItem) {
+        this.fromItem = fromItem;
+        return this;
     }
 
     /**
@@ -376,9 +387,9 @@ public class Join extends ASTNodeAccessImpl {
         }
 
         if (isSimple() && isOuter()) {
-            builder.append("OUTER ").append(rightItem);
+            builder.append("OUTER ").append(fromItem);
         } else if (isSimple()) {
-            builder.append(rightItem);
+            builder.append(fromItem);
         } else {
             if (isNatural()) {
                 builder.append("NATURAL ");
@@ -410,7 +421,7 @@ public class Join extends ASTNodeAccessImpl {
                 builder.append("JOIN ");
             }
 
-            builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
+            builder.append(fromItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
 
         for (Expression onExpression : onExpressions) {

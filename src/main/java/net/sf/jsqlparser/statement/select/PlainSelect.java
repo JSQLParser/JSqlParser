@@ -38,6 +38,7 @@ public class PlainSelect extends Select {
     private Expression where;
     private GroupByElement groupBy;
     private Expression having;
+    private Expression qualify;
     private OptimizeFor optimizeFor;
     private Skip skip;
     private boolean mySqlHintStraightJoin;
@@ -82,6 +83,10 @@ public class PlainSelect extends Select {
         return selectItems;
     }
 
+    public SelectItem<?> getSelectItem(int index) {
+        return selectItems.get(index);
+    }
+
     public Expression getWhere() {
         return where;
     }
@@ -124,7 +129,7 @@ public class PlainSelect extends Select {
 
     public PlainSelect addSelectItem(Expression expression, Alias alias) {
         selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
-        selectItems.add(new SelectItem(expression, alias));
+        selectItems.add(new SelectItem<>(expression, alias));
         return this;
     }
 
@@ -175,6 +180,10 @@ public class PlainSelect extends Select {
      */
     public List<Join> getJoins() {
         return joins;
+    }
+
+    public Join getJoin(int index) {
+        return joins.get(index);
     }
 
     public PlainSelect addJoins(Join... joins) {
@@ -264,6 +273,15 @@ public class PlainSelect extends Select {
 
     public void setHaving(Expression expression) {
         having = expression;
+    }
+
+    public Expression getQualify() {
+        return qualify;
+    }
+
+    public PlainSelect setQualify(Expression qualify) {
+        this.qualify = qualify;
+        return this;
     }
 
     /**
@@ -456,6 +474,9 @@ public class PlainSelect extends Select {
             }
             if (having != null) {
                 builder.append(" HAVING ").append(having);
+            }
+            if (qualify != null) {
+                builder.append(" QUALIFY ").append(qualify);
             }
             if (windowDefinitions != null) {
                 builder.append(" WINDOW ");

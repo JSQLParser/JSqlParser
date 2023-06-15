@@ -74,7 +74,7 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
         return addExpressions(expressions);
     }
 
-    public ExpressionList withExpressions(Collection<T> expressions) {
+    public ExpressionList<?> withExpressions(Collection<T> expressions) {
         this.clear();
         return addExpressions(expressions);
     }

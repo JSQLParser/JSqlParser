@@ -30,6 +30,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     Fetch fetch;
     WithIsolation isolation;
     boolean oracleSiblings = false;
+
+    ForClause forClause = null;
+
     List<OrderByElement> orderByElements;
 
     public static String orderByToString(List<OrderByElement> orderByElements) {
@@ -154,6 +157,15 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
+    public ForClause getForClause() {
+        return forClause;
+    }
+
+    public Select setForClause(ForClause forClause) {
+        this.forClause = forClause;
+        return this;
+    }
+
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }
@@ -260,6 +272,10 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         }
 
         appendSelectBodyTo(builder);
+
+        if (forClause != null) {
+            forClause.appendTo(builder);
+        }
 
         builder.append(orderByToString(oracleSiblings, orderByElements));
 

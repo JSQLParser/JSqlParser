@@ -96,7 +96,7 @@ public class TrimFunction extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
-    StringBuilder appendTo(StringBuilder builder) {
+    public StringBuilder appendTo(StringBuilder builder) {
         builder.append("Trim(");
 
         if (trimSpecification != null) {

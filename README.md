@@ -18,14 +18,14 @@ SELECT 1 FROM dual WHERE a = b
 ```
 
 ```text
- SQL Text
-   └─Statements: net.sf.jsqlparser.statement.select.Select
-       ├─selectItems -> Collection<SelectItem>
-       │  └─LongValue: 1
-       ├─Table: dual
-       └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
-          ├─Column: a
-          └─Column: b
+SQL Text
+ └─Statements: statement.select.PlainSelect
+    ├─selectItems: statement.select.SelectItem
+    │  └─LongValue: 1
+    ├─Table: dual
+    └─where: expression.operators.relational.EqualsTo
+       ├─Column: a
+       └─Column: b
 ```
 
 ```java

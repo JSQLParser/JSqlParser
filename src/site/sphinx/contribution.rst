@@ -94,12 +94,14 @@ There is a task ``updateKeywords`` for Gradle and Maven, which will:
 
 
 .. tab:: Gradle
+
     .. code-block:: shell
         :caption: Gradle `updateKeywords` Task
 
             gradle updateKeywords
 
 .. tab:: Maven
+
     .. code-block:: shell
         :caption: Maven `updateKeywords` Task
 

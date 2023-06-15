@@ -252,6 +252,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(" HAVING ");
             plainSelect.getHaving().accept(expressionVisitor);
         }
+        if (plainSelect.getQualify() != null) {
+            buffer.append(" QUALIFY ");
+            plainSelect.getQualify().accept(expressionVisitor);
+        }
         if (plainSelect.getWindowDefinitions() != null) {
             buffer.append(" WINDOW ");
             buffer.append(plainSelect.getWindowDefinitions().stream()
@@ -272,6 +276,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                 buffer.append(" SKIP LOCKED");
             }
         }
+        if (plainSelect.getForClause() != null) {
+            plainSelect.getForClause().appendTo(buffer);
+        }
+
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
@@ -468,7 +476,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         }
 
-        FromItem fromItem = join.getRightItem();
+        FromItem fromItem = join.getFromItem();
         fromItem.accept(this);
         if (join.isWindowJoin()) {
             buffer.append(" WITHIN ");

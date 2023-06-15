@@ -64,6 +64,10 @@ public class Update implements Statement {
         return updateSets;
     }
 
+    public UpdateSet getUpdateSet(int index) {
+        return updateSets.get(index);
+    }
+
     public void setUpdateSets(List<UpdateSet> updateSets) {
         this.updateSets = updateSets;
     }
