@@ -566,6 +566,7 @@ TOKEN:
             }
             input_stream.backup(image.length() - matchedToken.image.length() );
         } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\''") ) {
+            matchedToken.image = image.substring( 0, image.lastIndexOf("\\'") + 3);
             for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
                 if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
                     matchedToken.kind = i;
