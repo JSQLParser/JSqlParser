@@ -3266,7 +3266,7 @@ public class SelectTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"SELECT '\\'''", "SELECT '\\\\\\''"})
+    @ValueSource(strings = {"SELECT '\\'\\''", "SELECT '\\\\\\''"})
     public void testIssue167_singleQuoteEscape2(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
                 parser -> parser.withBackslashEscapeCharacter(true));
@@ -5721,5 +5721,29 @@ public class SelectTest {
     public void testNotIsNullInFilter() throws JSQLParserException {
         String stmt = "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    void testBackSlashQuotationIssue1812() throws JSQLParserException {
+        String sqlStr = "SELECT ('\\'', 'a')";
+        Statement stmt2 = CCJSqlParserUtil.parse(
+                sqlStr
+                , parser -> parser
+                        .withBackslashEscapeCharacter(true)
+        );
+
+        sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');";
+        stmt2 = CCJSqlParserUtil.parse(
+                sqlStr
+                , parser -> parser
+                        .withBackslashEscapeCharacter(true)
+        );
+
+        sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');";
+        stmt2 = CCJSqlParserUtil.parse(
+                sqlStr
+                , parser -> parser
+                        .withBackslashEscapeCharacter(true)
+        );
     }
 }
