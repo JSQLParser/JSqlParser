@@ -565,7 +565,14 @@ TOKEN:
               }
             }
             input_stream.backup(image.length() - matchedToken.image.length() );
-        }
+        } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\''") ) {
+            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+                if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
+                    matchedToken.kind = i;
+                }
+            }
+            input_stream.backup(image.length() - matchedToken.image.length() );
+      }
     }
 | < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
@@ -3405,7 +3412,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_RLIKE>
         | token = <K_REGEXP>
     ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
-    [ <K_BINARY> {result.setUseBinary(true); } ]
+    [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
     rightExpression=SimpleExpression()
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
