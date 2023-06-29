@@ -3968,8 +3968,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
 
-        | LOOKAHEAD(2, {!interrupted}) retval=InterpretExpression()
-
         | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
         // support timestamp expressions
@@ -4696,6 +4694,8 @@ CastExpression CastExpression():
         keyword=<K_SAFE_CAST>
         |
         keyword=<K_TRY_CAST>
+        |
+        keyword=<K_INTERPRET>
     )
     {
         retval = new CastExpression(keyword.image);
@@ -4713,30 +4713,6 @@ CastExpression CastExpression():
         )
         |
         type=ColDataType() { retval.setColDataType(type); }
-    )
-    ")"
-
-    {
-        retval.setLeftExpression(expression);
-        return retval;
-    }
-}
-
-InterpretExpression InterpretExpression():
-{
-    InterpretExpression retval = new InterpretExpression();
-    ColDataType type = null;
-    RowConstructor rowConstructor = null;
-    Expression expression = null;
-}
-{
-    <K_INTERPRET>
-    "("
-    expression=SimpleExpression()
-    <K_AS>
-    (
-        LOOKAHEAD(3) rowConstructor = RowConstructor() { retval.setRowConstructor(rowConstructor); }
-        | type=ColDataType() { retval.setType(type); }
     )
     ")"
 
