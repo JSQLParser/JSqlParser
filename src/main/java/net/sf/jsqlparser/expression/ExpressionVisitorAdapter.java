@@ -340,6 +340,11 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
+    public void visit(InterpretExpression interpretExpression) {
+        interpretExpression.getLeftExpression().accept(this);
+    }
+
+    @Override
     public void visit(Modulo expr) {
         visitBinaryExpression(expr);
     }
