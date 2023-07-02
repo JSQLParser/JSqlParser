@@ -33,5 +33,5 @@ jobs:
       with:
         arguments: build check publish
       env:
-        ossrhUsername: ${{ secrets.ossrhUsername }}
-        ossrhPassword: ${{ secrets.ossrhPassword }}
+        ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
+        ossrhPassword: ${{ secrets.OSSRH_TOKEN }}
