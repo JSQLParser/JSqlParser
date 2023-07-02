@@ -1,5 +1,10 @@
 name: Sphinx Pages
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
 permissions: write-all
 jobs:
   docs:
