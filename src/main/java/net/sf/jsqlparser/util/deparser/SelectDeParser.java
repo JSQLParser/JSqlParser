@@ -211,6 +211,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (plainSelect.getFromItem() != null) {
             buffer.append(" FROM ");
             plainSelect.getFromItem().accept(this);
+
+            if (plainSelect.getFromItem() instanceof Table) {
+                Table table = (Table) plainSelect.getFromItem();
+                if (table.getSampleClause() != null) {
+                    table.getSampleClause().appendTo(buffer);
+                }
+            }
         }
 
         if (plainSelect.getLateralViews() != null) {

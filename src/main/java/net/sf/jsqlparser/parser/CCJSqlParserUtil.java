@@ -461,7 +461,7 @@ public final class CCJSqlParserUtil {
                     return i; // Return position of unbalanced closing bracket
                 }
                 char top = stack.pop();
-                if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) {
+                if (c == ')' && top != '(' || c == ']' && top != '[' || c == '}' && top != '{') {
                     return i; // Return position of unbalanced closing bracket
                 }
             }

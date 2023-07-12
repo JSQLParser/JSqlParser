@@ -150,9 +150,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AUTO:"AUTO">
 |   <K_BASE64:"BASE64">
 |   <K_BEGIN:"BEGIN">
+|   <K_BERNOULLI: "BERNOULLI">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">
 |   <K_BIT:"BIT">
+|   <K_BLOCK: "BLOCK">
 |   <K_BOTH:"BOTH">
 |   <K_BROWSE:"BROWSE">
 |   <K_BY:"BY">
@@ -363,6 +365,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RLIKE: "RLIKE">
 |   <K_REGISTER: "REGISTER">
 |   <K_RENAME:"RENAME">
+|   <K_REPEATABLE: "REPEATABLE">
 |   <K_REPLACE:"REPLACE">
 |   <K_RESET:"RESET">
 |   <K_RESTART:"RESTART">
@@ -377,8 +380,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ROW: "ROW">
 |   <K_ROWS: "ROWS">
 |   <K_SAFE_CAST: "SAFE_CAST">
+|   <K_SAMPLE: "SAMPLE">
 |   <K_SAVEPOINT: "SAVEPOINT">
 |   <K_SCHEMA: "SCHEMA">
+|   <K_SEED: "SEED">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SEQUENCE: "SEQUENCE">
@@ -402,6 +407,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SYSTEM:"SYSTEM">
 |   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
+|   <K_TABLESAMPLE: "TABLESAMPLE">
 |   <K_TABLESPACE: "TABLESPACE">
 |   <K_TRIGGER: "TRIGGER">
 |   <K_THEN:"THEN">
@@ -1740,7 +1746,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BINARY" | tk="BIT" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONFLICT" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATABASE" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GLOBAL" | tk="GRANT" | tk="GUARD" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGISTER" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RLIKE" | tk="ROLLBACK" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -1825,8 +1831,62 @@ Table TableWithAlias():
     Alias alias = null;
 }
 {
-    table=Table() [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); }]
+    table=Table()
+    [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); }]
     { return table; }
+}
+
+Number Number():
+{
+    Token token;
+    Number number;
+}
+{
+    (
+        token = <S_DOUBLE> { number = Double.valueOf(token.image); }
+        |
+        token = <S_LONG> { number = Long.valueOf(token.image); }
+    )
+
+    {
+        return number;
+    }
+}
+
+SampleClause SampleClause():
+{
+    Token token;
+    SampleClause sampleClause;
+    String keyword;
+    String method=null;
+    Number percentageArgument;
+    Number repeatArgument=null;
+    Number seedArgument=null;
+}
+{
+    (
+        (
+            // Oracle
+            token=<K_SAMPLE> { keyword = token.image; }
+            [ token=<K_BLOCK> { method = token.image; } ]
+        )
+        |
+        (
+            // SQL:2016 compliant
+            token = <K_TABLESAMPLE> { keyword = token.image; }
+            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+        )
+    )
+
+    "(" percentageArgument = Number() ")"
+
+    [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
+
+    [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
+
+    {
+        return new SampleClause(keyword, method, percentageArgument, repeatArgument, seedArgument);
+    }
 }
 
 Select SelectWithWithItems( List<WithItem> withItems):
@@ -2546,6 +2606,7 @@ FromItem FromItem():
 {
     FromItem fromItem = null;
     FromItem fromItem2 = null;
+    SampleClause sampleClause;
     Pivot pivot = null;
     UnPivot unpivot = null;
     Alias alias = null;
@@ -2555,41 +2616,39 @@ FromItem FromItem():
 }
 {
     (
-
-        (
-            LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
-            |
-            LOOKAHEAD(3) fromItem=Table()
-            |
-            LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
-            |
-            LOOKAHEAD(3) (
-                fromItem=ParenthesedSelect()
-                [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
-                [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-            )
-            |
-            fromItem=LateralSubSelect()
+        LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
+        |
+        LOOKAHEAD(3) fromItem=Table()
+        |
+        LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
+        |
+        LOOKAHEAD(3) (
+            fromItem=ParenthesedSelect()
+            [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
+            [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
         )
-
-        [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
-        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
-        [
-            LOOKAHEAD(2)
-            (
-                indexHint = MySQLIndexHint() {
-                    if (fromItem instanceof Table)
-                        ((Table) fromItem).setHint(indexHint);
-                }
-                |
-                sqlServerHints = SQLServerHints() {
-                    if (fromItem instanceof Table)
-                        ((Table) fromItem).setSqlServerHints(sqlServerHints);
-                }
-            )
-        ]
+        |
+        fromItem=LateralSubSelect()
     )
+
+    [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
+    [ LOOKAHEAD(2) sampleClause = SampleClause() { ((Table) fromItem).setSampleClause(sampleClause); } ]
+    [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+    [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+    [
+        LOOKAHEAD(2)
+        (
+            indexHint = MySQLIndexHint() {
+                if (fromItem instanceof Table)
+                    ((Table) fromItem).setHint(indexHint);
+            }
+            |
+            sqlServerHints = SQLServerHints() {
+                if (fromItem instanceof Table)
+                    ((Table) fromItem).setSqlServerHints(sqlServerHints);
+            }
+        )
+    ]
     {
         return fromItem;
     }

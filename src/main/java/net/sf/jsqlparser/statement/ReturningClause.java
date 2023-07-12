@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RETURNING clause according to
- * {@see https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DELETE.html#GUID-156845A5-B626-412B-9F95-8869B988ABD7
- * } Part of UPDATE, INSERT, DELETE statements
+ * RETURNING clause according to <a href=
+ * "https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/DELETE.html#GUID-156845A5-B626-412B-9F95-8869B988ABD7"
+ * /> Part of UPDATE, INSERT, DELETE statements
  */
 
 public class ReturningClause extends ArrayList<SelectItem<?>> {

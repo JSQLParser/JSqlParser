@@ -86,7 +86,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      *
-     * @return Sets the INNER keyword and switches off any contradicting qualifiers automatically.
+     * Sets the INNER keyword and switches off any contradicting qualifiers automatically.
      */
     public void setInner(boolean b) {
         if (b) {
@@ -128,7 +128,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      *
-     * @return Sets the OUTER keyword and switches off any contradicting qualifiers automatically.
+     * Sets the OUTER keyword and switches off any contradicting qualifiers automatically.
      */
     public void setOuter(boolean b) {
         if (b) {
@@ -184,7 +184,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      *
-     * @return Sets the LEFT keyword and switches off any contradicting qualifiers automatically.
+     * Sets the LEFT keyword and switches off any contradicting qualifiers automatically.
      */
     public void setLeft(boolean b) {
         if (b) {
@@ -210,7 +210,7 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      *
-     * @return Sets the RIGHT keyword and switches off any contradicting qualifiers automatically.
+     * Sets the RIGHT keyword and switches off any contradicting qualifiers automatically.
      */
     public void setRight(boolean b) {
         if (b) {

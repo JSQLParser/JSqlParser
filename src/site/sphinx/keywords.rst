@@ -141,6 +141,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | RIGHT                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| SAMPLE               | Yes         |           | 
++----------------------+-------------+-----------+
 | SEL                  | Yes         |           | 
 +----------------------+-------------+-----------+
 | SELECT               | Yes         |           | 
@@ -178,6 +180,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | SQL_NO_CACHE         | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | STRAIGHT_JOIN        | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| TABLESAMPLE          | Yes         |           | 
 +----------------------+-------------+-----------+
 | VALUE                | Yes         | Yes       | 
 +----------------------+-------------+-----------+

@@ -5726,23 +5726,17 @@ public class SelectTest {
     void testBackSlashQuotationIssue1812() throws JSQLParserException {
         String sqlStr = "SELECT ('\\'', 'a')";
         Statement stmt2 = CCJSqlParserUtil.parse(
-                sqlStr
-                , parser -> parser
-                        .withBackslashEscapeCharacter(true)
-        );
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
 
         sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');";
         stmt2 = CCJSqlParserUtil.parse(
-                sqlStr
-                , parser -> parser
-                        .withBackslashEscapeCharacter(true)
-        );
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
 
         sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');";
         stmt2 = CCJSqlParserUtil.parse(
-                sqlStr
-                , parser -> parser
-                        .withBackslashEscapeCharacter(true)
-        );
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
     }
 }

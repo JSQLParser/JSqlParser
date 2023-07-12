@@ -292,7 +292,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.expression.operators.relational.ExpressionList
      */
     insertReturningExpressionList,
 
@@ -326,7 +326,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.statement.select.SelectItem
      */
     updateReturning,
     /**
@@ -354,7 +354,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.statement.select.SelectItem
      */
     deleteReturningExpressionList,
 
@@ -436,7 +436,6 @@ public enum Feature {
     /**
      * SQL "REPLACE" statement is allowed
      *
-     * @see Replace
      */
     @Deprecated
     replace,
@@ -644,7 +643,7 @@ public enum Feature {
 
     lateralSubSelect,
     /**
-     * @see ValuesList
+     * @see net.sf.jsqlparser.statement.select.Values
      */
     valuesList,
     /**
