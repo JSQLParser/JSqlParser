@@ -5672,11 +5672,10 @@ public class SelectTest {
         String sqlStr = "SELECT 1 FROM dual WHERE a = :paramMap.aValue";
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        assertTrue(select
+        assertEquals("paramMap.aValue", select
                 .getWhere(EqualsTo.class)
                 .getRightExpression(JdbcNamedParameter.class)
-                .getName()
-                .equals("paramMap.aValue"));
+                .getName());
     }
 
     @Test

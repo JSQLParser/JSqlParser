@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -439,4 +440,43 @@ public final class CCJSqlParserUtil {
         }
         return maxlevel;
     }
+
+    public static int getUnbalancedPosition(String text) {
+        Stack<Character> stack = new Stack<>();
+        boolean insideQuote = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '"' || c == '\'') {
+                if (!insideQuote) {
+                    stack.push(c); // Add quote to stack
+                } else if (stack.peek() == c) {
+                    stack.pop(); // Matching quote found, remove from stack
+                }
+                insideQuote = !insideQuote; // Toggle insideQuote flag
+            } else if (!insideQuote && (c == '(' || c == '[' || c == '{')) {
+                stack.push(c); // Add opening bracket to stack
+            } else if (!insideQuote && (c == ')' || c == ']' || c == '}')) {
+                if (stack.isEmpty()) {
+                    return i; // Return position of unbalanced closing bracket
+                }
+                char top = stack.pop();
+                if ((c == ')' && top != '(') || (c == ']' && top != '[') || (c == '}' && top != '{')) {
+                    return i; // Return position of unbalanced closing bracket
+                }
+            }
+        }
+
+        if (!stack.isEmpty()) {
+            char unbalanced = stack.peek();
+            for (int i = 0; i < text.length(); i++) {
+                if (text.charAt(i) == unbalanced) {
+                    return i; // Return position of unbalanced opening bracket or quote
+                }
+            }
+        }
+
+        return -1; // Return -1 if all brackets and quotes are balanced
+    }
+
 }
