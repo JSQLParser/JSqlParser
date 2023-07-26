@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagram][(https://jsqlparser.github.io/JSqlParser/syntax_snapshot.html)]
+Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagram](https://jsqlparser.github.io/JSqlParser/syntax_snapshot.html)
 
 ### Failing SQL Feature:
 - Brief description of the failing SQL feature
