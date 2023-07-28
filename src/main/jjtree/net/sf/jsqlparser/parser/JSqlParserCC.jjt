@@ -4796,10 +4796,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     [
         <K_ELSE>
         (
-            LOOKAHEAD(ConcatExpression()) elseExp = ConcatExpression() 
-              | LOOKAHEAD(3, {!interrupted}) "(" elseExp=CaseWhenExpression() ")" { elseExp = new Parenthesis( elseExp ); }
-              | LOOKAHEAD(3, {!interrupted}) elseExp=CaseWhenExpression()
-              | LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) elseExp=Expression()
+              LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) elseExp=Expression()
               | elseExp=SimpleExpression()
         )
     ]
