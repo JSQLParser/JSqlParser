@@ -4796,7 +4796,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
     [
         <K_ELSE>
         (
-              LOOKAHEAD(3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) elseExp=Expression()
+              LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) elseExp=Expression()
               | elseExp=SimpleExpression()
         )
     ]
