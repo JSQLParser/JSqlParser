@@ -31,7 +31,8 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
       with:
-        arguments: build check publish
+        arguments: build check
+        # arguments: build check publish
       env:
         ossrhUsername: ${{ secrets.OSSRH_USERNAME }}
         ossrhPassword: ${{ secrets.OSSRH_TOKEN }}
