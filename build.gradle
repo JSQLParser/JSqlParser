@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
 
-    id "ca.coglinc2.javacc" version "latest.release"
+    id "org.javacc.javacc" version "latest.release"
     id 'jacoco'
     id 'com.github.kt3k.coveralls' version "latest.release"
     id "com.github.spotbugs" version "latest.release"
