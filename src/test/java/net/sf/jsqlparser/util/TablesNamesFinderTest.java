@@ -489,6 +489,11 @@ public class TablesNamesFinderTest {
     @Test
     void testJoinSubSelect() throws JSQLParserException {
         String sqlStr = "select * from A left join B on A.id=B.id and A.age = (select age from C)";
-        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("A", "B", "C");
+        Set<String> tableNames = TablesNamesFinder.findTables(sqlStr);
+        assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
+
+        String exprStr = "A.id=B.id and A.age = (select age from C)";
+        tableNames = TablesNamesFinder.findTables(sqlStr);
+        assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
     }
 }

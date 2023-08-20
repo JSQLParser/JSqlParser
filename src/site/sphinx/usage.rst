@@ -12,7 +12,7 @@ How to use it
 
     4) Oracle Alternative Quoting is partially supported for common brackets such as ``q'{...}'``, ``q'[...]'``, ``q'(...)'`` and ``q''...''``.
 
-    5) Supported Statement Separators are Semicolon ``\;``, ``GO``, Slash ``\/`` or 2 empty lines.
+    5) Supported Statement Separators are Semicolon ``;``, ``GO``, Slash ``/`` or two empty lines ``\n\n\n``.
 
 
 Compile from Source Code
@@ -185,6 +185,23 @@ Traverse the Java Object Tree using the Visitor Patterns:
 
     // Invoke the Statement Visitor
     stmt.accept(statementVisitor);
+
+Find Table Names
+==============================
+
+The class ``net.sf.jsqlparser.util.TablesNamesFinder`` can be used to return all Table Names from a Query or an Expression.
+
+.. code-block:: java
+
+     // find in Statements
+     String sqlStr = "select * from A left join B on A.id=B.id and A.age = (select age from C)";
+     Set<String> tableNames = TablesNamesFinder.findTables(sqlStr);
+     assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
+
+     // find in Expressions
+     String exprStr = "A.id=B.id and A.age = (select age from C)";
+     tableNames = TablesNamesFinder.findTables(sqlStr);
+     assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
 
 
 Build a SQL Statement
