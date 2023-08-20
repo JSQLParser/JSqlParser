@@ -83,6 +83,33 @@ public class CaseExpressionTest {
     }
 
     @Test
+    public void testInnerCaseWithConcatInElsePart() throws JSQLParserException {
+        String query = "SELECT \n" +
+                "CASE \n" +
+                "   WHEN 1 = 1 \n" +
+                "   THEN \n" +
+                "       CASE \n" +
+                "           WHEN 2 = 2 \n" +
+                "           THEN '2a' \n" +
+                "           ELSE \n" +
+                "               CASE \n" +
+                "                   WHEN 1 = 1 \n" +
+                "                   THEN \n" +
+                "                       CASE \n" +
+                "                           WHEN 2 = 2 \n" +
+                "                           THEN '2a' \n" +
+                "                           ELSE '' \n" +
+                "                       END \n" +
+                "                   ELSE 'b' \n" +
+                "               END || 'z'\n" +
+                "       END \n" +
+                "   ELSE 'b' \n" +
+                "END AS tmp\n" +
+                "FROM test_table";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(query, true);
+    }
+
+    @Test
     public void testCaseInsideBrackets() throws JSQLParserException {
         String sqlStr = "SELECT ( CASE\n"
                         + "            WHEN something\n"
