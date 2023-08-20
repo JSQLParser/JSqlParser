@@ -5063,16 +5063,18 @@ MySQLGroupConcat MySQLGroupConcat():{
 
 TableFunction TableFunction():
 {
-    Alias alias = null;
+    Token prefix = null;
     Function function;
     TableFunction functionItem;
 }
 {
-    function=Function() {
-      functionItem = new TableFunction().withExpression(function);
+    [ prefix = <K_LATERAL> ]
+    function=Function()
+    {
+        return  prefix!=null
+            ? new TableFunction(prefix.image, function)
+            : new TableFunction(function);
     }
-             [LOOKAHEAD(2) alias=Alias() { functionItem.setAlias(alias); }]
-    { return functionItem; }
 }
 
 List<Index.ColumnParams> ColumnNamesWithParamsList() : {

@@ -3349,7 +3349,7 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getExpression();
+        Function function = fromItem.getFunction();
         assertNotNull(function);
         assertEquals("SOME_FUNCTION", function.getName());
         assertNull(function.getParameters());

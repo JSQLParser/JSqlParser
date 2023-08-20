@@ -194,7 +194,7 @@ public class ReflectionModelTest {
             // new net.sf.jsqlparser.statement.select.SetOperationList(),
             new net.sf.jsqlparser.statement.select.Skip(),
             // new net.sf.jsqlparser.statement.select.ParenthesedSelect(),
-            new net.sf.jsqlparser.statement.select.TableFunction(),
+            // new net.sf.jsqlparser.statement.select.TableFunction("LATERAL", new Function()),
             new net.sf.jsqlparser.statement.select.Top(),
             new net.sf.jsqlparser.statement.select.UnPivot(),
             new net.sf.jsqlparser.statement.select.UnionOp(),
