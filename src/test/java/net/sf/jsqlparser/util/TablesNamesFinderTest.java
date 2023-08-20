@@ -493,7 +493,7 @@ public class TablesNamesFinderTest {
         assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
 
         String exprStr = "A.id=B.id and A.age = (select age from C)";
-        tableNames = TablesNamesFinder.findTables(sqlStr);
+        tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
         assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
     }
 }

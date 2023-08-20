@@ -200,7 +200,7 @@ The class ``net.sf.jsqlparser.util.TablesNamesFinder`` can be used to return all
 
      // find in Expressions
      String exprStr = "A.id=B.id and A.age = (select age from C)";
-     tableNames = TablesNamesFinder.findTables(sqlStr);
+     tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
      assertThat( tableNames ).containsExactlyInAnyOrder("A", "B", "C");
 
 
