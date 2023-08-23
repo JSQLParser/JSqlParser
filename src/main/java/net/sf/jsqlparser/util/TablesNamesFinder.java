@@ -146,6 +146,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -620,7 +621,29 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(AnalyticExpression analytic) {
+        if (analytic.getExpression() != null) {
+            analytic.getExpression().accept(this);
+        }
+        if (analytic.getDefaultValue() != null) {
+            analytic.getDefaultValue().accept(this);
+        }
+        if (analytic.getOffset() != null) {
+            analytic.getOffset().accept(this);
+        }
+        if (analytic.getKeep() != null) {
+            analytic.getKeep().accept(this);
+        }
+        if (analytic.getFuncOrderBy() != null) {
+            for (OrderByElement element : analytic.getOrderByElements()) {
+                element.getExpression().accept(this);
+            }
+        }
 
+        if (analytic.getWindowElement() != null) {
+            analytic.getWindowElement().getRange().getStart().getExpression().accept(this);
+            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this);
+            analytic.getWindowElement().getOffset().getExpression().accept(this);
+        }
     }
 
     @Override
@@ -638,7 +661,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ExtractExpression eexpr) {
-
+        if (eexpr.getExpression() != null) {
+            eexpr.getExpression().accept(this);
+        }
     }
 
     @Override
@@ -662,7 +687,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(IntervalExpression iexpr) {
-
+        if (iexpr.getExpression() != null) {
+            iexpr.getExpression().accept(this);
+        }
     }
 
     @Override
@@ -688,12 +715,14 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(JsonExpression jsonExpr) {
-
+        if (jsonExpr.getExpression() != null) {
+            jsonExpr.getExpression().accept(this);
+        }
     }
 
     @Override
     public void visit(JsonOperator jsonExpr) {
-
+        visitBinaryExpression(jsonExpr);
     }
 
     @Override
