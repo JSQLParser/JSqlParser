@@ -358,8 +358,10 @@ public class ExpressionVisitorAdapter
         if (expr.getKeep() != null) {
             expr.getKeep().accept(this);
         }
-        for (OrderByElement element : expr.getOrderByElements()) {
-            element.getExpression().accept(this);
+        if (expr.getFuncOrderBy() != null) {
+            for (OrderByElement element : expr.getOrderByElements()) {
+                element.getExpression().accept(this);
+            }
         }
 
         if (expr.getWindowElement() != null) {
