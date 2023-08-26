@@ -203,11 +203,11 @@ public class InsertTest {
         String statement = "INSERT INTO mytable (col1, col2) VALUES (a, b), (d, e)";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        ExpressionList<Column> multiExpressionList = new ExpressionList<>()
+        ExpressionList<Expression> multiExpressionList = new ExpressionList<>()
                 .addExpression(
-                        new ParenthesedExpressionList<Column>(new Column("a"), new Column("b")))
+                        new ParenthesedExpressionList<Expression>(new Column("a"), new Column("b")))
                 .addExpression(
-                        new ParenthesedExpressionList<Column>(new Column("d"), new Column("e")));
+                        new ParenthesedExpressionList<Expression>(new Column("d"), new Column("e")));
 
         Select select = new Values().withExpressions(multiExpressionList);
 

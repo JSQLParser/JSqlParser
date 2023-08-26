@@ -18,22 +18,22 @@ import java.util.Collection;
 
 public class Values extends Select {
 
-    private ExpressionList expressions;
+    private ExpressionList<Expression> expressions;
 
     public Values() {
         // empty constructor
     }
 
-    public Values(ExpressionList expressions) {
+    public Values(ExpressionList<Expression> expressions) {
         this.expressions = expressions;
     }
 
-    public ExpressionList getExpressions() {
+    public ExpressionList<?> getExpressions() {
         return expressions;
     }
 
 
-    public void setExpressions(ExpressionList expressions) {
+    public void setExpressions(ExpressionList<Expression> expressions) {
         this.expressions = expressions;
     }
 
@@ -49,7 +49,7 @@ public class Values extends Select {
         selectVisitor.visit(this);
     }
 
-    public Values withExpressions(ExpressionList expressions) {
+    public Values withExpressions(ExpressionList<Expression> expressions) {
         this.setExpressions(expressions);
         return this;
     }
@@ -60,7 +60,7 @@ public class Values extends Select {
 
     public Values addExpressions(Collection<? extends Expression> expressions) {
         if (this.expressions == null) {
-            this.expressions = new ParenthesedExpressionList();
+            this.expressions = new ParenthesedExpressionList<>();
         }
         this.expressions.addAll(expressions);
         return this;
