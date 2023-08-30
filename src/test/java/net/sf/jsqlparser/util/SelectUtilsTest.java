@@ -21,7 +21,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -79,8 +78,7 @@ public class SelectUtilsTest {
                 .buildSelectFromTableAndExpressions(new Table("mytable"), "a+b", "test");
         assertEquals("SELECT a + b, test FROM mytable", select.toString());
 
-        assertTrue(((SelectExpressionItem) select
-                .getSelectItems().get(0)).getExpression() instanceof Addition);
+        assertTrue(select.getSelectItems().get(0).getExpression() instanceof Addition);
     }
 
     @Test

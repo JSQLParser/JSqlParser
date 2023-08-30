@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ReferentialAction;
+import net.sf.jsqlparser.statement.ReferentialAction.Action;
+import net.sf.jsqlparser.statement.ReferentialAction.Type;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,11 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.ReferentialAction;
-import net.sf.jsqlparser.statement.ReferentialAction.Action;
-import net.sf.jsqlparser.statement.ReferentialAction.Type;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ForeignKeyIndex extends NamedConstraint {
 
@@ -69,7 +70,8 @@ public class ForeignKeyIndex extends NamedConstraint {
      * @return
      */
     public ReferentialAction getReferentialAction(Type type) {
-        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst().orElse(null);
+        return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst()
+                .orElse(null);
     }
 
     private void setReferentialAction(Type type, Action action, boolean set) {
@@ -96,7 +98,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         if (onDeleteReferenceOption == null) {
             removeReferentialAction(Type.DELETE);
         } else {
-            setReferentialAction(Type.DELETE, Action.byAction(onDeleteReferenceOption));
+            setReferentialAction(Type.DELETE, Action.from(onDeleteReferenceOption));
         }
     }
 
@@ -111,7 +113,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         if (onUpdateReferenceOption == null) {
             removeReferentialAction(Type.UPDATE);
         } else {
-            setReferentialAction(Type.UPDATE, Action.byAction(onUpdateReferenceOption));
+            setReferentialAction(Type.UPDATE, Action.from(onUpdateReferenceOption));
         }
     }
 
@@ -144,13 +146,15 @@ public class ForeignKeyIndex extends NamedConstraint {
     }
 
     public ForeignKeyIndex addReferencedColumnNames(String... referencedColumnNames) {
-        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, referencedColumnNames);
         return this.withReferencedColumnNames(collection);
     }
 
     public ForeignKeyIndex addReferencedColumnNames(Collection<String> referencedColumnNames) {
-        List<String> collection = Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getReferencedColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(referencedColumnNames);
         return this.withReferencedColumnNames(collection);
     }

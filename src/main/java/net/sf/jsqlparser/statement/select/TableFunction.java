@@ -13,7 +13,45 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class TableFunction extends FunctionItem implements FromItem {
+public class TableFunction extends Function implements FromItem {
+    private String prefix = null;
+    private Alias alias = null;
+    private Pivot pivot = null;
+    private UnPivot unPivot = null;
+    private Function function;
+
+    public TableFunction(Function function) {
+        this.function = function;
+    }
+
+    public TableFunction(String prefix, Function function) {
+        this.prefix = prefix;
+        this.function = function;
+    }
+
+    public Function getFunction() {
+        return function;
+    }
+
+    @Deprecated
+    public Function getExpression() {
+        return getFunction();
+    }
+
+
+    public TableFunction setFunction(Function function) {
+        this.function = function;
+        return this;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public TableFunction setPrefix(String prefix) {
+        this.prefix = prefix;
+        return this;
+    }
 
     @Override
     public void accept(FromItemVisitor fromItemVisitor) {
@@ -21,23 +59,13 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
-    public Pivot getPivot() {
-        return null;
+    public Alias getAlias() {
+        return alias;
     }
 
     @Override
-    public void setPivot(Pivot pivot) {
-
-    }
-
-    @Override
-    public UnPivot getUnPivot() {
-        return null;
-    }
-
-    @Override
-    public void setUnPivot(UnPivot unpivot) {
-
+    public void setAlias(Alias alias) {
+        this.alias = alias;
     }
 
     @Override
@@ -46,8 +74,13 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
-    public TableFunction withFunction(Function function) {
-        return (TableFunction) super.withFunction(function);
+    public Pivot getPivot() {
+        return pivot;
+    }
+
+    @Override
+    public void setPivot(Pivot pivot) {
+        this.pivot = pivot;
     }
 
     @Override
@@ -56,8 +89,34 @@ public class TableFunction extends FunctionItem implements FromItem {
     }
 
     @Override
+    public UnPivot getUnPivot() {
+        return unPivot;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unPivot) {
+        this.unPivot = unPivot;
+    }
+
+    @Override
     public TableFunction withUnPivot(UnPivot unpivot) {
         return (TableFunction) FromItem.super.withUnPivot(unpivot);
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        if (prefix != null) {
+            builder.append(prefix).append(" ");
+        }
+        builder.append(function.toString());
+
+        if (alias != null) {
+            builder.append(alias);
+        }
+        return builder;
+    }
+
+    @Override
+    public String toString() {
+        return appendTo(new StringBuilder()).toString();
+    }
 }

@@ -9,15 +9,15 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TimezoneExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
-    private ArrayList<Expression> timezoneExpressions = new ArrayList<>();
+    private ExpressionList<Expression> timezoneExpressions = new ExpressionList<>();
 
     public Expression getLeftExpression() {
         return leftExpression;

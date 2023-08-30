@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagram](https://jsqlparser.github.io/JSqlParser/syntax.html)
+Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagram](https://jsqlparser.github.io/JSqlParser/syntax_snapshot.html)
 
 ### Failing SQL Feature:
 - Brief description of the failing SQL feature
@@ -27,5 +27,5 @@ Always check against the **Latest SNAPSHOT of JSQLParser** and the [Syntax Diagr
 
 ### Tips:
 Please write in English and avoid Screenshots (as we can't copy and paste content from it).
-[Try your example online with the latest JSQLParser](http://217.160.215.75:8080/jsqlformatter/demo.html) and share the link in the error report.
+[Try your example online with the latest JSQLParser](http://jsqlformatter.manticore-projects.com) and share the link in the error report.
 Do provide Links or References to the specific Grammar and Syntax you are trying to use.

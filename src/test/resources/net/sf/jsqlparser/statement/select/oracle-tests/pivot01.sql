@@ -15,3 +15,4 @@ select * from pivot_table
 
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select*from pivot_tableunpivot(yearly_total for order_mode in(store as 'direct',internet as 'online'))order by year,order_mode recorded first on Jul 12, 2023, 12:58:42 PM

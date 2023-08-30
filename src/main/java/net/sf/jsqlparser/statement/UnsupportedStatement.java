@@ -10,6 +10,7 @@
 
 package net.sf.jsqlparser.statement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,19 +23,28 @@ public class UnsupportedStatement implements Statement {
     private List<String> declarations;
 
     public UnsupportedStatement(List<String> declarations) {
-        this.declarations = Objects.requireNonNull(declarations, "The List of Tokens must not be null.");
+        this.declarations =
+                Objects.requireNonNull(declarations, "The List of Tokens must not be null.");
     }
 
-     @Override
+    public UnsupportedStatement(String upfront, List<String> declarations) {
+        this.declarations = new ArrayList<>();
+        this.declarations.add(upfront);
+        this.declarations.addAll(
+                Objects.requireNonNull(declarations, "The List of Tokens must not be null."));
+    }
+
+    @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
     }
-    
-    @SuppressWarnings({"PMD.MissingBreakInSwitch", "PMD.SwitchStmtsShouldHaveDefault", "PMD.CyclomaticComplexity"})
+
+    @SuppressWarnings({"PMD.MissingBreakInSwitch", "PMD.SwitchStmtsShouldHaveDefault",
+            "PMD.CyclomaticComplexity"})
     public StringBuilder appendTo(StringBuilder builder) {
-        int i=0;
-        for (String s:declarations) {
-            if (i>0) {
+        int i = 0;
+        for (String s : declarations) {
+            if (i > 0) {
                 builder.append(" ");
             }
             builder.append(s);

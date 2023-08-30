@@ -49,6 +49,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| FINAL                | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | FOR                  | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FORCE                | Yes         | Yes       | 
@@ -62,6 +64,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | GROUP                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | GROUPING             | Yes         |           | 
++----------------------+-------------+-----------+
+| QUALIFY              | Yes         |           | 
 +----------------------+-------------+-----------+
 | HAVING               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -137,6 +141,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | RIGHT                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| SAMPLE               | Yes         |           | 
++----------------------+-------------+-----------+
 | SEL                  | Yes         |           | 
 +----------------------+-------------+-----------+
 | SELECT               | Yes         |           | 
@@ -174,6 +180,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | SQL_NO_CACHE         | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | STRAIGHT_JOIN        | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| TABLESAMPLE          | Yes         |           | 
 +----------------------+-------------+-----------+
 | VALUE                | Yes         | Yes       | 
 +----------------------+-------------+-----------+

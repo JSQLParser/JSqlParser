@@ -8,69 +8,249 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
-  * **feat: Refactor SelectBody implementations**
+  * **doc: migration guide**
+
+    Andreas Reichel, 2023-06-02
+  * **fix: expose IntervalExpression attributes and use DeParser**
+
+    Andreas Reichel, 2023-06-01
+  * **doc: write migration guide**
+
+    Andreas Reichel, 2023-05-29
+  * **fix: throw the specific exception**
+
+    Andreas Reichel, 2023-05-29
+  * **doc: Website, fix tabs**
+
+    Andreas Reichel, 2023-05-24
+  * **doc: Website improvements**
+
+    Andreas Reichel, 2023-05-22
+  * **build: improve Upload task**
     
-    Andreas Reichel, 2023-03-27
-  * **feat: Refactor SelectBody implementations**
+    Andreas Reichel, 2023-05-19
+  * **feat: Quoted Identifiers can contain double-quotes (PostgreSQL)**
     
-    Andreas Reichel, 2023-03-26
-  * **style: Appease PMD/Codacy**
+    Andreas Reichel, 2023-05-18
+  * **Create gradle.yml**
+
+    manticore-projects, 2023-05-18
+  * **feat: functions blocks, parenthesed JSON Expressions**
     
-    Andreas Reichel, 2023-03-25
-  * **style: Appease PMD/Codacy**
+    Andreas Reichel, 2023-05-18
+  * **feat: functions blocks, parenthesed JSON Expressions**
     
-    Andreas Reichel, 2023-03-25
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-18
+  * **feat: parse CREATE TRIGGER as UnsupportedStatement**
     
-    Andreas Reichel, 2023-03-25
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-17
+  * **build: try to work around the Maven/JDK8 issue on GitHub**
     
-    Andreas Reichel, 2023-03-24
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-17
+  * **refact: Statements extends List<Statement>**
     
-    Andreas Reichel, 2023-03-23
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-17
+  * **style: remove unused imports**
     
-    Andreas Reichel, 2023-03-23
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-17
+  * **feat: chaining JSON Expressions**
     
-    Andreas Reichel, 2023-03-23
-  * **feat: ParenthesedSelectBody and ParenthesedFromItem**
+    Andreas Reichel, 2023-05-17
+  * **style: Cosmetic improvements**
     
-    Andreas Reichel, 2023-03-23
+    Andreas Reichel, 2023-05-17
+  * **style: Quieten the logger**
+    
+    Andreas Reichel, 2023-05-17
+  * **fix: Complex Parsing Approach**
+    
+    Andreas Reichel, 2023-05-17
+  * **refactor: CREATE and ALTER productions**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: RETURNING clause**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: SHOW statement, supporting any RDBMS specific implementation**
+    
+    Andreas Reichel, 2023-05-16
+  * **refactor: simplify production `CreateParameter()`**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1789**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1789**
+    
+    Andreas Reichel, 2023-05-16
+  * **fix: issue #1791**
+    
+    Andreas Reichel, 2023-05-15
+  * **build: improve the GIT Snapshot detection**
+    
+    Andreas Reichel, 2023-05-15
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **build: Sphinx build fixes**
+    
+    Andreas Reichel, 2023-05-14
+  * **Update sphinx.yml**
+    
+    manticore-projects, 2023-05-14
+  * **feat: Write API documentation to the WebSite via XMLDoclet**
+    
+    Andreas Reichel, 2023-05-14
+  * **test: add unit test for issue #1778**
+    
+    Andreas Reichel, 2023-05-11
+  * **style: appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-05-11
+  * **style: appease PMD/Codacy**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: `MEMBER OF` condition as shown at https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#operator_member-of**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: access Elements of Array Columns**
+    
+    Andreas Reichel, 2023-05-11
+  * **feat: JdbcNamedParameter allows "&" (instead of ":")**
+    
+    Andreas Reichel, 2023-05-11
+  * **fix: Java Version 8**
+    
+    Andreas Reichel, 2023-05-09
+  * **refactor: generify `SelectItem` and remove `FunctionItem` and `ExpressionListItem`**
+    
+    Andreas Reichel, 2023-05-09
+  * **style: replace all List<Expression> with ExpressionList<> and enforce policy via Acceptance Test**
+    
+    Andreas Reichel, 2023-05-09
+  * **fix: find the correct position when field belongs to an internal class**
+    
+    Andreas Reichel, 2023-05-09
+  * **style: Appease PMD**
+    
+    Andreas Reichel, 2023-05-07
+  * **style: Appease Checkstyle**
+    
+    Andreas Reichel, 2023-05-07
+  * **test: Disable API Sanitation for the moment**
+    
+    Andreas Reichel, 2023-05-07
+  * **refactor: `Insert` uses `ExpressionList` and `UpdateSet`**
+    
+    Andreas Reichel, 2023-05-07
+  * **build: improve Gradle Build**
+    
+    Andreas Reichel, 2023-05-07
+  * **refactor: remove SimpleFunction**
+    
+    Andreas Reichel, 2023-05-06
+  * **doc: RR chart colors cater for Dark Mode**
+    
+    Andreas Reichel, 2023-05-06
+  * **doc: Better Sphinx Tabs**
+    
+    Andreas Reichel, 2023-05-06
+  * **style: Rework all the ENUMs**
+    
+    Andreas Reichel, 2023-05-05
+  * **style: Appease Codacy**
+    
+    Andreas Reichel, 2023-05-04
+  * **refactor: Remove `ItemsList`, `MultiExpressionList`, `Replace`**
+    
+    Andreas Reichel, 2023-05-04
+  * **style: Checkstyle**
+    
+    Andreas Reichel, 2023-05-03
+  * **style: Appease Codacy**
+    
+    Andreas Reichel, 2023-05-03
+  * **build: Increase TimeOut for the GitHub CI**
+    
+    Andreas Reichel, 2023-05-03
+  * **refactor: UpdateSets for `Update` and `InsertConflictTarget`**
+    
+    Andreas Reichel, 2023-05-03
+  * **fix: Remove tests for `()`, since `ParenthesedExpressionList` will catch those too**
+    
+    Andreas Reichel, 2023-05-03
+  * **feat: Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions**
+    
+    Andreas Reichel, 2023-05-03
+  * **Revert "fix: assign Enum case insensitive"**
+
+    Andreas Reichel, 2023-05-02
+  * **fix: assign Enum case insensitive**
+    
+    Andreas Reichel, 2023-05-02
+  * **doc: Update the README.md**
+    
+    Andreas Reichel, 2023-05-01
+  * **build: Add missing import**
+    
+    Andreas Reichel, 2023-04-30
+  * **doc: Update examples**
+    
+    Andreas Reichel, 2023-04-30
+  * **refactor: remove `SelectExpressionItem` in favor of `SelectItem`**
+    
+    Andreas Reichel, 2023-04-30
+  * **test: add specific tests for closed issues**
+    
+    Andreas Reichel, 2023-04-30
+  * **test: add specific tests for closed issues**
+    
+    Andreas Reichel, 2023-04-30
+  * **feat: ClickHouse `LIMIT ... BY ...` clause**
+    
+    Andreas Reichel, 2023-04-30
+  * **feat: implement SQL:2016 Convert() and Trim()**
+    
+    Andreas Reichel, 2023-04-30
+  * **feat: Switch off contradicting `JOIN` qualifiers, when setting a qualifier**
+    
+    Andreas Reichel, 2023-04-30
+  * **feat: Test if a JOIN is an INNER JOIN according to the SQL:2016**
+    
+    Andreas Reichel, 2023-04-30
+  * **feat: ClickHouse `Select...` ``FINAL` modifier**
+    
+    Andreas Reichel, 2023-04-29
+  * **feat: Multi-Part Names for Variables and Parameters**
+    
+    Andreas Reichel, 2023-04-29
+  * **feat: Oracle `HAVING` before `GROUP BY`**
+    
+    Andreas Reichel, 2023-04-29
+  * **feat: Lateral View**
+    
+    Andreas Reichel, 2023-04-29
+  * **Fix #1758: Use long for Feature.timeOut (#1759)**
+    
+    Tomasz Zarna, 2023-04-27
+  * **Ignoring unnecessarily generated jacoco report (#1762)**
+    
+    optimizing-ci-builds, 2023-04-27
+  * **Ignoring unnecessarily generated by pmd plugin (#1763)**
+    
+    optimizing-ci-builds, 2023-04-27
+  * **Refactor Parenthesed SelectBody and FromItem (#1754)**
+    
+    manticore-projects, 2023-04-27
   * **Assorted Fixes #7 (#1745)**
     
     manticore-projects, 2023-03-21
   * **disable xml report (#1748)**
     
     optimizing-ci-builds, 2023-03-21
-  * **build: better Upload Groovy Task**
-    
-    Andreas Reichel, 2023-03-18
-  * **doc: fix reference in the Java Doc**
-    
-    Andreas Reichel, 2023-03-18
-  * **feat: `ConflictTarget` allows multiple `IndexColumnNames`**
-    
-    Andreas Reichel, 2023-03-18
-  * **style: Appease PMD/Codacy**
-    
-    Andreas Reichel, 2023-03-17
-  * **style: expose `SetStatement` key-value list**
-    
-    Andreas Reichel, 2023-03-17
-  * **feat: Add support for Hangul "\uAC00"-"\uD7A3"**
-    
-    Andreas Reichel, 2023-03-17
-  * **style: Remove unused variable**
-    
-    Andreas Reichel, 2023-03-14
-  * **style: Reformat changed files and headers**
-    
-    Andreas Reichel, 2023-03-14
-  * **fix: JSon Operator can use Simple Function**
-    
-    Andreas Reichel, 2023-03-14
   * **Assorted Fixes #6 (#1740)**
     
     manticore-projects, 2023-03-09

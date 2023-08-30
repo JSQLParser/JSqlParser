@@ -1,5 +1,10 @@
 name: Sphinx Pages
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
 permissions: write-all
 jobs:
   docs:
@@ -9,7 +14,7 @@ jobs:
       - name: Install XSLT Processor
         run: sudo apt-get install xsltproc sphinx-common
       - name: Install dependencies
-        run: pip install sphinx_rtd_theme sphinx-book-theme myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_tabs pygments
+        run: pip install furo myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
       - name: Checkout project sources
         uses: actions/checkout@v2
         with:
@@ -18,7 +23,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
       - name: Run build with Gradle Wrapper
-        run: gradle sphinx
+        run: gradle --no-build-cache clean xmldoc sphinx
       - name: Deploy
         uses: actions/configure-pages@v2
       - name: Upload artifact

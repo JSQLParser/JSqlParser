@@ -13,13 +13,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
-public class AllColumns extends ASTNodeAccessImpl implements SelectItem, Expression {
-
-    @Override
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
-    }
-
+public class AllColumns extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return "*";

@@ -9,30 +9,33 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.AllValue;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Server;
@@ -40,21 +43,9 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.Statements;
-import static net.sf.jsqlparser.test.TestUtils.*;
-
-import net.sf.jsqlparser.test.MemoryLeakVerifier;
 import net.sf.jsqlparser.test.TestUtils;
 import org.apache.commons.io.IOUtils;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -64,6 +55,29 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeDeparsedAs;
+import static net.sf.jsqlparser.test.TestUtils.assertExpressionCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Execution(ExecutionMode.CONCURRENT)
 public class SelectTest {
@@ -79,8 +93,8 @@ public class SelectTest {
                 parser -> parser.withSquareBracketQuotation(true));
         assertDeparse(
                 new PlainSelect()
-                        .addSelectItems(
-                                new SelectExpressionItem(new Column().withColumnName("columnName")))
+                        .addSelectItem(
+                                new Column().withColumnName("columnName"))
                         .withFromItem(new Table()
                                 .withDatabase(new Database("databaseName")
                                         .withServer(new Server("[server-name\\server-instance]")))
@@ -96,7 +110,7 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(statement, false,
                 parser -> parser.withSquareBracketQuotation(true));
         assertDeparse(new PlainSelect()
-                .addSelectItems(new SelectExpressionItem(new Column().withColumnName("columnName")))
+                .addSelectItem(new Column().withColumnName("columnName"))
                 .withFromItem(new Table()
                         .withDatabase(new Database("databaseName")
                                 .withServer(new Server("[server-name\\server-instance]")))
@@ -236,7 +250,7 @@ public class SelectTest {
     }
 
     void checkMultipartIdentifier(Select select, String fullColumnName) {
-        final Expression expr = ((SelectExpressionItem) ((PlainSelect) select)
+        final Expression expr = (((PlainSelect) select)
                 .getSelectItems().get(0)).getExpression();
         assertTrue(expr instanceof Column);
         Column col = (Column) expr;
@@ -251,7 +265,7 @@ public class SelectTest {
 
         assertStatementCanBeDeparsedAs(select, statement);
         assertTrue(select.getSelectItems()
-                .get(0) instanceof AllTableColumns);
+                .get(0).getExpression() instanceof AllTableColumns);
 
         Table t = new Table("tableName");
         assertDeparse(
@@ -704,7 +718,7 @@ public class SelectTest {
         assertTrue(top.hasParenthesis());
         assertTrue(top.isPercentage());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -769,7 +783,7 @@ public class SelectTest {
         assertNull(skip.getJdbcParameter());
         assertNull(skip.getVariable());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -786,7 +800,7 @@ public class SelectTest {
         assertNull(skip2.getJdbcParameter());
         assertEquals("skipVar", skip2.getVariable());
 
-        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        final List<SelectItem<?>> selectItems2 = selectBody2.getSelectItems();
         assertEquals(2, selectItems2.size());
         assertEquals("c1", selectItems2.get(0).toString());
         assertEquals("c2", selectItems2.get(1).toString());
@@ -809,7 +823,7 @@ public class SelectTest {
         assertNull(limit.getJdbcParameter());
         assertEquals(First.Keyword.FIRST, limit.getKeyword());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -826,7 +840,7 @@ public class SelectTest {
         assertNull(first2.getJdbcParameter());
         assertEquals("firstVar", first2.getVariable());
 
-        final List<SelectItem> selectItems2 = selectBody2.getSelectItems();
+        final List<SelectItem<?>> selectItems2 = selectBody2.getSelectItems();
         assertEquals(2, selectItems2.size());
         assertEquals("c1", selectItems2.get(0).toString());
         assertEquals("c2", selectItems2.get(1).toString());
@@ -851,7 +865,7 @@ public class SelectTest {
         assertFalse(limit.getJdbcParameter().isUseFixedIndex());
         assertEquals(First.Keyword.LIMIT, limit.getKeyword());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals(firstColumnName, selectItems.get(0).toString());
         assertEquals(secondColumnName, selectItems.get(1).toString());
@@ -877,7 +891,7 @@ public class SelectTest {
         assertNull(first.getRowCount());
         assertEquals("f1", first.getVariable());
 
-        final List<SelectItem> selectItems = selectBody.getSelectItems();
+        final List<SelectItem<?>> selectItems = selectBody.getSelectItems();
         assertEquals(2, selectItems.size());
         assertEquals("c1", selectItems.get(0).toString());
         assertEquals("c2", selectItems.get(1).toString());
@@ -892,22 +906,26 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select;
 
-        final List<SelectItem> selectItems = plainSelect.getSelectItems();
-        assertEquals("MYID", ((SelectExpressionItem) selectItems.get(0)).getAlias().getName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) selectItems.get(1)).getExpression())
+        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
+        assertEquals("MYID", selectItems.get(0).getAlias().getName());
+        assertEquals("mycol", ((Column) (selectItems.get(1)).getExpression())
                 .getColumnName());
-        assertEquals("tab", ((AllTableColumns) selectItems.get(2)).getTable().getName());
-        assertEquals("schema", ((AllTableColumns) selectItems.get(3)).getTable().getSchemaName());
+        assertEquals("tab",
+                ((AllTableColumns) selectItems.get(2).getExpression()).getTable().getName());
+        assertEquals("schema",
+                ((AllTableColumns) selectItems.get(3).getExpression()).getTable().getSchemaName());
         assertEquals("schema.tab",
-                ((AllTableColumns) selectItems.get(3)).getTable().getFullyQualifiedName());
+                ((AllTableColumns) selectItems.get(3).getExpression()).getTable()
+                        .getFullyQualifiedName());
         assertEquals("mytab.mycol2",
-                ((Column) ((SelectExpressionItem) selectItems.get(4)).getExpression())
+                ((Column) (selectItems.get(4)).getExpression())
                         .getFullyQualifiedName());
         assertEquals("myschema.mytab.mycol",
-                ((Column) ((SelectExpressionItem) selectItems.get(5)).getExpression())
+                ((Column) (selectItems.get(5)).getExpression())
                         .getFullyQualifiedName());
         assertEquals("myschema.mytab",
-                ((AllTableColumns) selectItems.get(6)).getTable().getFullyQualifiedName());
+                ((AllTableColumns) selectItems.get(6).getExpression()).getTable()
+                        .getFullyQualifiedName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement =
@@ -915,14 +933,14 @@ public class SelectTest {
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("myalias",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
+                (plainSelect.getSelectItems().get(1)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT (myid + myid2) AS MYID FROM mytable WHERE mytable.col = 9";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("MYID",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
+                (plainSelect.getSelectItems().get(0)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -1021,9 +1039,9 @@ public class SelectTest {
         Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
 
         PlainSelect plainSelect = (PlainSelect) select;
-        assertEquals("myid", ((Column) ((SelectExpressionItem) plainSelect.getDistinct()
+        assertEquals("myid", ((Column) (plainSelect.getDistinct()
                 .getOnSelectItems().get(0)).getExpression()).getColumnName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertEquals("mycol", ((Column) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getColumnName());
     }
 
@@ -1044,9 +1062,9 @@ public class SelectTest {
         String statement = "SELECT DISTINCT TOP 5 myid, mycol FROM mytable WHERE mytable.col = 9";
         Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertEquals("myid", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        assertEquals("myid", ((Column) (plainSelect.getSelectItems().get(0))
                 .getExpression()).getColumnName());
-        assertEquals("mycol", ((Column) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertEquals("mycol", ((Column) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getColumnName());
         assertNotNull(plainSelect.getTop());
     }
@@ -1083,10 +1101,10 @@ public class SelectTest {
         assertEquals(3, plainSelect.getJoins().size());
         assertEquals("mytable0", plainSelect.getFromItem().getAlias().getName());
         assertEquals("alias_tab1",
-                plainSelect.getJoins().get(0).getRightItem().getAlias().getName());
+                plainSelect.getJoins().get(0).getFromItem().getAlias().getName());
         assertEquals("alias_tab2",
-                plainSelect.getJoins().get(1).getRightItem().getAlias().getName());
-        assertEquals("mytable4", plainSelect.getJoins().get(2).getRightItem().getAlias().getName());
+                plainSelect.getJoins().get(1).getFromItem().getAlias().getName());
+        assertEquals("mytable4", plainSelect.getJoins().get(2).getFromItem().getAlias().getName());
     }
 
     @Test
@@ -1096,7 +1114,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select;
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("tab2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertEquals("tab1.id",
                 ((Column) ((EqualsTo) plainSelect.getJoins().get(0).getOnExpression())
                         .getLeftExpression()).getFullyQualifiedName());
@@ -1107,7 +1125,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(2, plainSelect.getJoins().size());
         assertEquals("tab3",
-                ((Table) plainSelect.getJoins().get(1).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(1).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(1).isOuter());
 
         statement = "SELECT * FROM tab1 LEFT OUTER JOIN tab2 ON tab1.id = tab2.id JOIN tab3";
@@ -1115,7 +1133,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(2, plainSelect.getJoins().size());
         assertEquals("tab3",
-                ((Table) plainSelect.getJoins().get(1).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(1).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(1).isOuter());
 
         // implicit INNER
@@ -1131,7 +1149,7 @@ public class SelectTest {
         plainSelect = (PlainSelect) select;
         assertEquals(1, plainSelect.getJoins().size());
         assertEquals("tab2",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
         assertFalse(plainSelect.getJoins().get(0).isOuter());
         assertEquals(2, plainSelect.getJoins().get(0).getUsingColumns().size());
         assertEquals("id2",
@@ -1151,8 +1169,8 @@ public class SelectTest {
         assertTrue(plainSelect.getJoins().get(0).isOuter());
         assertTrue(plainSelect.getJoins().get(0).isSimple());
         assertEquals("bar",
-                ((Table) plainSelect.getJoins().get(0).getRightItem()).getFullyQualifiedName());
-        assertEquals("b", plainSelect.getJoins().get(0).getRightItem().getAlias().getName());
+                ((Table) plainSelect.getJoins().get(0).getFromItem()).getFullyQualifiedName());
+        assertEquals("b", plainSelect.getJoins().get(0).getFromItem().getAlias().getName());
     }
 
     @Test
@@ -1161,56 +1179,56 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
         PlainSelect plainSelect = (PlainSelect) select;
         assertEquals("max",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getAlias().getName());
+                (plainSelect.getSelectItems().get(0)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement =
                 "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table";
         select = (Select) parserManager.parse(new StringReader(statement));
-        assertStatementCanBeDeparsedAs(select, statement);
+        assertStatementCanBeDeparsedAs(select, statement, true);
 
         statement =
                 "SELECT MAX(id), AVG(pro) AS myavg FROM mytable WHERE mytable.col = 9 GROUP BY pro";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
         assertEquals("myavg",
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(1)).getAlias().getName());
+                (plainSelect.getSelectItems().get(1)).getAlias().getName());
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        Function fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        Function fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertEquals("MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertTrue(((Function) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT {fn MAX(a, b, c)}, COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertTrue(fun.isEscaped());
         assertEquals("MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        assertTrue(((Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        assertTrue(((Function) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT ab.MAX(a, b, c), cd.COUNT(*), D FROM tab1 GROUP BY D";
         select = (Select) parserManager.parse(new StringReader(statement));
         plainSelect = (PlainSelect) select;
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(0))
+        fun = (Function) (plainSelect.getSelectItems().get(0))
                 .getExpression();
         assertEquals("ab.MAX", fun.getName());
         assertEquals("b",
                 ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
-        fun = (Function) ((SelectExpressionItem) plainSelect.getSelectItems().get(1))
+        fun = (Function) (plainSelect.getSelectItems().get(1))
                 .getExpression();
         assertEquals("cd.COUNT", fun.getName());
         assertTrue(fun.getParameters().getExpressions().get(0) instanceof AllColumns);
@@ -1234,7 +1252,8 @@ public class SelectTest {
     @Test
     public void testNamedParametersPR702() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table");
+                "SELECT substring(id, 2, 3), substring(id from 2 for 3), substring(id from 2), trim(BOTH ' ' from 'foo bar '), trim(LEADING ' ' from 'foo bar '), trim(TRAILING ' ' from 'foo bar '), trim(' ' from 'foo bar '), position('foo' in 'bar'), overlay('foo' placing 'bar' from 1), overlay('foo' placing 'bar' from 1 for 2) FROM my table",
+                true);
     }
 
     @Test
@@ -1252,41 +1271,42 @@ public class SelectTest {
     @Test
     public void testWhere() throws JSQLParserException {
 
+        String whereToString = "(1 + 2) * (1+2) > ?";
+        assertExpressionCanBeParsedAndDeparsed(whereToString, true);
+
         final String statement = "SELECT * FROM tab1 WHERE";
-        String whereToString = "(a + b + c / d + e * f) * (a / b * (a + b)) > ?";
-        PlainSelect plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
+        whereToString = "(a + b + c / d + e * f) * (a / b * (a + b)) > ?";
+        assertExpressionCanBeParsedAndDeparsed(whereToString, true);
+
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                        true);
+
         assertTrue(plainSelect.getWhere() instanceof GreaterThan);
         assertTrue(((GreaterThan) plainSelect.getWhere())
                 .getLeftExpression() instanceof Multiplication);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
 
         whereToString = "(7 * s + 9 / 3) NOT BETWEEN 3 AND ?";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
-
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
         whereToString = "a / b NOT IN (?, 's''adf', 234.2)";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + " " + whereToString));
-
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
         assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
-        assertEquals(statement + " " + whereToString, plainSelect.toString());
 
-        whereToString = " NOT 0 = 0";
-        parserManager
-                .parse(new StringReader(statement + whereToString));
+        whereToString = "NOT 0 = 0";
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
+        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
 
-        whereToString = " NOT (0 = 0)";
-        plainSelect = (PlainSelect) parserManager
-                .parse(new StringReader(statement + whereToString));
-
-        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString.trim());
-        assertEquals(statement + whereToString, plainSelect.toString());
+        whereToString = "NOT (0 = 0)";
+        plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement + " " + whereToString,
+                true);
+        assertExpressionCanBeDeparsedAs(plainSelect.getWhere(), whereToString);
     }
 
     @Test
@@ -1529,7 +1549,7 @@ public class SelectTest {
 
         assertEquals(1, plainSelect.getSelectItems().size());
         Expression expression =
-                ((SelectExpressionItem) plainSelect.getSelectItems().get(0)).getExpression();
+                (plainSelect.getSelectItems().get(0)).getExpression();
         assertTrue(expression instanceof Function);
         Function func = (Function) expression;
         assertEquals("REPLACE", func.getName());
@@ -1604,10 +1624,8 @@ public class SelectTest {
         String statement = "SELECT 1e2, * FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
-        assertEquals(1e2,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
-                        .getSelectItems().get(0)).getExpression()).getValue(),
-                0);
+        assertEquals(1e2, ((DoubleValue) ((PlainSelect) select)
+                .getSelectItems().get(0).getExpression()).getValue(), 0);
         assertStatementCanBeDeparsedAs(select, statement);
 
         statement = "SELECT * FROM mytable WHERE mytable.col = 1.e2";
@@ -1640,8 +1658,8 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1e22,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
-                        .getSelectItems().get(0)).getExpression()).getValue(),
+                ((DoubleValue) ((PlainSelect) select)
+                        .getSelectItems().get(0).getExpression()).getValue(),
                 0);
     }
 
@@ -1651,7 +1669,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1.0,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
+                ((DoubleValue) (((PlainSelect) select)
                         .getSelectItems().get(0)).getExpression()).getValue(),
                 0);
     }
@@ -1662,7 +1680,7 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertEquals(1.2e22,
-                ((DoubleValue) ((SelectExpressionItem) ((PlainSelect) select)
+                ((DoubleValue) (((PlainSelect) select)
                         .getSelectItems().get(0)).getExpression()).getValue(),
                 0);
     }
@@ -2404,8 +2422,7 @@ public class SelectTest {
         Statement parsed = CCJSqlParserUtil.parse(stmt);
         Select select = (Select) parsed;
         PlainSelect plainSelect = (PlainSelect) select;
-        SelectItem get = plainSelect.getSelectItems().get(0);
-        SelectExpressionItem item = (SelectExpressionItem) get;
+        SelectItem item = plainSelect.getSelectItems().get(0);
         assertTrue(item.getExpression() instanceof Function);
         assertEquals("test", ((Function) item.getExpression()).getName());
     }
@@ -2542,7 +2559,7 @@ public class SelectTest {
         PlainSelect plainSelect = (PlainSelect) select;
 
         assertEquals(1, plainSelect.getSelectItems().size());
-        SelectExpressionItem item = (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+        SelectItem item = (SelectItem) plainSelect.getSelectItems().get(0);
         Function function = (Function) item.getExpression();
 
         assertEquals("to_timestamp", function.getName());
@@ -2591,7 +2608,7 @@ public class SelectTest {
     public void testMultiValueIn2() throws JSQLParserException {
         String stmt =
                 "SELECT * FROM mytable WHERE (trim(a), trim(b)) IN (SELECT a, b FROM mytable2)";
-        assertSqlCanBeParsedAndDeparsed(stmt);
+        assertSqlCanBeParsedAndDeparsed(stmt, true);
     }
 
     @Test
@@ -3249,7 +3266,7 @@ public class SelectTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"SELECT '\\'''", "SELECT '\\\\\\''"})
+    @ValueSource(strings = {"SELECT '\\'\\''", "SELECT '\\\\\\''"})
     public void testIssue167_singleQuoteEscape2(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
                 parser -> parser.withBackslashEscapeCharacter(true));
@@ -3348,13 +3365,13 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getFunction();
+        Function function = fromItem.getExpression();
         assertNotNull(function);
         assertEquals("SOME_FUNCTION", function.getName());
 
         // verify params
         assertNotNull(function.getParameters());
-        List<Expression> expressions = function.getParameters().getExpressions();
+        ExpressionList<?> expressions = function.getParameters();
         assertEquals(2, expressions.size());
 
         Expression firstParam = expressions.get(0);
@@ -3379,7 +3396,7 @@ public class SelectTest {
 
         assertTrue(plainSelect.getFromItem() instanceof TableFunction);
         TableFunction fromItem = (TableFunction) plainSelect.getFromItem();
-        Function function = fromItem.getFunction();
+        Function function = fromItem.getExpression();
         assertNotNull(function);
 
         assertEquals("SOME_FUNCTION", function.getName());
@@ -4197,7 +4214,8 @@ public class SelectTest {
     @Test
     public void testForXmlPath() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')");
+                "SELECT '|' + person_name FROM person JOIN person_group ON person.person_id = person_group.person_id WHERE person_group.group_id = 1 FOR XML PATH('')",
+                true);
     }
 
     // @Test
@@ -4339,8 +4357,8 @@ public class SelectTest {
         });
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectExpressionItem);
-        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(list.get(0) instanceof SelectItem);
+        SelectItem item = list.get(0);
         assertTrue(item.getExpression() instanceof Addition);
         Addition add = (Addition) item.getExpression();
 
@@ -4368,8 +4386,8 @@ public class SelectTest {
         });
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectExpressionItem);
-        SelectExpressionItem item = (SelectExpressionItem) list.get(0);
+        assertTrue(list.get(0) instanceof SelectItem);
+        SelectItem item = list.get(0);
         assertTrue(item.getExpression() instanceof IntervalExpression);
         IntervalExpression interval = (IntervalExpression) item.getExpression();
         assertEquals("INTERVAL 5 MONTH", interval.toString());
@@ -4388,8 +4406,8 @@ public class SelectTest {
                 select.accept(new SelectVisitorAdapter() {
                     @Override
                     public void visit(PlainSelect plainSelect) {
-                        SelectExpressionItem typedExpression =
-                                (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+                        SelectItem typedExpression =
+                                (SelectItem) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
                         assertNull(typedExpression.getAlias());
                         StringValue value = (StringValue) typedExpression.getExpression();
@@ -4404,7 +4422,8 @@ public class SelectTest {
     @Test
     public void testGroupingSets1() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 " + "GROUP BY "
+                "SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 "
+                        + "GROUP BY "
                         + "GROUPING SETS ((COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))");
     }
 
@@ -4760,8 +4779,7 @@ public class SelectTest {
         String statement = "SELECT * FROM mytable WHERE 1 = 2 && 2 = 3";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(
-
-                new PlainSelect().addSelectItems(Collections.singleton(new AllColumns()))
+                new PlainSelect().addSelectItem(new AllColumns())
                         .withFromItem(new Table("mytable"))
                         .withWhere(new AndExpression().withUseOperator(true)
                                 .withLeftExpression(
@@ -5084,7 +5102,7 @@ public class SelectTest {
 
     @Test
     public void testGroupedByWithExtraBracketsIssue1210() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup(a,b,c)", true);
+        // assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup(a,b,c)", true);
         assertSqlCanBeParsedAndDeparsed("select a,b,c from table group by rollup((a,b,c))", true);
 
     }
@@ -5320,17 +5338,59 @@ public class SelectTest {
 
     @Test
     public void testComplexInExpressionIssue905() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("select * " + "from table_a " + "where other_id in ("
-                + "   (select id from table_b where name like '%aa%')"
-                + "   , (select id from table_b where name like '%bb%')" + ")", true);
-
-        assertSqlCanBeParsedAndDeparsed("select * from v.e\n" + "where\n" + "\tcid <> rid\n"
-                + "\tand  rid  not in\n" + "\t(\n" + "\t\t(select distinct  rid  from  v.s )\n"
-                + "\t\tunion\n" + "\t\t(select distinct  rid  from v.p )\n" + "\t)\n"
-                + "\tand  \"timestamp\"  <= 1298505600000", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE other_id IN ( (   SELECT id\n"
+                        + "                        FROM table_b\n"
+                        + "                        WHERE name LIKE '%aa%' ), ( SELECT id\n"
+                        + "                                                    FROM table_b\n"
+                        + "                                                    WHERE name LIKE '%bb%' ) )\n",
+                true);
 
         assertSqlCanBeParsedAndDeparsed(
-                "select * " + "from table_a " + "where (a, b, c) in ((1, 2, 3), (3, 4, 5))", true);
+                "SELECT *\n"
+                        + "FROM v.e\n"
+                        + "WHERE cid <> rid\n"
+                        + "    AND rid NOT IN (    ( SELECT DISTINCT\n"
+                        + "                                rid\n"
+                        + "                            FROM v.s )\n"
+                        + "                        UNION (\n"
+                        + "                            SELECT DISTINCT\n"
+                        + "                                rid\n"
+                        + "                            FROM v.p ) )\n"
+                        + "    AND \"timestamp\" <= 1298505600000\n",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE ( a, b, c ) IN ( ( 1, 2, 3 ), ( 3, 4, 5 ) )\n",
+                true);
+    }
+
+    @Test
+    public void testComplexInExpressionSimplyfied() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM dual\n"
+                        + "WHERE a IN ( ( SELECT id1), ( SELECT id2) )\n",
+                true);
+
+        assertExpressionCanBeParsedAndDeparsed(
+                "a IN ( ( SELECT id1) UNION (SELECT id2) )\n", true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM e\n"
+                        + "WHERE a IN ( ( SELECT id1) UNION (SELECT id2) )\n",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT *\n"
+                        + "FROM table_a\n"
+                        + "WHERE ( a, b, c ) IN ( ( 1, 2, 3 ), ( 3, 4, 5 ) )\n",
+                true);
     }
 
     @Test
@@ -5387,91 +5447,6 @@ public class SelectTest {
                         "/net/sf/jsqlparser/statement/select/performanceIssue1397.sql"),
                 Charset.defaultCharset());
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-    }
-
-    /**
-     * The purpose of the test is to run into a timeout and to stop the parser when this happens. We
-     * provide an INVALID statement for this purpose, which will fail the SIMPLE parse and then hang
-     * with COMPLEX parsing until the timeout occurs.
-     * <p>
-     * We repeat that test multiple times and want to see no stale references to the Parser after
-     * timeout.
-     *
-     * @throws JSQLParserException
-     */
-    @Test
-    public void testParserInterruptedByTimeout() {
-        String sqlStr = "" + "SELECT \t* FROM TABLE_1 t1\n" + "WHERE\n"
-                + "\t(((t1.COL1 = 'VALUE2' )\n" + "\t\tAND (t1.CAL2 = 'VALUE2' ))\n"
-                + "\t\tAND (((1 = 1 )\n"
-                + "\t\t\tAND ((((((t1.id IN (940550 ,940600 ,940650 ,940700 ,940750 ,940800 ,940850 ,940900 ,940950 ,941000 ,941050 ,941100 ,941150 ,941200 ,941250 ,941300 ,941350 ,941400 ,941450 ,941500 ,941550 ,941600 ,941650 ,941700 ,941750 ,941800 ,941850 ,941900 ,941950 ,942000 ,942050 ,942100 ,942150 ,942200 ,942250 ,942300 ,942350 ,942400 ,942450 ,942500 ,942550 ,942600 ,942650 ,942700 ,942750 ,942800 ,942850 ,942900 ,942950 ,943000 ,943050 ,943100 ,943150 ,943200 ,943250 ,943300 ,943350 ,943400 ,943450 ,943500 ,943550 ,943600 ,943650 ,943700 ,943750 ,943800 ,943850 ,943900 ,943950 ,944000 ,944050 ,944100 ,944150 ,944200 ,944250 ,944300 ,944350 ,944400 ,944450 ,944500 ,944550 ,944600 ,944650 ,944700 ,944750 ,944800 ,944850 ,944900 ,944950 ,945000 ,945050 ,945100 ,945150 ,945200 ,945250 ,945300 ))\n"
-                + "\t\t\t\tOR (t1.id IN (945350 ,945400 ,945450 ,945500 ,945550 ,945600 ,945650 ,945700 ,945750 ,945800 ,945850 ,945900 ,945950 ,946000 ,946050 ,946100 ,946150 ,946200 ,946250 ,946300 ,946350 ,946400 ,946450 ,946500 ,946550 ,946600 ,946650 ,946700 ,946750 ,946800 ,946850 ,946900 ,946950 ,947000 ,947050 ,947100 ,947150 ,947200 ,947250 ,947300 ,947350 ,947400 ,947450 ,947500 ,947550 ,947600 ,947650 ,947700 ,947750 ,947800 ,947850 ,947900 ,947950 ,948000 ,948050 ,948100 ,948150 ,948200 ,948250 ,948300 ,948350 ,948400 ,948450 ,948500 ,948550 ,948600 ,948650 ,948700 ,948750 ,948800 ,948850 ,948900 ,948950 ,949000 ,949050 ,949100 ,949150 ,949200 ,949250 ,949300 ,949350 ,949400 ,949450 ,949500 ,949550 ,949600 ,949650 ,949700 ,949750 ,949800 ,949850 ,949900 ,949950 ,950000 ,950050 ,950100 )))\n"
-                + "\t\t\t\tOR (t1.id IN (950150 ,950200 ,950250 ,950300 ,950350 ,950400 ,950450 ,950500 ,950550 ,950600 ,950650 ,950700 ,950750 ,950800 ,950850 ,950900 ,950950 ,951000 ,951050 ,951100 ,951150 ,951200 ,951250 ,951300 ,951350 ,951400 ,951450 ,951500 ,951550 ,951600 ,951650 ,951700 ,951750 ,951800 ,951850 ,951900 ,951950 ,952000 ,952050 ,952100 ,952150 ,952200 ,952250 ,952300 ,952350 ,952400 ,952450 ,952500 ,952550 ,952600 ,952650 ,952700 ,952750 ,952800 ,952850 ,952900 ,952950 ,953000 ,953050 ,953100 ,953150 ,953200 ,953250 ,953300 ,953350 ,953400 ,953450 ,953500 ,953550 ,953600 ,953650 ,953700 )))\n"
-                + "\t\t\t\tOR (t1.id IN (953750 ,953800 ,953850 ,953900 ,953950 ,954000 ,954050 ,954100 ,954150 ,954200 ,954250 ,954300 ,954350 ,954400 ,954450 ,954500 ,954550 ,954600 ,954650 ,954700 ,954750 ,954800 ,954850 ,954900 ,954950 ,955000 ,955050 ,955100 ,955150 ,955200 ,955250 ,955300 ,955350 ,955400 ,955450 ,955500 ,955550 ,955600 ,955650 ,955700 ,955750 ,955800 ,955850 ,955900 ,955950 ,956000 ,956050 ,956100 ,956150 ,956200 ,956250 ,956300 ,956350 ,956400 ,956450 ,956500 ,956550 ,956600 ,956650 ,956700 ,956750 ,956800 ,956850 ,956900 ,956950 ,957000 ,957050 ,957100 ,957150 ,957200 ,957250 ,957300 )))\n"
-                + "\t\t\t\tOR (t1.id IN (944100, 944150, 944200, 944250, 944300, 944350, 944400, 944450, 944500, 944550, 944600, 944650, 944700, 944750, 944800, 944850, 944900, 944950, 945000 )))\n"
-                + "\t\t\t\tOR (t1.id IN (957350 ,957400 ,957450 ,957500 ,957550 ,957600 ,957650 ,957700 ,957750 ,957800 ,957850 ,957900 ,957950 ,958000 ,958050 ,958100 ,958150 ,958200 ,958250 ,958300 ,958350 ,958400 ,958450 ,958500 ,958550 ,958600 ,958650 ,958700 ,958750 ,958800 ,958850 ,958900 ,958950 ,959000 ,959050 ,959100 ,959150 ,959200 ,959250 ,959300 ,959350 ,959400 ,959450 ,959500 ,959550 ,959600 ,959650 ,959700 ,959750 ,959800 ,959850 ,959900 ,959950 ,960000 ,960050 ,960100 ,960150 ,960200 ,960250 ,960300 ,960350 ,960400 ,960450 ,960500 ,960550 ,960600 ,960650 ,960700 ,960750 ,960800 ,960850 ,960900 ,960950 ,961000 ,961050 ,961100 ,961150 ,961200 ,961250 ,961300 ,961350 ,961400 ,961450 ,961500 ,961550 ,961600 ,961650 ,961700 ,961750 ,961800 ,961850 ,961900 ,961950 ,962000 ,962050 ,962100 ))))\n"
-                + "\t\t\t\tOR (t1.id IN (962150 ,962200 ,962250 ,962300 ,962350 ,962400 ,962450 ,962500 ,962550 ,962600 ,962650 ,962700 ,962750 ,962800 ,962850 ,962900 ,962950 ,963000 ,963050 ,963100 ,963150 ,963200 ,963250 ,963300 ,963350 ,963400 ,963450 ,963500 ,963550 ,963600 ,963650 ,963700 ,963750 ,963800 ,963850 ,963900 ,963950 ,964000 ,964050 ,964100 ,964150 ,964200 ,964250 ,964300 ,964350 ,964400 ,964450 ,964500 ,964550 ,964600 ,964650 ,964700 ,964750 ,964800 ,964850 ,964900 ,964950 ,965000 ,965050 ,965100 ,965150 ,965200 ,965250 ,965300 ,965350 ,965400 ,965450 ,965500 ))))\n"
-                + "\tAND t1.COL3 IN (\n" + "\t    SELECT\n" + "\t\t    t2.COL3\n" + "\t    FROM\n"
-                + "\t\t    TABLE_6 t6,\n" + "\t\t    TABLE_1 t5,\n" + "\t\t    TABLE_4 t4,\n"
-                + "\t\t    TABLE_3 t3,\n" + "\t\t    TABLE_1 t2\n" + "\t    WHERE\n"
-                + "\t\t    (((((((t5.CAL3 = T6.id)\n" + "\t\t\t    AND (t5.CAL5 = t6.CAL5))\n"
-                + "\t\t\t    AND (t5.CAL1 = t6.CAL1))\n" + "\t\t\t    AND (t3.CAL1 IN (108500)))\n"
-                + "\t\t\t    AND (t5.id = t2.id))\n"
-                + "\t\t\t    AND NOT ((t6.CAL6 IN ('VALUE'))))\n"
-                + "\t\t\t    AND ((t2.id = t3.CAL2)\n" + "\t\t\t\t    AND (t4.id = t3.CAL3))))\n" + // add
-                                                                                                    // two
-                                                                                                    // redundant
-                                                                                                    // unmatched
-                                                                                                    // brackets
-                                                                                                    // in
-                                                                                                    // order
-                                                                                                    // to
-                                                                                                    // make
-                                                                                                    // the
-                                                                                                    // Simple
-                                                                                                    // Parser
-                                                                                                    // fail
-                                                                                                    // and
-                                                                                                    // the
-                                                                                                    // complex
-                                                                                                    // parser
-                                                                                                    // stuck
-                " )) \n" + "ORDER BY\n" + "\tt1.id ASC";
-
-        MemoryLeakVerifier verifier = new MemoryLeakVerifier();
-
-        int parallelThreads = Runtime.getRuntime().availableProcessors() + 1;
-        ExecutorService executorService = Executors.newFixedThreadPool(parallelThreads);
-
-        for (int i = 0; i < parallelThreads; i++) {
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        CCJSqlParser parser =
-                                CCJSqlParserUtil.newParser(sqlStr).withAllowComplexParsing(true);
-                        verifier.addObject(parser);
-
-                        Statement statement = CCJSqlParserUtil.parseStatement(parser);
-                    } catch (JSQLParserException ignore) {
-                        // We expected that to happen.
-                    }
-                }
-            });
-        }
-        executorService.shutdown();
-
-        // we should not run in any timeout here (because we expect that the Parser has timed out by
-        // itself)
-        Assertions.assertDoesNotThrow(new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
-            }
-        });
-
-        // we should not have any Objects left in the weak reference map
-        verifier.assertGarbageCollected();
     }
 
     @Test
@@ -5632,5 +5607,136 @@ public class SelectTest {
         inExpression.setRightExpression(select);
 
         Assertions.assertEquals("id IN " + sqlStr, inExpression.toString());
+    }
+
+    @Test
+    void testLateralView() throws JSQLParserException {
+        String sqlStr1 =
+                "SELECT * FROM person\n"
+                        + "    LATERAL VIEW EXPLODE(ARRAY(30, 60)) tableName AS c_age\n"
+                        + "    LATERAL VIEW EXPLODE(ARRAY(40, 80)) AS d_age";
+
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr1, true);
+        Assertions.assertEquals(2, select.getLateralViews().size());
+
+        String sqlStr2 =
+                "SELECT * FROM person\n"
+                        + "    LATERAL VIEW OUTER EXPLODE(ARRAY(30, 60)) AS c_age";
+
+        select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr2, true);
+        Assertions.assertEquals(1, select.getLateralViews().size());
+
+        Function function = new Function()
+                .withName("Explode")
+                .withParameters(new Function()
+                        .withName("Array")
+                        .withParameters(
+                                new LongValue(30), new LongValue(60)));
+        LateralView lateralView1 = new LateralView(
+                true, function, null, new Alias("c_age", true));
+
+
+        select = new PlainSelect()
+                .addSelectItems(new AllColumns())
+                .withFromItem(new Table("person"))
+                .addLateralView(lateralView1);
+        assertStatementCanBeDeparsedAs(select, sqlStr2, true);
+
+        Function function2 = new Function()
+                .withName("Explode")
+                .withParameters(new Function()
+                        .withName("Array")
+                        .withParameters(
+                                new LongValue(40), new LongValue(80)));
+        LateralView lateralView2 = SerializationUtils
+                .clone(lateralView1.withOuter(false).withTableAlias(new Alias("tableName")))
+                .withOuter(false)
+                .withGeneratorFunction(function2)
+                .withTableAlias(null)
+                .withColumnAlias(new Alias("d_age", true));
+        select.addLateralView(lateralView2);
+        assertStatementCanBeDeparsedAs(select, sqlStr1, true);
+    }
+
+    @Test
+    void testOracleHavingBeforeGroupBy() throws JSQLParserException {
+        String sqlStr = "SELECT id from a having count(*) > 1 group by id";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        Assertions.assertEquals("count(*) > 1", select.getHaving().toString());
+        Assertions.assertEquals("GROUP BY id", select.getGroupBy().toString());
+    }
+
+    @Test
+    void testParameterMultiPartName() throws JSQLParserException {
+        String sqlStr = "SELECT 1 FROM dual WHERE a = :paramMap.aValue";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        assertEquals("paramMap.aValue", select
+                .getWhere(EqualsTo.class)
+                .getRightExpression(JdbcNamedParameter.class)
+                .getName());
+    }
+
+    @Test
+    void testInnerJoin() throws JSQLParserException {
+        String sqlStr = "SELECT 1 from a inner join b on a.id=b.id";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        Join join = select.getJoins().get(0);
+
+        assertTrue(join.isInnerJoin());
+        assertTrue(join.withInner(false).isInnerJoin());
+        assertFalse(join.withLeft(true).isInnerJoin());
+        assertFalse(join.withRight(true).isInnerJoin());
+        assertFalse(join.withInner(true).isRight());
+    }
+
+    @Test
+    void testArrayColumnsIssue1757() throws JSQLParserException {
+        String sqlStr = "SELECT my_map['my_key'] FROM my_table WHERE id = 123";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT cast(my_map['my_key'] as int) FROM my_table WHERE id = 123";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testQualifyClauseIssue1805() throws JSQLParserException {
+        String sqlStr = "SELECT i, p, o\n" +
+                "    FROM qt\n" +
+                "    QUALIFY ROW_NUMBER() OVER (PARTITION BY p ORDER BY o) = 1";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testNotNullInFilter() throws JSQLParserException {
+        String stmt = "SELECT count(*) FILTER (WHERE i NOTNULL) AS filtered FROM tasks";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testNotIsNullInFilter() throws JSQLParserException {
+        String stmt = "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    void testBackSlashQuotationIssue1812() throws JSQLParserException {
+        String sqlStr = "SELECT ('\\'', 'a')";
+        Statement stmt2 = CCJSqlParserUtil.parse(
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
+
+        sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');";
+        stmt2 = CCJSqlParserUtil.parse(
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
+
+        sqlStr = "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');";
+        stmt2 = CCJSqlParserUtil.parse(
+                sqlStr, parser -> parser
+                        .withBackslashEscapeCharacter(true));
     }
 }

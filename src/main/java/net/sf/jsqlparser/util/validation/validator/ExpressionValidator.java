@@ -9,7 +9,60 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.AllValue;
+import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
+import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.CaseExpression;
+import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import net.sf.jsqlparser.expression.DateValue;
+import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExtractExpression;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.HexValue;
+import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
+import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.NullValue;
+import net.sf.jsqlparser.expression.NumericBind;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
+import net.sf.jsqlparser.expression.OverlapsCondition;
+import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.RangeExpression;
+import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
+import net.sf.jsqlparser.expression.SignedExpression;
+import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.TimeKeyExpression;
+import net.sf.jsqlparser.expression.TimeValue;
+import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
+import net.sf.jsqlparser.expression.TranscodingFunction;
+import net.sf.jsqlparser.expression.TrimFunction;
+import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.VariableAssignment;
+import net.sf.jsqlparser.expression.WhenClause;
+import net.sf.jsqlparser.expression.WindowElement;
+import net.sf.jsqlparser.expression.WindowOffset;
+import net.sf.jsqlparser.expression.WindowRange;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -35,22 +88,21 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
+import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -164,7 +216,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
             }
         }
         validateOptionalExpression(inExpression.getRightExpression(), this);
-        validateOptionalItemsList(inExpression.getRightItemsList());
     }
 
     @Override
@@ -202,6 +253,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public void visit(ExistsExpression existsExpression) {
         existsExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(MemberOfExpression memberOfExpression) {
+        memberOfExpression.getLeftExpression().accept(this);
+        memberOfExpression.getRightExpression().accept(this);
     }
 
     @Override
@@ -284,8 +341,8 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(Function function) {
         validateFeature(Feature.function);
 
-        validateOptionalItemsList(function.getNamedParameters());
-        validateOptionalItemsList(function.getParameters());
+        validateOptionalExpressionList(function.getNamedParameters());
+        validateOptionalExpressionList(function.getParameters());
 
         Object attribute = function.getAttribute();
         if (attribute instanceof Expression) {
@@ -334,7 +391,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSubSelect().accept(this);
+        anyComparisonExpression.getSelect().accept(this);
     }
 
     @Override
@@ -365,17 +422,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public void visit(CastExpression cast) {
         cast.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(TryCastExpression cast) {
-        cast.getLeftExpression().accept(this);
-    }
-
-    @Override
-    public void visit(SafeCastExpression cast) {
-        cast.getLeftExpression().accept(this);
-
     }
 
     @Override
@@ -435,11 +481,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(RegExpMySQLOperator rexpr) {
-        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
-    }
-
-    @Override
     public void visit(JsonExpression jsonExpr) {
         validateOptionalExpression(jsonExpr.getExpression());
     }
@@ -470,26 +511,22 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         validateOptionalOrderByElements(groupConcat.getOrderByElements());
     }
 
-    private void validateOptionalExpressionList(ExpressionList expressionList) {
+    private void validateOptionalExpressionList(ExpressionList<?> expressionList) {
         if (expressionList != null) {
-            expressionList.accept(getValidator(ItemsListValidator.class));
+            for (Expression expression : expressionList) {
+                expression.accept(this);
+            }
         }
     }
 
     @Override
-    public void visit(ValueListExpression valueList) {
-        validateOptionalExpressionList(valueList.getExpressionList());
+    public void visit(ExpressionList<?> expressionList) {
+        validateOptionalExpressionList(expressionList);
     }
 
     @Override
     public void visit(RowConstructor rowConstructor) {
-        if (rowConstructor.getColumnDefinitions().isEmpty()) {
-            validateOptionalExpressionList(rowConstructor.getExprList());
-        } else {
-            for (ColumnDefinition columnDefinition : rowConstructor.getColumnDefinitions()) {
-                validateName(NamedObject.column, columnDefinition.getColumnName());
-            }
-        }
+        validateOptionalExpressionList(rowConstructor);
     }
 
     @Override
@@ -617,5 +654,26 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public void visit(Select selectBody) {
 
+    }
+
+    @Override
+    public void visit(TranscodingFunction transcodingFunction) {
+        transcodingFunction.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(TrimFunction trimFunction) {
+        if (trimFunction.getExpression() != null) {
+            trimFunction.getExpression().accept(this);
+        }
+        if (trimFunction.getFromExpression() != null) {
+            trimFunction.getFromExpression().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(RangeExpression rangeExpression) {
+        rangeExpression.getStartExpression().accept(this);
+        rangeExpression.getEndExpression().accept(this);
     }
 }

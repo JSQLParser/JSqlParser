@@ -37,7 +37,7 @@ public class UpsertValidatorTest extends ValidationTestAsserts {
     public void testValidationExecuteNotAllowed() throws Exception {
         for (String sql : Arrays.asList("UPSERT INTO TEST (NAME, ID) VALUES ('foo', 123)",
                 "UPSERT INTO TEST (ID, COUNTER) VALUES (123, 0) ON DUPLICATE KEY UPDATE COUNTER = COUNTER + 1")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DDL, Feature.upsert);
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DDL, Feature.upsert, Feature.values);
         }
     }
 

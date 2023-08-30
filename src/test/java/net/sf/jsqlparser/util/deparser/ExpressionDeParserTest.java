@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.ArrayList;
-import java.util.List;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.KeepExpression;
@@ -18,17 +16,21 @@ import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.will;
 import org.mockito.Mock;
-import static org.mockito.Mockito.mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.will;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class ExpressionDeParserTest {
@@ -142,22 +144,23 @@ public class ExpressionDeParserTest {
     public void shouldDeParseComplexAnalyticExpressionWithPartitionExpressionList() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
         ExpressionList partitionExpressionList = new ExpressionList();
-        List<Expression> partitionExpressions = new ArrayList<Expression>();
         Expression partitionExpression1 = mock(Expression.class);
         Expression partitionExpression2 = mock(Expression.class);
 
         analyticExpression.setName("name");
         analyticExpression.setPartitionExpressionList(partitionExpressionList);
-        partitionExpressionList.setExpressions(partitionExpressions);
-        partitionExpressions.add(partitionExpression1);
-        partitionExpressions.add(partitionExpression2);
+        partitionExpressionList.add(partitionExpression1);
+        partitionExpressionList.add(partitionExpression2);
 
-        will(appendToBuffer("partition expression 1")).given(partitionExpression1).accept(expressionDeParser);
-        will(appendToBuffer("partition expression 2")).given(partitionExpression2).accept(expressionDeParser);
+        will(appendToBuffer("partition expression 1")).given(partitionExpression1)
+                .accept(expressionDeParser);
+        will(appendToBuffer("partition expression 2")).given(partitionExpression2)
+                .accept(expressionDeParser);
 
         expressionDeParser.visit(analyticExpression);
 
-        assertEquals("name() OVER (PARTITION BY partition expression 1, partition expression 2 )", buffer.toString());
+        assertEquals("name() OVER (PARTITION BY partition expression 1, partition expression 2 )",
+                buffer.toString());
     }
 
     @Test
@@ -172,12 +175,15 @@ public class ExpressionDeParserTest {
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
 
-        will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
-        will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
+        will(appendToBuffer("order by element 1")).given(orderByDeParser)
+                .deParseElement(orderByElement1);
+        will(appendToBuffer("order by element 2")).given(orderByDeParser)
+                .deParseElement(orderByElement2);
 
         expressionDeParser.visit(analyticExpression);
 
-        assertEquals("name() OVER (ORDER BY order by element 1, order by element 2)", buffer.toString());
+        assertEquals("name() OVER (ORDER BY order by element 1, order by element 2)",
+                buffer.toString());
     }
 
     @Test
@@ -194,13 +200,16 @@ public class ExpressionDeParserTest {
         orderByElements.add(orderByElement1);
         orderByElements.add(orderByElement2);
 
-        will(appendToBuffer("order by element 1")).given(orderByDeParser).deParseElement(orderByElement1);
-        will(appendToBuffer("order by element 2")).given(orderByDeParser).deParseElement(orderByElement2);
+        will(appendToBuffer("order by element 1")).given(orderByDeParser)
+                .deParseElement(orderByElement1);
+        will(appendToBuffer("order by element 2")).given(orderByDeParser)
+                .deParseElement(orderByElement2);
         given(windowElement.toString()).willReturn("window element");
 
         expressionDeParser.visit(analyticExpression);
 
-        assertEquals("name() OVER (ORDER BY order by element 1, order by element 2 window element)", buffer.toString());
+        assertEquals("name() OVER (ORDER BY order by element 1, order by element 2 window element)",
+                buffer.toString());
     }
 
     private Answer<Void> appendToBuffer(final String string) {

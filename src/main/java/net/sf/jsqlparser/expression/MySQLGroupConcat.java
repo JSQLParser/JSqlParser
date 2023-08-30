@@ -9,15 +9,15 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
 
@@ -26,7 +26,7 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
     private List<OrderByElement> orderByElements;
     private String separator;
 
-    public ExpressionList getExpressionList() {
+    public ExpressionList<?> getExpressionList() {
         return expressionList;
     }
 
@@ -70,7 +70,7 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
         if (isDistinct()) {
             b.append("DISTINCT ");
         }
-        b.append(PlainSelect.getStringList(expressionList.getExpressions(), true, false));
+        b.append(expressionList);
         if (orderByElements != null && !orderByElements.isEmpty()) {
             b.append(" ORDER BY ");
             for (int i = 0; i < orderByElements.size(); i++) {
@@ -108,13 +108,16 @@ public class MySQLGroupConcat extends ASTNodeAccessImpl implements Expression {
     }
 
     public MySQLGroupConcat addOrderByElements(OrderByElement... orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         Collections.addAll(collection, orderByElements);
         return this.withOrderByElements(collection);
     }
 
-    public MySQLGroupConcat addOrderByElements(Collection<? extends OrderByElement> orderByElements) {
-        List<OrderByElement> collection = Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
+    public MySQLGroupConcat addOrderByElements(
+            Collection<? extends OrderByElement> orderByElements) {
+        List<OrderByElement> collection =
+                Optional.ofNullable(getOrderByElements()).orElseGet(ArrayList::new);
         collection.addAll(orderByElements);
         return this.withOrderByElements(collection);
     }

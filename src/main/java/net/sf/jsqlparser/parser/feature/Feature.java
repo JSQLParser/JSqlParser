@@ -44,7 +44,6 @@ import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
-import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
@@ -53,7 +52,6 @@ import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotXml;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
@@ -294,7 +292,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.expression.operators.relational.ExpressionList
      */
     insertReturningExpressionList,
 
@@ -328,7 +326,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.statement.select.SelectItem
      */
     updateReturning,
     /**
@@ -356,7 +354,7 @@ public enum Feature {
     /**
      * "RETURNING expr(, expr)*"
      *
-     * @see SelectExpressionItem
+     * @see net.sf.jsqlparser.statement.select.SelectItem
      */
     deleteReturningExpressionList,
 
@@ -438,7 +436,6 @@ public enum Feature {
     /**
      * SQL "REPLACE" statement is allowed
      *
-     * @see Replace
      */
     @Deprecated
     replace,
@@ -646,7 +643,7 @@ public enum Feature {
 
     lateralSubSelect,
     /**
-     * @see ValuesList
+     * @see net.sf.jsqlparser.statement.select.Values
      */
     valuesList,
     /**
@@ -741,7 +738,7 @@ public enum Feature {
      */
     allowUnsupportedStatements(false),
 
-    timeOut(6000),
+    timeOut(8000),
 
     /**
      * allows Backslash '\' as Escape Character

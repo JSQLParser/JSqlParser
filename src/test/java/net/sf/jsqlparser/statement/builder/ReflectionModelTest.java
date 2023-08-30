@@ -15,9 +15,11 @@ import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.asList;
@@ -71,7 +73,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.OrderByClause(),
             new net.sf.jsqlparser.expression.Parenthesis(),
             new net.sf.jsqlparser.expression.PartitionByClause(),
-            new net.sf.jsqlparser.expression.RowConstructor(),
+            // new net.sf.jsqlparser.expression.RowConstructor<>("ROW", new ExpressionList<>()),
             new net.sf.jsqlparser.expression.SQLServerHints(),
             new net.sf.jsqlparser.expression.SignedExpression(),
             new net.sf.jsqlparser.expression.StringValue(),
@@ -79,7 +81,6 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.TimeValue(),
             new net.sf.jsqlparser.expression.TimestampValue(),
             new net.sf.jsqlparser.expression.UserVariable(),
-            new net.sf.jsqlparser.expression.ValueListExpression(),
             new net.sf.jsqlparser.expression.WhenClause(),
             new net.sf.jsqlparser.expression.WindowElement(),
             new net.sf.jsqlparser.expression.WindowOffset(),
@@ -102,7 +103,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.relational.Between(),
             new net.sf.jsqlparser.expression.operators.relational.EqualsTo(),
             new net.sf.jsqlparser.expression.operators.relational.ExistsExpression(),
-            new net.sf.jsqlparser.expression.operators.relational.ExpressionList(),
+            new net.sf.jsqlparser.expression.operators.relational.ExpressionList<>(),
             new net.sf.jsqlparser.expression.operators.relational.FullTextSearch(),
             new net.sf.jsqlparser.expression.operators.relational.GreaterThan(),
             new net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals(),
@@ -114,13 +115,9 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.relational.Matches(),
             new net.sf.jsqlparser.expression.operators.relational.MinorThan(),
             new net.sf.jsqlparser.expression.operators.relational.MinorThanEquals(),
-            new net.sf.jsqlparser.expression.operators.relational.MultiExpressionList(),
-            new net.sf.jsqlparser.expression.operators.relational.NamedExpressionList(),
             new net.sf.jsqlparser.expression.operators.relational.NotEqualsTo(),
             new net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator(
                     RegExpMatchOperatorType.MATCH_CASEINSENSITIVE),
-            new net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator(
-                    RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE),
             new net.sf.jsqlparser.expression.operators.relational.SimilarToExpression(),
             new net.sf.jsqlparser.schema.Column(), new net.sf.jsqlparser.schema.Database("db"),
             new net.sf.jsqlparser.schema.Sequence(),
@@ -170,15 +167,13 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.grant.Grant(),
             new net.sf.jsqlparser.statement.insert.Insert(),
             new net.sf.jsqlparser.statement.merge.Merge(),
-            new net.sf.jsqlparser.statement.merge.MergeUpdate(),
+            new net.sf.jsqlparser.statement.merge.MergeUpdate(new ArrayList<UpdateSet>()),
             new net.sf.jsqlparser.statement.select.AllColumns(),
             new net.sf.jsqlparser.statement.select.AllTableColumns(),
             new net.sf.jsqlparser.statement.select.Distinct(),
             new net.sf.jsqlparser.statement.select.ExceptOp(),
-            new net.sf.jsqlparser.statement.select.ExpressionListItem(),
             new net.sf.jsqlparser.statement.select.Fetch(),
             new net.sf.jsqlparser.statement.select.First(),
-            new net.sf.jsqlparser.statement.select.FunctionItem(),
             new net.sf.jsqlparser.statement.select.GroupByElement(),
             new net.sf.jsqlparser.statement.select.IntersectOp(),
             new net.sf.jsqlparser.statement.select.Join(),
@@ -195,11 +190,11 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.PivotXml(),
             // new net.sf.jsqlparser.statement.select.PlainSelect(),
             // new net.sf.jsqlparser.statement.select.Select(),
-            new net.sf.jsqlparser.statement.select.SelectExpressionItem(),
+            new net.sf.jsqlparser.statement.select.SelectItem(),
             // new net.sf.jsqlparser.statement.select.SetOperationList(),
             new net.sf.jsqlparser.statement.select.Skip(),
             // new net.sf.jsqlparser.statement.select.ParenthesedSelect(),
-            new net.sf.jsqlparser.statement.select.TableFunction(),
+            // new net.sf.jsqlparser.statement.select.TableFunction("LATERAL", new Function()),
             new net.sf.jsqlparser.statement.select.Top(),
             new net.sf.jsqlparser.statement.select.UnPivot(),
             new net.sf.jsqlparser.statement.select.UnionOp(),

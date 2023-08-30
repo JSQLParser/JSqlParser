@@ -53,8 +53,10 @@ public class ExplainStatement implements Statement {
 
     /**
      * Returns the first option that matches this optionType
+     * 
      * @param optionType the option type to retrieve an Option for
-     * @return an option of that type, or null. In case of duplicate options, the first found option will be returned.
+     * @return an option of that type, or null. In case of duplicate options, the first found option
+     *         will be returned.
      */
     public Option getOption(OptionType optionType) {
         if (options == null) {
@@ -68,7 +70,8 @@ public class ExplainStatement implements Statement {
         StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
         if (options != null) {
             statementBuilder.append(" ");
-            statementBuilder.append(options.values().stream().map(Option::formatOption).collect(Collectors.joining(" ")));
+            statementBuilder.append(options.values().stream().map(Option::formatOption)
+                    .collect(Collectors.joining(" ")));
         }
 
         statementBuilder.append(" ");
@@ -82,11 +85,11 @@ public class ExplainStatement implements Statement {
     }
 
     public enum OptionType {
-        ANALYZE,
-        VERBOSE,
-        COSTS,
-        BUFFERS,
-        FORMAT
+        ANALYZE, VERBOSE, COSTS, BUFFERS, FORMAT;
+
+        public static OptionType from(String type) {
+            return Enum.valueOf(OptionType.class, type.toUpperCase());
+        }
     }
 
     public static class Option implements Serializable {
@@ -111,9 +114,9 @@ public class ExplainStatement implements Statement {
         }
 
         public String formatOption() {
-            return type.name() + ( value != null 
-                                                        ? " " + value 
-                                                        : "" );
+            return type.name() + (value != null
+                    ? " " + value
+                    : "");
         }
 
         public Option withValue(String value) {

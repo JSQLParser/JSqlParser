@@ -18,8 +18,7 @@ public class Parenthesis extends ASTNodeAccessImpl implements Expression {
 
     private Expression expression;
 
-    public Parenthesis() {
-    }
+    public Parenthesis() {}
 
     public Parenthesis(Expression expression) {
         setExpression(expression);
@@ -40,7 +39,7 @@ public class Parenthesis extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return "(" + expression + ")";
+        return "(" + (expression != null ? expression : "") + ")";
     }
 
     public Parenthesis withExpression(Expression expression) {

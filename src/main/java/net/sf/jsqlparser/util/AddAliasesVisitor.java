@@ -10,19 +10,16 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -69,19 +66,13 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     }
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
-
-    }
-
-    @Override
-    public void visit(SelectExpressionItem selectExpressionItem) {
+    public void visit(SelectItem selectExpressionItem) {
         if (firstRun) {
             if (selectExpressionItem.getAlias() != null) {
                 aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
             }
         } else {
             if (selectExpressionItem.getAlias() == null) {
-
                 while (true) {
                     String alias = getNextAlias().toUpperCase();
                     if (!aliases.contains(alias)) {
@@ -105,13 +96,6 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
 
     @Override
     public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
-                                                                    // methods, choose Tools |
-                                                                    // Templates.
-    }
-
-    @Override
-    public void visit(AllColumns allColumns) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
                                                                     // methods, choose Tools |
                                                                     // Templates.

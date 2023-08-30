@@ -22,7 +22,6 @@ import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -39,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.BDDMockito.then;
@@ -94,12 +94,15 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeparsersWhenDeParsingInsert() {
         Insert insert = new Insert();
         Table table = new Table();
-        List<Column> duplicateUpdateColumns = new ArrayList<Column>();
-        List<Expression> duplicateUpdateExpressionList = new ArrayList<Expression>();
+        List<UpdateSet> duplicateUpdateSets = new ArrayList<>();
         Column duplicateUpdateColumn1 = new Column();
-        Column duplicateUpdateColumn2 = new Column();
         Expression duplicateUpdateExpression1 = mock(Expression.class);
+        duplicateUpdateSets.add(new UpdateSet(duplicateUpdateColumn1, duplicateUpdateExpression1));
+
+        Column duplicateUpdateColumn2 = new Column();
         Expression duplicateUpdateExpression2 = mock(Expression.class);
+        duplicateUpdateSets.add(new UpdateSet(duplicateUpdateColumn2, duplicateUpdateExpression2));
+
         PlainSelect select = mock(PlainSelect.class);
         List<WithItem> withItemsList = new ArrayList<WithItem>();
         WithItem withItem1 = spy(new WithItem());
@@ -110,14 +113,7 @@ public class StatementDeParserTest {
 
         insert.setSelect(select);
         insert.setTable(table);
-        insert.setUseDuplicate(true);
-        insert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        duplicateUpdateColumns.add(duplicateUpdateColumn1);
-        duplicateUpdateColumns.add(duplicateUpdateColumn2);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
-        insert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        insert.withDuplicateUpdateSets(duplicateUpdateSets);
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
         withItem1.setSelect(withItem1SubSelect);
@@ -132,47 +128,6 @@ public class StatementDeParserTest {
         then(duplicateUpdateExpression1).should().accept(expressionDeParser);
     }
 
-    @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithoutItemsList() {
-        Replace replace = new Replace();
-        Table table = new Table();
-        List<Column> columns = new ArrayList<Column>();
-        List<Expression> expressions = new ArrayList<Expression>();
-        Column column1 = new Column();
-        Column column2 = new Column();
-        Expression expression1 = mock(Expression.class);
-        Expression expression2 = mock(Expression.class);
-
-        replace.setTable(table);
-        replace.setColumns(columns);
-        replace.setExpressions(expressions);
-        columns.add(column1);
-        columns.add(column2);
-        expressions.add(expression1);
-        expressions.add(expression2);
-
-        statementDeParser.visit(replace);
-
-        then(expression1).should().accept(expressionDeParser);
-        then(expression2).should().accept(expressionDeParser);
-    }
-
-    // @Test
-    // @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    // public void shouldUseProvidedDeParsersWhenDeParsingReplaceWithItemsList() {
-    // Replace replace = new Replace();
-    // Table table = new Table();
-    // ItemsList itemsList = mock(ItemsList.class);
-    //
-    // replace.setTable(table);
-    // replace.setItemsList(itemsList);
-    //
-    // statementDeParser.visit(replace);
-    //
-    // then(itemsList).should().accept(argThat(is(replaceDeParserWithDeParsers(equalTo(expressionDeParser),
-    // equalTo(selectDeParser)))));
-    // }
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParsersWhenDeParsingSelect() {
@@ -273,13 +228,11 @@ public class StatementDeParserTest {
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParserWhenDeParsingExecute() {
         Execute execute = new Execute();
-        ExpressionList exprList = new ExpressionList();
-        List<Expression> expressions = new ArrayList<Expression>();
+        ExpressionList expressions = new ExpressionList();
         Expression expression1 = mock(Expression.class);
         Expression expression2 = mock(Expression.class);
 
-        execute.setExprList(exprList);
-        exprList.setExpressions(expressions);
+        execute.setExprList(expressions);
         expressions.add(expression1);
         expressions.add(expression2);
 
@@ -294,7 +247,7 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
         String name = "name";
         Expression expression = mock(Expression.class);
-        ArrayList<Expression> expressions = new ArrayList<>();
+        ExpressionList expressions = new ExpressionList();
         expressions.add(expression);
 
         SetStatement setStatement = new SetStatement(name, expressions);
@@ -341,14 +294,10 @@ public class StatementDeParserTest {
 
         upsert.setSelect(select);
         upsert.setTable(table);
-        upsert.setUseDuplicate(true);
-        upsert.setDuplicateUpdateColumns(duplicateUpdateColumns);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
-        duplicateUpdateColumns.add(duplicateUpdateColumn1);
-        duplicateUpdateColumns.add(duplicateUpdateColumn2);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression1);
-        duplicateUpdateExpressionList.add(duplicateUpdateExpression2);
-        upsert.setDuplicateUpdateExpressionList(duplicateUpdateExpressionList);
+        upsert.setDuplicateUpdateSets(
+                Arrays.asList(
+                        new UpdateSet(duplicateUpdateColumn1, duplicateUpdateExpression1),
+                        new UpdateSet(duplicateUpdateColumn2, duplicateUpdateExpression2)));
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
         withItem1.setSelect(withItem1SubSelect);

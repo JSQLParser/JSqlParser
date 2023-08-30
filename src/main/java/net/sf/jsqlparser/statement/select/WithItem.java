@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public class WithItem extends ParenthesedSelect {
 
-    private List<SelectItem> withItemList;
+    private List<SelectItem<?>> withItemList;
 
     private boolean recursive = false;
 
@@ -35,11 +35,11 @@ public class WithItem extends ParenthesedSelect {
      *
      * @return a list of {@link SelectItem}s
      */
-    public List<SelectItem> getWithItemList() {
+    public List<SelectItem<?>> getWithItemList() {
         return withItemList;
     }
 
-    public void setWithItemList(List<SelectItem> withItemList) {
+    public void setWithItemList(List<SelectItem<?>> withItemList) {
         this.withItemList = withItemList;
     }
 
@@ -64,7 +64,7 @@ public class WithItem extends ParenthesedSelect {
     }
 
 
-    public WithItem withWithItemList(List<SelectItem> withItemList) {
+    public WithItem withWithItemList(List<SelectItem<?>> withItemList) {
         this.setWithItemList(withItemList);
         return this;
     }
@@ -74,15 +74,15 @@ public class WithItem extends ParenthesedSelect {
         return this;
     }
 
-    public WithItem addWithItemList(SelectItem... withItemList) {
-        List<SelectItem> collection =
+    public WithItem addWithItemList(SelectItem<?>... withItemList) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemList);
         return this.withWithItemList(collection);
     }
 
-    public WithItem addWithItemList(Collection<? extends SelectItem> withItemList) {
-        List<SelectItem> collection =
+    public WithItem addWithItemList(Collection<? extends SelectItem<?>> withItemList) {
+        List<SelectItem<?>> collection =
                 Optional.ofNullable(getWithItemList()).orElseGet(ArrayList::new);
         collection.addAll(withItemList);
         return this.withWithItemList(collection);

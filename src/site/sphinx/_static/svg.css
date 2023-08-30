@@ -7,10 +7,10 @@ div .ebnf
 }
 
 @namespace "http://www.w3.org/2000/svg";
-    .line                 {fill: none; stroke: #001133; stroke-width: 1;}
+    .line                 {fill: none; stroke: #0063db; stroke-width: 1;}
     .bold-line            {stroke: #000714; shape-rendering: crispEdges; stroke-width: 2;}
     .thin-line            {stroke: #000A1F; shape-rendering: crispEdges;}
-    .filled               {fill: #001133; stroke: none;}
+    .filled               {fill: #0063db; stroke: none;}
     text.terminal         {font-family: Roboto, Sans-serif;
                             font-size: 10px;
                             fill: #000714;
@@ -26,9 +26,9 @@ div .ebnf
                             fill: #000A1F;
                             font-weight: normal;
                           }
-    rect, circle, polygon {fill: #001133; stroke: #001133;}
-    rect.terminal         {fill: #4D88FF; stroke: #001133; stroke-width: 1;}
-    rect.nonterminal      {fill: #9EBFFF; stroke: #001133; stroke-width: 1;}
+    rect, circle, polygon {fill: #0063db; stroke: #0063db;}
+    rect.terminal         {fill: #4D88FF; stroke: #0063db; stroke-width: 1;}
+    rect.nonterminal      {fill: #9EBFFF; stroke: #0063db; stroke-width: 1;}
     rect.text             {fill: none; stroke: none;}
-    polygon.regexp        {fill: #C7DAFF; stroke: #001133; stroke-width: 1;}
+    polygon.regexp        {fill: #C7DAFF; stroke: #0063db; stroke-width: 1;}
   

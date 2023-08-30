@@ -16,10 +16,12 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
+ * 
  * <pre>
  * conflict_action is one of:
  *
@@ -35,15 +37,26 @@ import java.util.Objects;
 public class InsertConflictAction implements Serializable {
     ConflictActionType conflictActionType;
 
-    private final ArrayList<UpdateSet> updateSets = new ArrayList<>();
+    private List<UpdateSet> updateSets;
 
     Expression whereExpression;
+
     public InsertConflictAction(ConflictActionType conflictActionType) {
-        this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");
+        this.conflictActionType = Objects.requireNonNull(conflictActionType,
+                "The Conflict Action Type is mandatory and must not be Null.");
     }
 
-    public ArrayList<UpdateSet> getUpdateSets() {
+    public List<UpdateSet> getUpdateSets() {
         return updateSets;
+    }
+
+    public void setUpdateSets(List<UpdateSet> updateSets) {
+        this.updateSets = updateSets;
+    }
+
+    public InsertConflictAction withUpdateSets(List<UpdateSet> updateSets) {
+        this.setUpdateSets(updateSets);
+        return this;
     }
 
     public ConflictActionType getConflictActionType() {
@@ -51,7 +64,8 @@ public class InsertConflictAction implements Serializable {
     }
 
     public void setConflictActionType(ConflictActionType conflictActionType) {
-        this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");
+        this.conflictActionType = Objects.requireNonNull(conflictActionType,
+                "The Conflict Action Type is mandatory and must not be Null.");
     }
 
     public InsertConflictAction withConflictActionType(ConflictActionType conflictActionType) {
@@ -60,18 +74,19 @@ public class InsertConflictAction implements Serializable {
     }
 
     public InsertConflictAction addUpdateSet(Column column, Expression expression) {
-        this.updateSets.add(new UpdateSet(column, expression));
-        return this;
+        return this.addUpdateSet(new UpdateSet());
     }
 
     public InsertConflictAction addUpdateSet(UpdateSet updateSet) {
+        if (updateSets == null) {
+            updateSets = new ArrayList<>();
+        }
         this.updateSets.add(updateSet);
         return this;
     }
 
     public InsertConflictAction withUpdateSets(Collection<UpdateSet> updateSets) {
-        this.updateSets.clear();
-        this.updateSets.addAll(updateSets);
+        this.setUpdateSets(new ArrayList<>(updateSets));
         return this;
     }
 
@@ -95,10 +110,10 @@ public class InsertConflictAction implements Serializable {
                 builder.append(" DO NOTHING");
                 break;
             case DO_UPDATE:
-                builder.append(" DO UPDATE ");
+                builder.append(" DO UPDATE SET ");
                 UpdateSet.appendUpdateSetsTo(builder, updateSets);
 
-                if (whereExpression!=null) {
+                if (whereExpression != null) {
                     builder.append(" WHERE ").append(whereExpression);
                 }
                 break;

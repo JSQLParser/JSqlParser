@@ -20,8 +20,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -47,7 +45,7 @@ public class MySqlSqlCalcFoundRowsTest {
 
         Statement parsed = assertSqlCanBeParsedAndDeparsed(sqlCalcFoundRowsContainingSql);
         assertSqlCanBeParsedAndDeparsed(generalSql);
-        Select created = new PlainSelect().addSelectItems(Arrays.asList(new AllColumns()))
+        Select created = new PlainSelect().addSelectItem(new AllColumns())
                 .withMySqlSqlCalcFoundRows(true).withFromItem(new Table("TABLE"));
         assertDeparse(created, sqlCalcFoundRowsContainingSql);
         assertEqualsObjectTree(parsed, created);

@@ -37,7 +37,7 @@ public class SelectASTTest {
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
+            SelectItem<?> sei = (SelectItem) item;
             Column c = sei.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
@@ -93,9 +93,8 @@ public class SelectASTTest {
         String sql = "SELECT  a,  b FROM  mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
@@ -115,9 +114,8 @@ public class SelectASTTest {
                 "SELECT  /* testcomment */ \n a,  b FROM  -- testcomment2 \n mytable \n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');
@@ -139,9 +137,8 @@ public class SelectASTTest {
                 "SELECT  /* testcomment */ \r\n a,  b FROM  -- testcomment2 \r\n mytable \r\n order by   b,  c";
         StringBuilder b = new StringBuilder(sql);
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            SelectExpressionItem sei = (SelectExpressionItem) item;
-            Column c = sei.getExpression(Column.class);
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+            Column c = item.getExpression(Column.class);
             SimpleNode astNode = c.getASTNode();
             assertNotNull(astNode);
             b.setCharAt(astNode.jjtGetFirstToken().absoluteBegin - 1, '*');

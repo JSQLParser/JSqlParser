@@ -9,14 +9,14 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.Values;
 
 public class ValuesStatementDeParser extends AbstractDeParser<Values> {
 
-    private final ItemsListVisitor expressionVisitor;
+    private final ExpressionVisitor expressionVisitor;
 
-    public ValuesStatementDeParser(ItemsListVisitor expressionVisitor, StringBuilder buffer) {
+    public ValuesStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }

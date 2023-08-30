@@ -17,7 +17,6 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 public final class SelectUtils {
@@ -29,7 +28,7 @@ public final class SelectUtils {
     public static Select buildSelectFromTableAndExpressions(Table table, Expression... expr) {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
-            list[i] = new SelectExpressionItem(expr[i]);
+            list[i] = new SelectItem(expr[i]);
         }
         return buildSelectFromTableAndSelectItems(table, list);
     }
@@ -38,7 +37,7 @@ public final class SelectUtils {
             throws JSQLParserException {
         SelectItem[] list = new SelectItem[expr.length];
         for (int i = 0; i < expr.length; i++) {
-            list[i] = new SelectExpressionItem(CCJSqlParserUtil.parseExpression(expr[i]));
+            list[i] = new SelectItem(CCJSqlParserUtil.parseExpression(expr[i]));
         }
         return buildSelectFromTableAndSelectItems(table, list);
     }
@@ -56,7 +55,7 @@ public final class SelectUtils {
      * @return
      */
     public static Select buildSelectFromTable(Table table) {
-        return buildSelectFromTableAndSelectItems(table, new AllColumns());
+        return buildSelectFromTableAndSelectItems(table, SelectItem.from(new AllColumns()));
     }
 
     /**
@@ -67,7 +66,7 @@ public final class SelectUtils {
      */
     public static void addExpression(Select select, final Expression expr) {
         if (select instanceof PlainSelect) {
-            ((PlainSelect) select).getSelectItems().add(new SelectExpressionItem(expr));
+            ((PlainSelect) select).addSelectItem(expr);
         } else {
             throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
         }

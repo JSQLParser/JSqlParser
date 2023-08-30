@@ -34,7 +34,9 @@ public class ReplaceValidatorTest extends ValidationTestAsserts {
         for (String sql : Arrays.asList("REPLACE mytable SET col1='as', col2=?, col3=565",
                 "REPLACE mytable (col1, col2, col3) VALUES ('as', ?, 565)",
                 "REPLACE mytable (col1, col2, col3) SELECT * FROM mytable3")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC), Feature.upsert);
+            validateNotAllowed(sql, 1, 1,
+                    FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC).add(Feature.values),
+                    Feature.upsert);
         }
     }
 

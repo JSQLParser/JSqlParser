@@ -16,8 +16,11 @@ import java.io.Serializable;
 public class OrderByElement implements Serializable {
 
     public enum NullOrdering {
-        NULLS_FIRST,
-        NULLS_LAST
+        NULLS_FIRST, NULLS_LAST;
+
+        public static NullOrdering from(String ordering) {
+            return Enum.valueOf(NullOrdering.class, ordering.toUpperCase());
+        }
     }
 
     private Expression expression;

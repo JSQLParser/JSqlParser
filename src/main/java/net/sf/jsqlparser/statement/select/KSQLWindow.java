@@ -14,32 +14,15 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class KSQLWindow extends ASTNodeAccessImpl {
 
     public enum TimeUnit {
-        DAY ("DAY"),
-        HOUR ("HOUR"),
-        MINUTE ("MINUTE"),
-        SECOND ("SECOND"),
-        MILLISECOND ("MILLISECOND"),
-        DAYS ("DAYS"),
-        HOURS ("HOURS"),
-        MINUTES ("MINUTES"),
-        SECONDS ("SECONDS"),
-        MILLISECONDS ("MILLISECONDS");
+        DAY, HOUR, MINUTE, SECOND, MILLISECOND, DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS;
 
-        private String timeUnit;
-
-        TimeUnit(String timeUnit) {
-            this.timeUnit = timeUnit;
-        }
-
-        public String getTimeUnit() {
-            return timeUnit;
+        public static TimeUnit from(String unit) {
+            return Enum.valueOf(TimeUnit.class, unit.toUpperCase());
         }
     }
 
     public enum WindowType {
-        HOPPING ("HOPPING"),
-        SESSION ("SESSION"),
-        TUMBLING ("TUMBLING");
+        HOPPING("HOPPING"), SESSION("SESSION"), TUMBLING("TUMBLING");
 
         private String windowType;
 
@@ -49,6 +32,10 @@ public class KSQLWindow extends ASTNodeAccessImpl {
 
         public String getWindowType() {
             return windowType;
+        }
+
+        public static WindowType from(String type) {
+            return Enum.valueOf(WindowType.class, type.toUpperCase());
         }
     }
 
@@ -116,8 +103,7 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         this.advanceTimeUnit = advanceTimeUnit;
     }
 
-    public KSQLWindow() {
-    }
+    public KSQLWindow() {}
 
     @Override
     public String toString() {

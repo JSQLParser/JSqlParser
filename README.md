@@ -18,30 +18,35 @@ SELECT 1 FROM dual WHERE a = b
 ```
 
 ```text
- SQL Text
-  └─Statements: net.sf.jsqlparser.statement.select.PlainSelect
-      ├─selectItems -> Collection<SelectExpressionItem>
-      │  └─selectItems: net.sf.jsqlparser.statement.select.SelectExpressionItem
-      │     └─LongValue: 1
-      ├─Table: dual
-      └─where: net.sf.jsqlparser.expression.operators.relational.EqualsTo
-         ├─Column: a
-         └─Column: b
+SQL Text
+ └─Statements: statement.select.PlainSelect
+    ├─selectItems: statement.select.SelectItem
+    │  └─LongValue: 1
+    ├─Table: dual
+    └─where: expression.operators.relational.EqualsTo
+       ├─Column: a
+       └─Column: b
 ```
 
 ```java
-Statement statement = CCJSqlParserUtil.parse(sqlStr);
-if (statement instanceof PlainSelect) {
-    PlainSelect plainSelect = (PlainSelect) statement;
+String sqlStr = "select 1 from dual where a=b";
 
-    SelectExpressionItem selectExpressionItem =
-            (SelectExpressionItem) plainSelect.getSelectItems().get(0);
+PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
-    Table table = (Table) plainSelect.getFromItem();
+SelectItem selectItem =
+        select.getSelectItems().get(0);
+Assertions.assertEquals(
+        new LongValue(1)
+        , selectItem.getExpression());
 
-    EqualsTo equalsTo = (EqualsTo) plainSelect.getWhere();
-    Column a = (Column) equalsTo.getLeftExpression();
-    Column b = (Column) equalsTo.getRightExpression();
+Table table = (Table) select.getFromItem();
+Assertions.assertEquals("dual", table.getName());
+
+EqualsTo equalsTo = (EqualsTo) select.getWhere();
+Column a = (Column) equalsTo.getLeftExpression();
+Column b = (Column) equalsTo.getRightExpression();
+Assertions.assertEquals("a", a.getColumnName());
+Assertions.assertEquals("b", b.getColumnName());
 }
 ```
 

@@ -34,7 +34,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean semi = false;
     private boolean straight = false;
     private boolean apply = false;
-    private FromItem rightItem;
+    private FromItem fromItem;
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
     private final LinkedList<Column> usingColumns = new LinkedList<>();
     private KSQLJoinWindow joinWindow;
@@ -52,6 +52,29 @@ public class Join extends ASTNodeAccessImpl {
         simple = b;
     }
 
+    /**
+     * A JOIN means INNER when the INNER keyword is set or when no other qualifier has been set.
+     *
+     * @return Tells, if a JOIN means a qualified INNER JOIN.
+     *
+     */
+    public boolean isInnerJoin() {
+        return inner
+                || !(
+                /* Qualified Joins */
+                left || right || full || outer
+
+                /* Cross Join */
+                        || cross
+
+                        /* Natural Join */
+                        || natural);
+    }
+
+    /**
+     *
+     * @return Tells, if the INNER keyword has been set.
+     */
     public boolean isInner() {
         return inner;
     }
@@ -61,7 +84,18 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * Sets the INNER keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setInner(boolean b) {
+        if (b) {
+            left = false;
+            right = false;
+            outer = false;
+            cross = false;
+            natural = false;
+        }
         inner = b;
     }
 
@@ -92,7 +126,14 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * Sets the OUTER keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setOuter(boolean b) {
+        if (b) {
+            inner = false;
+        }
         outer = b;
     }
 
@@ -141,7 +182,15 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * Sets the LEFT keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setLeft(boolean b) {
+        if (b) {
+            inner = false;
+            right = false;
+        }
         left = b;
     }
 
@@ -159,7 +208,15 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /**
+     *
+     * Sets the RIGHT keyword and switches off any contradicting qualifiers automatically.
+     */
     public void setRight(boolean b) {
+        if (b) {
+            inner = false;
+            left = false;
+        }
         right = b;
     }
 
@@ -222,18 +279,29 @@ public class Join extends ASTNodeAccessImpl {
 
     /**
      * Returns the right item of the join
+     *
      */
     public FromItem getRightItem() {
-        return rightItem;
+        return fromItem;
     }
 
+    @Deprecated
     public Join withRightItem(FromItem item) {
-        this.setRightItem(item);
+        this.setFromItem(item);
         return this;
     }
 
     public void setRightItem(FromItem item) {
-        rightItem = item;
+        fromItem = item;
+    }
+
+    public FromItem getFromItem() {
+        return fromItem;
+    }
+
+    public Join setFromItem(FromItem fromItem) {
+        this.fromItem = fromItem;
+        return this;
     }
 
     /**
@@ -319,9 +387,9 @@ public class Join extends ASTNodeAccessImpl {
         }
 
         if (isSimple() && isOuter()) {
-            builder.append("OUTER ").append(rightItem);
+            builder.append("OUTER ").append(fromItem);
         } else if (isSimple()) {
-            builder.append(rightItem);
+            builder.append(fromItem);
         } else {
             if (isNatural()) {
                 builder.append("NATURAL ");
@@ -353,7 +421,7 @@ public class Join extends ASTNodeAccessImpl {
                 builder.append("JOIN ");
             }
 
-            builder.append(rightItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
+            builder.append(fromItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
         }
 
         for (Expression onExpression : onExpressions) {
