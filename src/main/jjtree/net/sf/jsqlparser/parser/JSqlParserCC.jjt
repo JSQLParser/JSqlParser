@@ -503,8 +503,8 @@ TOKEN : /* Numeric Constants */
             )>
   |     < S_LONG: ( <DIGIT> )+ >
   |     < #DIGIT: ["0" - "9"] >
-  |     < S_HEX: ("x'" ( <HEX_VALUE> )+ "'" | "0x" ( <HEX_VALUE> )+ ) >
-  |     < #HEX_VALUE: ["0"-"9","A"-"F"]  >
+  |     < S_HEX: ("X" ("'" ( <HEX_VALUE> )* "'" (" ")*)+ | "0x" ( <HEX_VALUE> )+ ) >
+  |     < #HEX_VALUE: ["0"-"9","A"-"F", " "]  >
 }
 
 SPECIAL_TOKEN:
@@ -548,16 +548,18 @@ TOKEN:
 
 | < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
 | < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
-| < S_CHAR_LITERAL: (["U","E","N","R","B"]|"RB"|"_utf8")?
-                    (
-                        ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
-                        // Alternative Oracle Escape Modes
-                        | ("q'{" (~[])* "}'")
-                        | ("q'(" (~[])* ")'")
-                        | ("q'[" (~[])* "]'")
-                        | ("q''" (~[])* "''")
-                        // | ("q'\\" (~[])* "\\'") <--- Does not work
-                    ) >
+| < S_CHAR_LITERAL: (
+                        (["U","E","N","R","B"]|"RB"|"_utf8")?
+                        (
+                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
+                            // Alternative Oracle Escape Modes
+                            | ("q'{" (~[])* "}'")
+                            | ("q'(" (~[])* ")'")
+                            | ("q'[" (~[])* "]'")
+                            | ("q''" (~[])* "''")
+                            // | ("q'\\" (~[])* "\\'") <--- Does not work
+                        )
+                     ) >
     {
         // <S_CHAR_LITERAL> contains the <SPECIAL_ESC> token and always the longest match is returned
         // So when Backslash is explicitly not allowed as an Escape Character and a <S_CHAR_LITERAL> is found

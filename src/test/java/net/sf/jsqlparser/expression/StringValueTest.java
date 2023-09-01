@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.expression;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.test.*;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -85,6 +85,12 @@ public class StringValueTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         sqlStr = "select q'{It's good!}' from dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testParseInput_BYTEA() throws Exception {
+        String sqlStr = "VALUES (X'', X'01FF', X'01 bc 2a', X'01' '02')";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
