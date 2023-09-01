@@ -270,7 +270,7 @@ public class SelectTest {
         Table t = new Table("tableName");
         assertDeparse(
                 new PlainSelect()
-                        .addSelectItems(new AllTableColumns().withTable(t)).withFromItem(t),
+                        .addSelectItems(new AllTableColumns(t)).withFromItem(t),
                 statement);
     }
 

@@ -2329,7 +2329,7 @@ SelectItem SelectItem() #SelectItem:
     // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
     // @todo: parse a proper SEQUENCE instead of a COLUMN
     (
-        "*" { expression = new AllColumns(); }
+        expression = AllColumns()
         |
         LOOKAHEAD(AllTableColumns()) expression = AllTableColumns()
         |
@@ -2347,14 +2347,30 @@ SelectItem SelectItem() #SelectItem:
     }
 }
 
+AllColumns AllColumns():
+{
+    ParenthesedExpressionList<Column> exceptColumns = null;
+    List<SelectItem<?>> replaceExpressions = null;
+}
+{
+    "*"
+    [ LOOKAHEAD(2) <K_EXCEPT> exceptColumns = ParenthesedColumnList() ]
+    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
+
+    {
+        return new AllColumns(exceptColumns, replaceExpressions);
+    }
+}
+
 AllTableColumns AllTableColumns():
 {
     Table table = null;
+    AllColumns allColumns;
 }
 {
-     table=Table() "." "*"
+     table=Table() "." allColumns=AllColumns()
     {
-        return new AllTableColumns(table);
+        return new AllTableColumns(table, allColumns);
     }
 
 }

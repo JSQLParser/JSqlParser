@@ -31,11 +31,11 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
         this(expression, null);
     }
 
-    public static SelectItem from(Expression expression, Alias alias) {
-        return new SelectItem(expression, alias);
+    public static SelectItem<?> from(Expression expression, Alias alias) {
+        return new SelectItem<>(expression, alias);
     }
 
-    public static SelectItem from(Expression expression) {
+    public static SelectItem<?> from(Expression expression) {
         return from(expression, null);
     }
 
@@ -69,7 +69,7 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
         return this;
     }
 
-    public SelectItem withAlias(Alias alias) {
+    public SelectItem<?> withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }
