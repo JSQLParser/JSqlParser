@@ -8,6 +8,21 @@ Latest Changes since |JSQLPARSER_VERSION|
 =============================================================
 
 
+  * **doc: Migration to 4.7**
+    
+    Andreas Reichel, 2023-09-02
+  * **[maven-release-plugin] prepare for next development iteration**
+    
+    Tobias Warneke, 2023-09-01
+  * **[maven-release-plugin] prepare release jsqlparser-4.7**
+    
+    Tobias Warneke, 2023-09-01
+  * **feat: H2 BYTEA Values `X'01' '02'`**
+    
+    Andreas Reichel, 2023-09-01
+  * **doc: update changelog**
+    
+    Andreas Reichel, 2023-09-01
   * **feat: BigQuery Except(..) Replace(..) syntax**
     
     Andreas Reichel, 2023-09-01
