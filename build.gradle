@@ -62,7 +62,10 @@ def getVersion = { boolean considerSnapshot ->
             ? "${major}.${minor}.${patch}${snapshot}"
             :  "${major}.${minor}${snapshot}"
 }
-version = getVersion(true)
+
+// for publishing a release, call Gradle with Environment Variable RELEASE:
+//      RELEASE=true gradle JSQLParser:publish
+version = getVersion( !System.getenv("RELEASE") )
 group = 'com.github.jsqlparser'
 description = 'JSQLParser library'
 archivesBaseName = "JSQLParser"
@@ -431,6 +434,11 @@ xslt  {
     dependsOn(renderRR)
     stylesheet 'src/main/resources/rr/xhtml2rst.xsl'
 
+    parameters (
+            "withFloatingToc": System.getenv().getOrDefault("FLOATING_TOC", "true"),
+            "isSnapshot": Boolean.toString(version.endsWith("-SNAPSHOT"))
+    )
+
     // Transform every .xml file in the "input" directory.
     input "$buildDir/rr/JSqlParserCC.xhtml"
     output outFile
@@ -571,7 +579,6 @@ remotes {
 }
 
 tasks.register('upload') {
-    dependsOn(check, assemble, gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
     doFirst {
         if (findProperty("${project.name}.host") == null) {
             println(
@@ -594,4 +601,5 @@ tasks.register('upload') {
         }
     }
 }
+upload.dependsOn(check, assemble, gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
 

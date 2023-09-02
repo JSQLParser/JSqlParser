@@ -21,11 +21,14 @@
             omit-xml-declaration="yes"
             indent="no" />
 
-    <xsl:param name="withFloatingToc" select="'true'" />
+    <xsl:param name="withFloatingToc" select="'false'" />
+    <xsl:param name="isSnapshot" select="'false'" />
 
     <!-- a default catch is needed to suppress all unwanted nodes -->
     <xsl:template match="*">
-        <xsl:text disable-output-escaping="yes">
+        <xsl:choose>
+            <xsl:when test="$withFloatingToc='true'">
+                <xsl:text disable-output-escaping="yes">
 .. raw:: html
 
     &lt;div id="floating-toc"&gt;
@@ -36,18 +39,26 @@
         &lt;ul id="toc-list"&gt;&lt;/ul&gt;
     &lt;/div&gt;
 
-
 </xsl:text>
+            </xsl:when>
+        </xsl:choose>
+
         <xsl:apply-templates select="/xhtml:html/xhtml:body"/>
     </xsl:template>
 
     <xsl:template match="/xhtml:html/xhtml:body">
         <xsl:text  disable-output-escaping="yes">
 *********************************************************************
-SQL Syntax |JSQLPARSER_SNAPSHOT_VERSION|
+SQL Syntax JSQLParser-</xsl:text><xsl:choose>
+        <xsl:when test="$isSnapshot='true'"><xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text></xsl:when>
+        <xsl:otherwise><xsl:text>|JSQLPARSER_VERSION|</xsl:text></xsl:otherwise>
+    </xsl:choose><xsl:text>
 *********************************************************************
 
-The EBNF and Railroad Diagrams for JSQLParser-|JSQLPARSER_VERSION|.
+The EBNF and Railroad Diagrams for JSQLParser-</xsl:text><xsl:choose>
+        <xsl:when test="$isSnapshot='true'"><xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text></xsl:when>
+        <xsl:otherwise><xsl:text>|JSQLPARSER_VERSION|</xsl:text></xsl:otherwise>
+    </xsl:choose><xsl:text>.
 
    </xsl:text>
         <xsl:apply-templates select="svg:svg"/>

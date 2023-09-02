@@ -13,27 +13,41 @@ Java SQL Parser Library
    usage
    contribution
    migration
-   syntax_stable
-   syntax_snapshot
-   javadoc_stable
-   javadoc_snapshot
+   SQL Grammar Stable <syntax_stable>
+   SQL Grammar Snapshot <syntax_snapshot>
+   Java API Stable <javadoc_stable>
+   Java API Snapshot <javadoc_snapshot>
    keywords
    changelog
 
-.. image:: https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg
-    :alt: Maven Repo
+.. image:: https://img.shields.io/github/release/JSQLParser/JSqlParser?include_prereleases=&sort=semver&color=blue
+    :alt: GitGub Release Badge
+    :target:  https://github.com/JSQLParser/JSqlParser/releases
+
+.. image:: https://img.shields.io/github/issues/JSQLParser/JSqlParser
+    :alt: GitGub Issues Badge
+    :target: https://github.com/JSQLParser/JSqlParser/issues
+
+.. image:: https://badgen.net/maven/v/maven-central/com.github.jsqlparser/jsqlparser
+    :alt: Maven Badge
+    :target: https://mvnrepository.com/artifact/com.github.jsqlparser/jsqlparser
 
 .. image:: https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml/badge.svg
     :alt: Maven Build Status
+    :target: https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml
 
 .. image:: https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master
     :alt: Coverage Status
+    :target: https://coveralls.io/github/com.github.jsqlparser/jsqlparser?branch=master
 
 .. image:: https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1
     :alt: Codacy Status
+    :target: https://app.codacy.com/gh/com.github.jsqlparser/jsqlparser/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
 
 .. image:: https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg
     :alt: Java Docs
+    :target: https://javadoc.io/doc/com.github.jsqlparser/jsqlparser/latest/index.html
+
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
 
