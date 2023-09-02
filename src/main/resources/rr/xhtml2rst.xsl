@@ -49,13 +49,13 @@
     <xsl:template match="/xhtml:html/xhtml:body">
         <xsl:text  disable-output-escaping="yes">
 *********************************************************************
-SQL Syntax JSQLParser-</xsl:text><xsl:choose>
+SQL Syntax </xsl:text><xsl:choose>
         <xsl:when test="$isSnapshot='true'"><xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text></xsl:when>
         <xsl:otherwise><xsl:text>|JSQLPARSER_VERSION|</xsl:text></xsl:otherwise>
     </xsl:choose><xsl:text>
 *********************************************************************
 
-The EBNF and Railroad Diagrams for JSQLParser-</xsl:text><xsl:choose>
+The EBNF and Railroad Diagrams for </xsl:text><xsl:choose>
         <xsl:when test="$isSnapshot='true'"><xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text></xsl:when>
         <xsl:otherwise><xsl:text>|JSQLPARSER_VERSION|</xsl:text></xsl:otherwise>
     </xsl:choose><xsl:text>.

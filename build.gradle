@@ -161,7 +161,7 @@ tasks.register('xmldoc', Javadoc) {
     options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
     title = "API $version"
     options.addBooleanOption("rst", true)
-    options.addBooleanOption("withFloatingToc", true)
+    options.addBooleanOption("withFloatingToc", Boolean.parseBoolean(System.getenv().getOrDefault("FLOATING_TOC", "true")))
     options.addStringOption("basePackage", "net.sf.jsqlparser")
     options.addStringOption("filename", outFile.getName())
 
