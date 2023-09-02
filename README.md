@@ -1,4 +1,4 @@
-# [JSqlParser (4.6 Stable or 4.7 Snapshot)](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
+# [JSqlParser 4.7 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
 ![Build Status](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml/badge.svg)
 
@@ -54,9 +54,9 @@ Assertions.assertEquals("b", b.getColumnName());
 
 **JSqlParser** aims to support the SQL standard as well as all major RDBMS. Any missing syntax or features can be added on demand.
 
-| RDBMS                              | Statements                              |
-|------------------------------------|-----------------------------------------|
-| Oracle<br>MS SQL Server and Sybase<br>PostgreSQL<br>MySQL and MariaDB<br>DB2<br>H2 and HSQLDB and Derby<br>SQLite| `SELECT`<br>`INSERT`, `UPDATE`, `UPSERT`, `MERGE`<br>`DELETE`, `TRUNCATE TABLE`<br>`CREATE ...`, `ALTER ....`, `DROP ...`<br>`WITH ...` |
+| RDBMS                                                                                                           | Statements                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| Oracle<br>MS SQL Server and Sybase<br>Postgres<br>MySQL and MariaDB<br>DB2<br>H2 and HSQLDB and Derby<br>SQLite | `SELECT`<br>`INSERT`, `UPDATE`, `UPSERT`, `MERGE`<br>`DELETE`, `TRUNCATE TABLE`<br>`CREATE ...`, `ALTER ....`, `DROP ...`<br>`WITH ...` |
 
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
@@ -65,12 +65,11 @@ Assertions.assertEquals("b", b.getColumnName());
 [**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
-
-### [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)
-### [Build Instructions](https://jsqlparser.github.io/JSqlParser/usage.html)
-### [Contribution](https://jsqlparser.github.io/JSqlParser/contribution.html)
-### [Change Log](https://jsqlparser.github.io/JSqlParser/changelog.html#latest-changes-since-jsqlparser-version)
-### [Issues](https://github.com/JSQLParser/JSqlParser/issues)
+  1. [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)
+  2. [Build Instructions](https://jsqlparser.github.io/JSqlParser/usage.html) and [Maven Artifact](https://jsqlparser.github.io/JSqlParser/usage.html#build-dependencies)
+  3. [Contribution](https://jsqlparser.github.io/JSqlParser/contribution.html)
+  4. [Change Log](https://jsqlparser.github.io/JSqlParser/changelog.html#latest-changes-since-jsqlparser-version)
+  5. [Issues](https://github.com/JSQLParser/JSqlParser/issues)
 
 ## License
 
