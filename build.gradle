@@ -478,7 +478,7 @@ tasks.register('sphinx', Exec) {
 }
 
 publish {
-    dependsOn(check)
+    dependsOn(check, sphinx)
 }
 
 publishing {
@@ -571,6 +571,7 @@ remotes {
 }
 
 tasks.register('upload') {
+    dependsOn(check, sphinx)
     doFirst {
         if (findProperty("${project.name}.host") == null) {
             println(
