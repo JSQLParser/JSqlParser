@@ -21,7 +21,7 @@ jobs:
           ref: master
           fetch-depth: 0
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@2.4.2
+        uses: gradle/gradle-build-action@v2.4.2
       - name: Run build with Gradle Wrapper
         run: FLOATING_TOC=false gradle --no-build-cache clean xmldoc sphinx
       - name: Deploy
