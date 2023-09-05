@@ -5645,7 +5645,7 @@ List<String> CreateParameter():
             | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_PARTITION> | tk=<K_BY> | tk=<K_IN>
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START>
-            | tk=<K_TIME_KEY_EXPR>
+            | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW>
             | tk="="
         )
         { param.add(tk.image); }

@@ -1043,4 +1043,12 @@ public class CreateTableTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+    @Test
+    void testIssue1858() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE \"foo\"\n"
+                + "(\n"
+                + "    event_sk               bigint identity             NOT NULL encode RAW\n"
+                + ") compound sortkey (      date_key      )";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
