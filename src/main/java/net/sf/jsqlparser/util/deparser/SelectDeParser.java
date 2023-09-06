@@ -419,16 +419,19 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     public void visit(Fetch fetch) {
-        // FETCH (FIRST | NEXT) row_count (ROW | ROWS) ONLY
         buffer.append(" FETCH ");
         if (fetch.isFetchParamFirst()) {
             buffer.append("FIRST ");
         } else {
             buffer.append("NEXT ");
         }
-        fetch.getExpression().accept(expressionVisitor);
-        buffer.append(" ").append(fetch.getFetchParam()).append(" ONLY");
+        if (fetch.getExpression() != null) {
+            fetch.getExpression().accept(expressionVisitor);
+        }
 
+        for (String p : fetch.getFetchParameters()) {
+            buffer.append(" ").append(p);
+        }
     }
 
     public ExpressionVisitor getExpressionVisitor() {

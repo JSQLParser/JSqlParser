@@ -32,4 +32,10 @@ class FetchTest {
         Fetch fetch = plainSelect.getFetch();
         Assertions.assertInstanceOf(ParenthesedSelect.class, fetch.getExpression());
     }
+
+    @Test
+    void testFetchWithoutExpressionIssue1859() throws JSQLParserException {
+        String sqlStr = "select 1 from test.dual fetch first row only";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

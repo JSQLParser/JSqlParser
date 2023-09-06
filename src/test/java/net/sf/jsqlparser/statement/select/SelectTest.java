@@ -578,14 +578,17 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertNotNull(select.getOffset());
-        assertEquals("ROWS", select.getOffset().getOffsetParam());
-        assertNotNull(select.getFetch());
-        assertEquals("ROWS", select.getFetch().getFetchParam());
-        assertFalse(select.getFetch().isFetchParamFirst());
-        assertNull(select.getFetch().getFetchJdbcParameter());
         assertEquals("3",
                 select.getOffset().getOffset().toString());
-        assertEquals(5, select.getFetch().getRowCount());
+        assertEquals("ROWS", select.getOffset().getOffsetParam());
+
+        assertNotNull(select.getFetch());
+        assertFalse(select.getFetch().isFetchParamFirst());
+        assertEquals("5", select.getFetch().getExpression().toString());
+        org.assertj.core.api.Assertions
+                .assertThat(select.getFetch().getFetchParameters())
+                .containsExactly("ROWS", "ONLY");
+
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -598,13 +601,15 @@ public class SelectTest {
         Select select = (Select) parserManager.parse(new StringReader(statement));
 
         assertNotNull(select.getOffset());
-        assertNotNull(select.getFetch());
         assertEquals("ROW", select.getOffset().getOffsetParam());
-        assertEquals("ROW", select.getFetch().getFetchParam());
+
+        assertNotNull(select.getFetch());
         assertTrue(select.getFetch().isFetchParamFirst());
-        assertEquals(new LongValue(3),
-                select.getOffset().getOffset());
-        assertEquals(5, select.getFetch().getRowCount());
+        assertEquals("5", select.getFetch().getExpression().toString());
+        org.assertj.core.api.Assertions
+                .assertThat(select.getFetch().getFetchParameters())
+                .containsExactly("ROW", "ONLY");
+
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -634,9 +639,11 @@ public class SelectTest {
 
         assertNull(select.getOffset());
         assertNotNull(select.getFetch());
-        assertEquals("ROWS", select.getFetch().getFetchParam());
         assertFalse(select.getFetch().isFetchParamFirst());
-        assertEquals(5, select.getFetch().getRowCount());
+        assertEquals("5", select.getFetch().getExpression().toString());
+        org.assertj.core.api.Assertions
+                .assertThat(select.getFetch().getFetchParameters())
+                .containsExactly("ROWS", "ONLY");
         assertStatementCanBeDeparsedAs(select, statement);
     }
 
@@ -650,12 +657,14 @@ public class SelectTest {
         assertNotNull(select.getOffset());
         assertEquals("ROWS", select.getOffset().getOffsetParam());
         assertNotNull(select.getFetch());
-        assertEquals("ROWS", select.getFetch().getFetchParam());
         assertFalse(select.getFetch().isFetchParamFirst());
+        assertEquals("?", select.getFetch().getExpression().toString());
+        org.assertj.core.api.Assertions
+                .assertThat(select.getFetch().getFetchParameters())
+                .containsExactly("ROWS", "ONLY");
         assertEquals("?",
                 select.getOffset().getOffset().toString());
-        assertEquals("?", select.getFetch().getFetchJdbcParameter()
-                .toString());
+
         assertStatementCanBeDeparsedAs(select, statement);
     }
 

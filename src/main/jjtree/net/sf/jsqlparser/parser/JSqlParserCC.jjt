@@ -3075,13 +3075,44 @@ Fetch Fetch():
     Fetch fetch = new Fetch();
     Token token = null;
     Expression expression;
+    List<String> fetchParameters = new ArrayList<String>();
 }
 {
     (
-        // sqlserver-oracle-> FETCH (FIRST | NEXT) expression (ROW | ROWS) ONLY
-        <K_FETCH> (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
-        expression = Expression() { fetch.setExpression(expression); }
-        (<K_ROWS> { fetch.setFetchParam("ROWS"); } | <K_ROW>) <K_ONLY>
+        LOOKAHEAD(3) (
+            <K_FETCH> (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
+            (
+                <K_ROWS> { fetch.addFetchParameter("ROWS"); }
+                |
+                <K_ROW> { fetch.addFetchParameter("ROW"); }
+            )
+            (
+                <K_ONLY> { fetch.addFetchParameter("ONLY"); }
+                |
+                <K_WITH_TIES> { fetch.addFetchParameter("WITH TIES"); }
+            )
+        )
+        |
+        (
+            <K_FETCH> (<K_FIRST> { fetch.setFetchParamFirst(true); } | <K_NEXT>)
+
+            // Expression is optional according to https://www.h2database.com/html/commands.html#select
+            expression = Expression() { fetch.setExpression(expression); }
+            [ <K_PERCENT> { fetch.addFetchParameter("PERCENT"); } ]
+            (
+                (
+                    <K_ROWS> { fetch.addFetchParameter("ROWS"); }
+                    |
+                    <K_ROW> { fetch.addFetchParameter("ROW"); }
+                )
+
+                (
+                    <K_ONLY> { fetch.addFetchParameter("ONLY"); }
+                    |
+                    <K_WITH_TIES> { fetch.addFetchParameter("WITH TIES"); }
+                )
+            )
+        )
     )
     {
         return fetch;
