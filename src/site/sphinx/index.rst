@@ -15,6 +15,7 @@ Java SQL Parser Library
    migration
    SQL Grammar Stable <syntax_stable>
    SQL Grammar Snapshot <syntax_snapshot>
+   Unsupported Grammar <unsupported>
    Java API Stable <javadoc_stable>
    Java API Snapshot <javadoc_snapshot>
    keywords
