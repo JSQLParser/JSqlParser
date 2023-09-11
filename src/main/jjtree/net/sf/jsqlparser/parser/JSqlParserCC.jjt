@@ -5167,10 +5167,8 @@ CreateIndex CreateIndex():
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
     List<Index.ColumnParams> colNames;
-    //Token columnName;
     Token using;
     Index index = null;
-    //String name = null;
     List<String> parameter = new ArrayList<String>();
     List<String> tailParameters = new ArrayList<String>();
     List<String> name;
@@ -5178,18 +5176,14 @@ CreateIndex CreateIndex():
 {
     [ parameter=CreateParameter() ]
 
-    <K_INDEX> index = Index() { index.setType(parameter.isEmpty()?null:parameter.get(0)); }
+    <K_INDEX>
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createIndex.setUsingIfNotExists(true);} ]
+    index = Index() { index.setType(parameter.isEmpty() ? null : parameter.get(0)); }
 
     <K_ON> table=Table()
-
     [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
-
     colNames = ColumnNamesWithParamsList()
-
-    /* [ tailParameter = CreateParameter() {} ] */
-
     ( parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
-
     {
         index.setColumns(colNames);
         createIndex.setIndex(index);

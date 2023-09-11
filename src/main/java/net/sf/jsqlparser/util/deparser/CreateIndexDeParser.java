@@ -9,10 +9,10 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import static java.util.stream.Collectors.joining;
-
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
+
+import static java.util.stream.Collectors.joining;
 
 public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
 
@@ -32,6 +32,9 @@ public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
         }
 
         buffer.append("INDEX ");
+        if (createIndex.isUsingIfNotExists()) {
+            buffer.append("IF NOT EXISTS ");
+        }
         buffer.append(index.getName());
         buffer.append(" ON ");
         buffer.append(createIndex.getTable().getFullyQualifiedName());
@@ -45,7 +48,9 @@ public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
         if (index.getColumnsNames() != null) {
             buffer.append(" (");
             buffer.append(index.getColumnWithParams().stream()
-                    .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : ""))
+                    .map(cp -> cp.columnName
+                            + (cp.getParams() != null ? " " + String.join(" ", cp.getParams())
+                                    : ""))
                     .collect(joining(", ")));
             buffer.append(")");
         }

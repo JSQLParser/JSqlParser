@@ -22,6 +22,17 @@ public class CreateIndex implements Statement {
     private Index index;
     private List<String> tailParameters;
 
+    public boolean isUsingIfNotExists() {
+        return usingIfNotExists;
+    }
+
+    public CreateIndex setUsingIfNotExists(boolean usingIfNotExists) {
+        this.usingIfNotExists = usingIfNotExists;
+        return this;
+    }
+
+    private boolean usingIfNotExists = false;
+
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -63,6 +74,9 @@ public class CreateIndex implements Statement {
         }
 
         buffer.append("INDEX ");
+        if (usingIfNotExists) {
+            buffer.append("IF NOT EXISTS ");
+        }
         buffer.append(index.getName());
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
@@ -77,8 +91,10 @@ public class CreateIndex implements Statement {
 
             buffer.append(
                     index.getColumns().stream()
-                            .map(cp -> cp.columnName + (cp.getParams() != null ? " " + String.join(" ", cp.getParams()) : "")).collect(joining(", "))
-            );
+                            .map(cp -> cp.columnName + (cp.getParams() != null
+                                    ? " " + String.join(" ", cp.getParams())
+                                    : ""))
+                            .collect(joining(", ")));
 
             buffer.append(")");
 
