@@ -78,6 +78,9 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
+import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -469,26 +472,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(NotEqualsTo notEqualsTo) {
         visitBinaryExpression(notEqualsTo);
     }
-    
-    /* Added by Mathew on 21st Nov 2016
-     * 
-     */
+
     @Override
     public void visit(DoubleAnd doubleAnd) {
         visitBinaryExpression(doubleAnd);
     }
-    
-    /* Added by Mathew on 21st Nov 2016
-     * 
-     */
+
     @Override
     public void visit(Contains contains) {
         visitBinaryExpression(contains);
     }
-    
-    /* Added by Mathew on 21st Nov 2016
-     * 
-     */
+
     @Override
     public void visit(ContainedBy containedBy) {
         visitBinaryExpression(containedBy);

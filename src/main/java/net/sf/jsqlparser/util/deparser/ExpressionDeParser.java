@@ -78,6 +78,9 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
+import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -401,27 +404,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 " " + notEqualsTo.getStringExpression() + " ");
 
     }
-    
-    /*Added by Mathew on November 21st 2016*/
-    @Override
-     public void visit(DoubleAnd doubleAnd) {
-         visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ");
 
-     }
-    
-    /*Added by Mathew on November 21st 2016*/
     @Override
-     public void visit(Contains contains) {
-         visitOldOracleJoinBinaryExpression(contains, " " + contains.getStringExpression() + " ");
+    public void visit(DoubleAnd doubleAnd) {
+        visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ");
 
-     }
-    
-    /*Added by Mathew on November 21st 2016*/
+    }
+
     @Override
-     public void visit(ContainedBy containedBy) {
-         visitOldOracleJoinBinaryExpression(containedBy, " " + containedBy.getStringExpression() + " ");
+    public void visit(Contains contains) {
+        visitOldOracleJoinBinaryExpression(contains, " " + contains.getStringExpression() + " ");
 
-     }
+    }
+
+    @Override
+    public void visit(ContainedBy containedBy) {
+        visitOldOracleJoinBinaryExpression(containedBy,
+                " " + containedBy.getStringExpression() + " ");
+
+    }
 
     @Override
     public void visit(NullValue nullValue) {

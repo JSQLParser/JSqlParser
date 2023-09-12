@@ -25,6 +25,9 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
+import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -254,25 +257,21 @@ public class ExpressionVisitorAdapter
     public void visit(NotEqualsTo expr) {
         visitBinaryExpression(expr);
     }
-    
-    /*Added by mathew on 21st Nov 2016*/
+
     @Override
     public void visit(DoubleAnd expr) {
         visitBinaryExpression(expr);
     }
-    
-    /*Added by mathew on 21st Nov 2016*/
+
     @Override
     public void visit(Contains expr) {
         visitBinaryExpression(expr);
     }
 
-    /*Added by mathew on 21st Nov 2016*/
     @Override
     public void visit(ContainedBy expr) {
         visitBinaryExpression(expr);
     }
-
 
     @Override
     public void visit(Column column) {

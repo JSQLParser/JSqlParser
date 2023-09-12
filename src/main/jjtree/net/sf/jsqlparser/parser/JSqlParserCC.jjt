@@ -138,7 +138,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ALTER:"ALTER">
 |   <K_ANALYZE:"ANALYZE">
 |   <K_AND:"AND">
-|   <K_AND_OPERATOR:"&&">
 |   <K_ANY:"ANY">
 |   <K_APPLY:"APPLY">
 |   <K_ARCHIVE: "ARCHIVE">
@@ -485,12 +484,10 @@ TOKEN : /* Operators */
 |   <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |   <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |   <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
-|	<OP_NOTEQUALSBANG: "!=">
 |   <OP_CONCAT: "|" (<WHITESPACE>)* "|">
-|	<OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
-| 	<OP_DOUBLEAND: "&&"> /*added by mathew on 21st Nov 2016*/
-| 	<OP_CONTAINS: "&>"> /*added by mathew on 21st Nov 2016*/
-| 	<OP_CONTAINEDBY: "<&"> /*added by mathew on 21st Nov 2016*/
+| 	<OP_DOUBLEAND: "&&">
+| 	<OP_CONTAINS: "&>">
+| 	<OP_CONTAINEDBY: "<&">
 }
 
 TOKEN : /* Date/Time with time zones */
@@ -3316,7 +3313,7 @@ Expression AndExpression() :
 
     ( LOOKAHEAD(2)
         { boolean useOperator = false; }
-         (<K_AND> | <K_AND_OPERATOR> {useOperator=true;} )
+         (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
         (
         LOOKAHEAD(Condition(), {!interrupted})
             right=Condition()
@@ -3382,23 +3379,23 @@ Expression RegularCondition() #RegularCondition:
 
     [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-	( LOOKAHEAD(2)
-	">" { result = new GreaterThan(); }
-	| "<" { result = new MinorThan(); }
-	| "=" { result = new EqualsTo(); }
-	| token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
-	| token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
-	| token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
-	| token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
-	| token=<OP_DOUBLEAND> { result = new DoubleAnd(token.image); }
-	| token=<OP_CONTAINS> { result = new DoubleAnd(token.image); }
-	| token=<OP_CONTAINEDBY> { result = new DoubleAnd(token.image); }
-	| "@@" { result = new Matches(); }
-	| "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
-	| <K_REGEXP> [ <K_BINARY> { binary=true; } ] { result = new RegExpMySQLOperator(binary?RegExpMatchOperatorType.MATCH_CASESENSITIVE:RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-	| "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
-	| "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
-	| "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
+	(
+        LOOKAHEAD(2)
+        ">" { result = new GreaterThan(); }
+        | "<" { result = new MinorThan(); }
+        | "=" { result = new EqualsTo(); }
+        | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
+        | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
+        | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
+        | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
+        | token=<OP_DOUBLEAND> { result = new DoubleAnd(); }
+        | token=<OP_CONTAINS> { result = new Contains(); }
+        | token=<OP_CONTAINEDBY> { result = new ContainedBy(); }
+        | "@@" { result = new Matches(); }
+        | "~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASESENSITIVE); }
+        | "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
+        | "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
+        | "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
 
         | "@>" { result = new JsonOperator("@>"); }
         | "<@" { result = new JsonOperator("<@"); }

@@ -79,6 +79,9 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
+import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -288,6 +291,21 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(NotEqualsTo notEqualsTo) {
         visitOldOracleJoinBinaryExpression(notEqualsTo,
                 " " + notEqualsTo.getStringExpression() + " ");
+    }
+
+    @Override
+    public void visit(DoubleAnd doubleAnd) {
+
+    }
+
+    @Override
+    public void visit(Contains contains) {
+
+    }
+
+    @Override
+    public void visit(ContainedBy containedBy) {
+
     }
 
     @Override
