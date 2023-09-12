@@ -247,6 +247,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 .getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
         }
+        if (inExpression.isGlobal()) {
+            buffer.append(" GLOBAL");
+        }
         if (inExpression.isNot()) {
             buffer.append(" NOT");
         }

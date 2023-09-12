@@ -3464,7 +3464,8 @@ Expression InExpression() #InExpression :
 {
     Token token;
     int oldOracleJoin = 0;
-    boolean usesNot = false;
+    boolean usingNot = false;
+    boolean usingGlobal = false;
     Expression leftExpression;
     Expression rightExpression;
 }
@@ -3472,7 +3473,9 @@ Expression InExpression() #InExpression :
     leftExpression=SimpleExpression()
     [ "(" "+" ")" { oldOracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-    [<K_NOT> { usesNot=true; } ] <K_IN>
+    [<K_GLOBAL> { usingGlobal=true; } ]
+    [<K_NOT> { usingNot=true; } ]
+    <K_IN>
     (
         LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
         | LOOKAHEAD(3) rightExpression = Function()
@@ -3483,7 +3486,8 @@ Expression InExpression() #InExpression :
     {
         InExpression inExpression =  new InExpression(leftExpression, rightExpression)
                                                 .withOldOracleJoinSyntax(oldOracleJoin)
-                                                .withNot(usesNot);
+                                                .withNot(usingNot)
+                                                .setGlobal(usingGlobal);
         linkAST(inExpression,jjtThis);
         return inExpression;
     }
