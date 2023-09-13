@@ -24,6 +24,7 @@ import java.io.StringReader;
 
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertUpdateMysqlHintExists;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -210,7 +211,9 @@ public class UpdateTest {
 
     @Test
     public void testMysqlHint() throws JSQLParserException {
-        assertUpdateMysqlHintExists("UPDATE demo FORCE INDEX (idx_demo) SET col1 = NULL WHERE col2 = 1", true, "FORCE", "INDEX", "idx_demo");
+        assertUpdateMysqlHintExists(
+                "UPDATE demo FORCE INDEX (idx_demo) SET col1 = NULL WHERE col2 = 1", true, "FORCE",
+                "INDEX", "idx_demo");
     }
 
     @Test

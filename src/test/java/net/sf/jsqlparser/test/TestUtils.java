@@ -412,7 +412,8 @@ public class TestUtils {
         }
     }
 
-    public static void assertUpdateMysqlHintExists(String sql, boolean assertDeparser, String action, String qualifier, String... indexNames)
+    public static void assertUpdateMysqlHintExists(String sql, boolean assertDeparser,
+            String action, String qualifier, String... indexNames)
             throws JSQLParserException {
         if (assertDeparser) {
             assertSqlCanBeParsedAndDeparsed(sql, true);
