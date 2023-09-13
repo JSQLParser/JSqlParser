@@ -233,7 +233,7 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | OVERLAY              | Yes         | Yes       | 
 +----------------------+-------------+-----------+
-| NEXTVAL              | Yes         | Yes       | 
+| NEXTVAL              | Yes         |           | 
 +----------------------+-------------+-----------+
 | 0x                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+

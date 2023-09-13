@@ -95,4 +95,10 @@ public class PostgresTest {
                 "\"column\"\"with\"\"quotes\"",
                 selectItems.get(0).getExpression(Column.class).getColumnName());
     }
+
+    @Test
+    void testNextValueIssue1863() throws JSQLParserException {
+        String sqlStr = "SELECT nextval('client_id_seq')";
+        assertSqlCanBeParsedAndDeparsed(sqlStr);
+    }
 }
