@@ -209,6 +209,11 @@ public class UpdateTest {
     }
 
     @Test
+    public void testMysqlHint() throws JSQLParserException {
+        assertUpdateMysqlHintExists("UPDATE demo FORCE INDEX (idx_demo) SET col1 = NULL WHERE col2 = 1", true, "FORCE", "INDEX", "idx_demo");
+    }
+
+    @Test
     public void testWith() throws JSQLParserException {
         String statement = ""
                 + "WITH a\n"

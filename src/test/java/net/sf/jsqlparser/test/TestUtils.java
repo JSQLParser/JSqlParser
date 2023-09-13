@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -409,5 +410,20 @@ public class TestUtils {
             assertNotNull(hint);
             assertEquals(hints[0], hint.getValue());
         }
+    }
+
+    public static void assertUpdateMysqlHintExists(String sql, boolean assertDeparser, String action, String qualifier, String... indexNames)
+            throws JSQLParserException {
+        if (assertDeparser) {
+            assertSqlCanBeParsedAndDeparsed(sql, true);
+        }
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Update.class, statement);
+        Update updateStmt = (Update) statement;
+        final MySQLIndexHint indexHint = updateStmt.getTable().getIndexHint();
+        assertNotNull(indexHint);
+        assertEquals(indexHint.getAction(), action);
+        assertEquals(indexHint.getIndexQualifier(), qualifier);
+        assertArrayEquals(indexHint.getIndexNames().toArray(), indexNames);
     }
 }
