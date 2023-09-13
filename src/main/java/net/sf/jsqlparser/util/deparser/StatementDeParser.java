@@ -244,6 +244,10 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         if (!merge.isInsertFirst() && mergeInsert != null) {
             deparseMergeInsert(mergeInsert);
         }
+
+        if (merge.getOutputClause() != null) {
+            merge.getOutputClause().appendTo(buffer);
+        }
     }
 
     private void deparseMergeInsert(MergeInsert mergeInsert) {

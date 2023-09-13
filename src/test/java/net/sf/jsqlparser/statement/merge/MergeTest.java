@@ -173,11 +173,67 @@ public class MergeTest {
 
     @Test
     public void testWith() throws JSQLParserException {
-        String statement = "" + "WITH a\n" + "     AS (SELECT 1 id_instrument_ref)\n" + "     , b\n"
-                + "       AS (SELECT 1 id_instrument_ref)\n" + "MERGE INTO cfe.instrument_ref b\n"
-                + "using a\n" + "ON ( b.id_instrument_ref = a.id_instrument_ref )\n"
-                + "WHEN matched THEN\n" + "  UPDATE SET b.id_instrument = 'a' ";
-        statement = "" + "WITH a\n" + "     AS (SELECT 1 id_instrument_ref)\n" + "select * from a ";
+        String statement = ""
+                + "WITH a\n"
+                + "     AS (SELECT 1 id_instrument_ref)\n"
+                + "select * from a ";
         assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
+    public void testOutputClause() throws JSQLParserException {
+        String sqlStr = ""
+                + "WITH\n"
+                + "        WMachine AS\n"
+                + "        (   SELECT\n"
+                + "                DISTINCT \n"
+                + "                ProjCode,\n"
+                + "                PlantCode,\n"
+                + "                BuildingCode,\n"
+                + "                FloorCode,\n"
+                + "                Room\n"
+                + "            FROM\n"
+                + "                TAB_MachineLocation\n"
+                + "            WHERE\n"
+                + "                TRIM(Room) <> '' AND TRIM(Room) <> '-'\n"
+                + "        ) \n"
+                + "    MERGE INTO\n"
+                + "        TAB_RoomLocation AS TRoom\n"
+                + "    USING\n"
+                + "        WMachine\n"
+                + "    ON\n"
+                + "        (\n"
+                + "            TRoom.ProjCode = WMachine.ProjCode\n"
+                + "        AND TRoom.PlantCode = WMachine.PlantCode\n"
+                + "        AND TRoom.BuildingCode = WMachine.BuildingCode\n"
+                + "        AND TRoom.FloorCode = WMachine.FloorCode\n"
+                + "        AND TRoom.Room = WMachine.Room)\n"
+                + "    WHEN NOT MATCHED /* BY TARGET */ THEN\n"
+                + "    INSERT\n"
+                + "        (\n"
+                + "            ProjCode,\n"
+                + "            PlantCode,\n"
+                + "            BuildingCode,\n"
+                + "            FloorCode,\n"
+                + "            Room\n"
+                + "        )\n"
+                + "        VALUES\n"
+                + "        (\n"
+                + "            WMachine.ProjCode,\n"
+                + "            WMachine.PlantCode,\n"
+                + "            WMachine.BuildingCode,\n"
+                + "            WMachine.FloorCode,\n"
+                + "            WMachine.Room\n"
+                + "        )\n"
+                + "        OUTPUT GETDATE() AS TimeAction,\n"
+                + "        $action as Action,\n"
+                + "        INSERTED.ProjCode,\n"
+                + "        INSERTED.PlantCode,\n"
+                + "        INSERTED.BuildingCode,\n"
+                + "        INSERTED.FloorCode,\n"
+                + "        INSERTED.Room\n"
+                + "    INTO\n"
+                + "        TAB_MergeActions_RoomLocation";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

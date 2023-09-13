@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -36,6 +37,8 @@ public class Merge implements Statement {
     private MergeInsert mergeInsert;
     private MergeUpdate mergeUpdate;
     private boolean insertFirst = false;
+
+    private OutputClause outputClause;
 
     public List<WithItem> getWithItemsList() {
         return withItemsList;
@@ -155,6 +158,15 @@ public class Merge implements Statement {
         this.insertFirst = insertFirst;
     }
 
+    public OutputClause getOutputClause() {
+        return outputClause;
+    }
+
+    public Merge setOutputClause(OutputClause outputClause) {
+        this.outputClause = outputClause;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -188,6 +200,10 @@ public class Merge implements Statement {
 
         if (!insertFirst && mergeInsert != null) {
             b.append(mergeInsert);
+        }
+
+        if (outputClause != null) {
+            b.append(outputClause);
         }
 
         return b.toString();

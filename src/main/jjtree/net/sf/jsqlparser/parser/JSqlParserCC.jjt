@@ -1647,6 +1647,7 @@ Statement Merge( List<WithItem> with ) : {
     Expression condition;
     MergeUpdate update;
     MergeInsert insert;
+    OutputClause outputClause;
 }
 {
     <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
@@ -1660,6 +1661,8 @@ Statement Merge( List<WithItem> with ) : {
           [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
         )
     ]
+
+    [ outputClause = OutputClause() { merge.setOutputClause(outputClause); } ]
 
     { return merge.withWithItemsList(with); }
 }
@@ -1847,7 +1850,9 @@ Table TableWithAliasAndMysqlIndexHint():
     MySQLIndexHint indexHint = null;
 }
 {
-    table=Table() [alias=Alias() { table.setAlias(alias); }] [indexHint=MySQLIndexHint() {table.setHint(indexHint);}]
+    table=Table()
+    [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); } ]
+    [ LOOKAHEAD(2) indexHint=MySQLIndexHint() { table.setHint(indexHint); } ]
     { return table; }
 }
 
