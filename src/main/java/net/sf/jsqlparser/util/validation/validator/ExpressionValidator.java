@@ -104,6 +104,8 @@ import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpr
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
+import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
+import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -693,5 +695,17 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(RangeExpression rangeExpression) {
         rangeExpression.getStartExpression().accept(this);
         rangeExpression.getEndExpression().accept(this);
+    }
+
+    @Override
+    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+        tsqlLeftJoin.getLeftExpression().accept(this);
+        tsqlLeftJoin.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(TSQLRightJoin tsqlRightJoin) {
+        tsqlRightJoin.getLeftExpression().accept(this);
+        tsqlRightJoin.getRightExpression().accept(this);
     }
 }

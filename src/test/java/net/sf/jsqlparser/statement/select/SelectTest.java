@@ -2253,6 +2253,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testTSQLJoin() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a *= tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testTSQLJoin2() throws JSQLParserException {
+        String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a =* tabelle2.b";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
     public void testOracleJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a = tabelle2.b(+)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -2418,12 +2430,6 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
-    // @Test
-    // public void testExtractFromIssue673() throws JSQLParserException {
-    // String stmt = "select EXTRACT(DAY FROM (SYSDATE - to_date('20180101', 'YYYYMMDD' ) ) DAY TO
-    // SECOND) from dual";
-    // assertSqlCanBeParsedAndDeparsed(stmt);
-    // }
     @Test
     public void testProblemFunction() throws JSQLParserException {
         String stmt = "SELECT test() FROM testtable";
