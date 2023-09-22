@@ -1051,4 +1051,12 @@ public class CreateTableTest {
                 + ") compound sortkey (      date_key      )";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testIssue1864() throws JSQLParserException {
+        String sqlStr = "ALTER TABLE `test`.`test_table` "
+                + "MODIFY COLUMN `test` varchar(251) "
+                + " CHARACTER SET armscii8 COLLATE armscii8_bin NULL DEFAULT NULL FIRST";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

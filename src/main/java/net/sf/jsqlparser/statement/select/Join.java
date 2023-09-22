@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Join extends ASTNodeAccessImpl {
 
     private boolean outer = false;
@@ -38,6 +39,8 @@ public class Join extends ASTNodeAccessImpl {
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
     private final LinkedList<Column> usingColumns = new LinkedList<>();
     private KSQLJoinWindow joinWindow;
+
+    private JoinHint joinHint = null;
 
     public boolean isSimple() {
         return simple;
@@ -377,6 +380,15 @@ public class Join extends ASTNodeAccessImpl {
         this.joinWindow = joinWindow;
     }
 
+    public JoinHint getJoinHint() {
+        return joinHint;
+    }
+
+    public Join setJoinHint(JoinHint joinHint) {
+        this.joinHint = joinHint;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -418,6 +430,9 @@ public class Join extends ASTNodeAccessImpl {
             } else if (isApply()) {
                 builder.append("APPLY ");
             } else {
+                if (joinHint != null) {
+                    builder.append(joinHint).append(" ");
+                }
                 builder.append("JOIN ");
             }
 

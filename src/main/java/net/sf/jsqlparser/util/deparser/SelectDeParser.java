@@ -481,6 +481,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             } else if (join.isApply()) {
                 buffer.append(" APPLY ");
             } else {
+                if (join.getJoinHint() != null) {
+                    buffer.append(" ").append(join.getJoinHint());
+                }
                 buffer.append(" JOIN ");
             }
 
