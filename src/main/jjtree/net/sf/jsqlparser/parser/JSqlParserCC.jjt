@@ -871,14 +871,15 @@ DeclareStatement Declare(): {
 } {
     <K_DECLARE> userVariable = UserVariable()
     (
-            ( <K_TABLE> "(" colDef = ColumnDefinition()
-      {
-        stmt.withUserVariable(userVariable)
-        .withDeclareType(DeclareType.TABLE)
-        .addColumnDefinition(colDef);
-      }
-                        ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")"
-            )
+         LOOKAHEAD(2) (
+            <K_TABLE> "(" colDef = ColumnDefinition()
+            {
+            stmt.withUserVariable(userVariable)
+            .withDeclareType(DeclareType.TABLE)
+            .addColumnDefinition(colDef);
+            }
+            ("," colDef = ColumnDefinition() { stmt.addColumnDefinition(colDef); })*  ")"
+        )
         |
             <K_AS> typeName = RelObjectName()
                 {
@@ -4866,7 +4867,7 @@ CastExpression CastExpression():
     expression=SimpleExpression()
     <K_AS> { retval.setUseCastKeyword(true); }
     (
-        (
+        LOOKAHEAD(2) (
             <K_ROW>
             "("
             columnDefinition=ColumnDefinition() { retval.addColumnDefinition(columnDefinition); }
@@ -5560,6 +5561,8 @@ ColDataType ColDataType():
     ColDataType colDataType = new ColDataType();
     Token tk = null;
     Token tk2 = null;
+    String schema;
+    String type;
     List<String> argumentsStringList = new ArrayList<String>();
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
@@ -5567,7 +5570,7 @@ ColDataType ColDataType():
 }
 {
     (
-		tk=<K_ARRAY_LITERAL> (
+		LOOKAHEAD(2) tk=<K_ARRAY_LITERAL> (
             ("<" arrayType = ColDataType() ">") {
                  colDataType.setDataType("ARRAY<" + arrayType.getDataType() + ">");
             }
@@ -5578,16 +5581,35 @@ ColDataType ColDataType():
             | tk=<K_STRING> "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER>) ")"
             | tk=<K_JSON> "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER>) ")"
         ) { colDataType.setDataType(tk.image + " (" + tk2.image + ")"); }
-        | (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-        | tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		| ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL> | tk=<K_XML> | tk=<K_INTERVAL>
-			| tk=<DT_ZONE> | tk=<K_CHAR> | tk=<K_SET> | tk=<K_BINARY> | tk=<K_JSON> | tk=<K_STRING> )
-                        [ "." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) ]
-		    { if (tk2!=null) colDataType.setDataType(tk.image + "." + tk2.image); else colDataType.setDataType(tk.image); }
-		| tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>]
-                    { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); }
-		| LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
-		| tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
+        |
+        LOOKAHEAD(2) (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+        |
+        tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+		|
+		(
+		    tk=<S_IDENTIFIER>
+		    | tk=<S_QUOTED_IDENTIFIER>
+		    | tk=<K_DATETIMELITERAL>
+		    | tk=<K_DATE_LITERAL>
+		    | tk=<K_XML>
+		    | tk=<K_INTERVAL>
+			| tk=<DT_ZONE>
+			| tk=<K_CHAR>
+			| tk=<K_SET>
+			| tk=<K_BINARY>
+			| tk=<K_JSON>
+			| tk=<K_STRING>
+			| tk=<K_PUBLIC>
+        ) { schema = tk.image; }
+        [ "." type = RelObjectName() { schema += "." + type; } ]
+        { colDataType.setDataType(schema); }
+		|
+		tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>]
+        { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); }
+		|
+		LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
+		|
+		tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
     )
 
     [LOOKAHEAD(2) "(" {tk2 =null;} ( ( ( tk=<S_LONG> [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ] ) | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
@@ -5943,7 +5965,7 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 }
 {
     columnName = RelObjectName()
-    (<K_TYPE> { withType = true; } )?
+    ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
     dataType = ColDataType() { columnSpecs = new ArrayList<String>(); }
     ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
