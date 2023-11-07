@@ -216,9 +216,8 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         buffer.append(" USING ");
         merge.getFromItem().accept(selectDeParser);
 
-        buffer.append(" ON (");
+        buffer.append(" ON ");
         merge.getOnCondition().accept(expressionDeParser);
-        buffer.append(")");
 
         MergeInsert mergeInsert = merge.getMergeInsert();
         MergeUpdate mergeUpdate = merge.getMergeUpdate();

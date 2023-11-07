@@ -1659,7 +1659,7 @@ Statement Merge( List<WithItem> with ) : {
 {
     <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
     <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
-    <K_ON> "(" condition = Expression() { merge.setOnCondition(condition); } ")"
+    <K_ON> condition = Expression() { merge.setOnCondition(condition); }
 
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
