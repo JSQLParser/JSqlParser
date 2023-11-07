@@ -214,7 +214,7 @@ public class ParserKeywordsUtils {
 
     public static TreeSet<String> getAllKeywordsUsingRegex(File file) throws IOException {
         Pattern tokenBlockPattern = Pattern.compile(
-                "TOKEN\\s*:\\s*(?:/\\*.*\\*/*)\\n\\{(?:[^\\}\\{]+|\\{(?:[^\\}\\{]+|\\{[^\\}\\{]*\\})*\\})*\\}",
+                "TOKEN\\s*:\\s*(?:/\\*.*\\*/*)(?:\\r?\\n|\\r)\\{(?:[^\\}\\{]+|\\{(?:[^\\}\\{]+|\\{[^\\}\\{]*\\})*\\})*\\}",
                 Pattern.MULTILINE);
         Pattern tokenStringValuePattern = Pattern.compile("\\\"(\\w{2,})\\\"", Pattern.MULTILINE);
 
