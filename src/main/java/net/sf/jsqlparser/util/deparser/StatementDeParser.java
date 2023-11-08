@@ -226,7 +226,12 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         }
 
         if (mergeUpdate != null) {
-            buffer.append(" WHEN MATCHED THEN UPDATE SET ");
+            buffer.append(" WHEN MATCHED");
+            if (mergeUpdate.getAndPredicate() != null) {
+                buffer.append(" AND ");
+                mergeUpdate.getAndPredicate().accept(expressionDeParser);
+            }
+            buffer.append(" THEN UPDATE SET ");
             deparseUpdateSets(mergeUpdate.getUpdateSets(), buffer, expressionDeParser);
 
             if (mergeUpdate.getWhereCondition() != null) {

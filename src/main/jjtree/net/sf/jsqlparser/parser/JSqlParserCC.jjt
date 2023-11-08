@@ -1675,14 +1675,17 @@ Statement Merge( List<WithItem> with ) : {
 }
 
 MergeUpdate MergeUpdateClause() : {
-    MergeUpdate mu;
+    MergeUpdate mu = new MergeUpdate();
     List<UpdateSet> updateSets;
+    Expression predicate;
     Expression condition;
 }
 {
-    <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE>
+    <K_WHEN> <K_MATCHED>
+    [ <K_AND> predicate = Expression() { mu.setAndPredicate(predicate); } ]
+    <K_THEN> <K_UPDATE>
     <K_SET>
-    updateSets = UpdateSets() { mu = new MergeUpdate(updateSets); }
+    updateSets = UpdateSets() { mu.setUpdateSets(updateSets); }
 
     [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
     [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]

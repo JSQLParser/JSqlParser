@@ -238,10 +238,19 @@ public class MergeTest {
     }
 
     @Test
-    public void testSnowflakeMergeStatement() throws JSQLParserException {
+    public void testSnowflakeMergeStatementSimple() throws JSQLParserException {
         String sql = "MERGE INTO target\n" +
                 "  USING src ON target.k = src.k\n" +
                 "  WHEN MATCHED THEN UPDATE SET target.v = src.v";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testSnowflakeMergeStatementWithMatchedAndPredicate() throws JSQLParserException {
+        String sql = "MERGE INTO target\n" +
+                "  USING src ON target.k = src.k\n" +
+                "  WHEN MATCHED AND src.v = 11 THEN UPDATE SET target.v = src.v";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
