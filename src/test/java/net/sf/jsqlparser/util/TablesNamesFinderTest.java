@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.util;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -23,6 +22,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -41,17 +41,17 @@ public class TablesNamesFinderTest {
 
     private static final CCJSqlParserManager PARSER_MANAGER = new CCJSqlParserManager();
 
-    @Ignore
+    @Disabled
     public void testRUBiSTableList() throws Exception {
         runTestOnResource("/RUBiS-select-requests.txt");
     }
 
-    @Ignore
+    @Disabled
     public void testMoreComplexExamples() throws Exception {
         runTestOnResource("complex-select-requests.txt");
     }
 
-    @Ignore
+    @Disabled
     public void testComplexMergeExamples() throws Exception {
         runTestOnResource("complex-merge-requests.txt");
     }
