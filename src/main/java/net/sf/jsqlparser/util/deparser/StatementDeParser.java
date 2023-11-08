@@ -255,7 +255,12 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     private void deparseMergeInsert(MergeInsert mergeInsert) {
-        buffer.append(" WHEN NOT MATCHED THEN INSERT ");
+        buffer.append(" WHEN NOT MATCHED");
+        if (mergeInsert.getAndPredicate() != null) {
+            buffer.append(" AND ");
+            mergeInsert.getAndPredicate().accept(expressionDeParser);
+        }
+        buffer.append(" THEN INSERT ");
         if (mergeInsert.getColumns() != null) {
             mergeInsert.getColumns().accept(expressionDeParser);
         }

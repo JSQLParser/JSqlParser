@@ -20,9 +20,18 @@ import java.util.Optional;
 
 public class MergeInsert implements Serializable {
 
+    private Expression andPredicate;
     private ExpressionList<Column> columns;
     private ExpressionList<Expression> values;
     private Expression whereCondition;
+
+    public Expression getAndPredicate() {
+        return andPredicate;
+    }
+
+    public void setAndPredicate(Expression andPredicate) {
+        this.andPredicate = andPredicate;
+    }
 
     public ExpressionList<Column> getColumns() {
         return columns;
@@ -50,12 +59,25 @@ public class MergeInsert implements Serializable {
 
     @Override
     public String toString() {
-        return " WHEN NOT MATCHED THEN INSERT "
-                + (columns != null ? columns.toString() : "")
-                + " VALUES " + values.toString()
-                + (whereCondition != null
-                        ? " WHERE " + whereCondition
-                        : "");
+        StringBuilder b = new StringBuilder();
+        b.append(" WHEN NOT MATCHED");
+        if (andPredicate != null) {
+            b.append(" AND ").append(andPredicate.toString());
+        }
+        b.append(" THEN INSERT ");
+        if (columns != null) {
+            b.append(columns.toString());
+        }
+        b.append(" VALUES ").append(values.toString());
+        if (whereCondition != null) {
+            b.append(" WHERE ").append(whereCondition.toString());
+        }
+        return b.toString();
+    }
+
+    public MergeInsert withAndPredicate(Expression andPredicate) {
+        this.setAndPredicate(andPredicate);
+        return this;
     }
 
     public MergeInsert withColumns(ExpressionList<Column> columns) {
@@ -93,6 +115,10 @@ public class MergeInsert implements Serializable {
     public MergeInsert withWhereCondition(Expression whereCondition) {
         this.setWhereCondition(whereCondition);
         return this;
+    }
+
+    public <E extends Expression> E getAndPredicate(Class<E> type) {
+        return type.cast(getAndPredicate());
     }
 
     public <E extends Expression> E getWhereCondition(Class<E> type) {

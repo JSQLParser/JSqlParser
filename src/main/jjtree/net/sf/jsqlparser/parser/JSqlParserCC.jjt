@@ -1695,12 +1695,15 @@ MergeUpdate MergeUpdateClause() : {
 
 MergeInsert MergeInsertClause() : {
     MergeInsert mi = new MergeInsert();
+    Expression predicate;
     ExpressionList<Column> columns;
     ExpressionList expList;
     Expression condition;
 }
 {
-    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN>
+    <K_WHEN> <K_NOT> <K_MATCHED>
+    [ <K_AND> predicate = Expression() { mi.setAndPredicate(predicate); } ]
+    <K_THEN>
         <K_INSERT>
         [ "(" columns = ColumnList() ")"
             {
