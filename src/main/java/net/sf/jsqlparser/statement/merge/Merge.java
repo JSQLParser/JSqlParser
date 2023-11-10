@@ -186,9 +186,8 @@ public class Merge implements Statement {
         b.append(table);
         b.append(" USING ");
         b.append(fromItem);
-        b.append(" ON (");
+        b.append(" ON ");
         b.append(onCondition);
-        b.append(")");
 
         if (insertFirst && mergeInsert != null) {
             b.append(mergeInsert);

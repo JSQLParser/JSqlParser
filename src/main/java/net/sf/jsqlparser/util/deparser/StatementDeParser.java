@@ -216,9 +216,8 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         buffer.append(" USING ");
         merge.getFromItem().accept(selectDeParser);
 
-        buffer.append(" ON (");
+        buffer.append(" ON ");
         merge.getOnCondition().accept(expressionDeParser);
-        buffer.append(")");
 
         MergeInsert mergeInsert = merge.getMergeInsert();
         MergeUpdate mergeUpdate = merge.getMergeUpdate();
@@ -227,7 +226,12 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
         }
 
         if (mergeUpdate != null) {
-            buffer.append(" WHEN MATCHED THEN UPDATE SET ");
+            buffer.append(" WHEN MATCHED");
+            if (mergeUpdate.getAndPredicate() != null) {
+                buffer.append(" AND ");
+                mergeUpdate.getAndPredicate().accept(expressionDeParser);
+            }
+            buffer.append(" THEN UPDATE SET ");
             deparseUpdateSets(mergeUpdate.getUpdateSets(), buffer, expressionDeParser);
 
             if (mergeUpdate.getWhereCondition() != null) {
@@ -251,7 +255,12 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     private void deparseMergeInsert(MergeInsert mergeInsert) {
-        buffer.append(" WHEN NOT MATCHED THEN INSERT ");
+        buffer.append(" WHEN NOT MATCHED");
+        if (mergeInsert.getAndPredicate() != null) {
+            buffer.append(" AND ");
+            mergeInsert.getAndPredicate().accept(expressionDeParser);
+        }
+        buffer.append(" THEN INSERT ");
         if (mergeInsert.getColumns() != null) {
             mergeInsert.getColumns().accept(expressionDeParser);
         }

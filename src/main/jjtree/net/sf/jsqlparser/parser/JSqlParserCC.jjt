@@ -1659,7 +1659,7 @@ Statement Merge( List<WithItem> with ) : {
 {
     <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
     <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
-    <K_ON> "(" condition = Expression() { merge.setOnCondition(condition); } ")"
+    <K_ON> condition = Expression() { merge.setOnCondition(condition); }
 
     [
         ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
@@ -1675,14 +1675,17 @@ Statement Merge( List<WithItem> with ) : {
 }
 
 MergeUpdate MergeUpdateClause() : {
-    MergeUpdate mu;
+    MergeUpdate mu = new MergeUpdate();
     List<UpdateSet> updateSets;
+    Expression predicate;
     Expression condition;
 }
 {
-    <K_WHEN> <K_MATCHED> <K_THEN>  <K_UPDATE>
+    <K_WHEN> <K_MATCHED>
+    [ <K_AND> predicate = Expression() { mu.setAndPredicate(predicate); } ]
+    <K_THEN> <K_UPDATE>
     <K_SET>
-    updateSets = UpdateSets() { mu = new MergeUpdate(updateSets); }
+    updateSets = UpdateSets() { mu.setUpdateSets(updateSets); }
 
     [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
     [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
@@ -1692,12 +1695,15 @@ MergeUpdate MergeUpdateClause() : {
 
 MergeInsert MergeInsertClause() : {
     MergeInsert mi = new MergeInsert();
+    Expression predicate;
     ExpressionList<Column> columns;
     ExpressionList expList;
     Expression condition;
 }
 {
-    <K_WHEN> <K_NOT> <K_MATCHED> <K_THEN>
+    <K_WHEN> <K_NOT> <K_MATCHED>
+    [ <K_AND> predicate = Expression() { mi.setAndPredicate(predicate); } ]
+    <K_THEN>
         <K_INSERT>
         [ "(" columns = ColumnList() ")"
             {

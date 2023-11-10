@@ -236,4 +236,31 @@ public class MergeTest {
                 + "        TAB_MergeActions_RoomLocation";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    public void testSnowflakeMergeStatementSimple() throws JSQLParserException {
+        String sql = "MERGE INTO target\n" +
+                "  USING src ON target.k = src.k\n" +
+                "  WHEN MATCHED THEN UPDATE SET target.v = src.v";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testSnowflakeMergeStatementWithMatchedAndPredicate() throws JSQLParserException {
+        String sql = "MERGE INTO target\n" +
+                "  USING src ON target.k = src.k\n" +
+                "  WHEN MATCHED AND src.v = 11 THEN UPDATE SET target.v = src.v";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    void testSnowflakeMergeStatementWithNotMatchedAndPredicate() throws JSQLParserException {
+        String sql = "MERGE INTO target USING (select k, max(v) as v from src group by k) AS b ON target.k = b.k\n" +
+                "  WHEN MATCHED THEN UPDATE SET target.v = b.v\n" +
+                "  WHEN NOT MATCHED AND b.v != 11 THEN INSERT (k, v) VALUES (b.k, b.v)";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }
