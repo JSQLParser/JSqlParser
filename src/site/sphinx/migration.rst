@@ -2,7 +2,7 @@
 Migration to 4.7
 *********************************
 
-The new version of JSQLParser 4.7 is a rewrite in order to simply accessing the SQL's Abstract Syntax Tree (AST). Quite a few redundant classes have been removed or merged.
+The new version of JSQLParser 4.7 is a rewrite in order to simplify accessing the SQL's Abstract Syntax Tree (AST). Quite a few redundant classes have been removed or merged.
 
 As always, such a major improvement comes at a certain cost, which is breaking the previous API. Following the guidance below, the new API can be adopted easily although you are welcome to lodge a support request when any questions or concerns arise.
 
