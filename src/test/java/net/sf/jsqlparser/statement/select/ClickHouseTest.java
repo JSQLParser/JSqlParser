@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
@@ -40,5 +43,20 @@ public class ClickHouseTest {
         String sql =
                 "SELECT lo_linenumber,lo_orderkey from lo_linenumber where lo_linenumber global in (1,2,3)";
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testGlobalKeywordIssue1883() throws JSQLParserException {
+        String sqlStr = "select a.* from  a global join  b on a.name = b.name ";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertTrue(select.getJoins().get(0).isGlobal());
+
+        Assertions.assertThrows(
+                JSQLParserException.class, new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        CCJSqlParserUtil.parse("select a.* from  a global");
+                    }
+                }, "Fail when restricted keyword GLOBAL is used as an Alias.");
     }
 }

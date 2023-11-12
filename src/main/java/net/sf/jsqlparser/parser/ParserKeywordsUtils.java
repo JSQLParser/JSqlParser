@@ -72,6 +72,7 @@ public class ParserKeywordsUtils {
             {"FOREIGN", RESTRICTED_SQL2016},
             {"FROM", RESTRICTED_SQL2016},
             {"FULL", RESTRICTED_SQL2016},
+            {"GLOBAL", RESTRICTED_ALIAS},
             {"GROUP", RESTRICTED_SQL2016},
             {"GROUPING", RESTRICTED_ALIAS},
             {"QUALIFY", RESTRICTED_ALIAS},
