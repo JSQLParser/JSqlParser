@@ -41,6 +41,9 @@ public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<R
                 }
                 break;
             case DEFAULT:
+                if (view.isConcurrently()) {
+                    buffer.append("CONCURRENTLY ");
+                }
                 buffer.append(view.getTableName());
                 break;
         }

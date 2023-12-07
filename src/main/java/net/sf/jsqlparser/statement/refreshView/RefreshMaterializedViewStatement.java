@@ -81,6 +81,9 @@ public class RefreshMaterializedViewStatement implements Statement {
                 }
                 break;
             case DEFAULT:
+                if (concurrently) {
+                    builder.append("CONCURRENTLY ");
+                }
                 builder.append(tableName);
                 break;
         }
