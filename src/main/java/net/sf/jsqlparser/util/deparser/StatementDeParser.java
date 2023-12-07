@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
+import net.sf.jsqlparser.statement.refreshView.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -102,6 +103,11 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     public void visit(CreateView createView) {
         CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
         createViewDeParser.deParse(createView);
+    }
+
+    @Override
+    public void visit(RefreshMaterializedViewStatement materializedViewStatement) {
+        new RefreshMaterializedViewStatementDeParser(buffer).deParse(materializedViewStatement);
     }
 
     @Override

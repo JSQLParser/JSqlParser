@@ -107,6 +107,12 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-alterview.html
                     // Feature.alterView,
 
+                    // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
+                    Feature.refreshMaterializedView,
+                    Feature.refreshMaterializedConcurrentlyView,
+                    Feature.refreshMaterializedWithNoDataView,
+                    Feature.refreshMaterializedWithDataView,
+
                     // https://www.postgresql.org/docs/current/sql-insert.html
                     Feature.insert,
                     Feature.insertValues,

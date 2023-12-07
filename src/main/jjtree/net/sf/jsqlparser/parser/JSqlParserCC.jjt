@@ -59,6 +59,7 @@ import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.refreshView.*;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
@@ -191,6 +192,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CURRENT: "CURRENT">
 |   <K_CYCLE:"CYCLE">
 |   <K_DATABASE:"DATABASE">
+|   <K_DATA:"DATA">
 |   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : ("DATE" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ") >
 |   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
@@ -456,6 +458,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VARYING:"VARYING">
 |   <K_VERBOSE: "VERBOSE">
 |   <K_VIEW:"VIEW">
+|   <K_CONCURRENTLY:"CONCURRENTLY">
 |   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
@@ -695,6 +698,8 @@ Statement SingleStatement() :
             stm = Reset()
             |
             stm = Show()
+            |
+            stm = RefreshMaterializedView()
             |
             stm = Use()
             |
@@ -1219,6 +1224,18 @@ ShowIndexStatement ShowIndex(): {
     }
 }
 
+RefreshMaterializedViewStatement RefreshMaterializedView(): {
+    String tableName;
+}
+{
+    <K_REFRESH> <K_MATERIALIZED> <K_VIEW> 
+    [<K_CONCURRENTLY>]
+    tableName = RelObjectNameExt()
+    [ <K_WITH> [ <K_NO> ] <K_DATA> ]
+    {
+        return new RefreshMaterializedViewStatement(tableName);
+    }
+}
 // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
 ShowTablesStatement ShowTables(): {
     ShowTablesStatement showTablesStatement;

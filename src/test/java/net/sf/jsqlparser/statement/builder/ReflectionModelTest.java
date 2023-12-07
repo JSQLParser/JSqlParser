@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.refreshView.RefreshType;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
@@ -131,6 +132,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.SetStatement("name", null),
             new net.sf.jsqlparser.statement.ShowColumnsStatement(),
             new net.sf.jsqlparser.statement.show.ShowIndexStatement(),
+            new net.sf.jsqlparser.statement.refreshView.RefreshMaterializedViewStatement(),
             new net.sf.jsqlparser.statement.ShowStatement(),
             new net.sf.jsqlparser.statement.Statements(),
             new net.sf.jsqlparser.statement.UseStatement(),
