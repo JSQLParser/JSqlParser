@@ -35,12 +35,10 @@ public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<R
                 buffer.append(" WITH DATA");
                 break;
             case WITH_NO_DATA:
-                if (view.isConcurrently()) {
-                    throw new IllegalArgumentException(
-                            "CONCURRENTLY and WITH NO DATA may not be specified together.");
-                }
                 buffer.append(view.getTableName());
-                buffer.append(" WITH NO DATA");
+                if (view.isConcurrently()) {
+                    buffer.append(" WITH NO DATA");
+                }
                 break;
             case DEFAULT:
                 buffer.append(view.getTableName());

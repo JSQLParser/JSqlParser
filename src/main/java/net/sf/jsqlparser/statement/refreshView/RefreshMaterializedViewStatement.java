@@ -75,12 +75,10 @@ public class RefreshMaterializedViewStatement implements Statement {
                 builder.append(" WITH DATA");
                 break;
             case WITH_NO_DATA:
-                if (concurrently) {
-                    throw new IllegalArgumentException(
-                            "CONCURRENTLY and WITH NO DATA may not be specified together.");
-                }
                 builder.append(tableName);
-                builder.append(" WITH NO DATA");
+                if (!concurrently) {
+                    builder.append(" WITH NO DATA");
+                }
                 break;
             case DEFAULT:
                 builder.append(tableName);
