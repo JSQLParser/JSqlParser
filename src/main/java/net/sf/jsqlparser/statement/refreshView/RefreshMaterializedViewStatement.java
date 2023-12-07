@@ -23,14 +23,14 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class RefreshMaterializedViewStatement implements Statement {
 
     private String tableName;
-    private RefreshType refreshType = RefreshType.DEFAULT;
+    private RefreshMode refreshMode = RefreshMode.DEFAULT;
     private boolean concurrently;
 
     public RefreshMaterializedViewStatement() {
     }
     
-    public RefreshMaterializedViewStatement(RefreshType refreshType) {
-        this.refreshType = refreshType;
+    public RefreshMaterializedViewStatement(RefreshMode refreshMode) {
+        this.refreshMode = refreshMode;
     }
 
     public RefreshMaterializedViewStatement(String tableName) {
@@ -45,12 +45,12 @@ public class RefreshMaterializedViewStatement implements Statement {
         this.tableName = tableName;
     }
 
-    public RefreshType getRefreshType() {
-        return refreshType;
+    public RefreshMode getRefreshMode() {
+        return refreshMode;
     }
 
-    public void setRefreshType(RefreshType refreshType) {
-        this.refreshType = refreshType;
+    public void setRefreshMode(RefreshMode refreshMode) {
+        this.refreshMode = refreshMode;
     }
 
     public boolean isConcurrently() {
@@ -66,7 +66,7 @@ public class RefreshMaterializedViewStatement implements Statement {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("REFRESH MATERIALIZED VIEW ");
-        switch (this.refreshType) {
+        switch (this.refreshMode) {
             case WITH_DATA:
                 if (concurrently) {
                     builder.append("CONCURRENTLY ");

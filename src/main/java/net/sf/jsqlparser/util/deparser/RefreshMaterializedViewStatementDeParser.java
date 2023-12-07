@@ -26,7 +26,7 @@ public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<R
     @Override
     public void deParse(RefreshMaterializedViewStatement view) {
         buffer.append("REFRESH MATERIALIZED VIEW ");
-        switch (view.getRefreshType()){
+        switch (view.getRefreshMode()){
             case WITH_DATA:
                 if (view.isConcurrently()) {
                     buffer.append("CONCURRENTLY ");
