@@ -9,15 +9,15 @@
  */
 package net.sf.jsqlparser.statement;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import net.sf.jsqlparser.JSQLParserException;
 import org.junit.jupiter.api.Test;
 
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-
 /**
-*
-* @author jxnu-liguobin
-*/
+ *
+ * @author jxnu-liguobin
+ */
 
 public class RefreshMaterializedViewStatementTest {
 

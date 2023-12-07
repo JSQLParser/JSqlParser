@@ -226,6 +226,6 @@ public class StatementVisitorAdapter implements StatementVisitor {
 
     @Override
     public void visit(RefreshMaterializedViewStatement materializedView) {
-        
+
     }
 }

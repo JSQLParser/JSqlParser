@@ -9,18 +9,17 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Arrays;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 /**
-*
-* @author jxnu-liguobin
-*/
+ *
+ * @author jxnu-liguobin
+ */
 
 public class RefreshMaterializedViewStatementValidatorTest extends ValidationTestAsserts {
 
@@ -33,7 +32,8 @@ public class RefreshMaterializedViewStatementValidatorTest extends ValidationTes
 
     @Test
     public void testValidationRefreshWithData() throws Exception {
-        for (String sql : Arrays.asList("REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH DATA")) {
+        for (String sql : Arrays
+                .asList("REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH DATA")) {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
         }
 
@@ -41,24 +41,23 @@ public class RefreshMaterializedViewStatementValidatorTest extends ValidationTes
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
         }
     }
-    
+
     @Test
     public void testValidationRefreshWithConcurrently() throws Exception {
         for (String sql : Arrays.asList("REFRESH MATERIALIZED VIEW CONCURRENTLY my_view")) {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
         }
     }
-    
-    
+
+
     @Test
     public void testValidationRefreshNotAllowed() throws Exception {
         for (String sql : Arrays.asList("REFRESH MATERIALIZED VIEW my_view")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML,
-                    Feature.refreshMaterializedView, 
-                    Feature.refreshMaterializedConcurrentlyView, 
+                    Feature.refreshMaterializedView,
+                    Feature.refreshMaterializedConcurrentlyView,
                     Feature.refreshMaterializedWithNoDataView,
-                    Feature.refreshMaterializedWithDataView
-            );
+                    Feature.refreshMaterializedWithDataView);
         }
     }
 }

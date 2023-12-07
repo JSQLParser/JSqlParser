@@ -68,7 +68,7 @@ public interface StatementVisitor {
     void visit(CreateView createView);
 
     void visit(AlterView alterView);
-    
+
     void visit(RefreshMaterializedViewStatement materializedView);
 
     void visit(Alter alter);

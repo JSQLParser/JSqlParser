@@ -12,12 +12,13 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.statement.refreshView.RefreshMaterializedViewStatement;
 
 /**
-*
-* @author jxnu-liguobin
-*/
+ *
+ * @author jxnu-liguobin
+ */
 
-public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<RefreshMaterializedViewStatement> {
-    
+public class RefreshMaterializedViewStatementDeParser
+        extends AbstractDeParser<RefreshMaterializedViewStatement> {
+
     public RefreshMaterializedViewStatementDeParser(StringBuilder buffer) {
         super(buffer);
     }
@@ -26,16 +27,16 @@ public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<R
     @Override
     public void deParse(RefreshMaterializedViewStatement view) {
         buffer.append("REFRESH MATERIALIZED VIEW ");
-        switch (view.getRefreshMode()){
+        switch (view.getRefreshMode()) {
             case WITH_DATA:
                 if (view.isConcurrently()) {
                     buffer.append("CONCURRENTLY ");
                 }
-                buffer.append(view.getTableName());
+                buffer.append(view.getView());
                 buffer.append(" WITH DATA");
                 break;
             case WITH_NO_DATA:
-                buffer.append(view.getTableName());
+                buffer.append(view.getView());
                 if (view.isConcurrently()) {
                     buffer.append(" WITH NO DATA");
                 }
@@ -44,9 +45,9 @@ public class RefreshMaterializedViewStatementDeParser extends AbstractDeParser<R
                 if (view.isConcurrently()) {
                     buffer.append("CONCURRENTLY ");
                 }
-                buffer.append(view.getTableName());
+                buffer.append(view.getView());
                 break;
         }
     }
-    
+
 }

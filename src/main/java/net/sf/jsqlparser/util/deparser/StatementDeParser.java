@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -58,10 +61,6 @@ import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 

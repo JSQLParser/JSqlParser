@@ -1225,15 +1225,15 @@ ShowIndexStatement ShowIndex(): {
 }
 
 RefreshMaterializedViewStatement RefreshMaterializedView(): {
-    String tableName;
+    Table view = null;
 }
 {
     <K_REFRESH> <K_MATERIALIZED> <K_VIEW> 
     [<K_CONCURRENTLY>]
-    tableName = RelObjectNameExt()
+    view = Table()
     [ <K_WITH> [ <K_NO> ] <K_DATA> ]
     {
-        return new RefreshMaterializedViewStatement(tableName);
+        return new RefreshMaterializedViewStatement(view);
     }
 }
 // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html

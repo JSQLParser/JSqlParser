@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import static net.sf.jsqlparser.test.TestUtils.asList;
+
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
@@ -18,11 +22,6 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static net.sf.jsqlparser.test.TestUtils.asList;
 
 /**
  * Testing of setters, getters, with-/add-methods by calling them with random parameter-values

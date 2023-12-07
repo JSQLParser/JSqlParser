@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.statement.refreshView;
 
 public enum RefreshMode {
-    
+
     DEFAULT, WITH_DATA, WITH_NO_DATA;
 
     public static RefreshMode from(String type) {

@@ -9,12 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
 
 class JoinHintTest {
     public static Stream<String> sqlStrings() {

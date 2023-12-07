@@ -1,48 +1,48 @@
-    /*-
-     * #%L
-     * JSQLParser library
-     * %%
-     * Copyright (C) 2004 - 2019 JSQLParser
-     * %%
-     * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
-     * #L%
-     */
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2019 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.refreshView;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
- * REFRESH MATERIALIZED VIEW [ CONCURRENTLY ] name
- *     [ WITH [ NO ] DATA ]
- *     
-*  https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
-* @author jxni-liguobin
-*/
+ * REFRESH MATERIALIZED VIEW [ CONCURRENTLY ] name [ WITH [ NO ] DATA ]
+ * 
+ * https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
+ * 
+ * @author jxni-liguobin
+ */
 
 public class RefreshMaterializedViewStatement implements Statement {
 
-    private String tableName;
+    private Table view;
     private RefreshMode refreshMode = RefreshMode.DEFAULT;
     private boolean concurrently;
 
-    public RefreshMaterializedViewStatement() {
-    }
-    
+    public RefreshMaterializedViewStatement() {}
+
     public RefreshMaterializedViewStatement(RefreshMode refreshMode) {
         this.refreshMode = refreshMode;
     }
 
-    public RefreshMaterializedViewStatement(String tableName) {
-        this.tableName = tableName;
+    public RefreshMaterializedViewStatement(Table view) {
+        this.view = view;
     }
 
-    public String getTableName() {
-        return tableName;
+    public Table getView() {
+        return view;
     }
 
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public void setView(Table view) {
+        this.view = view;
     }
 
     public RefreshMode getRefreshMode() {
@@ -71,11 +71,11 @@ public class RefreshMaterializedViewStatement implements Statement {
                 if (concurrently) {
                     builder.append("CONCURRENTLY ");
                 }
-                builder.append(tableName);
+                builder.append(view);
                 builder.append(" WITH DATA");
                 break;
             case WITH_NO_DATA:
-                builder.append(tableName);
+                builder.append(view);
                 if (!concurrently) {
                     builder.append(" WITH NO DATA");
                 }
@@ -84,7 +84,7 @@ public class RefreshMaterializedViewStatement implements Statement {
                 if (concurrently) {
                     builder.append("CONCURRENTLY ");
                 }
-                builder.append(tableName);
+                builder.append(view);
                 break;
         }
         return builder.toString();
@@ -95,10 +95,11 @@ public class RefreshMaterializedViewStatement implements Statement {
         statementVisitor.visit(this);
     }
 
-    public RefreshMaterializedViewStatement withTableName(String tableName) {
-        this.setTableName(tableName);
+    public RefreshMaterializedViewStatement withTableName(Table view) {
+        this.setView(view);
         return this;
     }
+
     public RefreshMaterializedViewStatement withConcurrently(boolean concurrently) {
         this.setConcurrently(concurrently);
         return this;
