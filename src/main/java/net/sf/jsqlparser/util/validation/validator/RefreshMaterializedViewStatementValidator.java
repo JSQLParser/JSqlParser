@@ -10,8 +10,8 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.statement.refreshView.RefreshMaterializedViewStatement;
-import net.sf.jsqlparser.statement.refreshView.RefreshMode;
+import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.refresh.RefreshMode;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 

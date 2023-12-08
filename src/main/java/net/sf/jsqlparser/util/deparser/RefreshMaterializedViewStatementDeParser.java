@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.statement.refreshView.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 
 /**
  *
