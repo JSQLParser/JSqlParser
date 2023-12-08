@@ -17,7 +17,6 @@ import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
 
 /**
- *
  * @author jxnu-liguobin
  */
 
@@ -53,10 +52,15 @@ public class RefreshMaterializedViewStatementValidatorTest extends ValidationTes
     @Test
     public void testValidationRefreshNotAllowed() throws Exception {
         for (String sql : Arrays.asList("REFRESH MATERIALIZED VIEW my_view")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML,
-                    Feature.refreshMaterializedView,
-                    Feature.refreshMaterializedWithNoDataView,
-                    Feature.refreshMaterializedWithDataView);
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT,
+                    Feature.refreshMaterializedView);
+        }
+
+        for (String sql : Arrays
+                .asList("REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH DATA")) {
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT,
+                    Feature.refreshMaterializedView, Feature.refreshMaterializedWithDataView,
+                    Feature.refreshMaterializedWithNoDataView);
         }
     }
 }

@@ -15,16 +15,16 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
  * REFRESH MATERIALIZED VIEW [ CONCURRENTLY ] name [ WITH [ NO ] DATA ]
- * 
+ * <p>
  * https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
- * 
+ *
  * @author jxni-liguobin
  */
 
 public class RefreshMaterializedViewStatement implements Statement {
 
     private Table view;
-    private RefreshMode refreshMode = RefreshMode.DEFAULT;
+    private RefreshMode refreshMode;
     private boolean concurrently = false;
 
     public RefreshMaterializedViewStatement() {}
@@ -65,6 +65,13 @@ public class RefreshMaterializedViewStatement implements Statement {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("REFRESH MATERIALIZED VIEW ");
+        if (this.refreshMode == null) {
+            if (concurrently) {
+                builder.append("CONCURRENTLY ");
+            }
+            builder.append(view);
+            return builder.toString();
+        }
         switch (this.refreshMode) {
             case WITH_DATA:
                 if (concurrently) {
@@ -78,12 +85,6 @@ public class RefreshMaterializedViewStatement implements Statement {
                 if (!concurrently) {
                     builder.append(" WITH NO DATA");
                 }
-                break;
-            case DEFAULT:
-                if (concurrently) {
-                    builder.append("CONCURRENTLY ");
-                }
-                builder.append(view);
                 break;
         }
         return builder.toString();

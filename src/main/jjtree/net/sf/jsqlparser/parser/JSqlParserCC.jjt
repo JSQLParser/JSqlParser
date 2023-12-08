@@ -1227,7 +1227,7 @@ ShowIndexStatement ShowIndex(): {
 Statement RefreshMaterializedView(): {
     Table view = null;
     boolean concurrently = false;
-    RefreshMode refreshMode = RefreshMode.DEFAULT;
+    RefreshMode refreshMode = null;
     List<String> captureRest;
 }
 {
