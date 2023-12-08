@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  * <p>
  * https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
  *
- * @author jxni-liguobin
+ * @author jxnu-liguobin
  */
 
 public class RefreshMaterializedViewStatement implements Statement {
