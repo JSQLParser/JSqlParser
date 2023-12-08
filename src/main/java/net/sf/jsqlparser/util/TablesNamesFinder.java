@@ -989,7 +989,6 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(RefreshMaterializedViewStatement materializedView) {
         visit(materializedView.getView());
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
