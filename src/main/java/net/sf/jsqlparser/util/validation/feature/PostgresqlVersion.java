@@ -109,7 +109,6 @@ public enum PostgresqlVersion implements Version {
 
                     // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
                     Feature.refreshMaterializedView,
-                    Feature.refreshMaterializedConcurrentlyView,
                     Feature.refreshMaterializedWithNoDataView,
                     Feature.refreshMaterializedWithDataView,
 

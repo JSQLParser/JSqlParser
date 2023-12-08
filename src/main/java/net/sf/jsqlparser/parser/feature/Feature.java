@@ -398,7 +398,7 @@ public enum Feature {
      *
      * @see RefreshMaterializedViewStatement
      */
-    refreshMaterializedView, refreshMaterializedConcurrentlyView, refreshMaterializedWithDataView, refreshMaterializedWithNoDataView,
+    refreshMaterializedView, refreshMaterializedWithDataView, refreshMaterializedWithNoDataView,
 
     /**
      * SQL "REPLACE VIEW" statement is allowed

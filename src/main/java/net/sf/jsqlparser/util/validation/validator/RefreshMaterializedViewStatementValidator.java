@@ -28,23 +28,29 @@ public class RefreshMaterializedViewStatementValidator
                 viewStatement.getView().getName());
         for (ValidationCapability c : getCapabilities()) {
             // default
-            validateFeature(c, viewStatement.getRefreshMode().compareTo(RefreshMode.DEFAULT) == 0,
+            validateFeature(c,
+                    viewStatement.getRefreshMode() == RefreshMode.DEFAULT
+                            && !viewStatement.isConcurrently(),
                     Feature.refreshMaterializedView);
+            validateFeature(c,
+                    viewStatement.getRefreshMode() == RefreshMode.DEFAULT
+                            && viewStatement.isConcurrently(),
+                    Feature.refreshMaterializedView);
+
             // specify WITH DATA
-            validateFeature(c, viewStatement.getRefreshMode().compareTo(RefreshMode.WITH_DATA) == 0,
+            validateFeature(c, viewStatement.getRefreshMode() == RefreshMode.WITH_DATA &&
+                    !viewStatement.isConcurrently(),
                     Feature.refreshMaterializedWithDataView);
+
             // specify WITH DATA and CONCURRENTLY
             validateOptionalFeature(c,
-                    viewStatement.getRefreshMode().compareTo(RefreshMode.WITH_DATA) == 0
+                    viewStatement.getRefreshMode() == RefreshMode.WITH_DATA
                             && viewStatement.isConcurrently(),
                     Feature.refreshMaterializedWithDataView);
-            validateOptionalFeature(c,
-                    viewStatement.getRefreshMode().compareTo(RefreshMode.WITH_DATA) == 0
-                            && viewStatement.isConcurrently(),
-                    Feature.refreshMaterializedConcurrentlyView);
+
             // specify WITH NO DATA
             validateOptionalFeature(c,
-                    viewStatement.getRefreshMode().compareTo(RefreshMode.WITH_NO_DATA) == 0
+                    viewStatement.getRefreshMode() == RefreshMode.WITH_NO_DATA
                             && !viewStatement.isConcurrently(),
                     Feature.refreshMaterializedWithNoDataView);
         }

@@ -25,15 +25,14 @@ public class RefreshMaterializedViewStatement implements Statement {
 
     private Table view;
     private RefreshMode refreshMode = RefreshMode.DEFAULT;
-    private boolean concurrently;
+    private boolean concurrently = false;
 
     public RefreshMaterializedViewStatement() {}
 
-    public RefreshMaterializedViewStatement(RefreshMode refreshMode) {
+    public RefreshMaterializedViewStatement(Table view, boolean concurrently,
+            RefreshMode refreshMode) {
         this.refreshMode = refreshMode;
-    }
-
-    public RefreshMaterializedViewStatement(Table view) {
+        this.concurrently = concurrently;
         this.view = view;
     }
 

@@ -1226,14 +1226,22 @@ ShowIndexStatement ShowIndex(): {
 
 RefreshMaterializedViewStatement RefreshMaterializedView(): {
     Table view = null;
+    boolean concurrently = false;
+    RefreshMode refreshMode = RefreshMode.DEFAULT;
 }
 {
     <K_REFRESH> <K_MATERIALIZED> <K_VIEW> 
-    [<K_CONCURRENTLY>]
+    [ LOOKAHEAD(2) <K_CONCURRENTLY>  { concurrently = true; } ]    
     view = Table()
-    [ <K_WITH> [ <K_NO> ] <K_DATA> ]
+    [
+        <K_WITH> { refreshMode = RefreshMode.WITH_DATA; }
+        [ 
+            <K_NO> { refreshMode = RefreshMode.WITH_NO_DATA; }
+        ] 
+        <K_DATA>
+     ]
     {
-        return new RefreshMaterializedViewStatement(view);
+        return new RefreshMaterializedViewStatement(view, concurrently, refreshMode);
     }
 }
 // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html

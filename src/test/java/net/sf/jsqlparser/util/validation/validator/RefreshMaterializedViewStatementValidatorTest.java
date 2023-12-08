@@ -55,7 +55,6 @@ public class RefreshMaterializedViewStatementValidatorTest extends ValidationTes
         for (String sql : Arrays.asList("REFRESH MATERIALIZED VIEW my_view")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML,
                     Feature.refreshMaterializedView,
-                    Feature.refreshMaterializedConcurrentlyView,
                     Feature.refreshMaterializedWithNoDataView,
                     Feature.refreshMaterializedWithDataView);
         }
