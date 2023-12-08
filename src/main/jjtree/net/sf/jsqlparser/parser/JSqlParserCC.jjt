@@ -1224,13 +1224,14 @@ ShowIndexStatement ShowIndex(): {
     }
 }
 
-RefreshMaterializedViewStatement RefreshMaterializedView(): {
+Statement RefreshMaterializedView(): {
     Table view = null;
     boolean concurrently = false;
     RefreshMode refreshMode = RefreshMode.DEFAULT;
+    List<String> captureRest;
 }
 {
-    <K_REFRESH> <K_MATERIALIZED> <K_VIEW> 
+    <K_REFRESH> <K_MATERIALIZED> <K_VIEW>
     [ LOOKAHEAD(2) <K_CONCURRENTLY>  { concurrently = true; } ]    
     view = Table()
     [
@@ -1239,9 +1240,14 @@ RefreshMaterializedViewStatement RefreshMaterializedView(): {
             <K_NO> { refreshMode = RefreshMode.WITH_NO_DATA; }
         ] 
         <K_DATA>
-     ]
+    ]
+    captureRest = captureRest()
     {
-        return new RefreshMaterializedViewStatement(view, concurrently, refreshMode);
+        if (concurrently && refreshMode == RefreshMode.WITH_NO_DATA) {
+            return new UnsupportedStatement("REFRESH", captureRest);
+        } else {
+           return new RefreshMaterializedViewStatement(view, concurrently, refreshMode);
+        }
     }
 }
 // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html

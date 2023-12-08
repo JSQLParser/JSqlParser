@@ -516,5 +516,9 @@ public class TablesNamesFinderTest {
         String sqlStr5 = "REFRESH MATERIALIZED VIEW my_view WITH NO DATA";
         Set<String> tableNames5 = TablesNamesFinder.findTables(sqlStr5);
         assertThat(tableNames5).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr6 = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH NO DATA";
+        Set<String> tableNames6 = TablesNamesFinder.findTables(sqlStr6);
+        assertThat(tableNames6).isEmpty();
     }
 }
