@@ -257,9 +257,11 @@ public class MergeTest {
 
     @Test
     void testSnowflakeMergeStatementWithNotMatchedAndPredicate() throws JSQLParserException {
-        String sql = "MERGE INTO target USING (select k, max(v) as v from src group by k) AS b ON target.k = b.k\n" +
-                "  WHEN MATCHED THEN UPDATE SET target.v = b.v\n" +
-                "  WHEN NOT MATCHED AND b.v != 11 THEN INSERT (k, v) VALUES (b.k, b.v)";
+        String sql =
+                "MERGE INTO target USING (select k, max(v) as v from src group by k) AS b ON target.k = b.k\n"
+                        +
+                        "  WHEN MATCHED THEN UPDATE SET target.v = b.v\n" +
+                        "  WHEN NOT MATCHED AND b.v != 11 THEN INSERT (k, v) VALUES (b.k, b.v)";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }

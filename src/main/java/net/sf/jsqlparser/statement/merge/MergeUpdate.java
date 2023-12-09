@@ -22,8 +22,7 @@ public class MergeUpdate implements Serializable {
     private Expression whereCondition;
     private Expression deleteWhereCondition;
 
-    public MergeUpdate() {
-    }
+    public MergeUpdate() {}
 
     public MergeUpdate(List<UpdateSet> updateSets) {
         this.updateSets = updateSets;
@@ -98,7 +97,7 @@ public class MergeUpdate implements Serializable {
 
     public <E extends Expression> E getAndPredicate(Class<E> type) {
         return type.cast(getAndPredicate());
-}
+    }
 
     public <E extends Expression> E getWhereCondition(Class<E> type) {
         return type.cast(getWhereCondition());

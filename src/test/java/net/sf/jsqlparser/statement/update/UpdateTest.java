@@ -18,6 +18,8 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
@@ -361,5 +363,21 @@ public class UpdateTest {
 
         sqlStr = "update utilisateur set listes[0:3] = (1,2,3,4)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testIssue1910() throws JSQLParserException {
+        Update update = new Update();
+        update.setTable(new Table("sys_dept"));
+
+        UpdateSet updateSet = new UpdateSet(new Column("deleted"), new LongValue(1L));
+        update.addUpdateSet(updateSet);
+
+        TestUtils.assertStatementCanBeDeparsedAs(update, "UPDATE sys_dept SET deleted = 1", true);
+
+        updateSet.add(new Column("created"), new LongValue(2L));
+
+        TestUtils.assertStatementCanBeDeparsedAs(update,
+                "UPDATE sys_dept SET (deleted, created) = (1,2)", true);
     }
 }

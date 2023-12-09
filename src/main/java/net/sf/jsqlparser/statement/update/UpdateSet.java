@@ -72,7 +72,7 @@ public class UpdateSet implements Serializable {
      * @param column
      */
     public void add(Column column) {
-        if (columns.size() < 2 && !(columns instanceof ParenthesedExpressionList)) {
+        if (!columns.isEmpty() && !(columns instanceof ParenthesedExpressionList)) {
             columns = new ParenthesedExpressionList<>(columns);
         }
         columns.add(column);
@@ -85,7 +85,7 @@ public class UpdateSet implements Serializable {
      * @param expression
      */
     public void add(Expression expression) {
-        if (values.size() < 2 && !(values instanceof ParenthesedExpressionList)) {
+        if (!values.isEmpty() && !(values instanceof ParenthesedExpressionList)) {
             values = new ParenthesedExpressionList<>(values);
         }
         values.add(expression);
