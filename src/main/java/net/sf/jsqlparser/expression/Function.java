@@ -24,8 +24,8 @@ import java.util.List;
 public class Function extends ASTNodeAccessImpl implements Expression {
 
     private List<String> nameparts;
-    private ExpressionList parameters;
-    private NamedExpressionList namedParameters;
+    private ExpressionList<?> parameters;
+    private NamedExpressionList<?> namedParameters;
     private boolean allColumns = false;
     private boolean distinct = false;
     private boolean unique = false;
@@ -55,6 +55,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Function withName(String name) {
         this.setName(name);
+        return this;
+    }
+
+    public Function withName(List<String> nameparts) {
+        this.nameparts = nameparts;
         return this;
     }
 
@@ -115,11 +120,19 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      * @return the list of parameters of the function (if any, else null)
      */
-    public ExpressionList getParameters() {
+    public ExpressionList<?> getParameters() {
         return parameters;
     }
 
-    public void setParameters(ExpressionList list) {
+    public void setParameters(Expression... expressions) {
+        if (expressions.length == 1 && expressions[0] instanceof ExpressionList) {
+            parameters = (ExpressionList<?>) expressions[0];
+        } else {
+            parameters = new ExpressionList<>(expressions);
+        }
+    }
+
+    public void setParameters(ExpressionList<?> list) {
         parameters = list;
     }
 
@@ -132,7 +145,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         return namedParameters;
     }
 
-    public void setNamedParameters(NamedExpressionList list) {
+    public void setNamedParameters(NamedExpressionList<?> list) {
         namedParameters = list;
     }
 
@@ -267,16 +280,16 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
-    public Function withParameters(ExpressionList parameters) {
+    public Function withParameters(ExpressionList<?> parameters) {
         this.setParameters(parameters);
         return this;
     }
 
     public Function withParameters(Expression... parameters) {
-        return withParameters(new ExpressionList(parameters));
+        return withParameters(new ExpressionList<>(parameters));
     }
 
-    public Function withNamedParameters(NamedExpressionList namedParameters) {
+    public Function withNamedParameters(NamedExpressionList<?> namedParameters) {
         this.setNamedParameters(namedParameters);
         return this;
     }

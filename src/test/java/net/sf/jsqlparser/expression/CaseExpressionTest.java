@@ -19,67 +19,80 @@ import org.junit.jupiter.api.Test;
 public class CaseExpressionTest {
     @Test
     public void testSimpleCase() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true THEN 1 ELSE 2 END",
+                true);
     }
 
     @Test
     public void testCaseBinaryAndWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true & false THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true WHEN true & false THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseBinaryOrWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true | false THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true WHEN true | false THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseExclamationWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN !true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN !true THEN 1 ELSE 2 END",
+                true);
     }
 
     @Test
     public void testCaseNotWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN NOT true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true WHEN NOT true THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseAndWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true AND false THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true WHEN true AND false THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseOrWhen() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true WHEN true OR false THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true WHEN true OR false THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseExclamationSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE !true WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE !true WHEN true THEN 1 ELSE 2 END",
+                true);
     }
 
     @Test
     public void testCaseNotSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE NOT true WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE NOT true WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseBinaryAndSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true & false WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true & false WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseBinaryOrSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true | false WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true | false WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseAndSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true AND false WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true AND false WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
     public void testCaseOrSwitch() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("CASE true OR false WHEN true THEN 1 ELSE 2 END", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "CASE true OR false WHEN true THEN 1 ELSE 2 END", true);
     }
 
     @Test
@@ -112,24 +125,38 @@ public class CaseExpressionTest {
     @Test
     public void testCaseInsideBrackets() throws JSQLParserException {
         String sqlStr = "SELECT ( CASE\n"
-                        + "            WHEN something\n"
-                        + "                THEN CASE\n"
-                        + "                     WHEN something2\n"
-                        + "                         THEN 1\n"
-                        + "                     ELSE 0\n"
-                        + "                     END + 1\n"
-                        + "            ELSE 0\n"
-                        + "        END ) + 1 \n"
-                        + "FROM test";
+                + "            WHEN something\n"
+                + "                THEN CASE\n"
+                + "                     WHEN something2\n"
+                + "                         THEN 1\n"
+                + "                     ELSE 0\n"
+                + "                     END + 1\n"
+                + "            ELSE 0\n"
+                + "        END ) + 1 \n"
+                + "FROM test";
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         sqlStr = "SELECT\n"
-                 + "(CASE WHEN FIELD_A=0 THEN FIELD_B\n"
-                 + "WHEN FIELD_C >FIELD_D  THEN (CASE WHEN FIELD_A>0 THEN\n"
-                 + "(FIELD_B)/(FIELD_A/(DATEDIFF(DAY,:started,:end)+1))\n"
-                 + "ELSE 0 END)-FIELD_D ELSE 0 END)*FIELD_A/(DATEDIFF(DAY,:started,:end)+1)  AS UNNECESSARY_COMPLEX_EXPRESSION\n"
-                 + "FROM TEST";
+                + "(CASE WHEN FIELD_A=0 THEN FIELD_B\n"
+                + "WHEN FIELD_C >FIELD_D  THEN (CASE WHEN FIELD_A>0 THEN\n"
+                + "(FIELD_B)/(FIELD_A/(DATEDIFF(DAY,:started,:end)+1))\n"
+                + "ELSE 0 END)-FIELD_D ELSE 0 END)*FIELD_A/(DATEDIFF(DAY,:started,:end)+1)  AS UNNECESSARY_COMPLEX_EXPRESSION\n"
+                + "FROM TEST";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testPerformanceIssue1889() throws JSQLParserException {
+        String sqlStr = "SELECT "
+                + "SUM(SUM(CASE\n"
+                + "               WHEN IssueDeadline IS NULL THEN 'Indeterminate'\n"
+                + "               WHEN IssueDeadline < CONVERT(DATETIME, CONVERT(DATE, COALESCE(IssueClosedOn, CONVERT(DATETIME, CONVERT(DATE, GETDATE()), 121)))) THEN 'PastDue'\n"
+                + "               WHEN (IssueDeadline>=CONVERT(DATETIME, CONVERT(DATE, GETDATE()), 121)\n"
+                + "                     AND IssueDeadline<=CONVERT(DATETIME, CONVERT(DATE, GETDATE()+3), 121)) THEN 'Alert'\n"
+                + "               ELSE 'OnTime'\n"
+                + "           END = 'PastDue'))\n";
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }

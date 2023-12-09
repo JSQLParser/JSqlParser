@@ -1211,7 +1211,7 @@ public class SelectTest {
                 .getExpression();
         assertEquals("MAX", fun.getName());
         assertEquals("b",
-                ((Column) fun.getParameters().getExpressions().get(1)).getFullyQualifiedName());
+                ((Column) fun.getParameters().get(1)).getFullyQualifiedName());
         assertTrue(((Function) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getParameters().getExpressions().get(0) instanceof AllColumns);
         assertStatementCanBeDeparsedAs(select, statement);
@@ -4210,7 +4210,16 @@ public class SelectTest {
     @Test
     public void testFuncConditionParameter3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT CAST((MAX(CAST(IIF(isnumeric(license_no) = 1, license_no, 0) AS INT)) + 2) AS varchar) FROM lcps.t_license WHERE profession_id = 60 and license_type = 100 and YEAR(issue_date) % 2 = case when YEAR(issue_date) % 2 = 0 then 0 else 1 end and ISNUMERIC(license_no) = 1",
+                "SELECT  cast( ( Max(  cast( Iif( Isnumeric( license_no ) = 1, license_no, 0 ) AS INT ) ) + 2 ) AS VARCHAR )\n"
+                        + "FROM lcps.t_license\n"
+                        + "WHERE profession_id = 60\n"
+                        + "    AND license_type = 100\n"
+                        + "    AND Year( issue_date ) % 2 = CASE\n"
+                        + "                WHEN Year( issue_date ) % 2 = 0\n"
+                        + "                    THEN 0\n"
+                        + "                ELSE 1\n"
+                        + "            END\n"
+                        + "    AND Isnumeric( license_no ) = 1",
                 true);
     }
 

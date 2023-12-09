@@ -3467,7 +3467,7 @@ Expression RegularCondition() #RegularCondition:
     [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
     {
-         BinaryExpression regCond = (BinaryExpression) result;
+        BinaryExpression regCond = (BinaryExpression) result;
         regCond.setLeftExpression(leftExpression);
         regCond.setRightExpression(rightExpression);
 
@@ -4121,8 +4121,6 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(JsonFunction(), {!interrupted}) retval = JsonFunction()
 
         | LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) retval = JsonAggregateFunction()
-
-        /* | LOOKAHEAD(FunctionWithCondParams()) retval = FunctionWithCondParams() */
 
         | LOOKAHEAD(FullTextSearch(), {!interrupted}) retval = FullTextSearch()
 
@@ -4902,7 +4900,7 @@ Expression CaseWhenExpression() #CaseWhenExpression:
 }
 {
     <K_CASE> { caseCounter++; }
-    [ switchExp=Expression() ]
+    [ LOOKAHEAD(2) switchExp=Expression() ]
     ( clause=WhenThenSearchCondition() { whenClauses.add(clause); } )+
     [
         <K_ELSE>
@@ -5028,17 +5026,18 @@ FullTextSearch FullTextSearch() : {
 
 Function Function() #Function:
 {
-    Function retval = new Function();
+    Function function;
 }
 {
     (
-        "{" <K_FN> { retval.setEscaped(true); }  InternalFunction(retval) "}"
-        | LOOKAHEAD(3) retval = SpecialStringFunctionWithNamedParameters()
-        | InternalFunction(retval)
+        "{" <K_FN> function = InternalFunction(true) "}"
+        | LOOKAHEAD( SimpleFunction(), { getAsBoolean(Feature.allowComplexParsing) }) function = SimpleFunction()
+        | LOOKAHEAD(3) function = SpecialStringFunctionWithNamedParameters()
+        | function = InternalFunction(false)
     )
     {
-        linkAST(retval,jjtThis);
-        return retval;
+        linkAST(function,jjtThis);
+        return function;
     }
 }
 
@@ -5068,15 +5067,47 @@ Function SpecialStringFunctionWithNamedParameters() :
     }
 }
 
-Function InternalFunction(Function retval) :
+// a simplified function with only one parameter
+// useful for parsing nested functions fast
+Function SimpleFunction():
 {
+    List<String> name;
+    Expression expr=null;
+}
+{
+    name = RelObjectNameList()
+    "("
+    [
+        (
+            "*" { expr = new AllColumns(); }
+            |
+            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns()
+            |
+            LOOKAHEAD( SimpleFunction() ) expr = SimpleFunction()
+            |
+            LOOKAHEAD( RegularCondition() ) expr = RegularCondition()
+            |
+            LOOKAHEAD( SimpleExpressionList() )  expr = SimpleExpressionList()
+        )
+    ]
+    ")"
+    {
+        Function function = new Function().withName(name);
+        if (expr!=null) {
+            function.setParameters(expr);
+        }
+
+        return function;
+    }
+}
+
+Function InternalFunction(boolean escaped):
+{
+    Function retval = new Function();
     List<String> funcName;
-    Expression allColumnsExpression = null;
     ExpressionList expressionList = null;
     KeepExpression keep = null;
-    Select expr = null;
-    Token tk1 = null;
-    Token tk2 = null;
+    Expression expr = null;
     Expression attributeExpression = null;
     Column attributeColumn = null;
     List<OrderByElement> orderByList;
@@ -5095,10 +5126,6 @@ Function InternalFunction(Function retval) :
             )
         ]
         (
-            "*" { expressionList = new ExpressionList(new AllColumns()); }
-            |
-            LOOKAHEAD( AllTableColumns() ) allColumnsExpression=AllTableColumns() { expressionList = new ExpressionList(allColumnsExpression); }
-            |
             LOOKAHEAD(3) expressionList=ExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
             |
             expr = Select() { expressionList = new ExpressionList(expr); }
@@ -5120,6 +5147,7 @@ Function InternalFunction(Function retval) :
     [ LOOKAHEAD(2) keep = KeepExpression() ]
 
     {
+        retval.setEscaped(escaped);
         retval.setParameters(expressionList);
         retval.setName(funcName);
         retval.setKeep(keep);

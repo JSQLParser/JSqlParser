@@ -53,7 +53,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         unique = function.isUnique();
         funcOrderBy = function.getOrderByElements();
 
-        ExpressionList<Expression> list = function.getParameters();
+        ExpressionList<? extends Expression> list = function.getParameters();
         if (list != null) {
             if (list.getExpressions().size() > 3) {
                 throw new IllegalArgumentException(
