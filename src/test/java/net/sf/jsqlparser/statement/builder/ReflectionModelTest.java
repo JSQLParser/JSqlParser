@@ -9,20 +9,20 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
+import static net.sf.jsqlparser.test.TestUtils.asList;
+
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.refresh.RefreshMode;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static net.sf.jsqlparser.test.TestUtils.asList;
 
 /**
  * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
@@ -131,6 +131,8 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.SetStatement("name", null),
             new net.sf.jsqlparser.statement.ShowColumnsStatement(),
             new net.sf.jsqlparser.statement.show.ShowIndexStatement(),
+            new net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement(
+                    new net.sf.jsqlparser.schema.Table("my_view"), true, RefreshMode.WITH_DATA),
             new net.sf.jsqlparser.statement.ShowStatement(),
             new net.sf.jsqlparser.statement.Statements(),
             new net.sf.jsqlparser.statement.UseStatement(),

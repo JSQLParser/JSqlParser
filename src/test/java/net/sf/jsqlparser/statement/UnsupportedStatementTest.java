@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.Select;
@@ -16,9 +19,6 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UnsupportedStatementTest {
     @Test
@@ -86,6 +86,13 @@ public class UnsupportedStatementTest {
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         assertTrue(statement instanceof UnsupportedStatement);
+    }
+
+    @Test
+    void testRefresh() throws JSQLParserException {
+        String sqlStr = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH NO DATA";
+        Statements statement = CCJSqlParserUtil.parseStatements(sqlStr);
+        assertTrue(statement.get(0) instanceof UnsupportedStatement);
     }
 
     @Test

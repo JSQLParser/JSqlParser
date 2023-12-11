@@ -9,6 +9,17 @@
  */
 package net.sf.jsqlparser.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.List;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -24,18 +35,6 @@ import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TablesNamesFinderTest {
 
@@ -495,5 +494,32 @@ public class TablesNamesFinderTest {
         String exprStr = "A.id=B.id and A.age = (select age from C)";
         tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
         assertThat(tableNames).containsExactlyInAnyOrder("A", "B", "C");
+    }
+
+    @Test
+    void testRefreshMaterializedView() throws JSQLParserException {
+        String sqlStr1 = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH DATA";
+        Set<String> tableNames1 = TablesNamesFinder.findTables(sqlStr1);
+        assertThat(tableNames1).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr2 = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view";
+        Set<String> tableNames2 = TablesNamesFinder.findTables(sqlStr2);
+        assertThat(tableNames2).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr3 = "REFRESH MATERIALIZED VIEW my_view";
+        Set<String> tableNames3 = TablesNamesFinder.findTables(sqlStr3);
+        assertThat(tableNames3).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr4 = "REFRESH MATERIALIZED VIEW my_view WITH DATA";
+        Set<String> tableNames4 = TablesNamesFinder.findTables(sqlStr4);
+        assertThat(tableNames4).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr5 = "REFRESH MATERIALIZED VIEW my_view WITH NO DATA";
+        Set<String> tableNames5 = TablesNamesFinder.findTables(sqlStr5);
+        assertThat(tableNames5).containsExactlyInAnyOrder("my_view");
+
+        String sqlStr6 = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH NO DATA";
+        Set<String> tableNames6 = TablesNamesFinder.findTables(sqlStr6);
+        assertThat(tableNames6).isEmpty();
     }
 }

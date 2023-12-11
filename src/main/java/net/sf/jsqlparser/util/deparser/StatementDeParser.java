@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -50,6 +53,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
+import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -57,10 +61,6 @@ import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 
@@ -102,6 +102,11 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     public void visit(CreateView createView) {
         CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
         createViewDeParser.deParse(createView);
+    }
+
+    @Override
+    public void visit(RefreshMaterializedViewStatement materializedViewStatement) {
+        new RefreshMaterializedViewStatementDeParser(buffer).deParse(materializedViewStatement);
     }
 
     @Override
