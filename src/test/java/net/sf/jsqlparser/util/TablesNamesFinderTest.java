@@ -495,6 +495,7 @@ public class TablesNamesFinderTest {
         tableNames = TablesNamesFinder.findTablesInExpression(exprStr);
         assertThat(tableNames).containsExactlyInAnyOrder("A", "B", "C");
     }
+
     @Test
     void testRefreshMaterializedView() throws JSQLParserException {
         String sqlStr1 = "REFRESH MATERIALIZED VIEW CONCURRENTLY my_view WITH DATA";
