@@ -17,6 +17,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
@@ -25,7 +26,7 @@ public class CreateView implements Statement {
     private Table view;
     private Select select;
     private boolean orReplace = false;
-    private List<ColumnWithCommentExpression> columnNames = null;
+    private List<ColumnDefinition> columnNames = null;
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
@@ -66,11 +67,11 @@ public class CreateView implements Statement {
         this.select = select;
     }
 
-    public List<ColumnWithCommentExpression> getColumnNames() {
+    public List<ColumnDefinition> getColumnNames() {
         return columnNames;
     }
 
-    public void setColumnNames(List<ColumnWithCommentExpression> columnNames) {
+    public void setColumnNames(List<ColumnDefinition> columnNames) {
         this.columnNames = columnNames;
     }
 
@@ -186,7 +187,7 @@ public class CreateView implements Statement {
         return this;
     }
 
-    public CreateView withColumnNames(List<ColumnWithCommentExpression> columnNames) {
+    public CreateView withColumnNames(List<ColumnDefinition> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
@@ -206,15 +207,15 @@ public class CreateView implements Statement {
         return this;
     }
 
-    public CreateView addColumnNames(ColumnWithCommentExpression... columnNames) {
-        List<ColumnWithCommentExpression> collection =
+    public CreateView addColumnNames(ColumnDefinition... columnNames) {
+        List<ColumnDefinition> collection =
                 Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnNames);
         return this.withColumnNames(collection);
     }
 
-    public CreateView addColumnNames(Collection<ColumnWithCommentExpression> columnNames) {
-        List<ColumnWithCommentExpression> collection =
+    public CreateView addColumnNames(Collection<ColumnDefinition> columnNames) {
+        List<ColumnDefinition> collection =
                 Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
         collection.addAll(columnNames);
         return this.withColumnNames(collection);
