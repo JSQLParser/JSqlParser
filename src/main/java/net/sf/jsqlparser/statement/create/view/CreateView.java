@@ -9,15 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
@@ -26,7 +23,7 @@ public class CreateView implements Statement {
     private Table view;
     private Select select;
     private boolean orReplace = false;
-    private List<ColumnDefinition> columnNames = null;
+    private ExpressionList<Column> columnNames = null;
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
     private TemporaryOption temp = TemporaryOption.NONE;
@@ -67,11 +64,11 @@ public class CreateView implements Statement {
         this.select = select;
     }
 
-    public List<ColumnDefinition> getColumnNames() {
+    public ExpressionList<Column> getColumnNames() {
         return columnNames;
     }
 
-    public void setColumnNames(List<ColumnDefinition> columnNames) {
+    public void setColumnNames(ExpressionList<Column> columnNames) {
         this.columnNames = columnNames;
     }
 
@@ -147,7 +144,9 @@ public class CreateView implements Statement {
             sql.append(" AUTO REFRESH ").append(autoRefresh.name());
         }
         if (columnNames != null) {
-            sql.append(PlainSelect.getStringList(columnNames, true, true));
+            sql.append("(");
+            sql.append(columnNames);
+            sql.append(")");
         }
         if (viewCommentOptions != null) {
             sql.append(PlainSelect.getStringList(viewCommentOptions, false, false));
@@ -187,7 +186,7 @@ public class CreateView implements Statement {
         return this;
     }
 
-    public CreateView withColumnNames(List<ColumnDefinition> columnNames) {
+    public CreateView withColumnNames(ExpressionList<Column> columnNames) {
         this.setColumnNames(columnNames);
         return this;
     }
@@ -205,20 +204,6 @@ public class CreateView implements Statement {
     public CreateView withWithReadOnly(boolean withReadOnly) {
         this.setWithReadOnly(withReadOnly);
         return this;
-    }
-
-    public CreateView addColumnNames(ColumnDefinition... columnNames) {
-        List<ColumnDefinition> collection =
-                Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, columnNames);
-        return this.withColumnNames(collection);
-    }
-
-    public CreateView addColumnNames(Collection<ColumnDefinition> columnNames) {
-        List<ColumnDefinition> collection =
-                Optional.ofNullable(getColumnNames()).orElseGet(ArrayList::new);
-        collection.addAll(columnNames);
-        return this.withColumnNames(collection);
     }
 
     public List<String> getViewCommentOptions() {

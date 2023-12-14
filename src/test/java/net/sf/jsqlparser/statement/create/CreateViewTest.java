@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;

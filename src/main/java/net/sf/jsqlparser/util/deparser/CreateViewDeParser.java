@@ -67,7 +67,9 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
             buffer.append(" AUTO REFRESH ").append(createView.getAutoRefresh().name());
         }
         if (createView.getColumnNames() != null) {
-            buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
+            buffer.append("(");
+            buffer.append(createView.getColumnNames());
+            buffer.append(")");
         }
         if (createView.getViewCommentOptions() != null) {
             buffer.append(

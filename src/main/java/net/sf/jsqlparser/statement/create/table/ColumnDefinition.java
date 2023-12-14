@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
  * Globally used definition class for columns.
@@ -64,18 +65,10 @@ public class ColumnDefinition implements Serializable {
 
     @Override
     public String toString() {
-        String spec = toStringDataTypeAndSpec();
-        if (spec.isEmpty()) {
-            return columnName;
-        }
         return columnName + " " + toStringDataTypeAndSpec();
     }
 
     public String toStringDataTypeAndSpec() {
-        if (colDataType == null) {
-            return columnSpecs == null || columnSpecs.isEmpty() ? ""
-                    : PlainSelect.getStringList(columnSpecs, false, false);
-        }
         return colDataType + (columnSpecs != null && !columnSpecs.isEmpty()
                 ? " " + PlainSelect.getStringList(columnSpecs, false, false)
                 : "");
