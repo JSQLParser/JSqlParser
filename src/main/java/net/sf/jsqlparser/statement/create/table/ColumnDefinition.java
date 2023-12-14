@@ -73,8 +73,8 @@ public class ColumnDefinition implements Serializable {
 
     public String toStringDataTypeAndSpec() {
         if (colDataType == null) {
-            return (columnSpecs == null || columnSpecs.isEmpty() ? ""
-                    : PlainSelect.getStringList(columnSpecs, false, false));
+            return columnSpecs == null || columnSpecs.isEmpty() ? ""
+                    : PlainSelect.getStringList(columnSpecs, false, false);
         }
         return colDataType + (columnSpecs != null && !columnSpecs.isEmpty()
                 ? " " + PlainSelect.getStringList(columnSpecs, false, false)
