@@ -9,11 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.feature;
 
-import net.sf.jsqlparser.parser.feature.Feature;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
@@ -41,7 +40,8 @@ public enum MariaDbVersion implements Version {
                     Feature.selectForUpdateSkipLocked,
 
                     // https://mariadb.com/kb/en/join-syntax/
-                    Feature.join, Feature.joinSimple, Feature.joinRight, Feature.joinNatural, Feature.joinLeft,
+                    Feature.join, Feature.joinSimple, Feature.joinRight, Feature.joinNatural,
+                    Feature.joinLeft,
                     Feature.joinCross, Feature.joinOuter, Feature.joinInner, Feature.joinStraight,
                     Feature.joinUsingColumns,
 
@@ -64,8 +64,10 @@ public enum MariaDbVersion implements Version {
 
                     // https://mariadb.com/kb/en/insert/
                     Feature.insert, Feature.insertValues, Feature.values,
-                    Feature.insertFromSelect, Feature.insertModifierPriority, Feature.insertModifierIgnore,
-                    Feature.insertUseSet, Feature.insertUseDuplicateKeyUpdate, Feature.insertReturningExpressionList,
+                    Feature.insertFromSelect, Feature.insertModifierPriority,
+                    Feature.insertModifierIgnore,
+                    Feature.insertUseSet, Feature.insertUseDuplicateKeyUpdate,
+                    Feature.insertReturningExpressionList,
 
                     // https://mariadb.com/kb/en/update/
                     Feature.update,
@@ -96,7 +98,8 @@ public enum MariaDbVersion implements Version {
                     Feature.dropView,
                     // https://mariadb.com/kb/en/drop-sequence/
                     Feature.dropSequence, Feature.dropTableIfExists, Feature.dropIndexIfExists,
-                    Feature.dropViewIfExists, Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
+                    Feature.dropViewIfExists, Feature.dropSchemaIfExists,
+                    Feature.dropSequenceIfExists,
 
                     // https://mariadb.com/kb/en/replace/
                     Feature.upsert,
@@ -110,9 +113,11 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/create-view/
                     Feature.createView,
                     Feature.createOrReplaceView,
+                    Feature.createViewWithComment,
 
                     // https://mariadb.com/kb/en/create-table/
-                    Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+                    Feature.createTable, Feature.createTableCreateOptionStrings,
+                    Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableIfNotExists,
                     // https://mariadb.com/kb/en/create-index/
                     Feature.createIndex,
@@ -143,7 +148,7 @@ public enum MariaDbVersion implements Version {
                     Feature.commit,
                     // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
-                    Feature.mysqlCalcFoundRows, 
+                    Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),
 
     ORACLE_MODE("oracle_mode", V10_5_4.copy().add(Feature.selectUnique).getFeatures());

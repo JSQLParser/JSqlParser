@@ -69,6 +69,10 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         if (createView.getColumnNames() != null) {
             buffer.append(PlainSelect.getStringList(createView.getColumnNames(), true, true));
         }
+        if (createView.getViewCommentOptions() != null) {
+            buffer.append(
+                    PlainSelect.getStringList(createView.getViewCommentOptions(), false, false));
+        }
         buffer.append(" AS ");
 
         Select select = createView.getSelect();
