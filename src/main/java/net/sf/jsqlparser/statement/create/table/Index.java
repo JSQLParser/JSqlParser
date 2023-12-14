@@ -81,12 +81,11 @@ public class Index implements Serializable {
     }
 
     /**
-     * In postgresql, the index type (Btree, GIST, etc.) is indicated
-     * with a USING clause.
-     * Please note that:
-     *  Oracle - the type might be BITMAP, indicating a bitmap kind of index
-     *  MySQL - the type might be FULLTEXT or SPATIAL
-     *  @param using
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated with a USING clause. Please
+     * note that: Oracle - the type might be BITMAP, indicating a bitmap kind of index MySQL - the
+     * type might be FULLTEXT or SPATIAL
+     * 
+     * @param using
      */
     public void setUsing(String using) {
         this.using = using;
@@ -135,8 +134,15 @@ public class Index implements Serializable {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        return ( type!=null ? type : "") + (!name.isEmpty() ? " " + getName() : "") + " " + PlainSelect.
-                getStringList(columns, true, true) + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+        String head = (type != null ? type : "") + (!name.isEmpty() ? " " + getName() : "");
+        String tail = PlainSelect.getStringList(columns, true, true)
+                + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+
+        if ("".equals(tail)) {
+            return head;
+        }
+
+        return head + " " + tail;
     }
 
     public Index withType(String type) {
