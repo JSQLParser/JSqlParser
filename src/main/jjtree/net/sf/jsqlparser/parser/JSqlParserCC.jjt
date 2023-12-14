@@ -5713,12 +5713,8 @@ ColumnDefinition ColumnDefinitionItem():
     ColumnDefinition columnWithComment = new ColumnDefinition();
 }
 {
-	( item = RelObjectName() { columnWithComment.withColumnName(item); } ) 
-	[
-	   tk=<K_COMMENT> tk2=<S_CHAR_LITERAL> { 
-	        columnWithComment.addColumnSpecs(tk.image).addColumnSpecs(tk2.image); 
-	    } 
-	]
+	( item=RelObjectName() { columnWithComment.withColumnName(item); } ) 
+	[ tk=<K_COMMENT> tk2=<S_CHAR_LITERAL> { columnWithComment.addColumnSpecs(tk.image).addColumnSpecs(tk2.image); } ]
 	{
 		return columnWithComment;
 	}
@@ -5731,7 +5727,7 @@ List<ColumnDefinition> ColumnDefinitionItemList():
 }
 {
     "("
-         img = ColumnDefinitionItem() { retval.add(img); }
+         img=ColumnDefinitionItem() { retval.add(img); }
          ( "," img=ColumnDefinitionItem() { retval.add(img); } )*
     ")"
     {
@@ -5762,8 +5758,8 @@ CreateView CreateView(boolean isUsingOrReplace):
     <K_VIEW> view=Table() { createView.setView(view); }
     [LOOKAHEAD(3) <K_AUTO> <K_REFRESH> (tk=<K_YES> | tk=<K_NO>) { createView.setAutoRefresh(AutoRefreshOption.from(tk.image)); } ]
     [LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> {createView.setIfNotExists(true);}]
-    [ columnNames = ColumnDefinitionItemList( ) { createView.setColumnNames(columnNames); } ]
-    [ commentTokens=CreateViewTailComment( ) { createView.setViewCommentOptions(commentTokens);} ]
+    [ columnNames=ColumnDefinitionItemList( ) { createView.setColumnNames(columnNames); } ]
+    [ commentTokens=CreateViewTailComment( ) { createView.setViewCommentOptions(commentTokens); } ]
     <K_AS>
     select=Select( ) { createView.setSelect(select); }
     [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
