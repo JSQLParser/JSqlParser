@@ -6156,7 +6156,7 @@ List<ConstraintState> AlterExpressionConstraintState():
 AlterExpression AlterExpression():
 {
     AlterExpression alterExp = new AlterExpression();
-    Token tk = null;
+    Token tk;
     Token tk2 = null;
     String sk3 = null;
     String sk4 = null;
@@ -6392,7 +6392,7 @@ AlterExpression AlterExpression():
             )
             |
             (
-               [ (tk=<K_INDEX> | tk=<K_KEY>) ]
+               ( (tk=<K_INDEX> | tk=<K_KEY>) )
                ( tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER> ) {
                        index = new Index().withType(tk.image).withName(tk2.image);
                        alterExp.setIndex(index);
