@@ -9,12 +9,11 @@
  */
 package net.sf.jsqlparser.schema;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
-import java.util.List;
 
 /**
  * A column. It can have the table name it belongs to.
@@ -23,6 +22,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     private Table table;
     private String columnName;
+    private String commentText;
     private ArrayConstructor arrayConstructor;
 
     public Column() {}
@@ -56,19 +56,19 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
      * <p>
      * The inference is based only on local information, and not on the whole SQL command. For
      * example, consider the following query: <blockquote>
-     * 
+     *
      * <pre>
      *  SELECT x FROM Foo
      * </pre>
-     * 
+     *
      * </blockquote> Given the {@code Column} called {@code x}, this method would return
      * {@code null}, and not the info about the table {@code Foo}. On the other hand, consider:
      * <blockquote>
-     * 
+     *
      * <pre>
      *  SELECT t.x FROM Foo t
      * </pre>
-     * 
+     *
      * </blockquote> Here, we will get a {@code Table} object for a table called {@code t}. But
      * because the inference is local, such object will not know that {@code t} is just an alias for
      * {@code Foo}.
@@ -114,6 +114,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
             fqn.append(columnName);
         }
 
+        if (commentText != null) {
+            fqn.append(" COMMENT ");
+            fqn.append(commentText);
+        }
+
         if (arrayConstructor != null) {
             fqn.append(arrayConstructor);
         }
@@ -145,5 +150,18 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     public Column withColumnName(String columnName) {
         this.setColumnName(columnName);
         return this;
+    }
+
+    public Column withCommentText(String commentText) {
+        this.setCommentText(commentText);
+        return this;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
+    }
+
+    public String getCommentText() {
+        return commentText;
     }
 }

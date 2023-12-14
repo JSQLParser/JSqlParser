@@ -33,6 +33,8 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
                     Feature.createViewTemporary);
             validateFeature(c, createView.isMaterialized(), Feature.createViewMaterialized);
             validateName(c, NamedObject.view, createView.getView().getFullyQualifiedName(), false);
+            validateFeature(c, createView.getViewCommentOptions() != null,
+                    Feature.createViewWithComment);
         }
         SelectValidator v = getValidator(SelectValidator.class);
         Select select = createView.getSelect();

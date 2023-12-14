@@ -483,6 +483,12 @@ public enum Feature {
      * SQL "CREATE MATERIALIZED VIEW" statement is allowed
      */
     createViewMaterialized,
+
+    /**
+     * SQL "CREATE VIEW(x comment 'x', y comment 'y') comment 'view'" statement is allowed
+     */
+    createViewWithComment,
+
     /**
      * SQL "CREATE TABLE" statement is allowed
      *
