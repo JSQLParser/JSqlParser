@@ -1771,7 +1771,7 @@ Column Column() #Column :
 }
 {
     data = RelObjectNameList()
-    [ <K_COMMENT> tk=<S_CHAR_LITERAL> ]
+    [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
     [ "." <K_NEXTVAL> { data.add("nextval"); } ]
 
