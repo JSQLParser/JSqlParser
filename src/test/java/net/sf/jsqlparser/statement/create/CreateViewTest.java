@@ -216,6 +216,14 @@ public class CreateViewTest {
         String stmt =
                 "CREATE VIEW v14(c1 COMMENT 'comment1', c2 COMMENT 'comment2') AS SELECT c1, C2 FROM t1 WITH READ ONLY";
         assertSqlCanBeParsedAndDeparsed(stmt);
+
+        String stmt2 =
+                "CREATE VIEW v14(c1 COMMENT 'comment1', c2) AS SELECT c1, C2 FROM t1 WITH READ ONLY";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
+
+        String stmt3 =
+                "CREATE VIEW v14(c1, c2) COMMENT = 'view' AS SELECT c1, C2 FROM t1 WITH READ ONLY";
+        assertSqlCanBeParsedAndDeparsed(stmt3);
     }
 
     @Test
