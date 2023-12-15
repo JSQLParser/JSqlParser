@@ -404,7 +404,7 @@ public class AlterExpression implements Serializable {
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
-            "PMD.ExcessiveMethodLength"})
+            "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
     public String toString() {
 
         StringBuilder b = new StringBuilder();
@@ -413,10 +413,16 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (getOldIndex() != null) {
             b.append("RENAME");
-            if (operation == AlterOperation.RENAME_INDEX) {
-                b.append(" INDEX ");
-            } else if (operation == AlterOperation.RENAME_CONSTRAINT) {
-                b.append(" CONSTRAINT ");
+            switch (operation) {
+                case RENAME_KEY:
+                    b.append(" KEY ");
+                    break;
+                case RENAME_INDEX:
+                    b.append(" INDEX ");
+                    break;
+                case RENAME_CONSTRAINT:
+                    b.append(" CONSTRAINT ");
+                    break;
             }
             b.append(getOldIndex().getName()).append(" TO ").append(getIndex().getName());
         } else if (operation == AlterOperation.RENAME_TABLE) {

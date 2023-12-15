@@ -6469,7 +6469,11 @@ AlterExpression AlterExpression():
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
       |
-      LOOKAHEAD(2)(<K_RENAME> ((<K_INDEX> | <K_KEY>) { alterExp.setOperation(AlterOperation.RENAME_INDEX); } | <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }) 
+      LOOKAHEAD(2)
+           (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);} 
+                    | <K_KEY> {alterExp.setOperation(AlterOperation.RENAME_KEY);}) 
+                    | <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
+           ) 
            (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>){
               alterExp.setOldIndex(new Index().withName(tk.image));
            } 

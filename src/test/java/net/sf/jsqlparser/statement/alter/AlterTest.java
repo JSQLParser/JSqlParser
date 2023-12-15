@@ -88,6 +88,8 @@ public class AlterTest {
         // MySQL: see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE cers_record_10 RENAME INDEX idx_cers_record_1_gmtcreate TO idx_cers_record_10_gmtcreate");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE cers_record_10 RENAME KEY k_cers_record_1_gmtcreate TO k_cers_record_10_gmtcreate");
         // PostgreSQL: see https://www.postgresql.org/docs/current/sql-altertable.html
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE cers_record_10 RENAME CONSTRAINT cst_cers_record_1_gmtcreate TO cst_cers_record_10_gmtcreate");
