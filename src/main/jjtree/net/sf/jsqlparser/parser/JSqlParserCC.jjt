@@ -6460,14 +6460,29 @@ AlterExpression AlterExpression():
                     <K_TO>
                     (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk2.image); }
       |
-      (
+      LOOKAHEAD(2)(
         <K_RENAME> <K_TO> {alterExp.setOperation(AlterOperation.RENAME_TABLE);}
-        (tk2=<S_IDENTIFIER>    | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
+        (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
       )
       |
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
+      |
+      LOOKAHEAD(2)
+           (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);} 
+                    | <K_KEY> {alterExp.setOperation(AlterOperation.RENAME_KEY);}) 
+                    | <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
+           ) 
+           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>){
+              alterExp.setOldIndex(new Index().withName(tk.image));
+           } 
+           <K_TO>
+           (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>){
+              index = new Index().withName(tk2.image);
+              alterExp.setIndex(index);
+           } 
+          )
       |
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
