@@ -9,18 +9,27 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
+import static java.util.stream.Collectors.joining;
+
+import java.util.*;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
-
-import java.util.*;
-import static java.util.stream.Collectors.joining;
 
 public class CreateIndex implements Statement {
 
     private Table table;
     private Index index;
     private List<String> tailParameters;
+    private boolean indexTypeBeforeOn = false;
+
+    public boolean isIndexTypeBeforeOn() {
+        return indexTypeBeforeOn;
+    }
+
+    public void setIndexTypeBeforeOn(boolean indexTypeBeforeOn) {
+        this.indexTypeBeforeOn = indexTypeBeforeOn;
+    }
 
     public boolean isUsingIfNotExists() {
         return usingIfNotExists;
@@ -78,10 +87,16 @@ public class CreateIndex implements Statement {
             buffer.append("IF NOT EXISTS ");
         }
         buffer.append(index.getName());
+
+        if (index.getUsing() != null && isIndexTypeBeforeOn()) {
+            buffer.append(" USING ");
+            buffer.append(index.getUsing());
+        }
+
         buffer.append(" ON ");
         buffer.append(table.getFullyQualifiedName());
 
-        if (index.getUsing() != null) {
+        if (index.getUsing() != null && !isIndexTypeBeforeOn()) {
             buffer.append(" USING ");
             buffer.append(index.getUsing());
         }
