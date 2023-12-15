@@ -5302,9 +5302,21 @@ CreateIndex CreateIndex():
     <K_INDEX>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createIndex.setUsingIfNotExists(true);} ]
     index = Index() { index.setType(parameter.isEmpty() ? null : parameter.get(0)); }
-
-    <K_ON> table=Table()
-    [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
+    (
+        LOOKAHEAD(3)(
+            <K_ON> table=Table()
+            [ <K_USING> using=<S_IDENTIFIER> { index.setUsing(using.image); } ]
+        )
+        |
+        (
+            [ <K_USING> using=<S_IDENTIFIER> { 
+                    index.setUsing(using.image);
+                    createIndex.setIndexTypeBeforeOn(true);
+                } 
+            ]
+            <K_ON> table=Table()
+        )
+    )
     colNames = ColumnNamesWithParamsList()
     ( parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {

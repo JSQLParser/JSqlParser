@@ -9,17 +9,16 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.io.StringReader;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import org.junit.jupiter.api.Test;
-
-import java.io.StringReader;
-import java.util.List;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CreateIndexTest {
 
@@ -140,6 +139,13 @@ public class CreateIndexTest {
     void testIfNotExistsIssue1861() throws JSQLParserException {
         String sqlStr =
                 "CREATE INDEX IF NOT EXISTS test_test_idx ON test.test USING btree (\"time\")";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateIndexIssue1814() throws JSQLParserException {
+        String sqlStr =
+                "CREATE INDEX idx_operationlog_operatetime_regioncode USING BTREE ON operation_log (operate_time,region_biz_code)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
