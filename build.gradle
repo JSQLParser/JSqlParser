@@ -306,7 +306,7 @@ spotless {
     // ratchetFrom 'master'
 
     // Enable diff check
-    diffCheck('HEAD')
+    spotlessDiffCheck('HEAD')
 
     format 'misc', {
         // define the files to apply `misc` to
