@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 public enum AlterOperation {
-    ADD, ALTER, DROP, DROP_PRIMARY_KEY, DROP_UNIQUE, DROP_FOREIGN_KEY, MODIFY, CHANGE, ALGORITHM, RENAME, RENAME_TABLE, COMMENT, UNSPECIFIC;
+    ADD, ALTER, DROP, DROP_PRIMARY_KEY, DROP_UNIQUE, DROP_FOREIGN_KEY, MODIFY, CHANGE, ALGORITHM, RENAME, RENAME_TABLE, RENAME_INDEX, RENAME_CONSTRAINT, COMMENT, UNSPECIFIC;
 
     public static AlterOperation from(String operation) {
         return Enum.valueOf(AlterOperation.class, operation.toUpperCase());
