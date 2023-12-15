@@ -4,10 +4,14 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+    types:
+      - closed
 
 permissions: write-all
 jobs:
   docs:
+    if_merged:
+      if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
