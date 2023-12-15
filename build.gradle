@@ -303,10 +303,7 @@ checkstyle {
 
 spotless {
     // optional: limit format enforcement to just the files changed by this feature branch
-    // ratchetFrom 'master'
-
-    // Enable diff check
-    spotlessDiffCheck('HEAD')
+    ratchetFrom 'origin/master'
 
     format 'misc', {
         // define the files to apply `misc` to
