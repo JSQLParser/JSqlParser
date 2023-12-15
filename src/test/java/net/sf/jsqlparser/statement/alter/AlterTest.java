@@ -874,6 +874,23 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddIndexWithComment1906() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE `student` ADD KEY `idx_name` (`name`) COMMENT 'name'");
+    }
+
+    @Test
+    public void testAlterTableAddIndexWithComment2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE (id) COMMENT 'name'");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key UNIQUE KEY (c1, c2) COMMENT 'name'");
+
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE team_phases ADD CONSTRAINT team_phases_id_key PRIMARY KEY (id) COMMENT 'name'");
+    }
+
+    @Test
     public void testAlterTableDropMultipleColumnsIfExistsWithParams() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE test DROP COLUMN IF EXISTS name CASCADE, DROP COLUMN IF EXISTS surname CASCADE");

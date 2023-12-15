@@ -26,6 +26,7 @@ public class Index implements Serializable {
     private List<ColumnParams> columns;
     private final List<String> name = new ArrayList<>();
     private List<String> idxSpec;
+    private String commentText;
 
     public List<String> getColumnsNames() {
         return columns.stream()
@@ -142,6 +143,11 @@ public class Index implements Serializable {
             return head;
         }
 
+        // MYSQL: ALTER TABLE ADD INDEX COMMENT 'comment'
+        if (getCommentText() != null) {
+            return head + " " + tail + " COMMENT " + getCommentText();
+        }
+
         return head + " " + tail;
     }
 
@@ -191,5 +197,13 @@ public class Index implements Serializable {
         public String toString() {
             return columnName + (params != null ? " " + String.join(" ", params) : "");
         }
+    }
+
+    public String getCommentText() {
+        return commentText;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
     }
 }
