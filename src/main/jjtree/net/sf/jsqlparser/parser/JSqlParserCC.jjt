@@ -6160,6 +6160,18 @@ List<ConstraintState> AlterExpressionConstraintState():
     }
 }
 
+Index IndexWithComment(Index index):
+{
+    Token tk = null;
+}
+{
+    <K_COMMENT> tk=<S_CHAR_LITERAL> {
+        index.setCommentText(tk.image);
+    }
+    {
+        return index;
+    }
+}
 
 /**
 * This production needs refactoring to multiple smaller productions. The target class should
@@ -6170,7 +6182,6 @@ AlterExpression AlterExpression():
     AlterExpression alterExp = new AlterExpression();
     Token tk;
     Token tk2 = null;
-    Token tk3 = null;
     String sk3 = null;
     String sk4 = null;
     ColDataType dataType;
@@ -6213,10 +6224,7 @@ AlterExpression AlterExpression():
                     index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                     alterExp.setIndex(index);
                   }
-                  [ <K_COMMENT> tk2=<S_CHAR_LITERAL> {
-                      index.setCommentText(tk2.image);
-                      alterExp.setIndex(index); 
-                  }]
+                  [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                   [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
                 )
@@ -6262,10 +6270,7 @@ AlterExpression AlterExpression():
                 ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
                     [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                    [ <K_COMMENT> tk2=<S_CHAR_LITERAL> {
-                        index.setCommentText(tk2.image);
-                        alterExp.setIndex(index); 
-                    }]
+                    [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
                 //following two choices regarding foreign keys should be merged
@@ -6327,10 +6332,7 @@ AlterExpression AlterExpression():
                         }
                         constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                         [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                        [ <K_COMMENT> tk3=<S_CHAR_LITERAL> {
-                            index.setCommentText(tk3.image);
-                            alterExp.setIndex(index); 
-                        }]
+                        [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                     )
                     |
                     (
@@ -6352,10 +6354,7 @@ AlterExpression AlterExpression():
                           }
                           constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                           [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                          [ <K_COMMENT> tk3=<S_CHAR_LITERAL> {
-                              index.setCommentText(tk3.image);
-                              alterExp.setIndex(index); 
-                          }]
+                          [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                     )
                     |
                     (
@@ -6419,9 +6418,9 @@ AlterExpression AlterExpression():
             (
                ( tk=<K_INDEX> | tk=<K_KEY> )
                ( tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER> ) {
-                       index = new Index().withType(tk.image).withName(tk2.image);
-                       alterExp.setIndex(index);
-                   }
+                   index = new Index().withType(tk.image).withName(tk2.image);
+                   alterExp.setIndex(index);
+               }
             )
             |
             (
