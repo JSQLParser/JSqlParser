@@ -70,13 +70,13 @@ public class AlterTest {
 
     @Test
     public void testAlterTableBackBrackets() throws JSQLParserException {
-        String sql = "ALTER TABLE tablename add column (field string comment 'aaaaa')";
+        String sql = "ALTER TABLE tablename add column (field  string comment 'aaaaa')";
         Statement statement = CCJSqlParserUtil.parse(sql);
         Alter alter = (Alter) statement;
         System.out.println(alter.toString());
 
         String sql2 =
-                "ALTER TABLE tablename add column (field string comment 'aaaaa', field2 string comment 'bbbbb');";
+                "ALTER TABLE tablename add column (field  string comment 'aaaaa', field2 string comment 'bbbbb');";
         Statement statement2 = CCJSqlParserUtil.parse(sql2);
         Alter alter2 = (Alter) statement2;
         System.out.println(alter2.toString());
