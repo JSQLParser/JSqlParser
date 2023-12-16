@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.LinkedList;
+import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -18,11 +20,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Add aliases to every column and expression selected by a select - statement. Existing aliases are
@@ -111,5 +111,10 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
         lateralSubSelect.getSelect().accept(this);
+    }
+
+    @Override
+    public void visit(TableStatement tableStatement) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

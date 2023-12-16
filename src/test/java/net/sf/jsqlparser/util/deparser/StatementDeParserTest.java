@@ -9,6 +9,13 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -26,6 +33,7 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
@@ -36,14 +44,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 
 @ExtendWith(MockitoExtension.class)
 public class StatementDeParserTest {
@@ -56,8 +56,12 @@ public class StatementDeParserTest {
 
     private StatementDeParser statementDeParser;
 
+    private TableStatementDeParser tableStatementDeParser;
+
     @BeforeEach
     public void setUp() {
+        tableStatementDeParser =
+                new TableStatementDeParser(expressionDeParser, new StringBuilder());
         statementDeParser =
                 new StatementDeParser(expressionDeParser, selectDeParser, new StringBuilder());
     }
@@ -324,6 +328,13 @@ public class StatementDeParserTest {
         String sqlStr = "select count(*) from some_table";
         PlainSelect selectBody = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
         selectBody.accept(new SelectDeParser());
+    }
+
+    @Test
+    public void testIssue1836() throws JSQLParserException {
+        String sqlStr = "TABLE columns ORDER BY column_name LIMIT 10 OFFSET 10;";
+        TableStatement tableStatement = (TableStatement) CCJSqlParserUtil.parse(sqlStr);
+        tableStatement.accept(tableStatementDeParser);
     }
 
     @Test

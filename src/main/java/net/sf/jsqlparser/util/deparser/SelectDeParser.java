@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static java.util.stream.Collectors.joining;
+
+import java.util.Iterator;
+import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -40,15 +44,11 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.Iterator;
-import java.util.List;
-
-import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
@@ -587,6 +587,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     public void visit(LateralSubSelect lateralSubSelect) {
         buffer.append(lateralSubSelect.getPrefix());
         visit((ParenthesedSelect) lateralSubSelect);
+    }
+
+    @Override
+    public void visit(TableStatement tableStatement) {
+        new TableStatementDeParser(expressionVisitor, buffer).deParse(tableStatement);
     }
 
     @Override

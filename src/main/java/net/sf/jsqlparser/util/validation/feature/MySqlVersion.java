@@ -60,6 +60,7 @@ public enum MySqlVersion implements Version {
                     Feature.insert,
                     Feature.insertValues,
                     Feature.values,
+                    Feature.tableStatement,
                     Feature.insertFromSelect, Feature.insertUseSet, Feature.insertModifierPriority,
                     Feature.insertModifierIgnore, Feature.insertUseDuplicateKeyUpdate,
 

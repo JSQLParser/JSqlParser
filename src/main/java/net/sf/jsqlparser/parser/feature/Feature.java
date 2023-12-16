@@ -307,6 +307,11 @@ public enum Feature {
     values,
 
     /**
+     * SQL "TABLE table_name [ORDER BY column_name] [LIMIT number [OFFSET number]]“
+     */
+    tableStatement,
+
+    /**
      * SQL "UPDATE" statement is allowed
      *
      * @see Update
