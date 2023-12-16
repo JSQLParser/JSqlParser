@@ -620,8 +620,8 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withForMode(ForMode forUpdate) {
-        this.setForMode(forUpdate);
+    public PlainSelect withForMode(ForMode forMode) {
+        this.setForMode(forMode);
         return this;
     }
 
