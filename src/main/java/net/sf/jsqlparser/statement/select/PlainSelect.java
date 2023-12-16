@@ -625,7 +625,7 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withForModeTable(Table forUpdateTable) {
+    public PlainSelect withForUpdateTable(Table forUpdateTable) {
         this.setForUpdateTable(forUpdateTable);
         return this;
     }
