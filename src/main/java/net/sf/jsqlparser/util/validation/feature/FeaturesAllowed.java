@@ -108,7 +108,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.updateJoins,
             Feature.updateFrom, Feature.updateLimit, Feature.updateOrderBy, Feature.updateReturning,
             Feature.updateUseSelect)
-                    .add(SELECT).unmodifyable();
+            .add(SELECT).unmodifyable();
 
     /**
      * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
@@ -118,7 +118,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
                     Feature.deleteLimit, Feature.deleteOrderBy, Feature.deleteTables,
                     Feature.deleteReturningExpressionList,
                     Feature.truncate)
-                            .add(SELECT).unmodifyable();
+                    .add(SELECT).unmodifyable();
 
     /**
      * all {@link Feature}' for SQL MERGE other similar commands
@@ -155,7 +155,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterView, Feature.alterIndex)
-                            .unmodifyable();
+                    .unmodifyable();
 
     /**
      * all "DROP" {@link Feature}'s
@@ -166,7 +166,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
                     Feature.dropTableIfExists,
                     Feature.dropIndexIfExists, Feature.dropViewIfExists, Feature.dropSchemaIfExists,
                     Feature.dropSequenceIfExists)
-                            .unmodifyable();
+                    .unmodifyable();
 
     /**
      * all DDL {@link Feature}'s
