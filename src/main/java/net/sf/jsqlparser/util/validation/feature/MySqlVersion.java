@@ -38,6 +38,7 @@ public enum MySqlVersion implements Version {
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,
                     Feature.selectForUpdateSkipLocked,
+                    Feature.selectForShare,
                     Feature.distinct,
 
                     Feature.setOperation,

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.ForMode;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.Join;
@@ -85,8 +86,15 @@ public class SelectValidator extends AbstractValidator<SelectItem>
                     isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
-            if (plainSelect.isForUpdate()) {
+            if (plainSelect.getForMode() != null) {
                 validateFeature(c, Feature.selectForUpdate);
+                validateFeature(c, plainSelect.getForMode() == ForMode.KEY_SHARE,
+                        Feature.selectForKeyShare);
+                validateFeature(c, plainSelect.getForMode() == ForMode.NO_KEY_UPDATE,
+                        Feature.selectForNoKeyUpdate);
+                validateFeature(c, plainSelect.getForMode() == ForMode.SHARE,
+                        Feature.selectForShare);
+
                 validateOptionalFeature(c, plainSelect.getForUpdateTable(),
                         Feature.selectForUpdateOfTable);
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);

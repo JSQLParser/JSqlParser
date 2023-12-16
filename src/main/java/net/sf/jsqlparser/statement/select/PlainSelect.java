@@ -9,12 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.schema.Table;
+import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +18,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.schema.Table;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -46,7 +45,7 @@ public class PlainSelect extends Select {
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private OracleHint oracleHint = null;
-    private boolean forUpdate = false;
+    private ForMode forMode = null;
     private Table forUpdateTable = null;
     private boolean skipLocked;
     private Wait wait;
@@ -312,12 +311,12 @@ public class PlainSelect extends Select {
         this.oracleHierarchical = oracleHierarchical;
     }
 
-    public boolean isForUpdate() {
-        return forUpdate;
+    public ForMode getForMode() {
+        return forMode;
     }
 
-    public void setForUpdate(boolean forUpdate) {
-        this.forUpdate = forUpdate;
+    public void setForMode(ForMode forMode) {
+        this.forMode = forMode;
     }
 
     public Table getForUpdateTable() {
@@ -486,8 +485,9 @@ public class PlainSelect extends Select {
             if (emitChanges) {
                 builder.append(" EMIT CHANGES");
             }
-            if (isForUpdate()) {
-                builder.append(" FOR UPDATE");
+            if (getForMode() != null) {
+                builder.append(" FOR ");
+                builder.append(getForMode().getValue());
 
                 if (forUpdateTable != null) {
                     builder.append(" OF ").append(forUpdateTable);
@@ -620,8 +620,8 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withForUpdate(boolean forUpdate) {
-        this.setForUpdate(forUpdate);
+    public PlainSelect withForMode(ForMode forMode) {
+        this.setForMode(forMode);
         return this;
     }
 

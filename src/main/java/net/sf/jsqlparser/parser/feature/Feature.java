@@ -244,6 +244,22 @@ public enum Feature {
      * "FOR UPDATE"
      */
     selectForUpdate,
+
+    /**
+     * "FOR SHARE"
+     */
+    selectForShare,
+
+    /**
+     * "FOR KEY SHARE"
+     */
+    selectForKeyShare,
+
+    /**
+     * "NO KEY UPDATE"
+     */
+    selectForNoKeyUpdate,
+
     /**
      * "FOR UPDATE OF table"
      */

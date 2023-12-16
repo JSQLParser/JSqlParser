@@ -73,6 +73,9 @@ public enum PostgresqlVersion implements Version {
                     Feature.orderBy,
                     Feature.orderByNullOrdering,
 
+                    Feature.selectForNoKeyUpdate,
+                    Feature.selectForKeyShare,
+                    Feature.selectForShare,
                     Feature.selectForUpdate,
                     Feature.selectForUpdateOfTable,
                     Feature.selectForUpdateNoWait,

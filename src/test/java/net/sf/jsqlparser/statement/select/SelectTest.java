@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -4805,6 +4806,27 @@ public class SelectTest {
     }
 
     @Test
+    public void testIssue1878() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR SHARE");
+        // PostgreSQL ONLY
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR NO KEY UPDATE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR KEY SHARE");
+    }
+
+    @Test
+    public void testIssue1878ViaJava() throws JSQLParserException {
+        String expectedSQLStr = "SELECT * FROM MY_TABLE1 FOR SHARE";
+
+        // Step 1: generate the Java Object Hierarchy for
+        Table table = new Table().withName("MY_TABLE1");
+
+        PlainSelect select = new PlainSelect().addSelectItem(new AllColumns())
+                .withFromItem(table).withForMode(ForMode.KEY_SHARE).withForMode(ForMode.SHARE);
+
+        Assertions.assertEquals(expectedSQLStr, select.toString());
+    }
+
+    @Test
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )",
@@ -5564,7 +5586,7 @@ public class SelectTest {
 
         Select select = (Select) CCJSqlParserUtil.parse(sql);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertTrue(plainSelect.isForUpdate());
+        assertSame(plainSelect.getForMode(), ForMode.UPDATE);
         assertTrue(plainSelect.isSkipLocked());
     }
 
@@ -5576,7 +5598,7 @@ public class SelectTest {
 
         Select select = (Select) CCJSqlParserUtil.parse(sql);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertTrue(plainSelect.isForUpdate());
+        assertSame(plainSelect.getForMode(), ForMode.UPDATE);
         assertFalse(plainSelect.isSkipLocked());
     }
 
@@ -5588,7 +5610,7 @@ public class SelectTest {
 
         Select select = (Select) CCJSqlParserUtil.parse(sql);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertFalse(plainSelect.isForUpdate());
+        assertNull(plainSelect.getForMode());
         assertFalse(plainSelect.isSkipLocked());
     }
 
