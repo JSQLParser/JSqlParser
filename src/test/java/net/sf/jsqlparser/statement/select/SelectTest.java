@@ -5610,7 +5610,7 @@ public class SelectTest {
 
         Select select = (Select) CCJSqlParserUtil.parse(sql);
         PlainSelect plainSelect = (PlainSelect) select;
-        assertNotNull(plainSelect.getForMode());
+        assertNull(plainSelect.getForMode());
         assertFalse(plainSelect.isSkipLocked());
     }
 
