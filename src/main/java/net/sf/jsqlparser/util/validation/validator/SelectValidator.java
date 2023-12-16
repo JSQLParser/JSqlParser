@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -85,8 +86,13 @@ public class SelectValidator extends AbstractValidator<SelectItem>
                     isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
-            if (plainSelect.isForUpdate()) {
+            if (plainSelect.isForUpdate() || plainSelect.isForKeyShare()
+                    || plainSelect.isForNoKeyUpdate() || plainSelect.isForShare()) {
                 validateFeature(c, Feature.selectForUpdate);
+                validateFeature(c, plainSelect.isForKeyShare(), Feature.selectForKeyShare);
+                validateFeature(c, plainSelect.isForNoKeyUpdate(), Feature.selectForNoKeyUpdate);
+                validateFeature(c, plainSelect.isForShare(), Feature.selectForShare);
+
                 validateOptionalFeature(c, plainSelect.getForUpdateTable(),
                         Feature.selectForUpdateOfTable);
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);

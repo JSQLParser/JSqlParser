@@ -268,8 +268,25 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(plainSelect.getWindowDefinitions().stream()
                     .map(WindowDefinition::toString).collect(joining(", ")));
         }
-        if (plainSelect.isForUpdate()) {
-            buffer.append(" FOR UPDATE");
+        if (plainSelect.isForUpdate() || plainSelect.isForShare() || plainSelect.isForNoKeyUpdate()
+                || plainSelect.isForKeyShare()) {
+            buffer.append(" FOR ");
+
+            String type = null;
+            if (plainSelect.isForUpdate()) {
+                type = "UPDATE";
+            }
+            if (plainSelect.isForShare()) {
+                type = "SHARE";
+            }
+            if (plainSelect.isForKeyShare()) {
+                type = "KEY SHARE";
+            }
+            if (plainSelect.isForNoKeyUpdate()) {
+                type = "NO KEY UPDATE";
+            }
+            buffer.append(type);
+
             if (plainSelect.getForUpdateTable() != null) {
                 buffer.append(" OF ").append(plainSelect.getForUpdateTable());
             }

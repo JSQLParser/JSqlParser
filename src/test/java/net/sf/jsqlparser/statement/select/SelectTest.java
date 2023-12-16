@@ -4805,6 +4805,14 @@ public class SelectTest {
     }
 
     @Test
+    public void testIssue1878() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR SHARE");
+        // PostgreSQL ONLY
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR NO KEY UPDATE");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM MY_TABLE1 FOR KEY SHARE");
+    }
+
+    @Test
     public void testKeyWordView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT ma.m_a_id, ma.anounsment, ma.max_view, ma.end_date, ma.view FROM member_anounsment as ma WHERE ( ( (ma.end_date > now() ) AND (ma.max_view >= ma.view) ) AND ( (ma.member_id='xxx') ) )",

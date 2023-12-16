@@ -9,12 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.schema.Table;
+import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +18,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.schema.Table;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -47,6 +46,9 @@ public class PlainSelect extends Select {
     private OracleHierarchicalExpression oracleHierarchical = null;
     private OracleHint oracleHint = null;
     private boolean forUpdate = false;
+    private boolean forShare = false;
+    private boolean forNoKeyUpdate = false;
+    private boolean forKeyShare = false;
     private Table forUpdateTable = null;
     private boolean skipLocked;
     private Wait wait;
@@ -486,8 +488,22 @@ public class PlainSelect extends Select {
             if (emitChanges) {
                 builder.append(" EMIT CHANGES");
             }
-            if (isForUpdate()) {
-                builder.append(" FOR UPDATE");
+            if (isForUpdate() || isForShare() || isForKeyShare() || isForNoKeyUpdate()) {
+                builder.append(" FOR ");
+                String type = null;
+                if (isForUpdate()) {
+                    type = "UPDATE";
+                }
+                if (isForShare()) {
+                    type = "SHARE";
+                }
+                if (isForKeyShare()) {
+                    type = "KEY SHARE";
+                }
+                if (isForNoKeyUpdate()) {
+                    type = "NO KEY UPDATE";
+                }
+                builder.append(type);
 
                 if (forUpdateTable != null) {
                     builder.append(" OF ").append(forUpdateTable);
@@ -683,6 +699,30 @@ public class PlainSelect extends Select {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
         return this.withJoins(collection);
+    }
+
+    public boolean isForShare() {
+        return forShare;
+    }
+
+    public void setForShare(boolean forShare) {
+        this.forShare = forShare;
+    }
+
+    public boolean isForNoKeyUpdate() {
+        return forNoKeyUpdate;
+    }
+
+    public void setForNoKeyUpdate(boolean forNoKeyUpdate) {
+        this.forNoKeyUpdate = forNoKeyUpdate;
+    }
+
+    public boolean isForKeyShare() {
+        return forKeyShare;
+    }
+
+    public void setForKeyShare(boolean forKeyShare) {
+        this.forKeyShare = forKeyShare;
     }
 
     public <E extends FromItem> E getFromItem(Class<E> type) {
