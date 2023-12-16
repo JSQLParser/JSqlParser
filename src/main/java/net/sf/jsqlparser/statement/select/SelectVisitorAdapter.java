@@ -41,4 +41,9 @@ public class SelectVisitorAdapter implements SelectVisitor {
     public void visit(LateralSubSelect lateralSubSelect) {
 
     }
+
+    @Override
+    public void visit(TableStatement tableStatement) {
+
+    }
 }

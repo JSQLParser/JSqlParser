@@ -676,6 +676,8 @@ Statement SingleStatement() :
             |
             stm = Select()
             |
+            stm = TableStatement()
+            |
             LOOKAHEAD(3) stm = Upsert()
             |
             LOOKAHEAD(2) stm = Alter()
@@ -2000,6 +2002,24 @@ Select Select() #Select:
         linkAST(select, jjtThis);
         return select.withWithItemsList(with);
     }
+}
+
+TableStatement TableStatement():
+{
+    Table table = null;
+    List<OrderByElement> orderByElements = null;
+    Limit limit = null;
+    Offset offset = null;
+    TableStatement tableStatement = new TableStatement(); 
+}{
+    <K_TABLE>
+    table = Table()
+    { tableStatement.setTable(table); }
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { tableStatement.setOrderByElements(orderByElements); } ]
+    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() { tableStatement.setLimit(limit);} ]
+    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { tableStatement.setOffset(offset);} ]
+    { return tableStatement; }
+    /* Support operationList */
 }
 
 ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:

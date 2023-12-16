@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.LinkedList;
+import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -19,11 +21,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Connect all selected expressions with a binary expression. Out of select a,b from table one gets
@@ -103,4 +103,8 @@ public abstract class ConnectExpressionsVisitor implements SelectVisitor, Select
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public void visit(TableStatement tableStatement) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

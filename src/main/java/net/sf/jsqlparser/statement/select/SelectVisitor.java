@@ -22,4 +22,6 @@ public interface SelectVisitor {
     void visit(Values aThis);
 
     void visit(LateralSubSelect lateralSubSelect);
+
+    void visit(TableStatement tableStatement);
 }
