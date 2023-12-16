@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;

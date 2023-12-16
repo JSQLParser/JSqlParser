@@ -45,10 +45,7 @@ public class PlainSelect extends Select {
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private OracleHint oracleHint = null;
-    private boolean forUpdate = false;
-    private boolean forShare = false;
-    private boolean forNoKeyUpdate = false;
-    private boolean forKeyShare = false;
+    private ForMode forMode = null;
     private Table forUpdateTable = null;
     private boolean skipLocked;
     private Wait wait;
@@ -314,12 +311,12 @@ public class PlainSelect extends Select {
         this.oracleHierarchical = oracleHierarchical;
     }
 
-    public boolean isForUpdate() {
-        return forUpdate;
+    public ForMode getForMode() {
+        return forMode;
     }
 
-    public void setForUpdate(boolean forUpdate) {
-        this.forUpdate = forUpdate;
+    public void setForMode(ForMode forMode) {
+        this.forMode = forMode;
     }
 
     public Table getForUpdateTable() {
@@ -488,22 +485,9 @@ public class PlainSelect extends Select {
             if (emitChanges) {
                 builder.append(" EMIT CHANGES");
             }
-            if (isForUpdate() || isForShare() || isForKeyShare() || isForNoKeyUpdate()) {
+            if (getForMode() != null) {
                 builder.append(" FOR ");
-                String type = null;
-                if (isForUpdate()) {
-                    type = "UPDATE";
-                }
-                if (isForShare()) {
-                    type = "SHARE";
-                }
-                if (isForKeyShare()) {
-                    type = "KEY SHARE";
-                }
-                if (isForNoKeyUpdate()) {
-                    type = "NO KEY UPDATE";
-                }
-                builder.append(type);
+                builder.append(getForMode().getValue());
 
                 if (forUpdateTable != null) {
                     builder.append(" OF ").append(forUpdateTable);
@@ -636,12 +620,12 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withForUpdate(boolean forUpdate) {
-        this.setForUpdate(forUpdate);
+    public PlainSelect withForMode(ForMode forUpdate) {
+        this.setForMode(forUpdate);
         return this;
     }
 
-    public PlainSelect withForUpdateTable(Table forUpdateTable) {
+    public PlainSelect withForModeTable(Table forUpdateTable) {
         this.setForUpdateTable(forUpdateTable);
         return this;
     }
@@ -699,30 +683,6 @@ public class PlainSelect extends Select {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
         return this.withJoins(collection);
-    }
-
-    public boolean isForShare() {
-        return forShare;
-    }
-
-    public void setForShare(boolean forShare) {
-        this.forShare = forShare;
-    }
-
-    public boolean isForNoKeyUpdate() {
-        return forNoKeyUpdate;
-    }
-
-    public void setForNoKeyUpdate(boolean forNoKeyUpdate) {
-        this.forNoKeyUpdate = forNoKeyUpdate;
-    }
-
-    public boolean isForKeyShare() {
-        return forKeyShare;
-    }
-
-    public void setForKeyShare(boolean forKeyShare) {
-        this.forKeyShare = forKeyShare;
     }
 
     public <E extends FromItem> E getFromItem(Class<E> type) {

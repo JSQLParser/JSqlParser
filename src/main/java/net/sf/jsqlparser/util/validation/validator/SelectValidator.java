@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -18,6 +17,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.ForMode;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.Join;
@@ -86,12 +86,14 @@ public class SelectValidator extends AbstractValidator<SelectItem>
                     isNotEmpty(plainSelect.getOrderByElements()) && plainSelect.isOracleSiblings(),
                     Feature.oracleOrderBySiblings);
 
-            if (plainSelect.isForUpdate() || plainSelect.isForKeyShare()
-                    || plainSelect.isForNoKeyUpdate() || plainSelect.isForShare()) {
+            if (plainSelect.getForMode() != null) {
                 validateFeature(c, Feature.selectForUpdate);
-                validateFeature(c, plainSelect.isForKeyShare(), Feature.selectForKeyShare);
-                validateFeature(c, plainSelect.isForNoKeyUpdate(), Feature.selectForNoKeyUpdate);
-                validateFeature(c, plainSelect.isForShare(), Feature.selectForShare);
+                validateFeature(c, plainSelect.getForMode() == ForMode.KEY_SHARE,
+                        Feature.selectForKeyShare);
+                validateFeature(c, plainSelect.getForMode() == ForMode.NO_KEY_UPDATE,
+                        Feature.selectForNoKeyUpdate);
+                validateFeature(c, plainSelect.getForMode() == ForMode.SHARE,
+                        Feature.selectForShare);
 
                 validateOptionalFeature(c, plainSelect.getForUpdateTable(),
                         Feature.selectForUpdateOfTable);
