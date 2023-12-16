@@ -10,8 +10,7 @@ on:
 permissions: write-all
 jobs:
   docs:
-    if_merged:
-      if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
