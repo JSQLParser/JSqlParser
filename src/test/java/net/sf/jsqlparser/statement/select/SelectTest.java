@@ -1480,20 +1480,20 @@ public class SelectTest {
 
         statement =
                 "SELECT a, (CASE " + "WHEN (CASE a WHEN 1 THEN 10 ELSE 20 END) > 15 THEN 'BBB' " + // "WHEN
-                                                                                                   // (SELECT
-                                                                                                   // c
-                                                                                                   // FROM
-                                                                                                   // tab2
-                                                                                                   // WHERE
-                                                                                                   // d
-                                                                                                   // =
-                                                                                                   // 2)
-                                                                                                   // =
-                                                                                                   // 3
-                                                                                                   // THEN
-                                                                                                   // 'AAA'
-                                                                                                   // "
-                                                                                                   // +
+                // (SELECT
+                // c
+                // FROM
+                // tab2
+                // WHERE
+                // d
+                // =
+                // 2)
+                // =
+                // 3
+                // THEN
+                // 'AAA'
+                // "
+                // +
                         "END) FROM tab1";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
@@ -2971,22 +2971,22 @@ public class SelectTest {
     public void testReservedKeyword() throws JSQLParserException {
         final String statement =
                 "SELECT cast, do, extract, first, following, last, materialized, nulls, partition, range, row, rows, siblings, value, xml FROM tableName"; // all
-                                                                                                                                                           // of
-                                                                                                                                                           // these
-                                                                                                                                                           // are
-                                                                                                                                                           // legal
-                                                                                                                                                           // in
-                                                                                                                                                           // SQL
-                                                                                                                                                           // server;
-                                                                                                                                                           // 'row'
-                                                                                                                                                           // and
-                                                                                                                                                           // 'rows'
-                                                                                                                                                           // are
-                                                                                                                                                           // not
-                                                                                                                                                           // legal
-                                                                                                                                                           // on
-                                                                                                                                                           // Oracle,
-                                                                                                                                                           // though;
+        // of
+        // these
+        // are
+        // legal
+        // in
+        // SQL
+        // server;
+        // 'row'
+        // and
+        // 'rows'
+        // are
+        // not
+        // legal
+        // on
+        // Oracle,
+        // though;
         final Select select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
     }
@@ -5773,6 +5773,17 @@ public class SelectTest {
     public void testNotNullInFilter() throws JSQLParserException {
         String stmt = "SELECT count(*) FILTER (WHERE i NOTNULL) AS filtered FROM tasks";
         assertSqlCanBeParsedAndDeparsed(stmt);
+    }
+
+    @Test
+    public void testIssue1907() throws JSQLParserException {
+        String stmt = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+
+        // since mysql 8.0.12
+        String stmt2 =
+                "SELECT * FROM (SELECT year, person, SUM(amount) FROM rentals GROUP BY year, person) t1 ORDER BY year DESC WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
     }
 
     @Test

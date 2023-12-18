@@ -9,10 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,10 +16,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
 public class GroupByElement implements Serializable {
     private ExpressionList groupByExpressions = new ExpressionList();
     private List<ExpressionList> groupingSets = new ArrayList<>();
+    // postgres rollup is an ExpressionList
+    private boolean mysqlWithRollup = false;
 
     public boolean isUsingBrackets() {
         return groupByExpressions.isUsingBrackets();
@@ -90,6 +91,10 @@ public class GroupByElement implements Serializable {
             b.append(")");
         }
 
+        if (isMysqlWithRollup()) {
+            b.append(" WITH ROLLUP");
+        }
+
         return b.toString();
     }
 
@@ -125,5 +130,18 @@ public class GroupByElement implements Serializable {
         List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
         collection.addAll(groupingSets);
         return this.withGroupingSets(collection);
+    }
+
+    public boolean isMysqlWithRollup() {
+        return mysqlWithRollup;
+    }
+
+    public void setMysqlWithRollup(boolean mysqlWithRollup) {
+        this.mysqlWithRollup = mysqlWithRollup;
+    }
+
+    public GroupByElement withMysqlWithRollup(boolean mysqlWithRollup) {
+        this.setMysqlWithRollup(mysqlWithRollup);
+        return this;
     }
 }
