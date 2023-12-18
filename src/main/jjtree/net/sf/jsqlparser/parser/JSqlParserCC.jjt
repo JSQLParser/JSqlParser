@@ -2979,7 +2979,6 @@ GroupByElement GroupByColumnReferences():
     GroupByElement groupBy = new GroupByElement();
     Expression expr;
     ExpressionList list;
-    ExpressionList rollupList;
     Token token;
 }
 {
@@ -3069,7 +3068,6 @@ OrderByElement OrderByElement():
 {
     columnReference = Expression()
     [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
-    [ LOOKAHEAD(2) <K_WITH> <K_ROLLUP> { orderByElement.setMysqlWithRollup(true); } ]
     [ LOOKAHEAD(2) <K_NULLS>
         [ LOOKAHEAD(2) (
             <K_FIRST> { orderByElement.setNullOrdering(OrderByElement.NullOrdering.NULLS_FIRST);  }
@@ -3078,6 +3076,7 @@ OrderByElement OrderByElement():
             )
         ]
     ]
+    [ LOOKAHEAD(2) <K_WITH> <K_ROLLUP> { orderByElement.setMysqlWithRollup(true); } ]
     {
         orderByElement.setExpression(columnReference);
         return orderByElement;
