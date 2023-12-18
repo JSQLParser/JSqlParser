@@ -218,6 +218,9 @@ public class Insert implements Statement {
             }
         }
         sql.append("INSERT ");
+        if (oracleHint != null) {
+            sql.append(oracleHint).append(" ");
+        }
         if (modifierPriority != null) {
             sql.append(modifierPriority.name()).append(" ");
         }

@@ -292,6 +292,9 @@ public class Update implements Statement {
             }
         }
         b.append("UPDATE ");
+        if (oracleHint != null) {
+            b.append(oracleHint).append(" ");
+        }
         if (modifierPriority != null) {
             b.append(modifierPriority.name()).append(" ");
         }

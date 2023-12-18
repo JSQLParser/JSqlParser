@@ -1478,24 +1478,21 @@ public class SelectTest {
         statement = "SELECT a FROM tab1 WHERE CASE b WHEN 1 THEN 2 + 3 ELSE 4 END > 34";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        statement =
-                "SELECT a, (CASE " + "WHEN (CASE a WHEN 1 THEN 10 ELSE 20 END) > 15 THEN 'BBB' " + // "WHEN
-                                                                                                   // (SELECT
-                                                                                                   // c
-                                                                                                   // FROM
-                                                                                                   // tab2
-                                                                                                   // WHERE
-                                                                                                   // d
-                                                                                                   // =
-                                                                                                   // 2)
-                                                                                                   // =
-                                                                                                   // 3
-                                                                                                   // THEN
-                                                                                                   // 'AAA'
-                                                                                                   // "
-                                                                                                   // +
-                        "END) FROM tab1";
-        assertSqlCanBeParsedAndDeparsed(statement);
+        statement = "SELECT  a\n"
+                + "        , ( CASE\n"
+                + "                    WHEN ( CASE\n"
+                + "                                        WHEN 1\n"
+                + "                                            THEN 10\n"
+                + "                                        ELSE 20\n"
+                + "                                    END ) > 15\n"
+                + "                        THEN 'BBB'\n"
+                + "                    WHEN (  SELECT c\n"
+                + "                            FROM tab2\n"
+                + "                            WHERE d = 2 ) = 3\n"
+                + "                        THEN 'AAA'\n"
+                + "                END )\n"
+                + "FROM tab1\n";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
     @Test

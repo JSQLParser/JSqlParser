@@ -188,7 +188,9 @@ public class Delete implements Statement {
         }
 
         b.append("DELETE");
-
+        if (oracleHint != null) {
+            b.append(oracleHint).append(" ");
+        }
         if (modifierPriority != null) {
             b.append(" ").append(modifierPriority.name());
         }
