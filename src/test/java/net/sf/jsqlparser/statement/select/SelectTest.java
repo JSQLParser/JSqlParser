@@ -5795,4 +5795,15 @@ public class SelectTest {
                 sqlStr, parser -> parser
                         .withBackslashEscapeCharacter(true));
     }
+
+    @Test
+    public void testIssue1907() throws JSQLParserException {
+        String stmt = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+
+        // since mysql 8.0.12
+        String stmt2 =
+                "SELECT * FROM (SELECT year, person, SUM(amount) FROM rentals GROUP BY year, person) t1 ORDER BY year DESC WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
+    }
 }
