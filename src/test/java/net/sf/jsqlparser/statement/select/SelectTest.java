@@ -1478,24 +1478,21 @@ public class SelectTest {
         statement = "SELECT a FROM tab1 WHERE CASE b WHEN 1 THEN 2 + 3 ELSE 4 END > 34";
         assertSqlCanBeParsedAndDeparsed(statement);
 
-        statement =
-                "SELECT a, (CASE " + "WHEN (CASE a WHEN 1 THEN 10 ELSE 20 END) > 15 THEN 'BBB' " + // "WHEN
-                // (SELECT
-                // c
-                // FROM
-                // tab2
-                // WHERE
-                // d
-                // =
-                // 2)
-                // =
-                // 3
-                // THEN
-                // 'AAA'
-                // "
-                // +
-                        "END) FROM tab1";
-        assertSqlCanBeParsedAndDeparsed(statement);
+        statement = "SELECT  a\n"
+                + "        , ( CASE\n"
+                + "                    WHEN ( CASE\n"
+                + "                                        WHEN 1\n"
+                + "                                            THEN 10\n"
+                + "                                        ELSE 20\n"
+                + "                                    END ) > 15\n"
+                + "                        THEN 'BBB'\n"
+                + "                    WHEN (  SELECT c\n"
+                + "                            FROM tab2\n"
+                + "                            WHERE d = 2 ) = 3\n"
+                + "                        THEN 'AAA'\n"
+                + "                END )\n"
+                + "FROM tab1\n";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
     @Test
@@ -2971,22 +2968,22 @@ public class SelectTest {
     public void testReservedKeyword() throws JSQLParserException {
         final String statement =
                 "SELECT cast, do, extract, first, following, last, materialized, nulls, partition, range, row, rows, siblings, value, xml FROM tableName"; // all
-        // of
-        // these
-        // are
-        // legal
-        // in
-        // SQL
-        // server;
-        // 'row'
-        // and
-        // 'rows'
-        // are
-        // not
-        // legal
-        // on
-        // Oracle,
-        // though;
+                                                                                                                                                           // of
+                                                                                                                                                           // these
+                                                                                                                                                           // are
+                                                                                                                                                           // legal
+                                                                                                                                                           // in
+                                                                                                                                                           // SQL
+                                                                                                                                                           // server;
+                                                                                                                                                           // 'row'
+                                                                                                                                                           // and
+                                                                                                                                                           // 'rows'
+                                                                                                                                                           // are
+                                                                                                                                                           // not
+                                                                                                                                                           // legal
+                                                                                                                                                           // on
+                                                                                                                                                           // Oracle,
+                                                                                                                                                           // though;
         final Select select = (Select) parserManager.parse(new StringReader(statement));
         assertStatementCanBeDeparsedAs(select, statement);
     }
@@ -5776,17 +5773,6 @@ public class SelectTest {
     }
 
     @Test
-    public void testIssue1907() throws JSQLParserException {
-        String stmt = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D WITH ROLLUP";
-        assertSqlCanBeParsedAndDeparsed(stmt);
-
-        // since mysql 8.0.12
-        String stmt2 =
-                "SELECT * FROM (SELECT year, person, SUM(amount) FROM rentals GROUP BY year, person) t1 ORDER BY year DESC WITH ROLLUP";
-        assertSqlCanBeParsedAndDeparsed(stmt2);
-    }
-
-    @Test
     public void testNotIsNullInFilter() throws JSQLParserException {
         String stmt = "SELECT count(*) FILTER (WHERE i NOT ISNULL) AS filtered FROM tasks";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -5808,5 +5794,16 @@ public class SelectTest {
         stmt2 = CCJSqlParserUtil.parse(
                 sqlStr, parser -> parser
                         .withBackslashEscapeCharacter(true));
+    }
+
+    @Test
+    public void testIssue1907() throws JSQLParserException {
+        String stmt = "SELECT MAX(a, b, c), COUNT(*), D FROM tab1 GROUP BY D WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+
+        // since mysql 8.0.12
+        String stmt2 =
+                "SELECT * FROM (SELECT year, person, SUM(amount) FROM rentals GROUP BY year, person) t1 ORDER BY year DESC WITH ROLLUP";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
     }
 }

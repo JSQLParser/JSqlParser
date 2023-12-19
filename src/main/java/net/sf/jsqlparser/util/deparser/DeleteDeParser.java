@@ -48,6 +48,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             }
         }
         buffer.append("DELETE");
+        if (delete.getOracleHint() != null) {
+            buffer.append(delete.getOracleHint()).append(" ");
+        }
         if (delete.getModifierPriority() != null) {
             buffer.append(" ").append(delete.getModifierPriority());
         }

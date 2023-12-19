@@ -114,12 +114,9 @@ public class OrderByElement implements Serializable {
         return mysqlWithRollup;
     }
 
-    public void setMysqlWithRollup(boolean mysqlWithRollup) {
+    public OrderByElement setMysqlWithRollup(boolean mysqlWithRollup) {
         this.mysqlWithRollup = mysqlWithRollup;
-    }
-
-    public OrderByElement withMysqlWithRollup(boolean mysqlWithRollup) {
-        this.setMysqlWithRollup(mysqlWithRollup);
         return this;
     }
+
 }

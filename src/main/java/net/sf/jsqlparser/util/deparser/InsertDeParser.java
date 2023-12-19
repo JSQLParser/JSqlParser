@@ -54,6 +54,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         if (insert.getModifierPriority() != null) {
             buffer.append(insert.getModifierPriority()).append(" ");
         }
+        if (insert.getOracleHint() != null) {
+            buffer.append(insert.getOracleHint()).append(" ");
+        }
         if (insert.isModifierIgnore()) {
             buffer.append("IGNORE ");
         }

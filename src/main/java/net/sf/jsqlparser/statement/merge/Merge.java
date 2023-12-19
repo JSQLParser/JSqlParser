@@ -182,7 +182,11 @@ public class Merge implements Statement {
                 b.append(" ");
             }
         }
-        b.append("MERGE INTO ");
+        b.append("MERGE ");
+        if (oracleHint != null) {
+            b.append(oracleHint).append(" ");
+        }
+        b.append("INTO ");
         b.append(table);
         b.append(" USING ");
         b.append(fromItem);

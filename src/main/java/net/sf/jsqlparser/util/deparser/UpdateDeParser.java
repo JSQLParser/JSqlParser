@@ -48,6 +48,9 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             }
         }
         buffer.append("UPDATE ");
+        if (update.getOracleHint() != null) {
+            buffer.append(update.getOracleHint()).append(" ");
+        }
         if (update.getModifierPriority() != null) {
             buffer.append(update.getModifierPriority()).append(" ");
         }

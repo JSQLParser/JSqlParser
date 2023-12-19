@@ -9,11 +9,18 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -21,22 +28,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import org.apache.commons.io.FileUtils;
-import org.assertj.core.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 
 /**
- * Tries to parse and deparse all statments in net.sf.jsqlparser.test.oracle-tests.
- *
+ * Tries to parse and de-parse all statements in net.sf.jsqlparser.test.oracle-tests.
+ * <p>
  * As a matter of fact there are a lot of files that can still not processed. Here a step by step
  * improvement is the way to go.
- *
+ * <p>
  * The test ensures, that the successful parsed file count does not decrease.
  *
  * @author toben
@@ -97,7 +99,8 @@ public class SpecialOracleTest {
             "join21.sql", "keywordasidentifier01.sql", "keywordasidentifier02.sql",
             "keywordasidentifier03.sql", "keywordasidentifier04.sql", "keywordasidentifier05.sql",
             "lexer02.sql", "lexer03.sql", "lexer04.sql", "lexer05.sql", "like01.sql", "merge01.sql",
-            "merge02.sql", "order_by01.sql", "order_by02.sql", "order_by03.sql", "order_by04.sql",
+            "merge02.sql", "merge03.sql", "merge04.sql", "order_by01.sql", "order_by02.sql",
+            "order_by03.sql", "order_by04.sql",
             "order_by05.sql", "order_by06.sql", "pivot01.sql", "pivot02.sql", "pivot03.sql",
             "pivot04.sql", "pivot05.sql", "pivot06.sql", "pivot07.sql", "pivot07_Parenthesis.sql",
             "pivot08.sql", "pivot09.sql", "pivot11.sql", "pivot12.sql", "query_factoring01.sql",
@@ -118,10 +121,11 @@ public class SpecialOracleTest {
 
         boolean foundUnexpectedFailures = false;
 
+        assert sqlTestFiles != null;
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
                 count++;
-                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+                String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 try {
                     assertSqlCanBeParsedAndDeparsed(sql, true);
                     success++;
@@ -187,9 +191,10 @@ public class SpecialOracleTest {
             }
         });
 
+        assert sqlTestFiles != null;
         for (File file : sqlTestFiles) {
             if (file.isFile()) {
-                String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+                String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 assertSqlCanBeParsedAndDeparsed(sql, true);
             }
         }
@@ -197,7 +202,7 @@ public class SpecialOracleTest {
 
     public void recordSuccessOnSourceFile(File file) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
-        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        String sourceSql = FileUtils.readFileToString(sourceFile, StandardCharsets.UTF_8);
         if (!sourceSql.contains("@SUCCESSFULLY_PARSED_AND_DEPARSED")) {
             LOG.log(Level.INFO, "NEW SUCCESS: {0}", file.getName());
             if (sourceFile.exists() && sourceFile.canWrite()) {
@@ -219,10 +224,10 @@ public class SpecialOracleTest {
 
     public void recordFailureOnSourceFile(File file, String message) throws IOException {
         File sourceFile = new File(SQL_SOURCE_DIR, file.getName());
-        String sourceSql = FileUtils.readFileToString(sourceFile, Charset.forName("UTF-8"));
+        String sourceSql = FileUtils.readFileToString(sourceFile, StandardCharsets.UTF_8);
         if (!sourceSql.contains("@FAILURE: " + message) && sourceFile.canWrite()) {
             try (FileWriter writer = new FileWriter(sourceFile, true)) {
-                writer.append("\n--@FAILURE: " + message + " recorded first on ")
+                writer.append("\n--@FAILURE: ").append(message).append(" recorded first on ")
                         .append(DateFormat.getDateTimeInstance().format(new Date()));
             }
         }
@@ -233,8 +238,9 @@ public class SpecialOracleTest {
         File[] sqlTestFiles = new File(SQLS_DIR, "only-parse-test").listFiles();
 
         List<String> regressionFiles = new LinkedList<>();
+        assert sqlTestFiles != null;
         for (File file : sqlTestFiles) {
-            String sql = FileUtils.readFileToString(file, Charset.forName("UTF-8"));
+            String sql = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
             try {
                 CCJSqlParserUtil.parse(sql);
                 LOG.log(Level.FINE, "EXPECTED SUCCESS: {0}", file.getName());

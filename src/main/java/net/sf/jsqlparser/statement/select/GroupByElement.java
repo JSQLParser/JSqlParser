@@ -136,12 +136,8 @@ public class GroupByElement implements Serializable {
         return mysqlWithRollup;
     }
 
-    public void setMysqlWithRollup(boolean mysqlWithRollup) {
+    public GroupByElement setMysqlWithRollup(boolean mysqlWithRollup) {
         this.mysqlWithRollup = mysqlWithRollup;
-    }
-
-    public GroupByElement withMysqlWithRollup(boolean mysqlWithRollup) {
-        this.setMysqlWithRollup(mysqlWithRollup);
         return this;
     }
 }
