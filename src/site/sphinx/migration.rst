@@ -118,7 +118,7 @@ The ``ValuesStatement`` has been replaced by ``Values``, which implements ``Sele
 `Expression` Lists
 ---------------------------------
 
-The class ``ExpressionList`` directly extends ``List<Expression>`` directly and so ``ExpressionList.getExpressions()`` is obsolete.
+The class ``ExpressionList`` extends ``List<Expression>`` directly and so ``ExpressionList.getExpressions()`` is obsolete.
 
 Any instance of `List<Expression>` is considered an Anti Pattern and the class ``ExpressionList<T extends Expression>`` shall be used instead.
 
@@ -194,11 +194,11 @@ The class ``SelectItem<T extends Expression>`` is now generic and various deriva
 `Select` Statement
 ---------------------------------
 
-``SelectBody`` has been removed and `PlainSelect` can be used directly
+``SelectBody`` has been removed and ``PlainSelect`` can be used directly
 
-``SubJoin`` has been replaced by `ParenthesedFromItem`` (implementing a ``FromItem`` with a regular list of ``Join``)
+``SubJoin`` has been replaced by ``ParenthesedFromItem`` (implementing a ``FromItem`` with a regular list of ``Join``)
 
-``SubSelect`` has been removed and any instance of ``Select`` (`PlainSelect`, `Values` or `SetOperationList`) can be used instead
+``SubSelect`` has been removed and any instance of ``Select`` (``PlainSelect``, ``Values`` or ``SetOperationList``) can be used instead
 
 .. tab:: Select
 
@@ -383,5 +383,5 @@ A ``List<UpdateSet>`` is used for any `Set` clause within `Insert`, `Update`, `U
 `Statements` collection
 ---------------------------------
 
-The ``Statements`` class extends `List<Statement>` directly and so ``Statements.getStatements()`` is obsolete.
+The ``Statements`` class extends `List<Statement>` directly and so `Statements.getStatements()` is obsolete.
 
