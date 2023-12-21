@@ -45,5 +45,9 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
             }
             buffer.append(")");
         }
+
+        if (groupBy.isMysqlWithRollup()) {
+            buffer.append(" WITH ROLLUP");
+        }
     }
 }

@@ -11,7 +11,6 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
@@ -58,8 +57,12 @@ public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
         }
         if (orderBy.getNullOrdering() != null) {
             buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST ? "NULLS FIRST"
+            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST
+                    ? "NULLS FIRST"
                     : "NULLS LAST");
+        }
+        if (orderBy.isMysqlWithRollup()) {
+            buffer.append(" WITH ROLLUP");
         }
     }
 
