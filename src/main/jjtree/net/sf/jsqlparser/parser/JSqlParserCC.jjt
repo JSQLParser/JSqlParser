@@ -486,7 +486,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 
 TOKEN : /* Statement Separators */
 {
-    <ST_SEMICOLON : ( ";" | ("\n\n\n") | "\n/\n" | "\ngo"  ) >
+    <ST_SEMICOLON : ( ";" | ("\n\n\n") | "\n/\n" | "\ngo\n" ) >
 }
 
 TOKEN : /* Operators */
