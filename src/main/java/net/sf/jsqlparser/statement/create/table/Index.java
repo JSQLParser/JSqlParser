@@ -143,11 +143,6 @@ public class Index implements Serializable {
             return head;
         }
 
-        // MYSQL: ALTER TABLE ADD INDEX COMMENT 'comment'
-        if (getCommentText() != null) {
-            return head + " " + tail + " COMMENT " + getCommentText();
-        }
-
         return head + " " + tail;
     }
 

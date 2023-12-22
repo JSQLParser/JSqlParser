@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -536,6 +537,11 @@ public class AlterExpression implements Serializable {
 
         if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
+        }
+
+        if (index != null && index.getCommentText() != null) {
+            // `USING` is a parameters
+            b.append(" COMMENT ").append(index.getCommentText());
         }
 
         return b.toString();
