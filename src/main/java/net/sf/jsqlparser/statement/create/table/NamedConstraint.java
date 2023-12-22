@@ -21,12 +21,6 @@ public class NamedConstraint extends Index {
         String head = getName() != null ? "CONSTRAINT " + getName() + " " : "";
         String tail = getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) +
                 (!"".equals(idxSpecText) ? " " + idxSpecText : "");
-
-        // MYSQL: ALTER TABLE ADD CONSTRAINT COMMENT 'comment'
-        if (getCommentText() != null) {
-            return head + tail + " COMMENT " + getCommentText();
-        }
-
         return head + tail;
     }
 
