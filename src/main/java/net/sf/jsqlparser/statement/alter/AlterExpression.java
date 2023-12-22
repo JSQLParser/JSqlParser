@@ -538,6 +538,11 @@ public class AlterExpression implements Serializable {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
 
+        if (index != null && index.getCommentText() != null) {
+            // `USING` is a parameters
+            b.append(" COMMENT ").append(index.getCommentText());
+        }
+
         return b.toString();
     }
 

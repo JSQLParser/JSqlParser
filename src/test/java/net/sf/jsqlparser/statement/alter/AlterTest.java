@@ -484,6 +484,23 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableColumnCommentIssue1926() throws JSQLParserException {
+        String statement =
+                "ALTER TABLE `student` ADD INDEX `idx_age` (`age`) USING BTREE COMMENT 'index age'";
+        assertSqlCanBeParsedAndDeparsed(statement);
+
+        String stmt2 =
+                "ALTER TABLE `student` ADD INDEX `idx_name` (`name`) COMMENT 'index name', " +
+                        "ADD INDEX `idx_age` (`age`) USING BTREE COMMENT 'index age'";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
+
+        // TODO NOT SUPPORT MYSQL: ADD {INDEX | KEY} `idx_age` USING BTREE (`age`)
+        // String stmt3 = "ALTER TABLE `student` ADD INDEX `idx_age` USING BTREE (`age`) COMMENT
+        // 'index age'";
+        // assertSqlCanBeParsedAndDeparsed(stmt3);
+    }
+
+    @Test
     public void testAlterTableIndex586() throws Exception {
         Statement result =
                 CCJSqlParserUtil.parse("ALTER TABLE biz_add_fee DROP INDEX operation_time, "
