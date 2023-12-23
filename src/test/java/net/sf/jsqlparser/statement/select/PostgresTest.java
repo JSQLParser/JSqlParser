@@ -57,9 +57,9 @@ public class PostgresTest {
         String sqlStr = "SELECT '{\"key\": \"value\"}'::json -> 'key' AS X";
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         SelectItem<?> selectExpressionItem =
-                (SelectItem) plainSelect.getSelectItems().get(0);
+                plainSelect.getSelectItems().get(0);
         Assertions.assertEquals("'key'",
-                selectExpressionItem.getExpression(JsonExpression.class).getIdents().get(0));
+                selectExpressionItem.getExpression(JsonExpression.class).getIdent(0).getKey());
     }
 
     @Test

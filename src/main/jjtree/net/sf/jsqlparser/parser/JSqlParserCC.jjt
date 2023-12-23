@@ -3638,7 +3638,27 @@ Expression Between(Expression leftExpression) :
 }
 {
         [<K_NOT> { result.setNot(true); }]
-        <K_BETWEEN> betweenExpressionStart=SimpleExpression() <K_AND> betweenExpressionEnd=SimpleExpression()
+        <K_BETWEEN>
+        (
+            LOOKAHEAD( 3 ) betweenExpressionStart = ParenthesedSelect()
+            |
+            LOOKAHEAD( SimpleFunction() ) betweenExpressionStart = SimpleFunction()
+            |
+            LOOKAHEAD( RegularCondition() ) betweenExpressionStart = RegularCondition()
+            |
+            betweenExpressionStart  = SimpleExpression()
+        )
+
+        <K_AND>
+        (
+            LOOKAHEAD( 3 ) betweenExpressionEnd = ParenthesedSelect()
+            |
+            LOOKAHEAD( SimpleFunction() ) betweenExpressionEnd = SimpleFunction()
+            |
+            LOOKAHEAD( RegularCondition() ) betweenExpressionEnd = RegularCondition()
+            |
+            betweenExpressionEnd = SimpleExpression()
+        )
 
     {
         result.setLeftExpression(leftExpression);
@@ -3985,7 +4005,10 @@ Expression SimpleExpression():
             user = UserVariable()
            ( operation = "=" | operation = ":=" )
         ]
-        retval=ConcatExpression()
+
+        (
+            retval=ConcatExpression()
+        )
     )
     {
         if (user != null) {
@@ -4172,6 +4195,8 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean exclamationMarkNot = false;
     boolean dateExpressionAllowed = true;
     ExpressionList list;
+
+    final List<Map.Entry<String, String>> jsonIdents = new ArrayList<Map.Entry<String, String>>();
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -4195,15 +4220,13 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=XMLSerializeExpr()
 
-        | LOOKAHEAD(JsonExpression(), {!interrupted}) retval=JsonExpression()
+        | LOOKAHEAD(3, { !interrupted}) retval = JsonFunction()
 
-        | LOOKAHEAD(JsonFunction(), {!interrupted}) retval = JsonFunction()
+        | LOOKAHEAD(3, { !interrupted}) retval = JsonAggregateFunction()
 
-        | LOOKAHEAD(JsonAggregateFunction(), {!interrupted}) retval = JsonAggregateFunction()
+        | LOOKAHEAD(3, { !interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD(FullTextSearch(), {!interrupted}) retval = FullTextSearch()
-
-        | LOOKAHEAD(Function(), {!interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(Function(), { !interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -4267,12 +4290,28 @@ Expression PrimaryExpression() #PrimaryExpression:
     [ retval = ArrayExpression(retval) ]
 
     ( "::" type=ColDataType() {
-        castExpr = new CastExpression();
-        castExpr.setUseCastKeyword(false);
-        castExpr.setLeftExpression(retval);
-        castExpr.setColDataType(type);
-        retval=castExpr;
-    } )*
+            castExpr = new CastExpression();
+            castExpr.setUseCastKeyword(false);
+            castExpr.setLeftExpression(retval);
+            castExpr.setColDataType(type);
+            retval=castExpr;
+        }
+    )*
+
+    // Check for JSON operands
+    [
+        LOOKAHEAD(2) (
+            "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->")); }
+            |
+            "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->>")); }
+            |
+            "#>" token=<S_CHAR_LITERAL> { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"#>")); }
+            |
+            "#>>" token=<S_CHAR_LITERAL> { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"#>>")); }
+        )+
+        retval = JsonExpression(retval, jsonIdents)
+    ]
+
 
     ( LOOKAHEAD(2) <K_AT> <K_DATETIMELITERAL> <K_ZONE> timezoneRightExpr=PrimaryExpression() {
         if (timezoneExpr == null)
@@ -4428,65 +4467,13 @@ Expression ParenthesedExpression():
     }
 }
 
-JsonExpression JsonExpression() : {
-  JsonExpression result = new JsonExpression();
-  Expression expr;
+JsonExpression JsonExpression(Expression expr, List<Map.Entry<String, String>> idents) : {
+  JsonExpression result = new JsonExpression(expr, idents);
   Token token;
   ColDataType type = null;
   CastExpression castExpr = null;
 }
 {
-    (
-        LOOKAHEAD(3, {!interrupted}) expr=CaseWhenExpression()
-        |
-        expr = SimpleJdbcParameter()
-        |
-        LOOKAHEAD(2, {!interrupted}) expr=JdbcNamedParameter()
-        |
-        expr=UserVariable()
-        |
-        LOOKAHEAD(JsonFunction(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = JsonFunction()
-        |
-        LOOKAHEAD(JsonAggregateFunction(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = JsonAggregateFunction()
-        |
-        LOOKAHEAD(FullTextSearch(), {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr = FullTextSearch()
-        |
-        LOOKAHEAD( Function() , {getAsBoolean(Feature.allowComplexParsing) && !interrupted} ) expr=Function()
-        |
-        LOOKAHEAD( 2, {!interrupted} ) expr=Column()
-        |
-        token=<S_CHAR_LITERAL> { expr = new StringValue(token.image); }
-        |
-        LOOKAHEAD(ParenthesedExpression(), {getAsBoolean(Feature.allowComplexParsing)} ) expr = ParenthesedExpression()
-        |
-        LOOKAHEAD( 3, {getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expr=ParenthesedSelect()
-    )
-
-    (
-        "::" type=ColDataType()
-        {
-            castExpr = new CastExpression();
-            castExpr.setUseCastKeyword(false);
-            castExpr.setLeftExpression(expr);
-            castExpr.setColDataType(type);
-            expr=castExpr;
-        }
-    )*
-    {
-            result.setExpression(expr);
-    }
-
-    (
-        LOOKAHEAD(2) (
-            "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");}
-            |
-            "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");}
-            |
-            "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");}
-            |
-            "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
-        )
-    )+
 
     // chaining JSON Expressions, e.g.
     // '{"obj":{"field": "value"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT
@@ -4504,8 +4491,7 @@ JsonExpression JsonExpression() : {
             )
         )+
         {
-            result = new JsonExpression();
-            result.setExpression(expr);
+            result = new JsonExpression(expr);
         }
 
         (
@@ -5161,6 +5147,8 @@ Function SimpleFunction():
             "*" { expr = new AllColumns(); }
             |
             LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns()
+            |
+            LOOKAHEAD( 3 ) expr = ParenthesedSelect()
             |
             LOOKAHEAD( SimpleFunction() ) expr = SimpleFunction()
             |
