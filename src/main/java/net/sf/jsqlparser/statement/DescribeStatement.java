@@ -14,6 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 public class DescribeStatement implements Statement {
 
     private Table table;
+    private String describeType;
 
     public DescribeStatement() {
         // empty constructor
@@ -33,7 +34,7 @@ public class DescribeStatement implements Statement {
 
     @Override
     public String toString() {
-        return "DESCRIBE " + table.getFullyQualifiedName();
+        return this.describeType + " " + table.getFullyQualifiedName();
     }
 
     @Override
@@ -43,6 +44,15 @@ public class DescribeStatement implements Statement {
 
     public DescribeStatement withTable(Table table) {
         this.setTable(table);
+        return this;
+    }
+
+    public String getDescribeType() {
+        return describeType;
+    }
+
+    public DescribeStatement setDescribeType(String describeType) {
+        this.describeType = describeType;
         return this;
     }
 }

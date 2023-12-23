@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.statement.select.Select;
-
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * An {@code EXPLAIN} statement
@@ -22,9 +22,19 @@ public class ExplainStatement implements Statement {
 
     private Select select;
     private LinkedHashMap<OptionType, Option> options;
+    private Table table;
 
     public ExplainStatement() {
         // empty constructor
+    }
+
+    public Table getTable() {
+        return table;
+    }
+
+    public ExplainStatement setTable(Table table) {
+        this.table = table;
+        return this;
     }
 
     public ExplainStatement(Select select) {
@@ -68,14 +78,19 @@ public class ExplainStatement implements Statement {
     @Override
     public String toString() {
         StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
-        if (options != null) {
+        if (table != null) {
+            statementBuilder.append(" ").append(table);
+        } else {
+            if (options != null) {
+                statementBuilder.append(" ");
+                statementBuilder.append(options.values().stream().map(Option::formatOption)
+                        .collect(Collectors.joining(" ")));
+            }
+
             statementBuilder.append(" ");
-            statementBuilder.append(options.values().stream().map(Option::formatOption)
-                    .collect(Collectors.joining(" ")));
+            statementBuilder.append(select.toString());
         }
 
-        statementBuilder.append(" ");
-        statementBuilder.append(select.toString());
         return statementBuilder.toString();
     }
 

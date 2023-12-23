@@ -9,8 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
 import static net.sf.jsqlparser.test.TestUtils.*;
+
+import net.sf.jsqlparser.JSQLParserException;
 import org.junit.jupiter.api.Test;
 
 public class DescribeTest {
@@ -18,6 +19,12 @@ public class DescribeTest {
     @Test
     public void testDescribe() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DESCRIBE foo.products");
+    }
+
+    @Test
+    public void testDescribeIssue1931() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DESC table_name");
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN table_name");
     }
 
     @Test
