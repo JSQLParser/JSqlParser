@@ -88,7 +88,9 @@ public class ExplainStatement implements Statement {
             }
 
             statementBuilder.append(" ");
-            statementBuilder.append(select.toString());
+            if (select != null) {
+                statementBuilder.append(select.toString());
+            }
         }
 
         return statementBuilder.toString();
