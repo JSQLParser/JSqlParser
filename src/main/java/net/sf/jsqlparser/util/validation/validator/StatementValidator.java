@@ -209,13 +209,16 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     @Override
     public void visit(DescribeStatement describe) {
         validateFeature(Feature.describe);
+        validateFeature(Feature.desc);
         validateOptionalFromItem(describe.getTable());
     }
 
     @Override
     public void visit(ExplainStatement explain) {
         validateFeature(Feature.explain);
-        explain.getStatement().accept(this);
+        if (explain.getStatement() != null) {
+            explain.getStatement().accept(this);
+        }
     }
 
 

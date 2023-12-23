@@ -593,6 +593,14 @@ public enum Feature {
      * @see DescribeStatement
      */
     describe,
+
+    /**
+     * SQL "DESC" statement is allowed
+     *
+     * @see DescribeStatement
+     */
+    desc,
+
     /**
      * SQL "EXPLAIN" statement is allowed
      *

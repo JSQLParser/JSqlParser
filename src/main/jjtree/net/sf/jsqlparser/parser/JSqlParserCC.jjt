@@ -1056,29 +1056,43 @@ PurgeStatement PurgeStatement(): {
 
 DescribeStatement Describe(): {
     Table table;
+    DescribeStatement stmt = new DescribeStatement();
+    Token tk = null;
 } {
-    <K_DESCRIBE> table = Table()
+    (tk=<K_DESCRIBE> | tk=<K_DESC>) 
+    table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
     {
-        return new DescribeStatement(table);
+        return stmt;
     }
 }
 
 ExplainStatement Explain(): {
     Select select;
+    Table table = null;
     List<ExplainStatement.Option> options = null;
+    ExplainStatement es = new ExplainStatement();
 } {
     <K_EXPLAIN>
-    options=ExplainStatementOptions()
-    select = Select( )
-    {
-       ExplainStatement es = new ExplainStatement(select);
-       if(options != null && !options.isEmpty()) {
-         for(ExplainStatement.Option o : options) {
-           es.addOption(o);
-         }
-       }
-       return es;
-    }
+    (
+        LOOKAHEAD(3)(
+            options=ExplainStatementOptions()
+            select = Select( )
+            {
+               es.setStatement(select);
+               if (options != null && !options.isEmpty()) {
+                 for(ExplainStatement.Option o : options) {
+                   es.addOption(o);
+                 }
+               }
+            }
+        )
+        |
+        (
+           table=Table( ) { es.setTable(table); }
+        )
+        
+    )
+    { return es; }
 }
 
 /**

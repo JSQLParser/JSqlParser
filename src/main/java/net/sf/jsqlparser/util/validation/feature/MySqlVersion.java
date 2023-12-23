@@ -115,6 +115,7 @@ public enum MySqlVersion implements Version {
 
                     // https://dev.mysql.com/doc/refman/8.0/en/describe.html
                     Feature.describe,
+                    Feature.desc,
                     // https://dev.mysql.com/doc/refman/8.0/en/explain.html
                     Feature.explain,
                     // https://dev.mysql.com/doc/refman/8.0/en/show.html
