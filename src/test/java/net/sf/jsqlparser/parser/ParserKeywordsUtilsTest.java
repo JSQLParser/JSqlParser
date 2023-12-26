@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import org.javacc.parser.JavaCCErrors;
 
 
 class ParserKeywordsUtilsTest {
@@ -144,6 +145,7 @@ class ParserKeywordsUtilsTest {
         });
         Path jjGrammarFile = jjGrammarOutputDir.resolve("JSqlParserCC.jj");
 
+        JavaCCErrors.reInit();
         JavaCCParser parser = new JavaCCParser(new java.io.FileInputStream(jjGrammarFile.toFile()));
         parser.javacc_input();
 
