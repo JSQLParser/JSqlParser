@@ -101,7 +101,7 @@ public class MemoryLeakVerifier {
         for (int i = 0; i < maxIterations; i++) {
             runtime.runFinalization();
             runtime.gc();
-            if (ref.get() == null) {
+            if (ref == null || ref.get() == null) {
                 break;
             }
 
