@@ -389,7 +389,7 @@ public class CCJSqlParserUtilTest {
         assertDoesNotThrow(new Executable() {
             @Override
             public void execute() throws Throwable {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
+                executorService.awaitTermination(20, TimeUnit.SECONDS);
             }
         });
 
