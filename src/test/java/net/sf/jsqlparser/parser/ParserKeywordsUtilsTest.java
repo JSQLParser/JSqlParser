@@ -145,11 +145,11 @@ class ParserKeywordsUtilsTest {
         });
         Path jjGrammarFile = jjGrammarOutputDir.resolve("JSqlParserCC.jj");
 
-        JavaCCErrors.reInit();
         JavaCCParser parser = new JavaCCParser(new java.io.FileInputStream(jjGrammarFile.toFile()));
         parser.javacc_input();
 
         // needed for filling JavaCCGlobals
+        JavaCCErrors.reInit();
         Semanticize.start();
 
         // read all the Token and get the String image
