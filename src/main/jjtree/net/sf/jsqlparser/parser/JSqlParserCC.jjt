@@ -6500,6 +6500,7 @@ AlterExpression AlterExpression():
       )
       |
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
+          ["="]{alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);}
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
       |
