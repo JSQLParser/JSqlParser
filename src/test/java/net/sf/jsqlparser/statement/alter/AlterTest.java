@@ -899,6 +899,7 @@ public class AlterTest {
     @Test
     public void testAlterTableCommentIssue1935() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name COMMENT = 'New table comment'");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE table_name COMMENT 'New table comment'");
     }
 
     @Test
