@@ -442,8 +442,11 @@ public class AlterExpression implements Serializable {
             // Oracle Multi Column Drop
             b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else {
-            b.append(operation).append(" ");
-
+            if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
+                b.append("COMMENT =").append(" ");
+            } else {
+                b.append(operation).append(" ");
+            }
             if (commentText != null) {
                 if (columnName != null) {
                     b.append(columnName).append(" COMMENT ");
