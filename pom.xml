@@ -279,6 +279,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <!-- dont switch to version 3.0.1, that makes the strange certificate problems --> 
                 <version>3.0.0-M7</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
