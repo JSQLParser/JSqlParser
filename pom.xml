@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>4.9-SNAPSHOT</version>
+    <version>4.8-SNAPSHOT</version>
     <name>JSQLParser library</name> 
     <inceptionYear>2004</inceptionYear>
     <organization>
