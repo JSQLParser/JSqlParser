@@ -544,10 +544,9 @@ publishing {
             def releasesRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
             def snapshotsRepoUrl= "https://oss.sonatype.org/service/local/staging/deploy/maven2"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            //credentials(PasswordCredentials)
             credentials {
-                username = System.getenv("ossrhUsername")
-                password = System.getenv("ossrhPassword")
+                username = System.getenv("OSSRHPASSWORD")
+                password = System.getenv("OSSRHUSERNAME")
             }
         }
 //        maven {
@@ -563,7 +562,11 @@ signing {
     //def signingKey = findProperty("signingKey")
     //def signingPassword = findProperty("signingPassword")
     //useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications.mavenJava
+
+    // don't sign SNAPSHOTS
+    if (!version.endsWith('SNAPSHOT')) {
+        sign publishing.publications.mavenJava
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

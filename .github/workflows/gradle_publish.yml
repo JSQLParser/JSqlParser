@@ -10,8 +10,6 @@ name: Java CI with Gradle
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 permissions:
   contents: read
@@ -31,9 +29,9 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v2.4.2
+      uses: gradle/gradle-build-action@v2.6.0
       with:
-        arguments: check
+        arguments: publish
         # arguments: build check publish
       env:
         ossrhUsername: ${{ secrets.OSSRHPASSWORD }}

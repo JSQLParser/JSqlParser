@@ -1,4 +1,4 @@
-# [JSqlParser 4.7 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
+# [JSqlParser 4.8 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
 ![Build Status](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml/badge.svg)
 
