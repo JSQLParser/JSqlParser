@@ -1,10 +1,11 @@
-name: deploy to sonatype snapshots
+name: Maven deploy snapshot
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "master" ]
 
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
     strategy:

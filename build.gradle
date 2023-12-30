@@ -64,7 +64,7 @@ def getVersion = { boolean considerSnapshot ->
 }
 
 // for publishing a release, call Gradle with Environment Variable RELEASE:
-//      RELEASE=true gradle JSQLParser:publish
+// RELEASE=true gradle JSQLParser:publish
 version = getVersion( !System.getenv("RELEASE") )
 group = 'com.github.jsqlparser'
 description = 'JSQLParser library'
@@ -298,7 +298,7 @@ pmd {
 
 checkstyle {
     sourceSets = [sourceSets.main, sourceSets.test]
-    configFile =rootProject.file('config/checkstyle/checkstyle.xml')
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
 }
 
 spotless {
@@ -540,21 +540,14 @@ publishing {
     repositories {
         maven {
             name "ossrh"
-
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl= "https://oss.sonatype.org/content/repositories/snapshots"
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl= "https://oss.sonatype.org/content/repositories/snapshots/"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
                 username = System.getenv("ossrhUsername")
                 password = System.getenv("ossrhPassword")
             }
         }
-//        maven {
-//            name = "GitHubPackages"
-//
-//            url = uri("https://maven.pkg.github.com/JSQLParser/jsqlparser")
-//            credentials(PasswordCredentials)
-//        }
     }
 }
 
