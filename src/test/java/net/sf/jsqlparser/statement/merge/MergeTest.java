@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -124,17 +123,6 @@ public class MergeTest {
     public void testMergeUpdateInsertOrderIssue401_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "MERGE INTO a USING dual ON (col3 = ? AND col1 = ? AND col2 = ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ? WHEN NOT MATCHED THEN INSERT (col1, col2, col3, col4) VALUES (?, ?, ?, ?)");
-    }
-
-    @Test
-    public void testMergeUpdateInsertOrderIssue401_3() throws JSQLParserException {
-        try {
-            assertSqlCanBeParsedAndDeparsed(
-                    "MERGE INTO a USING dual ON (col3 = ? AND col1 = ? AND col2 = ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ? WHEN NOT MATCHED THEN INSERT (col1, col2, col3, col4) VALUES (?, ?, ?, ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ?");
-            fail("syntaxerror parsed");
-        } catch (JSQLParserException ex) {
-            // expected to fail
-        }
     }
 
     @Test
@@ -262,6 +250,19 @@ public class MergeTest {
                         +
                         "  WHEN MATCHED THEN UPDATE SET target.v = b.v\n" +
                         "  WHEN NOT MATCHED AND b.v != 11 THEN INSERT (k, v) VALUES (b.k, b.v)";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    void testSnowflakeMergeStatementWithManyWhensAndDelete() throws JSQLParserException {
+        String sql =
+                "MERGE INTO t1 USING t2 ON t1.t1Key = t2.t2Key\n" +
+                        "    WHEN MATCHED AND t2.marked = 1 THEN DELETE\n" +
+                        "    WHEN MATCHED AND t2.isNewStatus = 1 THEN UPDATE SET val = t2.newVal, status = t2.newStatus\n"
+                        +
+                        "    WHEN MATCHED THEN UPDATE SET val = t2.newVal\n" +
+                        "    WHEN NOT MATCHED THEN INSERT (val, status) VALUES (t2.newVal, t2.newStatus)";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }

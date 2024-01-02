@@ -34,9 +34,7 @@ public class Merge implements Statement {
     private OracleHint oracleHint = null;
     private FromItem fromItem;
     private Expression onCondition;
-    private MergeInsert mergeInsert;
-    private MergeUpdate mergeUpdate;
-    private boolean insertFirst = false;
+    private List<MergeOperation> operations;
 
     private OutputClause outputClause;
 
@@ -129,20 +127,36 @@ public class Merge implements Statement {
         this.onCondition = onCondition;
     }
 
+    public List<MergeOperation> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(List<MergeOperation> operations) {
+        this.operations = operations;
+    }
+
+    /**
+     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
+     */
+    @Deprecated
     public MergeInsert getMergeInsert() {
-        return mergeInsert;
+        return operations.stream()
+                .filter(MergeInsert.class::isInstance)
+                .findFirst()
+                .map(MergeInsert.class::cast)
+                .orElse(null);
     }
 
-    public void setMergeInsert(MergeInsert insert) {
-        this.mergeInsert = insert;
-    }
-
+    /**
+     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
+     */
+    @Deprecated
     public MergeUpdate getMergeUpdate() {
-        return mergeUpdate;
-    }
-
-    public void setMergeUpdate(MergeUpdate mergeUpdate) {
-        this.mergeUpdate = mergeUpdate;
+        return operations.stream()
+                .filter(MergeUpdate.class::isInstance)
+                .findFirst()
+                .map(MergeUpdate.class::cast)
+                .orElse(null);
     }
 
     @Override
@@ -150,12 +164,15 @@ public class Merge implements Statement {
         statementVisitor.visit(this);
     }
 
+    /**
+     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
+     */
+    @Deprecated
     public boolean isInsertFirst() {
-        return insertFirst;
-    }
-
-    public void setInsertFirst(boolean insertFirst) {
-        this.insertFirst = insertFirst;
+        if (operations == null || operations.isEmpty()) {
+            return false;
+        }
+        return operations.get(0) instanceof MergeInsert;
     }
 
     public OutputClause getOutputClause() {
@@ -193,16 +210,8 @@ public class Merge implements Statement {
         b.append(" ON ");
         b.append(onCondition);
 
-        if (insertFirst && mergeInsert != null) {
-            b.append(mergeInsert);
-        }
-
-        if (mergeUpdate != null) {
-            b.append(mergeUpdate);
-        }
-
-        if (!insertFirst && mergeInsert != null) {
-            b.append(mergeInsert);
+        if (operations != null && !operations.isEmpty()) {
+            operations.forEach(b::append);
         }
 
         if (outputClause != null) {
@@ -235,23 +244,8 @@ public class Merge implements Statement {
         return this;
     }
 
-    public Merge withMergeUpdate(MergeUpdate mergeUpdate) {
-        this.setMergeUpdate(mergeUpdate);
-        return this;
-    }
-
-    public Merge withInsertFirst(boolean insertFirst) {
-        this.setInsertFirst(insertFirst);
-        return this;
-    }
-
     public Merge withTable(Table table) {
         this.setTable(table);
-        return this;
-    }
-
-    public Merge withMergeInsert(MergeInsert mergeInsert) {
-        this.setMergeInsert(mergeInsert);
         return this;
     }
 
