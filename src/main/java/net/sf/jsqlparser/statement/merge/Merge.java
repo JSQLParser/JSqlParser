@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Merge implements Statement {
 
@@ -34,9 +35,45 @@ public class Merge implements Statement {
     private OracleHint oracleHint = null;
     private FromItem fromItem;
     private Expression onCondition;
+    private MergeInsert mergeInsert;
+    private MergeUpdate mergeUpdate;
+    private boolean insertFirst = false;
     private List<MergeOperation> operations;
 
     private OutputClause outputClause;
+
+    private void deriveOperationsFromStandardClauses() {
+        List<MergeOperation> operations = new ArrayList<>();
+        if (insertFirst) {
+            Optional.ofNullable(mergeInsert).ifPresent(operations::add);
+            Optional.ofNullable(mergeUpdate).ifPresent(operations::add);
+        } else {
+            Optional.ofNullable(mergeUpdate).ifPresent(operations::add);
+            Optional.ofNullable(mergeInsert).ifPresent(operations::add);
+        }
+        this.operations = operations;
+    }
+
+    private void deriveStandardClausesFromOperations() {
+        List<MergeOperation> applicableOperations =
+                Optional.ofNullable(operations).orElse(Collections.emptyList()).stream()
+                        .filter(o -> o instanceof MergeUpdate || o instanceof MergeInsert)
+                        .collect(Collectors.toList());
+        mergeUpdate = applicableOperations.stream()
+                .filter(o -> o instanceof MergeUpdate)
+                .map(MergeUpdate.class::cast)
+                .findFirst()
+                .orElse(null);
+        mergeInsert = applicableOperations.stream()
+                .filter(o -> o instanceof MergeInsert)
+                .map(MergeInsert.class::cast)
+                .findFirst()
+                .orElse(null);
+        insertFirst = applicableOperations.stream()
+                .findFirst()
+                .map(o -> o instanceof MergeInsert)
+                .orElse(false);
+    }
 
     public List<WithItem> getWithItemsList() {
         return withItemsList;
@@ -133,30 +170,25 @@ public class Merge implements Statement {
 
     public void setOperations(List<MergeOperation> operations) {
         this.operations = operations;
+        deriveStandardClausesFromOperations();
     }
 
-    /**
-     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
-     */
-    @Deprecated
     public MergeInsert getMergeInsert() {
-        return operations.stream()
-                .filter(MergeInsert.class::isInstance)
-                .findFirst()
-                .map(MergeInsert.class::cast)
-                .orElse(null);
+        return mergeInsert;
     }
 
-    /**
-     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
-     */
-    @Deprecated
+    public void setMergeInsert(MergeInsert mergeInsert) {
+        this.mergeInsert = mergeInsert;
+        deriveOperationsFromStandardClauses();
+    }
+
     public MergeUpdate getMergeUpdate() {
-        return operations.stream()
-                .filter(MergeUpdate.class::isInstance)
-                .findFirst()
-                .map(MergeUpdate.class::cast)
-                .orElse(null);
+        return mergeUpdate;
+    }
+
+    public void setMergeUpdate(MergeUpdate mergeUpdate) {
+        this.mergeUpdate = mergeUpdate;
+        deriveOperationsFromStandardClauses();
     }
 
     @Override
@@ -164,15 +196,13 @@ public class Merge implements Statement {
         statementVisitor.visit(this);
     }
 
-    /**
-     * @deprecated use {@link #getOperations()} or consider a {@link MergeOperationVisitor} instead
-     */
-    @Deprecated
     public boolean isInsertFirst() {
-        if (operations == null || operations.isEmpty()) {
-            return false;
-        }
-        return operations.get(0) instanceof MergeInsert;
+        return insertFirst;
+    }
+
+    public void setInsertFirst(boolean insertFirst) {
+        this.insertFirst = insertFirst;
+        deriveOperationsFromStandardClauses();
     }
 
     public OutputClause getOutputClause() {
@@ -244,8 +274,23 @@ public class Merge implements Statement {
         return this;
     }
 
+    public Merge withMergeUpdate(MergeUpdate mergeUpdate) {
+        this.setMergeUpdate(mergeUpdate);
+        return this;
+    }
+
+    public Merge withInsertFirst(boolean insertFirst) {
+        this.setInsertFirst(insertFirst);
+        return this;
+    }
+
     public Merge withTable(Table table) {
         this.setTable(table);
+        return this;
+    }
+
+    public Merge withMergeInsert(MergeInsert mergeInsert) {
+        this.setMergeInsert(mergeInsert);
         return this;
     }
 
