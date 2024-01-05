@@ -15,7 +15,7 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import java.io.Serializable;
 import java.util.List;
 
-public class MergeUpdate implements Serializable {
+public class MergeUpdate implements Serializable, MergeOperation {
 
     private List<UpdateSet> updateSets;
     private Expression andPredicate;
@@ -59,6 +59,11 @@ public class MergeUpdate implements Serializable {
 
     public void setDeleteWhereCondition(Expression deleteWhereCondition) {
         this.deleteWhereCondition = deleteWhereCondition;
+    }
+
+    @Override
+    public void accept(MergeOperationVisitor mergeOperationVisitor) {
+        mergeOperationVisitor.visit(this);
     }
 
     @Override

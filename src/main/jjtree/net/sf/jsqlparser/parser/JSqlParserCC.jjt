@@ -1701,8 +1701,7 @@ Statement Merge( List<WithItem> with ) : {
     Table table;
     FromItem fromItem;
     Expression condition;
-    MergeUpdate update;
-    MergeInsert insert;
+    List<MergeOperation> operations;
     OutputClause outputClause;
 }
 {
@@ -1710,39 +1709,60 @@ Statement Merge( List<WithItem> with ) : {
     <K_USING> fromItem = FromItem() { merge.setFromItem(fromItem); }
     <K_ON> condition = Expression() { merge.setOnCondition(condition); }
 
-    [
-        ( LOOKAHEAD(2) update = MergeUpdateClause() { merge.setMergeUpdate(update); }
-          [ insert = MergeInsertClause() { merge.setMergeInsert(insert); } ]
-        | insert = MergeInsertClause() { merge.withMergeInsert(insert).withInsertFirst(true); }
-          [ update = MergeUpdateClause() { merge.setMergeUpdate(update); } ]
-        )
-    ]
+    operations = MergeOperations() { merge.setOperations(operations); }
 
     [ outputClause = OutputClause() { merge.setOutputClause(outputClause); } ]
 
     { return merge.withWithItemsList(with); }
 }
 
-MergeUpdate MergeUpdateClause() : {
-    MergeUpdate mu = new MergeUpdate();
-    List<UpdateSet> updateSets;
-    Expression predicate;
-    Expression condition;
+List<MergeOperation> MergeOperations() : {
+    List<MergeOperation> operationsList = new ArrayList<MergeOperation>();
+    MergeOperation operation;
+}
+{
+    (
+        LOOKAHEAD(2) operation = MergeWhenMatched() { operationsList.add(operation); }
+        |
+        operation = MergeWhenNotMatched() { operationsList.add(operation); }
+    )*
+    { return operationsList; }
+}
+
+MergeOperation MergeWhenMatched() : {
+    Expression predicate = null;
+    MergeOperation operation;
 }
 {
     <K_WHEN> <K_MATCHED>
-    [ <K_AND> predicate = Expression() { mu.setAndPredicate(predicate); } ]
-    <K_THEN> <K_UPDATE>
-    <K_SET>
-    updateSets = UpdateSets() { mu.setUpdateSets(updateSets); }
+    [ <K_AND> predicate = Expression() ]
+    <K_THEN>
+    (
+        operation = MergeDeleteClause(predicate) | operation = MergeUpdateClause(predicate)
+    )
+    { return operation; }
+}
 
+MergeOperation MergeDeleteClause(Expression predicate) : {
+    MergeDelete md = new MergeDelete().withAndPredicate(predicate);
+}
+{
+    <K_DELETE> { return md; }
+}
+
+MergeOperation MergeUpdateClause(Expression predicate) : {
+    MergeUpdate mu = new MergeUpdate().withAndPredicate(predicate);
+    List<UpdateSet> updateSets;
+    Expression condition;
+}
+{
+    <K_UPDATE> <K_SET> updateSets = UpdateSets() { mu.setUpdateSets(updateSets); }
     [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
     [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
-
     { return mu; }
 }
 
-MergeInsert MergeInsertClause() : {
+MergeOperation MergeWhenNotMatched() : {
     MergeInsert mi = new MergeInsert();
     Expression predicate;
     ExpressionList<Column> columns;

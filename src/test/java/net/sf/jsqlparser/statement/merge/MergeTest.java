@@ -12,12 +12,20 @@ package net.sf.jsqlparser.statement.merge;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -127,17 +135,6 @@ public class MergeTest {
     }
 
     @Test
-    public void testMergeUpdateInsertOrderIssue401_3() throws JSQLParserException {
-        try {
-            assertSqlCanBeParsedAndDeparsed(
-                    "MERGE INTO a USING dual ON (col3 = ? AND col1 = ? AND col2 = ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ? WHEN NOT MATCHED THEN INSERT (col1, col2, col3, col4) VALUES (?, ?, ?, ?) WHEN MATCHED THEN UPDATE SET col4 = col4 + ?");
-            fail("syntaxerror parsed");
-        } catch (JSQLParserException ex) {
-            // expected to fail
-        }
-    }
-
-    @Test
     public void testOracleHint() throws JSQLParserException {
         String sql = "MERGE /*+ SOMEHINT */ INTO bonuses B\n" + "USING (\n"
                 + "  SELECT employee_id, salary\n" + "  FROM employee\n"
@@ -165,10 +162,10 @@ public class MergeTest {
 
         Merge merge = (Merge) statement;
         MergeInsert mergeInsert = merge.getMergeInsert();
-        Assertions.assertThat(mergeInsert.getWhereCondition());
+        assertThat(mergeInsert.getWhereCondition());
 
         MergeUpdate mergeUpdate = merge.getMergeUpdate();
-        Assertions.assertThat(mergeUpdate.getWhereCondition());
+        assertThat(mergeUpdate.getWhereCondition());
     }
 
     @Test
@@ -264,5 +261,73 @@ public class MergeTest {
                         "  WHEN NOT MATCHED AND b.v != 11 THEN INSERT (k, v) VALUES (b.k, b.v)";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    void testSnowflakeMergeStatementWithManyWhensAndDelete() throws JSQLParserException {
+        String sql =
+                "MERGE INTO t1 USING t2 ON t1.t1Key = t2.t2Key\n" +
+                        "    WHEN MATCHED AND t2.marked = 1 THEN DELETE\n" +
+                        "    WHEN MATCHED AND t2.isNewStatus = 1 THEN UPDATE SET val = t2.newVal, status = t2.newStatus\n"
+                        +
+                        "    WHEN MATCHED THEN UPDATE SET val = t2.newVal\n" +
+                        "    WHEN NOT MATCHED THEN INSERT (val, status) VALUES (t2.newVal, t2.newStatus)";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @ParameterizedTest
+    @MethodSource("deriveOperationsFromStandardClausesCases")
+    void testDeriveOperationsFromStandardClauses(List<MergeOperation> expectedOperations,
+            MergeUpdate update, MergeInsert insert, boolean insertFirst) {
+        Merge merge = new Merge();
+        merge.setMergeUpdate(update);
+        merge.setMergeInsert(insert);
+        merge.setInsertFirst(insertFirst);
+
+        assertThat(merge.getOperations()).isEqualTo(expectedOperations);
+    }
+
+    private static Stream<Arguments> deriveOperationsFromStandardClausesCases() {
+        MergeUpdate update = mock(MergeUpdate.class);
+        MergeInsert insert = mock(MergeInsert.class);
+
+        return Stream.of(
+                Arguments.of(Arrays.asList(update, insert), update, insert, false),
+                Arguments.of(Arrays.asList(insert, update), update, insert, true));
+    }
+
+    @ParameterizedTest
+    @MethodSource("deriveStandardClausesFromOperationsCases")
+    void testDeriveStandardClausesFromOperations(List<MergeOperation> operations,
+            MergeUpdate expectedUpdate, MergeInsert expectedInsert, boolean expectedInsertFirst) {
+        Merge merge = new Merge();
+        merge.setOperations(operations);
+
+        assertThat(merge.getMergeUpdate()).isEqualTo(expectedUpdate);
+        assertThat(merge.getMergeInsert()).isEqualTo(expectedInsert);
+        assertThat(merge.isInsertFirst()).isEqualTo(expectedInsertFirst);
+    }
+
+    private static Stream<Arguments> deriveStandardClausesFromOperationsCases() {
+        MergeDelete delete1 = mock(MergeDelete.class);
+        MergeUpdate update1 = mock(MergeUpdate.class);
+        MergeUpdate update2 = mock(MergeUpdate.class);
+        MergeInsert insert1 = mock(MergeInsert.class);
+        MergeInsert insert2 = mock(MergeInsert.class);
+
+        return Stream.of(
+                // just the two standard clauses present
+                Arguments.of(Arrays.asList(update1, insert1), update1, insert1, false),
+                Arguments.of(Arrays.asList(insert1, update1), update1, insert1, true),
+                // some clause(s) missing
+                Arguments.of(Collections.singletonList(update1), update1, null, false),
+                Arguments.of(Collections.singletonList(insert1), null, insert1, true),
+                Arguments.of(Collections.emptyList(), null, null, false),
+                // many clauses (non-standard)
+                Arguments.of(Arrays.asList(update1, update2, delete1, insert1, insert2), update1,
+                        insert1, false),
+                Arguments.of(Arrays.asList(insert1, insert2, update1, update2, delete1), update1,
+                        insert1, true));
     }
 }
