@@ -141,6 +141,14 @@ javadoc {
     options.addBooleanOption("Xdoclint:none", true)
 }
 
+jar {
+    manifest {
+        attributes (
+            "Automatic-Module-Name": "net.sf.jsqlparser"
+        )
+    }
+}
+
 tasks.register('xmldoc', Javadoc) {
     def outFile =  reporting.file(
             version.endsWith("-SNAPSHOT")
