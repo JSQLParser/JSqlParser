@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -49,5 +50,10 @@ public class AllTableColumns extends AllColumns {
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
         return super.appendTo(table.appendTo(builder).append("."));
+    }
+
+    @Override
+    public void accept(ExpressionVisitor expressionVisitor) {
+        expressionVisitor.visit(this);
     }
 }
