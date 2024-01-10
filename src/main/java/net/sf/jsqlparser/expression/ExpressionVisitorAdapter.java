@@ -64,6 +64,8 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+import java.util.Optional;
+
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter
         implements ExpressionVisitor, PivotVisitor, SelectItemVisitor {
@@ -382,11 +384,19 @@ public class ExpressionVisitorAdapter
                 element.getExpression().accept(this);
             }
         }
-
         if (expr.getWindowElement() != null) {
-            expr.getWindowElement().getRange().getStart().getExpression().accept(this);
-            expr.getWindowElement().getRange().getEnd().getExpression().accept(this);
-            expr.getWindowElement().getOffset().getExpression().accept(this);
+            /*
+             * Visit expressions from the range and offset of the window element. Do this using
+             * optional chains, because several things down the tree can be null e.g. the
+             * expression. So, null-safe versions of e.g.:
+             * expr.getWindowElement().getOffset().getExpression().accept(this);
+             */
+            Optional.ofNullable(expr.getWindowElement().getRange()).map(WindowRange::getStart)
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this));
+            Optional.ofNullable(expr.getWindowElement().getRange()).map(WindowRange::getEnd)
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this));
+            Optional.ofNullable(expr.getWindowElement().getOffset())
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this));
         }
     }
 
