@@ -65,6 +65,8 @@ public class PlainSelect extends Select {
      */
     private boolean isUsingFinal = false;
 
+    private boolean isUsingOnly = false;
+
     @Deprecated
     public boolean isUseBrackets() {
         return false;
@@ -210,6 +212,19 @@ public class PlainSelect extends Select {
 
     public PlainSelect withUsingFinal(boolean usingFinal) {
         this.setUsingFinal(usingFinal);
+        return this;
+    }
+
+    public boolean isUsingOnly() {
+        return isUsingOnly;
+    }
+
+    public void setUsingOnly(boolean usingOnly) {
+        isUsingOnly = usingOnly;
+    }
+
+    public PlainSelect withUsingOnly(boolean usingOnly) {
+        this.setUsingOnly(usingOnly);
         return this;
     }
 
@@ -439,7 +454,11 @@ public class PlainSelect extends Select {
         }
 
         if (fromItem != null) {
-            builder.append(" FROM ").append(fromItem);
+            builder.append(" FROM ");
+            if (isUsingOnly) {
+                builder.append("ONLY ");
+            }
+            builder.append(fromItem);
             if (lateralViews != null) {
                 for (LateralView lateralView : lateralViews) {
                     builder.append(" ").append(lateralView);

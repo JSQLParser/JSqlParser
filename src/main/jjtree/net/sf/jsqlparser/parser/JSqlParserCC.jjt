@@ -2277,6 +2277,10 @@ PlainSelect PlainSelect() #PlainSelect:
         [ lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
+    [ LOOKAHEAD(3) <K_FROM> <K_ONLY> { plainSelect.setUsingOnly(true); } fromItem=FromItem()
+            [ lateralViews=LateralViews() ]
+            [ LOOKAHEAD(2) joins=JoinsList() ]
+    ]
 
     // Clickhouse FINAL as shown at https://clickhouse.com/docs/en/operations/settings/settings#final
     [ LOOKAHEAD(2) <K_FINAL> { plainSelect.setUsingFinal(true); } ]

@@ -210,6 +210,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         if (plainSelect.getFromItem() != null) {
             buffer.append(" FROM ");
+            if (plainSelect.isUsingOnly()) {
+                buffer.append("ONLY ");
+            }
             plainSelect.getFromItem().accept(this);
 
             if (plainSelect.getFromItem() instanceof Table) {

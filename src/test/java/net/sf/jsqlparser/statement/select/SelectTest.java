@@ -5806,4 +5806,11 @@ public class SelectTest {
                 "SELECT * FROM (SELECT year, person, SUM(amount) FROM rentals GROUP BY year, person) t1 ORDER BY year DESC WITH ROLLUP";
         assertSqlCanBeParsedAndDeparsed(stmt2);
     }
+
+    @Test
+    public void testIssue1908() throws JSQLParserException {
+        // postgresql14
+        String stmt = "SELECT * FROM ONLY sys_business_rule";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }
