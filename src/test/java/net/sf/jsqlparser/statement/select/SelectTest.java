@@ -5813,4 +5813,10 @@ public class SelectTest {
         String stmt = "SELECT * FROM ONLY sys_business_rule";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+
+    @Test
+    public void testIssue1833() throws JSQLParserException {
+        String stmt = "SELECT age, name, gender FROM user_info INTO TEMP user_temp WITH NO LOG";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }

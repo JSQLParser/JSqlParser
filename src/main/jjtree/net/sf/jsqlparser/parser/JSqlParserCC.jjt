@@ -2237,6 +2237,7 @@ PlainSelect PlainSelect() #PlainSelect:
     boolean noWait = false;
     String windowName = null;
     WindowDefinition winDef;
+    Table intoTempTable = null;
 }
 {
     <K_SELECT>
@@ -2322,6 +2323,8 @@ PlainSelect PlainSelect() #PlainSelect:
                | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
     ]
     [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
+    [ LOOKAHEAD(3) <K_INTO> <K_TEMP> intoTempTable = Table() { plainSelect.setIntoTempTable(intoTempTable);} ]
+    [ LOOKAHEAD(3)<K_WITH> <K_NO> <K_LOG> { plainSelect.setUseWithNoLog(true); } ]
     {
         plainSelect.setSelectItems(selectItems);
         plainSelect.setFromItem(fromItem);
