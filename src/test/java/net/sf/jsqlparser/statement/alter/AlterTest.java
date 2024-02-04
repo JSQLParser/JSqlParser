@@ -964,7 +964,7 @@ public class AlterTest {
     public void testAlterColumnSetCommitTimestamp1() throws JSQLParserException {
         // @todo: properly implement SET OPTIONS, the current hack is terrible
         // final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET
-        // OPTIONS (allow_commit_timestamp=null)";f
+        // OPTIONS (allow_commit_timestamp=null)";
 
         final String sql =
                 "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)";
