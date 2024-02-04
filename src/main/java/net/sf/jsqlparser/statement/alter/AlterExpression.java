@@ -68,6 +68,8 @@ public class AlterExpression implements Serializable {
 
     private boolean useBrackets = false;
 
+    private String truncatePartitionName = null;
+
     public Index getOldIndex() {
         return oldIndex;
     }
@@ -402,6 +404,19 @@ public class AlterExpression implements Serializable {
         this.uk = uk;
     }
 
+    public String getTruncatePartitionName() {
+        return truncatePartitionName;
+    }
+
+    public void setTruncatePartitionName(String truncatePartitionName) {
+        this.truncatePartitionName = truncatePartitionName;
+    }
+
+    public AlterExpression withTruncatePartitionName(String truncatePartitionName) {
+        this.truncatePartitionName = truncatePartitionName;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -441,6 +456,9 @@ public class AlterExpression implements Serializable {
                 && !pkColumns.isEmpty()) {
             // Oracle Multi Column Drop
             b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+        } else if (operation == AlterOperation.TRUNCATE_PARTITION
+                && truncatePartitionName != null) {
+            b.append("TRUNCATE PARTITION ").append(truncatePartitionName);
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
                 b.append("COMMENT =").append(" ");

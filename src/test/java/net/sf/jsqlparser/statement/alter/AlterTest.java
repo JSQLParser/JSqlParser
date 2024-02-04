@@ -981,4 +981,11 @@ public class AlterTest {
         assertEquals("UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)",
                 type.toString());
     }
+
+    @Test
+    public void testIssue1890() throws JSQLParserException {
+        String stmt =
+                "ALTER TABLE xdmiddle.ft_mid_sop_sms_send_list_daily TRUNCATE PARTITION sum_date";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }
