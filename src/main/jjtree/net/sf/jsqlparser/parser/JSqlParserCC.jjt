@@ -6252,6 +6252,7 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
     ReferentialAction.Action action = null;
+    String truncatePartitionName = null;
 
     // for captureRest()
     List<String> tokens = new LinkedList<String>();
@@ -6542,6 +6543,8 @@ AlterExpression AlterExpression():
               alterExp.setIndex(index);
            } 
           )
+      |
+      LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); } truncatePartitionName = RelObjectName() { alterExp.setTruncatePartitionName(truncatePartitionName); }
       |
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);

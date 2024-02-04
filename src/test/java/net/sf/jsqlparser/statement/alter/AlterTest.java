@@ -964,7 +964,7 @@ public class AlterTest {
     public void testAlterColumnSetCommitTimestamp1() throws JSQLParserException {
         // @todo: properly implement SET OPTIONS, the current hack is terrible
         // final String sql = "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET
-        // OPTIONS (allow_commit_timestamp=null)";
+        // OPTIONS (allow_commit_timestamp=null)";f
 
         final String sql =
                 "ALTER TABLE FOCUS_PATIENT ALTER COLUMN UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)";
@@ -980,5 +980,11 @@ public class AlterTest {
         assertEquals("UPDATE_DATE_TIME_GMT", type.getColumnName());
         assertEquals("UPDATE_DATE_TIME_GMT SET OPTIONS (allow_commit_timestamp=true)",
                 type.toString());
+    }
+
+    @Test
+    public void testIssue1890() throws JSQLParserException{
+        String stmt = "ALTER TABLE xdmiddle.ft_mid_sop_sms_send_list_daily TRUNCATE PARTITION sum_date";
+        assertSqlCanBeParsedAndDeparsed(stmt);
     }
 }
