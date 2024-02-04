@@ -456,7 +456,8 @@ public class AlterExpression implements Serializable {
                 && !pkColumns.isEmpty()) {
             // Oracle Multi Column Drop
             b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
-        } else if (operation == AlterOperation.TRUNCATE_PARTITION && truncatePartitionName != null) {
+        } else if (operation == AlterOperation.TRUNCATE_PARTITION
+                && truncatePartitionName != null) {
             b.append("TRUNCATE PARTITION ").append(truncatePartitionName);
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
