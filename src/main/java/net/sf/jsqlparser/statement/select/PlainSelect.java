@@ -67,6 +67,10 @@ public class PlainSelect extends Select {
 
     private boolean isUsingOnly = false;
 
+    private boolean useWithNoLog = false;
+
+    private Table intoTempTable = null;
+
     @Deprecated
     public boolean isUseBrackets() {
         return false;
@@ -225,6 +229,32 @@ public class PlainSelect extends Select {
 
     public PlainSelect withUsingOnly(boolean usingOnly) {
         this.setUsingOnly(usingOnly);
+        return this;
+    }
+
+    public boolean isUseWithNoLog() {
+        return useWithNoLog;
+    }
+
+    public void setUseWithNoLog(boolean useWithNoLog) {
+        this.useWithNoLog = useWithNoLog;
+    }
+
+    public PlainSelect withUseWithNoLog(boolean useWithNoLog) {
+        this.setUseWithNoLog(useWithNoLog);
+        return this;
+    }
+
+    public Table getIntoTempTable() {
+        return intoTempTable;
+    }
+
+    public void setIntoTempTable(Table intoTempTable) {
+        this.intoTempTable = intoTempTable;
+    }
+
+    public PlainSelect withIntoTempTable(Table intoTempTable) {
+        this.setIntoTempTable(intoTempTable);
         return this;
     }
 
@@ -528,6 +558,12 @@ public class PlainSelect extends Select {
             if (where != null) {
                 builder.append(" WHERE ").append(where);
             }
+        }
+        if (intoTempTable != null) {
+            builder.append(" INTO TEMP ").append(intoTempTable);
+        }
+        if (useWithNoLog) {
+            builder.append(" WITH NO LOG");
         }
         return builder;
     }
