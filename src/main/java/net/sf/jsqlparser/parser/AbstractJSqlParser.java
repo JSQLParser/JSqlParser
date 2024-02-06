@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractJSqlParser<P> {
 
