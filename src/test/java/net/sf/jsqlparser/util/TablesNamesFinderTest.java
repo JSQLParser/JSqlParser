@@ -526,7 +526,7 @@ public class TablesNamesFinderTest {
     void testFromParenthesesJoin() throws JSQLParserException {
         String sqlStr = "select * from (t1 left join  t2 on t1.id = t2.id) t_select";
         Set<String> tables = TablesNamesFinder.findTables(sqlStr);
-        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("t1", "t2");
+        assertThat(tables).containsExactly("t1", "t2");
 
     }
 }
