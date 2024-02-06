@@ -26,7 +26,7 @@ public abstract class AbstractJSqlParser<P> {
     }
 
     public P withAllowComplexParsing(boolean allowComplexParsing) {
-      return withFeature(Feature.allowComplexParsing, allowComplexParsing);
+        return withFeature(Feature.allowComplexParsing, allowComplexParsing);
     }
 
     public P withUnsupportedStatements(boolean allowUnsupportedStatements) {
@@ -40,7 +40,7 @@ public abstract class AbstractJSqlParser<P> {
     public P withBackslashEscapeCharacter(boolean allowBackslashEscapeCharacter) {
         return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
     }
-    
+
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
         return me();
