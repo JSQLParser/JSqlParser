@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractJSqlParser<P> {
 
@@ -26,7 +26,7 @@ public abstract class AbstractJSqlParser<P> {
     }
 
     public P withAllowComplexParsing(boolean allowComplexParsing) {
-      return withFeature(Feature.allowComplexParsing, allowComplexParsing);
+        return withFeature(Feature.allowComplexParsing, allowComplexParsing);
     }
 
     public P withUnsupportedStatements(boolean allowUnsupportedStatements) {
@@ -40,7 +40,7 @@ public abstract class AbstractJSqlParser<P> {
     public P withBackslashEscapeCharacter(boolean allowBackslashEscapeCharacter) {
         return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
     }
-    
+
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
         return me();
