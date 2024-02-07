@@ -6144,9 +6144,9 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     List<String> parameter = null;
 }
 {
-    columnName = RelObjectName()
+    columnName = RelObjectName() { columnSpecs = new ArrayList<String>(); }
     ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
-    dataType = ColDataType() { columnSpecs = new ArrayList<String>(); }
+    ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
         return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
@@ -6273,7 +6273,8 @@ AlterExpression AlterExpression():
             )
 
             (
-                LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
+                LOOKAHEAD(2)
+                (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
 
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
@@ -6289,6 +6290,10 @@ AlterExpression AlterExpression():
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                   [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
                   [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                )
+                |
+                LOOKAHEAD(2) (
+                  sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
                 )
                 |
                 LOOKAHEAD(3) (
@@ -6433,8 +6438,6 @@ AlterExpression AlterExpression():
                     )
                    )
                 )
-                |
-                ( sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); } )
               )
       )
       |
