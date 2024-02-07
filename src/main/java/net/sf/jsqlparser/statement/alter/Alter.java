@@ -24,6 +24,8 @@ public class Alter implements Statement {
     private Table table;
     private boolean useOnly = false;
 
+    private boolean useTableIfExists = false;
+
     private List<AlterExpression> alterExpressions;
 
     public Table getTable() {
@@ -40,6 +42,19 @@ public class Alter implements Statement {
 
     public void setUseOnly(boolean useOnly) {
         this.useOnly = useOnly;
+    }
+
+    public boolean isUseTableIfExists() {
+        return useTableIfExists;
+    }
+
+    public void setUseTableIfExists(boolean useTableIfExists) {
+        this.useTableIfExists = useTableIfExists;
+    }
+
+    public Alter withUseTableIfExists(boolean useTableIfExists) {
+        this.useTableIfExists = useTableIfExists;
+        return this;
     }
 
     public void addAlterExpression(AlterExpression alterExpression) {
@@ -71,9 +86,13 @@ public class Alter implements Statement {
             b.append("ONLY ");
         }
 
-        if (alterExpressions.size()>0 && alterExpressions.get(0).getOperation()==AlterOperation.RENAME_TABLE && alterExpressions.get(0).isUsingIfExists()) {
+        if (useTableIfExists) {
             b.append("IF EXISTS ");
         }
+
+//        if (alterExpressions.size()>0 && alterExpressions.get(0).getOperation()==AlterOperation.RENAME_TABLE && alterExpressions.get(0).isUsingIfExists()) {
+//            b.append("IF EXISTS ");
+//        }
 
         b.append(table.getFullyQualifiedName()).append(" ");
 

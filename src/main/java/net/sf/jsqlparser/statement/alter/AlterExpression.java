@@ -70,6 +70,8 @@ public class AlterExpression implements Serializable {
 
     private String truncatePartitionName = null;
 
+    private boolean useIfNotExists = false;
+
     public Index getOldIndex() {
         return oldIndex;
     }
@@ -417,6 +419,19 @@ public class AlterExpression implements Serializable {
         return this;
     }
 
+    public boolean isUseIfNotExists() {
+        return useIfNotExists;
+    }
+
+    public void setUseIfNotExists(boolean useIfNotExists) {
+        this.useIfNotExists = useIfNotExists;
+    }
+
+    public AlterExpression withUserIfNotExists(boolean userIfNotExists) {
+        this.useIfNotExists = userIfNotExists;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -492,6 +507,10 @@ public class AlterExpression implements Serializable {
                 } else {
                     if (hasColumn) {
                         b.append("COLUMN ");
+                    }
+                    if (useIfNotExists
+                            && operation == AlterOperation.ADD) {
+                        b.append("IF NOT EXISTS ");
                     }
                 }
                 if (useBrackets && colDataTypeList.size() == 1) {

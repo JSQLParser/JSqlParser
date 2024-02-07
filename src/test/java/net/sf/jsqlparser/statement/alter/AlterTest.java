@@ -988,4 +988,11 @@ public class AlterTest {
                 "ALTER TABLE xdmiddle.ft_mid_sop_sms_send_list_daily TRUNCATE PARTITION sum_date";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+
+    @Test
+    public void testIssue1875() throws JSQLParserException {
+        String stmt =
+                "ALTER TABLE IF EXISTS usercenter.dict_surgeries ADD COLUMN IF NOT EXISTS operation_grade_id int8 NULL";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+    }
 }

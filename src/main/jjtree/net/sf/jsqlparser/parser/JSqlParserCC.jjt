@@ -6293,7 +6293,7 @@ AlterExpression AlterExpression():
                 |
                 LOOKAHEAD(3) (
                     ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
-
+                    [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
                     (
                         LOOKAHEAD(4) (
                             "(" 
@@ -6625,14 +6625,10 @@ Alter AlterTable():
 {
     <K_TABLE>
     [ <K_ONLY> { alter.setUseOnly(true); } ]
-    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { usingIfExists = true; } ]
-
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alter.setUseTableIfExists(true); } ]
     table=Table() { alter.setTable(table); }
 
-    alterExp=AlterExpression() { if (usingIfExists)
-                                    alter.addAlterExpression( alterExp.withUsingIfExists(true) );
-                                  else
-                                    alter.addAlterExpression(alterExp); }
+    alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
 
     ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
 
