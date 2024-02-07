@@ -544,7 +544,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         buffer.append(tableColumn.getColumnName());
         if (tableColumn.isUseSubColumn()) {
-            buffer.append("[").append(tableColumn.getSubColumnFirst()).append(",").append(tableColumn.getSubColumnLast()).append("]");
+            buffer.append("[").append(tableColumn.getSubColumnFirst()).append(",")
+                    .append(tableColumn.getSubColumnLast()).append("]");
         }
         if (tableColumn.getArrayConstructor() != null) {
             tableColumn.getArrayConstructor().accept(this);
