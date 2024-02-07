@@ -1806,17 +1806,26 @@ Column Column() #Column :
     List<String> data = new ArrayList<String>();
     ArrayConstructor arrayConstructor = null;
     Token tk = null;
+    Token subColumnFirst = null;
+    Token subColumnLast = null;
 }
 {
     data = RelObjectNameList()
+    ( LOOKAHEAD(5) "[" subColumnFirst=<S_LONG> "," subColumnLast=<S_LONG> "]" )?
     [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
     [ "." <K_NEXTVAL> { data.add("nextval"); } ]
 
-    [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
+    [ LOOKAHEAD(5) arrayConstructor = ArrayConstructor(false) ]
+
     {
         Column col = new Column(data);
         if (tk != null) { col.withCommentText(tk.image); }
+        if (subColumnFirst != null && subColumnLast != null ) {
+            col.withUseSubColumn(true);
+            col.withSubColumnFirst(Long.parseLong(subColumnFirst.image));
+            col.withSubColumnLast(Long.parseLong(subColumnLast.image));
+        }
         if (arrayConstructor!=null) {
             col.setArrayConstructor(arrayConstructor);
         }

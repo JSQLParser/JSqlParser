@@ -25,6 +25,12 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     private String commentText;
     private ArrayConstructor arrayConstructor;
 
+    private boolean useSubColumn;
+
+    private Long subColumnFirst;
+
+    private Long subColumnLast;
+
     public Column() {}
 
     public Column(Table table, String columnName) {
@@ -114,6 +120,10 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
             fqn.append(columnName);
         }
 
+        if (useSubColumn) {
+            fqn.append("[").append(subColumnFirst).append(",").append(subColumnLast).append("]");
+        }
+
         if (commentText != null) {
             fqn.append(" COMMENT ");
             fqn.append(commentText);
@@ -163,5 +173,44 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public String getCommentText() {
         return commentText;
+    }
+
+    public boolean isUseSubColumn() {
+        return useSubColumn;
+    }
+
+    public void setUseSubColumn(boolean useSubColumn) {
+        this.useSubColumn = useSubColumn;
+    }
+
+    public Column withUseSubColumn(boolean useSubColumn) {
+        this.setUseSubColumn(useSubColumn);
+        return this;
+    }
+
+    public Long getSubColumnFirst() {
+        return subColumnFirst;
+    }
+
+    public void setSubColumnFirst(Long subColumnFirst) {
+        this.subColumnFirst = subColumnFirst;
+    }
+
+    public Column withSubColumnFirst(Long subColumnFirst) {
+        this.setSubColumnFirst(subColumnFirst);
+        return this;
+    }
+
+    public Long getSubColumnLast() {
+        return subColumnLast;
+    }
+
+    public void setSubColumnLast(Long subColumnLast) {
+        this.subColumnLast = subColumnLast;
+    }
+
+    public Column withSubColumnLast(Long subColumnLast) {
+        this.setSubColumnLast(subColumnLast);
+        return this;
     }
 }

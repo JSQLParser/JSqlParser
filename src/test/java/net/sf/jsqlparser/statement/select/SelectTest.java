@@ -5819,4 +5819,15 @@ public class SelectTest {
         String stmt = "SELECT age, name, gender FROM user_info INTO TEMP user_temp WITH NO LOG";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+
+    @Test
+    public void testIssue1834() throws JSQLParserException {
+        String stmt =
+                "SELECT age, name, gender, citiy_code FROM user_info WHERE city_code[1,4] = '3301'";
+        assertSqlCanBeParsedAndDeparsed(stmt);
+
+        String stmt2 =
+                "SELECT age[1,2], name, gender, citiy_code FROM user_info WHERE city_code[1,4] = '3301'";
+        assertSqlCanBeParsedAndDeparsed(stmt2);
+    }
 }
