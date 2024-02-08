@@ -6273,8 +6273,7 @@ AlterExpression AlterExpression():
             )
 
             (
-                LOOKAHEAD(2)
-                (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
+                LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
 
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]

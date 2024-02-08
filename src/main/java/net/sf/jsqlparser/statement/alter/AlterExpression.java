@@ -774,7 +774,7 @@ public class AlterExpression implements Serializable {
         @Override
         public String toString() {
             return getColumnName() + (withType ? " TYPE " : getColDataType() == null ? "" : " ")
-                + toStringDataTypeAndSpec();
+                    + toStringDataTypeAndSpec();
         }
 
         @Override

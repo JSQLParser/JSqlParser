@@ -363,7 +363,7 @@ public class AlterTest {
     @Test
     public void testAlterTableModifyColumn3() throws JSQLParserException {
         Alter alter =
-            (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 NULL");
+                (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 NULL");
         AlterExpression alterExpression = alter.getAlterExpressions().get(0);
 
         // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
@@ -377,7 +377,7 @@ public class AlterTest {
     @Test
     public void testAlterTableModifyColumn4() throws JSQLParserException {
         Alter alter =
-            (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 DEFAULT 0");
+                (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 DEFAULT 0");
         AlterExpression alterExpression = alter.getAlterExpressions().get(0);
 
         // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
