@@ -361,6 +361,34 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableModifyColumn3() throws JSQLParserException {
+        Alter alter =
+                (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 NULL");
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+
+        // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
+        assertStatementCanBeDeparsedAs(alter, "ALTER TABLE mytable MODIFY col1 NULL");
+
+        assertEquals(AlterOperation.MODIFY, alterExpression.getOperation());
+
+        assertFalse(alterExpression.hasColumn());
+    }
+
+    @Test
+    public void testAlterTableModifyColumn4() throws JSQLParserException {
+        Alter alter =
+                (Alter) CCJSqlParserUtil.parse("ALTER TABLE mytable modify col1 DEFAULT 0");
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+
+        // COLUMN keyword DOES NOT appear in deparsed statement, modify becomes all caps
+        assertStatementCanBeDeparsedAs(alter, "ALTER TABLE mytable MODIFY col1 DEFAULT 0");
+
+        assertEquals(AlterOperation.MODIFY, alterExpression.getOperation());
+
+        assertFalse(alterExpression.hasColumn());
+    }
+
+    @Test
     public void testAlterTableAlterColumn() throws JSQLParserException {
         // http://www.postgresqltutorial.com/postgresql-change-column-type/
         String sql =

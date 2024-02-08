@@ -6144,9 +6144,9 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     List<String> parameter = null;
 }
 {
-    columnName = RelObjectName()
+    columnName = RelObjectName() { columnSpecs = new ArrayList<String>(); }
     ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
-    dataType = ColDataType() { columnSpecs = new ArrayList<String>(); }
+    ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
         return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
@@ -6291,6 +6291,10 @@ AlterExpression AlterExpression():
                   [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
+                LOOKAHEAD(2) (
+                  sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
+                )
+                |
                 LOOKAHEAD(3) (
                     ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
                     [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
@@ -6433,8 +6437,6 @@ AlterExpression AlterExpression():
                     )
                    )
                 )
-                |
-                ( sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); } )
               )
       )
       |
