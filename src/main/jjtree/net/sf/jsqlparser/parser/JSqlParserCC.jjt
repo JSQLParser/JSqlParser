@@ -460,6 +460,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VARYING:"VARYING">
 |   <K_VERBOSE: "VERBOSE">
 |   <K_VIEW:"VIEW">
+|   <K_VOLATILE:"VOLATILE">
 |   <K_CONCURRENTLY:"CONCURRENTLY">
 |   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
@@ -5814,6 +5815,7 @@ CreateView CreateView(boolean isUsingOrReplace):
     [
         <K_TEMP> { createView.setTemporary(TemporaryOption.TEMP); }
         | <K_TEMPORARY> { createView.setTemporary(TemporaryOption.TEMPORARY); }
+        | <K_VOLATILE> { createView.setTemporary(TemporaryOption.VOLATILE); }
     ]
     [ <K_MATERIALIZED> { createView.setMaterialized(true);} ]
     <K_VIEW> view=Table() { createView.setView(view); }
