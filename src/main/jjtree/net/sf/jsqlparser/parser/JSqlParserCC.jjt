@@ -391,6 +391,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SAMPLE: "SAMPLE">
 |   <K_SAVEPOINT: "SAVEPOINT">
 |   <K_SCHEMA: "SCHEMA">
+|   <K_SECURE: "SECURE">
 |   <K_SEED: "SEED">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
@@ -5812,6 +5813,7 @@ CreateView CreateView(boolean isUsingOrReplace):
         <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); }
         | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
     ]
+    [ <K_SECURE> { createView.setSecure(true);} ]
     [
         <K_TEMP> { createView.setTemporary(TemporaryOption.TEMP); }
         | <K_TEMPORARY> { createView.setTemporary(TemporaryOption.TEMPORARY); }

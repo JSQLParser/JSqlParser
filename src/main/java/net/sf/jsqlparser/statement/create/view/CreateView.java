@@ -26,6 +26,7 @@ public class CreateView implements Statement {
     private ExpressionList<Column> columnNames = null;
     private boolean materialized = false;
     private ForceOption force = ForceOption.NONE;
+    private boolean secure = false;
     private TemporaryOption temp = TemporaryOption.NONE;
     private AutoRefreshOption autoRefresh = AutoRefreshOption.NONE;
     private boolean withReadOnly = false;
@@ -88,6 +89,14 @@ public class CreateView implements Statement {
         this.force = force;
     }
 
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
+
     public TemporaryOption getTemporary() {
         return temp;
     }
@@ -127,6 +136,9 @@ public class CreateView implements Statement {
             sql.append("OR REPLACE ");
         }
         appendForceOptionIfApplicable(sql);
+        if (secure) {
+            sql.append("SECURE ");
+        }
 
         if (temp != TemporaryOption.NONE) {
             sql.append(temp.name()).append(" ");

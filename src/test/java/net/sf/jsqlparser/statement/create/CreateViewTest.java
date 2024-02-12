@@ -120,6 +120,11 @@ public class CreateViewTest {
     }
 
     @Test
+    public void testCreateSecureView() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE SECURE VIEW myview AS SELECT * FROM mytable");
+    }
+
+    @Test
     public void testCreateVolatileView() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE VOLATILE VIEW myview AS SELECT * FROM mytable");
     }
