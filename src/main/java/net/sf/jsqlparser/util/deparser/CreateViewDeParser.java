@@ -53,6 +53,9 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
             default:
                 // nothing
         }
+        if (createView.isSecure()) {
+            buffer.append("SECURE ");
+        }
         if (createView.getTemporary() != TemporaryOption.NONE) {
             buffer.append(createView.getTemporary().name()).append(" ");
         }
