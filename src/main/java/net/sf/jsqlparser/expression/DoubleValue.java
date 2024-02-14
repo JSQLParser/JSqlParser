@@ -24,6 +24,9 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public DoubleValue(final String value) {
+        if (value == null || value.length() == 0) {
+            throw new IllegalArgumentException("value can neither be null nor empty.");
+        }
         String val = value;
         if (val.charAt(0) == '+') {
             val = val.substring(1);

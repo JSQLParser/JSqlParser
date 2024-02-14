@@ -25,6 +25,9 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public TimeValue(String value) {
+        if (value == null || value.length() == 0) {
+            throw new IllegalArgumentException("value can neither be null nor empty.");
+        }
         this.value = Time.valueOf(value.substring(1, value.length() - 1));
     }
 
