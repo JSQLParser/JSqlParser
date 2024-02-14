@@ -11,6 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
@@ -39,8 +40,22 @@ public class LongValueTest {
             value.getValue();
             fail("should not work");
         } catch (Exception e) {
-            //expected to fail
+            // expected to fail
         }
         assertEquals(new BigInteger(largeNumber), value.getBigIntegerValue());
+    }
+
+    @Test
+    public void testNullStringValue() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new LongValue((String) null);
+        });
+    }
+
+    @Test
+    public void testEmptyStringValue() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new LongValue("");
+        });
     }
 }
