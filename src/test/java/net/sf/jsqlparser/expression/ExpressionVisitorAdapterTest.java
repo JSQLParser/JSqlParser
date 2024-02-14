@@ -259,4 +259,13 @@ public class ExpressionVisitorAdapterTest {
         assertNotNull(holder[0]);
         assertEquals("a.*", holder[0].toString());
     }
+
+    @Test
+    public void testAnalyticExpressionWithPartialWindowElement() throws JSQLParserException {
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter();
+        Expression expression = CCJSqlParserUtil.parseExpression(
+                "SUM(\"Spent\") OVER (PARTITION BY \"ID\" ORDER BY \"Name\" ASC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)");
+
+        expression.accept(adapter);
+    }
 }
