@@ -3666,8 +3666,6 @@ Expression Between(Expression leftExpression) :
         (
             LOOKAHEAD( 3 ) betweenExpressionStart = ParenthesedSelect()
             |
-            LOOKAHEAD( SimpleFunction() ) betweenExpressionStart = SimpleFunction()
-            |
             LOOKAHEAD( RegularCondition() ) betweenExpressionStart = RegularCondition()
             |
             betweenExpressionStart  = SimpleExpression()
@@ -3676,8 +3674,6 @@ Expression Between(Expression leftExpression) :
         <K_AND>
         (
             LOOKAHEAD( 3 ) betweenExpressionEnd = ParenthesedSelect()
-            |
-            LOOKAHEAD( SimpleFunction() ) betweenExpressionEnd = SimpleFunction()
             |
             LOOKAHEAD( RegularCondition() ) betweenExpressionEnd = RegularCondition()
             |
