@@ -24,4 +24,10 @@ public class CastExpressionTest {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))", true);
         TestUtils.assertExpressionCanBeParsedAndDeparsed("CAST(ROW(dataid, value, calcMark) AS testcol)", true);
     }
+
+    @Test
+    void testDataKeywordIssue1969() throws Exception {
+        String sqlStr = "SELECT * FROM myschema.myfunction('test'::data.text_not_null)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

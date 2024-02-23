@@ -4361,6 +4361,7 @@ Expression PrimaryExpression() #PrimaryExpression:
         if (not) {
             retval = new NotExpression(retval, exclamationMarkNot);
         }
+        linkAST(retval, jjtThis);
         return retval;
     }
 }
@@ -5743,6 +5744,7 @@ ColDataType ColDataType():
 			| tk=<K_JSON>
 			| tk=<K_STRING>
 			| tk=<K_PUBLIC>
+			| tk=<K_DATA>
         ) { schema = tk.image; }
         [ "." type = RelObjectName() { schema += "." + type; } ]
         { colDataType.setDataType(schema); }
