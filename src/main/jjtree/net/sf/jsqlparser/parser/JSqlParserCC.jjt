@@ -530,6 +530,8 @@ SPECIAL_TOKEN:
 
 TOKEN:
 {
+<S_PARAMETER: ["$"] (["0"-"9"])+ >
+|
 <S_IDENTIFIER: <LETTER> (<PART_LETTER>)*>
 |   <#LETTER: <UnicodeIdentifierStart>
                 | <Nd> | [ "$" , "#", "_" ] // Not SQL:2016 compliant!
@@ -3126,26 +3128,19 @@ OrderByElement OrderByElement():
     }
 }
 
-JdbcParameter SimpleJdbcParameter() : {
+JdbcParameter JdbcParameter() : {
+    Token tk;
     JdbcParameter retval;
 }
 {
-    "?" { retval = new JdbcParameter(++jdbcParameterIndex, false); }
-		[ LOOKAHEAD(2) token = <S_LONG> { retval.setUseFixedIndex(true); retval.setIndex(Integer.valueOf(token.image)); } ]
-    {
-        return retval;
-    }
+    ( tk="?" | tk=<S_PARAMETER> )
+    { retval = new JdbcParameter(++jdbcParameterIndex, false, tk.image); }
+
+    [ LOOKAHEAD(2) token = <S_LONG> { retval.setUseFixedIndex(true); retval.setIndex(Integer.valueOf(token.image)); } ]
+
+    { return retval; }
 }
 
-JdbcNamedParameter SimpleJdbcNamedParameter() : {
-    String name;
-}
-{
-    ":" name = RelObjectNameExt()
-    {
-        return new JdbcNamedParameter(token.image);
-    }
-}
 
 Limit LimitWithOffset() #LimitWithOffset:
 {
@@ -3323,7 +3318,7 @@ Top Top():
     (
          token=<S_LONG>                      { top.setExpression(new LongValue(token.image)); }
        |
-         jdbc = SimpleJdbcParameter() { top.setExpression(jdbc); }
+         jdbc = JdbcParameter() { top.setExpression(jdbc); }
          /*"?"                                 { top.setExpression(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)(top.getExpression())).setUseFixedIndex(true); ((JdbcParameter)(top.getExpression())).setIndex(Integer.valueOf(token.image)); } ]*/
        |
        ":"                                  { top.setExpression(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
@@ -3354,7 +3349,7 @@ Skip Skip():
     (
          token=<S_LONG>                      { skip.setRowCount(Long.parseLong(token.image)); }
                 | token=<S_IDENTIFIER>              { skip.setVariable(token.image); }
-                | jdbc = SimpleJdbcParameter() { skip.setJdbcParameter(jdbc); }
+                | jdbc = JdbcParameter() { skip.setJdbcParameter(jdbc); }
                    /* "?" { skip.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setUseFixedIndex(true); skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
     )
     {
@@ -3396,7 +3391,7 @@ First First():
         |
         token=<S_IDENTIFIER> { first.setVariable(token.image); }
         |
-        jdbc = SimpleJdbcParameter() { first.setJdbcParameter(jdbc); }
+        jdbc = JdbcParameter() { first.setJdbcParameter(jdbc); }
     )
     {
         return first;
@@ -4235,9 +4230,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
-        | LOOKAHEAD(3) retval = SimpleJdbcParameter()
+        | retval = JdbcParameter()
 
-        | LOOKAHEAD(2) retval=JdbcNamedParameter()
+        | LOOKAHEAD(2) retval =JdbcNamedParameter()
 
         | LOOKAHEAD(3) retval=UserVariable()
 
@@ -4758,7 +4753,7 @@ IntervalExpression IntervalExpression() : {
 {
 
 { interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | LOOKAHEAD(SimpleJdbcParameter()) expr = SimpleJdbcParameter() | expr = JdbcNamedParameter() | LOOKAHEAD(Function()) expr = Function() | expr = Column())
+    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | LOOKAHEAD(JdbcParameter()) expr = JdbcParameter() | expr = JdbcNamedParameter() | LOOKAHEAD(Function()) expr = Function() | expr = Column())
     {
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);
@@ -5099,9 +5094,9 @@ FullTextSearch FullTextSearch() : {
     (
       againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
       |
-      jdbcParameter=SimpleJdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
+      jdbcParameter=JdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
       |
-      jdbcNamedParameter=SimpleJdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
+      jdbcNamedParameter=JdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
     )
     [
         (
