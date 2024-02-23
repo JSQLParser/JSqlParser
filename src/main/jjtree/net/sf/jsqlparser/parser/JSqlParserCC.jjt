@@ -427,6 +427,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
                          ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP")
                          | ("CURRENT" ( "_" | (" ")+ ) "TIME")
                          | ("CURRENT" ( "_" | (" ")+ ) "DATE")
+                         | ("CURRENT" ( "_" | (" ")+ ) "TIMEZONE")
                        ) ( "()" )?>
 |   <K_TIMEOUT:"TIMEOUT">
 |   <K_TRIM:"TRIM">
