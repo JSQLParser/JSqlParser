@@ -79,6 +79,10 @@ public final class CCJSqlParserUtil {
     public static Statement parse(String sql, Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
 
+        if (sql == null || sql.isEmpty()) {
+            return null;
+        }
+
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Statement statement = null;
         try {
@@ -92,8 +96,11 @@ public final class CCJSqlParserUtil {
     public static Statement parse(String sql, ExecutorService executorService,
             Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
-        Statement statement = null;
+        if (sql == null || sql.isEmpty()) {
+            return null;
+        }
 
+        Statement statement = null;
         // first, try to parse fast and simple
         CCJSqlParser parser = newParser(sql);
         if (consumer != null) {
@@ -122,6 +129,10 @@ public final class CCJSqlParserUtil {
     }
 
     public static CCJSqlParser newParser(String sql) {
+        if (sql == null || sql.isEmpty()) {
+            return null;
+        }
+
         return new CCJSqlParser(new StringProvider(sql));
     }
 
@@ -134,6 +145,10 @@ public final class CCJSqlParserUtil {
     }
 
     public static Node parseAST(String sql) throws JSQLParserException {
+        if (sql == null || sql.isEmpty()) {
+            return null;
+        }
+
         CCJSqlParser parser = newParser(sql);
         try {
             parser.Statement();
@@ -162,11 +177,19 @@ public final class CCJSqlParserUtil {
     }
 
     public static Expression parseExpression(String expression) throws JSQLParserException {
+        if (expression == null || expression.isEmpty()) {
+            return null;
+        }
+
         return parseExpression(expression, true);
     }
 
     public static Expression parseExpression(String expression, boolean allowPartialParse)
             throws JSQLParserException {
+        if (expression == null || expression.isEmpty()) {
+            return null;
+        }
+
         return parseExpression(expression, allowPartialParse, p -> {
         });
     }
@@ -174,8 +197,11 @@ public final class CCJSqlParserUtil {
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseExpression(String expressionStr, boolean allowPartialParse,
             Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        Expression expression = null;
+        if (expressionStr == null || expressionStr.isEmpty()) {
+            return null;
+        }
 
+        Expression expression = null;
         // first, try to parse fast and simple
         try {
             CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(false);
@@ -225,6 +251,9 @@ public final class CCJSqlParserUtil {
      * @see #parseCondExpression(String, boolean)
      */
     public static Expression parseCondExpression(String condExpr) throws JSQLParserException {
+        if (condExpr == null || condExpr.isEmpty()) {
+            return null;
+        }
         return parseCondExpression(condExpr, true);
     }
 
@@ -238,6 +267,9 @@ public final class CCJSqlParserUtil {
      */
     public static Expression parseCondExpression(String condExpr, boolean allowPartialParse)
             throws JSQLParserException {
+        if (condExpr == null || condExpr.isEmpty()) {
+            return null;
+        }
         return parseCondExpression(condExpr, allowPartialParse, p -> {
         });
     }
@@ -245,8 +277,11 @@ public final class CCJSqlParserUtil {
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public static Expression parseCondExpression(String conditionalExpressionStr,
             boolean allowPartialParse, Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        Expression expression = null;
+        if (conditionalExpressionStr == null || conditionalExpressionStr.isEmpty()) {
+            return null;
+        }
 
+        Expression expression = null;
         // first, try to parse fast and simple
         try {
             CCJSqlParser parser =
@@ -323,11 +358,19 @@ public final class CCJSqlParserUtil {
      * @return the statements parsed
      */
     public static Statements parseStatements(String sqls) throws JSQLParserException {
+        if (sqls == null || sqls.isEmpty()) {
+            return null;
+        }
+
         return parseStatements(sqls, null);
     }
 
     public static Statements parseStatements(String sqls, Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
+        if (sqls == null || sqls.isEmpty()) {
+            return null;
+        }
+
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         final Statements statements = parseStatements(sqls, executorService, consumer);
         executorService.shutdown();
@@ -343,8 +386,11 @@ public final class CCJSqlParserUtil {
     public static Statements parseStatements(String sqls, ExecutorService executorService,
             Consumer<CCJSqlParser> consumer)
             throws JSQLParserException {
-        Statements statements = null;
+        if (sqls == null || sqls.isEmpty()) {
+            return null;
+        }
 
+        Statements statements = null;
         CCJSqlParser parser = newParser(sqls);
         if (consumer != null) {
             consumer.accept(parser);

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -506,5 +507,11 @@ public class CCJSqlParserUtilTest {
                 +
                 " from tab";
         assertEquals(1122, CCJSqlParserUtil.getUnbalancedPosition(sqlStr));
+    }
+
+    @Test
+    void testParseEmpty() throws JSQLParserException {
+        assertNull(CCJSqlParserUtil.parse(""));
+        assertNull(CCJSqlParserUtil.parse((String) null));
     }
 }
