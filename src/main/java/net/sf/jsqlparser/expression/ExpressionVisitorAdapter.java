@@ -283,14 +283,7 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(ParenthesedSelect selectBody) {
-        if (selectVisitor != null) {
-            if (selectBody.getWithItemsList() != null) {
-                for (WithItem item : selectBody.getWithItemsList()) {
-                    item.accept(selectVisitor);
-                }
-            }
-            selectBody.accept(selectVisitor);
-        }
+        visit((Select) selectBody);
         if (selectBody.getPivot() != null) {
             selectBody.getPivot().accept(this);
         }
@@ -663,7 +656,14 @@ public class ExpressionVisitorAdapter
 
     @Override
     public void visit(Select selectBody) {
-
+        if (selectVisitor != null) {
+            if (selectBody.getWithItemsList() != null) {
+                for (WithItem item : selectBody.getWithItemsList()) {
+                    item.accept(selectVisitor);
+                }
+            }
+            selectBody.accept(selectVisitor);
+        }
     }
 
     @Override
