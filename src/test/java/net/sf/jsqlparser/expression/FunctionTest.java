@@ -38,4 +38,15 @@ class FunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+    @Test
+    void testChainedFunctions() throws JSQLParserException {
+        String sqlStr =
+                "select f1(a1=1).f2 = 1";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr =
+                "select f1(a1=1).f2(b).f2 = 1";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
 }
