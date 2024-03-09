@@ -279,7 +279,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <!-- dont switch to version 3.0.1, that makes the strange certificate problems --> 
+                <!-- 
+                dont switch to version 3.0.1, that makes the strange certificate problems 
+                start maven release with -Dmaven.wagon.http.ssl.allowall=true since JDK 1.8
+                does not have a complete truststore
+                --> 
                 <version>3.0.0-M7</version>
                 <configuration>
                     <localCheckout>true</localCheckout>
