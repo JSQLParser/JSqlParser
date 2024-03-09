@@ -214,7 +214,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         }
         
         if (onNullType!=null) {
-            switch(onNullType) {
+            switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL");
                     break;
@@ -227,7 +227,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         }
         
         if (uniqueKeysType!=null) {
-            switch(uniqueKeysType) {
+            switch (uniqueKeysType) {
                 case WITH:
                     builder.append(" WITH UNIQUE KEYS");
                     break;
@@ -260,7 +260,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         expressionOrderBy.toStringOrderByElements(builder);
         
         if (onNullType!=null) {
-            switch(onNullType) {
+            switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL ");
                     break;
