@@ -29,50 +29,50 @@
         <dependency>
             <groupId>net.java.dev.javacc</groupId>
             <artifactId>javacc</artifactId>
-            <version>7.0.13</version>
+            <version>[7.0.13,)</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>[2.15.1,)</version>
             <scope>test</scope>
         </dependency>
         <dependency>
         	<groupId>org.junit.jupiter</groupId>
         	<artifactId>junit-jupiter</artifactId>
-        	<version>5.9.2</version>
+        	<version>[5.10.2,)</version>
         	<scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.8.0</version>
+            <version>[5.11.0,)</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>4.8.0</version>
+            <version>[5.11.0,)</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.23.1</version>
+            <version>[3.25.3,)</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>[3.14.0,)</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.1.214</version>
+            <version>[2.2.224,)</version>
             <scope>test</scope>
         </dependency>
 
@@ -133,7 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.19.0</version>
+                <version>3.21.2</version>
                 <configuration>
                     <rulesets>
                         <!-- Custom local file system rule set -->
@@ -205,8 +205,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <showDeprecation>true</showDeprecation>
@@ -335,6 +335,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -543,14 +544,14 @@
                 <property>
                     <name>!skipCheckSources</name>
                 </property>
-                <jdk>[1.8,)</jdk>
+                <jdk>[11,)</jdk>
             </activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>verify-style</id>
@@ -602,7 +603,7 @@
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
                                 <artifactId>checkstyle</artifactId>
-                                <version>8.29</version>
+                                <version>${checkStyleVersion}</version>
                             </dependency>
                         </dependencies>
                     </plugin>
@@ -626,7 +627,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <pmdVersion>6.53.0</pmdVersion>
+        <pmdVersion>6.55.0</pmdVersion>
+        <checkStyleVersion>10.14.0</checkStyleVersion>
     </properties>
 
     <description>JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.

@@ -88,15 +88,15 @@ configurations {
 dependencies {
     testImplementation 'commons-io:commons-io:2.+'
     testImplementation 'org.apache.commons:commons-text:+'
-    testImplementation 'org.mockito:mockito-core:4.+'
-    testImplementation 'org.assertj:assertj-core:3.+'
-    testImplementation 'org.hamcrest:hamcrest-core:2.+'
-    testImplementation 'org.apache.commons:commons-lang3:3.+'
-    testImplementation 'com.h2database:h2:2.+'
+    testImplementation 'org.mockito:mockito-core:+'
+    testImplementation 'org.assertj:assertj-core:+'
+    testImplementation 'org.hamcrest:hamcrest-core:+'
+    testImplementation 'org.apache.commons:commons-lang3:+'
+    testImplementation 'com.h2database:h2:+'
 
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:+'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
@@ -122,8 +122,8 @@ java {
     withSourcesJar()
     withJavadocJar()
 
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
     // needed for XML-Doclet to work (since Doclet changed again with Java 13)
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
@@ -131,7 +131,7 @@ java {
 }
 
 compileJava {
-    options.release = 8
+    options.release = 11
 }
 
 javadoc {
