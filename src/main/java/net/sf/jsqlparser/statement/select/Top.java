@@ -10,10 +10,11 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.io.Serializable;
 
-public class Top implements Serializable {
+public class Top extends ASTNodeAccessImpl implements Serializable {
 
     private boolean hasParenthesis = false;
     private boolean isPercentage = false;
@@ -85,4 +86,5 @@ public class Top implements Serializable {
     public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
     }
+
 }

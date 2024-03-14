@@ -3175,14 +3175,13 @@ Limit PlainLimit() #PlainLimit:
 {
     // mysql-postgresql-> LIMIT (row_count | ALL | NULL)
     <K_LIMIT>
-     (
-        (
+    (
             LOOKAHEAD(3) rowCountExpression = ParenthesedSelect()
             |
             rowCountExpression = Expression()
-        ) { limit.setRowCount(rowCountExpression); }
-     )
+    )
     {
+        limit.setRowCount(rowCountExpression);
         linkAST(limit,jjtThis);
         return limit;
     }
@@ -3307,7 +3306,7 @@ OptimizeFor OptimizeFor():
 }
 
 // according to http://technet.microsoft.com/en-us/library/ms189463.aspx
-Top Top():
+Top Top() #Top:
 {
     Top top = new Top();
     Token token = null;
@@ -3317,23 +3316,25 @@ Top Top():
 {
     <K_TOP>
     (
-         token=<S_LONG>                      { top.setExpression(new LongValue(token.image)); }
-       |
-         jdbc = JdbcParameter() { top.setExpression(jdbc); }
-         /*"?"                                 { top.setExpression(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { ((JdbcParameter)(top.getExpression())).setUseFixedIndex(true); ((JdbcParameter)(top.getExpression())).setIndex(Integer.valueOf(token.image)); } ]*/
-       |
-       ":"                                  { top.setExpression(new JdbcNamedParameter()); } [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
-       |
-       "("
+        token=<S_LONG> { top.setExpression(new LongValue(token.image)); }
+        |
+        jdbc = JdbcParameter() { top.setExpression(jdbc); }
+        |
+        ":" { top.setExpression(new JdbcNamedParameter()); }
+        [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
+        |
+        "("
         expr=AdditiveExpression()
         {
             top.setExpression(expr);
             top.setParenthesis(true);
         }
         ")"
-    ) [ LOOKAHEAD(2) <K_PERCENT>            { top.setPercentage(true); } ]
-      [ LOOKAHEAD(2) <K_WITH_TIES>            { top.setWithTies(true); }]
+    )
+    [ LOOKAHEAD(2) <K_PERCENT> { top.setPercentage(true); } ]
+    [ LOOKAHEAD(2) <K_WITH_TIES> { top.setWithTies(true); } ]
     {
+        linkAST(top,jjtThis);
         return top;
     }
 }

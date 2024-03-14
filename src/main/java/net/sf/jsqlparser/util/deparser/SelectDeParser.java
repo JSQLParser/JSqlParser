@@ -116,6 +116,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
+    public void visit(Top top) {
+        buffer.append(top).append(" ");
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
@@ -176,7 +180,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         Top top = plainSelect.getTop();
         if (top != null) {
-            buffer.append(top).append(" ");
+            visit(top);
         }
 
         if (plainSelect.getMySqlSqlCacheFlag() != null) {
