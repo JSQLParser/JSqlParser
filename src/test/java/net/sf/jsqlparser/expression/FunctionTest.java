@@ -49,4 +49,10 @@ class FunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+
+    @Test
+    void testDatetimeParameter() throws JSQLParserException {
+        String sqlStr= "SELECT DATE(DATETIME '2016-12-25 23:59:59')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
