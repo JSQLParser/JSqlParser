@@ -4439,7 +4439,7 @@ DateTimeLiteralExpression DateTimeLiteralExpression() : {
 } {
     t=<K_DATETIMELITERAL>  { expr.setType(DateTimeLiteralExpression.DateTime.from(t.image)); }
 
-    t=<S_CHAR_LITERAL> { expr.setValue(t.image); return expr; }
+    ( t=<S_CHAR_LITERAL> | t=<S_QUOTED_IDENTIFIER> ) { expr.setValue(t.image); return expr; }
 }
 
 RangeExpression RangeExpression(Expression startExpression):
