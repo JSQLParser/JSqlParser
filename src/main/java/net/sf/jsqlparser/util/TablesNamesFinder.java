@@ -204,9 +204,24 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         return tables;
     }
 
+    public Set<String> getTablesOrOtherSources(Statement statement) {
+        init(false);
+        statement.accept(this);
+
+        HashSet<String> tablesOrOtherSources = new HashSet<>(tables);
+        tablesOrOtherSources.addAll(otherItemNames);
+
+        return tablesOrOtherSources;
+    }
+
     public static Set<String> findTables(String sqlStr) throws JSQLParserException {
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         return tablesNamesFinder.getTables(CCJSqlParserUtil.parse(sqlStr));
+    }
+
+    public static Set<String> findTablesOrOtherSources(String sqlStr) throws JSQLParserException {
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        return tablesNamesFinder.getTablesOrOtherSources(CCJSqlParserUtil.parse(sqlStr));
     }
 
     @Override
@@ -262,7 +277,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(WithItem withItem) {
-        otherItemNames.add(withItem.getAlias().getName().toLowerCase());
+        otherItemNames.add(withItem.getAlias().getName());
         withItem.getSelect().accept((SelectVisitor) this);
     }
 
@@ -322,8 +337,7 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(Table tableName) {
         String tableWholeName = extractTableName(tableName);
-        if (!otherItemNames.contains(tableWholeName.toLowerCase())
-                && !tables.contains(tableWholeName)) {
+        if (!otherItemNames.contains(tableWholeName)) {
             tables.add(tableWholeName);
         }
     }

@@ -531,5 +531,28 @@ public class TablesNamesFinderTest {
         assertThat(tables).containsExactly("t1", "t2");
 
     }
+
+    @Test
+    void testOtherSources() throws JSQLParserException {
+        String sqlStr = "WITH Datetimes AS (\n" +
+                "  SELECT DATETIME '2005-01-03 12:34:56' as datetime UNION ALL\n" +
+                "  SELECT DATETIME '2007-12-31' UNION ALL\n" +
+                "  SELECT DATETIME '2009-01-01' UNION ALL\n" +
+                "  SELECT DATETIME '2009-12-31' UNION ALL\n" +
+                "  SELECT DATETIME '2017-01-02' UNION ALL\n" +
+                "  SELECT DATETIME '2017-05-26'\n" +
+                ")\n" +
+                "SELECT\n" +
+                "  datetime,\n" +
+                "  EXTRACT(ISOYEAR FROM datetime) AS isoyear,\n" +
+                "  EXTRACT(WEEK FROM datetime) AS isoweek,\n" +
+                "  EXTRACT(YEAR FROM datetime) AS year,\n" +
+                "  /*APPROXIMATION: WEEK*/ EXTRACT(WEEK FROM datetime) AS week\n" +
+                "FROM Datetimes\n" +
+                "ORDER BY datetime\n" +
+                ";";
+        Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactly("Datetimes");
+    }
 }
 
