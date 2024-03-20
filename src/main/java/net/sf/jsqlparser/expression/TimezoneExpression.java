@@ -12,19 +12,30 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class TimezoneExpression extends ASTNodeAccessImpl implements Expression {
 
     private Expression leftExpression;
-    private ExpressionList<Expression> timezoneExpressions = new ExpressionList<>();
+    private final ExpressionList<Expression> timezoneExpressions = new ExpressionList<>();
+
+    public TimezoneExpression() {
+        leftExpression = null;
+    }
+
+    public TimezoneExpression(Expression leftExpression, Expression... timezoneExpressions) {
+        this.leftExpression = leftExpression;
+        this.timezoneExpressions.addAll(Arrays.asList(timezoneExpressions));
+    }
 
     public Expression getLeftExpression() {
         return leftExpression;
     }
 
-    public void setLeftExpression(Expression expression) {
-        leftExpression = expression;
+    public TimezoneExpression setLeftExpression(Expression expression) {
+        this.leftExpression = expression;
+        return this;
     }
 
     @Override
@@ -36,17 +47,17 @@ public class TimezoneExpression extends ASTNodeAccessImpl implements Expression 
         return timezoneExpressions;
     }
 
-    public void addTimezoneExpression(Expression timezoneExpr) {
-        this.timezoneExpressions.add(timezoneExpr);
+    public void addTimezoneExpression(Expression... timezoneExpr) {
+        this.timezoneExpressions.addAll(Arrays.asList(timezoneExpr));
     }
 
     @Override
     public String toString() {
-        String returnValue = getLeftExpression().toString();
+        StringBuilder returnValue = new StringBuilder(leftExpression.toString());
         for (Expression expr : timezoneExpressions) {
-            returnValue += " AT TIME ZONE " + expr.toString();
+            returnValue.append(" AT TIME ZONE ").append(expr.toString());
         }
 
-        return returnValue;
+        return returnValue.toString();
     }
 }
