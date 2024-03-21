@@ -348,12 +348,15 @@ tasks.register('renderRR') {
             src 'http://manticore-projects.com/download/convert.war'
             dest "$buildDir/rr/convert.war"
             overwrite false
+            onlyIfModified true
         }
 
         download.run {
             src 'http://manticore-projects.com/download/rr.war'
             dest "$buildDir/rr/rr.war"
             overwrite false
+            onlyIfModified true
+            tempAndMove true
         }
 
         javaexec {
