@@ -2476,7 +2476,7 @@ SelectItem SelectItem() #SelectItem:
         |
         LOOKAHEAD(AllTableColumns()) expression = AllTableColumns()
         |
-        LOOKAHEAD( Condition() ) expression = Condition()
+        LOOKAHEAD( 3 ) expression = XorExpression()
         |
         LOOKAHEAD( 3 ) expression = ConcatExpression()
         |
