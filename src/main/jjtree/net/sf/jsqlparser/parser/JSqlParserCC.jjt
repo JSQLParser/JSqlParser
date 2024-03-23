@@ -4248,7 +4248,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, { !interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD(Function(), { !interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD( Function(), { !interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -4267,7 +4267,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD(2, {!interrupted}) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
+        | LOOKAHEAD(3, {!interrupted}) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
 
         | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
 

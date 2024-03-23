@@ -55,4 +55,11 @@ class FunctionTest {
         String sqlStr= "SELECT DATE(DATETIME '2016-12-25 23:59:59')";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testFunctionArrayParameter() throws JSQLParserException {
+        String sqlStr = "select unnest(ARRAY[1,2,3], nested >= true) as a";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
