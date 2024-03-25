@@ -52,7 +52,7 @@ class FunctionTest {
 
     @Test
     void testDatetimeParameter() throws JSQLParserException {
-        String sqlStr= "SELECT DATE(DATETIME '2016-12-25 23:59:59')";
+        String sqlStr = "SELECT DATE(DATETIME '2016-12-25 23:59:59')";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
@@ -60,6 +60,19 @@ class FunctionTest {
     void testFunctionArrayParameter() throws JSQLParserException {
         String sqlStr = "select unnest(ARRAY[1,2,3], nested >= true) as a";
 
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testSubSelectArrayWithoutKeywordParameter() throws JSQLParserException {
+        String sqlStr = "SELECT\n" +
+                "  email,\n" +
+                "  REGEXP_CONTAINS(email, r'@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+') AS is_valid\n" +
+                "FROM\n" +
+                "  (SELECT\n" +
+                "    ['foo@example.com', 'bar@example.org', 'www.example.net']\n" +
+                "    AS addresses),\n" +
+                "  UNNEST(addresses) AS email";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

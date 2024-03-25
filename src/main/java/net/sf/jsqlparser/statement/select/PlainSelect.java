@@ -114,6 +114,10 @@ public class PlainSelect extends Select {
         return this;
     }
 
+    public PlainSelect withSelectItems(SelectItem<?>... selectItems) {
+        return this.withSelectItems(Arrays.asList(selectItems));
+    }
+
     public void setSelectItems(List<SelectItem<?>> list) {
         selectItems = list;
     }

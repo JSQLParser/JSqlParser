@@ -20,6 +20,12 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
     private boolean useIsNull = false;
     private boolean useNotNull = false;
 
+    public IsNullExpression() {}
+
+    public IsNullExpression(Expression leftExpression) {
+        this.leftExpression = leftExpression;
+    }
+
     public Expression getLeftExpression() {
         return leftExpression;
     }

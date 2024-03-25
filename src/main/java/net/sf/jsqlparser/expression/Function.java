@@ -36,6 +36,13 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private KeepExpression keep = null;
     private boolean ignoreNulls = false;
 
+    public Function() {}
+
+    public Function(String name, Expression... parameters) {
+        this.nameparts = Arrays.asList(name);
+        this.parameters = new ExpressionList<>(parameters);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

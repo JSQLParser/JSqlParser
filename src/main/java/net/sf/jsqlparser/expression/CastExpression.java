@@ -22,7 +22,19 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     private Expression leftExpression;
     private ColDataType colDataType = null;
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
-    private boolean useCastKeyword = true;
+
+    public CastExpression(String keyword, Expression leftExpression, String dataType) {
+        this.keyword = keyword;
+        this.leftExpression = leftExpression;
+        this.colDataType = new ColDataType(dataType);
+    }
+
+    // Implicit Cast
+    public CastExpression(Expression leftExpression, String dataType) {
+        this.keyword = null;
+        this.leftExpression = leftExpression;
+        this.colDataType = new ColDataType(dataType);
+    }
 
     public CastExpression(String keyword) {
         this.keyword = keyword;
@@ -61,17 +73,25 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         expressionVisitor.visit(this);
     }
 
+    @Deprecated
     public boolean isUseCastKeyword() {
-        return useCastKeyword;
+        return keyword != null && !keyword.isEmpty();
     }
 
+    @Deprecated
     public void setUseCastKeyword(boolean useCastKeyword) {
-        this.useCastKeyword = useCastKeyword;
+        if (useCastKeyword) {
+            if (keyword == null || keyword.isEmpty()) {
+                keyword = "CAST";
+            }
+        } else {
+            keyword = null;
+        }
     }
 
     @Override
     public String toString() {
-        if (useCastKeyword) {
+        if (keyword != null && !keyword.isEmpty()) {
             return columnDefinitions.size() > 1
                     ? keyword + "(" + leftExpression + " AS ROW("
                             + Select.getStringList(columnDefinitions) + "))"

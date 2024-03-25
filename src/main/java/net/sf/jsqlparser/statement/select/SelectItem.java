@@ -23,12 +23,17 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
         this.alias = alias;
     }
 
+    public SelectItem(T expression, String aliasName) {
+        this.expression = expression;
+        this.alias = new Alias(aliasName);
+    }
+
     public SelectItem() {
-        this(null, null);
+        this(null, (Alias) null);
     }
 
     public SelectItem(T expression) {
-        this(expression, null);
+        this(expression, (Alias) null);
     }
 
     public static SelectItem<?> from(Expression expression, Alias alias) {
