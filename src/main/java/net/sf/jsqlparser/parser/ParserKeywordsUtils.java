@@ -110,7 +110,6 @@ public class ParserKeywordsUtils {
             {"PROCEDURE", RESTRICTED_ALIAS},
             {"PUBLIC", RESTRICTED_ALIAS},
             {"RECURSIVE", RESTRICTED_SQL2016},
-            {"REGEXP", RESTRICTED_SQL2016},
             {"RETURNING", RESTRICTED_JSQLPARSER},
             {"RIGHT", RESTRICTED_SQL2016},
             {"SAMPLE", RESTRICTED_ALIAS},
