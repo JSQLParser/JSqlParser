@@ -50,6 +50,7 @@ import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.StructType;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -112,6 +113,7 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -707,5 +709,14 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(TSQLRightJoin tsqlRightJoin) {
         tsqlRightJoin.getLeftExpression().accept(this);
         tsqlRightJoin.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(StructType structType) {
+        if (structType.getArguments() != null) {
+            for (SelectItem<?> selectItem : structType.getArguments()) {
+                selectItem.getExpression().accept(this);
+            }
+        }
     }
 }

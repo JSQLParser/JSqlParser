@@ -692,4 +692,14 @@ public class ExpressionVisitorAdapter
         visitBinaryExpression(tsqlRightJoin);
     }
 
+    @Override
+    public void visit(StructType structType) {
+        // @todo: visit the ColType also
+        if (structType.getArguments() != null) {
+            for (SelectItem<?> selectItem : structType.getArguments()) {
+                visit(selectItem);
+            }
+        }
+    }
+
 }

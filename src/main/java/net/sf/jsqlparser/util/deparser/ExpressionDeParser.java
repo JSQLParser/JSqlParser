@@ -51,6 +51,7 @@ import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.StructType;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -107,16 +108,19 @@ import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
 import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -1104,6 +1108,46 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(TSQLRightJoin tsqlRightJoin) {
         visitBinaryExpression(tsqlRightJoin, " =* ");
+    }
+
+    @Override
+    public void visit(StructType structType) {
+        if (structType.getKeyword() != null) {
+            buffer.append(structType.getKeyword());
+        }
+
+        if (structType.getParameters() != null && !structType.getParameters().isEmpty()) {
+            buffer.append("<");
+            int i = 0;
+            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
+                if (0 < i++) {
+                    buffer.append(",");
+                }
+                // optional name
+                if (e.getKey() != null && !e.getKey().isEmpty()) {
+                    buffer.append(e.getKey()).append(" ");
+                }
+
+                // mandatory type
+                buffer.append(e.getValue());
+            }
+
+            buffer.append(">");
+        }
+
+        if (structType.getArguments() != null && !structType.getArguments().isEmpty()) {
+            buffer.append("(");
+            int i = 0;
+
+            for (SelectItem<?> e : structType.getArguments()) {
+                if (0 < i++) {
+                    buffer.append(",");
+                }
+                e.appendTo(buffer);
+            }
+
+            buffer.append(")");
+        }
     }
 
 }

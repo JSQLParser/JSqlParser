@@ -57,6 +57,7 @@ import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.StructType;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -1175,6 +1176,15 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     @Override
     public void visit(TSQLRightJoin tsqlRightJoin) {
         visitBinaryExpression(tsqlRightJoin);
+    }
+
+    @Override
+    public void visit(StructType structType) {
+        if (structType.getArguments() != null) {
+            for (SelectItem<?> selectItem : structType.getArguments()) {
+                selectItem.getExpression().accept(this);
+            }
+        }
     }
 
     @Override

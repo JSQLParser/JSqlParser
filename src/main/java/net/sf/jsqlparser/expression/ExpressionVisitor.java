@@ -246,4 +246,5 @@ public interface ExpressionVisitor {
 
     void visit(TSQLRightJoin tsqlRightJoin);
 
+    void visit(StructType structType);
 }
