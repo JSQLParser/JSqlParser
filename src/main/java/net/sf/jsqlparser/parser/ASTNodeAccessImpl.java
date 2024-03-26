@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.parser;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 public class ASTNodeAccessImpl implements ASTNodeAccess {
 
     private transient SimpleNode node;
@@ -24,11 +27,20 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        // don't add spaces around the following punctuation
+        final Set<String> punctuation = new TreeSet<>(Set.of(".", "[", "]"));
+
         SimpleNode simpleNode = getASTNode();
         Token token = simpleNode.jjtGetFirstToken();
         Token lastToken = simpleNode.jjtGetLastToken();
+        Token prevToken = null;
         while (token.next != null && token.absoluteEnd <= lastToken.absoluteEnd) {
-            builder.append(" ").append(token.image);
+            if (!punctuation.contains(token.image)
+                    && (prevToken == null || !punctuation.contains(prevToken.image))) {
+                builder.append(" ");
+            }
+            builder.append(token.image);
+            prevToken = token;
             token = token.next;
         }
         return builder;
