@@ -487,6 +487,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_YAML:"YAML">
 |   <K_YES:"YES">
 |   <K_ZONE:"ZONE">
+
+|   <OPENING_CURLY_BRACKET: "{">
+|   <CLOSING_CURLY_BRACKET: "}">
+|   <DOUBLE_COLON: ":">
 }
 
 TOKEN : /* Statement Separators */
@@ -4516,11 +4520,13 @@ List<Map.Entry<String, ColDataType>> StructParameters():
 
 StructType StructType() #StruckType:
 {
+    StructType.Dialect dialect = StructType.Dialect.BIG_QUERY;
     Token tk1;
     String keyword = "";
     List<Map.Entry<String, ColDataType>> parameters = null;
     List<SelectItem<?>> arguments = null;
-
+    String id = null;
+    Expression expression = null;
     StructType type;
 }
 {
@@ -4535,13 +4541,25 @@ StructType StructType() #StruckType:
             tk1=<K_STRUCT> { keyword = tk1.image; }
             "(" arguments = SelectItemsList() ")"
         )
+        |
+        (
+            <OPENING_CURLY_BRACKET> { arguments= new  ArrayList<SelectItem<?>>(); dialect = StructType.Dialect.DUCKDB;}
+
+            id = RelObjectName() <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
+
+            (
+                ","
+                id = RelObjectName() <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
+            )*
+            <CLOSING_CURLY_BRACKET>
+        )
 
         // don't parse this as an Struct, but rather use an Expressionlist
         // |
         // arguments = StructArguments()
     )
     {
-        type = new StructType(keyword, parameters, arguments);
+        type = new StructType(dialect, keyword, parameters, arguments);
         linkAST(type,jjtThis);
         return type;
     }

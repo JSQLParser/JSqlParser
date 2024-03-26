@@ -1136,17 +1136,30 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         if (structType.getArguments() != null && !structType.getArguments().isEmpty()) {
-            buffer.append("(");
-            int i = 0;
-
-            for (SelectItem<?> e : structType.getArguments()) {
-                if (0 < i++) {
-                    buffer.append(",");
+            if (structType.getDialect()==StructType.Dialect.DUCKDB) {
+                buffer.append("{ ");
+                int i = 0;
+                for (SelectItem<?> e : structType.getArguments()) {
+                    if (0 < i++) {
+                        buffer.append(",");
+                    }
+                    buffer.append(e.getAlias().getName());
+                    buffer.append(":");
+                    buffer.append(e.getExpression());
                 }
-                e.appendTo(buffer);
-            }
+                buffer.append(" }");
+            } else {
+                buffer.append("(");
+                int i = 0;
+                for (SelectItem<?> e : structType.getArguments()) {
+                    if (0 < i++) {
+                        buffer.append(",");
+                    }
+                    e.appendTo(buffer);
+                }
 
-            buffer.append(")");
+                buffer.append(")");
+            }
         }
     }
 

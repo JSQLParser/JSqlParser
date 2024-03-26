@@ -59,7 +59,7 @@ public class TestUtils {
 
     // Assure SPACE around Syntax Characters
     private static final Pattern SQL_SANITATION_PATTERN2 =
-            Pattern.compile("\\s*([!/,()=+\\-*|\\]<>:\\[\\]])\\s*", Pattern.MULTILINE);
+            Pattern.compile("\\s*([!/,()=+\\-*|\\]<>:\\[\\]\\{\\}])\\s*", Pattern.MULTILINE);
 
     /**
      * @param statement

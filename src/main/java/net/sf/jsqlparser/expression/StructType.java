@@ -4,6 +4,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,20 +32,33 @@ import java.util.Map;
  * 
  */
 public class StructType extends ASTNodeAccessImpl implements Expression {
+    public enum Dialect { BIG_QUERY, DUCKDB };
+
+    public Dialect getDialect() {
+        return dialect;
+    }
+
+    public StructType setDialect(Dialect dialect) {
+        this.dialect = dialect;
+        return this;
+    }
+
+    private Dialect dialect = Dialect.BIG_QUERY;
     private String keyword;
     private List<Map.Entry<String, ColDataType>> parameters;
     private List<SelectItem<?>> arguments;
 
-    public StructType(String keyword, List<Map.Entry<String, ColDataType>> parameters,
+    public StructType(Dialect dialect, String keyword, List<Map.Entry<String, ColDataType>> parameters,
             List<SelectItem<?>> arguments) {
+        this.dialect = dialect;
         this.keyword = keyword;
         this.parameters = parameters;
         this.arguments = arguments;
     }
 
-    public StructType(List<Map.Entry<String, ColDataType>> parameters,
+    public StructType(Dialect dialect, List<Map.Entry<String, ColDataType>> parameters,
             List<SelectItem<?>> arguments) {
-        this.keyword = "STRUCT";
+        this.dialect = dialect;
         this.parameters = parameters;
         this.arguments = arguments;
     }
@@ -76,6 +90,15 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public StructType add(Expression expression, String aliasName) {
+        if (arguments==null) {
+            arguments= new ArrayList<>();
+        }
+        arguments.add(new SelectItem<>(expression, aliasName));
+
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         if (keyword != null) {
             builder.append(keyword);
@@ -102,17 +125,31 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
         }
 
         if (arguments != null && !arguments.isEmpty()) {
-            builder.append("(");
-            int i = 0;
 
-            for (SelectItem<?> e : arguments) {
-                if (0 < i++) {
-                    builder.append(",");
+            if (dialect==Dialect.DUCKDB) {
+                builder.append("{ ");
+                int i = 0;
+                for (SelectItem<?> e : arguments) {
+                    if (0 < i++) {
+                        builder.append(",");
+                    }
+                    builder.append(e.getAlias().getName());
+                    builder.append(":");
+                    builder.append(e.getExpression());
                 }
-                e.appendTo(builder);
-            }
+                builder.append(" }");
+            } else {
+                builder.append("(");
+                int i = 0;
+                for (SelectItem<?> e : arguments) {
+                    if (0 < i++) {
+                        builder.append(",");
+                    }
+                    e.appendTo(builder);
+                }
 
-            builder.append(")");
+                builder.append(")");
+            }
         }
 
         return builder;
