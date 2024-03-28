@@ -1112,11 +1112,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(StructType structType) {
-        if (structType.getKeyword() != null) {
+        if (structType.getDialect() != StructType.Dialect.DUCKDB
+                && structType.getKeyword() != null) {
             buffer.append(structType.getKeyword());
         }
 
-        if (structType.getParameters() != null && !structType.getParameters().isEmpty()) {
+        if (structType.getDialect() != StructType.Dialect.DUCKDB
+                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
             buffer.append("<");
             int i = 0;
             for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
@@ -1136,7 +1138,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         if (structType.getArguments() != null && !structType.getArguments().isEmpty()) {
-            if (structType.getDialect()==StructType.Dialect.DUCKDB) {
+            if (structType.getDialect() == StructType.Dialect.DUCKDB) {
                 buffer.append("{ ");
                 int i = 0;
                 for (SelectItem<?> e : structType.getArguments()) {
@@ -1160,6 +1162,20 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
                 buffer.append(")");
             }
+        }
+
+        if (structType.getDialect() == StructType.Dialect.DUCKDB
+                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
+            buffer.append("::STRUCT( ");
+            int i = 0;
+            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
+                if (0 < i++) {
+                    buffer.append(",");
+                }
+                buffer.append(e.getKey()).append(" ");
+                buffer.append(e.getValue());
+            }
+            buffer.append(")");
         }
     }
 

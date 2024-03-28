@@ -135,8 +135,6 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | PUBLIC               | Yes         |           | 
 +----------------------+-------------+-----------+
-| RECURSIVE            | Yes         | Yes       | 
-+----------------------+-------------+-----------+
 | RETURNING            | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | RIGHT                | Yes         | Yes       | 

@@ -26,11 +26,33 @@ class StructTypeTest {
 
     @Test
     void testStructTypeDuckDB() throws JSQLParserException {
-        //@todo: check why the white-space after the "{" is needed?!
+        // @todo: check why the white-space after the "{" is needed?!
         String sqlStr = "SELECT { t:'abc',len:5}";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         sqlStr = "SELECT UNNEST({ t:'abc', len:5 })";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT * from (SELECT UNNEST([{ t:'abc', len:5 }]))";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT * from (SELECT UNNEST([{ t:'abc', len:5 }, ('abc', 6) ], recursive => true))";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testStructTypeWithArgumentsDuckDB() throws JSQLParserException {
+        // @todo: check why the white-space after the "{" is needed?!
+        String sqlStr = "SELECT { t:'abc',len:5}::STRUCT( t VARCHAR, len INTEGER)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT t, len, LPAD(t, len, ' ') as padded from (\n" +
+                "select Unnest([\n" +
+                "  { t:'abc', len: 5}::STRUCT(t VARCHAR, len INTEGER),\n" +
+                "  { t:'abc', len: 5},\n" +
+                "  ('abc', 2),\n" +
+                "  ('例子', 4)\n" +
+                "], \"recursive\" => true))";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

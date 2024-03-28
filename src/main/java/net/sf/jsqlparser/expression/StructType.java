@@ -32,23 +32,13 @@ import java.util.Map;
  * 
  */
 public class StructType extends ASTNodeAccessImpl implements Expression {
-    public enum Dialect { BIG_QUERY, DUCKDB };
-
-    public Dialect getDialect() {
-        return dialect;
-    }
-
-    public StructType setDialect(Dialect dialect) {
-        this.dialect = dialect;
-        return this;
-    }
-
-    private Dialect dialect = Dialect.BIG_QUERY;
+    private Dialect dialect = Dialect.BIG_QUERY;;
     private String keyword;
     private List<Map.Entry<String, ColDataType>> parameters;
     private List<SelectItem<?>> arguments;
 
-    public StructType(Dialect dialect, String keyword, List<Map.Entry<String, ColDataType>> parameters,
+    public StructType(Dialect dialect, String keyword,
+            List<Map.Entry<String, ColDataType>> parameters,
             List<SelectItem<?>> arguments) {
         this.dialect = dialect;
         this.keyword = keyword;
@@ -61,6 +51,15 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
         this.dialect = dialect;
         this.parameters = parameters;
         this.arguments = arguments;
+    }
+
+    public Dialect getDialect() {
+        return dialect;
+    }
+
+    public StructType setDialect(Dialect dialect) {
+        this.dialect = dialect;
+        return this;
     }
 
     public String getKeyword() {
@@ -91,8 +90,8 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
     }
 
     public StructType add(Expression expression, String aliasName) {
-        if (arguments==null) {
-            arguments= new ArrayList<>();
+        if (arguments == null) {
+            arguments = new ArrayList<>();
         }
         arguments.add(new SelectItem<>(expression, aliasName));
 
@@ -100,11 +99,11 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        if (keyword != null) {
+        if (dialect != Dialect.DUCKDB && keyword != null) {
             builder.append(keyword);
         }
 
-        if (parameters != null && !parameters.isEmpty()) {
+        if (dialect != Dialect.DUCKDB && parameters != null && !parameters.isEmpty()) {
             builder.append("<");
             int i = 0;
 
@@ -126,7 +125,7 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
 
         if (arguments != null && !arguments.isEmpty()) {
 
-            if (dialect==Dialect.DUCKDB) {
+            if (dialect == Dialect.DUCKDB) {
                 builder.append("{ ");
                 int i = 0;
                 for (SelectItem<?> e : arguments) {
@@ -152,6 +151,20 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
             }
         }
 
+        if (dialect == Dialect.DUCKDB && parameters != null && !parameters.isEmpty()) {
+            builder.append("::STRUCT( ");
+            int i = 0;
+
+            for (Map.Entry<String, ColDataType> e : parameters) {
+                if (0 < i++) {
+                    builder.append(",");
+                }
+                builder.append(e.getKey()).append(" ");
+                builder.append(e.getValue());
+            }
+            builder.append(")");
+        }
+
         return builder;
     }
 
@@ -163,5 +176,9 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
+    }
+
+    public enum Dialect {
+        BIG_QUERY, DUCKDB
     }
 }
