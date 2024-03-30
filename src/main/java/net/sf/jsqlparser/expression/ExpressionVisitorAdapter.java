@@ -702,4 +702,9 @@ public class ExpressionVisitorAdapter
         }
     }
 
+    @Override
+    public void visit(LambdaExpression lambdaExpression) {
+        lambdaExpression.getExpression().accept(this);
+    }
+
 }

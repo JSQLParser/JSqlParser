@@ -34,6 +34,7 @@ import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
@@ -718,5 +719,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
                 selectItem.getExpression().accept(this);
             }
         }
+    }
+
+    @Override
+    public void visit(LambdaExpression lambdaExpression) {
+        lambdaExpression.getExpression().accept(this);
     }
 }

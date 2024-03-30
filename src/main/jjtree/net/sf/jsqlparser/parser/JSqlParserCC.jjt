@@ -3879,7 +3879,7 @@ ExpressionList SimpleExpressionList():
 }
 {
     expr=SimpleExpression() { expressions.add(expr); }
-    ( LOOKAHEAD(2, {!interrupted} ) "," expr=SimpleExpression() { expressions.add(expr); } )*
+    ( LOOKAHEAD(2, {!interrupted} ) "," ( LOOKAHEAD(2) expr=LambdaExpression() | expr=SimpleExpression()) { expressions.add(expr); } )*
     {
         return expressions;
     }
@@ -3928,6 +3928,7 @@ ExpressionList ComplexExpressionList():
         LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            | LOOKAHEAD(2) expr=LambdaExpression()
             | expr=Expression()
         ) { expressions.add(expr); }
     )*
@@ -5199,6 +5200,35 @@ FullTextSearch FullTextSearch() : {
     {
         fs.setMatchColumns(matchedColumns);
         return fs;
+    }
+}
+
+LambdaExpression LambdaExpression() #LambdaExpression:
+{
+    String s;
+    ArrayList<String> identifiers = new ArrayList<String>();
+    Expression expression;
+    LambdaExpression lambdaExpression;
+}
+{
+//    wip, right now the Grammar works but collides with Multi Value Lists
+//    (
+//        LOOKAHEAD(3) "("
+//        s = RelObjectName() { identifiers.add(s); }
+//        ( "," s = RelObjectName() { identifiers.add(s); } )*
+//        ")"
+//    )
+//    |
+    (
+        s = RelObjectName() { identifiers.add(s); }
+    )
+
+    "->"
+    expression = Expression()
+    {
+        lambdaExpression = new LambdaExpression(identifiers, expression);
+        linkAST(lambdaExpression,jjtThis);
+        return lambdaExpression;
     }
 }
 
