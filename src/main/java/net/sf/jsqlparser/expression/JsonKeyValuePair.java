@@ -74,8 +74,9 @@ public class JsonKeyValuePair implements Serializable {
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 83 * hash + Objects.hashCode(this.key);
+    int prime1=7;
+    int prime2=83;
+    int hash = prime2 * prime1 + Objects.hashCode(this.key);
     return hash;
   }
 
