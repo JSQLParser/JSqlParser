@@ -11,8 +11,11 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -267,5 +270,45 @@ public class ExpressionVisitorAdapterTest {
                 "SUM(\"Spent\") OVER (PARTITION BY \"ID\" ORDER BY \"Name\" ASC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)");
 
         expression.accept(adapter);
+    }
+
+    @Test
+    public void testIncludesExpression() throws JSQLParserException {
+        final List<Object> exprList = new ArrayList<>();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
+            .parse("select id from foo where b includes ('A', 'B')");
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(IncludesExpression expr) {
+                super.visit(expr);
+                exprList.add(expr.getLeftExpression());
+                exprList.add(expr.getRightExpression());
+            }
+        });
+
+        assertTrue(exprList.get(0) instanceof Column);
+        assertTrue(exprList.get(1) instanceof ParenthesedExpressionList);
+    }
+
+    @Test
+    public void testExcludesExpression() throws JSQLParserException {
+        final List<Object> exprList = new ArrayList<>();
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
+            .parse("select id from foo where b Excludes ('A', 'B')");
+        Expression where = plainSelect.getWhere();
+        where.accept(new ExpressionVisitorAdapter() {
+
+            @Override
+            public void visit(ExcludesExpression expr) {
+                super.visit(expr);
+                exprList.add(expr.getLeftExpression());
+                exprList.add(expr.getRightExpression());
+            }
+        });
+
+        assertTrue(exprList.get(0) instanceof Column);
+        assertTrue(exprList.get(1) instanceof ParenthesedExpressionList);
     }
 }

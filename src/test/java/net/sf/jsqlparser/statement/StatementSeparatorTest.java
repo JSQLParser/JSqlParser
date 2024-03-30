@@ -62,4 +62,20 @@ public class StatementSeparatorTest {
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         Assertions.assertEquals(2, statements.size());
     }
+
+    @Test
+    void testSOQLIncludes() throws JSQLParserException {
+        String sqlStr =
+            "select name,\ngoods from test_table where option includes ('option1', 'option2')";
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        System.out.println(statement);
+    }
+
+    @Test
+    void testSOQLExcludes() throws JSQLParserException {
+        String sqlStr =
+            "select name,\ngoods from test_table where option excludes ('option1', 'option2')";
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        System.out.println(statement);
+    }
 }

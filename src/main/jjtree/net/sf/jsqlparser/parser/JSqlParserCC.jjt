@@ -224,6 +224,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ESCAPE:"ESCAPE">
 |   <K_EXCEPT:"EXCEPT">
 |   <K_EXCLUDE : "EXCLUDE">
+|   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
@@ -264,6 +265,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ILIKE:"ILIKE">
 |   <K_IN:"IN">
 |   <K_INCLUDE:"INCLUDE">
+|   <K_INCLUDES:"INCLUDES"> /* Salesforce SOQL */
 |   <K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
 |   <K_INCREMENT:"INCREMENT">
 |   <K_INDEX: "INDEX">
@@ -3609,6 +3611,10 @@ Expression SQLCondition():
         [
             LOOKAHEAD(2) (
                 (
+                LOOKAHEAD(ExcludesExpression()) result=ExcludesExpression(left)
+                |
+                LOOKAHEAD(IncludesExpression()) result=IncludesExpression(left)
+                |
                 LOOKAHEAD(2) result=Between(left)
                 |
                 result = MemberOfExpression(left)
@@ -3659,6 +3665,36 @@ Expression InExpression() #InExpression :
                                                 .setGlobal(usingGlobal);
         linkAST(inExpression,jjtThis);
         return inExpression;
+    }
+}
+
+Expression IncludesExpression(Expression leftExpression) #IncludesExpression :
+{
+    Token token;
+    Expression rightExpression;
+}
+{
+    <K_INCLUDES> (rightExpression = ParenthesedExpressionList())
+    {
+        IncludesExpression includesExpression =  new IncludesExpression(leftExpression, rightExpression);
+
+        linkAST(includesExpression,jjtThis);
+        return includesExpression;
+    }
+}
+
+Expression ExcludesExpression(Expression leftExpression) #ExcludesExpression :
+{
+    Token token;
+    Expression rightExpression;
+}
+{
+    <K_EXCLUDES> (rightExpression = ParenthesedExpressionList())
+    {
+        ExcludesExpression excludesExpression =  new ExcludesExpression(leftExpression, rightExpression);
+
+        linkAST(excludesExpression,jjtThis);
+        return excludesExpression;
     }
 }
 

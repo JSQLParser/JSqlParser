@@ -84,6 +84,7 @@ import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
@@ -91,6 +92,7 @@ import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -223,6 +225,18 @@ public class ExpressionValidator extends AbstractValidator<Expression>
             }
         }
         validateOptionalExpression(inExpression.getRightExpression(), this);
+    }
+
+    @Override
+    public void visit(IncludesExpression includesExpression) {
+        validateOptionalExpression(includesExpression.getLeftExpression(), this);
+        validateOptionalExpression(includesExpression.getRightExpression(), this);
+    }
+
+    @Override
+    public void visit(ExcludesExpression excludesExpression) {
+        validateOptionalExpression(excludesExpression.getLeftExpression(), this);
+        validateOptionalExpression(excludesExpression.getRightExpression(), this);
     }
 
     @Override
