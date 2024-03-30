@@ -25,7 +25,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
-import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -457,74 +456,60 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         expressionVisitor = visitor;
     }
 
+    private void appendJoinType(boolean condition, String type) {
+        if (condition) {
+            buffer.append(type);
+        }
+    }
+    private void appendJoinType(String type) {
+        buffer.append(type);
+    }
+
+
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deparseJoin(Join join) {
-        if (join.isGlobal()) {
-            buffer.append(" GLOBAL ");
-        }
 
+        appendJoinType(join.isGlobal(), " GLOBAL ");
         if (join.isSimple() && join.isOuter()) {
-            buffer.append(", OUTER ");
+            appendJoinType(", OUTER ");
         } else if (join.isSimple()) {
-            buffer.append(", ");
+            appendJoinType(", ");
         } else {
-
-            if (join.isNatural()) {
-                buffer.append(" NATURAL");
-            }
-
-            if (join.isRight()) {
-                buffer.append(" RIGHT");
-            } else if (join.isFull()) {
-                buffer.append(" FULL");
-            } else if (join.isLeft()) {
-                buffer.append(" LEFT");
-            } else if (join.isCross()) {
-                buffer.append(" CROSS");
-            }
-
-            if (join.isOuter()) {
-                buffer.append(" OUTER");
-            } else if (join.isInner()) {
-                buffer.append(" INNER");
-            } else if (join.isSemi()) {
-                buffer.append(" SEMI");
-            }
-
+            appendJoinType(join.isNatural(), " NATURAL");
+            appendJoinType(join.isRight(), " RIGHT");
+            appendJoinType(join.isFull(), " FULL");
+            appendJoinType(join.isLeft(), " LEFT");
+            appendJoinType(join.isCross(), " CROSS");
+            appendJoinType(join.isOuter(), " OUTER");
+            appendJoinType(join.isInner(), " INNER");
+            appendJoinType(join.isSemi(), " SEMI");
             if (join.isStraight()) {
-                buffer.append(" STRAIGHT_JOIN ");
+                appendJoinType(" STRAIGHT_JOIN ");
             } else if (join.isApply()) {
-                buffer.append(" APPLY ");
+                appendJoinType(" APPLY ");
             } else {
-                if (join.getJoinHint() != null) {
-                    buffer.append(" ").append(join.getJoinHint());
-                }
-                buffer.append(" JOIN ");
+                appendJoinType(join.getJoinHint() != null, " "+join.getJoinHint());
+                appendJoinType(" JOIN ");
             }
-
         }
-
-        FromItem fromItem = join.getFromItem();
-        fromItem.accept(this);
+        join.getFromItem().accept(this);
         if (join.isWindowJoin()) {
-            buffer.append(" WITHIN ");
-            buffer.append(join.getJoinWindow().toString());
+            appendJoinType(" WITHIN ");
+            appendJoinType(join.getJoinWindow().toString());
         }
         for (Expression onExpression : join.getOnExpressions()) {
-            buffer.append(" ON ");
+            appendJoinType(" ON ");
             onExpression.accept(expressionVisitor);
         }
         if (join.getUsingColumns().size() > 0) {
-            buffer.append(" USING (");
+            appendJoinType(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator
                     .hasNext();) {
                 Column column = iterator.next();
-                buffer.append(column.toString());
-                if (iterator.hasNext()) {
-                    buffer.append(", ");
-                }
+                appendJoinType(column.toString());
+                appendJoinType(iterator.hasNext(), ", ");
             }
-            buffer.append(")");
+            appendJoinType(")");
         }
 
     }
@@ -659,5 +644,4 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     void deParse(PlainSelect statement) {
         statement.accept((SelectVisitor) this);
     }
-
 }
