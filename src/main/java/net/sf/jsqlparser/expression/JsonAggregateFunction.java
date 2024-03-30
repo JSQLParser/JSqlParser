@@ -196,23 +196,20 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         }
         return builder;
     }
-    
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+
     public StringBuilder appendObject(StringBuilder builder) {
         builder.append("JSON_OBJECTAGG( ");
-        if (usingValueKeyword) {
-            if (usingKeyKeyword) {
-                builder.append("KEY ");
-            }
-            builder.append(key).append(" VALUE ").append(value);
-        } else {
-            builder.append(key).append(":").append(value);
-        }
-        
+        keywordAppender(builder);
         if (usingFormatJson) {
             builder.append(" FORMAT JSON");
         }
-        
+        nullTypeAppender(builder);
+        keysAppender(builder);
+        super.append(builder);
+        return builder;
+    }
+
+    public void nullTypeAppender(StringBuilder builder){
         if (onNullType!=null) {
             switch (onNullType) {
                 case NULL:
@@ -225,7 +222,20 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                     // this should never happen
             }
         }
-        
+    }
+    public void keywordAppender(StringBuilder builder){
+        if (usingValueKeyword) {
+            if (usingKeyKeyword) {
+                builder.append("KEY ");
+            }
+            builder.append(key).append(" VALUE ").append(value);
+        } else {
+            builder.append(key).append(":").append(value);
+        }
+
+    }
+    public void keysAppender(StringBuilder builder){
+
         if (uniqueKeysType!=null) {
             switch (uniqueKeysType) {
                 case WITH:
@@ -238,14 +248,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                     // this should never happen
             }
         }
-        
+
         builder.append(" ) ");
-        
-        
-        // FILTER( WHERE expression ) OVER windowNameOrSpecification
-        super.append(builder);
-        
-        return builder;
     }
     
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
