@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -352,5 +353,169 @@ public class NestedBracketsPerformanceTest {
                 + "                WHERE beschfehler_id = a.beschwkat_id ), 0 ) > 0\n";
 
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    @Disabled
+    void testIssue1983() throws JSQLParserException {
+        String sqlStr = "INSERT INTO\n" +
+                "C01_INDIV_TELBK_CUST_INFO_H_T2 (PARTY_ID, PARTY_SIGN_STAT_CD, SIGN_TM, CLOSE_TM)\n"
+                +
+                "SELECT\n" +
+                "A1.PARTY_ID,\n" +
+                "A1.PARTY_SIGN_STAT_CD,\n" +
+                "CAST(\n" +
+                "(\n" +
+                "CASE\n" +
+                "WHEN A1.SIGN_TM IS NULL\n" +
+                "OR A1.SIGN_TM = '' THEN CAST(\n" +
+                "CAST(\n" +
+                "CAST('ATkkIVQJZm' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "WHEN CHARACTERS (TRIM(A1.SIGN_TM)) <> 19\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 1, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 1, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 2, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 2, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 3, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 3, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 4, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 4, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 6, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 6, 1) > '1'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 7, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 7, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 9, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 9, 1) > '3'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 10, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 10, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 1, 4) = '0000'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 6, 2) = '00'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 9, 2) = '00'\n" +
+                "OR SUBSTR (TRIM(A1.SIGN_TM), 1, 1) = '0' THEN CAST(\n" +
+                "CAST(\n" +
+                "CAST('cDXtwdFyky' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "ELSE (\n" +
+                "CASE\n" +
+                "WHEN (\n" +
+                "CAST(SUBSTR (TRIM(A1.SIGN_TM), 9, 2) AS INTEGER) < 29\n" +
+                "AND SUBSTR (TRIM(A1.SIGN_TM), 6, 2) = '02'\n" +
+                ")\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.SIGN_TM), 9, 2) AS INTEGER) < 31\n" +
+                "AND SUBSTR (TRIM(A1.SIGN_TM), 6, 2) <> '02'\n" +
+                "AND SUBSTR (TRIM(A1.SIGN_TM), 6, 2) <= 12\n" +
+                ")\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.SIGN_TM), 9, 2) AS INTEGER) = 31\n" +
+                "AND SUBSTR (TRIM(A1.SIGN_TM), 6, 2) IN ('01', '03', '05', '07', '08', '10', '12')\n"
+                +
+                ") THEN CAST(A1.SIGN_TM AS TIMESTAMP)\n" +
+                "WHEN SUBSTR (TRIM(A1.SIGN_TM), 6, 2) || SUBSTR (TRIM(A1.SIGN_TM), 9, 2) = '0229'\n"
+                +
+                "AND (\n" +
+                "CAST(SUBSTR (TRIM(A1.SIGN_TM), 1, 4) AS INTEGER) MOD 400 = 0\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.SIGN_TM), 1, 4) AS INTEGER) MOD 4 = 0\n" +
+                "AND CAST(SUBSTR (TRIM(A1.SIGN_TM), 1, 4) AS INTEGER) MOD 100 <> 0\n" +
+                ")\n" +
+                ") THEN CAST(A1.SIGN_TM AS TIMESTAMP)\n" +
+                "ELSE CAST(\n" +
+                "CAST(\n" +
+                "CAST('cDXtwdFyky' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "END\n" +
+                ")\n" +
+                "END\n" +
+                ") AS DATE FORMAT 'YYYYMMDD'\n" +
+                "),\n" +
+                "CAST(\n" +
+                "(\n" +
+                "CASE\n" +
+                "WHEN A1.CLOSE_TM IS NULL\n" +
+                "OR A1.CLOSE_TM = '' THEN CAST(\n" +
+                "CAST(\n" +
+                "CAST('ATkkIVQJZm' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "WHEN CHARACTERS (TRIM(A1.CLOSE_TM)) <> 19\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 1, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 1, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 2, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 2, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 3, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 3, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 4, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 4, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 6, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 6, 1) > '1'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 7, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 7, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 9, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 9, 1) > '3'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 10, 1) < '0'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 10, 1) > '9'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 1, 4) = '0000'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) = '00'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 9, 2) = '00'\n" +
+                "OR SUBSTR (TRIM(A1.CLOSE_TM), 1, 1) = '0' THEN CAST(\n" +
+                "CAST(\n" +
+                "CAST('cDXtwdFyky' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "ELSE (\n" +
+                "CASE\n" +
+                "WHEN (\n" +
+                "CAST(SUBSTR (TRIM(A1.CLOSE_TM), 9, 2) AS INTEGER) < 29\n" +
+                "AND SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) = '02'\n" +
+                ")\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.CLOSE_TM), 9, 2) AS INTEGER) < 31\n" +
+                "AND SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) <> '02'\n" +
+                "AND SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) <= 12\n" +
+                ")\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.CLOSE_TM), 9, 2) AS INTEGER) = 31\n" +
+                "AND SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) IN ('01', '03', '05', '07', '08', '10', '12')\n"
+                +
+                ") THEN CAST(A1.CLOSE_TM AS TIMESTAMP)\n" +
+                "WHEN SUBSTR (TRIM(A1.CLOSE_TM), 6, 2) || SUBSTR (TRIM(A1.CLOSE_TM), 9, 2) = '0229'\n"
+                +
+                "AND (\n" +
+                "CAST(SUBSTR (TRIM(A1.CLOSE_TM), 1, 4) AS INTEGER) MOD 400 = 0\n" +
+                "OR (\n" +
+                "CAST(SUBSTR (TRIM(A1.CLOSE_TM), 1, 4) AS INTEGER) MOD 4 = 0\n" +
+                "AND CAST(SUBSTR (TRIM(A1.CLOSE_TM), 1, 4) AS INTEGER) MOD 100 <> 0\n" +
+                ")\n" +
+                ") THEN CAST(A1.CLOSE_TM AS TIMESTAMP)\n" +
+                "ELSE CAST(\n" +
+                "CAST(\n" +
+                "CAST('cDXtwdFyky' AS DATE FORMAT 'YYYYMMDD') AS DATE\n" +
+                ") || ' 00:00:00' AS TIMESTAMP\n" +
+                ")\n" +
+                "END\n" +
+                ")\n" +
+                "END\n" +
+                ") AS DATE FORMAT 'YYYYMMDD'\n" +
+                ")\n" +
+                "FROM\n" +
+                "T01_PTY_SIGN_H_T1 A1\n" +
+                "WHERE\n" +
+                "A1.PARTY_SIGN_TYPE_CD = 'CD_021'\n" +
+                "AND A1.ST_DT <= CAST('LDBCGtCIyo' AS DATE FORMAT 'YYYYMMDD')\n" +
+                "AND A1.END_DT > CAST('LDBCGtCIyo' AS DATE FORMAT 'YYYYMMDD')\n" +
+                "GROUP BY\n" +
+                "1,\n" +
+                "2,\n" +
+                "3,\n" +
+                "4";
+        CCJSqlParserUtil.parse(sqlStr, parser -> parser
+                .withSquareBracketQuotation(false)
+                .withAllowComplexParsing(true)
+                .withTimeOut(60000));
     }
 }

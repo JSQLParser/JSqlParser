@@ -5033,6 +5033,7 @@ CastExpression CastExpression():
     ColDataType type;
     Expression expression = null;
     boolean    useCastKeyword;
+    Token formatCharLiteral;
 }
 {
     (
@@ -5061,6 +5062,11 @@ CastExpression CastExpression():
         |
         type=ColDataType() { retval.setColDataType(type); }
     )
+
+    // BigQuery FORMAT clause
+    // https://cloud.google.com/bigquery/docs/reference/standard-sql/conversion_functions#cast_as_date
+    [ <K_FORMAT> formatCharLiteral=<S_CHAR_LITERAL> { retval.setFormat(formatCharLiteral.image); } ]
+
     ")"
 
     {

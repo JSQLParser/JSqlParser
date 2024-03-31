@@ -704,6 +704,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public void visit(CastExpression cast) {
         if (cast.isUseCastKeyword()) {
+            String formatStr = cast.getFormat() != null && !cast.getFormat().isEmpty()
+                    ? " FORMAT " + cast.getFormat()
+                    : "";
+
             buffer.append(cast.keyword).append("(");
             cast.getLeftExpression().accept(this);
             buffer.append(" AS ");
@@ -711,6 +715,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     cast.getColumnDefinitions().size() > 1
                             ? "ROW(" + Select.getStringList(cast.getColumnDefinitions()) + ")"
                             : cast.getColDataType().toString());
+            buffer.append(formatStr);
             buffer.append(")");
         } else {
             cast.getLeftExpression().accept(this);

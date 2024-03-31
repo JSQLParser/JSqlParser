@@ -23,6 +23,10 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     private ColDataType colDataType = null;
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
+    // BigQuery specific FORMAT clause:
+    // https://cloud.google.com/bigquery/docs/reference/standard-sql/conversion_functions#cast_as_date
+    private String format = null;
+
     public CastExpression(String keyword, Expression leftExpression, String dataType) {
         this.keyword = keyword;
         this.leftExpression = leftExpression;
@@ -89,13 +93,26 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         }
     }
 
+    public String getFormat() {
+        return format;
+    }
+
+    public CastExpression setFormat(String format) {
+        this.format = format;
+        return this;
+    }
+
     @Override
     public String toString() {
+        String formatStr = format != null && !format.isEmpty()
+                ? " FORMAT " + format
+                : "";
         if (keyword != null && !keyword.isEmpty()) {
             return columnDefinitions.size() > 1
                     ? keyword + "(" + leftExpression + " AS ROW("
-                            + Select.getStringList(columnDefinitions) + "))"
-                    : keyword + "(" + leftExpression + " AS " + colDataType.toString() + ")";
+                            + Select.getStringList(columnDefinitions) + ")" + formatStr + ")"
+                    : keyword + "(" + leftExpression + " AS " + colDataType.toString() + formatStr
+                            + ")";
         } else {
             return leftExpression + "::" + colDataType.toString();
         }

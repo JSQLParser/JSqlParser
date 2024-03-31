@@ -160,4 +160,10 @@ public class CaseExpressionTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testFormatClause() throws JSQLParserException {
+        String sqlStr = "SELECT CAST('18-12-03' AS DATE FORMAT 'YY-MM-DD') AS string_to_date";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
