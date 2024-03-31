@@ -66,7 +66,7 @@ public class StatementSeparatorTest {
     @Test
     void testSOQLIncludes() throws JSQLParserException {
         String sqlStr =
-            "select name,\ngoods from test_table where option includes ('option1', 'option2')";
+                "select name,\ngoods from test_table where option includes ('option1', 'option2')";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         System.out.println(statement);
     }
@@ -74,7 +74,7 @@ public class StatementSeparatorTest {
     @Test
     void testSOQLExcludes() throws JSQLParserException {
         String sqlStr =
-            "select name,\ngoods from test_table where option excludes ('option1', 'option2')";
+                "select name,\ngoods from test_table where option excludes ('option1', 'option2')";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         System.out.println(statement);
     }

@@ -276,7 +276,7 @@ public class ExpressionVisitorAdapterTest {
     public void testIncludesExpression() throws JSQLParserException {
         final List<Object> exprList = new ArrayList<>();
         PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
-            .parse("select id from foo where b includes ('A', 'B')");
+                .parse("select id from foo where b includes ('A', 'B')");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
@@ -296,7 +296,7 @@ public class ExpressionVisitorAdapterTest {
     public void testExcludesExpression() throws JSQLParserException {
         final List<Object> exprList = new ArrayList<>();
         PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil
-            .parse("select id from foo where b Excludes ('A', 'B')");
+                .parse("select id from foo where b Excludes ('A', 'B')");
         Expression where = plainSelect.getWhere();
         where.accept(new ExpressionVisitorAdapter() {
 
