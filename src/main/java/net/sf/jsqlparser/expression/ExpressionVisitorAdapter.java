@@ -225,6 +225,18 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
+    public void visit(IncludesExpression expr) {
+        expr.getLeftExpression().accept(this);
+        expr.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(ExcludesExpression expr) {
+        expr.getLeftExpression().accept(this);
+        expr.getRightExpression().accept(this);
+    }
+
+    @Override
     public void visit(IsNullExpression expr) {
         expr.getLeftExpression().accept(this);
     }

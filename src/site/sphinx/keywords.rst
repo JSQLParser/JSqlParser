@@ -45,6 +45,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | EXCEPT               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| EXCLUDES             | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | EXISTS               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
@@ -80,6 +82,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | ILIKE                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IN                   | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| INCLUDES             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | INNER                | Yes         | Yes       | 
 +----------------------+-------------+-----------+

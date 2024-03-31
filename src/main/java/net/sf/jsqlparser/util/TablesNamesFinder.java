@@ -89,6 +89,7 @@ import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
@@ -96,6 +97,7 @@ import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -417,6 +419,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public void visit(InExpression inExpression) {
         inExpression.getLeftExpression().accept(this);
         inExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(IncludesExpression includesExpression) {
+        includesExpression.getLeftExpression().accept(this);
+        includesExpression.getRightExpression().accept(this);
+    }
+
+    @Override
+    public void visit(ExcludesExpression excludesExpression) {
+        excludesExpression.getLeftExpression().accept(this);
+        excludesExpression.getRightExpression().accept(this);
     }
 
     @Override
