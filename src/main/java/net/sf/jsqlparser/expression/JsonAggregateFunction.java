@@ -20,20 +20,20 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class JsonAggregateFunction extends FilterOverImpl implements Expression {
     private JsonFunctionType functionType;
-    
+
     private Expression expression = null;
     private final OrderByClause expressionOrderBy = new OrderByClause();
-    
+
     private boolean usingKeyKeyword = false;
     private String key;
     private boolean usingValueKeyword = false;
     private Object value;
-    
+
     private boolean usingFormatJson = false;
-    
+
     private JsonAggregateOnNullType onNullType;
     private JsonAggregateUniqueKeysType uniqueKeysType;
-    
+
 
     public JsonAggregateOnNullType getOnNullType() {
         return onNullType;
@@ -42,7 +42,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setOnNullType(JsonAggregateOnNullType onNullType) {
         this.onNullType = onNullType;
     }
-    
+
     public JsonAggregateFunction withOnNullType(JsonAggregateOnNullType onNullType) {
         this.setOnNullType(onNullType);
         return this;
@@ -55,7 +55,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setUniqueKeysType(JsonAggregateUniqueKeysType uniqueKeysType) {
         this.uniqueKeysType = uniqueKeysType;
     }
-    
+
     public JsonAggregateFunction withUniqueKeysType(JsonAggregateUniqueKeysType uniqueKeysType) {
         this.setUniqueKeysType(uniqueKeysType);
         return this;
@@ -64,11 +64,12 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public JsonFunctionType getType() {
         return functionType;
     }
-    
+
     public void setType(JsonFunctionType type) {
-        this.functionType = Objects.requireNonNull(type, "The Type of the JSON Aggregate Function must not be null");
+        this.functionType = Objects.requireNonNull(type,
+                "The Type of the JSON Aggregate Function must not be null");
     }
-    
+
     public JsonAggregateFunction withType(JsonFunctionType type) {
         this.setType(type);
         return this;
@@ -76,9 +77,12 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
 
     public void setType(String typeName) {
         this.functionType = JsonFunctionType
-          .valueOf( Objects.requireNonNull(typeName, "The Type of the JSON Aggregate Function must not be null").toUpperCase());
+                .valueOf(Objects
+                        .requireNonNull(typeName,
+                                "The Type of the JSON Aggregate Function must not be null")
+                        .toUpperCase());
     }
-    
+
     public JsonAggregateFunction withType(String typeName) {
         this.setType(typeName);
         return this;
@@ -91,7 +95,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setExpression(Expression expression) {
         this.expression = expression;
     }
-    
+
     public JsonAggregateFunction withExpression(Expression expression) {
         this.setExpression(expression);
         return this;
@@ -104,7 +108,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setUsingKeyKeyword(boolean usingKeyKeyword) {
         this.usingKeyKeyword = usingKeyKeyword;
     }
-    
+
     public JsonAggregateFunction withUsingKeyKeyword(boolean usingKeyKeyword) {
         this.setUsingKeyKeyword(usingKeyKeyword);
         return this;
@@ -117,7 +121,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setKey(String key) {
         this.key = key;
     }
-    
+
     public JsonAggregateFunction withKey(String key) {
         this.setKey(key);
         return this;
@@ -130,7 +134,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setUsingValueKeyword(boolean usingValueKeyword) {
         this.usingValueKeyword = usingValueKeyword;
     }
-    
+
     public JsonAggregateFunction withUsingValueKeyword(boolean usingValueKeyword) {
         this.setUsingValueKeyword(usingValueKeyword);
         return this;
@@ -143,12 +147,12 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setValue(Object value) {
         this.value = value;
     }
-    
+
     public JsonAggregateFunction withValue(Object value) {
         this.setValue(value);
         return this;
     }
-    
+
     public boolean isUsingFormatJson() {
         return usingFormatJson;
     }
@@ -156,12 +160,12 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setUsingFormatJson(boolean usingFormatJson) {
         this.usingFormatJson = usingFormatJson;
     }
-    
+
     public JsonAggregateFunction withUsingFormatJson(boolean usingFormatJson) {
         this.setUsingFormatJson(usingFormatJson);
         return this;
     }
-     
+
     public List<OrderByElement> getExpressionOrderByElements() {
         return expressionOrderBy.getOrderByElements();
     }
@@ -169,8 +173,9 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void setExpressionOrderByElements(List<OrderByElement> orderByElements) {
         expressionOrderBy.setOrderByElements(orderByElements);
     }
-    
-    public JsonAggregateFunction withExpressionOrderByElements(List<OrderByElement> orderByElements) {
+
+    public JsonAggregateFunction withExpressionOrderByElements(
+            List<OrderByElement> orderByElements) {
         this.setExpressionOrderByElements(orderByElements);
         return this;
     }
@@ -179,7 +184,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
     }
-    
+
     // avoid countless Builder --> String conversion
     @Override
     public StringBuilder append(StringBuilder builder) {
@@ -192,7 +197,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                 break;
             default:
                 // this should never happen really
-                throw new UnsupportedOperationException("JSON Aggregate Function of the type " + functionType.name() + " has not been implemented yet.");
+                throw new UnsupportedOperationException("JSON Aggregate Function of the type "
+                        + functionType.name() + " has not been implemented yet.");
         }
         return builder;
     }
@@ -209,8 +215,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         return builder;
     }
 
-    public void nullTypeAppender(StringBuilder builder){
-        if (onNullType!=null) {
+    public void nullTypeAppender(StringBuilder builder) {
+        if (onNullType != null) {
             switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL");
@@ -223,7 +229,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
             }
         }
     }
-    public void keywordAppender(StringBuilder builder){
+
+    public void keywordAppender(StringBuilder builder) {
         if (usingValueKeyword) {
             if (usingKeyKeyword) {
                 builder.append("KEY ");
@@ -234,9 +241,10 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         }
 
     }
-    public void keysAppender(StringBuilder builder){
 
-        if (uniqueKeysType!=null) {
+    public void keysAppender(StringBuilder builder) {
+
+        if (uniqueKeysType != null) {
             switch (uniqueKeysType) {
                 case WITH:
                     builder.append(" WITH UNIQUE KEYS");
@@ -251,19 +259,19 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
 
         builder.append(" ) ");
     }
-    
+
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendArray(StringBuilder builder) {
         builder.append("JSON_ARRAYAGG( ");
         builder.append(expression).append(" ");
-        
+
         if (usingFormatJson) {
             builder.append("FORMAT JSON ");
         }
-        
+
         expressionOrderBy.toStringOrderByElements(builder);
-        
-        if (onNullType!=null) {
+
+        if (onNullType != null) {
             switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL ");
@@ -276,17 +284,17 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
             }
         }
         builder.append(") ");
-        
-        
+
+
         // FILTER( WHERE expression ) OVER windowNameOrSpecification
         super.append(builder);
-        
+
         return builder;
     }
 
     @Override
     public String toString() {
-       StringBuilder builder = new StringBuilder();
-       return append(builder).toString();
+        StringBuilder builder = new StringBuilder();
+        return append(builder).toString();
     }
 }

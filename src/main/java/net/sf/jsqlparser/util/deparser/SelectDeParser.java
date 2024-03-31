@@ -461,6 +461,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(type);
         }
     }
+
     private void appendJoinType(String type) {
         buffer.append(type);
     }
@@ -488,7 +489,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             } else if (join.isApply()) {
                 appendJoinType(" APPLY ");
             } else {
-                appendJoinType(join.getJoinHint() != null, " "+join.getJoinHint());
+                appendJoinType(join.getJoinHint() != null, " " + join.getJoinHint());
                 appendJoinType(" JOIN ");
             }
         }
