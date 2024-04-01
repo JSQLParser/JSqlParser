@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.schema;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.parser.IndexIds;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,10 +23,6 @@ import java.util.Optional;
  */
 public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
-    private static final int NAME_IDX = 0;
-    private static final int SCHEMA_IDX = 1;
-    private static final int DATABASE_IDX = 2;
-    private static final int SERVER_IDX = 3;
     private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
@@ -46,13 +43,13 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     }
 
     public Database getDatabase() {
-        return new Database(getIndex(DATABASE_IDX));
+        return new Database(getIndex(IndexIds.DATABASE.getID()));
     }
 
     public void setDatabase(Database database) {
-        setIndex(DATABASE_IDX, database.getDatabaseName());
+        setIndex(IndexIds.DATABASE.getID(), database.getDatabaseName());
         if (database.getServer() != null) {
-            setIndex(SERVER_IDX, database.getServer().getFullyQualifiedName());
+            setIndex(IndexIds.SERVER.getID(), database.getServer().getFullyQualifiedName());
         }
     }
 
@@ -62,11 +59,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     }
 
     public String getSchemaName() {
-        return getIndex(SCHEMA_IDX);
+        return getIndex(IndexIds.SCHEMA.getID());
     }
 
     public void setSchemaName(String string) {
-        setIndex(SCHEMA_IDX, string);
+        setIndex(IndexIds.SCHEMA.getID(), string);
     }
 
     public Sequence withSchemaName(String string) {
@@ -75,11 +72,11 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     }
 
     public String getName() {
-        return getIndex(NAME_IDX);
+        return getIndex(IndexIds.NAME.getID());
     }
 
     public void setName(String string) {
-        setIndex(NAME_IDX, string);
+        setIndex(IndexIds.NAME.getID(), string);
     }
 
     public Sequence withName(String string) {
