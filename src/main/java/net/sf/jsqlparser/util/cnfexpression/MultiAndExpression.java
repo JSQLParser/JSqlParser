@@ -25,9 +25,5 @@ public final class MultiAndExpression extends MultipleExpression {
         super(childlist);
     }
 
-    @Override
-    public String getStringExpression() {
-        return "AND";
-    }
 
 }

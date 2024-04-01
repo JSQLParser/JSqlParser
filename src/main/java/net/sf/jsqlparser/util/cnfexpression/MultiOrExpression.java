@@ -19,9 +19,4 @@ public final class MultiOrExpression extends MultipleExpression {
         super(childlist);
     }
 
-    @Override
-    public String getStringExpression() {
-        return "OR";
-    }
-
 }

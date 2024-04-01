@@ -62,8 +62,6 @@ public abstract class MultipleExpression extends ASTNodeAccessImpl implements Ex
         childlist.add(index, express);
     }
 
-    public abstract String getStringExpression();
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -77,5 +75,15 @@ public abstract class MultipleExpression extends ASTNodeAccessImpl implements Ex
         sb.append(")");
         return sb.toString();
     }
+
+    public  String getStringExpression(){
+
+        if(this instanceof MultiAndExpression){
+            return "AND";
+        }
+
+        return "OR";
+    }
+
 
 }
