@@ -22,6 +22,10 @@ public class GreaterThanEquals extends ComparisonOperator {
         super(operator);
     }
 
+    public GreaterThanEquals(Expression leftExpression, Expression rightExpression) {
+        super(">=", leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

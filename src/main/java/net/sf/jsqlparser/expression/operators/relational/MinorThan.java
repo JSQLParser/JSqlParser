@@ -18,6 +18,10 @@ public class MinorThan extends ComparisonOperator {
         super("<");
     }
 
+    public MinorThan(Expression leftExpression, Expression rightExpression) {
+        super("<", leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

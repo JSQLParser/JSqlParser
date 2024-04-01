@@ -22,6 +22,10 @@ public class MinorThanEquals extends ComparisonOperator {
         super(operator);
     }
 
+    public MinorThanEquals(Expression leftExpression, Expression rightExpression) {
+        super("<=", leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

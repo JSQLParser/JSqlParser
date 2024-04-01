@@ -18,6 +18,10 @@ public class GreaterThan extends ComparisonOperator {
         super(">");
     }
 
+    public GreaterThan(Expression leftExpression, Expression rightExpression) {
+        super(">", leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

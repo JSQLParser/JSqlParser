@@ -2,11 +2,17 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     private List<String> identifiers;
     private Expression expression;
+
+    public LambdaExpression(String identifier, Expression expression) {
+        this.identifiers = Arrays.asList(identifier);
+        this.expression = expression;
+    }
 
     public LambdaExpression(List<String> identifiers, Expression expression) {
         this.identifiers = identifiers;
