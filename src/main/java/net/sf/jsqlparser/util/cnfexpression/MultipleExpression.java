@@ -78,7 +78,7 @@ public abstract class MultipleExpression extends ASTNodeAccessImpl implements Ex
 
     public  String getStringExpression(){
 
-        if(this instanceof MultiAndExpression){
+        if (this instanceof MultiAndExpression){
             return "AND";
         }
 
