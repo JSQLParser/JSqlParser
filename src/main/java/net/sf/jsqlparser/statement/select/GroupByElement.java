@@ -19,6 +19,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class GroupByElement implements Serializable {
     private ExpressionList groupByExpressions = new ExpressionList();
@@ -84,7 +85,7 @@ public class GroupByElement implements Serializable {
             }
             b.append("GROUPING SETS (");
             for (ExpressionList expressionList : groupingSets) {
-                b.append(i++ > 0 ? ", " : "").append(Select.getStringList(
+                b.append(i++ > 0 ? ", " : "").append(SelectUtils.getStringList(
                         expressionList,
                         true, expressionList instanceof ParenthesedExpressionList));
             }

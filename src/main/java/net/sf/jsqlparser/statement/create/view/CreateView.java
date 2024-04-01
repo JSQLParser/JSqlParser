@@ -15,8 +15,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class CreateView implements Statement {
 
@@ -161,7 +161,7 @@ public class CreateView implements Statement {
             sql.append(")");
         }
         if (viewCommentOptions != null) {
-            sql.append(PlainSelect.getStringList(viewCommentOptions, false, false));
+            sql.append(SelectUtils.getStringList(viewCommentOptions, false, false));
         }
         sql.append(" AS ").append(select);
         if (isWithReadOnly()) {

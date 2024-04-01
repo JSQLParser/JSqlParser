@@ -24,6 +24,7 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.util.SelectUtils;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -475,7 +476,7 @@ public class PlainSelect extends Select {
         if (mySqlSqlCalcFoundRows) {
             builder.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
-        builder.append(getStringList(selectItems));
+        builder.append(SelectUtils.getStringList(selectItems));
 
         if (intoTables != null) {
             builder.append(" INTO ");

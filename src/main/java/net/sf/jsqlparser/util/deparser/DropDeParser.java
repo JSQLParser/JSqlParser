@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class DropDeParser extends AbstractDeParser<Drop> {
 
@@ -39,7 +39,7 @@ public class DropDeParser extends AbstractDeParser<Drop> {
         }
 
         if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
-            buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters(), false, false));
+            buffer.append(" ").append(SelectUtils.getStringList(drop.getParameters(), false, false));
         }
     }
 

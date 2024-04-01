@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ public final class SetStatement implements Statement {
 
     private String toString(NameExpr ne) {
         return ne.name + (ne.useEqual ? " = " : " ")
-                + PlainSelect.getStringList(ne.expressions, true, false);
+                + SelectUtils.getStringList(ne.expressions, true, false);
     }
 
     @Override

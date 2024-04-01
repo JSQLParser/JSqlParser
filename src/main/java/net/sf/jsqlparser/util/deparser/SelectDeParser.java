@@ -49,6 +49,7 @@ import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.util.SelectUtils;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
@@ -370,13 +371,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     @Override
     public void visit(Pivot pivot) {
         // @todo: implement this as Visitor
-        buffer.append(" PIVOT (").append(PlainSelect.getStringList(pivot.getFunctionItems()));
+        buffer.append(" PIVOT (").append(SelectUtils.getStringList(pivot.getFunctionItems()));
 
         buffer.append(" FOR ");
         pivot.getForColumns().accept(expressionVisitor);
 
         // @todo: implement this as Visitor
-        buffer.append(" IN ").append(PlainSelect.getStringList(pivot.getInItems(), true, true));
+        buffer.append(" IN ").append(SelectUtils.getStringList(pivot.getInItems(), true, true));
 
         buffer.append(")");
         if (pivot.getAlias() != null) {
@@ -392,13 +393,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         List<Column> unpivotForClause = unpivot.getUnPivotForClause();
         buffer.append(" UNPIVOT").append(showOptions && includeNulls ? " INCLUDE NULLS" : "")
                 .append(showOptions && !includeNulls ? " EXCLUDE NULLS" : "").append(" (")
-                .append(PlainSelect.getStringList(unPivotClause, true,
+                .append(SelectUtils.getStringList(unPivotClause, true,
                         unPivotClause != null && unPivotClause.size() > 1))
                 .append(" FOR ")
-                .append(PlainSelect.getStringList(unpivotForClause, true,
+                .append(SelectUtils.getStringList(unpivotForClause, true,
                         unpivotForClause != null && unpivotForClause.size() > 1))
                 .append(" IN ")
-                .append(PlainSelect.getStringList(unpivot.getUnPivotInClause(), true, true))
+                .append(SelectUtils.getStringList(unpivot.getUnPivotInClause(), true, true))
                 .append(")");
         if (unpivot.getAlias() != null) {
             buffer.append(unpivot.getAlias().toString());
@@ -408,8 +409,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     @Override
     public void visit(PivotXml pivot) {
         List<Column> forColumns = pivot.getForColumns();
-        buffer.append(" PIVOT XML (").append(PlainSelect.getStringList(pivot.getFunctionItems()))
-                .append(" FOR ").append(PlainSelect.getStringList(forColumns, true,
+        buffer.append(" PIVOT XML (").append(SelectUtils.getStringList(pivot.getFunctionItems()))
+                .append(" FOR ").append(SelectUtils.getStringList(forColumns, true,
                         forColumns != null && forColumns.size() > 1))
                 .append(" IN (");
         if (pivot.isInAny()) {
@@ -417,7 +418,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         } else if (pivot.getInSelect() != null) {
             buffer.append(pivot.getInSelect());
         } else {
-            buffer.append(PlainSelect.getStringList(pivot.getInItems()));
+            buffer.append(SelectUtils.getStringList(pivot.getInItems()));
         }
         buffer.append("))");
     }
@@ -592,7 +593,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         buffer.append(withItem.getAlias().getName());
         if (withItem.getWithItemList() != null) {
             buffer.append(" ")
-                    .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
+                    .append(SelectUtils.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS ");
         withItem.getSelect().accept(this);

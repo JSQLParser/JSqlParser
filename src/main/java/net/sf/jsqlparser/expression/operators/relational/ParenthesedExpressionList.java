@@ -10,7 +10,7 @@
 package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +36,6 @@ public class ParenthesedExpressionList<T extends Expression> extends ExpressionL
 
     @Override
     public String toString() {
-        return PlainSelect.getStringList(this, true, true);
+        return SelectUtils.getStringList(this, true, true);
     }
 }

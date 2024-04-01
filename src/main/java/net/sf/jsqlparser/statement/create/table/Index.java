@@ -17,7 +17,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class Index implements Serializable {
 
@@ -134,9 +135,9 @@ public class Index implements Serializable {
 
     @Override
     public String toString() {
-        String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
+        String idxSpecText = SelectUtils.getStringList(idxSpec, false, false);
         String head = (type != null ? type : "") + (!name.isEmpty() ? " " + getName() : "");
-        String tail = PlainSelect.getStringList(columns, true, true)
+        String tail = SelectUtils.getStringList(columns, true, true)
                 + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
 
         if ("".equals(tail)) {

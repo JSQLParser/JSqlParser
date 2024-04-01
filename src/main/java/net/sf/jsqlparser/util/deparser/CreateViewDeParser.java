@@ -12,9 +12,9 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.statement.create.view.AutoRefreshOption;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class CreateViewDeParser extends AbstractDeParser<CreateView> {
 
@@ -76,7 +76,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         }
         if (createView.getViewCommentOptions() != null) {
             buffer.append(
-                    PlainSelect.getStringList(createView.getViewCommentOptions(), false, false));
+                    SelectUtils.getStringList(createView.getViewCommentOptions(), false, false));
         }
         buffer.append(" AS ");
 

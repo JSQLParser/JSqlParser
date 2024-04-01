@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
@@ -463,14 +463,14 @@ public class AlterExpression implements Serializable {
             b.append("DROP PRIMARY KEY ");
         } else if (operation == AlterOperation.DROP_UNIQUE) {
 
-            b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
+            b.append("DROP UNIQUE (").append(SelectUtils.getStringList(pkColumns)).append(')');
         } else if (operation == AlterOperation.DROP_FOREIGN_KEY) {
 
-            b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+            b.append("DROP FOREIGN KEY (").append(SelectUtils.getStringList(pkColumns)).append(')');
         } else if (operation == AlterOperation.DROP && columnName == null && pkColumns != null
                 && !pkColumns.isEmpty()) {
             // Oracle Multi Column Drop
-            b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+            b.append("DROP (").append(SelectUtils.getStringList(pkColumns)).append(')');
         } else if (operation == AlterOperation.TRUNCATE_PARTITION
                 && truncatePartitionName != null) {
             b.append("TRUNCATE PARTITION ").append(truncatePartitionName);
@@ -516,7 +516,7 @@ public class AlterExpression implements Serializable {
                 if (useBrackets && colDataTypeList.size() == 1) {
                     b.append(" ( ");
                 }
-                b.append(PlainSelect.getStringList(colDataTypeList));
+                b.append(SelectUtils.getStringList(colDataTypeList));
                 if (useBrackets && colDataTypeList.size() == 1) {
                     b.append(" ) ");
                 }
@@ -525,10 +525,10 @@ public class AlterExpression implements Serializable {
                 }
             } else if (getColumnDropNotNullList() != null) {
                 b.append("COLUMN ");
-                b.append(PlainSelect.getStringList(columnDropNotNullList));
+                b.append(SelectUtils.getStringList(columnDropNotNullList));
             } else if (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
                 b.append("COLUMN ");
-                b.append(PlainSelect.getStringList(columnDropDefaultList));
+                b.append(SelectUtils.getStringList(columnDropDefaultList));
             } else if (constraintName != null) {
                 b.append("CONSTRAINT ");
                 if (usingIfExists) {
@@ -536,7 +536,7 @@ public class AlterExpression implements Serializable {
                 }
                 b.append(constraintName);
             } else if (pkColumns != null) {
-                b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+                b.append("PRIMARY KEY (").append(SelectUtils.getStringList(pkColumns)).append(')');
             } else if (ukColumns != null) {
                 b.append("UNIQUE");
                 if (ukName != null) {
@@ -547,10 +547,10 @@ public class AlterExpression implements Serializable {
                     }
                     b.append(ukName);
                 }
-                b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
+                b.append(" (").append(SelectUtils.getStringList(ukColumns)).append(")");
             } else if (fkColumns != null) {
                 b.append("FOREIGN KEY (")
-                        .append(PlainSelect.getStringList(fkColumns))
+                        .append(SelectUtils.getStringList(fkColumns))
                         .append(") REFERENCES ")
                         .append(
                                 fkSourceSchema != null && fkSourceSchema.trim().length() > 0
@@ -558,7 +558,7 @@ public class AlterExpression implements Serializable {
                                         : "")
                         .append(fkSourceTable)
                         .append(" (")
-                        .append(PlainSelect.getStringList(fkSourceColumns))
+                        .append(SelectUtils.getStringList(fkSourceColumns))
                         .append(")");
                 referentialActions.forEach(b::append);
             } else if (index != null) {
@@ -567,7 +567,7 @@ public class AlterExpression implements Serializable {
 
 
             if (getConstraints() != null && !getConstraints().isEmpty()) {
-                b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
+                b.append(' ').append(SelectUtils.getStringList(constraints, false, false));
             }
             if (getUseEqual()) {
                 b.append('=');
@@ -575,7 +575,7 @@ public class AlterExpression implements Serializable {
         }
 
         if (parameters != null && !parameters.isEmpty()) {
-            b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
+            b.append(' ').append(SelectUtils.getStringList(parameters, false, false));
         }
 
         if (index != null && index.getCommentText() != null) {

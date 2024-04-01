@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,11 +48,11 @@ public class PivotXml extends Pivot {
     public String toString() {
         List<Column> forColumns = getForColumns();
         String in = inAny ? "ANY"
-                : inSelect == null ? PlainSelect.getStringList(getInItems()) : inSelect.toString();
+                : inSelect == null ? SelectUtils.getStringList(getInItems()) : inSelect.toString();
         return "PIVOT XML ("
-                + PlainSelect.getStringList(getFunctionItems())
+                + SelectUtils.getStringList(getFunctionItems())
                 + " FOR "
-                + PlainSelect.getStringList(forColumns, true,
+                + SelectUtils.getStringList(forColumns, true,
                         forColumns != null && forColumns.size() > 1)
                 + " IN (" + in + "))";
     }

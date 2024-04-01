@@ -19,6 +19,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
+import java.util.List;
+
 public final class SelectUtils {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
@@ -103,5 +105,81 @@ public final class SelectUtils {
         } else {
             throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
         }
+    }
+
+    public static String getFormattedList(List<?> list, String expression) {
+        return getFormattedList(list, expression, true, false);
+    }
+
+    public static String getFormattedList(List<?> list, String expression, boolean useComma,
+                                          boolean useBrackets) {
+        String sql = getStringList(list, useComma, useBrackets);
+
+        if (sql.length() > 0) {
+            if (expression.length() > 0) {
+                sql = " " + expression + " " + sql;
+            } else {
+                sql = " " + sql;
+            }
+        }
+
+        return sql;
+    }
+
+    /**
+     * List the toString out put of the objects in the List comma separated. If the List is null or
+     * empty an empty string is returned.
+     * <p>
+     * The same as getStringList(list, true, false)
+     *
+     * @see #getStringList(List, boolean, boolean)
+     * @param list list of objects with toString methods
+     * @return comma separated list of the elements in the list
+     */
+    public static String getStringList(List<?> list) {
+        return getStringList(list, true, false);
+    }
+
+    /**
+     * List the toString out put of the objects in the List that can be comma separated. If the List
+     * is null or empty an empty string is returned.
+     *
+     * @param list list of objects with toString methods
+     * @param useComma true if the list has to be comma separated
+     * @param useBrackets true if the list has to be enclosed in brackets
+     * @return comma separated list of the elements in the list
+     */
+    public static String getStringList(List<?> list, boolean useComma, boolean useBrackets) {
+        return appendStringListTo(new StringBuilder(), list, useComma, useBrackets).toString();
+    }
+
+    /**
+     * Append the toString out put of the objects in the List (that can be comma separated). If the
+     * List is null or empty an empty string is returned.
+     *
+     * @param list list of objects with toString methods
+     * @param useComma true if the list has to be comma separated
+     * @param useBrackets true if the list has to be enclosed in brackets
+     * @return comma separated list of the elements in the list
+     */
+    public static StringBuilder appendStringListTo(StringBuilder builder, List<?> list,
+            boolean useComma, boolean useBrackets) {
+        if (list != null) {
+            String comma = useComma ? ", " : " ";
+
+            if (useBrackets) {
+                builder.append("(");
+            }
+
+            int size = list.size();
+            for (int i = 0; i < size; i++) {
+                builder.append(list.get(i)).append(i < size - 1 ? comma : "");
+            }
+
+            if (useBrackets) {
+                builder.append(")");
+            }
+        }
+        return builder;
     }
 }

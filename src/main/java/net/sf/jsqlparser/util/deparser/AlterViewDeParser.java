@@ -10,8 +10,8 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.create.view.AlterView;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class AlterViewDeParser extends AbstractDeParser<AlterView> {
 
@@ -39,7 +39,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         }
         buffer.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
         if (alterView.getColumnNames() != null) {
-            buffer.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
+            buffer.append(SelectUtils.getStringList(alterView.getColumnNames(), true, true));
         }
         buffer.append(" AS ");
 

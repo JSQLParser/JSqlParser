@@ -12,7 +12,7 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.util.ArrayList;
 
@@ -110,7 +110,7 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         if (keyword != null && !keyword.isEmpty()) {
             return columnDefinitions.size() > 1
                     ? keyword + "(" + leftExpression + " AS ROW("
-                            + Select.getStringList(columnDefinitions) + ")" + formatStr + ")"
+                            + SelectUtils.getStringList(columnDefinitions) + ")" + formatStr + ")"
                     : keyword + "(" + leftExpression + " AS " + colDataType.toString() + formatStr
                             + ")";
         } else {

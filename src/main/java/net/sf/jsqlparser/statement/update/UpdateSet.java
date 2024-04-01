@@ -13,7 +13,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -111,10 +111,10 @@ public class UpdateSet implements Serializable {
             builder.append(", ");
         }
         builder.append(
-                Select.getStringList(columns, true, columns instanceof ParenthesedExpressionList));
+                SelectUtils.getStringList(columns, true, columns instanceof ParenthesedExpressionList));
         builder.append(" = ");
         builder.append(
-                Select.getStringList(values, true, values instanceof ParenthesedExpressionList));
+                SelectUtils.getStringList(values, true, values instanceof ParenthesedExpressionList));
         return builder;
     }
 

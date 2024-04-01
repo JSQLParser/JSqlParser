@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.util.SelectUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,7 +50,7 @@ public class Distinct implements Serializable {
         String sql = useUnique ? "UNIQUE" : "DISTINCT";
 
         if (onSelectItems != null && !onSelectItems.isEmpty()) {
-            sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";
+            sql += " ON (" + SelectUtils.getStringList(onSelectItems) + ")";
         }
 
         return sql;

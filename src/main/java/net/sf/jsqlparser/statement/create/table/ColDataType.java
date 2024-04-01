@@ -16,7 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import static java.util.stream.Collectors.joining;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class ColDataType implements Serializable {
 
@@ -80,7 +81,7 @@ public class ColDataType implements Serializable {
             arraySpec.append("]");
         }
         return dataType
-                + (argumentsStringList != null ? " " + PlainSelect.
+                + (argumentsStringList != null ? " " + SelectUtils.
                         getStringList(argumentsStringList, true, true) : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");

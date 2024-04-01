@@ -13,7 +13,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -120,7 +120,7 @@ public class ForeignKeyIndex extends NamedConstraint {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
-                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
+                .append(SelectUtils.getStringList(getReferencedColumnNames(), true, true));
         referentialActions.forEach(b::append);
         return b.toString();
     }

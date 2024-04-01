@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -75,7 +76,7 @@ public class UnPivot implements Serializable {
                 + unpivotClause.toString()
                 + " FOR "
                 + unpivotForClause.toString()
-                + " IN " + PlainSelect.getStringList(unpivotInClause, true, true) + ")"
+                + " IN " + SelectUtils.getStringList(unpivotInClause, true, true) + ")"
                 + (alias != null ? alias.toString() : "");
     }
 

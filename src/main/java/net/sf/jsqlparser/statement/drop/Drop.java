@@ -19,7 +19,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class Drop implements Statement {
 
@@ -111,7 +111,7 @@ public class Drop implements Statement {
         }
 
         if (parameters != null && !parameters.isEmpty()) {
-            sql += " " + PlainSelect.getStringList(parameters, false, false);
+            sql += " " + SelectUtils.getStringList(parameters, false, false);
         }
 
         return sql;
@@ -121,7 +121,7 @@ public class Drop implements Statement {
         if (params == null) {
             return "";
         }
-        return params.isEmpty() ? "()" : PlainSelect.getStringList(params, true, true);
+        return params.isEmpty() ? "()" : SelectUtils.getStringList(params, true, true);
     }
 
     public List<String> getParamsByType(String type) {

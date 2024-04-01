@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -81,11 +82,11 @@ public class Pivot implements Serializable {
     @Override
     public String toString() {
         return "PIVOT ("
-                + PlainSelect.getStringList(functionItems)
+                + SelectUtils.getStringList(functionItems)
                 + " FOR "
-                + PlainSelect.getStringList(forColumns, true,
+                + SelectUtils.getStringList(forColumns, true,
                         forColumns != null && forColumns.size() > 1)
-                + " IN " + PlainSelect.getStringList(getInItems(), true, true) + ")"
+                + " IN " + SelectUtils.getStringList(getInItems(), true, true) + ")"
                 + (alias != null ? alias.toString() : "");
     }
 

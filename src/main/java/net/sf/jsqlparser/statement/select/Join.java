@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -443,7 +444,7 @@ public class Join extends ASTNodeAccessImpl {
             builder.append(" ON ").append(onExpression);
         }
         if (usingColumns.size() > 0) {
-            builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
+            builder.append(SelectUtils.getFormattedList(usingColumns, "USING", true, true));
         }
 
         return builder.toString();

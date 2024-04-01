@@ -11,8 +11,8 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -89,7 +89,7 @@ public class OutputClause implements Serializable {
 
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(" OUTPUT ");
-        PlainSelect.appendStringListTo(builder, selectItemList, true, false);
+        SelectUtils.appendStringListTo(builder, selectItemList, true, false);
 
         if (tableVariable != null) {
             builder.append(" INTO ").append(tableVariable);
@@ -97,7 +97,7 @@ public class OutputClause implements Serializable {
             builder.append(" INTO ").append(outputTable);
         }
 
-        PlainSelect.appendStringListTo(builder, columnList, true, false);
+        SelectUtils.appendStringListTo(builder, columnList, true, false);
 
         return builder.append(" ");
     }

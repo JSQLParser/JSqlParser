@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.util.SelectUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +51,7 @@ public class WithItem extends ParenthesedSelect {
         builder.append(recursive ? "RECURSIVE " : "");
         builder.append(alias.getName());
         builder.append(
-                (withItemList != null) ? " " + PlainSelect.getStringList(withItemList, true, true)
+                (withItemList != null) ? " " + SelectUtils.getStringList(withItemList, true, true)
                         : "");
         builder.append(" AS ");
 

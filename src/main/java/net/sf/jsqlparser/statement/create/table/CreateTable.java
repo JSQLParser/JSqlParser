@@ -19,8 +19,8 @@ import net.sf.jsqlparser.expression.SpannerInterleaveIn;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.util.SelectUtils;
 
 public class CreateTable implements Statement {
 
@@ -167,7 +167,7 @@ public class CreateTable implements Statement {
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         String sql;
-        String createOps = PlainSelect.getStringList(createOptionsStrings, false, false);
+        String createOps = SelectUtils.getStringList(createOptionsStrings, false, false);
 
         sql = "CREATE " + (unlogged ? "UNLOGGED " : "")
                 + (!"".equals(createOps) ? createOps + " " : "")
@@ -176,19 +176,19 @@ public class CreateTable implements Statement {
 
         if (columns != null && !columns.isEmpty()) {
             sql += " ";
-            sql += PlainSelect.getStringList(columns, true, true);
+            sql += SelectUtils.getStringList(columns, true, true);
         }
         if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             sql += " (";
 
-            sql += PlainSelect.getStringList(columnDefinitions, true, false);
+            sql += SelectUtils.getStringList(columnDefinitions, true, false);
             if (indexes != null && !indexes.isEmpty()) {
                 sql += ", ";
-                sql += PlainSelect.getStringList(indexes);
+                sql += SelectUtils.getStringList(indexes);
             }
             sql += ")";
         }
-        String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+        String options = SelectUtils.getStringList(tableOptionsStrings, false, false);
         if (options != null && options.length() > 0) {
             sql += " " + options;
         }

@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.util.SelectUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class ColumnDefinition implements Serializable {
     public String toStringDataTypeAndSpec() {
         return (colDataType == null ? "" : colDataType)
                 + (columnSpecs != null && !columnSpecs.isEmpty()
-                        ? " " + PlainSelect.getStringList(columnSpecs, false, false)
+                        ? " " + SelectUtils.getStringList(columnSpecs, false, false)
                         : "");
     }
 
