@@ -373,16 +373,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     private boolean shouldProcessColumn(Column tableColumn) {
-        if (!allowColumnProcessing) {
-            return false;
-        }
-
-        Table table = tableColumn.getTable();
-        if (table == null || table.getName() == null) {
-            return false;
-        }
-
-        return true;
+        return allowColumnProcessing
+                && tableColumn.getTable() != null
+                && tableColumn.getTable().getName() != null;
     }
 
     @Override
