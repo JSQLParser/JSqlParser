@@ -9,7 +9,14 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * A basic class for binary expressions, that is expressions having a left member and a right member
@@ -20,7 +27,67 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
     private Expression leftExpression;
     private Expression rightExpression;
 
-    public BinaryExpression() {
+    public BinaryExpression() {}
+
+    public BinaryExpression(Expression leftExpression, Expression rightExpression) {
+        this.leftExpression = leftExpression;
+        this.rightExpression = rightExpression;
+    }
+
+    public static Expression build(Class<? extends BinaryExpression> clz, Expression... expressions)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+            IllegalAccessException {
+        switch (expressions.length) {
+            case 0:
+                return new NullValue();
+            case 1:
+                return expressions[0];
+            default:
+                Iterator<Expression> it = Arrays.stream(expressions).iterator();
+
+                Expression leftExpression = it.next();
+                Expression rightExpression = it.next();
+                BinaryExpression binaryExpression =
+                        clz.getConstructor(Expression.class, Expression.class)
+                                .newInstance(leftExpression, rightExpression);
+
+                while (it.hasNext()) {
+                    rightExpression = it.next();
+                    binaryExpression = clz.getConstructor(Expression.class, Expression.class)
+                            .newInstance(binaryExpression, rightExpression);
+                }
+                return binaryExpression;
+        }
+    }
+
+    public static Expression add(Expression... expressions) {
+        try {
+            return build(Addition.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression multiply(Expression... expressions) {
+        try {
+            return build(Multiplication.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression concat(Expression... expressions) {
+        try {
+            return build(Concat.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
     }
 
     public Expression getLeftExpression() {
@@ -52,7 +119,7 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
     @Override
     public String toString() {
         return // (not ? "NOT " : "") +
-                getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
+        getLeftExpression() + " " + getStringExpression() + " " + getRightExpression();
     }
 
     public abstract String getStringExpression();

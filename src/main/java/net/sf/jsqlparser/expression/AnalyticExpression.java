@@ -19,9 +19,8 @@ import static java.util.stream.Collectors.joining;
 
 /**
  * Analytic function. The name of the function is variable but the parameters following the special
- * analytic function path. e.g. row_number() over (order by test). Additional there can be an
- * expression for an analytical aggregate like sum(col) or the "all collumns" wildcard like
- * count(*).
+ * analytic function path. e.g. row_number() over (order by test). Additionally, there can be an
+ * expression for an analytical aggregate like sum(col) or the "all columns" wildcard like count(*).
  *
  * @author tw
  */
