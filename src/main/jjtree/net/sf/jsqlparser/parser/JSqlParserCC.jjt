@@ -305,9 +305,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MATCH: "MATCH">
 |   <K_MATCHED: "MATCHED">
 |   <K_MATERIALIZED:"MATERIALIZED">
+|   <K_MAX: "MAX">
 |   <K_MAXVALUE: "MAXVALUE">
 |   <K_MEMBER: "MEMBER">
 |   <K_MERGE: "MERGE">
+|   <K_MIN:"MIN">
 |   <K_MINUS:"MINUS">
 |   <K_MINVALUE:"MINVALUE">
 |   <K_MODIFY: "MODIFY">
@@ -370,6 +372,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REFRESH:"REFRESH">
 |   <K_REGEXP: "REGEXP">
+|   <K_RESPECT: "RESPECT">
 |   <K_RLIKE: "RLIKE">
 |   <K_REGISTER: "REGISTER">
 |   <K_REMOTE: "REMOTE">
@@ -1850,7 +1853,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GUARD" | tk="HASH" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="LOOP" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGISTER" | tk="REMOTE" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="STRUCT" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GUARD" | tk="HASH" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="LOOP" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGISTER" | tk="REMOTE" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="STRUCT" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -5378,7 +5381,7 @@ Function InternalFunction(boolean escaped):
     Expression attributeExpression = null;
     Column attributeColumn = null;
     List<OrderByElement> orderByList;
-    boolean ignoreNulls = false;
+    Limit limit;
 }
 {
     funcName = RelObjectNameList()
@@ -5398,7 +5401,29 @@ Function InternalFunction(boolean escaped):
             expr = Select() { expressionList = new ExpressionList(expr); }
         )
     ]
-    [  <K_IGNORE> <K_NULLS> {retval.setIgnoreNulls(true); }]
+
+    [
+        <K_HAVING> (
+            <K_MIN> expr = Expression() { retval.setHavingClause( "MIN", expr ); }
+            |
+            <K_MAX> expr = Expression() { retval.setHavingClause( "MAX", expr ); }
+        )
+    ]
+
+    [
+        (
+            <K_IGNORE> <K_NULLS> { retval.setNullHandling(Function.NullHandling.IGNORE_NULLS); }
+        )
+        |
+        (
+             <K_RESPECT> <K_NULLS> {  retval.setNullHandling(Function.NullHandling.RESPECT_NULLS); }
+        )
+    ]
+
+    [
+        limit = PlainLimit() { retval.setLimit(limit); }
+    ]
+
     ")"
 
     [ "." (
@@ -5891,12 +5916,14 @@ ColDataType ColDataType():
         )
         |
         LOOKAHEAD(2) (
-            tk=<K_BYTES> "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER>) ")"
-            | tk=<K_STRING> "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER>) ")"
-            | tk=<K_JSON> "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER>) ")"
+            ( tk=<K_BYTES> | tk=<K_STRING> | tk=<K_JSON> | tk="NVARCHAR" | tk="VARCHAR" ) "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER> | tk2=<K_MAX> ) ")"
         ) { colDataType.setDataType(tk.image + " (" + tk2.image + ")"); }
         |
-        LOOKAHEAD(2) (tk=<K_CHARACTER> | tk=<K_BIT>) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
+        LOOKAHEAD(2) (
+            tk=<K_CHARACTER>
+            |
+            tk=<K_BIT>
+            ) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
         |
         tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
 		|
@@ -5927,8 +5954,28 @@ ColDataType ColDataType():
 		tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
     )
 
-    [LOOKAHEAD(2) "(" {tk2 =null;} ( ( ( tk=<S_LONG> [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ] ) | tk=<S_CHAR_LITERAL> | tk=<S_IDENTIFIER> | tk=<K_CHAR> )
-		{ argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:"")); } ["," {/*argumentsStringList.add(",");*/}] )*    ")"]
+    [
+        LOOKAHEAD(2) "(" {tk2 =null;}
+        (
+            (
+                (
+                    ( tk=<S_LONG> | tk=<K_MAX> ) [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ]
+                )
+                |
+                tk=<S_CHAR_LITERAL>
+                |
+                tk=<S_IDENTIFIER>
+                |
+                tk=<K_CHAR>
+            )
+		    {
+		        argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+            }
+
+            ["," { /*argumentsStringList.add(",");*/} ]
+        )*
+        ")"
+    ]
     [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 

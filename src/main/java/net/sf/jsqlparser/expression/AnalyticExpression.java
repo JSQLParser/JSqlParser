@@ -11,6 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import static java.util.stream.Collectors.joining;
  */
 public class AnalyticExpression extends ASTNodeAccessImpl implements Expression {
 
+
     private String name;
     private Expression expression;
     private Expression offset;
@@ -35,7 +37,6 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private AnalyticType type = AnalyticType.OVER;
     private boolean distinct = false;
     private boolean unique = false;
-    private boolean ignoreNulls = false; // IGNORE NULLS inside function parameters
     private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
     private List<OrderByElement> funcOrderBy = null;
@@ -43,33 +44,43 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
                                       // orderBy, windowElement)
     private WindowDefinition windowDef = new WindowDefinition();
 
+    private Function.HavingClause havingClause;
+
+    private Function.NullHandling nullHandling = null;
+
+    private Limit limit = null;
+
     public AnalyticExpression() {}
 
     public AnalyticExpression(Function function) {
-        name = function.getName();
-        allColumns = function.isAllColumns();
-        distinct = function.isDistinct();
-        unique = function.isUnique();
-        funcOrderBy = function.getOrderByElements();
+        this.name = function.getName();
+        this.allColumns = function.isAllColumns();
+        this.distinct = function.isDistinct();
+        this.unique = function.isUnique();
+
 
         ExpressionList<? extends Expression> list = function.getParameters();
         if (list != null) {
-            if (list.getExpressions().size() > 3) {
+            if (list.size() > 3) {
                 throw new IllegalArgumentException(
                         "function object not valid to initialize analytic expression");
             }
 
             expression = list.get(0);
-            if (list.getExpressions().size() > 1) {
+            if (list.size() > 1) {
                 offset = list.get(1);
             }
-            if (list.getExpressions().size() > 2) {
+            if (list.size() > 2) {
                 defaultValue = list.get(2);
             }
         }
-        ignoreNulls = function.isIgnoreNulls();
-        keep = function.getKeep();
+        this.havingClause = function.getHavingClause();
+        this.nullHandling = function.getNullHandling();
+        this.funcOrderBy = function.getOrderByElements();
+        this.limit = function.getLimit();
+        this.keep = function.getKeep();
     }
+
 
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
@@ -92,15 +103,15 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.keep = keep;
     }
 
-    public ExpressionList getPartitionExpressionList() {
+    public ExpressionList<?> getPartitionExpressionList() {
         return windowDef.partitionBy.getPartitionExpressionList();
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+    public void setPartitionExpressionList(ExpressionList<?> partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+    public void setPartitionExpressionList(ExpressionList<?> partitionExpressionList,
             boolean brackets) {
         windowDef.partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
     }
@@ -174,11 +185,11 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public boolean isIgnoreNulls() {
-        return ignoreNulls;
+        return this.nullHandling == Function.NullHandling.IGNORE_NULLS;
     }
 
     public void setIgnoreNulls(boolean ignoreNulls) {
-        this.ignoreNulls = ignoreNulls;
+        this.nullHandling = ignoreNulls ? Function.NullHandling.IGNORE_NULLS : null;
     }
 
     public boolean isIgnoreNullsOutside() {
@@ -205,6 +216,41 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.windowDef = windowDef;
     }
 
+
+    public Function.HavingClause getHavingClause() {
+        return havingClause;
+    }
+
+    public AnalyticExpression setHavingClause(Function.HavingClause havingClause) {
+        this.havingClause = havingClause;
+        return this;
+    }
+
+    public AnalyticExpression setHavingClause(String havingType, Expression expression) {
+        this.havingClause = new Function.HavingClause(
+                Function.HavingClause.HavingType.valueOf(havingType.trim().toUpperCase()),
+                expression);
+        return this;
+    }
+
+    public Function.NullHandling getNullHandling() {
+        return nullHandling;
+    }
+
+    public AnalyticExpression setNullHandling(Function.NullHandling nullHandling) {
+        this.nullHandling = nullHandling;
+        return this;
+    }
+
+    public Limit getLimit() {
+        return limit;
+    }
+
+    public AnalyticExpression setLimit(Limit limit) {
+        this.limit = limit;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.MissingBreakInSwitch"})
@@ -216,32 +262,48 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append("DISTINCT ");
         }
         if (expression != null) {
-            b.append(expression.toString());
+            b.append(expression);
             if (offset != null) {
-                b.append(", ").append(offset.toString());
+                b.append(", ").append(offset);
                 if (defaultValue != null) {
-                    b.append(", ").append(defaultValue.toString());
+                    b.append(", ").append(defaultValue);
                 }
             }
         } else if (isAllColumns()) {
             b.append("*");
         }
-        if (isIgnoreNulls()) {
-            b.append(" IGNORE NULLS");
+
+        if (havingClause != null) {
+            havingClause.appendTo(b);
+        }
+
+        if (nullHandling != null) {
+            switch (nullHandling) {
+                case IGNORE_NULLS:
+                    b.append(" IGNORE NULLS");
+                    break;
+                case RESPECT_NULLS:
+                    b.append(" RESPECT NULLS");
+                    break;
+            }
         }
         if (funcOrderBy != null) {
             b.append(" ORDER BY ");
             b.append(funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
         }
 
+        if (limit != null) {
+            b.append(limit);
+        }
+
         b.append(") ");
         if (keep != null) {
-            b.append(keep.toString()).append(" ");
+            b.append(keep).append(" ");
         }
 
         if (filterExpression != null) {
             b.append("FILTER (WHERE ");
-            b.append(filterExpression.toString());
+            b.append(filterExpression);
             b.append(")");
             if (type != AnalyticType.FILTER_ONLY) {
                 b.append(" ");

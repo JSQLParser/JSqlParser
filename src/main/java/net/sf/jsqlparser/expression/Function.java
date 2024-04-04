@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.Arrays;
@@ -22,6 +23,56 @@ import java.util.List;
  * A function as MAX,COUNT...
  */
 public class Function extends ASTNodeAccessImpl implements Expression {
+    public enum NullHandling {
+        IGNORE_NULLS, RESPECT_NULLS;
+    }
+
+    public static class HavingClause extends ASTNodeAccessImpl implements Expression {
+        enum HavingType {
+            MAX, MIN;
+        }
+
+        HavingType havingType;
+        Expression expression;
+
+        public HavingClause(HavingType havingType, Expression expression) {
+            this.havingType = havingType;
+            this.expression = expression;
+        }
+
+        public HavingType getHavingType() {
+            return havingType;
+        }
+
+        public HavingClause setHavingType(HavingType havingType) {
+            this.havingType = havingType;
+            return this;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public HavingClause setExpression(Expression expression) {
+            this.expression = expression;
+            return this;
+        }
+
+        @Override
+        public void accept(ExpressionVisitor expressionVisitor) {
+            expression.accept(expressionVisitor);
+        }
+
+        public StringBuilder appendTo(StringBuilder builder) {
+            builder.append(" HAVING ").append(havingType.name()).append(" ").append(expression);
+            return builder;
+        }
+
+        @Override
+        public String toString() {
+            return appendTo(new StringBuilder()).toString();
+        }
+    }
 
     private List<String> nameparts;
     private ExpressionList<?> parameters;
@@ -31,10 +82,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean unique = false;
     private boolean isEscaped = false;
     private Expression attributeExpression;
+    private HavingClause havingClause;
     private Column attributeColumn = null;
     private List<OrderByElement> orderByElements;
+    private NullHandling nullHandling = null;
+    private Limit limit = null;
+
     private KeepExpression keep = null;
-    private boolean ignoreNulls = false;
+
 
     public Function() {}
 
@@ -82,8 +137,26 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         allColumns = b;
     }
 
+    public NullHandling getNullHandling() {
+        return nullHandling;
+    }
+
+    public Function setNullHandling(NullHandling nullHandling) {
+        this.nullHandling = nullHandling;
+        return this;
+    }
+
+    public Limit getLimit() {
+        return limit;
+    }
+
+    public Function setLimit(Limit limit) {
+        this.limit = limit;
+        return this;
+    }
+
     public boolean isIgnoreNulls() {
-        return ignoreNulls;
+        return nullHandling != null && nullHandling == NullHandling.IGNORE_NULLS;
     }
 
     /**
@@ -92,7 +165,22 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      *
      */
     public void setIgnoreNulls(boolean ignoreNulls) {
-        this.ignoreNulls = ignoreNulls;
+        this.nullHandling = ignoreNulls ? NullHandling.IGNORE_NULLS : null;
+    }
+
+    public HavingClause getHavingClause() {
+        return havingClause;
+    }
+
+    public Function setHavingClause(HavingClause havingClause) {
+        this.havingClause = havingClause;
+        return this;
+    }
+
+    public Function setHavingClause(String havingType, Expression expression) {
+        this.havingClause = new HavingClause(
+                HavingClause.HavingType.valueOf(havingType.trim().toUpperCase()), expression);
+        return this;
     }
 
     /**
@@ -226,6 +314,21 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                     b.append("ALL ");
                 }
                 b.append(parameters);
+
+                if (havingClause != null) {
+                    havingClause.appendTo(b);
+                }
+
+                if (nullHandling != null) {
+                    switch (nullHandling) {
+                        case IGNORE_NULLS:
+                            b.append(" IGNORE NULLS");
+                            break;
+                        case RESPECT_NULLS:
+                            b.append(" RESPECT NULLS");
+                            break;
+                    }
+                }
                 if (orderByElements != null) {
                     b.append(" ORDER BY ");
                     boolean comma = false;
@@ -237,6 +340,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                         }
                         b.append(orderByElement);
                     }
+                }
+                if (limit != null) {
+                    b.append(limit);
                 }
                 b.append(")");
                 params = b.toString();

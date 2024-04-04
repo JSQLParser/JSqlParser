@@ -595,6 +595,23 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getParameters() != null) {
                 function.getParameters().accept(this);
             }
+
+            Function.HavingClause havingClause = function.getHavingClause();
+            if (havingClause != null) {
+                buffer.append(" HAVING ").append(havingClause.getHavingType()).append(" ");
+                havingClause.getExpression().accept(this);
+            }
+
+            if (function.getNullHandling() != null) {
+                switch (function.getNullHandling()) {
+                    case IGNORE_NULLS:
+                        buffer.append(" IGNORE NULLS");
+                        break;
+                    case RESPECT_NULLS:
+                        buffer.append(" RESPECT NULLS");
+                        break;
+                }
+            }
             if (function.getOrderByElements() != null) {
                 buffer.append(" ORDER BY ");
                 boolean comma = false;
@@ -608,6 +625,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     }
                     orderByDeParser.deParseElement(orderByElement);
                 }
+            }
+            if (function.getLimit() != null) {
+                new LimitDeparser(this, buffer).deParse(function.getLimit());
             }
             buffer.append(")");
         }
@@ -779,13 +799,30 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         } else if (isAllColumns) {
             buffer.append("*");
         }
-        if (aexpr.isIgnoreNulls()) {
-            buffer.append(" IGNORE NULLS");
+        Function.HavingClause havingClause = aexpr.getHavingClause();
+        if (havingClause != null) {
+            buffer.append(" HAVING ").append(havingClause.getHavingType()).append(" ");
+            havingClause.getExpression().accept(this);
+        }
+
+        if (aexpr.getNullHandling() != null) {
+            switch (aexpr.getNullHandling()) {
+                case IGNORE_NULLS:
+                    buffer.append(" IGNORE NULLS");
+                    break;
+                case RESPECT_NULLS:
+                    buffer.append(" RESPECT NULLS");
+                    break;
+            }
         }
         if (aexpr.getFuncOrderBy() != null) {
             buffer.append(" ORDER BY ");
             buffer.append(aexpr.getFuncOrderBy().stream().map(OrderByElement::toString)
                     .collect(joining(", ")));
+        }
+
+        if (aexpr.getLimit() != null) {
+            new LimitDeparser(this, buffer).deParse(aexpr.getLimit());
         }
 
         buffer.append(") ");

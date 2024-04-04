@@ -328,12 +328,18 @@ public class TestUtils {
 
             sanitizedSqlStr = sanitizedSqlStr.trim().toLowerCase();
 
+            if (laxDeparsingCheck && sanitizedSqlStr.endsWith(";")) {
+                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 1).trim();
+            }
+
             // Rewrite statement separators "/" and "GO"
             if (sanitizedSqlStr.endsWith("/")) {
-                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 1) + ";";
+                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 1);
             } else if (sanitizedSqlStr.endsWith("go")) {
-                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 2) + ";";
+                sanitizedSqlStr = sanitizedSqlStr.substring(0, sanitizedSqlStr.length() - 2);
             }
+
+
 
             return sanitizedSqlStr;
 
