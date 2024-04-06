@@ -515,11 +515,26 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(TranscodingFunction transcodingFunction) {
-        buffer.append("CONVERT( ");
-        transcodingFunction.getExpression().accept(this);
-        buffer.append(" USING ")
-                .append(transcodingFunction.getTranscodingName())
-                .append(" )");
+        if (transcodingFunction.isTranscodeStyle()) {
+            buffer.append("CONVERT( ");
+            transcodingFunction.getExpression().accept(this);
+            buffer.append(" USING ")
+                    .append(transcodingFunction.getTranscodingName())
+                    .append(" )");
+        } else {
+            buffer
+                    .append("CONVERT( ")
+                    .append(transcodingFunction.getColDataType())
+                    .append(", ");
+            transcodingFunction.getExpression().accept(this);
+
+            String transCodingName = transcodingFunction.getTranscodingName();
+            if (transCodingName != null && !transCodingName.isEmpty()) {
+                buffer.append(", ").append(transCodingName);
+            }
+            buffer.append(" )");
+        }
+
     }
 
     public void visit(TrimFunction trimFunction) {
@@ -739,7 +754,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(CastExpression cast) {
-        if (cast.isUseCastKeyword()) {
+        if (cast.isImplicitCast()) {
+            buffer.append(cast.getColDataType()).append(" ");
+            cast.getLeftExpression().accept(this);
+        } else if (cast.isUseCastKeyword()) {
             String formatStr = cast.getFormat() != null && !cast.getFormat().isEmpty()
                     ? " FORMAT " + cast.getFormat()
                     : "";

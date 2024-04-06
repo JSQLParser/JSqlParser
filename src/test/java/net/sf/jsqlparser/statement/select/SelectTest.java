@@ -2749,7 +2749,8 @@ public class SelectTest {
                         + " WHERE simulation_id = 210 AND data_timestamp BETWEEN convert(datetime, '2021-09-14', 120) AND convert(datetime, '2021-09-18', 120)"
                         + " GROUP BY simulation_id) sim_data" + " UNPIVOT" + " (" + "val"
                         + " FOR signal IN (DosingOnStatus_TenMinutes_sim, DosingOnDuration_Hour_sim)"
-                        + ") un_piv_alias");
+                        + ") un_piv_alias",
+                true);
     }
 
     @Test

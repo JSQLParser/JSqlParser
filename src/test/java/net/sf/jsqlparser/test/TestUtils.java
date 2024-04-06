@@ -68,7 +68,7 @@ public class TestUtils {
      */
     public static Statement assertSqlCanBeParsedAndDeparsed(String statement)
             throws JSQLParserException {
-        return assertSqlCanBeParsedAndDeparsed(statement, false);
+        return assertSqlCanBeParsedAndDeparsed(statement, true);
     }
 
     /**

@@ -195,8 +195,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DATABASE:"DATABASE">
 |   <K_DATA:"DATA">
 |   <K_DECLARE: "DECLARE">
-|   <K_DATETIMELITERAL : ("DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ") >
-|   <K_DATE_LITERAL : ( "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" ) >
+|   <K_DATETIMELITERAL : "DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ" >
+|   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
 |   <K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
 |   <K_DEFAULT : "DEFAULT">
 |   <K_DEFERRABLE : "DEFERRABLE">
@@ -212,7 +212,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DML:"DML">
 |   <K_DO:"DO">
 |   <K_DOMAIN:"DOMAIN">
-|   <K_DOUBLE : "DOUBLE">
 |   <K_DROP:"DROP">
 |   <K_DUMP:"DUMP">
 |   <K_DUPLICATE: "DUPLICATE">
@@ -354,7 +353,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PIVOT:"PIVOT">
 |   <K_PLACING:"PLACING">
 |   <K_PRECEDING: "PRECEDING">
-|   <K_PRECISION : "PRECISION">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
@@ -466,7 +464,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALIDATE : "VALIDATE">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
-|   <K_VARYING:"VARYING">
 |   <K_VERBOSE: "VERBOSE">
 |   <K_VIEW:"VIEW">
 |   <K_VOLATILE:"VOLATILE">
@@ -518,6 +515,40 @@ TOKEN : /* Operators */
 TOKEN : /* Date/Time with time zones */
 {
     <DT_ZONE: <K_DATETIMELITERAL> (<WHITESPACE>)* ("(" <S_LONG> ")")? (<WHITESPACE>)* (<K_WITH> | <K_WITHOUT>) ((<WHITESPACE>)+ <K_LOCAL>)? (<WHITESPACE>)+ "TIME" (<WHITESPACE>)+ <K_ZONE>>
+}
+
+TOKEN : /* Data Types */
+{
+    <DATA_TYPE: ( <TYPE_BIT> | <TYPE_BLOB> | <TYPE_BOOLEAN> |  <TYPE_ENUM>
+                     | <TYPE_REAL> | <TYPE_DOUBLE> | <TYPE_UUID> | <TYPE_MAP>| <TYPE_TINYINT> | <TYPE_SMALLINT>
+                     | <TYPE_INTEGER> | <TYPE_BIGINT> | <TYPE_HUGEINT> | <TYPE_UTINYINT> | <TYPE_USMALLINT>
+                     | <TYPE_UINTEGER> | <TYPE_UBIGINT> | <TYPE_UHUGEINT> | <TYPE_DECIMAL>
+                     | <TYPE_VARCHAR> | <TYPE_TIME> | <TYPE_TIMESTAMP>
+              ) >
+
+    | <#TYPE_BIT:  "BISTRING">
+    | <#TYPE_BLOB: "BLOB" | "BYTEA" | <K_BINARY> | "VARBINARY" | <K_BYTES> >
+    | <#TYPE_BOOLEAN: "BOOLEAN" | "BOOL" >
+    | <#TYPE_ENUM: "ENUM" >
+    | <#TYPE_MAP: "MAP" >
+    | <#TYPE_DECIMAL: "DECIMAL" | "NUMBER" | "NUMERIC" >
+    | <#TYPE_TINYINT: "TINYINT" | "INT1" >
+    | <#TYPE_SMALLINT: "SMALLINT" | "INT2" | "SHORT" >
+    | <#TYPE_INTEGER: ( "INTEGER" | "INT" | "INT4" | <K_SIGNED> | <K_UNSIGNED> ) >
+    | <#TYPE_BIGINT: "BIGINT" | "INT8" | "LONG" >
+    | <#TYPE_HUGEINT: "HUGEINT" >
+    | <#TYPE_UTINYINT: "UTINYINT" >
+    | <#TYPE_USMALLINT: "USMALLINT" >
+    | <#TYPE_UINTEGER: "UINTEGER" >
+    | <#TYPE_UBIGINT: "UBIGINT" >
+    | <#TYPE_UHUGEINT: "UHUGEINT" >
+    | <#TYPE_REAL: "REAL" | "FLOAT4" | "FLOAT">
+    | <#TYPE_DOUBLE: "DOUBLE" | "PRECISION"  | "FLOAT8" | "FLOAT64">
+    | <#TYPE_VARCHAR: "NVARCHAR" | "VARCHAR" | "NCHAR" | <K_CHAR> | "BPCHAR" | "STRING" | "TEXT" | <K_CHARACTER> | "VARYING">
+    | <#TYPE_TIME: "TIMETZ" >
+    | <#TYPE_TIMESTAMP: "TIMESTAMP_NS" | "TIMESTAMP_MS" | "TIMESTAMP_S"  >
+
+    | <#TYPE_UUID: "UUID">
 }
 
 TOKEN : /* Numeric Constants */
@@ -1852,7 +1883,7 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> 
+    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR>
        | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="COSTS" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DDL" | tk="DECLARE" | tk="DEFAULT" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="END" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FALSE" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GUARD" | tk="HASH" | tk="HISTORY" | tk="HOPPING" | tk="INCLUDE" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="ISNULL" | tk="JSON" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LINK" | tk="LOCAL" | tk="LOCKED" | tk="LOG" | tk="LOOP" | tk="MATCH" | tk="MATCHED" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERLAPS" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PRECEDING" | tk="PRECISION" | tk="PRIMARY" | tk="PRIOR" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGISTER" | tk="REMOTE" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRING" | tk="STRUCT" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TO" | tk="TRIGGER" | tk="TRUE" | tk="TRUNCATE" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
@@ -1895,7 +1926,7 @@ String RelObjectNameExt():
 }
 {
     ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
-        | tk=<K_DOUBLE> | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
+        | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
         | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC>
         | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING> | tk=<K_ORDER>
         | tk=<K_NEXTVAL>
@@ -4303,6 +4334,10 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
 
+        | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
+
+        | LOOKAHEAD( ImplicitCast(), {!interrupted})  retval=ImplicitCast()
+
         | retval = JdbcParameter()
 
         | LOOKAHEAD(2) retval =JdbcNamedParameter()
@@ -4335,7 +4370,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
 
-        | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -5090,6 +5124,30 @@ ExtractExpression ExtractExpression() :
     ")"
     {
         return retval;
+    }
+}
+
+CastExpression ImplicitCast() #ImplicitCast:
+{
+    ColDataType colDataType;
+    Token tk1;
+    Token tk2;
+
+    int precision = -1;
+    int scale = -1;
+}
+{
+     colDataType = DataType()
+    (
+        tk2 = <S_CHAR_LITERAL>
+        |
+        tk2 = <S_LONG>
+        |
+        tk2 = <S_DOUBLE>
+    )
+    {
+        CastExpression castExpression = new CastExpression(colDataType, tk2.image);
+        return castExpression;
     }
 }
 
@@ -5924,17 +5982,22 @@ SpannerInterleaveIn SpannerInterleaveIn():
     }
 }
 
-ColDataType ColDataType():
+
+ColDataType DataType():
 {
     ColDataType colDataType = new ColDataType();
+    Token prefix = null;
     Token tk = null;
     Token tk2 = null;
     String schema;
-    String type;
+    String type="";
     List<String> argumentsStringList = new ArrayList<String>();
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
     ColDataType arrayType;
+
+    int precision = -1;
+    int scale = -1;
 }
 {
     (
@@ -5944,18 +6007,54 @@ ColDataType ColDataType():
             }
         )
         |
-        LOOKAHEAD(2) (
-            ( tk=<K_BYTES> | tk=<K_STRING> | tk=<K_JSON> | tk="NVARCHAR" | tk="VARCHAR" ) "(" (tk2=<S_LONG> | tk2=<S_IDENTIFIER> | tk2=<K_MAX> ) ")"
-        ) { colDataType.setDataType(tk.image + " (" + tk2.image + ")"); }
+        (
+            ( tk=<K_DATETIMELITERAL> | tk=<DT_ZONE> | tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+                | tk=<K_CHARACTER>  |  tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY>
+                | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> ) { type = tk.image; }
+            [
+                // MySQL seems to allow: INT UNSIGNED
+                ( LOOKAHEAD(2) ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+                                   | tk=<K_CHARACTER>  | tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY>
+                                   | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; } )+
+            ]
+            [
+                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
+                [ "," tk = <S_LONG> { scale = Integer.valueOf(tk.image); } ]
+                ")"
+            ]
+            {
+                colDataType = new ColDataType(type, precision, scale);
+            }
+        )
+    )
+
+    {
+        return colDataType;
+    }
+}
+
+ColDataType ColDataType():
+{
+    ColDataType colDataType = new ColDataType();
+    Token prefix = null;
+    Token tk = null;
+    Token tk2 = null;
+    String schema;
+    String type="";
+    List<String> argumentsStringList = new ArrayList<String>();
+    List<Integer> array = new ArrayList<Integer>();
+    List<String> name;
+    ColDataType arrayType;
+
+    int precision = -1;
+    int scale = -1;
+}
+{
+    (
+		LOOKAHEAD(2) (
+            colDataType = DataType()
+        )
         |
-        LOOKAHEAD(2) (
-            tk=<K_CHARACTER>
-            |
-            tk=<K_BIT>
-            ) [tk2=<K_VARYING>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-        |
-        tk=<K_DOUBLE> [LOOKAHEAD(2) tk2=<K_PRECISION>] { colDataType.setDataType(tk.image + (tk2!=null?" " + tk2.image:"")); }
-		|
 		(
 		    tk=<S_IDENTIFIER>
 		    | tk=<S_QUOTED_IDENTIFIER>
@@ -5972,15 +6071,9 @@ ColDataType ColDataType():
 			| tk=<K_PUBLIC>
 			| tk=<K_DATA>
         ) { schema = tk.image; }
-        [ "." type = RelObjectName() { schema += "." + type; } ]
+
+        [ "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
         { colDataType.setDataType(schema); }
-		|
-		tk=<K_UNSIGNED>  [LOOKAHEAD(2) tk2=<S_IDENTIFIER>]
-        { if (tk2!=null) colDataType.setDataType(tk.image + " " + tk2.image); else colDataType.setDataType(tk.image); }
-		|
-		LOOKAHEAD(2) tk=<K_SIGNED> tk2=<S_IDENTIFIER> {colDataType.setDataType(tk.image + " " + tk2.image);}
-		|
-		tk=<K_SIGNED> { colDataType.setDataType(tk.image);}
     )
 
     [
@@ -6001,12 +6094,12 @@ ColDataType ColDataType():
 		        argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
             }
 
-            ["," { /*argumentsStringList.add(",");*/} ]
+            [ "," ]
         )*
         ")"
     ]
     [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
-    [LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
+    [ LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
     {
         if (argumentsStringList.size() > 0)
@@ -6174,11 +6267,11 @@ List<String> CreateParameter():
             tk=<S_CHAR_LITERAL> | tk=<K_NULL> | tk=<K_NOT> | tk=<K_PRIMARY> | tk=<K_FOREIGN>
             | tk=<K_REFERENCES> | tk=<K_KEY> | tk=<K_STORED> | tk=<K_ON> | tk=<K_COMMIT> | tk=<K_DROP>
             | tk=<K_ROWS> | tk=<K_UNIQUE> | tk=<K_CASCADE> | tk=<K_DELETE> | tk=<K_UPDATE>
-            | tk=<K_CONSTRAINT> | tk=<K_WITH> | tk=<K_EXCLUDE> | tk=<K_WHERE> | tk=<K_UNSIGNED>
+            | tk=<K_CONSTRAINT> | tk=<K_WITH> | tk=<K_EXCLUDE> | tk=<K_WHERE>
             | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_PARTITION> | tk=<K_BY> | tk=<K_IN>
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START>
-            | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST>
+            | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
             | tk="="
         )
         { param.add(tk.image); }
@@ -7557,16 +7650,39 @@ Expression CharacterPrimary():
     }
 }
 
-TranscodingFunction TranscodingFunction():
+TranscodingFunction TranscodingFunction() #TranscodingFunction :
 {
+    TranscodingFunction transcodingFunction;
+    ColDataType colDataType;
     Expression expression;
-    String transcodingName;
+    String transcodingName=null;
+    Token style;
 }
 {
-    <K_CONVERT> "(" expression = Expression() <K_USING> transcodingName=IdentifierChain() ")"
+    <K_CONVERT> "("
+    (
+        LOOKAHEAD(ColDataType() ",") (
+            colDataType = ColDataType()
+            "," expression = Expression()
+            [ "," style = <S_LONG> { transcodingName = style.image; } ]
 
+            {
+                transcodingFunction = new TranscodingFunction(colDataType, expression, transcodingName);
+            }
+        )
+        |
+        (
+            expression = Expression()
+            <K_USING> transcodingName=IdentifierChain()
+
+            {
+                transcodingFunction = new TranscodingFunction(expression, transcodingName);
+            }
+        )
+    )
+    ")"
     {
-        return new TranscodingFunction(expression, transcodingName);
+        return transcodingFunction;
     }
 }
 

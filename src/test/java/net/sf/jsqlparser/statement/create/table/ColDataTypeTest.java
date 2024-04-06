@@ -13,6 +13,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 class ColDataTypeTest {
     @Test
     void testPublicType() throws JSQLParserException {
@@ -39,5 +41,10 @@ class ColDataTypeTest {
                 "    fulltext tsvector NOT NULL\n" +
                 ")";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testNestedCast() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit(64)::int(64) FROM mytable");
     }
 }

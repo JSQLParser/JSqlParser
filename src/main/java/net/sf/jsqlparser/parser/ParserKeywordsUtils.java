@@ -215,9 +215,9 @@ public class ParserKeywordsUtils {
 
     public static TreeSet<String> getAllKeywordsUsingRegex(File file) throws IOException {
         Pattern tokenBlockPattern = Pattern.compile(
-                "TOKEN\\s*:\\s*(?:/\\*.*\\*/*)(?:\\r?\\n|\\r)\\{(?:[^\\}\\{]+|\\{(?:[^\\}\\{]+|\\{[^\\}\\{]*\\})*\\})*\\}",
+                "TOKEN\\s*:\\s*/\\*.*\\*/*(?:\\r?\\n|\\r)\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}",
                 Pattern.MULTILINE);
-        Pattern tokenStringValuePattern = Pattern.compile("\\\"(\\w{2,})\\\"", Pattern.MULTILINE);
+        Pattern tokenStringValuePattern = Pattern.compile("\"(\\w{2,})\"", Pattern.MULTILINE);
 
         TreeSet<String> allKeywords = new TreeSet<>();
 
@@ -257,7 +257,7 @@ public class ParserKeywordsUtils {
                 + "{    Token tk = null; }\n"
                 + "{\n"
                 // @todo: find a way to avoid those hardcoded compound tokens
-                + "    ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> \n"
+                + "    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> \n"
                 + "      ");
 
         for (String keyword : allKeywords) {

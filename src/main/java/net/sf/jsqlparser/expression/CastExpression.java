@@ -23,6 +23,8 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     private ColDataType colDataType = null;
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
+    private boolean isImplicitCast = false;
+
     // BigQuery specific FORMAT clause:
     // https://cloud.google.com/bigquery/docs/reference/standard-sql/conversion_functions#cast_as_date
     private String format = null;
@@ -34,11 +36,34 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     // Implicit Cast
+    public CastExpression(ColDataType colDataType, String value) {
+        this.keyword = null;
+        this.isImplicitCast = true;
+        this.colDataType = colDataType;
+        this.leftExpression = new StringValue(value);
+    }
+
+    public CastExpression(ColDataType colDataType, Long value) {
+        this.keyword = null;
+        this.isImplicitCast = true;
+        this.colDataType = colDataType;
+        this.leftExpression = new LongValue(value);
+    }
+
+    public CastExpression(ColDataType colDataType, Double value) {
+        this.keyword = null;
+        this.isImplicitCast = true;
+        this.colDataType = colDataType;
+        this.leftExpression = new DoubleValue(value);
+    }
+
     public CastExpression(Expression leftExpression, String dataType) {
         this.keyword = null;
         this.leftExpression = leftExpression;
         this.colDataType = new ColDataType(dataType);
     }
+
+
 
     public CastExpression(String keyword) {
         this.keyword = keyword;
@@ -70,6 +95,15 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
 
     public void setLeftExpression(Expression expression) {
         leftExpression = expression;
+    }
+
+    public boolean isImplicitCast() {
+        return isImplicitCast;
+    }
+
+    public CastExpression setImplicitCast(boolean implicitCast) {
+        isImplicitCast = implicitCast;
+        return this;
     }
 
     @Override
@@ -107,7 +141,9 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         String formatStr = format != null && !format.isEmpty()
                 ? " FORMAT " + format
                 : "";
-        if (keyword != null && !keyword.isEmpty()) {
+        if (isImplicitCast) {
+            return colDataType + " " + leftExpression;
+        } else if (keyword != null && !keyword.isEmpty()) {
             return columnDefinitions.size() > 1
                     ? keyword + "(" + leftExpression + " AS ROW("
                             + Select.getStringList(columnDefinitions) + ")" + formatStr + ")"

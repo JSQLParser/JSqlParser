@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.Statement;
 import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -48,5 +49,15 @@ class TranscodingFunctionTest {
                 + "WHERE (name like ?)\n"
                 + "ORDER BY convert(name using GBK) ASC";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+
+    @Test
+    public void testUnPivotWithAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT cast(1 as Decimal(18,2))", true);
+
+        Statement st = assertSqlCanBeParsedAndDeparsed(
+                "SELECT Convert( Decimal(18,2) , 1 )", true);
     }
 }

@@ -29,6 +29,18 @@ public class ColDataType implements Serializable {
         // empty constructor
     }
 
+    public ColDataType(String dataType, int precision, int scale) {
+        this.dataType = dataType;
+
+        if (precision >= 0) {
+            this.dataType += " (" + (precision == Integer.MAX_VALUE ? "MAX" : precision);
+            if (scale >= 0) {
+                this.dataType += ", " + scale;
+            }
+            this.dataType += ")";
+        }
+    }
+
     public ColDataType(String dataType) {
         this.dataType = dataType;
     }
@@ -48,7 +60,7 @@ public class ColDataType implements Serializable {
     public void setDataType(String string) {
         dataType = string;
     }
-    
+
     public void setDataType(List<String> list) {
         dataType = list.stream().collect(joining("."));
     }
@@ -80,8 +92,9 @@ public class ColDataType implements Serializable {
             arraySpec.append("]");
         }
         return dataType
-                + (argumentsStringList != null ? " " + PlainSelect.
-                        getStringList(argumentsStringList, true, true) : "")
+                + (argumentsStringList != null
+                        ? " " + PlainSelect.getStringList(argumentsStringList, true, true)
+                        : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
@@ -107,13 +120,15 @@ public class ColDataType implements Serializable {
     }
 
     public ColDataType addArgumentsStringList(String... argumentsStringList) {
-        List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, argumentsStringList);
         return this.withArgumentsStringList(collection);
     }
 
     public ColDataType addArgumentsStringList(Collection<String> argumentsStringList) {
-        List<String> collection = Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getArgumentsStringList()).orElseGet(ArrayList::new);
         collection.addAll(argumentsStringList);
         return this.withArgumentsStringList(collection);
     }
