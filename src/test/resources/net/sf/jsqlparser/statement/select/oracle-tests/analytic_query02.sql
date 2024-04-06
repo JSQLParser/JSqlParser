@@ -20,3 +20,4 @@ select time_id, product
 
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Apr 6, 2024, 7:38:53 AM

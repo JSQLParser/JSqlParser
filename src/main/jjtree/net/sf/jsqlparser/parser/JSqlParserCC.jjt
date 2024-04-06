@@ -2530,7 +2530,7 @@ AllTableColumns AllTableColumns():
 }
 
 Alias Alias():
-{ String name = null;
+{ String name = "";
   Token token = null;
   boolean useAs = false;
   Alias alias;
@@ -2538,15 +2538,44 @@ Alias Alias():
   ColDataType colDataType = null;
 }
 {
-    [<K_AS> { useAs = true; } ]
-	( name=RelObjectNameWithoutStart() | token=<S_CHAR_LITERAL> { name=token.image; } )
-	{ alias = new Alias(name,useAs); }
+    (
+        LOOKAHEAD(3) (
+            // Aliases with Columns:
+            //      SELECT fun(x) AS (a,b,c)
+            //      SELECT fun(x) AS T(a,b,c)
+            <K_AS>
+            [ LOOKAHEAD(2) name=RelObjectNameWithoutStart() ]
+            { alias = new Alias(name, true ); }
 
-	[ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
-		colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-		("," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); } )*
-	")" { alias.setAliasColumns(list); } ]
+            "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
+            colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
+            (
+                "," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); }
+            )*
+            ")" { alias.setAliasColumns(list); }
 
+        )
+        |
+        (
+            // Aliases without Columns:
+            //      SELECT fun(x) AS T
+            //      SELECT fun(x) T
+
+            [<K_AS> { useAs = true; } ]
+            ( name=RelObjectNameWithoutStart() | token=<S_CHAR_LITERAL> { name=token.image; } )
+            { alias = new Alias(name,useAs); }
+
+            /* Should not be allowed/needed
+               We can bring this back only if people complain
+
+            [ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
+                colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
+                ("," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); } )*
+            ")" { alias.setAliasColumns(list); } ]
+
+            */
+        )
+    )
     { return alias; }
 }
 
