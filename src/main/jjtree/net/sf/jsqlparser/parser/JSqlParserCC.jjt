@@ -6013,7 +6013,7 @@ ColDataType DataType():
                 | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> ) { type = tk.image; }
             [
                 // MySQL seems to allow: INT UNSIGNED
-                ( LOOKAHEAD(2) ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+                LOOKAHEAD(2) ( LOOKAHEAD(2) ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
                                    | tk=<K_CHARACTER>  | tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY>
                                    | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; } )+
             ]

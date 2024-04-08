@@ -86,4 +86,13 @@ public class CastExpressionTest {
                 "SELECT CAST(contact_id AS TIME WITHOUT TIME ZONE) A");
     }
 
+
+    @Test
+    void testDataTypeFrom() {
+        CastExpression.DataType float64 = CastExpression.DataType.from("FLOAT64");
+        Assertions.assertEquals(CastExpression.DataType.FLOAT64, float64);
+
+        CastExpression.DataType float128 = CastExpression.DataType.from("FLOAT128");
+        Assertions.assertEquals(CastExpression.DataType.UNKNOWN, float128);
+    }
 }
