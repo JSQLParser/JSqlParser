@@ -205,6 +205,11 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     public Set<String> getTables(Statement statement) {
         init(false);
         statement.accept(this);
+
+        // @todo: assess this carefully, maybe we want to remove more specifically
+        // only Aliases on WithItems, Parenthesed Selects and Lateral Selects
+        tables.removeAll(otherItemNames);
+
         return tables;
     }
 
@@ -286,14 +291,17 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(ParenthesedSelect selectBody) {
-        List<WithItem> withItemsList = selectBody.getWithItemsList();
+    public void visit(ParenthesedSelect select) {
+        if (select.getAlias() != null) {
+            otherItemNames.add(select.getAlias().getName());
+        }
+        List<WithItem> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
                 withItem.accept((SelectVisitor) this);
             }
         }
-        selectBody.getSelect().accept((SelectVisitor) this);
+        select.getSelect().accept((SelectVisitor) this);
     }
 
     @Override
@@ -712,6 +720,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
+        if (lateralSubSelect.getAlias() != null) {
+            otherItemNames.add(lateralSubSelect.getAlias().getName());
+        }
         lateralSubSelect.getSelect().accept((SelectVisitor) this);
     }
 
@@ -1047,6 +1058,9 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     @Override
     public void visit(ParenthesedFromItem parenthesis) {
+        if (parenthesis.getAlias() != null) {
+            otherItemNames.add(parenthesis.getAlias().getName());
+        }
         parenthesis.getFromItem().accept(this);
         // support join keyword in fromItem
         visitJoins(parenthesis.getJoins());
@@ -1055,13 +1069,13 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     /**
      * visit join block
      *
-     * @param parenthesis join sql block
+     * @param joins join sql block
      */
-    private void visitJoins(List<Join> parenthesis) {
-        if (parenthesis == null) {
+    private void visitJoins(List<Join> joins) {
+        if (joins == null) {
             return;
         }
-        for (Join join : parenthesis) {
+        for (Join join : joins) {
             join.getFromItem().accept(this);
             join.getRightItem().accept(this);
             for (Expression expression : join.getOnExpressions()) {

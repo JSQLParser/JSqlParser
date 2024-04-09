@@ -474,12 +474,26 @@ public class TablesNamesFinderTest {
     void testSubqueryAliasesIssue1987() throws JSQLParserException {
         String sqlStr = "select * from (select * from a) as a1, b;";
         Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
-        assertThat(tables).containsExactly("a", "b");
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "a1");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b");
         assertThat(tables).doesNotContain("a1");
 
         sqlStr = "select * from b, (select * from a) as a1";
         tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
-        assertThat(tables).containsExactly("a", "b");
+        assertThat(tables).containsExactlyInAnyOrder("a1", "a", "b");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b");
+        assertThat(tables).doesNotContain("a1");
+
+        sqlStr = "SELECT * FROM b, (SELECT * FROM a) as a1 WHERE b.id IN ( SELECT id FROM a1 )";
+        tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a1", "a", "b");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b");
         assertThat(tables).doesNotContain("a1");
     }
 }
