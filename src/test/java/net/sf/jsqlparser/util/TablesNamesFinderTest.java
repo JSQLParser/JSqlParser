@@ -11,7 +11,6 @@ package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -19,16 +18,9 @@ import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
-import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.test.TestUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,79 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TablesNamesFinderTest {
-
-    private static final CCJSqlParserManager PARSER_MANAGER = new CCJSqlParserManager();
-
-    @Disabled
-    public void testRUBiSTableList() throws Exception {
-        runTestOnResource("/RUBiS-select-requests.txt");
-    }
-
-    @Disabled
-    public void testMoreComplexExamples() throws Exception {
-        runTestOnResource("complex-select-requests.txt");
-    }
-
-    @Disabled
-    public void testComplexMergeExamples() throws Exception {
-        runTestOnResource("complex-merge-requests.txt");
-    }
-
-    private void runTestOnResource(String resPath) throws Exception {
-
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(TablesNamesFinderTest.class.getResourceAsStream(resPath)))) {
-            TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-            int numSt = 1;
-            while (true) {
-                String line = getLine(in);
-                if (line == null) {
-                    break;
-                }
-
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                if (!"#begin".equals(line)) {
-                    break;
-                }
-                line = getLine(in);
-                StringBuilder buf = new StringBuilder(line);
-                while (true) {
-                    line = getLine(in);
-                    if ("#end".equals(line)) {
-                        break;
-                    }
-                    buf.append("\n");
-                    buf.append(line);
-                }
-
-                String query = buf.toString();
-                if (!getLine(in).equals("true")) {
-                    continue;
-                }
-
-                String tables = getLine(in);
-                try {
-                    Statement statement = PARSER_MANAGER.parse(new StringReader(query));
-
-                    String[] tablesArray = tables.split("\\s+");
-
-                    List<String> tableListRetr = tablesNamesFinder.getTableList(statement);
-                    assertEquals(tablesArray.length, tableListRetr.size(), "stm num:" + numSt);
-
-                    for (String element : tablesArray) {
-                        assertTrue(tableListRetr.contains(element), "stm num:" + numSt);
-                    }
-                } catch (Exception e) {
-                    throw new TestException("error at stm num: " + numSt + " in file " + resPath,
-                            e);
-                }
-                numSt++;
-            }
-        }
-    }
 
     @Test
     public void testGetTables() throws Exception {
@@ -250,10 +169,6 @@ public class TablesNamesFinderTest {
         String exprStr = "mycol in (select col2 from mytable)";
         assertThat(TablesNamesFinder.findTablesInExpression(exprStr))
                 .containsExactlyInAnyOrder("mytable");
-    }
-
-    private String getLine(BufferedReader in) throws Exception {
-        return CCJSqlParserManagerTest.getLine(in);
     }
 
     @Test
