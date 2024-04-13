@@ -10,8 +10,17 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
+import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -70,6 +79,26 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         }
     }
 
+    public static Expression bitAnd(Expression... expressions) {
+        try {
+            return build(BitwiseAnd.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression bitShiftLeft(Expression... expressions) {
+        try {
+            return build(BitwiseLeftShift.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Expression multiply(Expression... expressions) {
         try {
             return build(Multiplication.class, expressions);
@@ -80,9 +109,79 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
         }
     }
 
+    public static Expression bitOr(Expression... expressions) {
+        try {
+            return build(BitwiseOr.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression bitShiftRight(Expression... expressions) {
+        try {
+            return build(BitwiseRightShift.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression bitXor(Expression... expressions) {
+        try {
+            return build(BitwiseXor.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Expression concat(Expression... expressions) {
         try {
             return build(Concat.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression divide(Expression... expressions) {
+        try {
+            return build(Division.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression divideInt(Expression... expressions) {
+        try {
+            return build(IntegerDivision.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression modulo(Expression... expressions) {
+        try {
+            return build(Modulo.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression subtract(Expression... expressions) {
+        try {
+            return build(Subtraction.class, expressions);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
                 | IllegalAccessException e) {
             // this should never happen, at least I don't see how

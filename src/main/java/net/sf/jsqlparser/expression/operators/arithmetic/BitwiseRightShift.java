@@ -15,6 +15,12 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class BitwiseRightShift extends BinaryExpression {
 
+    public BitwiseRightShift() {}
+
+    public BitwiseRightShift(Expression leftExpression, Expression rightExpression) {
+        super(leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

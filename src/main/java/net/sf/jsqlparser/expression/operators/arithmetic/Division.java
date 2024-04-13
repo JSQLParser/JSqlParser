@@ -15,6 +15,12 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Division extends BinaryExpression {
 
+    public Division() {}
+
+    public Division(Expression leftExpression, Expression rightExpression) {
+        super(leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

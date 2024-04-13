@@ -18,7 +18,10 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
  */
 public class Modulo extends BinaryExpression {
 
-    public Modulo() {
+    public Modulo() {}
+
+    public Modulo(Expression leftExpression, Expression rightExpression) {
+        super(leftExpression, rightExpression);
     }
 
     @Override
