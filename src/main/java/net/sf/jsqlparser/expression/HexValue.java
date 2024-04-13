@@ -49,14 +49,13 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
 
     public String getDigits() {
         return value.toUpperCase().startsWith("0X")
-               ? value.substring(2)
-               : value.substring(2, value.length()-1);
+                ? value.substring(2)
+                : value.substring(2, value.length() - 1);
     }
 
     public Long getLong() {
         return Long.parseLong(
-                getDigits()
-                , 16);
+                getDigits(), 16);
     }
 
     public LongValue getLongValue() {

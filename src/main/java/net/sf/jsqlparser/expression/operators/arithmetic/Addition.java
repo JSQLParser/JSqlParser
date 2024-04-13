@@ -15,6 +15,12 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class Addition extends BinaryExpression {
 
+    public Addition() {}
+
+    public Addition(Expression leftExpression, Expression rightExpression) {
+        super(leftExpression, rightExpression);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);

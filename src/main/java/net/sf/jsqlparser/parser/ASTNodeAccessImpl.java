@@ -31,13 +31,13 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
         final Set<String> punctuation = new TreeSet<>(Set.of(".", "[", "]"));
 
         SimpleNode simpleNode = getASTNode();
-        if (simpleNode!=null) {
+        if (simpleNode != null) {
             Token token = simpleNode.jjtGetFirstToken();
             Token lastToken = simpleNode.jjtGetLastToken();
             Token prevToken = null;
-            while (token.next!=null && token.absoluteEnd <= lastToken.absoluteEnd) {
+            while (token.next != null && token.absoluteEnd <= lastToken.absoluteEnd) {
                 if (!punctuation.contains(token.image)
-                        && (prevToken==null || !punctuation.contains(prevToken.image))) {
+                        && (prevToken == null || !punctuation.contains(prevToken.image))) {
                     builder.append(" ");
                 }
                 builder.append(token.image);
