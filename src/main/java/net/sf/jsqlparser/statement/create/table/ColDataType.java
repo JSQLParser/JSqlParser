@@ -9,14 +9,17 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+
 import static java.util.stream.Collectors.joining;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ColDataType implements Serializable {
 
@@ -143,5 +146,30 @@ public class ColDataType implements Serializable {
         List<Integer> collection = Optional.ofNullable(getArrayData()).orElseGet(ArrayList::new);
         collection.addAll(arrayData);
         return this.withArrayData(collection);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ColDataType)) {
+            return false;
+        }
+
+        ColDataType that = (ColDataType) o;
+        return dataType.equalsIgnoreCase(that.dataType)
+                && Objects.equals(argumentsStringList, that.argumentsStringList)
+                && Objects.equals(characterSet, that.characterSet)
+                && Objects.equals(arrayData, that.arrayData);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dataType.hashCode();
+        result = 31 * result + Objects.hashCode(argumentsStringList);
+        result = 31 * result + Objects.hashCode(characterSet);
+        result = 31 * result + Objects.hashCode(arrayData);
+        return result;
     }
 }

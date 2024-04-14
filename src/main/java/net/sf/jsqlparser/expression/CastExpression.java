@@ -208,6 +208,10 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         }
     }
 
+    public boolean isOf(CastExpression anotherCast) {
+        return this.colDataType.equals(anotherCast.colDataType);
+    }
+
     public static boolean isOf(ColDataType colDataType, DataType... types) {
         return Set.of(types).contains(DataType.from(colDataType.getDataType()));
     }
