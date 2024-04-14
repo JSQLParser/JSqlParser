@@ -43,6 +43,13 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     // Implicit Cast
+    public CastExpression(String dataType, String value) {
+        this.keyword = null;
+        this.isImplicitCast = true;
+        this.colDataType = new ColDataType(dataType);
+        this.leftExpression = new StringValue(value);
+    }
+
     public CastExpression(ColDataType colDataType, String value) {
         this.keyword = null;
         this.isImplicitCast = true;
