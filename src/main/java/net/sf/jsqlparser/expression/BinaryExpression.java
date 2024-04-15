@@ -21,6 +21,9 @@ import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -182,6 +185,36 @@ public abstract class BinaryExpression extends ASTNodeAccessImpl implements Expr
     public static Expression subtract(Expression... expressions) {
         try {
             return build(Subtraction.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression or(Expression... expressions) {
+        try {
+            return build(OrExpression.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression xor(Expression... expressions) {
+        try {
+            return build(XorExpression.class, expressions);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            // this should never happen, at least I don't see how
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Expression and(Expression... expressions) {
+        try {
+            return build(AndExpression.class, expressions);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
                 | IllegalAccessException e) {
             // this should never happen, at least I don't see how
