@@ -4346,7 +4346,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=NumericBind()
 
-        | LOOKAHEAD(3, {!interrupted}) retval=ExtractExpression()
+        | LOOKAHEAD( ExtractExpression() , {!interrupted}) retval=ExtractExpression()
 
         | LOOKAHEAD(3) retval=MySQLGroupConcat()
 
