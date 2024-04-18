@@ -104,7 +104,9 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     public String getName() {
-        return nameparts == null ? null : String.join(".", nameparts);
+        return nameparts == null ? null
+                : String.join(nameparts.get(0).equalsIgnoreCase("APPROXIMATE") ? " " : ".",
+                        nameparts);
     }
 
     public List<String> getMultipartName() {

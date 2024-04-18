@@ -53,7 +53,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     public AnalyticExpression() {}
 
     public AnalyticExpression(Function function) {
-        this.name = function.getName();
+        this.name = String.join(" ", function.getMultipartName());
         this.allColumns = function.isAllColumns();
         this.distinct = function.isDistinct();
         this.unique = function.isUnique();
