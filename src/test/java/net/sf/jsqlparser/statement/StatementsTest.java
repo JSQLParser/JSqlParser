@@ -18,6 +18,8 @@ import net.sf.jsqlparser.statement.select.Select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 public class StatementsTest {
@@ -67,9 +69,9 @@ public class StatementsTest {
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
 
-        assertEquals(2, parseStatements.size());
+        assertEquals(1, parseStatements.size());
 
-        assertInstanceOf(Select.class, parseStatements.get(0));
+        assertNull(parseStatements.get(0));
         assertEquals(1, parser.getParseErrors().size());
     }
 
@@ -91,7 +93,7 @@ public class StatementsTest {
     @Test
     public void testStatementsErrorRecovery4() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "select * from mytable; select from; select * from mytable2; select 4;",
+                "select * from mytable; select from; select * from mytable2; select 4 from dual;",
                 parser -> parser.withUnsupportedStatements());
 
         assertEquals(4, statements.size());
@@ -101,6 +103,6 @@ public class StatementsTest {
         assertInstanceOf(Select.class, statements.get(2));
         assertInstanceOf(Select.class, statements.get(3));
 
-        assertEquals("select from", statements.get(1).toString());
+        TestUtils.assertStatementCanBeDeparsedAs(statements.get(1), "select from", true);
     }
 }

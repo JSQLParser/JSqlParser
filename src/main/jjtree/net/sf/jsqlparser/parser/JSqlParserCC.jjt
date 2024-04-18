@@ -667,33 +667,47 @@ Statement Statement() #Statement:
     Expression condition;
 }
 {
-    try {
-        (
-            <K_IF> condition=Condition()
-            ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
-            [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-            [ LOOKAHEAD(2)
-                <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
-                [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForElseStatement(true); }]
-            ]
-            <EOF>
-        )
-        |
-        (
-            ( stm = SingleStatement() | stm = Block() )
-            [ <ST_SEMICOLON> ]
-            <EOF>
-        )
-        |
-        LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
-    } catch (ParseException e) {
-        if (errorRecovery) {
-            parseErrors.add(e);
-            error_skipto(ST_SEMICOLON);
-        }
-        else
-            throw e;
-    }
+    (
+         try {
+            (
+                 <K_IF> condition=Condition()
+                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                 [ LOOKAHEAD(2)
+                     [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                 ]
+
+                 [
+                     LOOKAHEAD(2) <ST_SEMICOLON>
+                     { if (stm2!=null)
+                           ifElseStatement.setUsingSemicolonForElseStatement(true);
+                        else if (ifElseStatement!=null)
+                           ifElseStatement.setUsingSemicolonForIfStatement(true);
+                     }
+                 ]
+            )
+            |
+            (
+                (stm = SingleStatement()
+                    | stm = Block())
+
+                ( <ST_SEMICOLON> | <EOF> )
+            )
+            |
+            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+         } catch (ParseException ex) {
+            if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+                stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
+            } else if ( errorRecovery ) {
+                parseErrors.add(ex);
+                error_skipto(ST_SEMICOLON);
+                stm = null;
+            } else {
+                throw ex;
+            }
+         }
+
+    )
 
 	{
 		return ifElseStatement!=null ? ifElseStatement : stm;
@@ -835,19 +849,30 @@ Statements Statements() #Statements: {
                      ]
 
                      { stmts.add( ifElseStatement ); }
+
+                     [
+                         LOOKAHEAD(2) <ST_SEMICOLON>
+                         { if (stm2!=null)
+                               ifElseStatement.setUsingSemicolonForElseStatement(true);
+                            else if (ifElseStatement!=null)
+                               ifElseStatement.setUsingSemicolonForIfStatement(true);
+                         }
+                     ]
                 )
                 |
                 (
-                    stm = SingleStatement()
-                    | stm = Block()
+                    (stm = SingleStatement()
+                        | stm = Block())
+
+                    ( <ST_SEMICOLON> | <EOF> )
                 )
                 {
-                    stmts.add(stm);
+                    stmts.add(stm); stm=null;
                 }
 
              } catch (ParseException ex) {
                 if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( error_skipto(ST_SEMICOLON) );
+                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "", error_skipto(ST_SEMICOLON) );
                     if (!unsupportedStatement.isEmpty()) {
                         stmts.add( unsupportedStatement );
                     }
@@ -859,14 +884,7 @@ Statements Statements() #Statements: {
                     throw ex;
                 }
              }
-             [
-                LOOKAHEAD(2) <ST_SEMICOLON>
-                { if (stm2!=null)
-                      ifElseStatement.setUsingSemicolonForElseStatement(true);
-                   else if (ifElseStatement!=null)
-                      ifElseStatement.setUsingSemicolonForIfStatement(true);
-                }
-            ]
+
         )
 
         (
@@ -886,10 +904,10 @@ Statements Statements() #Statements: {
                 (
                     stm = SingleStatement()
                     | stm = Block()
-                ) { stmts.add(stm); }
+                ) { stmts.add(stm); stm=null; }
             } catch (ParseException ex) {
                if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( error_skipto(ST_SEMICOLON) );
+                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "" , error_skipto(ST_SEMICOLON) );
                    if (!unsupportedStatement.isEmpty()) {
                        stmts.add( unsupportedStatement );
                    }

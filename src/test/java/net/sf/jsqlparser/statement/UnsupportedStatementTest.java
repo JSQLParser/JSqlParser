@@ -162,4 +162,22 @@ public class UnsupportedStatementTest {
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
         assertEquals(2, statements.size());
     }
+
+    @Test
+    void testSQLServerSetStatementIssue1984() throws JSQLParserException {
+        String sqlStr = "SET IDENTITY_INSERT tb_inter_d2v_transfer on";
+        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
+                parser -> parser.withUnsupportedStatements(true));
+        Assertions.assertEquals(1, statements.size());
+        Assertions.assertInstanceOf(UnsupportedStatement.class, statements.get(0));
+
+        TestUtils.assertStatementCanBeDeparsedAs(statements.get(0), sqlStr, true);
+
+        Statement statement = CCJSqlParserUtil.parse(sqlStr,
+                parser -> parser.withUnsupportedStatements(true));
+        Assertions.assertInstanceOf(UnsupportedStatement.class, statement);
+
+        TestUtils.assertStatementCanBeDeparsedAs(statement, sqlStr, true);
+    }
+
 }
