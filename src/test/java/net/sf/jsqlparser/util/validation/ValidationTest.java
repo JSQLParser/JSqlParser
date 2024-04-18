@@ -35,8 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ValidationTest extends ValidationTestAsserts {
 
     public static void main(String args[]) {
-        System.out.println("mysql" + MySqlVersion.V8_0.getNotContained(MariaDbVersion.V10_5_4.getFeatures()));
-        System.out.println("mariadb" + MariaDbVersion.V10_5_4.getNotContained(MySqlVersion.V8_0.getFeatures()));
+        System.out.println(
+                "mysql" + MySqlVersion.V8_0.getNotContained(MariaDbVersion.V10_5_4.getFeatures()));
+        System.out.println("mariadb"
+                + MariaDbVersion.V10_5_4.getNotContained(MySqlVersion.V8_0.getFeatures()));
     }
 
     @Test
@@ -52,18 +54,21 @@ public class ValidationTest extends ValidationTestAsserts {
         Map<ValidationCapability, Set<ValidationException>> unsupportedErrors = validator
                 .getValidationErrors(DatabaseType.SQLSERVER);
         assertErrorsSize(unsupportedErrors, 1);
-        assertNotSupported(unsupportedErrors.get(DatabaseType.SQLSERVER), Feature.oracleOldJoinSyntax);
+        assertNotSupported(unsupportedErrors.get(DatabaseType.SQLSERVER),
+                Feature.oracleOldJoinSyntax);
 
         unsupportedErrors = validator.getValidationErrors(DatabaseType.POSTGRESQL);
         assertErrorsSize(unsupportedErrors, 1);
-        assertNotSupported(unsupportedErrors.get(DatabaseType.POSTGRESQL), Feature.oracleOldJoinSyntax);
+        assertNotSupported(unsupportedErrors.get(DatabaseType.POSTGRESQL),
+                Feature.oracleOldJoinSyntax);
     }
 
     @Test
     public void testWithValidation() throws JSQLParserException {
 
         String stmt = "SELECT * FROM tab1, tab2 WHERE tab1.id (+) = tab2.ref";
-        List<ValidationError> errors = Validation.validate(Collections.singletonList(DatabaseType.SQLSERVER), stmt);
+        List<ValidationError> errors =
+                Validation.validate(Collections.singletonList(DatabaseType.SQLSERVER), stmt);
 
         assertErrorsSize(errors, 1);
         assertEquals(stmt, errors.get(0).getStatements());
@@ -125,7 +130,9 @@ public class ValidationTest extends ValidationTestAsserts {
 
         String stmt = "UPDATE tab1 t1 SET t1.ref = ? WHERE t1.id = ?";
         List<ValidationError> errors = Validation.validate(
-                Arrays.asList(DatabaseType.POSTGRESQL, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)), stmt);
+                Arrays.asList(DatabaseType.POSTGRESQL,
+                        FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC)),
+                stmt);
 
         assertErrorsSize(errors, 1);
         assertNotAllowed(errors.get(0).getErrors(), Feature.update);
@@ -142,19 +149,23 @@ public class ValidationTest extends ValidationTestAsserts {
 
     @Test
     public void testFeatureSetName() {
-        assertEquals("SELECT + jdbc", FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC).getName());
+        assertEquals("SELECT + jdbc",
+                FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC).getName());
         assertEquals("UPDATE + SELECT", FeaturesAllowed.UPDATE.getName());
         assertEquals("DELETE + SELECT", FeaturesAllowed.DELETE.getName());
         assertEquals("DELETE + SELECT + UPDATE + jdbc",
-                FeaturesAllowed.DELETE.copy().add(FeaturesAllowed.UPDATE).add(FeaturesAllowed.JDBC).getName());
-        assertEquals("UPDATE + SELECT", new FeaturesAllowed().add(FeaturesAllowed.UPDATE).getName());
+                FeaturesAllowed.DELETE.copy().add(FeaturesAllowed.UPDATE).add(FeaturesAllowed.JDBC)
+                        .getName());
+        assertEquals("UPDATE + SELECT",
+                new FeaturesAllowed().add(FeaturesAllowed.UPDATE).getName());
         assertEquals("UPDATE + SELECT + feature set",
                 FeaturesAllowed.UPDATE.copy().add(new FeaturesAllowed(Feature.commit)).getName());
     }
 
     @Test
     public void testRowConstructorValidation() throws JSQLParserException {
-        String stmt = "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))";
+        String stmt =
+                "SELECT CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))";
         List<ValidationError> errors = Validation.validate(
                 Arrays.asList(DatabaseType.ANSI_SQL, FeaturesAllowed.SELECT), stmt);
         assertErrorsSize(errors, 0);

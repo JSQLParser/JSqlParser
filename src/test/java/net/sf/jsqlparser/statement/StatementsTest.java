@@ -68,7 +68,7 @@ public class StatementsTest {
         parser.setErrorRecovery(true);
         Statements parseStatements = parser.Statements();
 
-        assertEquals(1, parseStatements.size());
+        assertEquals(2, parseStatements.size());
 
         assertInstanceOf(Select.class, parseStatements.get(0));
         assertEquals(1, parser.getParseErrors().size());
@@ -76,12 +76,9 @@ public class StatementsTest {
 
     @Test
     public void testStatementsErrorRecovery3() throws JSQLParserException, ParseException {
-        String sqlStr = "select * from mytable; select from; select * from mytable2";
-
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqlStr));
-        parser.setErrorRecovery(true);
-
-        Statements statements = parser.Statements();
+        CCJSqlParser parser =
+                new CCJSqlParser("select * from mytable; select from; select * from mytable2");
+        Statements statements = parser.withErrorRecovery().Statements();
 
         assertEquals(3, statements.size());
 
@@ -94,10 +91,9 @@ public class StatementsTest {
 
     @Test
     public void testStatementsErrorRecovery4() throws JSQLParserException {
-        String sqlStr = "select * from mytable; select from; select * from mytable2; select 4;";
-
-        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr
-                , parser -> parser.withUnsupportedStatements(true).withErrorRecovery(true));
+        Statements statements = CCJSqlParserUtil.parseStatements(
+                "select * from mytable; select from; select * from mytable2; select 4;",
+                parser -> parser.withUnsupportedStatements());
 
         assertEquals(4, statements.size());
 
@@ -105,5 +101,7 @@ public class StatementsTest {
         assertInstanceOf(UnsupportedStatement.class, statements.get(1));
         assertInstanceOf(Select.class, statements.get(2));
         assertInstanceOf(Select.class, statements.get(3));
+
+        assertEquals("select from", statements.get(1).toString());
     }
 }

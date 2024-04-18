@@ -227,9 +227,8 @@ public class CCJSqlParserUtilTest {
             @Override
             public void execute() throws Throwable {
                 final Statements statements = CCJSqlParserUtil.parseStatements(
-                        sqlStr
-                        , parser -> parser.withErrorRecovery(true).withUnsupportedStatements(true)
-                );
+                        sqlStr,
+                        parser -> parser.withErrorRecovery(true).withUnsupportedStatements(true));
                 assertEquals(2, statements.size());
                 assertInstanceOf(PlainSelect.class, statements.get(0));
                 assertInstanceOf(UnsupportedStatement.class, statements.get(1));
