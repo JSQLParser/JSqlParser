@@ -21,12 +21,32 @@ public abstract class AbstractJSqlParser<P> {
     protected boolean errorRecovery = false;
     protected List<ParseException> parseErrors = new ArrayList<>();
 
+    public P withSquareBracketQuotation() {
+        return withFeature(Feature.allowSquareBracketQuotation, true);
+    }
+
     public P withSquareBracketQuotation(boolean allowSquareBracketQuotation) {
         return withFeature(Feature.allowSquareBracketQuotation, allowSquareBracketQuotation);
     }
 
+    public P withAllowComplexParsing() {
+        return withFeature(Feature.allowComplexParsing, true);
+    }
+
     public P withAllowComplexParsing(boolean allowComplexParsing) {
         return withFeature(Feature.allowComplexParsing, allowComplexParsing);
+    }
+
+    public P withComplexParsing() {
+        return withFeature(Feature.allowComplexParsing, true);
+    }
+
+    public P withComplexParsing(boolean allowComplexParsing) {
+        return withFeature(Feature.allowComplexParsing, allowComplexParsing);
+    }
+
+    public P withUnsupportedStatements() {
+        return withFeature(Feature.allowUnsupportedStatements, true);
     }
 
     public P withUnsupportedStatements(boolean allowUnsupportedStatements) {
@@ -35,6 +55,10 @@ public abstract class AbstractJSqlParser<P> {
 
     public P withTimeOut(long timeOutMillSeconds) {
         return withFeature(Feature.timeOut, timeOutMillSeconds);
+    }
+
+    public P withBackslashEscapeCharacter() {
+        return withFeature(Feature.allowBackslashEscapeCharacter, true);
     }
 
     public P withBackslashEscapeCharacter(boolean allowBackslashEscapeCharacter) {
@@ -65,6 +89,16 @@ public abstract class AbstractJSqlParser<P> {
 
     public void setErrorRecovery(boolean errorRecovery) {
         this.errorRecovery = errorRecovery;
+    }
+
+    public P withErrorRecovery() {
+        this.errorRecovery = true;
+        return me();
+    }
+
+    public P withErrorRecovery(boolean errorRecovery) {
+        this.errorRecovery = errorRecovery;
+        return me();
     }
 
     public List<ParseException> getParseErrors() {
