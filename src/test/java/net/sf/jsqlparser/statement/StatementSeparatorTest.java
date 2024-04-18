@@ -9,10 +9,11 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.*;
-import net.sf.jsqlparser.parser.*;
-import net.sf.jsqlparser.test.*;
-import org.junit.jupiter.api.*;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class StatementSeparatorTest {
 

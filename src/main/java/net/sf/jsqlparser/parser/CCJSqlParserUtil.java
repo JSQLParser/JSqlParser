@@ -22,6 +22,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -523,6 +525,21 @@ public final class CCJSqlParserUtil {
         }
 
         return -1; // Return -1 if all brackets and quotes are balanced
+    }
+
+    public static String sanitizeSingleSql(String sqlStr) {
+        final Pattern SQL_DELIMITER_SPLIT =
+                Pattern.compile("((?:'[^']*+'|[^\\n])*+)");
+        final StringBuilder builder = new StringBuilder();
+        final Matcher matcher = SQL_DELIMITER_SPLIT.matcher(sqlStr);
+        while (matcher.find()) {
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                if (!matcher.group(i).isEmpty()) {
+                    builder.append("\n").append(matcher.group(i));
+                }
+            }
+        }
+        return builder.toString();
     }
 
 }

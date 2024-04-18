@@ -40,6 +40,7 @@ import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.test.MemoryLeakVerifier;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -518,5 +519,28 @@ public class CCJSqlParserUtilTest {
     void testParseEmpty() throws JSQLParserException {
         assertNull(CCJSqlParserUtil.parse(""));
         assertNull(CCJSqlParserUtil.parse((String) null));
+    }
+
+    @Test
+    void testSingleStatementWithEmptyLines() throws JSQLParserException {
+        String sqlStr = "update shop_info set title=?,\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "content='abc\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "def'\n"
+                + "where id=?";
+
+        Statement statement = CCJSqlParserUtil.parse(CCJSqlParserUtil.sanitizeSingleSql(sqlStr));
+        TestUtils.assertStatementCanBeDeparsedAs(statement, "update shop_info set title=?,\n"
+                + "content='abc\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "def'\n"
+                + "where id=?", true);
     }
 }
