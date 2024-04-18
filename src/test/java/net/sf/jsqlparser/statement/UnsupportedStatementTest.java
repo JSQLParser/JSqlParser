@@ -168,16 +168,34 @@ public class UnsupportedStatementTest {
         String sqlStr = "SET IDENTITY_INSERT tb_inter_d2v_transfer on";
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
                 parser -> parser.withUnsupportedStatements(true));
-        Assertions.assertEquals(1, statements.size());
-        Assertions.assertInstanceOf(UnsupportedStatement.class, statements.get(0));
+        assertEquals(1, statements.size());
+        assertInstanceOf(UnsupportedStatement.class, statements.get(0));
 
         TestUtils.assertStatementCanBeDeparsedAs(statements.get(0), sqlStr, true);
 
         Statement statement = CCJSqlParserUtil.parse(sqlStr,
                 parser -> parser.withUnsupportedStatements(true));
-        Assertions.assertInstanceOf(UnsupportedStatement.class, statement);
+        assertInstanceOf(UnsupportedStatement.class, statement);
 
         TestUtils.assertStatementCanBeDeparsedAs(statement, sqlStr, true);
     }
 
+    @Test
+    void testInformixSetStatementIssue1945() throws JSQLParserException {
+        String sqlStr = "set isolation to dirty read;";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr,
+                parser -> parser.withUnsupportedStatements(true));
+        assertInstanceOf(UnsupportedStatement.class, statement);
+        TestUtils.assertStatementCanBeDeparsedAs(statement, sqlStr, true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "set isolation to dirty read;", true, parser -> parser.withUnsupportedStatements());
+    }
+
+    @Test
+    void testRedshiftSetStatementIssue1708() throws JSQLParserException {
+        Statement st = TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SET x TO y;", true, parser -> parser.withUnsupportedStatements());
+        assertInstanceOf(UnsupportedStatement.class, st);
+    }
 }
