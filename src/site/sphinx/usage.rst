@@ -145,6 +145,43 @@ For guidance with the API, use `JSQLFormatter <http://jsqlformatter.manticore-pr
    </pre>
    </div>
 
+Error Handling
+==============================
+
+There are two features for handling errors
+
+- ``parser.withErrorRecovery(true)`` will continue to the next statement separator and return an empty statement.
+- ``parser.withUnsupportedStatements(true)`` will return an instance of the `UnsupportedStatement` class, although the first statement **must** be a regular statement
+
+.. code-block:: java
+    :caption: Error Recovery
+
+    CCJSqlParser parser = new CCJSqlParser(
+            "select * from mytable; select from; select * from mytable2" );
+    Statements statements = parser.withErrorRecovery().Statements();
+
+    // 3 statements, the failing one set to NULL
+    assertEquals(3, statements.size());
+    assertNull(statements.get(1));
+
+    // errors are recorded
+    assertEquals(1, parser.getParseErrors().size());
+
+.. code-block:: java
+    :caption: Unsupported Statement
+
+    Statements statements = CCJSqlParserUtil.parseStatements(
+            "select * from mytable; select from; select * from mytable2; select 4;"
+            , parser -> parser.withUnsupportedStatements() );
+
+    // 4 statements with one Unsupported Statement holding the content
+    assertEquals(4, statements.size());
+    assertInstanceOf(UnsupportedStatement.class, statements.get(1));
+    assertEquals("select from", statements.get(1).toString());
+
+    // no errors records, because a statement has been returned
+    assertEquals(0, parser.getParseErrors().size());
+
 
 Use the Visitor Patterns
 ==============================
