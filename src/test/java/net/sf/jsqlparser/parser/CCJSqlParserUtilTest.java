@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -225,10 +226,13 @@ public class CCJSqlParserUtilTest {
         assertDoesNotThrow(new Executable() {
             @Override
             public void execute() throws Throwable {
-                final Statements statements = CCJSqlParserUtil.parseStatements(sqlStr);
+                final Statements statements = CCJSqlParserUtil.parseStatements(
+                        sqlStr
+                        , parser -> parser.withErrorRecovery(true).withUnsupportedStatements(true)
+                );
                 assertEquals(2, statements.size());
-                assertTrue(statements.get(0) instanceof PlainSelect);
-                assertTrue(statements.get(1) instanceof UnsupportedStatement);
+                assertInstanceOf(PlainSelect.class, statements.get(0));
+                assertInstanceOf(UnsupportedStatement.class, statements.get(1));
             }
         });
     }

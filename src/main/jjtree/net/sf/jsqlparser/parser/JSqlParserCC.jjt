@@ -706,7 +706,6 @@ Statement SingleStatement() :
     List<WithItem> with = null;
 }
 {
-    try {
         (
            LOOKAHEAD(3) (
                 [ LOOKAHEAD(2) with=WithList() ]
@@ -773,14 +772,6 @@ Statement SingleStatement() :
             stm = PurgeStatement()
         )
         { return stm; }
-    } catch (ParseException e) {
-        if (errorRecovery) {
-            parseErrors.add(e);
-            error_skipto(ST_SEMICOLON);
-            return null;
-        } else
-            throw e;
-    }
 }
 
 Block Block() #Block : {
@@ -792,7 +783,6 @@ Block Block() #Block : {
 {
     <K_BEGIN>
     (<ST_SEMICOLON>)*
-    try {
        (
             stm = SingleStatement()
             | stm = Block()
@@ -810,14 +800,6 @@ Block Block() #Block : {
                 { list.add(stm); }
             )
        )*
-    } catch (ParseException e) {
-        if (errorRecovery) {
-            parseErrors.add(e);
-            error_skipto(ST_SEMICOLON);
-        } else {
-            throw e;
-        }
-    }
 
     {
         stmts.setStatements(list);
@@ -838,37 +820,135 @@ Statements Statements() #Statements: {
     Expression condition;
 }
 {
-    (<ST_SEMICOLON>)*
-    try {
         (
-            (
-                 <K_IF> condition=Condition()
-                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
-                 [ LOOKAHEAD(2)
-                     [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
-                 ]
+             ( <ST_SEMICOLON> )*
+             try {
+                (
+                     <K_IF> condition=Condition()
+                     ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                     [ LOOKAHEAD(2)
+                         [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                         <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                     ]
 
-                 { stmts.add( ifElseStatement ); }
-            )
-            |
-            (
-                 stm = SingleStatement()
-                 | stm = Block()
-
-                 [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
-            ) { stmts.add(stm); }
-            |
-            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
-            { if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
+                     { stmts.add( ifElseStatement ); }
+                )
+                |
+                (
+                    stm = SingleStatement()
+                    | stm = Block()
+                ) { stmts.add(stm); }
+             } catch (ParseException ex) {
+                if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+                    parseErrors.add(ex);
+                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( error_skipto(ST_SEMICOLON) );
+                    if (!unsupportedStatement.isEmpty()) {
+                        stmts.add( unsupportedStatement );
+                        System.out.println("Exception!");
+                    }
+                } else if ( errorRecovery ) {
+                    parseErrors.add(ex);
+                    error_skipto(ST_SEMICOLON);
+                    stmts.add( null );
+                } else {
+                    throw ex;
+                }
+             }
+             [
+                LOOKAHEAD(2) <ST_SEMICOLON>
+                { if (stm2!=null)
+                      ifElseStatement.setUsingSemicolonForElseStatement(true);
+                   else if (ifElseStatement!=null)
+                      ifElseStatement.setUsingSemicolonForIfStatement(true);
+                }
+            ]
         )
 
         (
-            <ST_SEMICOLON> { if (stm2!=null)
+            ( <ST_SEMICOLON> )*
+
+            try {
+                (
+                    <K_IF> condition=Condition()
+                    ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                    [ LOOKAHEAD(2)
+                        [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                        <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                    ]
+
+                    { stmts.add( ifElseStatement ); }
+               )
+               |
+                (
+                    stm = SingleStatement()
+                    | stm = Block()
+                ) { stmts.add(stm); }
+            } catch (ParseException ex) {
+               if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+                   parseErrors.add(ex);
+                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( error_skipto(ST_SEMICOLON) );
+                   if (!unsupportedStatement.isEmpty()) {
+                       stmts.add( unsupportedStatement );
+                       System.out.println("Exception!");
+                   }
+               } else if ( errorRecovery ) {
+                   parseErrors.add(ex);
+                   error_skipto(ST_SEMICOLON);
+                   stmts.add( null );
+               } else {
+                   throw ex;
+               }
+            }
+
+            ( LOOKAHEAD(2) <ST_SEMICOLON> { if (stm2!=null)
+                             ifElseStatement.setUsingSemicolonForElseStatement(true);
+                          else if (ifElseStatement!=null)
+                             ifElseStatement.setUsingSemicolonForIfStatement(true);
+             } )*
+
+        )*
+
+        <EOF>
+    {
+        return stmts;
+    }
+}
+
+Statements Statements3() #Statements: {
+    Statements stmts = new Statements();
+    IfElseStatement ifElseStatement = null;
+    Statement stm = null;
+    Statement stm2 = null;
+    Expression condition;
+}
+{
+    (
+        (
+             <K_IF> condition=Condition()
+             ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+             [ LOOKAHEAD(2)
+                 [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                 <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+             ]
+
+             { stmts.add( ifElseStatement ); }
+        )
+        |
+        (
+             stm = SingleStatement()
+             | stm = Block()
+        ) { stmts.add(stm); }
+        |
+        LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+        { if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
+
+        (
+            <ST_SEMICOLON>
+            try {
+               { if (stm2!=null)
                                 ifElseStatement.setUsingSemicolonForElseStatement(true);
                              else if (ifElseStatement!=null)
                                 ifElseStatement.setUsingSemicolonForIfStatement(true); }
-            [
                 (
                     <K_IF> condition=Condition()
                     ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
@@ -883,37 +963,50 @@ Statements Statements() #Statements: {
                (
                     stm = SingleStatement()
                     | stm = Block()
-
-                    [ LOOKAHEAD(2)  <ST_SEMICOLON> ]
-               ) { stmts.add(stm); }
+               ) { System.out.println("found normal statement"); stmts.add(stm); }
                |
-               // For any reason, we can't LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) here
-               // As it will result in a Stack Overflow
                stm = UnsupportedStatement()
-               { if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
-            ]
+               { System.out.println("found uns. statement"); if ( !((UnsupportedStatement) stm).isEmpty() ) stmts.add(stm); }
+
+            } catch (ParseException ex) {
+               if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+                   parseErrors.add(ex);
+                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( error_skipto(ST_SEMICOLON) );
+                   if (!unsupportedStatement.isEmpty()) {
+                       stmts.add( unsupportedStatement );
+                       System.out.println("Exception!");
+                   }
+               } else if ( errorRecovery ) {
+                   parseErrors.add(ex);
+                   error_skipto(ST_SEMICOLON);
+                   stmts.add( null );
+               } else {
+                   throw ex;
+               }
+            }
         )*
+
         <EOF>
-    } catch (ParseException e) {
-        if (errorRecovery) {
-            parseErrors.add(e);
-            error_skipto(ST_SEMICOLON);
-        } else {
-            throw e;
-        }
-    }
+        )
     {
         return stmts;
     }
 }
 
 JAVACODE
-void error_skipto(int kind) {
+List<String> error_skipto(int kind) {
+  ArrayList<String> tokenImages = new ArrayList<String>();
   ParseException e = generateParseException();
   Token t;
+  System.out.println("Current Token:" + getToken(0).image );
   do {
     t = getNextToken();
+    System.out.println("Next Token:" + t.image );
+    if (t.kind != kind && t.kind != EOF) {
+        tokenImages.add(t.image);
+    }
   } while (t.kind != kind && t.kind != EOF);
+  return tokenImages;
 }
 
 DeclareStatement Declare(): {
@@ -1416,7 +1509,7 @@ Update Update( List<WithItem> with ):
 
     [ <K_FROM>
       fromItem=FromItem()
-      [ joins=JoinsList() ] ]
+      [ LOOKAHEAD(2) joins=JoinsList() ] ]
 
     [ where=WhereClause() { update.setWhere(where); } ]
 
@@ -1720,7 +1813,7 @@ Delete Delete( List<WithItem> with ):
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias() [ joins=JoinsList() ] ]
+    [ LOOKAHEAD(3) table=TableWithAlias() [ LOOKAHEAD(2)  joins=JoinsList() ] ]
     [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
           ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
@@ -1805,7 +1898,7 @@ MergeOperation MergeUpdateClause(Expression predicate) : {
 {
     <K_UPDATE> <K_SET> updateSets = UpdateSets() { mu.setUpdateSets(updateSets); }
     [ <K_WHERE> condition = Expression() { mu.setWhereCondition(condition); }]
-    [ <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
+    [ LOOKAHEAD(2)  <K_DELETE> <K_WHERE> condition = Expression() { mu.setDeleteWhereCondition(condition); } ]
     { return mu; }
 }
 
@@ -5293,7 +5386,7 @@ Execute Execute(): {
     funcName=RelObjectNameList() { execute.setName(funcName); }
 
     (
-        expressionList=ExpressionList() { execute.setExprList(expressionList); }
+        LOOKAHEAD(2)  expressionList=ExpressionList() { execute.setExprList(expressionList); }
     )?
 
     {
@@ -5664,7 +5757,7 @@ CreateIndex CreateIndex():
         )
     )
     colNames = ColumnNamesWithParamsList()
-    ( parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
+    ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);
         createIndex.setIndex(index);
@@ -6168,7 +6261,7 @@ CreateView CreateView(boolean isUsingOrReplace):
     [ commentTokens=CreateViewTailComment( ) { createView.setViewCommentOptions(commentTokens); } ]
     <K_AS>
     select=Select( ) { createView.setSelect(select); }
-    [ <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
+    [ LOOKAHEAD(2)  <K_WITH> <K_READ> <K_ONLY> { createView.setWithReadOnly(true); } ]
     { return createView; }
 }
 
@@ -6343,7 +6436,7 @@ String ColumnsNamesListItem():
 }
 {
 	( item = RelObjectName() )
-	[ "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
+	[ LOOKAHEAD(2)  "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
 	{
 		return item;
 	}
@@ -6441,7 +6534,7 @@ Drop Drop():
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
-    [ funcArgs = FuncArgsList() ]
+    [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
     ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> | tk=<K_ON>) { dropArgs.add(tk.image); })*
 
     {
@@ -6492,7 +6585,7 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     columnName = RelObjectName() { columnSpecs = new ArrayList<String>(); }
     ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
     ( LOOKAHEAD(2) dataType = ColDataType() )?
-    ( parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
     {
         return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
     }
@@ -6632,8 +6725,8 @@ AlterExpression AlterExpression():
                     alterExp.setIndex(index);
                   }
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                  [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                  [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                  [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                  [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
                 LOOKAHEAD(2) (
@@ -6680,8 +6773,8 @@ AlterExpression AlterExpression():
                 |
                 ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
-                    [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                    [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                    [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                    [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
                 //following two choices regarding foreign keys should be merged
@@ -6690,7 +6783,7 @@ AlterExpression AlterExpression():
                         <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
                      */
-                     <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                     <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
                         {
                             alterExp.setFkSourceSchema(fkTable.getSchemaName());
                             alterExp.setFkSourceTable(fkTable.getName());
@@ -6717,7 +6810,7 @@ AlterExpression AlterExpression():
                             .withColumnsNames(columnNames);
                                                 columnNames = null;
                         }
-                        <K_REFERENCES> fkTable=Table() [ columnNames=ColumnsNamesList() ]
+                        <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
                         {
                             fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
                             alterExp.setIndex(fkIndex);
@@ -6742,12 +6835,12 @@ AlterExpression AlterExpression():
                             alterExp.setIndex(index);
                         }
                         constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                        [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                        [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                        [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                        [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                     )
                     |
                     (
-                        <K_CHECK>  {Expression exp = null;} ("(" exp = Expression() ")")* {
+                        <K_CHECK>  {Expression exp = null;} (LOOKAHEAD(2) "(" exp = Expression() ")")* {
                             CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
                             alterExp.setIndex(checkCs);
                         }
@@ -6764,8 +6857,8 @@ AlterExpression AlterExpression():
                               alterExp.setIndex(index);
                           }
                           constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                          [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                          [ index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                          [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                          [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                     )
                     |
                     (
@@ -7328,7 +7421,7 @@ List<Sequence.Parameter> SequenceParameters():
     }
    )
    |
-   (<K_RESTART> [<K_WITH> token=<S_LONG>]
+   (<K_RESTART> [ LOOKAHEAD(2) <K_WITH> token=<S_LONG>]
     {
       parameter = new Sequence.Parameter(Sequence.ParameterType.RESTART_WITH);
       if(token != null){

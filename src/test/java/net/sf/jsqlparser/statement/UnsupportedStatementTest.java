@@ -61,8 +61,8 @@ public class UnsupportedStatementTest {
         String sqlStr = "Select * from dual; This is an unsupported statement; Select * from dual;";
 
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
-                parser -> parser.withUnsupportedStatements(true));
-        Assertions.assertEquals(3, statements.getStatements().size());
+                parser -> parser.withUnsupportedStatements(true).withErrorRecovery(true));
+        Assertions.assertEquals(3, statements.size());
 
         Assertions.assertInstanceOf(Select.class, statements.getStatements().get(0));
         Assertions.assertInstanceOf(UnsupportedStatement.class, statements.getStatements().get(1));
