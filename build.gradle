@@ -463,7 +463,7 @@ xslt  {
 }
 
 tasks.register('sphinx', Exec) {
-    dependsOn(gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
+    dependsOn(gitChangelogTask, renderRR, xslt, xmldoc)
 
     String PROLOG = """
 .. |_| unicode:: U+00A0
@@ -504,7 +504,7 @@ tasks.register('sphinx', Exec) {
 }
 
 publish {
-    dependsOn(check, gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
+    dependsOn(check, gitChangelogTask, renderRR, xslt, xmldoc)
 }
 
 publishing {
@@ -615,5 +615,5 @@ tasks.register('upload') {
         }
     }
 }
-upload.dependsOn(check, assemble, gitChangelogTask, renderRR, xslt, updateKeywords, xmldoc)
+upload.dependsOn(check, assemble, gitChangelogTask, renderRR, xslt, xmldoc)
 

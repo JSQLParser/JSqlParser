@@ -106,6 +106,15 @@ public class UnsupportedStatementTest {
     }
 
     @Test
+    public void testCaptureRestIssue1993() throws JSQLParserException {
+        String sqlStr = "Select 1; ALTER TABLE \"inter\".\"inter_user_rec\" \n"
+                + "  OWNER TO \"postgres\"; select 2; select 3;";
+        Statements statements = CCJSqlParserUtil.parseStatements(sqlStr,
+                parser -> parser.withErrorRecovery(false));
+        Assertions.assertEquals(4, statements.size());
+    }
+
+    @Test
     void testAlter() throws JSQLParserException {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";

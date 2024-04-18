@@ -7574,7 +7574,7 @@ List<String> captureRest() {
   while(true) {
     tok = getToken(1);
     int l = tokens.size();
-    if( tok.kind == EOF ) {
+    if( tok.kind == EOF || tok.kind == ST_SEMICOLON ) {
       break;
     } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
         tokens.set(l-1, tokens.get(l-1) + tok.image);
