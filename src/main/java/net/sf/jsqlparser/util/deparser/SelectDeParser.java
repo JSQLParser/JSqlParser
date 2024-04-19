@@ -9,14 +9,9 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import static java.util.stream.Collectors.joining;
-
-import java.util.Iterator;
-import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -50,6 +45,11 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+import java.util.Iterator;
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
+
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
         SelectItemVisitor, FromItemVisitor, PivotVisitor {
@@ -61,7 +61,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     public SelectDeParser(StringBuilder buffer) {
-        this(new ExpressionVisitorAdapter(), buffer);
+        super(buffer);
+        this.expressionVisitor = new ExpressionDeParser(this, buffer);
     }
 
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
