@@ -16,6 +16,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -24,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -1080,13 +1080,15 @@ public class SelectTest {
 
     @Test
     public void testDistinctTop2() {
-        String statement = "SELECT TOP 5 DISTINCT myid, mycol FROM mytable WHERE mytable.col = 9";
-        try {
-            parserManager.parse(new StringReader(statement));
-            fail("sould not work");
-        } catch (JSQLParserException ex) {
-            // expected to fail
-        }
+        // valid on Redshift
+        // https://docs.aws.amazon.com/redshift/latest/dg/r_SELECT_list.html
+        String sqlStr = "SELECT TOP 5 DISTINCT myid, mycol FROM mytable WHERE mytable.col = 9";
+        assertDoesNotThrow(new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                CCJSqlParserUtil.parse(sqlStr);
+            }
+        });
     }
 
     @Test

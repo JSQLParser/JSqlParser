@@ -2342,6 +2342,11 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [ LOOKAHEAD(2) first = First() { plainSelect.setFirst(first); } ]
 
+    // Redshift allows TOP before DISTINCT
+    // https://docs.aws.amazon.com/redshift/latest/dg/r_SELECT_list.html
+    // @Todo: reflect the order when de-parsing
+    [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
+
     [ LOOKAHEAD(2)
         (
         <K_ALL>
