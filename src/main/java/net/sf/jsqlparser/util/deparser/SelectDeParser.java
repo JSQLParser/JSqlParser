@@ -276,23 +276,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(plainSelect.getWindowDefinitions().stream()
                     .map(WindowDefinition::toString).collect(joining(", ")));
         }
-        if (plainSelect.getForMode() != null) {
-            buffer.append(" FOR ");
-            buffer.append(plainSelect.getForMode().getValue());
-
-            if (plainSelect.getForUpdateTable() != null) {
-                buffer.append(" OF ").append(plainSelect.getForUpdateTable());
-            }
-            if (plainSelect.getWait() != null) {
-                // wait's toString will do the formatting for us
-                buffer.append(plainSelect.getWait());
-            }
-            if (plainSelect.isNoWait()) {
-                buffer.append(" NOWAIT");
-            } else if (plainSelect.isSkipLocked()) {
-                buffer.append(" SKIP LOCKED");
-            }
-        }
         if (plainSelect.getForClause() != null) {
             plainSelect.getForClause().appendTo(buffer);
         }
@@ -318,6 +301,23 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
         if (plainSelect.getIsolation() != null) {
             buffer.append(plainSelect.getIsolation().toString());
+        }
+        if (plainSelect.getForMode() != null) {
+            buffer.append(" FOR ");
+            buffer.append(plainSelect.getForMode().getValue());
+
+            if (plainSelect.getForUpdateTable() != null) {
+                buffer.append(" OF ").append(plainSelect.getForUpdateTable());
+            }
+            if (plainSelect.getWait() != null) {
+                // wait's toString will do the formatting for us
+                buffer.append(plainSelect.getWait());
+            }
+            if (plainSelect.isNoWait()) {
+                buffer.append(" NOWAIT");
+            } else if (plainSelect.isSkipLocked()) {
+                buffer.append(" SKIP LOCKED");
+            }
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());

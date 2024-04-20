@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression {
+    protected Table forUpdateTable = null;
     List<WithItem> withItemsList;
     Limit limitBy;
     Limit limit;
@@ -34,6 +36,10 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     ForClause forClause = null;
 
     List<OrderByElement> orderByElements;
+    ForMode forMode = null;
+    private boolean skipLocked;
+    private Wait wait;
+    private boolean noWait = false;
 
     public static String orderByToString(List<OrderByElement> orderByElements) {
         return orderByToString(false, orderByElements);
@@ -52,8 +58,8 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
             boolean useBrackets) {
         String sql = getStringList(list, useComma, useBrackets);
 
-        if (sql.length() > 0) {
-            if (expression.length() > 0) {
+        if (!sql.isEmpty()) {
+            if (!expression.isEmpty()) {
                 sql = " " + expression + " " + sql;
             } else {
                 sql = " " + sql;
@@ -150,6 +156,14 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     public void setOracleSiblings(boolean oracleSiblings) {
         this.oracleSiblings = oracleSiblings;
+    }
+
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
+
+    public boolean isNoWait() {
+        return this.noWait;
     }
 
     public Select withOracleSiblings(boolean oracleSiblings) {
@@ -255,6 +269,48 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
+    public ForMode getForMode() {
+        return this.forMode;
+    }
+
+    public void setForMode(ForMode forMode) {
+        this.forMode = forMode;
+    }
+
+    public Table getForUpdateTable() {
+        return this.forUpdateTable;
+    }
+
+    public void setForUpdateTable(Table forUpdateTable) {
+        this.forUpdateTable = forUpdateTable;
+    }
+
+    /**
+     * Sets the {@link Wait} for this SELECT
+     *
+     * @param wait the {@link Wait} for this SELECT
+     */
+    public void setWait(final Wait wait) {
+        this.wait = wait;
+    }
+
+    /**
+     * Returns the value of the {@link Wait} set for this SELECT
+     *
+     * @return the value of the {@link Wait} set for this SELECT
+     */
+    public Wait getWait() {
+        return wait;
+    }
+
+    public boolean isSkipLocked() {
+        return skipLocked;
+    }
+
+    public void setSkipLocked(boolean skipLocked) {
+        this.skipLocked = skipLocked;
+    }
+
     public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
@@ -293,6 +349,25 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         }
         if (isolation != null) {
             builder.append(isolation);
+        }
+        if (forMode != null) {
+            builder.append(" FOR ");
+            builder.append(forMode.getValue());
+
+            if (getForUpdateTable() != null) {
+                builder.append(" OF ").append(forUpdateTable);
+            }
+
+            if (wait != null) {
+                // Wait's toString will do the formatting for us
+                builder.append(wait);
+            }
+
+            if (isNoWait()) {
+                builder.append(" NOWAIT");
+            } else if (isSkipLocked()) {
+                builder.append(" SKIP LOCKED");
+            }
         }
 
         return builder;
@@ -333,5 +408,25 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     public <E extends Select> E as(Class<E> type) {
         return type.cast(this);
+    }
+
+    public Select withForMode(ForMode forMode) {
+        this.setForMode(forMode);
+        return this;
+    }
+
+    public Select withForUpdateTable(Table forUpdateTable) {
+        this.setForUpdateTable(forUpdateTable);
+        return this;
+    }
+
+    public Select withSkipLocked(boolean skipLocked) {
+        this.setSkipLocked(skipLocked);
+        return this;
+    }
+
+    public Select withWait(Wait wait) {
+        this.setWait(wait);
+        return this;
     }
 }

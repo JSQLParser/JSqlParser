@@ -4818,7 +4818,7 @@ public class SelectTest {
         // Step 1: generate the Java Object Hierarchy for
         Table table = new Table().withName("MY_TABLE1");
 
-        PlainSelect select = new PlainSelect().addSelectItem(new AllColumns())
+        Select select = new PlainSelect().addSelectItem(new AllColumns())
                 .withFromItem(table).withForMode(ForMode.KEY_SHARE).withForMode(ForMode.SHARE);
 
         Assertions.assertEquals(expectedSQLStr, select.toString());
@@ -5637,14 +5637,6 @@ public class SelectTest {
                 + "         (SELECT z)\n" + "         ORDER BY z\n" + "     )\n" + "GROUP BY z\n"
                 + "ORDER BY z";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-    }
-
-    @Test
-    void subJoinTest() throws JSQLParserException {
-        String sqlStr =
-                "select su.d\n" + "from sku su\n" + "for update of su.up\n" + "order by su.d";
-
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test

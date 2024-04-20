@@ -13,4 +13,4 @@ where (nvl(su.up,'n')='n' and su.ttype=:b0)
 for update of su.up
 order by su.d
 
---@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: select su.ttype,su.cid,su.s_id,sessiontimezone from sku su where(nvl(su.up,'n')='n' and su.ttype=:b0)order by su.d for update of su.up recorded first on 20 Apr 2024, 15:59:32

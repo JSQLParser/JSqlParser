@@ -9,7 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import static java.util.stream.Collectors.joining;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.schema.Table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,12 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.schema.Table;
+
+import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -45,15 +46,10 @@ public class PlainSelect extends Select {
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private OracleHint oracleHint = null;
-    private ForMode forMode = null;
-    private Table forUpdateTable = null;
-    private boolean skipLocked;
-    private Wait wait;
     private boolean mySqlSqlCalcFoundRows = false;
     private MySqlSqlCacheFlags mySqlCacheFlag = null;
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
-    private boolean noWait = false;
     private boolean emitChanges = false;
 
     private List<WindowDefinition> windowDefinitions;
@@ -360,46 +356,12 @@ public class PlainSelect extends Select {
         this.oracleHierarchical = oracleHierarchical;
     }
 
-    public ForMode getForMode() {
-        return forMode;
-    }
-
-    public void setForMode(ForMode forMode) {
-        this.forMode = forMode;
-    }
-
-    public Table getForUpdateTable() {
-        return forUpdateTable;
-    }
-
-    public void setForUpdateTable(Table forUpdateTable) {
-        this.forUpdateTable = forUpdateTable;
-    }
-
     public OracleHint getOracleHint() {
         return oracleHint;
     }
 
     public void setOracleHint(OracleHint oracleHint) {
         this.oracleHint = oracleHint;
-    }
-
-    /**
-     * Sets the {@link Wait} for this SELECT
-     *
-     * @param wait the {@link Wait} for this SELECT
-     */
-    public void setWait(final Wait wait) {
-        this.wait = wait;
-    }
-
-    /**
-     * Returns the value of the {@link Wait} set for this SELECT
-     *
-     * @return the value of the {@link Wait} set for this SELECT
-     */
-    public Wait getWait() {
-        return wait;
     }
 
     public String getForXmlPath() {
@@ -432,14 +394,6 @@ public class PlainSelect extends Select {
 
     public void setWindowDefinitions(List<WindowDefinition> windowDefinitions) {
         this.windowDefinitions = windowDefinitions;
-    }
-
-    public boolean isSkipLocked() {
-        return skipLocked;
-    }
-
-    public void setSkipLocked(boolean skipLocked) {
-        this.skipLocked = skipLocked;
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
@@ -538,25 +492,6 @@ public class PlainSelect extends Select {
             if (emitChanges) {
                 builder.append(" EMIT CHANGES");
             }
-            if (getForMode() != null) {
-                builder.append(" FOR ");
-                builder.append(getForMode().getValue());
-
-                if (forUpdateTable != null) {
-                    builder.append(" OF ").append(forUpdateTable);
-                }
-
-                if (wait != null) {
-                    // Wait's toString will do the formatting for us
-                    builder.append(wait);
-                }
-
-                if (isNoWait()) {
-                    builder.append(" NOWAIT");
-                } else if (isSkipLocked()) {
-                    builder.append(" SKIP LOCKED");
-                }
-            }
         } else {
             // without from
             if (where != null) {
@@ -616,14 +551,6 @@ public class PlainSelect extends Select {
         return this.mySqlCacheFlag;
     }
 
-    public void setNoWait(boolean noWait) {
-        this.noWait = noWait;
-    }
-
-    public boolean isNoWait() {
-        return this.noWait;
-    }
-
     public PlainSelect withDistinct(Distinct distinct) {
         this.setDistinct(distinct);
         return this;
@@ -679,16 +606,6 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withForMode(ForMode forMode) {
-        this.setForMode(forMode);
-        return this;
-    }
-
-    public PlainSelect withForUpdateTable(Table forUpdateTable) {
-        this.setForUpdateTable(forUpdateTable);
-        return this;
-    }
-
     public PlainSelect withForXmlPath(String forXmlPath) {
         this.setForXmlPath(forXmlPath);
         return this;
@@ -704,18 +621,8 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect withSkipLocked(boolean skipLocked) {
-        this.setSkipLocked(skipLocked);
-        return this;
-    }
-
     public PlainSelect withHaving(Expression having) {
         this.setHaving(having);
-        return this;
-    }
-
-    public PlainSelect withWait(Wait wait) {
-        this.setWait(wait);
         return this;
     }
 
