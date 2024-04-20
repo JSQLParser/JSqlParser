@@ -277,7 +277,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             havingClause.appendTo(b);
         }
 
-        if (nullHandling != null) {
+        if (nullHandling != null && !ignoreNullsOutside) {
             switch (nullHandling) {
                 case IGNORE_NULLS:
                     b.append(" IGNORE NULLS");
@@ -287,6 +287,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
                     break;
             }
         }
+
         if (funcOrderBy != null) {
             b.append(" ORDER BY ");
             b.append(funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
@@ -310,8 +311,15 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             }
         }
 
-        if (isIgnoreNullsOutside()) {
-            b.append("IGNORE NULLS ");
+        if (nullHandling != null && ignoreNullsOutside) {
+            switch (nullHandling) {
+                case IGNORE_NULLS:
+                    b.append(" IGNORE NULLS ");
+                    break;
+                case RESPECT_NULLS:
+                    b.append(" RESPECT NULLS ");
+                    break;
+            }
         }
 
         switch (type) {

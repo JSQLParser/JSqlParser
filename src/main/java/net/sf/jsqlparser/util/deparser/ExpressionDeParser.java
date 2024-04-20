@@ -823,7 +823,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             havingClause.getExpression().accept(this);
         }
 
-        if (aexpr.getNullHandling() != null) {
+        if (aexpr.getNullHandling() != null && !aexpr.isIgnoreNullsOutside()) {
             switch (aexpr.getNullHandling()) {
                 case IGNORE_NULLS:
                     buffer.append(" IGNORE NULLS");
@@ -858,8 +858,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
 
-        if (aexpr.isIgnoreNullsOutside()) {
-            buffer.append("IGNORE NULLS ");
+        if (aexpr.getNullHandling() != null && aexpr.isIgnoreNullsOutside()) {
+            switch (aexpr.getNullHandling()) {
+                case IGNORE_NULLS:
+                    buffer.append(" IGNORE NULLS ");
+                    break;
+                case RESPECT_NULLS:
+                    buffer.append(" RESPECT NULLS ");
+                    break;
+            }
         }
 
         switch (aexpr.getType()) {
