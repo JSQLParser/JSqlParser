@@ -48,4 +48,21 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
         return builder;
     }
 
+    public ASTNodeAccess getParent() {
+        SimpleNode parent = (SimpleNode) node.jjtGetParent();
+        while (parent.jjtGetValue() == null) {
+            parent = (SimpleNode) parent.jjtGetParent();
+        }
+
+        return ASTNodeAccess.class.cast(parent.jjtGetValue());
+    }
+
+    public <T extends ASTNodeAccess> T getParent(Class<T> clazz) {
+        SimpleNode parent = (SimpleNode) node.jjtGetParent();
+        while (parent.jjtGetValue() == null || !clazz.isInstance(parent.jjtGetValue())) {
+            parent = (SimpleNode) parent.jjtGetParent();
+        }
+
+        return clazz.cast(parent.jjtGetValue());
+    }
 }

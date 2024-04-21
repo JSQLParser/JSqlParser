@@ -201,7 +201,18 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     }
 
     public Select addOrderByElements(OrderByElement... orderByElements) {
-        return addOrderByElements(Arrays.asList(orderByElements));
+        return this.addOrderByElements(Arrays.asList(orderByElements));
+    }
+
+    public Select addOrderByExpressions(Collection<Expression> orderByExpressions) {
+        for (Expression e : orderByExpressions) {
+            addOrderByElements(new OrderByElement().withExpression(e));
+        }
+        return this;
+    }
+
+    public Select addOrderByElements(Expression... orderByExpressions) {
+        return addOrderByExpressions(Arrays.asList(orderByExpressions));
     }
 
     public Limit getLimit() {

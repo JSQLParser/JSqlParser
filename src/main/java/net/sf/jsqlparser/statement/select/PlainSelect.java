@@ -67,6 +67,60 @@ public class PlainSelect extends Select {
 
     private Table intoTempTable = null;
 
+    public PlainSelect() {}
+
+    public PlainSelect(FromItem fromItem) {
+        addSelectItem(new AllColumns());
+        setFromItem(fromItem);
+    }
+
+    public PlainSelect(FromItem fromItem, Expression whereExpressions) {
+        addSelectItem(new AllColumns());
+        setFromItem(fromItem);
+        setWhere(whereExpressions);
+    }
+
+    public PlainSelect(FromItem fromItem, Collection<Expression> orderByExpressions) {
+        addSelectItem(new AllColumns());
+        setFromItem(fromItem);
+        addOrderByExpressions(orderByExpressions);
+    }
+
+    public PlainSelect(FromItem fromItem, Expression whereExpressions,
+            Collection<Expression> orderByExpressions) {
+        addSelectItem(new AllColumns());
+        setFromItem(fromItem);
+        setWhere(whereExpressions);
+        addOrderByExpressions(orderByExpressions);
+    }
+
+    public PlainSelect(Collection<Expression> selectExpressions, FromItem fromItem) {
+        addSelectExpressions(selectExpressions);
+        setFromItem(fromItem);
+    }
+
+    public PlainSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Expression whereExpressions) {
+        addSelectExpressions(selectExpressions);
+        setFromItem(fromItem);
+        setWhere(whereExpressions);
+    }
+
+    public PlainSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Collection<Expression> orderByExpressions) {
+        addSelectExpressions(selectExpressions);
+        setFromItem(fromItem);
+        addOrderByExpressions(orderByExpressions);
+    }
+
+    public PlainSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Expression whereExpressions, Collection<Expression> orderByExpressions) {
+        addSelectExpressions(selectExpressions);
+        setFromItem(fromItem);
+        setWhere(whereExpressions);
+        addOrderByExpressions(orderByExpressions);
+    }
+
     @Deprecated
     public boolean isUseBrackets() {
         return false;
@@ -124,12 +178,16 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public PlainSelect addSelectItems(Expression... expressions) {
+    public PlainSelect addSelectExpressions(Collection<Expression> expressions) {
         selectItems = Optional.ofNullable(selectItems).orElseGet(ArrayList::new);
         for (Expression expression : expressions) {
             selectItems.add(SelectItem.from(expression));
         }
         return this;
+    }
+
+    public PlainSelect addSelectItems(Expression... expressions) {
+        return this.addSelectExpressions(Arrays.asList(expressions));
     }
 
     public PlainSelect addSelectItem(Expression expression, Alias alias) {

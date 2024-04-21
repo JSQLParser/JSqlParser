@@ -10,12 +10,72 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Table;
+
+import java.util.Collection;
 
 public class ParenthesedSelect extends Select implements FromItem {
     Alias alias;
     Pivot pivot;
     UnPivot unPivot;
     Select select;
+
+    private static Alias getAliasFromItem(FromItem fromItem) {
+        if (fromItem instanceof Table && fromItem.getAlias() == null) {
+            Table t = (Table) fromItem;
+            return new Alias(t.getName(), true);
+        } else {
+            return new Alias(fromItem.getAlias().getName(), true);
+        }
+    }
+
+    public ParenthesedSelect() {}
+
+    public ParenthesedSelect(FromItem fromItem) {
+        this.select = new PlainSelect(fromItem);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(FromItem fromItem, Expression whereExpressions) {
+        this.select = new PlainSelect(fromItem, whereExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(FromItem fromItem, Collection<Expression> orderByExpressions) {
+        this.select = new PlainSelect(fromItem, orderByExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(FromItem fromItem, Expression whereExpressions,
+            Collection<Expression> orderByExpressions) {
+        this.select = new PlainSelect(fromItem, whereExpressions, orderByExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(Collection<Expression> selectExpressions, FromItem fromItem) {
+        this.select = new PlainSelect(selectExpressions, fromItem);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Expression whereExpressions) {
+        this.select = new PlainSelect(selectExpressions, fromItem, whereExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Collection<Expression> orderByExpressions) {
+        this.select = new PlainSelect(selectExpressions, fromItem, orderByExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
+
+    public ParenthesedSelect(Collection<Expression> selectExpressions, FromItem fromItem,
+            Expression whereExpressions, Collection<Expression> orderByExpressions) {
+        this.select =
+                new PlainSelect(selectExpressions, fromItem, whereExpressions, orderByExpressions);
+        this.alias = getAliasFromItem(fromItem);
+    }
 
     @Override
     public Alias getAlias() {
