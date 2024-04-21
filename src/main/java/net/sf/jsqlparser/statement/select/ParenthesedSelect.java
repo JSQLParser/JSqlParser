@@ -137,7 +137,7 @@ public class ParenthesedSelect extends Select implements FromItem {
     }
 
     public ParenthesedSelect withOrderByElements(List<OrderByElement> orderByElements) {
-        super.setOrderByElements(orderByElements);
+        this.select.setOrderByElements(orderByElements);
         return this;
     }
 
