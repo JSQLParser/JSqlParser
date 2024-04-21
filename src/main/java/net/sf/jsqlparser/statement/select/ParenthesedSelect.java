@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.Collection;
+import java.util.List;
 
 public class ParenthesedSelect extends Select implements FromItem {
     Alias alias;
@@ -132,6 +133,11 @@ public class ParenthesedSelect extends Select implements FromItem {
 
     public ParenthesedSelect withSelect(Select selectBody) {
         setSelect(selectBody);
+        return this;
+    }
+
+    public ParenthesedSelect withOrderByElements(List<OrderByElement> orderByElements) {
+        super.setOrderByElements(orderByElements);
         return this;
     }
 
