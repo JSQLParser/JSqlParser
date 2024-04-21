@@ -10,13 +10,14 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ParenthesedFromItem implements FromItem {
+public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
     private FromItem fromItem;
     private List<Join> joins;
     private Alias alias;

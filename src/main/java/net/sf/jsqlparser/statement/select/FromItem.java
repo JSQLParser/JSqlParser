@@ -9,10 +9,10 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.Model;
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.ASTNodeAccess;
 
-public interface FromItem extends Model {
+public interface FromItem extends ASTNodeAccess {
 
     void accept(FromItemVisitor fromItemVisitor);
 

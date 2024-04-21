@@ -2886,7 +2886,7 @@ FromItem ParenthesedFromItem():
     }
 }
 
-FromItem FromItem():
+FromItem FromItem() #FromItem:
 {
     FromItem fromItem = null;
     FromItem fromItem2 = null;
@@ -2934,6 +2934,7 @@ FromItem FromItem():
         )
     ]
     {
+        linkAST(fromItem,jjtThis);
         return fromItem;
     }
 }
@@ -3027,11 +3028,11 @@ Join JoinerExpression() #JoinerExpression:
                         )
                     )
     ]
-  {
-    linkAST(join,jjtThis);
-    join.setFromItem(right);
-  return join;
-}
+    {
+        linkAST(join,jjtThis);
+        join.setFromItem(right);
+        return join;
+    }
 
 }
 
