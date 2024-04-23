@@ -1,8 +1,12 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class StructTypeTest {
     @Test
@@ -38,6 +42,19 @@ class StructTypeTest {
 
         sqlStr = "SELECT * from (SELECT UNNEST([{ t:'abc', len:5 }, ('abc', 6) ], recursive => true))";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testStructTypeConstructorDuckDB() throws JSQLParserException {
+        // @todo: check why the white-space after the "{" is needed?!
+        String sqlStr = "SELECT { t:'abc',len:5}";
+        List<SelectItem<?>> selectItems = List.of(
+                new SelectItem<>("abc", "t")
+                , new SelectItem<>(5, "len")
+        );
+        StructType struct = new StructType(StructType.Dialect.DUCKDB, selectItems);
+        PlainSelect select = new PlainSelect().withSelectItems( new SelectItem<>(struct));
+        TestUtils.assertStatementCanBeDeparsedAs(select, sqlStr, true);
     }
 
     @Test

@@ -10,7 +10,10 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
@@ -26,6 +29,22 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
     public SelectItem(T expression, String aliasName) {
         this.expression = expression;
         this.alias = new Alias(aliasName);
+    }
+
+    public SelectItem(Long expression, String aliasName) {
+        this((T) new LongValue(expression), aliasName);
+    }
+
+    public SelectItem(Integer expression, String aliasName) {
+        this((T) new LongValue(expression), aliasName);
+    }
+
+    public SelectItem(Double expression, String aliasName) {
+        this((T) new DoubleValue(expression), aliasName);
+    }
+
+    public SelectItem(String expression, String aliasName) {
+        this((T) new StringValue(expression), aliasName);
     }
 
     public SelectItem() {

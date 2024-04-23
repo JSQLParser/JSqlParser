@@ -53,6 +53,11 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
         this.arguments = arguments;
     }
 
+    public StructType(Dialect dialect, List<SelectItem<?>> arguments) {
+        this.dialect = dialect;
+        this.arguments = arguments;
+    }
+
     public Dialect getDialect() {
         return dialect;
     }
