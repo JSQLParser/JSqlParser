@@ -95,4 +95,13 @@ public class CastExpressionTest {
         CastExpression.DataType float128 = CastExpression.DataType.from("FLOAT128");
         Assertions.assertEquals(CastExpression.DataType.UNKNOWN, float128);
     }
+
+    @Test
+    void testParenthesisCastIssue1997() throws JSQLParserException {
+        String sqlStr = "SELECT ((foo)::text = ANY((ARRAY['bar'])::text[]))";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT ((foo)::text = ANY((((ARRAY['bar'])))::text[]))";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

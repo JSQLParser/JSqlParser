@@ -3693,7 +3693,7 @@ Expression RegularCondition() #RegularCondition:
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
-      | rightExpression=ComparisonItem() )
+    | rightExpression=ComparisonItem() )
 
     [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
 
@@ -4146,7 +4146,7 @@ Expression ComparisonItem() :
 }
 {
   (
-    LOOKAHEAD(3) retval=AnyComparisonExpression()
+    LOOKAHEAD( AnyComparisonExpression() ) retval=AnyComparisonExpression()
     | LOOKAHEAD(3) retval=SimpleExpression()
     | LOOKAHEAD(3) retval=ParenthesedExpressionList()
     | LOOKAHEAD(3) retval=RowConstructor()
@@ -4165,11 +4165,14 @@ Expression AnyComparisonExpression() :
 }
 {
     (
-        <K_ANY> { anyType = AnyType.ANY; }
-        | <K_SOME> { anyType = AnyType.SOME; }
-        | <K_ALL> { anyType = AnyType.ALL; }
+        (
+            <K_ANY> { anyType = AnyType.ANY; }
+            | <K_SOME> { anyType = AnyType.SOME; }
+            | <K_ALL> { anyType = AnyType.ALL; }
+        )
+
+        select = ParenthesedSelect()
     )
-    select = Select()
     {
       return new AnyComparisonExpression(anyType, select);
     }
