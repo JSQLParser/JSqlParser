@@ -30,6 +30,15 @@ public class ValuesTest {
     }
 
     @Test
+    public void testSelectRowConstructor() throws JSQLParserException {
+        String sqlStr = "select * from values 1, 2, 3;";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "select * from values (1, 2), (3, 4), (5,6);";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     public void testDuplicateKey() throws JSQLParserException {
         String statement = "VALUES (1, 2, 'test')";
         assertSqlCanBeParsedAndDeparsed(statement);

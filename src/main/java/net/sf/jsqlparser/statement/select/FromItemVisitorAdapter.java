@@ -38,4 +38,9 @@ public class FromItemVisitorAdapter implements FromItemVisitor {
     public void visit(ParenthesedFromItem aThis) {
 
     }
+
+    @Override
+    public void visit(Values values) {
+
+    }
 }

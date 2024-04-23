@@ -22,4 +22,6 @@ public interface FromItemVisitor {
     void visit(TableFunction tableFunction);
 
     void visit(ParenthesedFromItem aThis);
+
+    void visit(Values values);
 }

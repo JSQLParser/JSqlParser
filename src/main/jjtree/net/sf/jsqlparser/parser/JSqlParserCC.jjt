@@ -2900,6 +2900,8 @@ FromItem FromItem() #FromItem:
 }
 {
     (
+        LOOKAHEAD(3) fromItem = Values()
+        |
         LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
         |
         LOOKAHEAD(3) fromItem=Table()

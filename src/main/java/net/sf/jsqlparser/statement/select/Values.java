@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
@@ -16,7 +17,7 @@ import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionLi
 import java.util.Arrays;
 import java.util.Collection;
 
-public class Values extends Select {
+public class Values extends Select implements FromItem {
 
     private ExpressionList<Expression> expressions;
 
@@ -64,5 +65,40 @@ public class Values extends Select {
         }
         this.expressions.addAll(expressions);
         return this;
+    }
+
+    @Override
+    public void accept(FromItemVisitor fromItemVisitor) {
+        fromItemVisitor.visit(this);
+    }
+
+    @Override
+    public Alias getAlias() {
+        return null;
+    }
+
+    @Override
+    public void setAlias(Alias alias) {
+
+    }
+
+    @Override
+    public Pivot getPivot() {
+        return null;
+    }
+
+    @Override
+    public void setPivot(Pivot pivot) {
+
+    }
+
+    @Override
+    public UnPivot getUnPivot() {
+        return null;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {
+
     }
 }

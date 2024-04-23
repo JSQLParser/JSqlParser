@@ -213,8 +213,8 @@ public class HowToUseSample {
                 "        FROM ( VALUES 1, 2, 3 )";
 
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
-        ParenthesedSelect subSelect = (ParenthesedSelect) select.getFromItem();
-        Values values = (Values) subSelect.getSelect();
+        ParenthesedFromItem fromItem = (ParenthesedFromItem) select.getFromItem();
+        Values values = (Values) fromItem.getFromItem();
         Assertions.assertEquals(3, values.getExpressions().size());
     }
 
