@@ -49,4 +49,13 @@ public class LikeExpressionTest {
         String sqlStr = "select * from test where id  not rlike '111'";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testDuckDBSimuilarTo() throws JSQLParserException {
+        String sqlStr = "SELECT v\n"
+                + "    FROM strings\n"
+                + "    WHERE v SIMILAR TO 'San* [fF].*'\n"
+                + "    ORDER BY v;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

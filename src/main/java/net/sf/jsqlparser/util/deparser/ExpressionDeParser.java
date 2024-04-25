@@ -358,12 +358,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(LikeExpression likeExpression) {
+        String keywordStr = likeExpression.getLikeKeyWord() == LikeExpression.KeyWord.SIMILAR_TO
+                ? " SIMILAR TO"
+                : likeExpression.getLikeKeyWord().toString();
+
         likeExpression.getLeftExpression().accept(this);
         buffer.append(" ");
         if (likeExpression.isNot()) {
             buffer.append("NOT ");
         }
-        buffer.append(likeExpression.getLikeKeyWord()).append(" ");
+        buffer.append(keywordStr).append(" ");
         if (likeExpression.isUseBinary()) {
             buffer.append("BINARY ");
         }

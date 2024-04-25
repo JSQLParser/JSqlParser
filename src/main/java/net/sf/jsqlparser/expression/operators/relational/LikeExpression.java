@@ -15,10 +15,10 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class LikeExpression extends BinaryExpression {
     public enum KeyWord {
-        LIKE, ILIKE, RLIKE, REGEXP;
+        LIKE, ILIKE, RLIKE, REGEXP, SIMILAR_TO;
 
         public static KeyWord from(String keyword) {
-            return Enum.valueOf(KeyWord.class, keyword.toUpperCase());
+            return Enum.valueOf(KeyWord.class, keyword.toUpperCase().replaceAll("\\s+", "_"));
         }
     }
 
@@ -58,7 +58,8 @@ public class LikeExpression extends BinaryExpression {
     @Override
     public String toString() {
         String retval = getLeftExpression() + " " + (not ? "NOT " : "")
-                + likeKeyWord + " " + (useBinary ? "BINARY " : "") + getRightExpression();
+                + (likeKeyWord == KeyWord.SIMILAR_TO ? "SIMILAR TO" : likeKeyWord) + " "
+                + (useBinary ? "BINARY " : "") + getRightExpression();
         if (escapeExpression != null) {
             retval += " ESCAPE " + escapeExpression;
         }

@@ -498,6 +498,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <OPENING_CURLY_BRACKET: "{">
 |   <CLOSING_CURLY_BRACKET: "}">
 |   <DOUBLE_COLON: ":">
+|   <K_SIMILAR_TO: ( <K_SIMILAR> (" ")+ <K_TO> ) >
 }
 
 TOKEN : /* Statement Separators */
@@ -3866,6 +3867,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_ILIKE>
         | token = <K_RLIKE>
         | token = <K_REGEXP>
+        | token = <K_SIMILAR_TO>
     ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
     rightExpression=SimpleExpression()
