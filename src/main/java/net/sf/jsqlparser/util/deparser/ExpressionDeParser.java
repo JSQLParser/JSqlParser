@@ -1169,9 +1169,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public void visit(IsDistinctExpression isDistinctExpression) {
-        buffer.append(isDistinctExpression.getLeftExpression()
-                + isDistinctExpression.getStringExpression()
-                + isDistinctExpression.getRightExpression());
+        buffer.append(isDistinctExpression.getLeftExpression())
+                .append(isDistinctExpression.getStringExpression())
+                .append(isDistinctExpression.getRightExpression());
     }
 
     @Override
@@ -1226,8 +1226,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                         buffer.append(",");
                     }
                     buffer.append(e.getAlias().getName());
-                    buffer.append(":");
-                    buffer.append(e.getExpression());
+                    buffer.append(" : ");
+                    e.getExpression().accept(this);
                 }
                 buffer.append(" }");
             } else {
@@ -1237,9 +1237,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     if (0 < i++) {
                         buffer.append(",");
                     }
-                    e.appendTo(buffer);
+                    e.getExpression().accept(this);
+                    if (e.getAlias() != null) {
+                        buffer.append(" as ");
+                        buffer.append(e.getAlias().getName());
+                    }
                 }
-
                 buffer.append(")");
             }
         }
