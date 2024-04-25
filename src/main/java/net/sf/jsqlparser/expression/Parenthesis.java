@@ -9,45 +9,29 @@
  */
 package net.sf.jsqlparser.expression;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
 /**
- * It represents an expression like "(" expression ")"
+ * @deprecated This class is deprecated since version 5.0. Use {@link ParenthesedExpressionList}
+ *             instead. The reason for deprecation is the ambiguity and redundancy.
  */
-public class Parenthesis extends ASTNodeAccessImpl implements Expression {
-
-    private Expression expression;
-
-    public Parenthesis() {}
-
-    public Parenthesis(Expression expression) {
-        setExpression(expression);
-    }
-
+@Deprecated(since = "5.0", forRemoval = true)
+public class Parenthesis extends ParenthesedExpressionList<Expression> {
     public Expression getExpression() {
-        return expression;
+        return isEmpty() ? null : get(0);
     }
 
-    public final void setExpression(Expression expression) {
-        this.expression = expression;
-    }
-
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return "(" + (expression != null ? expression : "") + ")";
+    public Parenthesis setExpression(Expression expression) {
+        this.set(0, expression);
+        return this;
     }
 
     public Parenthesis withExpression(Expression expression) {
-        this.setExpression(expression);
-        return this;
+        return this.setExpression(expression);
     }
 
     public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
     }
+
 }

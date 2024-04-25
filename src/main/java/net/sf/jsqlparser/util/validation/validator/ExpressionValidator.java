@@ -45,7 +45,6 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
-import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -342,11 +341,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public void visit(XorExpression xorExpression) {
         visitBinaryExpression(xorExpression, " XOR ");
 
-    }
-
-    @Override
-    public void visit(Parenthesis parenthesis) {
-        parenthesis.getExpression().accept(this);
     }
 
     @Override

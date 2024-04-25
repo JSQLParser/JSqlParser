@@ -86,8 +86,6 @@ public interface ExpressionVisitor {
 
     void visit(TimestampValue timestampValue);
 
-    void visit(Parenthesis parenthesis);
-
     void visit(StringValue stringValue);
 
     void visit(Addition addition);

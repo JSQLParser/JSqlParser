@@ -141,11 +141,6 @@ public class ExpressionVisitorAdapter
     }
 
     @Override
-    public void visit(Parenthesis parenthesis) {
-        parenthesis.getExpression().accept(this);
-    }
-
-    @Override
     public void visit(StringValue value) {
 
     }

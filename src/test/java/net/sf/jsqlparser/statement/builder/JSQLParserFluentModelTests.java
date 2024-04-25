@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.builder;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -46,7 +45,7 @@ public class JSQLParserFluentModelTests {
         Table t2 = new Table("tab2").withAlias(new Alias("t2", false));
 
         AndExpression where = new AndExpression().withLeftExpression(
-                new Parenthesis(new OrExpression().withLeftExpression(
+                new ParenthesedExpressionList<>(new OrExpression().withLeftExpression(
                         new EqualsTo()
                                 .withLeftExpression(new Column(asList("t1", "col1")))
                                 .withRightExpression(new JdbcParameter().withIndex(1)))
@@ -58,7 +57,7 @@ public class JSQLParserFluentModelTests {
                         new InExpression()
                                 .withLeftExpression(new Column(asList("t1", "col3")))
                                 .withRightExpression(
-                                        new ParenthesedExpressionList(new StringValue("A"))));
+                                        new ParenthesedExpressionList<>(new StringValue("A"))));
 
         PlainSelect select = new PlainSelect().addSelectItems(new AllColumns()).withFromItem(t1)
                 .addJoins(new Join().withRightItem(t2)
@@ -84,7 +83,7 @@ public class JSQLParserFluentModelTests {
         XorExpression where = new XorExpression()
                 .withLeftExpression(new AndExpression()
                         .withLeftExpression(
-                                new Parenthesis(
+                                new ParenthesedExpressionList<>(
                                         new XorExpression()
                                                 .withLeftExpression(
                                                         new Column(asList("t1", "col1")))
@@ -94,7 +93,8 @@ public class JSQLParserFluentModelTests {
                                 new InExpression()
                                         .withLeftExpression(new Column(asList("t1", "col3")))
                                         .withRightExpression(
-                                                new ParenthesedExpressionList(new StringValue("B"),
+                                                new ParenthesedExpressionList<>(
+                                                        new StringValue("B"),
                                                         new StringValue("C")))))
                 .withRightExpression(new Column(asList("t2", "col4")));
 

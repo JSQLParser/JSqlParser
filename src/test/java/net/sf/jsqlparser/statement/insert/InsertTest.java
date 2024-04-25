@@ -98,7 +98,7 @@ public class InsertTest {
         assertEquals("mytable", insert.getTable().getName());
         assertEquals(1, insert.getColumns().size());
         assertEquals("col1", insert.getColumns().get(0).getColumnName());
-        assertEquals("('val1')",
+        assertEquals("'val1'",
                 (insert.getValues().getExpressions().get(0)).toString());
         assertEquals("INSERT INTO mytable (col1) VALUES ('val1')", insert.toString());
 
@@ -207,7 +207,8 @@ public class InsertTest {
                 .addExpression(
                         new ParenthesedExpressionList<Expression>(new Column("a"), new Column("b")))
                 .addExpression(
-                        new ParenthesedExpressionList<Expression>(new Column("d"), new Column("e")));
+                        new ParenthesedExpressionList<Expression>(new Column("d"),
+                                new Column("e")));
 
         Select select = new Values().withExpressions(multiExpressionList);
 

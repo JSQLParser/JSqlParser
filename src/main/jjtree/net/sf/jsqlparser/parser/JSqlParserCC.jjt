@@ -3591,7 +3591,7 @@ Expression AndExpression() :
         left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-        "(" left=XorExpression() ")" {left = new Parenthesis(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
+        "(" left=XorExpression() ")" {left = new ParenthesedExpressionList(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
     )
     { result = left; }
 
@@ -3603,7 +3603,7 @@ Expression AndExpression() :
             right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-            "(" right=XorExpression() ")" {right = new Parenthesis(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
+            "(" right=XorExpression() ")" {right = new ParenthesedExpressionList(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
         )
         {
             result = new AndExpression(left, right);
@@ -4467,7 +4467,7 @@ Expression PrimaryExpression() #PrimaryExpression:
             list=ParenthesedExpressionList()
             {
                 if (list.size() == 1) {
-                    retval = new Parenthesis( (Expression) list.getExpressions().get(0));
+                    retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
                 } else {
                     retval = list;
                 }
@@ -4741,7 +4741,7 @@ Expression ParenthesedExpression():
 {
     "(" expression = PrimaryExpression()  ")"
     {
-        return new Parenthesis(expression);
+        return new ParenthesedExpressionList(expression);
     }
 }
 

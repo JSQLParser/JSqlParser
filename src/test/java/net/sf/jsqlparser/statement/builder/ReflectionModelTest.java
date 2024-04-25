@@ -9,10 +9,6 @@
  */
 package net.sf.jsqlparser.statement.builder;
 
-import static net.sf.jsqlparser.test.TestUtils.asList;
-
-import java.util.ArrayList;
-import java.util.List;
 import net.sf.jsqlparser.expression.AnyType;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperatorType;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
@@ -23,6 +19,11 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static net.sf.jsqlparser.test.TestUtils.asList;
 
 /**
  * Testing of setters, getters, with-/add-methods by calling them with random parameter-values
@@ -71,7 +72,6 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.OracleHierarchicalExpression(),
             new net.sf.jsqlparser.expression.OracleHint(),
             new net.sf.jsqlparser.expression.OrderByClause(),
-            new net.sf.jsqlparser.expression.Parenthesis(),
             new net.sf.jsqlparser.expression.PartitionByClause(),
             // new net.sf.jsqlparser.expression.RowConstructor<>("ROW", new ExpressionList<>()),
             new net.sf.jsqlparser.expression.SQLServerHints(),
