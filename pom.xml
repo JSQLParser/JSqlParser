@@ -169,16 +169,6 @@
                         <artifactId>pmd-java</artifactId>
                         <version>${pmdVersion}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>net.sourceforge.pmd</groupId>
-                        <artifactId>pmd-javascript</artifactId>
-                        <version>${pmdVersion}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>net.sourceforge.pmd</groupId>
-                        <artifactId>pmd-jsp</artifactId>
-                        <version>${pmdVersion}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>

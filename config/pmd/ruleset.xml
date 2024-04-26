@@ -31,9 +31,6 @@ under the License.
 
 	<rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP" />
 	<rule ref="category/java/bestpractices.xml/CheckResultSet" />
-    
-    <!-- this little fellow will complain about PACKAGE based imports -->
-    <!--<rule ref="category/java/bestpractices.xml/UnusedImports" /> -->
 
 	<rule ref="category/java/bestpractices.xml/UnusedFormalParameter" />
 	<rule ref="category/java/bestpractices.xml/UnusedLocalVariable" />
@@ -49,7 +46,6 @@ under the License.
 	<rule ref="category/java/codestyle.xml/UselessParentheses" />
 	<rule ref="category/java/codestyle.xml/UselessQualifiedThis" />
 
-	<!-- for Codazy -->
 	<rule ref="category/java/codestyle.xml/MethodNamingConventions">
 		<properties>
 			<property name="methodPattern" value="[a-z][a-zA-Z0-9]*" />
@@ -67,16 +63,7 @@ under the License.
 	<rule ref="category/java/design.xml/UselessOverridingMethod" />
 	<rule ref="category/java/design.xml/AvoidThrowingNullPointerException" />
 
-	<!--
-	<rule ref="category/java/design.xml/NPathComplexity">
-		<properties>
-			<property name="reportLevel" value="200" />
-		</properties>
-	</rule>
-	-->
 
-
-	<!-- for Codazy -->
 	<rule ref="category/java/design.xml/CyclomaticComplexity">
 		<properties>
 			<property name="classReportLevel" value="200" />
@@ -84,7 +71,6 @@ under the License.
 		</properties>
 	</rule>
 	<rule ref="category/java/design.xml/ExcessiveMethodLength" />
-	<rule ref="category/java/bestpractices.xml/SwitchStmtsShouldHaveDefault" />
 
 	<rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
 	<rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />
