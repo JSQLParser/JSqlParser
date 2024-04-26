@@ -19,7 +19,7 @@ class HexValueTest {
 
     @Test
     void testHexCode() throws JSQLParserException {
-        String sqlString = "SELECT 0xF001, X'00A1'";
+        String sqlString = "SELECT 0xF001, X'00A1', X'C3BC'";
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlString);
 
         HexValue hex1 = (HexValue) select.getSelectItem(0).getExpression();
@@ -31,5 +31,12 @@ class HexValueTest {
         Assertions.assertEquals("00A1", hex2.getDigits());
         Assertions.assertEquals(161, hex2.getLong());
         Assertions.assertEquals(161, hex2.getLongValue().getValue());
+
+        HexValue hex3 = (HexValue) select.getSelectItem(2).getExpression();
+        Assertions.assertEquals("C3BC", hex3.getDigits());
+        Assertions.assertEquals("'ü'", hex3.getStringValue().toString());
+        Assertions.assertEquals("ü", hex3.getStringValue().getValue());
+
+        Assertions.assertEquals("'\\xC3\\xBC'", hex3.getBlob().toString());
     }
 }
