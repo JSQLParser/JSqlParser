@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
+
 /**
  * lateral sub select
  * 
@@ -22,7 +24,21 @@ public class LateralSubSelect extends ParenthesedSelect {
     }
 
     public LateralSubSelect(String prefix) {
+        this(prefix, null, null);
+    }
+
+    public LateralSubSelect(String prefix, Select select) {
+        this(prefix, select, null);
+    }
+
+    public LateralSubSelect(Select select, Alias alias) {
+        this("LATERAL", select, alias);
+    }
+
+    public LateralSubSelect(String prefix, Select select, Alias alias) {
         this.prefix = prefix;
+        this.select = select;
+        this.alias = alias;
     }
 
     public String getPrefix() {
@@ -40,6 +56,11 @@ public class LateralSubSelect extends ParenthesedSelect {
 
     public LateralSubSelect withSelect(Select select) {
         setSelect(select);
+        return this;
+    }
+
+    public LateralSubSelect withAlias(Alias alias) {
+        setAlias(alias);
         return this;
     }
 
