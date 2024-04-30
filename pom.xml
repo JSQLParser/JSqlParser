@@ -555,6 +555,7 @@
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
+                            <excludes>**/module-info.java</excludes>
                             <checkstyleRules>
                                 <module name="Checker">
                                     <module name="SuppressWarningsFilter" />
