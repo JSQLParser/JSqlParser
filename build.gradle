@@ -135,6 +135,7 @@ compileJava {
 }
 
 javadoc {
+    include("build/generated/javacc/net/sf/jsqlparser/parser/*.java" )
     if(JavaVersion.current().isJava9Compatible()) {
         options.addBooleanOption('html5', true)
     }
