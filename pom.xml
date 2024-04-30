@@ -378,9 +378,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.5</version>
                 <configuration>
                     <trimStackTrace>false</trimStackTrace>
+                    <!-- AlterViewTest does deep reflection -->
+                    <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
             <plugin>
@@ -555,6 +557,7 @@
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
+                            <excludes>**/module-info.java</excludes>
                             <checkstyleRules>
                                 <module name="Checker">
                                     <module name="SuppressWarningsFilter" />

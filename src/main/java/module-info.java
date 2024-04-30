@@ -8,6 +8,8 @@
  * #L%
  */
 module net.sf.jsqlparser {
+    requires java.sql;
+
     exports net.sf.jsqlparser;
     exports net.sf.jsqlparser.expression;
     exports net.sf.jsqlparser.expression.operators.arithmetic;
