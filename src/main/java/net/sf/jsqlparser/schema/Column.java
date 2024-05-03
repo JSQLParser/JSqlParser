@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.schema;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
@@ -24,6 +26,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     private String columnName;
     private String commentText;
     private ArrayConstructor arrayConstructor;
+    private String tableDelimiter = ".";
 
     public Column() {}
 
@@ -33,8 +36,16 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public Column(List<String> nameParts) {
-        this(nameParts.size() > 1 ? new Table(nameParts.subList(0, nameParts.size() - 1)) : null,
+        this(nameParts, nameParts.size() > 1 ? Collections.nCopies(nameParts.size() - 1, ".")
+                : new ArrayList<>());
+    }
+
+    public Column(List<String> nameParts, List<String> delimiters) {
+        this(
+                nameParts.size() > 1 ? new Table(nameParts.subList(0, nameParts.size() - 1),
+                        delimiters.subList(0, delimiters.size() - 1)) : null,
                 nameParts.get(nameParts.size() - 1));
+        setTableDelimiter(delimiters.isEmpty() ? "." : delimiters.get(delimiters.size() - 1));
     }
 
     public Column(String columnName) {
@@ -92,6 +103,14 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         columnName = string;
     }
 
+    public String getTableDelimiter() {
+        return tableDelimiter;
+    }
+
+    public void setTableDelimiter(String tableDelimiter) {
+        this.tableDelimiter = tableDelimiter;
+    }
+
     @Override
     public String getFullyQualifiedName() {
         return getFullyQualifiedName(false);
@@ -108,7 +127,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
             }
         }
         if (fqn.length() > 0) {
-            fqn.append('.');
+            fqn.append(tableDelimiter);
         }
         if (columnName != null) {
             fqn.append(columnName);
@@ -154,6 +173,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public Column withCommentText(String commentText) {
         this.setCommentText(commentText);
+        return this;
+    }
+
+    public Column withTableDelimiter(String delimiter) {
+        this.setTableDelimiter(delimiter);
         return this;
     }
 

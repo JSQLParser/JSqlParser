@@ -17,7 +17,10 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -72,5 +75,14 @@ public class TableTest {
         assertThat(table.getFullyQualifiedName()).isEqualTo("link.DICTIONARY");
         table.setSchemaName(null);
         assertThat(table.getFullyQualifiedName()).isEqualTo("DICTIONARY");
+    }
+
+    @Test
+    public void testConstructorDelimitersInappropriateSize() {
+        assertThatThrownBy(
+                () -> new Table(List.of("a", "b", "c"), List.of("too", "many", "delimiters")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(
+                        "the length of the delimiters list must be 1 less than nameParts");
     }
 }

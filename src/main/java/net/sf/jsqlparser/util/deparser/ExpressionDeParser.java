@@ -571,7 +571,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
         if (tableName != null && !tableName.isEmpty()) {
-            buffer.append(tableName).append(".");
+            buffer.append(tableName).append(tableColumn.getTableDelimiter());
         }
 
         buffer.append(tableColumn.getColumnName());

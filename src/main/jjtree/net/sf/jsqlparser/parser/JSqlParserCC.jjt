@@ -102,6 +102,25 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     public Node getASTRoot() {
         return jjtree.rootNode();
     }
+
+    private static class ObjectNames {
+
+        private final List<String> names;
+        private final List<String> delimiters;
+
+        public ObjectNames(List<String> names, List<String> delimiters) {
+            this.names = names;
+            this.delimiters = delimiters;
+        }
+
+        public List<String> getNames() {
+            return names;
+        }
+
+        public List<String> getDelimiters() {
+            return delimiters;
+        }
+    }
 }
 
 PARSER_END(CCJSqlParser)
@@ -1886,33 +1905,38 @@ MergeOperation MergeWhenNotMatched() : {
         { return mi; }
 }
 
-List<String> RelObjectNameList() : {
+ObjectNames RelObjectNames() : {
     String token = null;
+    Token delimiter = null;
     List<String> data = new ArrayList<String>();
+    List<String> delimiters = new ArrayList<String>();
 } {
     token = RelObjectNameExt() { data.add(token); }
-    ( LOOKAHEAD (2) ("." | ":") ("." { data.add(null); })* token = RelObjectNameExt2() { data.add(token); } ) *
+    (
+        LOOKAHEAD (2) ( delimiter = "." | delimiter = ":" ) { delimiters.add(delimiter.image); } (( delimiter =  "." | delimiter = ":" ) { data.add(null); delimiters.add(delimiter.image); })*
+        token = RelObjectNameExt2() { data.add(token); }
+    ) *
 
-    { return data; }
+    { return new ObjectNames(data, delimiters); }
 }
 
 // See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
 
 Column Column() #Column :
 {
-    List<String> data = new ArrayList<String>();
+    ObjectNames data = null;
     ArrayConstructor arrayConstructor = null;
     Token tk = null;
 }
 {
-    data = RelObjectNameList()
+    data = RelObjectNames()
     [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
-    [ "." <K_NEXTVAL> { data.add("nextval"); } ]
+    [ "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
 
     [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
     {
-        Column col = new Column(data);
+        Column col = new Column(data.getNames(), data.getDelimiters());
         if (tk != null) { col.withCommentText(tk.image); }
         if (arrayConstructor!=null) {
             col.setArrayConstructor(arrayConstructor);
@@ -2004,13 +2028,13 @@ String RelObjectNameExt2():
 Table Table() #TableName :
 {
     //String serverName = null, databaseName = null, schemaName = null, tableName = null;
-    List<String> data = new ArrayList<String>();
+    ObjectNames data = null;
 }
 {
-    data = RelObjectNameList()
+    data = RelObjectNames()
 
     {
-        Table table = new Table(data);
+        Table table = new Table(data.getNames());
 		linkAST(table,jjtThis);
         return table;
     }
@@ -4545,13 +4569,13 @@ ConnectByRootOperator ConnectByRootOperator() #ConnectByRootOperator: {
 }
 
 NextValExpression NextValExpression() : {
-    List<String> data = new ArrayList<String>();
+    ObjectNames data = null;
     Token token;
 }
 {
-     token=<K_NEXTVAL>  data = RelObjectNameList()
+     token=<K_NEXTVAL>  data = RelObjectNames()
     {
-        return new NextValExpression(data, token.image);
+        return new NextValExpression(data.getNames(), token.image);
     }
 }
 
@@ -5350,7 +5374,7 @@ EqualsTo VariableExpression(): {
 
 Execute Execute(): {
     Token token;
-    List<String> funcName;
+    ObjectNames funcName;
     ExpressionList expressionList = null;
     Execute execute = new Execute();
     List<Expression> namedExprList;
@@ -5361,7 +5385,7 @@ Execute Execute(): {
         | <K_EXECUTE> { execute.setExecType(Execute.ExecType.EXECUTE); }
         | <K_CALL> { execute.setExecType(Execute.ExecType.CALL); } )
 
-    funcName=RelObjectNameList() { execute.setName(funcName); }
+    funcName=RelObjectNames() { execute.setName(funcName.getNames()); }
 
     (
         LOOKAHEAD(2)  expressionList=ExpressionList() { execute.setExprList(expressionList); }
@@ -5483,13 +5507,13 @@ Function SpecialStringFunctionWithNamedParameters() :
 Function SimpleFunction():
 {
     Function function = new Function();
-    List<String> name;
+    ObjectNames name;
     Expression expr=null;
     Expression attributeExpression = null;
     Column attributeColumn = null;
 }
 {
-    name = RelObjectNameList()
+    name = RelObjectNames()
     "("
     [
         (
@@ -5508,7 +5532,7 @@ Function SimpleFunction():
     ]
     ")"
     {
-        function.setName(name);
+        function.setName(name.getNames());
         if (expr!=null) {
             function.setParameters(expr);
         }
@@ -5533,7 +5557,7 @@ Function InternalFunction(boolean escaped):
 {
     Token prefixToken = null;
     Function retval = new Function();
-    List<String> funcName;
+    ObjectNames funcName;
     ExpressionList expressionList = null;
     KeepExpression keep = null;
     Expression expr = null;
@@ -5544,7 +5568,7 @@ Function InternalFunction(boolean escaped):
 }
 {
     [ LOOKAHEAD(2) prefixToken = <K_APPROXIMATE> ]
-    funcName = RelObjectNameList() { if (prefixToken!=null) funcName.add(0, prefixToken.image ); }
+    funcName = RelObjectNames() { if (prefixToken!=null) funcName.getNames().add(0, prefixToken.image ); }
 
     "("
     [
@@ -5601,7 +5625,7 @@ Function InternalFunction(boolean escaped):
     {
         retval.setEscaped(escaped);
         retval.setParameters(expressionList);
-        retval.setName(funcName);
+        retval.setName(funcName.getNames());
         retval.setKeep(keep);
         return retval;
     }
@@ -5698,10 +5722,10 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 }
 
 Index Index(): {
-    List<String> name;
+    ObjectNames name;
 }
 {
-    name= RelObjectNameList() { return new Index().withName(name).withType(""); }
+    name= RelObjectNames() { return new Index().withName(name.getNames()).withType(""); }
 }
 
 CreateIndex CreateIndex():
@@ -7311,7 +7335,7 @@ Grant Grant():
 	ArrayList<String> privileges = new ArrayList<String>();
 	List<String> users;
 	Token tk = null;
-        List<String> objName;
+    ObjectNames objName;
 }
 {
 	<K_GRANT>
@@ -7320,7 +7344,7 @@ Grant Grant():
             [readGrantTypes(privileges) (<K_COMMA> readGrantTypes(privileges))*]
             <K_ON>
                 (
-                    objName=RelObjectNameList()   { grant.setObjectName(objName); }
+                    objName=RelObjectNames()   { grant.setObjectName(objName.getNames()); }
                 )
             )
             |
@@ -7365,13 +7389,13 @@ void readGrantTypes(ArrayList<String> privileges):
 
 Sequence Sequence() #Sequence :
 {
-    List<String> data = new ArrayList<String>();
+    ObjectNames data = null;
     String serverName = null, databaseName = null, schemaName = null, sequenceName = null;
 }
 {
-    data = RelObjectNameList()
+    data = RelObjectNames()
     {
-        Sequence sequence = new Sequence(data);
+        Sequence sequence = new Sequence(data.getNames());
 		linkAST(sequence,jjtThis);
         return sequence;
     }
@@ -7575,29 +7599,29 @@ CreateSynonym CreateSynonym(boolean isUsingOrReplace):
   CreateSynonym createSynonym = new CreateSynonym();
   Synonym synonym;
   boolean publicSynonym = false;
-  List<String> data = new ArrayList<String>();
+  ObjectNames data = null;
 }
 {
   [<K_PUBLIC> { publicSynonym = true; } ]
   <K_SYNONYM> synonym=Synonym() { createSynonym.setSynonym(synonym); }
-  <K_FOR> data = RelObjectNameList()
+  <K_FOR> data = RelObjectNames()
   {
     createSynonym.setOrReplace(isUsingOrReplace);
     createSynonym.setPublicSynonym(publicSynonym);
-    createSynonym.setForList(data);
+    createSynonym.setForList(data.getNames());
     return createSynonym;
   }
 }
 
 Synonym Synonym() #Synonym :
 {
-    List<String> data = new ArrayList<String>();
+    ObjectNames data = null;
     String serverName = null, databaseName = null, schemaName = null, sequenceName = null;
 }
 {
-    data = RelObjectNameList()
+    data = RelObjectNames()
     {
-        Synonym synonym = new Synonym(data);
+        Synonym synonym = new Synonym(data.getNames());
 		linkAST(synonym,jjtThis);
         return synonym;
     }

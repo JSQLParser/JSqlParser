@@ -41,6 +41,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     private List<String> partItems = new ArrayList<>();
 
+    private List<String> partDelimiters = new ArrayList<>();
+
     private Alias alias;
 
     private SampleClause sampleClause;
@@ -73,6 +75,17 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public Table(List<String> partItems) {
         this.partItems = new ArrayList<>(partItems);
         Collections.reverse(this.partItems);
+    }
+
+    public Table(List<String> partItems, List<String> partDelimiters) {
+        if (partDelimiters.size() != partItems.size() - 1) {
+            throw new IllegalArgumentException(
+                    "the length of the delimiters list must be 1 less than nameParts");
+        }
+        this.partItems = new ArrayList<>(partItems);
+        this.partDelimiters = new ArrayList<>(partDelimiters);
+        Collections.reverse(this.partItems);
+        Collections.reverse(this.partDelimiters);
     }
 
     public Database getDatabase() {
@@ -177,7 +190,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
             }
             fqn.append(part);
             if (i != 0) {
-                fqn.append(".");
+                fqn.append(partDelimiters.isEmpty() ? "." : partDelimiters.get(i - 1));
             }
         }
 
@@ -298,5 +311,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public List<String> getNameParts() {
         return partItems;
+    }
+
+    public List<String> getNamePartDelimiters() {
+        return partDelimiters;
     }
 }
