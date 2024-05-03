@@ -79,8 +79,10 @@ public class TableTest {
 
     @Test
     public void testConstructorDelimitersInappropriateSize() {
-        assertThatThrownBy(() -> new Table(List.of("a", "b", "c"), List.of("too", "many", "delimiters")))
+        assertThatThrownBy(
+                () -> new Table(List.of("a", "b", "c"), List.of("too", "many", "delimiters")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("the length of the delimiters list must be 1 less than nameParts");
+                .hasMessageContaining(
+                        "the length of the delimiters list must be 1 less than nameParts");
     }
 }

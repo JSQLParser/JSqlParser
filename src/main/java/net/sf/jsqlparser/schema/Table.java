@@ -79,7 +79,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public Table(List<String> partItems, List<String> partDelimiters) {
         if (partDelimiters.size() != partItems.size() - 1) {
-            throw new IllegalArgumentException("the length of the delimiters list must be 1 less than nameParts");
+            throw new IllegalArgumentException(
+                    "the length of the delimiters list must be 1 less than nameParts");
         }
         this.partItems = new ArrayList<>(partItems);
         this.partDelimiters = new ArrayList<>(partDelimiters);

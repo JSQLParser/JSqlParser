@@ -36,14 +36,15 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public Column(List<String> nameParts) {
-        this(nameParts, nameParts.size() > 1 ? Collections.nCopies(nameParts.size() - 1, ".") : new ArrayList<>());
+        this(nameParts, nameParts.size() > 1 ? Collections.nCopies(nameParts.size() - 1, ".")
+                : new ArrayList<>());
     }
 
     public Column(List<String> nameParts, List<String> delimiters) {
         this(
-                nameParts.size() > 1 ? new Table(nameParts.subList(0, nameParts.size() - 1), delimiters.subList(0, delimiters.size() - 1)) : null,
-                nameParts.get(nameParts.size() - 1)
-        );
+                nameParts.size() > 1 ? new Table(nameParts.subList(0, nameParts.size() - 1),
+                        delimiters.subList(0, delimiters.size() - 1)) : null,
+                nameParts.get(nameParts.size() - 1));
         setTableDelimiter(delimiters.isEmpty() ? "." : delimiters.get(delimiters.size() - 1));
     }
 
