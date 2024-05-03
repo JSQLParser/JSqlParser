@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -26,6 +27,15 @@ public class ExpressionDelimiterTest {
         PlainSelect parsed = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement);
         Column column = parsed.getSelectItem(0).getExpression(Column.class);
         assertEquals(":", column.getTableDelimiter());
+        assertEquals(List.of(":", "."), column.getTable().getNamePartDelimiters());
+    }
+
+    @Test
+    public void testColumnWithEmptyNameParts() throws JSQLParserException {
+        String statement = "SELECT mytable.:.child FROM mytable";
+        PlainSelect parsed = (PlainSelect) assertSqlCanBeParsedAndDeparsed(statement);
+        Column column = parsed.getSelectItem(0).getExpression(Column.class);
+        assertEquals(".", column.getTableDelimiter());
         assertEquals(List.of(":", "."), column.getTable().getNamePartDelimiters());
     }
 }
