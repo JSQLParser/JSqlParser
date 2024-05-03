@@ -102,6 +102,25 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     public Node getASTRoot() {
         return jjtree.rootNode();
     }
+
+    private static class ObjectNames {
+
+        private final List<String> names;
+        private final List<String> delimiters;
+
+        public ObjectNames(List<String> names, List<String> delimiters) {
+            this.names = names;
+            this.delimiters = delimiters;
+        }
+
+        public List<String> getNames() {
+            return names;
+        }
+
+        public List<String> getDelimiters() {
+            return delimiters;
+        }
+    }
 }
 
 PARSER_END(CCJSqlParser)

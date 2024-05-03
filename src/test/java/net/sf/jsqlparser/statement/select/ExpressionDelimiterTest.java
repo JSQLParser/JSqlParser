@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
