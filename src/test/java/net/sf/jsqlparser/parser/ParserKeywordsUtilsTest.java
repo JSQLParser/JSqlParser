@@ -9,7 +9,10 @@
  */
 package net.sf.jsqlparser.parser;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.test.TestUtils;
 import org.javacc.jjtree.JJTree;
+import org.javacc.parser.JavaCCErrors;
 import org.javacc.parser.JavaCCGlobals;
 import org.javacc.parser.JavaCCParser;
 import org.javacc.parser.RCharacterList;
@@ -39,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import org.javacc.parser.JavaCCErrors;
 
 
 class ParserKeywordsUtilsTest {
@@ -201,5 +203,11 @@ class ParserKeywordsUtilsTest {
                 LOGGER.fine("Found Additional Keywords from Parser: " + s);
             }
         }
+    }
+
+    @Test
+    void testBase64() throws JSQLParserException {
+        String sqlStr = "SELECT base64('Spark SQL') AS b;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
