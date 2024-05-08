@@ -5814,4 +5814,22 @@ public class SelectTest {
         String stmt = "SELECT age, name, gender FROM user_info INTO TEMP user_temp WITH NO LOG";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
+
+    @Test
+    void testGroupByWithHaving() throws JSQLParserException {
+        String sqlStr = "-- GROUP BY\n"
+                        + "SELECT  a\n"
+                        + "        , b\n"
+                        + "        , c\n"
+                        + "        , Sum( d )\n"
+                        + "FROM t\n"
+                        + "GROUP BY    a\n"
+                        + "            , b\n"
+                        + "            , c\n"
+                        + "HAVING Sum( d ) > 0\n"
+                        + "    AND Count( * ) > 1\n"
+                        + ";";
+        Statement stmt = assertSqlCanBeParsedAndDeparsed(sqlStr);
+        Assertions.assertInstanceOf(Select.class, stmt);
+    }
 }

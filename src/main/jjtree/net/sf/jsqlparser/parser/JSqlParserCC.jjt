@@ -719,7 +719,7 @@ Statement Statement() #Statement:
                 ( <ST_SEMICOLON> | <EOF> )
             )
             |
-            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+            LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
          } catch (ParseException ex) {
             if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
                 stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
