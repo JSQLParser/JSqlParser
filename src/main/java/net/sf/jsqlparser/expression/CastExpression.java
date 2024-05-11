@@ -196,12 +196,12 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
                 try {
                     return Enum.valueOf(DataType.class, matcher.group(0));
                 } catch (Exception ex) {
-                    Logger.getLogger(CastExpression.class.getName()).log(Level.WARNING,
+                    Logger.getLogger(CastExpression.class.getName()).log(Level.FINE,
                             "Type " + typeStr + " unknown", ex);
                     return DataType.UNKNOWN;
                 }
             } else {
-                Logger.getLogger(CastExpression.class.getName()).log(Level.WARNING,
+                Logger.getLogger(CastExpression.class.getName()).log(Level.FINE,
                         "Type " + typeStr + " unknown");
                 return DataType.UNKNOWN;
             }
