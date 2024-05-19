@@ -51,6 +51,7 @@ public class DoubleValue extends ASTNodeAccessImpl implements Expression {
 
     public void setValue(Double d) {
         value = d;
+        stringValue = String.valueOf(value);
     }
 
     @Override

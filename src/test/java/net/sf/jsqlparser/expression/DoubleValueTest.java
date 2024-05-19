@@ -11,6 +11,7 @@ package net.sf.jsqlparser.expression;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class DoubleValueTest {
@@ -27,5 +28,15 @@ public class DoubleValueTest {
         assertThrows(IllegalArgumentException.class, () -> {
             new DoubleValue("");
         });
+    }
+
+    @Test
+    public void shouldSetStringValue() {
+        final DoubleValue doubleValue = new DoubleValue("42");
+
+        doubleValue.setValue(43D);
+
+        assertEquals(43D, doubleValue.getValue());
+        assertEquals("43.0", doubleValue.toString());
     }
 }
