@@ -16,9 +16,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOperationVisitor {
-    private final ExpressionDeParser expressionDeParser;
+    protected final ExpressionDeParser expressionDeParser;
 
-    private final SelectDeParser selectDeParser;
+    protected final SelectDeParser selectDeParser;
 
     public MergeDeParser(ExpressionDeParser expressionDeParser, SelectDeParser selectDeParser,
             StringBuilder buffer) {

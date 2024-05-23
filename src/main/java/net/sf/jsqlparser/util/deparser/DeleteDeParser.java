@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.joining;
 
 public class DeleteDeParser extends AbstractDeParser<Delete> {
 
-    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    protected ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public DeleteDeParser() {
         super(new StringBuilder());
@@ -90,10 +90,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             }
         }
 
-        if (delete.getWhere() != null) {
-            buffer.append(" WHERE ");
-            delete.getWhere().accept(expressionVisitor);
-        }
+        acceptWhere(delete);
 
         if (delete.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
@@ -106,6 +103,13 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             delete.getReturningClause().appendTo(buffer);
         }
 
+    }
+    
+    protected void acceptWhere(Delete delete) {
+        if (delete.getWhere() != null) {
+            buffer.append(" WHERE ");
+            delete.getWhere().accept(expressionVisitor);
+        }
     }
 
     public ExpressionVisitor getExpressionVisitor() {
