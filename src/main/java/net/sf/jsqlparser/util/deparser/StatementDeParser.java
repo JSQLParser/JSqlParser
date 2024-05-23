@@ -328,7 +328,7 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     @Override
-    void deParse(Statement statement) {
+    public void deParse(Statement statement) {
         statement.accept(this);
     }
 
