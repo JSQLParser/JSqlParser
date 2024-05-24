@@ -69,7 +69,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
+        deparseUpdateSetsClause(update.getUpdateSets());
 
         if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);
@@ -106,6 +106,10 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         if (update.getReturningClause() != null) {
             update.getReturningClause().appendTo(buffer);
         }
+    }
+
+    protected void deparseUpdateSetsClause(Update update) {
+        deparseUpdateSets(update.getUpdateSets(), buffer, getExpressionVisitor());
     }
 
     public ExpressionVisitor getExpressionVisitor() {
