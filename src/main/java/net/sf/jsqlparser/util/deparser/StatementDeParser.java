@@ -328,7 +328,7 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     }
 
     @Override
-    public void deParse(Statement statement) {
+    void deParse(Statement statement) {
         statement.accept(this);
     }
 
@@ -360,13 +360,5 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
         unsupportedStatement.appendTo(buffer);
-    }
-
-    public ExpressionDeParser getExpressionDeParser() {
-        return expressionDeParser;
-    }
-
-    public SelectDeParser getSelectDeParser() {
-        return selectDeParser;
     }
 }
