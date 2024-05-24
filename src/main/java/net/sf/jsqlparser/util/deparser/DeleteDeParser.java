@@ -108,7 +108,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     protected void deparseWhereClause(Delete delete) {
         if (delete.getWhere() != null) {
             buffer.append(" WHERE ");
-			int len = buffer.length();
+            int len = buffer.length();
             delete.getWhere().accept(expressionVisitor);
             if (buffer.length() == len) {
                 buffer.delete(len - " WHERE ".length(), len);
