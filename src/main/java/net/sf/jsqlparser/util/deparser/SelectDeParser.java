@@ -54,7 +54,7 @@ import static java.util.stream.Collectors.joining;
 public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
         SelectItemVisitor, FromItemVisitor, PivotVisitor {
 
-    protected ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor expressionVisitor;
 
     public SelectDeParser() {
         this(new StringBuilder());
@@ -249,7 +249,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(plainSelect.getKsqlWindow().toString());
         }
 
-        acceptWhere(plainSelect);
+        deparseWhereClause(plainSelect);
 
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(expressionVisitor);
@@ -331,7 +331,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     }
 
-    protected void acceptWhere(PlainSelect plainSelect) {
+    protected void deparseWhereClause(PlainSelect plainSelect) {
         if (plainSelect.getWhere() != null) {
             buffer.append(" WHERE ");
             plainSelect.getWhere().accept(expressionVisitor);
@@ -661,7 +661,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    void deParse(PlainSelect statement) {
+    public void deParse(PlainSelect statement) {
         statement.accept((SelectVisitor) this);
     }
 

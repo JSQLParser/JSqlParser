@@ -59,9 +59,9 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 public class StatementDeParser extends AbstractDeParser<Statement> implements StatementVisitor {
 
-    protected final ExpressionDeParser expressionDeParser;
+    private final ExpressionDeParser expressionDeParser;
 
-    protected final SelectDeParser selectDeParser;
+    private final SelectDeParser selectDeParser;
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
@@ -360,5 +360,13 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
         unsupportedStatement.appendTo(buffer);
+    }
+
+    public ExpressionDeParser getExpressionDeParser() {
+        return expressionDeParser;
+    }
+
+    public SelectDeParser getSelectDeParser() {
+        return selectDeParser;
     }
 }

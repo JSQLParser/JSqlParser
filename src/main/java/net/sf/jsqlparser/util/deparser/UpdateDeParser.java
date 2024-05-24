@@ -21,7 +21,7 @@ import java.util.Iterator;
 
 public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
 
-    protected ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
 
     public UpdateDeParser() {
         super(new StringBuilder());
@@ -69,7 +69,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        acceptUpdateSets(update);
+        deparseUpdateSetsClause(update);
 
         if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);
@@ -88,7 +88,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             }
         }
 
-        acceptWhere(update);
+        deparseWhereClause(update);
         
         if (update.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
@@ -102,14 +102,14 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
     }
     
-    protected void acceptWhere(Update update) {
+    protected void deparseWhereClause(Update update) {
         if (update.getWhere() != null) {
             buffer.append(" WHERE ");
             update.getWhere().accept(expressionVisitor);
         }
     }
     
-    protected void acceptUpdateSets(Update update) {
+    protected void deparseUpdateSetsClause(Update update) {
         deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
     }
 
