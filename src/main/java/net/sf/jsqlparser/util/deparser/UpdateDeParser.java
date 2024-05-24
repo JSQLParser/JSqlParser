@@ -105,7 +105,11 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     protected void deparseWhereClause(Update update) {
         if (update.getWhere() != null) {
             buffer.append(" WHERE ");
+			int len = buffer.length();
             update.getWhere().accept(expressionVisitor);
+            if (buffer.length() == len) {
+                buffer.delete(len - " WHERE ".length(), len);
+            }
         }
     }
     
