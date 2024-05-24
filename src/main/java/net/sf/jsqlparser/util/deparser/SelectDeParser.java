@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.LateralView;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -159,7 +160,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(first).append(" ");
         }
 
-        deparseDistinctClause(plainSelect.getDistinct());
+        deparseDistinctClause(plainSelect, plainSelect.getDistinct());
 
         Top top = plainSelect.getTop();
         if (top != null) {
@@ -174,7 +175,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        deparseSelectItemsClause(plainSelect.getSelectItems());
+        deparseSelectItemsClause(plainSelect, plainSelect.getSelectItems());
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -257,7 +258,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             plainSelect.getForClause().appendTo(buffer);
         }
 
-        deparseOrderByElementsClause(plainSelect);
+        deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
 
         if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
@@ -309,7 +310,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     }
 
-    protected void deparseDistinctClause(Distinct distinct) {
+    protected void deparseDistinctClause(PlainSelect plainSelect, Distinct distinct) {
         if (distinct != null) {
             if (distinct.isUseUnique()) {
                 buffer.append("UNIQUE ");
@@ -332,7 +333,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseSelectItemsClause(List<SelectItem<?>> selectItems) {
+    protected void deparseSelectItemsClause(PlainSelect plainSelect, List<SelectItem<?>> selectItems) {
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
                 SelectItem<?> selectItem = iter.next();
@@ -344,10 +345,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseOrderByElementsClause(PlainSelect plainSelect) {
-        if (plainSelect.getOrderByElements() != null) {
+    protected void deparseOrderByElementsClause(PlainSelect plainSelect, List<OrderByElement> orderByElements) {
+        if (orderByElements != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
-                    plainSelect.getOrderByElements());
+                    orderByElements);
         }
     }
 
