@@ -18,6 +18,7 @@ import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Distinct;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -158,26 +159,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(first).append(" ");
         }
 
-        if (plainSelect.getDistinct() != null) {
-            if (plainSelect.getDistinct().isUseUnique()) {
-                buffer.append("UNIQUE ");
-            } else {
-                buffer.append("DISTINCT ");
-            }
-            if (plainSelect.getDistinct().getOnSelectItems() != null) {
-                buffer.append("ON (");
-                for (Iterator<SelectItem<?>> iter =
-                        plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
-                    SelectItem<?> selectItem = iter.next();
-                    selectItem.accept(this);
-                    if (iter.hasNext()) {
-                        buffer.append(", ");
-                    }
-                }
-                buffer.append(") ");
-            }
-
-        }
+        deparseDistinctClause(plainSelect.getDistinct());
 
         Top top = plainSelect.getTop();
         if (top != null) {
@@ -192,7 +174,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        deparseSelectItemsClause(plainSelect);
+        deparseSelectItemsClause(plainSelect.getSelectItems());
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -327,8 +309,30 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     }
 
-    protected void deparseSelectItemsClause(PlainSelect plainSelect) {
-        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
+    protected void deparseDistinctClause(Distinct distinct) {
+        if (distinct != null) {
+            if (distinct.isUseUnique()) {
+                buffer.append("UNIQUE ");
+            } else {
+                buffer.append("DISTINCT ");
+            }
+            if (distinct.getOnSelectItems() != null) {
+                buffer.append("ON (");
+                for (Iterator<SelectItem<?>> iter =
+                        distinct.getOnSelectItems().iterator(); iter.hasNext();) {
+                    SelectItem<?> selectItem = iter.next();
+                    selectItem.accept(this);
+                    if (iter.hasNext()) {
+                        buffer.append(", ");
+                    }
+                }
+                buffer.append(") ");
+            }
+
+        }
+    }
+
+    protected void deparseSelectItemsClause(List<SelectItem<?>> selectItems) {
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
                 SelectItem<?> selectItem = iter.next();
