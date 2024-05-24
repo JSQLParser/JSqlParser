@@ -192,16 +192,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
-        if (selectItems != null) {
-            for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
-                SelectItem<?> selectItem = iter.next();
-                selectItem.accept(this);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
-        }
+		deparseSelectItemsClause(plainSelect);
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -284,10 +275,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             plainSelect.getForClause().appendTo(buffer);
         }
 
-        if (plainSelect.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
-                    plainSelect.getOrderByElements());
-        }
+        deparseOrderByElementsClause(plainSelect);
+
         if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
         }
@@ -337,6 +326,26 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
     }
+
+	protected void deparseSelectItemsClause(PlainSelect plainSelect) {
+        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
+        if (selectItems != null) {
+            for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
+                SelectItem<?> selectItem = iter.next();
+                selectItem.accept(this);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
+	}
+
+	protected void deparseOrderByElementsClause(PlainSelect plainSelect) {
+        if (plainSelect.getOrderByElements() != null) {
+            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
+                    plainSelect.getOrderByElements());
+        }
+	}
 
     @Override
     public void visit(SelectItem selectExpressionItem) {
