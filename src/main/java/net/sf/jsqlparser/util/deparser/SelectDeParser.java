@@ -192,7 +192,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-		deparseSelectItemsClause(plainSelect);
+        deparseSelectItemsClause(plainSelect);
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -327,7 +327,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     }
 
-	protected void deparseSelectItemsClause(PlainSelect plainSelect) {
+    protected void deparseSelectItemsClause(PlainSelect plainSelect) {
         final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
@@ -340,7 +340,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 	}
 
-	protected void deparseOrderByElementsClause(PlainSelect plainSelect) {
+    protected void deparseOrderByElementsClause(PlainSelect plainSelect) {
         if (plainSelect.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
                     plainSelect.getOrderByElements());
