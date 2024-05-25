@@ -113,7 +113,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     }
     
     public ExpressionVisitor getExpressionVisitor() {
-        return expressionVisitor; 
+        return expressionVisitor;
     }
 
     public void setExpressionVisitor(ExpressionVisitor visitor) {
