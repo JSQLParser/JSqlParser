@@ -306,7 +306,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     protected void deparseWhereClause(PlainSelect plainSelect) {
         if (plainSelect.getWhere() != null) {
             buffer.append(" WHERE ");
-            plainSelect.getWhere().accept(expressionVisitor);	
+            plainSelect.getWhere().accept(expressionVisitor);
         }
     }
     
