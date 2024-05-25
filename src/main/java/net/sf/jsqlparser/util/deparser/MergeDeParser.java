@@ -116,7 +116,7 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
     }
     
     public ExpressionDeParser getExpressionDeParser() {
-        return expressionDeParser;
+        return expressionDeParser; 
     }
 
     public SelectDeParser getSelectDeParser() {
