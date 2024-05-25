@@ -110,7 +110,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
     
     protected void deparseUpdateSetsClause(Update update) {
-        deparseUpdateSets(update.getUpdateSets(), buffer, getExpressionVisitor());
+        deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
     }
 
     public ExpressionVisitor getExpressionVisitor() {

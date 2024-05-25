@@ -329,7 +329,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                 }
                 buffer.append(") ");
             }
-
         }
     }
 
