@@ -90,14 +90,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             }
         }
 
-        if (delete.getWhere() != null) {
-            buffer.append(" WHERE ");
-            int len = buffer.length();
-            delete.getWhere().accept(expressionVisitor);			
-            if (buffer.length() == len) {
-                buffer.delete(len - " WHERE ".length(), len);
-            }
-        }
+        deparseWhereClause(delete);
 
         if (delete.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
@@ -112,6 +105,13 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
 
     }
 
+    protected void deparseWhereClause(Delete delete) {
+        if (delete.getWhere() != null) {
+            buffer.append(" WHERE ");
+            delete.getWhere().accept(expressionVisitor);
+        }
+    }
+    
     public ExpressionVisitor getExpressionVisitor() {
         return expressionVisitor;
     }

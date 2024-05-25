@@ -69,7 +69,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
         }
         buffer.append(" SET ");
 
-        deparseUpdateSetsClause(update.getUpdateSets());
+        deparseUpdateSetsClause(update);
 
         if (update.getOutputClause() != null) {
             update.getOutputClause().appendTo(buffer);
@@ -88,14 +88,8 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             }
         }
 
-        if (update.getWhere() != null) {
-            buffer.append(" WHERE ");
-            int len = buffer.length();
-            update.getWhere().accept(expressionVisitor);			
-            if (buffer.length() == len) {
-                buffer.delete(len - " WHERE ".length(), len);
-            }
-        }
+        deparseWhereClause(update);
+        
         if (update.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
         }
@@ -107,7 +101,14 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
             update.getReturningClause().appendTo(buffer);
         }
     }
-
+    
+    protected void deparseWhereClause(Update update) {
+        if (update.getWhere() != null) {
+            buffer.append(" WHERE ");
+            update.getWhere().accept(expressionVisitor);
+        }
+    }
+    
     protected void deparseUpdateSetsClause(Update update) {
         deparseUpdateSets(update.getUpdateSets(), buffer, getExpressionVisitor());
     }
