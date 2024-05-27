@@ -23,57 +23,6 @@ import java.util.List;
  * A function as MAX,COUNT...
  */
 public class Function extends ASTNodeAccessImpl implements Expression {
-    public enum NullHandling {
-        IGNORE_NULLS, RESPECT_NULLS;
-    }
-
-    public static class HavingClause extends ASTNodeAccessImpl implements Expression {
-        enum HavingType {
-            MAX, MIN;
-        }
-
-        HavingType havingType;
-        Expression expression;
-
-        public HavingClause(HavingType havingType, Expression expression) {
-            this.havingType = havingType;
-            this.expression = expression;
-        }
-
-        public HavingType getHavingType() {
-            return havingType;
-        }
-
-        public HavingClause setHavingType(HavingType havingType) {
-            this.havingType = havingType;
-            return this;
-        }
-
-        public Expression getExpression() {
-            return expression;
-        }
-
-        public HavingClause setExpression(Expression expression) {
-            this.expression = expression;
-            return this;
-        }
-
-        @Override
-        public void accept(ExpressionVisitor expressionVisitor) {
-            expression.accept(expressionVisitor);
-        }
-
-        public StringBuilder appendTo(StringBuilder builder) {
-            builder.append(" HAVING ").append(havingType.name()).append(" ").append(expression);
-            return builder;
-        }
-
-        @Override
-        public String toString() {
-            return appendTo(new StringBuilder()).toString();
-        }
-    }
-
     private List<String> nameparts;
     private ExpressionList<?> parameters;
     private NamedExpressionList<?> namedParameters;
@@ -88,9 +37,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private NullHandling nullHandling = null;
     private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Limit limit = null;
-
     private KeepExpression keep = null;
-
 
     public Function() {}
 
@@ -110,12 +57,16 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                         nameparts);
     }
 
-    public List<String> getMultipartName() {
-        return nameparts;
-    }
-
     public void setName(String string) {
         nameparts = Arrays.asList(string);
+    }
+
+    public void setName(List<String> string) {
+        nameparts = string;
+    }
+
+    public List<String> getMultipartName() {
+        return nameparts;
     }
 
     public Function withName(String name) {
@@ -126,10 +77,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function withName(List<String> nameparts) {
         this.nameparts = nameparts;
         return this;
-    }
-
-    public void setName(List<String> string) {
-        nameparts = string;
     }
 
     public boolean isAllColumns() {
@@ -277,6 +224,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.attributeExpression = attributeExpression;
     }
 
+    public void setAttribute(Column attributeColumn) {
+        attributeExpression = null;
+        this.attributeColumn = attributeColumn;
+    }
+
     @Deprecated
     public String getAttributeName() {
         return attributeColumn.toString();
@@ -288,11 +240,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Column getAttributeColumn() {
         return attributeColumn;
-    }
-
-    public void setAttribute(Column attributeColumn) {
-        attributeExpression = null;
-        this.attributeColumn = attributeColumn;
     }
 
     public Function withAttribute(Column attributeColumn) {
@@ -455,5 +402,56 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public <E extends Expression> E getAttribute(Class<E> type) {
         return type.cast(getAttribute());
+    }
+
+    public enum NullHandling {
+        IGNORE_NULLS, RESPECT_NULLS;
+    }
+
+    public static class HavingClause extends ASTNodeAccessImpl implements Expression {
+        HavingType havingType;
+        Expression expression;
+
+        public HavingClause(HavingType havingType, Expression expression) {
+            this.havingType = havingType;
+            this.expression = expression;
+        }
+
+        public HavingType getHavingType() {
+            return havingType;
+        }
+
+        public HavingClause setHavingType(HavingType havingType) {
+            this.havingType = havingType;
+            return this;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public HavingClause setExpression(Expression expression) {
+            this.expression = expression;
+            return this;
+        }
+
+        @Override
+        public void accept(ExpressionVisitor expressionVisitor) {
+            expression.accept(expressionVisitor);
+        }
+
+        public StringBuilder appendTo(StringBuilder builder) {
+            builder.append(" HAVING ").append(havingType.name()).append(" ").append(expression);
+            return builder;
+        }
+
+        @Override
+        public String toString() {
+            return appendTo(new StringBuilder()).toString();
+        }
+
+        enum HavingType {
+            MAX, MIN;
+        }
     }
 }
