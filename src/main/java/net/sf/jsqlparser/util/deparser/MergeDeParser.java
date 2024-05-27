@@ -114,9 +114,9 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
             mergeInsert.getWhereCondition().accept(expressionDeParser);
         }
     }
-    
+
     public ExpressionDeParser getExpressionDeParser() {
-        return expressionDeParser; 
+        return expressionDeParser;
     }
 
     public SelectDeParser getSelectDeParser() {

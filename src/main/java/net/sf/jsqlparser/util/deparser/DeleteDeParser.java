@@ -111,7 +111,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             delete.getWhere().accept(expressionVisitor);
         }
     }
-    
+
     public ExpressionVisitor getExpressionVisitor() {
         return expressionVisitor;
     }

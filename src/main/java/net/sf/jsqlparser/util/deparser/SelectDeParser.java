@@ -252,7 +252,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
         deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
-
         if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
         }
@@ -302,14 +301,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
 
     }
-    
+
     protected void deparseWhereClause(PlainSelect plainSelect) {
         if (plainSelect.getWhere() != null) {
             buffer.append(" WHERE ");
             plainSelect.getWhere().accept(expressionVisitor);
         }
     }
-    
+
     protected void deparseDistinctClause(PlainSelect plainSelect, Distinct distinct) {
         if (distinct != null) {
             if (distinct.isUseUnique()) {
@@ -329,6 +328,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                 }
                 buffer.append(") ");
             }
+
         }
     }
 
