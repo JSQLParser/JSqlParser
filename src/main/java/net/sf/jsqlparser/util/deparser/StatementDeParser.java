@@ -361,4 +361,12 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     public void visit(UnsupportedStatement unsupportedStatement) {
         unsupportedStatement.appendTo(buffer);
     }
+
+    public ExpressionDeParser getExpressionDeParser() {
+        return expressionDeParser;
+    }
+
+    public SelectDeParser getSelectDeParser() {
+        return selectDeParser;
+    }
 }
