@@ -5086,16 +5086,6 @@ void windowFun(AnalyticExpression retval):{
      WindowDefinition winDef;
 } {
     (
-        [
-            (
-                <K_IGNORE> <K_NULLS> { retval.setNullHandling(Function.NullHandling.IGNORE_NULLS); retval.setIgnoreNullsOutside(true); }
-            )
-            |
-            (
-                 <K_RESPECT> <K_NULLS> {  retval.setNullHandling(Function.NullHandling.RESPECT_NULLS); retval.setIgnoreNullsOutside(true); }
-            )
-        ]
-
         <K_OVER> {retval.setType(AnalyticType.OVER);}
         |
         <K_WITHIN> <K_GROUP> {retval.setType(AnalyticType.WITHIN_GROUP);}
@@ -5146,8 +5136,13 @@ AnalyticExpression AnalyticExpression(Function function) :
     Expression filter = null;
 }
 {
-    ((<K_FILTER> "(" <K_WHERE> {retval.setType(AnalyticType.FILTER_ONLY);} filter = Expression() ")" [ LOOKAHEAD(2) windowFun(retval) ] )
-        | windowFun(retval))
+    (
+        (
+            <K_FILTER> "(" <K_WHERE> {retval.setType(AnalyticType.FILTER_ONLY);} filter = Expression() ")"
+            [ LOOKAHEAD(2) windowFun(retval) ]
+        )
+        | windowFun(retval)
+    )
     {
         retval.setFilterExpression(filter);
         return retval;
@@ -5610,6 +5605,7 @@ Function InternalFunction(boolean escaped):
 
     ")"
 
+
     [ "." (
             // tricky lookahead since we do need to support the following constructs
             // schema.f1().f2() - Function with Function Column
@@ -5618,6 +5614,24 @@ Function InternalFunction(boolean escaped):
             |
             attributeColumn=Column() { retval.setAttribute(attributeColumn); }
           )
+    ]
+
+    [
+        (
+            <K_IGNORE> <K_NULLS>
+            {
+                retval.setNullHandling(Function.NullHandling.IGNORE_NULLS);
+                retval.setIgnoreNullsOutside(true);
+            }
+        )
+        |
+        (
+             <K_RESPECT> <K_NULLS>
+             {
+                retval.setNullHandling(Function.NullHandling.RESPECT_NULLS);
+                retval.setIgnoreNullsOutside(true);
+             }
+        )
     ]
 
     [ LOOKAHEAD(2) keep = KeepExpression() ]

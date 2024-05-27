@@ -75,6 +75,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             }
         }
         this.havingClause = function.getHavingClause();
+        this.ignoreNullsOutside = function.isIgnoreNullsOutside();
         this.nullHandling = function.getNullHandling();
         this.funcOrderBy = function.getOrderByElements();
         this.limit = function.getLimit();

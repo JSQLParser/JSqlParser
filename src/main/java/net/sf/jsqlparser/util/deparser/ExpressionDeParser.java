@@ -613,7 +613,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 havingClause.getExpression().accept(this);
             }
 
-            if (function.getNullHandling() != null) {
+            if (function.getNullHandling() != null && !function.isIgnoreNullsOutside()) {
                 switch (function.getNullHandling()) {
                     case IGNORE_NULLS:
                         buffer.append(" IGNORE NULLS");
@@ -641,6 +641,17 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 new LimitDeparser(this, buffer).deParse(function.getLimit());
             }
             buffer.append(")");
+        }
+
+        if (function.getNullHandling() != null && function.isIgnoreNullsOutside()) {
+            switch (function.getNullHandling()) {
+                case IGNORE_NULLS:
+                    buffer.append(" IGNORE NULLS");
+                    break;
+                case RESPECT_NULLS:
+                    buffer.append(" RESPECT NULLS");
+                    break;
+            }
         }
 
         if (function.getAttribute() != null) {

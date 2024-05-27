@@ -86,6 +86,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private Column attributeColumn = null;
     private List<OrderByElement> orderByElements;
     private NullHandling nullHandling = null;
+    private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Limit limit = null;
 
     private KeepExpression keep = null;
@@ -145,6 +146,15 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Function setNullHandling(NullHandling nullHandling) {
         this.nullHandling = nullHandling;
+        return this;
+    }
+
+    public boolean isIgnoreNullsOutside() {
+        return ignoreNullsOutside;
+    }
+
+    public Function setIgnoreNullsOutside(boolean ignoreNullsOutside) {
+        this.ignoreNullsOutside = ignoreNullsOutside;
         return this;
     }
 
@@ -321,7 +331,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                     havingClause.appendTo(b);
                 }
 
-                if (nullHandling != null) {
+                if (nullHandling != null && !isIgnoreNullsOutside()) {
                     switch (nullHandling) {
                         case IGNORE_NULLS:
                             b.append(" IGNORE NULLS");
@@ -356,6 +366,17 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         }
 
         String ans = getName() + params;
+
+        if (nullHandling != null && isIgnoreNullsOutside()) {
+            switch (nullHandling) {
+                case IGNORE_NULLS:
+                    ans += " IGNORE NULLS";
+                    break;
+                case RESPECT_NULLS:
+                    ans += " RESPECT NULLS";
+                    break;
+            }
+        }
 
         if (attributeExpression != null) {
             ans += "." + attributeExpression;

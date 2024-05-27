@@ -20,13 +20,19 @@ import java.util.Collection;
 public class Values extends Select implements FromItem {
 
     private ExpressionList<Expression> expressions;
+    private Alias alias;
 
     public Values() {
-        // empty constructor
+        this(null, null);
     }
 
     public Values(ExpressionList<Expression> expressions) {
         this.expressions = expressions;
+    }
+
+    public Values(ExpressionList<Expression> expressions, Alias alias) {
+        this.expressions = expressions;
+        this.alias = alias;
     }
 
     public ExpressionList<?> getExpressions() {
@@ -42,6 +48,9 @@ public class Values extends Select implements FromItem {
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append("VALUES ");
         builder.append(expressions.toString());
+        if (alias != null) {
+            builder.append(" ").append(alias);
+        }
         return builder;
     }
 
@@ -74,12 +83,12 @@ public class Values extends Select implements FromItem {
 
     @Override
     public Alias getAlias() {
-        return null;
+        return alias;
     }
 
     @Override
     public void setAlias(Alias alias) {
-
+        this.alias = alias;
     }
 
     @Override

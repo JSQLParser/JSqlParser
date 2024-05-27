@@ -25,5 +25,8 @@ public class ValuesStatementDeParser extends AbstractDeParser<Values> {
     public void deParse(Values values) {
         buffer.append("VALUES ");
         values.getExpressions().accept(expressionVisitor);
+        if (values.getAlias() != null) {
+            buffer.append(" ").append(values.getAlias());
+        }
     }
 }

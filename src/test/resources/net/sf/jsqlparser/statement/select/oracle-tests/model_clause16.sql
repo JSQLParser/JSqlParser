@@ -39,3 +39,4 @@ select spf.*, nvl(a, ddr_a) as a, b, d,
 
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:07 AM
+--@FAILURE: Encountered unexpected token: "(" "(" recorded first on May 27, 2024, 9:38:28 AM

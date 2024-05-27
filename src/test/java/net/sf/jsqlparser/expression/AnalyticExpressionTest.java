@@ -32,4 +32,15 @@ class AnalyticExpressionTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testDatabricks() throws JSQLParserException {
+        String sqlStr = "SELECT any_value(col) IGNORE NULLS FROM test;";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        sqlStr = "SELECT any_value(col) IGNORE NULLS FROM VALUES (NULL), (5), (20) AS tab(col);";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
