@@ -331,7 +331,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseSelectItemsClause(PlainSelect plainSelect, 
+    protected void deparseSelectItemsClause(PlainSelect plainSelect,
             List<SelectItem<?>> selectItems) {
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
@@ -344,7 +344,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseOrderByElementsClause(PlainSelect plainSelect, 
+    protected void deparseOrderByElementsClause(PlainSelect plainSelect,
             List<OrderByElement> orderByElements) {
         if (orderByElements != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
