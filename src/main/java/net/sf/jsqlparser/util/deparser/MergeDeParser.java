@@ -28,7 +28,7 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
     }
 
     @Override
-    void deParse(Merge merge) {
+    public void deParse(Merge merge) {
         List<WithItem> withItemsList = merge.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
@@ -115,4 +115,11 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
         }
     }
 
+    public ExpressionDeParser getExpressionDeParser() {
+        return expressionDeParser;
+    }
+
+    public SelectDeParser getSelectDeParser() {
+        return selectDeParser;
+    }
 }

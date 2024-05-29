@@ -18,6 +18,7 @@ import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Distinct;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -27,6 +28,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.LateralView;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptimizeFor;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -158,26 +160,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(first).append(" ");
         }
 
-        if (plainSelect.getDistinct() != null) {
-            if (plainSelect.getDistinct().isUseUnique()) {
-                buffer.append("UNIQUE ");
-            } else {
-                buffer.append("DISTINCT ");
-            }
-            if (plainSelect.getDistinct().getOnSelectItems() != null) {
-                buffer.append("ON (");
-                for (Iterator<SelectItem<?>> iter =
-                        plainSelect.getDistinct().getOnSelectItems().iterator(); iter.hasNext();) {
-                    SelectItem<?> selectItem = iter.next();
-                    selectItem.accept(this);
-                    if (iter.hasNext()) {
-                        buffer.append(", ");
-                    }
-                }
-                buffer.append(") ");
-            }
-
-        }
+        deparseDistinctClause(plainSelect, plainSelect.getDistinct());
 
         Top top = plainSelect.getTop();
         if (top != null) {
@@ -192,16 +175,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        final List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
-        if (selectItems != null) {
-            for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
-                SelectItem<?> selectItem = iter.next();
-                selectItem.accept(this);
-                if (iter.hasNext()) {
-                    buffer.append(", ");
-                }
-            }
-        }
+        deparseSelectItemsClause(plainSelect, plainSelect.getSelectItems());
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -249,10 +223,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(plainSelect.getKsqlWindow().toString());
         }
 
-        if (plainSelect.getWhere() != null) {
-            buffer.append(" WHERE ");
-            plainSelect.getWhere().accept(expressionVisitor);
-        }
+        deparseWhereClause(plainSelect);
 
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(expressionVisitor);
@@ -280,10 +251,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             plainSelect.getForClause().appendTo(buffer);
         }
 
-        if (plainSelect.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
-                    plainSelect.getOrderByElements());
-        }
+        deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
         if (plainSelect.isEmitChanges()) {
             buffer.append(" EMIT CHANGES");
         }
@@ -332,6 +300,56 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(" WITH NO LOG");
         }
 
+    }
+
+    protected void deparseWhereClause(PlainSelect plainSelect) {
+        if (plainSelect.getWhere() != null) {
+            buffer.append(" WHERE ");
+            plainSelect.getWhere().accept(expressionVisitor);
+        }
+    }
+
+    protected void deparseDistinctClause(PlainSelect plainSelect, Distinct distinct) {
+        if (distinct != null) {
+            if (distinct.isUseUnique()) {
+                buffer.append("UNIQUE ");
+            } else {
+                buffer.append("DISTINCT ");
+            }
+            if (distinct.getOnSelectItems() != null) {
+                buffer.append("ON (");
+                for (Iterator<SelectItem<?>> iter =
+                        distinct.getOnSelectItems().iterator(); iter.hasNext();) {
+                    SelectItem<?> selectItem = iter.next();
+                    selectItem.accept(this);
+                    if (iter.hasNext()) {
+                        buffer.append(", ");
+                    }
+                }
+                buffer.append(") ");
+            }
+        }
+    }
+
+    protected void deparseSelectItemsClause(PlainSelect plainSelect,
+            List<SelectItem<?>> selectItems) {
+        if (selectItems != null) {
+            for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
+                SelectItem<?> selectItem = iter.next();
+                selectItem.accept(this);
+                if (iter.hasNext()) {
+                    buffer.append(", ");
+                }
+            }
+        }
+    }
+
+    protected void deparseOrderByElementsClause(PlainSelect plainSelect,
+            List<OrderByElement> orderByElements) {
+        if (orderByElements != null) {
+            new OrderByDeParser(expressionVisitor, buffer).deParse(plainSelect.isOracleSiblings(),
+                    orderByElements);
+        }
     }
 
     @Override
