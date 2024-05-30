@@ -64,4 +64,11 @@ public class ValuesTest {
 
         valuesStatement.accept(new StatementVisitorAdapter());
     }
+
+    @Test
+    public void testValuesWithAliasWithoutAs() throws JSQLParserException {
+        String sqlStr = "SELECT a, b, cume_dist() OVER (PARTITION BY a ORDER BY b) AS cume_dist\n" +
+                "    FROM VALUES ('A1', 2), ('A1', 1), ('A2', 3), ('A1', 1) tab(a, b);";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
