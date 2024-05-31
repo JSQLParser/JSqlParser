@@ -20,4 +20,10 @@ class IsNullExpressionTest {
         String sqlStr = "select * from mytable where 1 notnull";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testStringConstructor() {
+        IsNullExpression isNullExpression= new IsNullExpression("x", true);
+        TestUtils.assertExpressionCanBeDeparsedAs(isNullExpression, "x IS NOT NULL");
+    }
 }

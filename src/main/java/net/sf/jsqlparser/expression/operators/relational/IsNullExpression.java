@@ -29,7 +29,7 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
     public IsNullExpression(String columnName, boolean not) {
         this.leftExpression = new Column(columnName);
-        this.not = useNotNull;
+        this.not = not;
     }
 
     public Expression getLeftExpression() {
