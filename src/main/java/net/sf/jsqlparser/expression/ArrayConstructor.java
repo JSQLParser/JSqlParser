@@ -37,6 +37,10 @@ public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
         this.arrayKeyword = arrayKeyword;
     }
 
+    public ArrayConstructor(Expression... expressions) {
+        this(new ExpressionList<Expression>(expressions), false);
+    }
+
     @Override
     public void accept(ExpressionVisitor expressionVisitor) {
         expressionVisitor.visit(this);
