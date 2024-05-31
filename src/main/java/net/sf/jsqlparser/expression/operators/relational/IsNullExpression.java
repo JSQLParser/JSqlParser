@@ -27,9 +27,9 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
         this.leftExpression = leftExpression;
     }
 
-    public IsNullExpression(String columnName, boolean useNotNull) {
+    public IsNullExpression(String columnName, boolean not) {
         this.leftExpression = new Column(columnName);
-        this.useNotNull = useNotNull;
+        this.not = useNotNull;
     }
 
     public Expression getLeftExpression() {
