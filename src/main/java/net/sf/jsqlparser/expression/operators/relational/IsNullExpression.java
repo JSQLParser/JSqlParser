@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression.operators.relational;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.schema.Column;
 
 public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
@@ -24,6 +25,11 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
 
     public IsNullExpression(Expression leftExpression) {
         this.leftExpression = leftExpression;
+    }
+
+    public IsNullExpression(String columnName, boolean useNotNull) {
+        this.leftExpression = new Column(columnName);
+        this.useNotNull = useNotNull;
     }
 
     public Expression getLeftExpression() {
