@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
@@ -62,6 +63,22 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
     private final ExpressionDeParser expressionDeParser;
 
     private final SelectDeParser selectDeParser;
+
+    public StatementDeParser(Class<? extends ExpressionDeParser> expressionDeparserClass,
+            Class<? extends SelectDeParser> selectDeparserClass, StringBuilder builder)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+            IllegalAccessException {
+        super(builder);
+
+        this.selectDeParser = selectDeparserClass
+                .getConstructor(Class.class, StringBuilder.class)
+                .newInstance(expressionDeparserClass, builder);
+
+
+        this.expressionDeParser =
+                expressionDeparserClass.cast(this.selectDeParser.getExpressionVisitor());
+
+    }
 
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);

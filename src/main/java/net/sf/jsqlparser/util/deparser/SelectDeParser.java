@@ -47,6 +47,7 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,6 +67,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         super(buffer);
         this.expressionVisitor = new ExpressionDeParser(this, buffer);
     }
+
+    public SelectDeParser(Class<? extends ExpressionDeParser> expressionDeparserClass,
+            StringBuilder builder) throws NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+        super(builder);
+        this.expressionVisitor = expressionDeparserClass
+                .getConstructor(SelectDeParser.class, StringBuilder.class)
+                .newInstance(this, builder);
+    }
+
 
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
