@@ -80,6 +80,13 @@ public class StatementDeParser extends AbstractDeParser<Statement> implements St
 
     }
 
+    public StatementDeParser(Class<? extends ExpressionDeParser> expressionDeparserClass,
+            Class<? extends SelectDeParser> selectDeparserClass)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException,
+            IllegalAccessException {
+        this(expressionDeparserClass, selectDeparserClass, new StringBuilder());
+    }
+
     public StatementDeParser(StringBuilder buffer) {
         this(new ExpressionDeParser(), new SelectDeParser(), buffer);
     }

@@ -77,6 +77,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
                 .newInstance(this, builder);
     }
 
+    public SelectDeParser(Class<? extends ExpressionDeParser> expressionDeparserClass)
+            throws NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+        this(expressionDeparserClass, new StringBuilder());
+    }
+
 
     public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
         super(buffer);
