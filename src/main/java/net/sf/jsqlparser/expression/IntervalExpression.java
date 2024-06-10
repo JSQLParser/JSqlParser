@@ -28,6 +28,13 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
         this.intervalKeyword = intervalKeyword;
     }
 
+    public IntervalExpression(int value, String type) {
+        this.parameter = null;
+        this.intervalKeyword = true;
+        this.expression = new LongValue(value);
+        this.intervalType = type;
+    }
+
     public boolean isUsingIntervalKeyword() {
         return intervalKeyword;
     }
