@@ -21,9 +21,14 @@ public class AllTableColumns extends AllColumns {
     private Table table;
 
     public AllTableColumns(Table table, ExpressionList<Column> exceptColumns,
-            List<SelectItem<Column>> replaceExpressions) {
-        super(exceptColumns, replaceExpressions);
+            List<SelectItem<Column>> replaceExpressions, String exceptKeyword) {
+        super(exceptColumns, replaceExpressions, exceptKeyword);
         this.table = table;
+    }
+
+    public AllTableColumns(Table table, ExpressionList<Column> exceptColumns,
+            List<SelectItem<Column>> replaceExpressions) {
+        this(table, exceptColumns, replaceExpressions, "EXCEPT");
     }
 
     public AllTableColumns(Table table) {
@@ -31,7 +36,8 @@ public class AllTableColumns extends AllColumns {
     }
 
     public AllTableColumns(Table table, AllColumns allColumns) {
-        this(table, allColumns.exceptColumns, allColumns.replaceExpressions);
+        this(table, allColumns.exceptColumns, allColumns.replaceExpressions,
+                allColumns.getExceptKeyword());
     }
 
     public Table getTable() {

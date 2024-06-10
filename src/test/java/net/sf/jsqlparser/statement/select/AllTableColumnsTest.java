@@ -22,4 +22,12 @@ class AllTableColumnsTest {
                         + "FROM orders";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testDuckDBSyntax() throws JSQLParserException {
+        String sqlStr =
+                "SELECT orders.* EXCLUDE (order_id)\n"
+                        + "FROM orders";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
