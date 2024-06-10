@@ -19,7 +19,15 @@ class AllColumnsTest {
     @Test
     void testBigQuerySyntax() throws JSQLParserException {
         String sqlStr =
-                "SELECT * EXCEPT (order_id) REPLACE (\"widget\" AS item_name), \"more\" as more_fields\n"
+                "SELECT * EXCEPT(order_id) REPLACE(\"widget\" AS item_name), \"more\" as more_fields\n"
+                        + "FROM orders";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testDuckDBQuerySyntax() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * EXCLUDE(order_id) REPLACE(\"widget\" AS item_name), \"more\" as more_fields\n"
                         + "FROM orders";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }

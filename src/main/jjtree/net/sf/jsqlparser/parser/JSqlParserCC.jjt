@@ -2632,14 +2632,16 @@ AllColumns AllColumns():
 {
     ParenthesedExpressionList<Column> exceptColumns = null;
     List<SelectItem<Column>> replaceExpressions = null;
+    String exceptKeyword=null;
+    Token tk;
 }
 {
     "*"
-    [ LOOKAHEAD(2) <K_EXCEPT> exceptColumns = ParenthesedColumnList() ]
+    [ LOOKAHEAD(2) ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList() { exceptKeyword=tk.image; } ]
     [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = ColumnSelectItemsList() ")" ]
 
     {
-        return new AllColumns(exceptColumns, replaceExpressions);
+        return new AllColumns(exceptColumns, replaceExpressions, exceptKeyword);
     }
 }
 

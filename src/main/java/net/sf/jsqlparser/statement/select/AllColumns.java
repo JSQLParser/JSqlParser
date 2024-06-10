@@ -21,11 +21,20 @@ import java.util.List;
 public class AllColumns extends ASTNodeAccessImpl implements Expression {
     protected ExpressionList<Column> exceptColumns;
     protected List<SelectItem<Column>> replaceExpressions;
+    private String exceptKeyword;
 
     public AllColumns(ExpressionList<Column> exceptColumns,
             List<SelectItem<Column>> replaceExpressions) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
+        this.exceptKeyword = exceptColumns !=null ? "Except" : null;
+    }
+
+    public AllColumns(ExpressionList<Column> exceptColumns,
+            List<SelectItem<Column>> replaceExpressions, String exceptKeyword) {
+        this.exceptColumns = exceptColumns;
+        this.replaceExpressions = replaceExpressions;
+        this.exceptKeyword = exceptKeyword;
     }
 
     public AllColumns() {
@@ -66,10 +75,19 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public String getExceptKeyword() {
+        return exceptKeyword;
+    }
+
+    public AllColumns setExceptKeyword(String exceptKeyword) {
+        this.exceptKeyword = exceptKeyword;
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("*");
         if (exceptColumns != null && !exceptColumns.isEmpty()) {
-            builder.append(" Except( ");
+            builder.append(" ").append(exceptKeyword).append("( ");
             exceptColumns.appendTo(builder);
             builder.append(" )");
         }
