@@ -20,10 +20,10 @@ import java.util.List;
 
 public class AllColumns extends ASTNodeAccessImpl implements Expression {
     protected ExpressionList<Column> exceptColumns;
-    protected List<SelectItem<?>> replaceExpressions;
+    protected List<SelectItem<Column>> replaceExpressions;
 
     public AllColumns(ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions) {
+            List<SelectItem<Column>> replaceExpressions) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
     }
@@ -49,11 +49,11 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
-    public List<SelectItem<?>> getReplaceExpressions() {
+    public List<SelectItem<Column>> getReplaceExpressions() {
         return replaceExpressions;
     }
 
-    public List<SelectItem<?>> addReplaceExpression(SelectItem<?> selectItem) {
+    public List<SelectItem<Column>> addReplaceExpression(SelectItem<Column> selectItem) {
         if (replaceExpressions == null) {
             replaceExpressions = new ArrayList<>();
         }
@@ -61,19 +61,19 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return replaceExpressions;
     }
 
-    public AllColumns setReplaceExpressions(List<SelectItem<?>> replaceExpressions) {
+    public AllColumns setReplaceExpressions(List<SelectItem<Column>> replaceExpressions) {
         this.replaceExpressions = replaceExpressions;
         return this;
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("*");
-        if (exceptColumns != null && exceptColumns.size() > 0) {
+        if (exceptColumns != null && !exceptColumns.isEmpty()) {
             builder.append(" Except( ");
             exceptColumns.appendTo(builder);
             builder.append(" )");
         }
-        if (replaceExpressions != null && replaceExpressions.size() > 0) {
+        if (replaceExpressions != null && !replaceExpressions.isEmpty()) {
             builder.append(" Replace(");
             int i = 0;
             for (SelectItem<?> selectItem : replaceExpressions) {

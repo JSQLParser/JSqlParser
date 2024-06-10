@@ -21,7 +21,7 @@ public class AllTableColumns extends AllColumns {
     private Table table;
 
     public AllTableColumns(Table table, ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions) {
+            List<SelectItem<Column>> replaceExpressions) {
         super(exceptColumns, replaceExpressions);
         this.table = table;
     }

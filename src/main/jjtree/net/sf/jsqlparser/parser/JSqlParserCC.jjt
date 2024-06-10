@@ -2566,6 +2566,23 @@ WithItem WithItem() #WithItem:
      }
 }
 
+List<SelectItem<Column>> ColumnSelectItemsList():
+{
+    List<SelectItem<Column>> selectItemsList = null;
+    SelectItem selectItem = null;
+}
+{
+    selectItem=SelectItem() {  selectItemsList = new ArrayList<SelectItem<Column>>(); selectItemsList.add(selectItem); }
+    (
+        LOOKAHEAD(2) "," selectItem=SelectItem()
+        {
+            selectItemsList.add(selectItem);
+        }
+    )*
+
+    { return selectItemsList; }
+}
+
 List<SelectItem<?>> SelectItemsList():
 {
     List<SelectItem<?>> selectItemsList = null;
@@ -2614,12 +2631,12 @@ SelectItem SelectItem() #SelectItem:
 AllColumns AllColumns():
 {
     ParenthesedExpressionList<Column> exceptColumns = null;
-    List<SelectItem<?>> replaceExpressions = null;
+    List<SelectItem<Column>> replaceExpressions = null;
 }
 {
     "*"
     [ LOOKAHEAD(2) <K_EXCEPT> exceptColumns = ParenthesedColumnList() ]
-    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
+    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = ColumnSelectItemsList() ")" ]
 
     {
         return new AllColumns(exceptColumns, replaceExpressions);
