@@ -80,4 +80,16 @@ public class BigQueryTest {
                 "SELECT ANY_VALUE(fruit HAVING MAX sold) AS a_highest_selling_fruit FROM Store;\n";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testAsStruct() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY(SELECT AS STRUCT 1 a, 2 b)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAsValue() throws JSQLParserException {
+        String sqlStr = "SELECT AS VALUE STRUCT(1 AS a, 2 AS b) xyz";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

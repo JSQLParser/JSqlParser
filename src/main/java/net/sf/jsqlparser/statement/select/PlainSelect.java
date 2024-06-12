@@ -29,7 +29,12 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
 
+    public enum BigQuerySelectQualifier {
+        AS_STRUCT, AS_VALUE
+    }
+
     private Distinct distinct = null;
+    private BigQuerySelectQualifier bigQuerySelectQualifier = null;
     private List<SelectItem<?>> selectItems;
     private List<Table> intoTables;
     private FromItem fromItem;
@@ -369,6 +374,15 @@ public class PlainSelect extends Select {
         this.distinct = distinct;
     }
 
+    public BigQuerySelectQualifier getBigQuerySelectQualifier() {
+        return bigQuerySelectQualifier;
+    }
+
+    public PlainSelect setBigQuerySelectQualifier(BigQuerySelectQualifier bigQuerySelectQualifier) {
+        this.bigQuerySelectQualifier = bigQuerySelectQualifier;
+        return this;
+    }
+
     public Expression getHaving() {
         return having;
     }
@@ -478,6 +492,18 @@ public class PlainSelect extends Select {
         if (distinct != null) {
             builder.append(distinct).append(" ");
         }
+
+        if (bigQuerySelectQualifier != null) {
+            switch (bigQuerySelectQualifier) {
+                case AS_STRUCT:
+                    builder.append("AS STRUCT ");
+                    break;
+                case AS_VALUE:
+                    builder.append("AS VALUE ");
+                    break;
+            }
+        }
+
         if (top != null) {
             builder.append(top).append(" ");
         }

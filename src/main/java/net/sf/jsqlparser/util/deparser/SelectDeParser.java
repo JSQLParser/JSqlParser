@@ -179,6 +179,17 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
         deparseDistinctClause(plainSelect, plainSelect.getDistinct());
 
+        if (plainSelect.getBigQuerySelectQualifier() != null) {
+            switch (plainSelect.getBigQuerySelectQualifier()) {
+                case AS_STRUCT:
+                    buffer.append("AS STRUCT ");
+                    break;
+                case AS_VALUE:
+                    buffer.append("AS VALUE ");
+                    break;
+            }
+        }
+
         Top top = plainSelect.getTop();
         if (top != null) {
             visit(top);

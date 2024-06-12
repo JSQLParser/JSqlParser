@@ -2395,6 +2395,15 @@ PlainSelect PlainSelect() #PlainSelect:
         )
     ]
 
+    [
+        <K_AS>
+        (
+            <K_STRUCT> { plainSelect.setBigQuerySelectQualifier( PlainSelect.BigQuerySelectQualifier.AS_STRUCT ); }
+            |
+            <K_VALUE> { plainSelect.setBigQuerySelectQualifier( PlainSelect.BigQuerySelectQualifier.AS_VALUE ); }
+        )
+    ]
+
     [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
 
     selectItems=SelectItemsList()
