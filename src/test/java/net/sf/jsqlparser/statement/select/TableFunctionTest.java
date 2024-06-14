@@ -38,13 +38,13 @@ class TableFunctionTest {
     void testTableFunctionWithNamedParameterWhereNameIsOuterKeyword() throws JSQLParserException {
         String sqlStr =
                 "INSERT INTO db.schema.target\n" +
-                "     (Name, FriendParent)\n" +
-                " SELECT\n" +
-                "     i.DATA_VALUE:Name AS Name,\n" +
-                "     f1.Value:Parent:Name AS FriendParent\n" +
-                " FROM\n" +
-                "     db.schema.source AS i,\n" +
-                "     lateral flatten(input => i.DATA_VALUE:Friends, outer => true) AS f1;";
+                        "     (Name, FriendParent)\n" +
+                        " SELECT\n" +
+                        "     i.DATA_VALUE:Name AS Name,\n" +
+                        "     f1.Value:Parent:Name AS FriendParent\n" +
+                        " FROM\n" +
+                        "     db.schema.source AS i,\n" +
+                        "     lateral flatten(input => i.DATA_VALUE:Friends, outer => true) AS f1;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
