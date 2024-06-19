@@ -46,7 +46,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(InExpression expr) {
+            public Object visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
                 exprList.add(expr.getRightExpression());
@@ -67,7 +67,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(InExpression expr) {
+            public Object visit(InExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
                 exprList.add(expr.getRightExpression());
@@ -88,7 +88,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(XorExpression expr) {
+            public Object visit(XorExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
                 exprList.add(expr.getRightExpression());
@@ -117,7 +117,7 @@ public class ExpressionVisitorAdapterTest {
         plainSelect.getOracleHint().accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(OracleHint hint) {
+            public Object visit(OracleHint hint) {
                 super.visit(hint);
                 holder[0] = hint;
                 return null;
@@ -138,7 +138,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(Column column) {
+            public Object visit(Column column) {
                 super.visit(column);
                 columnList.add(column.getColumnName());
                 return null;
@@ -158,7 +158,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(Column column) {
+            public Object visit(Column column) {
                 super.visit(column);
                 columnList.add(column.getColumnName());
                 return null;
@@ -260,7 +260,7 @@ public class ExpressionVisitorAdapterTest {
         from.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(AllTableColumns all) {
+            public Object visit(AllTableColumns all) {
                 holder[0] = all;
                 return null;
             }
@@ -288,7 +288,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(IncludesExpression expr) {
+            public Object visit(IncludesExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
                 exprList.add(expr.getRightExpression());
@@ -309,7 +309,7 @@ public class ExpressionVisitorAdapterTest {
         where.accept(new ExpressionVisitorAdapter() {
 
             @Override
-            public Void visit(ExcludesExpression expr) {
+            public Object visit(ExcludesExpression expr) {
                 super.visit(expr);
                 exprList.add(expr.getLeftExpression());
                 exprList.add(expr.getRightExpression());

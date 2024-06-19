@@ -139,13 +139,13 @@ public class HowToUseSample {
         // Define an Expression Visitor reacting on any Expression
         // Overwrite the visit() methods for each Expression Class
         ExpressionVisitorAdapter expressionVisitorAdapter = new ExpressionVisitorAdapter() {
-            public Void visit(EqualsTo equalsTo) {
+            public Object visit(EqualsTo equalsTo) {
                 equalsTo.getLeftExpression().accept(this);
                 equalsTo.getRightExpression().accept(this);
                 return null;
             }
 
-            public Void visit(Column column) {
+            public Object visit(Column column) {
                 System.out.println("Found a Column " + column.getColumnName());
                 return null;
             }

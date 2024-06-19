@@ -52,14 +52,14 @@ public class AdaptersTest {
                             }
 
                             @Override
-                            public Void visit(Column column) {
+                            public Object visit(Column column) {
                                 params.push(new Pair<>(column.getColumnName(),
                                         params.pop().getRight()));
                                 return null;
                             }
 
                             @Override
-                            public Void visit(JdbcNamedParameter parameter) {
+                            public Object visit(JdbcNamedParameter parameter) {
                                 params.push(new Pair<>(params.pop().getLeft(),
                                         parameter.getName()));
                                 return null;
