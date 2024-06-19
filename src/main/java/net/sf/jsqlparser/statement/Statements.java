@@ -26,7 +26,7 @@ public class Statements extends ArrayList<Statement> implements Serializable {
         this.addAll(statements);
     }
 
-    public void accept(StatementVisitor statementVisitor) {
+    public void accept(StatementVisitor<?> statementVisitor) {
         statementVisitor.visit(this);
     }
 

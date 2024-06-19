@@ -58,199 +58,199 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public interface ExpressionVisitor {
+public interface ExpressionVisitor<T> {
 
-    void visit(BitwiseRightShift aThis);
+    T visit(BitwiseRightShift aThis);
 
-    void visit(BitwiseLeftShift aThis);
+    T visit(BitwiseLeftShift aThis);
 
-    void visit(NullValue nullValue);
+    T visit(NullValue nullValue);
 
-    void visit(Function function);
+    T visit(Function function);
 
-    void visit(SignedExpression signedExpression);
+    T visit(SignedExpression signedExpression);
 
-    void visit(JdbcParameter jdbcParameter);
+    T visit(JdbcParameter jdbcParameter);
 
-    void visit(JdbcNamedParameter jdbcNamedParameter);
+    T visit(JdbcNamedParameter jdbcNamedParameter);
 
-    void visit(DoubleValue doubleValue);
+    T visit(DoubleValue doubleValue);
 
-    void visit(LongValue longValue);
+    T visit(LongValue longValue);
 
-    void visit(HexValue hexValue);
+    T visit(HexValue hexValue);
 
-    void visit(DateValue dateValue);
+    T visit(DateValue dateValue);
 
-    void visit(TimeValue timeValue);
+    T visit(TimeValue timeValue);
 
-    void visit(TimestampValue timestampValue);
+    T visit(TimestampValue timestampValue);
 
-    void visit(StringValue stringValue);
+    T visit(StringValue stringValue);
 
-    void visit(Addition addition);
+    T visit(Addition addition);
 
-    void visit(Division division);
+    T visit(Division division);
 
-    void visit(IntegerDivision division);
+    T visit(IntegerDivision division);
 
-    void visit(Multiplication multiplication);
+    T visit(Multiplication multiplication);
 
-    void visit(Subtraction subtraction);
+    T visit(Subtraction subtraction);
 
-    void visit(AndExpression andExpression);
+    T visit(AndExpression andExpression);
 
-    void visit(OrExpression orExpression);
+    T visit(OrExpression orExpression);
 
-    void visit(XorExpression orExpression);
+    T visit(XorExpression orExpression);
 
-    void visit(Between between);
+    T visit(Between between);
 
-    void visit(OverlapsCondition overlapsCondition);
+    T visit(OverlapsCondition overlapsCondition);
 
-    void visit(EqualsTo equalsTo);
+    T visit(EqualsTo equalsTo);
 
-    void visit(GreaterThan greaterThan);
+    T visit(GreaterThan greaterThan);
 
-    void visit(GreaterThanEquals greaterThanEquals);
+    T visit(GreaterThanEquals greaterThanEquals);
 
-    void visit(InExpression inExpression);
+    T visit(InExpression inExpression);
 
-    void visit(IncludesExpression includesExpression);
+    T visit(IncludesExpression includesExpression);
 
-    void visit(ExcludesExpression excludesExpression);
+    T visit(ExcludesExpression excludesExpression);
 
-    void visit(FullTextSearch fullTextSearch);
+    T visit(FullTextSearch fullTextSearch);
 
-    void visit(IsNullExpression isNullExpression);
+    T visit(IsNullExpression isNullExpression);
 
-    void visit(IsBooleanExpression isBooleanExpression);
+    T visit(IsBooleanExpression isBooleanExpression);
 
-    void visit(LikeExpression likeExpression);
+    T visit(LikeExpression likeExpression);
 
-    void visit(MinorThan minorThan);
+    T visit(MinorThan minorThan);
 
-    void visit(MinorThanEquals minorThanEquals);
+    T visit(MinorThanEquals minorThanEquals);
 
-    void visit(NotEqualsTo notEqualsTo);
+    T visit(NotEqualsTo notEqualsTo);
 
-    void visit(DoubleAnd doubleAnd);
+    T visit(DoubleAnd doubleAnd);
 
-    void visit(Contains contains);
+    T visit(Contains contains);
 
-    void visit(ContainedBy containedBy);
+    T visit(ContainedBy containedBy);
 
-    void visit(ParenthesedSelect selectBody);
+    T visit(ParenthesedSelect selectBody);
 
-    void visit(Column tableColumn);
+    T visit(Column tableColumn);
 
-    void visit(CaseExpression caseExpression);
+    T visit(CaseExpression caseExpression);
 
-    void visit(WhenClause whenClause);
+    T visit(WhenClause whenClause);
 
-    void visit(ExistsExpression existsExpression);
+    T visit(ExistsExpression existsExpression);
 
-    void visit(MemberOfExpression memberOfExpression);
+    T visit(MemberOfExpression memberOfExpression);
 
-    void visit(AnyComparisonExpression anyComparisonExpression);
+    T visit(AnyComparisonExpression anyComparisonExpression);
 
-    void visit(Concat concat);
+    T visit(Concat concat);
 
-    void visit(Matches matches);
+    T visit(Matches matches);
 
-    void visit(BitwiseAnd bitwiseAnd);
+    T visit(BitwiseAnd bitwiseAnd);
 
-    void visit(BitwiseOr bitwiseOr);
+    T visit(BitwiseOr bitwiseOr);
 
-    void visit(BitwiseXor bitwiseXor);
+    T visit(BitwiseXor bitwiseXor);
 
-    void visit(CastExpression cast);
+    T visit(CastExpression cast);
 
-    void visit(Modulo modulo);
+    T visit(Modulo modulo);
 
-    void visit(AnalyticExpression aexpr);
+    T visit(AnalyticExpression aexpr);
 
-    void visit(ExtractExpression eexpr);
+    T visit(ExtractExpression eexpr);
 
-    void visit(IntervalExpression iexpr);
+    T visit(IntervalExpression iexpr);
 
-    void visit(OracleHierarchicalExpression oexpr);
+    T visit(OracleHierarchicalExpression oexpr);
 
-    void visit(RegExpMatchOperator rexpr);
+    T visit(RegExpMatchOperator rexpr);
 
-    void visit(JsonExpression jsonExpr);
+    T visit(JsonExpression jsonExpr);
 
-    void visit(JsonOperator jsonExpr);
+    T visit(JsonOperator jsonExpr);
 
-    void visit(UserVariable var);
+    T visit(UserVariable var);
 
-    void visit(NumericBind bind);
+    T visit(NumericBind bind);
 
-    void visit(KeepExpression aexpr);
+    T visit(KeepExpression aexpr);
 
-    void visit(MySQLGroupConcat groupConcat);
+    T visit(MySQLGroupConcat groupConcat);
 
-    void visit(ExpressionList<?> expressionList);
+    T visit(ExpressionList<?> expressionList);
 
-    void visit(RowConstructor<?> rowConstructor);
+    T visit(RowConstructor<?> rowConstructor);
 
-    void visit(RowGetExpression rowGetExpression);
+    T visit(RowGetExpression rowGetExpression);
 
-    void visit(OracleHint hint);
+    T visit(OracleHint hint);
 
-    void visit(TimeKeyExpression timeKeyExpression);
+    T visit(TimeKeyExpression timeKeyExpression);
 
-    void visit(DateTimeLiteralExpression literal);
+    T visit(DateTimeLiteralExpression literal);
 
-    void visit(NotExpression aThis);
+    T visit(NotExpression aThis);
 
-    void visit(NextValExpression aThis);
+    T visit(NextValExpression aThis);
 
-    void visit(CollateExpression aThis);
+    T visit(CollateExpression aThis);
 
-    void visit(SimilarToExpression aThis);
+    T visit(SimilarToExpression aThis);
 
-    void visit(ArrayExpression aThis);
+    T visit(ArrayExpression aThis);
 
-    void visit(ArrayConstructor aThis);
+    T visit(ArrayConstructor aThis);
 
-    void visit(VariableAssignment aThis);
+    T visit(VariableAssignment aThis);
 
-    void visit(XMLSerializeExpr aThis);
+    T visit(XMLSerializeExpr aThis);
 
-    void visit(TimezoneExpression aThis);
+    T visit(TimezoneExpression aThis);
 
-    void visit(JsonAggregateFunction aThis);
+    T visit(JsonAggregateFunction aThis);
 
-    void visit(JsonFunction aThis);
+    T visit(JsonFunction aThis);
 
-    void visit(ConnectByRootOperator aThis);
+    T visit(ConnectByRootOperator aThis);
 
-    void visit(OracleNamedFunctionParameter aThis);
+    T visit(OracleNamedFunctionParameter aThis);
 
-    void visit(AllColumns allColumns);
+    T visit(AllColumns allColumns);
 
-    void visit(AllTableColumns allTableColumns);
+    T visit(AllTableColumns allTableColumns);
 
-    void visit(AllValue allValue);
+    T visit(AllValue allValue);
 
-    void visit(IsDistinctExpression isDistinctExpression);
+    T visit(IsDistinctExpression isDistinctExpression);
 
-    void visit(GeometryDistance geometryDistance);
+    T visit(GeometryDistance geometryDistance);
 
-    void visit(Select selectBody);
+    T visit(Select selectBody);
 
-    void visit(TranscodingFunction transcodingFunction);
+    T visit(TranscodingFunction transcodingFunction);
 
-    void visit(TrimFunction trimFunction);
+    T visit(TrimFunction trimFunction);
 
-    void visit(RangeExpression rangeExpression);
+    T visit(RangeExpression rangeExpression);
 
-    void visit(TSQLLeftJoin tsqlLeftJoin);
+    T visit(TSQLLeftJoin tsqlLeftJoin);
 
-    void visit(TSQLRightJoin tsqlRightJoin);
+    T visit(TSQLRightJoin tsqlRightJoin);
 
-    void visit(StructType structType);
+    T visit(StructType structType);
 
-    void visit(LambdaExpression lambdaExpression);
+    T visit(LambdaExpression lambdaExpression);
 }

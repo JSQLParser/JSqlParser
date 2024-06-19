@@ -64,198 +64,233 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 /**
  * @author gitmotte
  */
-public class StatementValidator extends AbstractValidator<Statement> implements StatementVisitor {
+public class StatementValidator extends AbstractValidator<Statement>
+        implements StatementVisitor<Void> {
 
     @Override
-    public void visit(CreateIndex createIndex) {
+    public Void visit(CreateIndex createIndex) {
         getValidator(CreateIndexValidator.class).validate(createIndex);
+        return null;
     }
 
     @Override
-    public void visit(CreateTable createTable) {
+    public Void visit(CreateTable createTable) {
         getValidator(CreateTableValidator.class).validate(createTable);
+        return null;
     }
 
     @Override
-    public void visit(CreateView createView) {
+    public Void visit(CreateView createView) {
         getValidator(CreateViewValidator.class).validate(createView);
+        return null;
     }
 
     @Override
-    public void visit(AlterView alterView) {
+    public Void visit(AlterView alterView) {
         getValidator(AlterViewValidator.class).validate(alterView);
+        return null;
     }
 
     @Override
-    public void visit(RefreshMaterializedViewStatement materializedView) {
+    public Void visit(RefreshMaterializedViewStatement materializedView) {
         getValidator(RefreshMaterializedViewStatementValidator.class).validate(materializedView);
+        return null;
     }
 
     @Override
-    public void visit(Delete delete) {
+    public Void visit(Delete delete) {
         getValidator(DeleteValidator.class).validate(delete);
+        return null;
     }
 
     @Override
-    public void visit(Drop drop) {
+    public Void visit(Drop drop) {
         getValidator(DropValidator.class).validate(drop);
+        return null;
     }
 
     @Override
-    public void visit(Insert insert) {
+    public Void visit(Insert insert) {
         getValidator(InsertValidator.class).validate(insert);
+        return null;
     }
 
     @Override
-    public void visit(Select select) {
+    public Void visit(Select select) {
         validateFeature(Feature.select);
 
         SelectValidator selectValidator = getValidator(SelectValidator.class);
         select.accept(selectValidator);
+        return null;
     }
 
     @Override
-    public void visit(Truncate truncate) {
+    public Void visit(Truncate truncate) {
         validateFeature(Feature.truncate);
         validateOptionalFromItem(truncate.getTable());
+        return null;
     }
 
     @Override
-    public void visit(Update update) {
+    public Void visit(Update update) {
         getValidator(UpdateValidator.class).validate(update);
+        return null;
     }
 
     @Override
-    public void visit(Alter alter) {
+    public Void visit(Alter alter) {
         getValidator(AlterValidator.class).validate(alter);
+        return null;
     }
 
     @Override
-    public void visit(Statements stmts) {
-        stmts.getStatements().forEach(s -> s.accept(this));
+    public Void visit(Statements stmts) {
+        stmts.forEach(s -> s.accept(this));
+        return null;
     }
 
     @Override
-    public void visit(Execute execute) {
+    public Void visit(Execute execute) {
         getValidator(ExecuteValidator.class).validate(execute);
+        return null;
     }
 
     @Override
-    public void visit(SetStatement set) {
+    public Void visit(SetStatement set) {
         getValidator(SetStatementValidator.class).validate(set);
+        return null;
     }
 
     @Override
-    public void visit(ResetStatement reset) {
+    public Void visit(ResetStatement reset) {
         getValidator(ResetStatementValidator.class).validate(reset);
+        return null;
     }
 
     @Override
-    public void visit(Merge merge) {
+    public Void visit(Merge merge) {
         getValidator(MergeValidator.class).validate(merge);
+        return null;
     }
 
     @Override
-    public void visit(Commit commit) {
+    public Void visit(Commit commit) {
         validateFeature(Feature.commit);
+        return null;
     }
 
     @Override
-    public void visit(Upsert upsert) {
+    public Void visit(Upsert upsert) {
         getValidator(UpsertValidator.class).validate(upsert);
+        return null;
     }
 
     @Override
-    public void visit(UseStatement use) {
+    public Void visit(UseStatement use) {
         getValidator(UseStatementValidator.class).validate(use);
+        return null;
     }
 
     @Override
-    public void visit(ShowStatement show) {
+    public Void visit(ShowStatement show) {
         getValidator(ShowStatementValidator.class).validate(show);
+        return null;
     }
 
     @Override
-    public void visit(ShowColumnsStatement show) {
+    public Void visit(ShowColumnsStatement show) {
         getValidator(ShowColumnsStatementValidator.class).validate(show);
+        return null;
     }
 
     @Override
-    public void visit(ShowIndexStatement show) {
+    public Void visit(ShowIndexStatement show) {
         getValidator(ShowIndexStatementValidator.class).validate(show);
+        return null;
     }
 
     @Override
-    public void visit(ShowTablesStatement showTables) {
+    public Void visit(ShowTablesStatement showTables) {
         getValidator(ShowTablesStatementValidator.class).validate(showTables);
+        return null;
     }
 
     @Override
-    public void visit(Block block) {
+    public Void visit(Block block) {
         validateFeature(Feature.block);
         block.getStatements().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(Comment comment) {
+    public Void visit(Comment comment) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.comment);
             validateOptionalFeature(c, comment.getTable(), Feature.commentOnTable);
             validateOptionalFeature(c, comment.getColumn(), Feature.commentOnColumn);
             validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
         }
+        return null;
     }
 
     @Override
-    public void visit(DescribeStatement describe) {
+    public Void visit(DescribeStatement describe) {
         validateFeature(Feature.describe);
         validateFeature(Feature.desc);
         validateOptionalFromItem(describe.getTable());
+        return null;
     }
 
     @Override
-    public void visit(ExplainStatement explain) {
+    public Void visit(ExplainStatement explain) {
         validateFeature(Feature.explain);
         if (explain.getStatement() != null) {
             explain.getStatement().accept(this);
         }
+        return null;
     }
 
 
     @Override
-    public void visit(DeclareStatement declare) {
+    public Void visit(DeclareStatement declare) {
         getValidator(DeclareStatementValidator.class).validate(declare);
+        return null;
     }
 
     @Override
-    public void visit(Grant grant) {
+    public Void visit(Grant grant) {
         getValidator(GrantValidator.class).validate(grant);
+        return null;
     }
 
     @Override
-    public void visit(CreateSchema aThis) {
+    public Void visit(CreateSchema aThis) {
         validateFeatureAndName(Feature.createSchema, NamedObject.schema, aThis.getSchemaName());
         aThis.getStatements().forEach(s -> s.accept(this));
+        return null;
     }
 
     @Override
-    public void visit(CreateSequence createSequence) {
+    public Void visit(CreateSequence createSequence) {
         getValidator(CreateSequenceValidator.class).validate(createSequence);
+        return null;
     }
 
     @Override
-    public void visit(AlterSequence alterSequence) {
+    public Void visit(AlterSequence alterSequence) {
         getValidator(AlterSequenceValidator.class).validate(alterSequence);
+        return null;
     }
 
     @Override
-    public void visit(CreateFunctionalStatement createFunctionalStatement) {
+    public Void visit(CreateFunctionalStatement createFunctionalStatement) {
         validateFeature(Feature.functionalStatement);
         if (createFunctionalStatement instanceof CreateFunction) {
             validateFeature(Feature.createFunction);
         } else if (createFunctionalStatement instanceof CreateProcedure) {
             validateFeature(Feature.createProcedure);
         }
+        return null;
     }
 
     @Override
@@ -264,54 +299,64 @@ public class StatementValidator extends AbstractValidator<Statement> implements 
     }
 
     @Override
-    public void visit(CreateSynonym createSynonym) {
+    public Void visit(CreateSynonym createSynonym) {
         getValidator(CreateSynonymValidator.class).validate(createSynonym);
+        return null;
     }
 
     @Override
-    public void visit(Analyze analyze) {
+    public Void visit(Analyze analyze) {
         getValidator(AnalyzeValidator.class).validate(analyze);
+        return null;
     }
 
     @Override
-    public void visit(SavepointStatement savepointStatement) {
+    public Void visit(SavepointStatement savepointStatement) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(RollbackStatement rollbackStatement) {
+    public Void visit(RollbackStatement rollbackStatement) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(AlterSession alterSession) {
+    public Void visit(AlterSession alterSession) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(IfElseStatement ifElseStatement) {
+    public Void visit(IfElseStatement ifElseStatement) {
         ifElseStatement.getIfStatement().accept(this);
         if (ifElseStatement.getElseStatement() != null) {
             ifElseStatement.getElseStatement().accept(this);
         }
+        return null;
     }
 
-    public void visit(RenameTableStatement renameTableStatement) {
+    public Void visit(RenameTableStatement renameTableStatement) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(PurgeStatement purgeStatement) {
+    public Void visit(PurgeStatement purgeStatement) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(AlterSystemStatement alterSystemStatement) {
+    public Void visit(AlterSystemStatement alterSystemStatement) {
         // TODO: not yet implemented
+        return null;
     }
 
     @Override
-    public void visit(UnsupportedStatement unsupportedStatement) {
+    public Void visit(UnsupportedStatement unsupportedStatement) {
 
+        return null;
     }
 }

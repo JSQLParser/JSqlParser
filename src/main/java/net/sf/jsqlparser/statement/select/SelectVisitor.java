@@ -9,19 +9,19 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface SelectVisitor {
+public interface SelectVisitor<T> {
 
-    void visit(ParenthesedSelect parenthesedSelect);
+    T visit(ParenthesedSelect parenthesedSelect);
 
-    void visit(PlainSelect plainSelect);
+    T visit(PlainSelect plainSelect);
 
-    void visit(SetOperationList setOpList);
+    T visit(SetOperationList setOpList);
 
-    void visit(WithItem withItem);
+    T visit(WithItem withItem);
 
-    void visit(Values aThis);
+    T visit(Values aThis);
 
-    void visit(LateralSubSelect lateralSubSelect);
+    T visit(LateralSubSelect lateralSubSelect);
 
-    void visit(TableStatement tableStatement);
+    T visit(TableStatement tableStatement);
 }

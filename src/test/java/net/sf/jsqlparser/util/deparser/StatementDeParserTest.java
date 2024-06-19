@@ -354,13 +354,15 @@ public class StatementDeParserTest {
         StringBuilder builder = new StringBuilder();
         ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
             @Override
-            public void visit(StringValue stringValue) {
+            public StringBuilder visit(StringValue stringValue) {
                 buffer.append("?");
+                return null;
             }
 
             @Override
-            public void visit(LongValue longValue) {
+            public StringBuilder visit(LongValue longValue) {
                 buffer.append("?");
+                return null;
             }
         };
 

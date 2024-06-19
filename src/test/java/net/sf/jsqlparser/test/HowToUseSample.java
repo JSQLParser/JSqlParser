@@ -139,13 +139,15 @@ public class HowToUseSample {
         // Define an Expression Visitor reacting on any Expression
         // Overwrite the visit() methods for each Expression Class
         ExpressionVisitorAdapter expressionVisitorAdapter = new ExpressionVisitorAdapter() {
-            public void visit(EqualsTo equalsTo) {
+            public Void visit(EqualsTo equalsTo) {
                 equalsTo.getLeftExpression().accept(this);
                 equalsTo.getRightExpression().accept(this);
+                return null;
             }
 
-            public void visit(Column column) {
+            public Void visit(Column column) {
                 System.out.println("Found a Column " + column.getColumnName());
+                return null;
             }
         };
 
@@ -153,15 +155,17 @@ public class HowToUseSample {
         // Where Clause
         SelectVisitorAdapter selectVisitorAdapter = new SelectVisitorAdapter() {
             @Override
-            public void visit(PlainSelect plainSelect) {
+            public Object visit(PlainSelect plainSelect) {
                 plainSelect.getWhere().accept(expressionVisitorAdapter);
+                return null;
             }
         };
 
         // Define a Statement Visitor for dispatching the Statements
         StatementVisitorAdapter statementVisitor = new StatementVisitorAdapter() {
-            public void visit(Select select) {
+            public Object visit(Select select) {
                 select.accept(selectVisitorAdapter);
+                return null;
             }
         };
 

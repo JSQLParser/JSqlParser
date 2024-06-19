@@ -58,10 +58,11 @@ public class TableTest {
         SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer) {
 
             @Override
-            public void visit(Table tableName) {
+            public StringBuilder visit(Table tableName) {
                 System.out.println(tableName);
                 tableName.setDatabase(database); // Exception
                 System.out.println(tableName.getDatabase());
+                return null;
             }
         };
 

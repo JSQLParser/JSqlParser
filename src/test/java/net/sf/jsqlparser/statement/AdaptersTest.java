@@ -38,10 +38,10 @@ public class AdaptersTest {
         final Stack<Pair<String, String>> params = new Stack<>();
         stmnt.accept(new StatementVisitorAdapter() {
             @Override
-            public void visit(Select select) {
+            public Object visit(Select select) {
                 select.accept(new SelectVisitorAdapter() {
                     @Override
-                    public void visit(PlainSelect plainSelect) {
+                    public Object visit(PlainSelect plainSelect) {
                         plainSelect.getWhere().accept(new ExpressionVisitorAdapter() {
                             @Override
                             protected void visitBinaryExpression(BinaryExpression expr) {
@@ -52,19 +52,23 @@ public class AdaptersTest {
                             }
 
                             @Override
-                            public void visit(Column column) {
+                            public Void visit(Column column) {
                                 params.push(new Pair<>(column.getColumnName(),
                                         params.pop().getRight()));
+                                return null;
                             }
 
                             @Override
-                            public void visit(JdbcNamedParameter parameter) {
+                            public Void visit(JdbcNamedParameter parameter) {
                                 params.push(new Pair<>(params.pop().getLeft(),
                                         parameter.getName()));
+                                return null;
                             }
                         });
+                        return null;
                     }
                 });
+                return null;
             }
         });
 

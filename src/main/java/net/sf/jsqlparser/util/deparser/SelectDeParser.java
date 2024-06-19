@@ -54,10 +54,12 @@ import java.util.List;
 import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-public class SelectDeParser extends AbstractDeParser<PlainSelect> implements SelectVisitor,
-        SelectItemVisitor, FromItemVisitor, PivotVisitor {
+public class SelectDeParser extends AbstractDeParser<PlainSelect>
+        implements SelectVisitor<StringBuilder>,
+        SelectItemVisitor<StringBuilder>, FromItemVisitor<StringBuilder>,
+        PivotVisitor<StringBuilder> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
     public SelectDeParser() {
         this(new StringBuilder());
@@ -84,24 +86,25 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
 
-    public SelectDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public SelectDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
     @Override
-    public void visit(ParenthesedSelect selectBody) {
+    public StringBuilder visit(ParenthesedSelect selectBody) {
         List<WithItem> withItemsList = selectBody.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this);
                 buffer.append(" ");
             }
         }
 
         buffer.append("(");
-        selectBody.getSelect().accept((SelectVisitor) this);
+        selectBody.getSelect().accept(this);
         buffer.append(")");
 
         if (selectBody.getOrderByElements() != null) {
@@ -134,6 +137,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (selectBody.getIsolation() != null) {
             buffer.append(selectBody.getIsolation().toString());
         }
+        return buffer;
     }
 
     public void visit(Top top) {
@@ -143,12 +147,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
-    public void visit(PlainSelect plainSelect) {
+    public StringBuilder visit(PlainSelect plainSelect) {
         List<WithItem> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                iter.next().accept((SelectVisitor) this);
+                iter.next().accept((SelectVisitor<?>) this);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
@@ -177,7 +181,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(first).append(" ");
         }
 
-        deparseDistinctClause(plainSelect, plainSelect.getDistinct());
+        deparseDistinctClause(plainSelect.getDistinct());
 
         if (plainSelect.getBigQuerySelectQualifier() != null) {
             switch (plainSelect.getBigQuerySelectQualifier()) {
@@ -203,7 +207,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        deparseSelectItemsClause(plainSelect, plainSelect.getSelectItems());
+        deparseSelectItemsClause(plainSelect.getSelectItems());
 
         if (plainSelect.getIntoTables() != null) {
             buffer.append(" INTO ");
@@ -327,7 +331,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (plainSelect.isUseWithNoLog()) {
             buffer.append(" WITH NO LOG");
         }
-
+        return buffer;
     }
 
     protected void deparseWhereClause(PlainSelect plainSelect) {
@@ -337,7 +341,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseDistinctClause(PlainSelect plainSelect, Distinct distinct) {
+    protected void deparseDistinctClause(Distinct distinct) {
         if (distinct != null) {
             if (distinct.isUseUnique()) {
                 buffer.append("UNIQUE ");
@@ -359,8 +363,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    protected void deparseSelectItemsClause(PlainSelect plainSelect,
-            List<SelectItem<?>> selectItems) {
+    protected void deparseSelectItemsClause(List<SelectItem<?>> selectItems) {
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
                 SelectItem<?> selectItem = iter.next();
@@ -381,16 +384,17 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(SelectItem selectExpressionItem) {
+    public StringBuilder visit(SelectItem<?> selectExpressionItem) {
         selectExpressionItem.getExpression().accept(expressionVisitor);
         if (selectExpressionItem.getAlias() != null) {
             buffer.append(selectExpressionItem.getAlias().toString());
         }
+        return buffer;
     }
 
 
     @Override
-    public void visit(Table tableName) {
+    public StringBuilder visit(Table tableName) {
         buffer.append(tableName.getFullyQualifiedName());
         Alias alias = tableName.getAlias();
         if (alias != null) {
@@ -412,10 +416,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (sqlServerHints != null) {
             buffer.append(sqlServerHints);
         }
+        return buffer;
     }
 
     @Override
-    public void visit(Pivot pivot) {
+    public StringBuilder visit(Pivot pivot) {
         // @todo: implement this as Visitor
         buffer.append(" PIVOT (").append(PlainSelect.getStringList(pivot.getFunctionItems()));
 
@@ -429,10 +434,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (pivot.getAlias() != null) {
             buffer.append(pivot.getAlias().toString());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(UnPivot unpivot) {
+    public StringBuilder visit(UnPivot unpivot) {
         boolean showOptions = unpivot.getIncludeNullsSpecified();
         boolean includeNulls = unpivot.getIncludeNulls();
         List<Column> unPivotClause = unpivot.getUnPivotClause();
@@ -450,10 +456,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (unpivot.getAlias() != null) {
             buffer.append(unpivot.getAlias().toString());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(PivotXml pivot) {
+    public StringBuilder visit(PivotXml pivot) {
         List<Column> forColumns = pivot.getForColumns();
         buffer.append(" PIVOT XML (").append(PlainSelect.getStringList(pivot.getFunctionItems()))
                 .append(" FOR ").append(PlainSelect.getStringList(forColumns, true,
@@ -467,6 +474,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(PlainSelect.getStringList(pivot.getInItems()));
         }
         buffer.append("))");
+        return buffer;
     }
 
     public void visit(Offset offset) {
@@ -496,11 +504,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 
@@ -561,7 +569,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
             buffer.append(" ON ");
             onExpression.accept(expressionVisitor);
         }
-        if (join.getUsingColumns().size() > 0) {
+        if (!join.getUsingColumns().isEmpty()) {
             buffer.append(" USING (");
             for (Iterator<Column> iterator = join.getUsingColumns().iterator(); iterator
                     .hasNext();) {
@@ -594,12 +602,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
     }
 
     @Override
-    public void visit(SetOperationList list) {
+    public StringBuilder visit(SetOperationList list) {
         List<WithItem> withItemsList = list.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                iter.next().accept((SelectVisitor) this);
+                iter.next().accept((SelectVisitor<?>) this);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
@@ -629,10 +637,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (list.getIsolation() != null) {
             buffer.append(list.getIsolation().toString());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(WithItem withItem) {
+    public StringBuilder visit(WithItem withItem) {
         if (withItem.isRecursive()) {
             buffer.append("RECURSIVE ");
         }
@@ -643,26 +652,31 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         }
         buffer.append(" AS ");
         withItem.getSelect().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
+    public StringBuilder visit(LateralSubSelect lateralSubSelect) {
         buffer.append(lateralSubSelect.getPrefix());
         visit((ParenthesedSelect) lateralSubSelect);
+
+        return buffer;
     }
 
     @Override
-    public void visit(TableStatement tableStatement) {
+    public StringBuilder visit(TableStatement tableStatement) {
         new TableStatementDeParser(expressionVisitor, buffer).deParse(tableStatement);
+        return buffer;
     }
 
     @Override
-    public void visit(TableFunction tableFunction) {
+    public StringBuilder visit(TableFunction tableFunction) {
         buffer.append(tableFunction.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(ParenthesedFromItem fromItem) {
+    public StringBuilder visit(ParenthesedFromItem fromItem) {
 
         buffer.append("(");
         fromItem.getFromItem().accept(this);
@@ -689,11 +703,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
         if (fromItem.getUnPivot() != null) {
             visit(fromItem.getUnPivot());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(Values values) {
+    public StringBuilder visit(Values values) {
         new ValuesStatementDeParser(expressionVisitor, buffer).deParse(values);
+        return buffer;
     }
 
     private void deparseOptimizeFor(OptimizeFor optimizeFor) {
@@ -704,7 +720,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect> implements Sel
 
     @Override
     void deParse(PlainSelect statement) {
-        statement.accept((SelectVisitor) this);
+        statement.accept(this);
     }
 
 }

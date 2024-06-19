@@ -24,11 +24,12 @@ import net.sf.jsqlparser.statement.select.WithItem;
  * @author jxnu-liguobin
  */
 public class TableStatementDeParser extends AbstractDeParser<TableStatement>
-        implements SelectVisitor {
+        implements SelectVisitor<StringBuilder> {
 
-    private final ExpressionVisitor expressionVisitor;
+    private final ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public TableStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public TableStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -48,37 +49,43 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     @Override
-    public void visit(ParenthesedSelect parenthesedSelect) {
+    public StringBuilder visit(ParenthesedSelect parenthesedSelect) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(PlainSelect plainSelect) {
+    public StringBuilder visit(PlainSelect plainSelect) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(SetOperationList setOpList) {
+    public StringBuilder visit(SetOperationList setOpList) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(WithItem withItem) {
+    public StringBuilder visit(WithItem withItem) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(Values aThis) {
+    public StringBuilder visit(Values aThis) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
+    public StringBuilder visit(LateralSubSelect lateralSubSelect) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(TableStatement tableStatement) {
+    public StringBuilder visit(TableStatement tableStatement) {
         buffer.append("TABLE ");
         buffer.append(tableStatement.getTable());
         if (tableStatement.getOrderByElements() != null) {
@@ -94,5 +101,6 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
         }
 
         // TODO UNION
+        return buffer;
     }
 }

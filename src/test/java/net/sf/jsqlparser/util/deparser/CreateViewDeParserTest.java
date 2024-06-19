@@ -37,7 +37,7 @@ public class CreateViewDeParserTest {
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, b) {
 
             @Override
-            public void visit(Column tableColumn) {
+            public StringBuilder visit(Column tableColumn) {
                 final Table table = tableColumn.getTable();
                 String tableName = null;
                 if (table != null) {
@@ -52,19 +52,20 @@ public class CreateViewDeParserTest {
                 }
 
                 getBuffer().append("\"").append(tableColumn.getColumnName()).append("\"");
+                return null;
             }
         };
 
         selectDeParser.setExpressionVisitor(expressionDeParser);
 
         CreateViewDeParser instance = new CreateViewDeParser(b, selectDeParser);
-        CreateView vc = (CreateView) CCJSqlParserUtil.
-                parse("CREATE VIEW test AS SELECT a, b FROM mytable");
+        CreateView vc =
+                (CreateView) CCJSqlParserUtil.parse("CREATE VIEW test AS SELECT a, b FROM mytable");
         instance.deParse(vc);
 
         assertEquals("CREATE VIEW test AS SELECT a, b FROM mytable", vc.toString());
-        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable", instance.getBuffer().
-                toString());
+        assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable",
+                instance.getBuffer().toString());
     }
 
     @Test

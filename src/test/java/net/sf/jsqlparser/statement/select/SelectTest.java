@@ -4375,8 +4375,9 @@ public class SelectTest {
         final List<SelectItem> list = new ArrayList<>();
         select.accept(new SelectVisitorAdapter() {
             @Override
-            public void visit(PlainSelect plainSelect) {
+            public Object visit(PlainSelect plainSelect) {
                 list.addAll(plainSelect.getSelectItems());
+                return null;
             }
         });
 
@@ -4404,8 +4405,9 @@ public class SelectTest {
         final List<SelectItem> list = new ArrayList<>();
         select.accept(new SelectVisitorAdapter() {
             @Override
-            public void visit(PlainSelect plainSelect) {
+            public Object visit(PlainSelect plainSelect) {
                 list.addAll(plainSelect.getSelectItems());
+                return null;
             }
         });
 
@@ -4426,10 +4428,10 @@ public class SelectTest {
         assertNotNull(statement);
         statement.accept(new StatementVisitorAdapter() {
             @Override
-            public void visit(Select select) {
+            public Object visit(Select select) {
                 select.accept(new SelectVisitorAdapter() {
                     @Override
-                    public void visit(PlainSelect plainSelect) {
+                    public Object visit(PlainSelect plainSelect) {
                         SelectItem typedExpression =
                                 (SelectItem) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
@@ -4437,8 +4439,10 @@ public class SelectTest {
                         StringValue value = (StringValue) typedExpression.getExpression();
                         assertEquals(prefix.toUpperCase(), value.getPrefix());
                         assertEquals("test", value.getValue());
+                        return null;
                     }
                 });
+                return null;
             }
         });
     }
@@ -5818,17 +5822,17 @@ public class SelectTest {
     @Test
     void testGroupByWithHaving() throws JSQLParserException {
         String sqlStr = "-- GROUP BY\n"
-                        + "SELECT  a\n"
-                        + "        , b\n"
-                        + "        , c\n"
-                        + "        , Sum( d )\n"
-                        + "FROM t\n"
-                        + "GROUP BY    a\n"
-                        + "            , b\n"
-                        + "            , c\n"
-                        + "HAVING Sum( d ) > 0\n"
-                        + "    AND Count( * ) > 1\n"
-                        + ";";
+                + "SELECT  a\n"
+                + "        , b\n"
+                + "        , c\n"
+                + "        , Sum( d )\n"
+                + "FROM t\n"
+                + "GROUP BY    a\n"
+                + "            , b\n"
+                + "            , c\n"
+                + "HAVING Sum( d ) > 0\n"
+                + "    AND Count( * ) > 1\n"
+                + ";";
         Statement stmt = assertSqlCanBeParsedAndDeparsed(sqlStr);
         Assertions.assertInstanceOf(Select.class, stmt);
     }

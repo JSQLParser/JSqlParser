@@ -124,69 +124,81 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression>
-        implements ExpressionVisitor {
+        implements ExpressionVisitor<Void> {
     @Override
-    public void visit(Addition addition) {
+    public Void visit(Addition addition) {
         visitBinaryExpression(addition, " + ");
+        return null;
     }
 
     @Override
-    public void visit(AndExpression andExpression) {
+    public Void visit(AndExpression andExpression) {
         visitBinaryExpression(andExpression, andExpression.isUseOperator() ? " && " : " AND ");
+        return null;
     }
 
     @Override
-    public void visit(Between between) {
+    public Void visit(Between between) {
         between.getLeftExpression().accept(this);
         between.getBetweenExpressionStart().accept(this);
         between.getBetweenExpressionEnd().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(OverlapsCondition overlapsCondition) {
+    public Void visit(OverlapsCondition overlapsCondition) {
         validateOptionalExpressionList(overlapsCondition.getLeft());
         validateOptionalExpressionList(overlapsCondition.getRight());
+        return null;
     }
 
 
     @Override
-    public void visit(EqualsTo equalsTo) {
+    public Void visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
+        return null;
     }
 
     @Override
-    public void visit(Division division) {
+    public Void visit(Division division) {
         visitBinaryExpression(division, " / ");
+        return null;
     }
 
     @Override
-    public void visit(IntegerDivision division) {
+    public Void visit(IntegerDivision division) {
         visitBinaryExpression(division, " DIV ");
+        return null;
     }
 
     @Override
-    public void visit(DoubleValue doubleValue) {
+    public Void visit(DoubleValue doubleValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(HexValue hexValue) {
+    public Void visit(HexValue hexValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(NotExpression notExpr) {
+    public Void visit(NotExpression notExpr) {
         notExpr.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseRightShift expr) {
+    public Void visit(BitwiseRightShift expr) {
         visitBinaryExpression(expr, " >> ");
+        return null;
     }
 
     @Override
-    public void visit(BitwiseLeftShift expr) {
+    public Void visit(BitwiseLeftShift expr) {
         visitBinaryExpression(expr, " << ");
+        return null;
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression,
@@ -205,18 +217,20 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(GreaterThan greaterThan) {
+    public Void visit(GreaterThan greaterThan) {
         visitOldOracleJoinBinaryExpression(greaterThan, " > ");
+        return null;
     }
 
     @Override
-    public void visit(GreaterThanEquals greaterThanEquals) {
+    public Void visit(GreaterThanEquals greaterThanEquals) {
         visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
 
+        return null;
     }
 
     @Override
-    public void visit(InExpression inExpression) {
+    public Void visit(InExpression inExpression) {
         for (ValidationCapability c : getCapabilities()) {
             validateOptionalExpression(inExpression.getLeftExpression(), this);
             if (inExpression
@@ -225,132 +239,156 @@ public class ExpressionValidator extends AbstractValidator<Expression>
             }
         }
         validateOptionalExpression(inExpression.getRightExpression(), this);
+        return null;
     }
 
     @Override
-    public void visit(IncludesExpression includesExpression) {
+    public Void visit(IncludesExpression includesExpression) {
         validateOptionalExpression(includesExpression.getLeftExpression(), this);
         validateOptionalExpression(includesExpression.getRightExpression(), this);
+        return null;
     }
 
     @Override
-    public void visit(ExcludesExpression excludesExpression) {
+    public Void visit(ExcludesExpression excludesExpression) {
         validateOptionalExpression(excludesExpression.getLeftExpression(), this);
         validateOptionalExpression(excludesExpression.getRightExpression(), this);
+        return null;
     }
 
     @Override
-    public void visit(FullTextSearch fullTextSearch) {
+    public Void visit(FullTextSearch fullTextSearch) {
         validateOptionalExpressions(fullTextSearch.getMatchColumns());
+        return null;
     }
 
     @Override
-    public void visit(SignedExpression signedExpression) {
+    public Void visit(SignedExpression signedExpression) {
         signedExpression.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(IsNullExpression isNullExpression) {
+    public Void visit(IsNullExpression isNullExpression) {
         isNullExpression.getLeftExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(IsBooleanExpression isBooleanExpression) {
+    public Void visit(IsBooleanExpression isBooleanExpression) {
         isBooleanExpression.getLeftExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(JdbcParameter jdbcParameter) {
+    public Void visit(JdbcParameter jdbcParameter) {
         validateFeature(Feature.jdbcParameter);
+        return null;
     }
 
     @Override
-    public void visit(LikeExpression likeExpression) {
+    public Void visit(LikeExpression likeExpression) {
         validateFeature(Feature.exprLike);
         visitBinaryExpression(likeExpression, (likeExpression.isNot() ? " NOT" : "")
                 + (likeExpression.isCaseInsensitive() ? " ILIKE " : " LIKE "));
+        return null;
     }
 
     @Override
-    public void visit(ExistsExpression existsExpression) {
+    public Void visit(ExistsExpression existsExpression) {
         existsExpression.getRightExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(MemberOfExpression memberOfExpression) {
+    public Void visit(MemberOfExpression memberOfExpression) {
         memberOfExpression.getLeftExpression().accept(this);
         memberOfExpression.getRightExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(LongValue longValue) {
+    public Void visit(LongValue longValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(MinorThan minorThan) {
+    public Void visit(MinorThan minorThan) {
         visitOldOracleJoinBinaryExpression(minorThan, " < ");
 
+        return null;
     }
 
     @Override
-    public void visit(MinorThanEquals minorThanEquals) {
+    public Void visit(MinorThanEquals minorThanEquals) {
         visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
 
+        return null;
     }
 
     @Override
-    public void visit(Multiplication multiplication) {
+    public Void visit(Multiplication multiplication) {
         visitBinaryExpression(multiplication, " * ");
 
+        return null;
     }
 
     @Override
-    public void visit(NotEqualsTo notEqualsTo) {
+    public Void visit(NotEqualsTo notEqualsTo) {
         visitOldOracleJoinBinaryExpression(notEqualsTo,
                 " " + notEqualsTo.getStringExpression() + " ");
+        return null;
     }
 
     @Override
-    public void visit(DoubleAnd doubleAnd) {
+    public Void visit(DoubleAnd doubleAnd) {
 
+        return null;
     }
 
     @Override
-    public void visit(Contains contains) {
+    public Void visit(Contains contains) {
 
+        return null;
     }
 
     @Override
-    public void visit(ContainedBy containedBy) {
+    public Void visit(ContainedBy containedBy) {
 
+        return null;
     }
 
     @Override
-    public void visit(NullValue nullValue) {
+    public Void visit(NullValue nullValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(OrExpression orExpression) {
+    public Void visit(OrExpression orExpression) {
         visitBinaryExpression(orExpression, " OR ");
 
+        return null;
     }
 
     @Override
-    public void visit(XorExpression xorExpression) {
+    public Void visit(XorExpression xorExpression) {
         visitBinaryExpression(xorExpression, " XOR ");
 
+        return null;
     }
 
     @Override
-    public void visit(StringValue stringValue) {
+    public Void visit(StringValue stringValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(Subtraction subtraction) {
+    public Void visit(Subtraction subtraction) {
         visitBinaryExpression(subtraction, " - ");
+        return null;
     }
 
     protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
@@ -359,17 +397,19 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(ParenthesedSelect selectBody) {
+    public Void visit(ParenthesedSelect selectBody) {
         validateOptionalFromItem(selectBody);
+        return null;
     }
 
     @Override
-    public void visit(Column tableColumn) {
+    public Void visit(Column tableColumn) {
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
+        return null;
     }
 
     @Override
-    public void visit(Function function) {
+    public Void visit(Function function) {
         validateFeature(Feature.function);
 
         validateOptionalExpressionList(function.getNamedParameters());
@@ -382,25 +422,29 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
         validateOptionalExpression(function.getKeep(), this);
         validateOptionalOrderByElements(function.getOrderByElements());
+        return null;
     }
 
     @Override
-    public void visit(DateValue dateValue) {
+    public Void visit(DateValue dateValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(TimestampValue timestampValue) {
+    public Void visit(TimestampValue timestampValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(TimeValue timeValue) {
+    public Void visit(TimeValue timeValue) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(CaseExpression caseExpression) {
+    public Void visit(CaseExpression caseExpression) {
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
             switchExp.accept(this);
@@ -412,56 +456,66 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         if (elseExp != null) {
             elseExp.accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(WhenClause whenClause) {
+    public Void visit(WhenClause whenClause) {
         whenClause.getWhenExpression().accept(this);
         whenClause.getThenExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AnyComparisonExpression anyComparisonExpression) {
+    public Void visit(AnyComparisonExpression anyComparisonExpression) {
         anyComparisonExpression.getSelect().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(Concat concat) {
+    public Void visit(Concat concat) {
         visitBinaryExpression(concat, " || ");
+        return null;
     }
 
     @Override
-    public void visit(Matches matches) {
+    public Void visit(Matches matches) {
         visitOldOracleJoinBinaryExpression(matches, " @@ ");
+        return null;
     }
 
     @Override
-    public void visit(BitwiseAnd bitwiseAnd) {
+    public Void visit(BitwiseAnd bitwiseAnd) {
         visitBinaryExpression(bitwiseAnd, " & ");
+        return null;
     }
 
     @Override
-    public void visit(BitwiseOr bitwiseOr) {
+    public Void visit(BitwiseOr bitwiseOr) {
         visitBinaryExpression(bitwiseOr, " | ");
+        return null;
     }
 
     @Override
-    public void visit(BitwiseXor bitwiseXor) {
+    public Void visit(BitwiseXor bitwiseXor) {
         visitBinaryExpression(bitwiseXor, " ^ ");
+        return null;
     }
 
     @Override
-    public void visit(CastExpression cast) {
+    public Void visit(CastExpression cast) {
         cast.getLeftExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(Modulo modulo) {
+    public Void visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
+        return null;
     }
 
     @Override
-    public void visit(AnalyticExpression aexpr) {
+    public Void visit(AnalyticExpression aexpr) {
         validateOptionalExpression(aexpr.getExpression(), this);
         validateOptionalExpression(aexpr.getOffset(), this);
         validateOptionalExpression(aexpr.getDefaultValue(), this);
@@ -478,6 +532,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
             }
         }
         validateOptionalExpression(aexpr.getFilterExpression());
+        return null;
     }
 
     private void validateOptionalWindowOffset(WindowOffset offset) {
@@ -487,59 +542,70 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(ExtractExpression eexpr) {
+    public Void visit(ExtractExpression eexpr) {
         eexpr.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(IntervalExpression iexpr) {
+    public Void visit(IntervalExpression iexpr) {
         validateOptionalExpression(iexpr.getExpression());
+        return null;
     }
 
     @Override
-    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    public Void visit(JdbcNamedParameter jdbcNamedParameter) {
         validateFeature(Feature.jdbcNamedParameter);
+        return null;
     }
 
     @Override
-    public void visit(OracleHierarchicalExpression oexpr) {
+    public Void visit(OracleHierarchicalExpression oexpr) {
         validateFeature(Feature.oracleHierarchicalExpression);
+        return null;
     }
 
     @Override
-    public void visit(RegExpMatchOperator rexpr) {
+    public Void visit(RegExpMatchOperator rexpr) {
         visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
+        return null;
     }
 
     @Override
-    public void visit(JsonExpression jsonExpr) {
+    public Void visit(JsonExpression jsonExpr) {
         validateOptionalExpression(jsonExpr.getExpression());
+        return null;
     }
 
     @Override
-    public void visit(JsonOperator jsonExpr) {
+    public Void visit(JsonOperator jsonExpr) {
         visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
+        return null;
     }
 
     @Override
-    public void visit(UserVariable var) {
+    public Void visit(UserVariable var) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(NumericBind bind) {
+    public Void visit(NumericBind bind) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(KeepExpression aexpr) {
+    public Void visit(KeepExpression aexpr) {
         validateOptionalOrderByElements(aexpr.getOrderByElements());
+        return null;
     }
 
     @Override
-    public void visit(MySQLGroupConcat groupConcat) {
+    public Void visit(MySQLGroupConcat groupConcat) {
         validateOptionalExpressionList(groupConcat.getExpressionList());
         validateOptionalOrderByElements(groupConcat.getOrderByElements());
+        return null;
     }
 
     private void validateOptionalExpressionList(ExpressionList<?> expressionList) {
@@ -551,53 +617,62 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(ExpressionList<?> expressionList) {
+    public Void visit(ExpressionList<?> expressionList) {
         validateOptionalExpressionList(expressionList);
+        return null;
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
+    public Void visit(RowConstructor rowConstructor) {
         validateOptionalExpressionList(rowConstructor);
+        return null;
     }
 
     @Override
-    public void visit(RowGetExpression rowGetExpression) {
+    public Void visit(RowGetExpression rowGetExpression) {
         rowGetExpression.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(OracleHint hint) {
+    public Void visit(OracleHint hint) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(TimeKeyExpression timeKeyExpression) {
+    public Void visit(TimeKeyExpression timeKeyExpression) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(DateTimeLiteralExpression literal) {
+    public Void visit(DateTimeLiteralExpression literal) {
         // nothing to validate
+        return null;
     }
 
     @Override
-    public void visit(NextValExpression nextVal) {
+    public Void visit(NextValExpression nextVal) {
         validateName(NamedObject.sequence, nextVal.getName());
+        return null;
     }
 
     @Override
-    public void visit(CollateExpression col) {
+    public Void visit(CollateExpression col) {
         validateOptionalExpression(col.getLeftExpression());
+        return null;
     }
 
     @Override
-    public void visit(SimilarToExpression expr) {
+    public Void visit(SimilarToExpression expr) {
         validateFeature(Feature.exprSimilarTo);
         visitBinaryExpression(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ");
+        return null;
     }
 
     @Override
-    public void visit(ArrayExpression array) {
+    public Void visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         if (array.getIndexExpression() != null) {
             array.getIndexExpression().accept(this);
@@ -608,13 +683,15 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         if (array.getStopIndexExpression() != null) {
             array.getStopIndexExpression().accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(ArrayConstructor aThis) {
+    public Void visit(ArrayConstructor aThis) {
         for (Expression expression : aThis.getExpressions()) {
             expression.accept(this);
         }
+        return null;
     }
 
     @Override
@@ -623,114 +700,136 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
-    public void visit(VariableAssignment a) {
+    public Void visit(VariableAssignment a) {
         validateOptionalExpression(a.getExpression());
         if (a.getVariable() != null) {
             a.getVariable().accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(TimezoneExpression a) {
+    public Void visit(TimezoneExpression a) {
         validateOptionalExpression(a.getLeftExpression());
+        return null;
     }
 
     @Override
-    public void visit(XMLSerializeExpr xml) {
+    public Void visit(XMLSerializeExpr xml) {
         // TODO this feature seams very close to a jsqlparser-user usecase
+        return null;
     }
 
     @Override
-    public void visit(JsonAggregateFunction expression) {
+    public Void visit(JsonAggregateFunction expression) {
         // no idea what this is good for
+        return null;
     }
 
     @Override
-    public void visit(JsonFunction expression) {
+    public Void visit(JsonFunction expression) {
         // no idea what this is good for
+        return null;
     }
 
     @Override
-    public void visit(ConnectByRootOperator connectByRootOperator) {
+    public Void visit(ConnectByRootOperator connectByRootOperator) {
         connectByRootOperator.getColumn().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+    public Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         oracleNamedFunctionParameter.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AllColumns allColumns) {}
-
-    @Override
-    public void visit(AllTableColumns allTableColumns) {}
-
-    @Override
-    public void visit(AllValue allValue) {
-
+    public Void visit(AllColumns allColumns) {
+        return null;
     }
 
     @Override
-    public void visit(IsDistinctExpression isDistinctExpression) {
+    public Void visit(AllTableColumns allTableColumns) {
+        return null;
+    }
+
+    @Override
+    public Void visit(AllValue allValue) {
+
+        return null;
+    }
+
+    @Override
+    public Void visit(IsDistinctExpression isDistinctExpression) {
         isDistinctExpression.getLeftExpression().accept(this);
         isDistinctExpression.getRightExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(GeometryDistance geometryDistance) {
+    public Void visit(GeometryDistance geometryDistance) {
         visitOldOracleJoinBinaryExpression(geometryDistance, " <-> ");
+        return null;
     }
 
     @Override
-    public void visit(Select selectBody) {
+    public Void visit(Select selectBody) {
 
+        return null;
     }
 
     @Override
-    public void visit(TranscodingFunction transcodingFunction) {
+    public Void visit(TranscodingFunction transcodingFunction) {
         transcodingFunction.getExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(TrimFunction trimFunction) {
+    public Void visit(TrimFunction trimFunction) {
         if (trimFunction.getExpression() != null) {
             trimFunction.getExpression().accept(this);
         }
         if (trimFunction.getFromExpression() != null) {
             trimFunction.getFromExpression().accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(RangeExpression rangeExpression) {
+    public Void visit(RangeExpression rangeExpression) {
         rangeExpression.getStartExpression().accept(this);
         rangeExpression.getEndExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+    public Void visit(TSQLLeftJoin tsqlLeftJoin) {
         tsqlLeftJoin.getLeftExpression().accept(this);
         tsqlLeftJoin.getRightExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(TSQLRightJoin tsqlRightJoin) {
+    public Void visit(TSQLRightJoin tsqlRightJoin) {
         tsqlRightJoin.getLeftExpression().accept(this);
         tsqlRightJoin.getRightExpression().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(StructType structType) {
+    public Void visit(StructType structType) {
         if (structType.getArguments() != null) {
             for (SelectItem<?> selectItem : structType.getArguments()) {
                 selectItem.getExpression().accept(this);
             }
         }
+        return null;
     }
 
     @Override
-    public void visit(LambdaExpression lambdaExpression) {
+    public Void visit(LambdaExpression lambdaExpression) {
         lambdaExpression.getExpression().accept(this);
+        return null;
     }
 }

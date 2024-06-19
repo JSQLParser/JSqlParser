@@ -10,20 +10,23 @@
 package net.sf.jsqlparser.statement.select;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class PivotVisitorAdapter implements PivotVisitor {
+public class PivotVisitorAdapter<T> implements PivotVisitor<T> {
 
     @Override
-    public void visit(Pivot pivot) {
+    public T visit(Pivot pivot) {
 
+        return null;
     }
 
     @Override
-    public void visit(PivotXml pivot) {
+    public T visit(PivotXml pivot) {
 
+        return null;
     }
 
     @Override
-    public void visit(UnPivot unpivot) {
+    public T visit(UnPivot unpivot) {
 
+        return null;
     }
 }

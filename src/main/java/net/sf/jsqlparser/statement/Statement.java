@@ -12,5 +12,5 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.Model;
 
 public interface Statement extends Model {
-    void accept(StatementVisitor statementVisitor);
+    void accept(StatementVisitor<?> statementVisitor);
 }

@@ -179,9 +179,10 @@ public class TablesNamesFinderTest {
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder() {
 
             @Override
-            public void visit(OracleHint hint) {
+            public Object visit(OracleHint hint) {
                 super.visit(hint);
                 holder[0] = hint;
+                return null;
             }
 
         };

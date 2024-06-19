@@ -37,93 +37,93 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
-public interface StatementVisitor {
+public interface StatementVisitor<T> {
 
-    void visit(Analyze analyze);
+    T visit(Analyze analyze);
 
-    void visit(SavepointStatement savepointStatement);
+    T visit(SavepointStatement savepointStatement);
 
-    void visit(RollbackStatement rollbackStatement);
+    T visit(RollbackStatement rollbackStatement);
 
-    void visit(Comment comment);
+    T visit(Comment comment);
 
-    void visit(Commit commit);
+    T visit(Commit commit);
 
-    void visit(Delete delete);
+    T visit(Delete delete);
 
-    void visit(Update update);
+    T visit(Update update);
 
-    void visit(Insert insert);
+    T visit(Insert insert);
 
-    void visit(Drop drop);
+    T visit(Drop drop);
 
-    void visit(Truncate truncate);
+    T visit(Truncate truncate);
 
-    void visit(CreateIndex createIndex);
+    T visit(CreateIndex createIndex);
 
-    void visit(CreateSchema aThis);
+    T visit(CreateSchema aThis);
 
-    void visit(CreateTable createTable);
+    T visit(CreateTable createTable);
 
-    void visit(CreateView createView);
+    T visit(CreateView createView);
 
-    void visit(AlterView alterView);
+    T visit(AlterView alterView);
 
-    void visit(RefreshMaterializedViewStatement materializedView);
+    T visit(RefreshMaterializedViewStatement materializedView);
 
-    void visit(Alter alter);
+    T visit(Alter alter);
 
-    void visit(Statements stmts);
+    T visit(Statements stmts);
 
-    void visit(Execute execute);
+    T visit(Execute execute);
 
-    void visit(SetStatement set);
+    T visit(SetStatement set);
 
-    void visit(ResetStatement reset);
+    T visit(ResetStatement reset);
 
-    void visit(ShowColumnsStatement set);
+    T visit(ShowColumnsStatement set);
 
-    void visit(ShowIndexStatement showIndex);
+    T visit(ShowIndexStatement showIndex);
 
-    void visit(ShowTablesStatement showTables);
+    T visit(ShowTablesStatement showTables);
 
-    void visit(Merge merge);
+    T visit(Merge merge);
 
-    void visit(Select select);
+    T visit(Select select);
 
-    void visit(Upsert upsert);
+    T visit(Upsert upsert);
 
-    void visit(UseStatement use);
+    T visit(UseStatement use);
 
-    void visit(Block block);
+    T visit(Block block);
 
-    void visit(DescribeStatement describe);
+    T visit(DescribeStatement describe);
 
-    void visit(ExplainStatement aThis);
+    T visit(ExplainStatement aThis);
 
-    void visit(ShowStatement aThis);
+    T visit(ShowStatement aThis);
 
-    void visit(DeclareStatement aThis);
+    T visit(DeclareStatement aThis);
 
-    void visit(Grant grant);
+    T visit(Grant grant);
 
-    void visit(CreateSequence createSequence);
+    T visit(CreateSequence createSequence);
 
-    void visit(AlterSequence alterSequence);
+    T visit(AlterSequence alterSequence);
 
-    void visit(CreateFunctionalStatement createFunctionalStatement);
+    T visit(CreateFunctionalStatement createFunctionalStatement);
 
-    void visit(CreateSynonym createSynonym);
+    T visit(CreateSynonym createSynonym);
 
-    void visit(AlterSession alterSession);
+    T visit(AlterSession alterSession);
 
-    void visit(IfElseStatement aThis);
+    T visit(IfElseStatement aThis);
 
-    void visit(RenameTableStatement renameTableStatement);
+    T visit(RenameTableStatement renameTableStatement);
 
-    void visit(PurgeStatement purgeStatement);
+    T visit(PurgeStatement purgeStatement);
 
-    void visit(AlterSystemStatement alterSystemStatement);
+    T visit(AlterSystemStatement alterSystemStatement);
 
-    void visit(UnsupportedStatement unsupportedStatement);
+    T visit(UnsupportedStatement unsupportedStatement);
 }

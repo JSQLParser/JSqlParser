@@ -9,6 +9,6 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface SelectItemVisitor {
-    void visit(SelectItem selectItem);
+public interface SelectItemVisitor<T> {
+    T visit(SelectItem<?> selectItem);
 }

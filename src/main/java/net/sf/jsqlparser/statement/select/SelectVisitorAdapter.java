@@ -10,40 +10,41 @@
 package net.sf.jsqlparser.statement.select;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class SelectVisitorAdapter implements SelectVisitor {
+public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
-    public void visit(ParenthesedSelect parenthesedSelect) {
+    public T visit(ParenthesedSelect parenthesedSelect) {
         parenthesedSelect.getSelect().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(PlainSelect plainSelect) {
-
+    public T visit(PlainSelect plainSelect) {
+        return null;
     }
 
     @Override
-    public void visit(SetOperationList setOpList) {
-
+    public T visit(SetOperationList setOpList) {
+        return null;
     }
 
     @Override
-    public void visit(WithItem withItem) {
-
+    public T visit(WithItem withItem) {
+        return null;
     }
 
     @Override
-    public void visit(Values aThis) {
-
+    public T visit(Values aThis) {
+        return null;
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
-
+    public T visit(LateralSubSelect lateralSubSelect) {
+        return null;
     }
 
     @Override
-    public void visit(TableStatement tableStatement) {
-
+    public T visit(TableStatement tableStatement) {
+        return null;
     }
 }

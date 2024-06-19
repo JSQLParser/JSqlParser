@@ -129,21 +129,21 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
         // FIXME maybe we should implement an ItemsListDeparser too?
-        implements ExpressionVisitor {
+        implements ExpressionVisitor<StringBuilder> {
 
     private static final String NOT = "NOT ";
-    private SelectVisitor selectVisitor;
+    private SelectVisitor<StringBuilder> selectVisitor;
     private OrderByDeParser orderByDeParser = new OrderByDeParser();
 
     public ExpressionDeParser() {
         super(new StringBuilder());
     }
 
-    public ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer) {
+    public ExpressionDeParser(SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer) {
         this(selectVisitor, buffer, new OrderByDeParser());
     }
 
-    ExpressionDeParser(SelectVisitor selectVisitor, StringBuilder buffer,
+    ExpressionDeParser(SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer,
             OrderByDeParser orderByDeParser) {
         super(buffer);
         this.selectVisitor = selectVisitor;
@@ -151,17 +151,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(Addition addition) {
+    public StringBuilder visit(Addition addition) {
         visitBinaryExpression(addition, " + ");
+        return buffer;
     }
 
     @Override
-    public void visit(AndExpression andExpression) {
+    public StringBuilder visit(AndExpression andExpression) {
         visitBinaryExpression(andExpression, andExpression.isUseOperator() ? " && " : " AND ");
+        return buffer;
     }
 
     @Override
-    public void visit(Between between) {
+    public StringBuilder visit(Between between) {
         between.getLeftExpression().accept(this);
         if (between.isNot()) {
             buffer.append(" NOT");
@@ -172,56 +174,66 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(" AND ");
         between.getBetweenExpressionEnd().accept(this);
 
+        return buffer;
     }
 
     @Override
-    public void visit(OverlapsCondition overlapsCondition) {
+    public StringBuilder visit(OverlapsCondition overlapsCondition) {
         buffer.append(overlapsCondition.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(EqualsTo equalsTo) {
+    public StringBuilder visit(EqualsTo equalsTo) {
         visitOldOracleJoinBinaryExpression(equalsTo, " = ");
+        return buffer;
     }
 
     @Override
-    public void visit(Division division) {
+    public StringBuilder visit(Division division) {
         visitBinaryExpression(division, " / ");
+        return buffer;
     }
 
     @Override
-    public void visit(IntegerDivision division) {
+    public StringBuilder visit(IntegerDivision division) {
         visitBinaryExpression(division, " DIV ");
+        return buffer;
     }
 
     @Override
-    public void visit(DoubleValue doubleValue) {
+    public StringBuilder visit(DoubleValue doubleValue) {
         buffer.append(doubleValue.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(HexValue hexValue) {
+    public StringBuilder visit(HexValue hexValue) {
         buffer.append(hexValue.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(NotExpression notExpr) {
+    public StringBuilder visit(NotExpression notExpr) {
         if (notExpr.isExclamationMark()) {
             buffer.append("! ");
         } else {
             buffer.append(NOT);
         }
         notExpr.getExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(BitwiseRightShift expr) {
+    public StringBuilder visit(BitwiseRightShift expr) {
         visitBinaryExpression(expr, " >> ");
+        return buffer;
     }
 
     @Override
-    public void visit(BitwiseLeftShift expr) {
+    public StringBuilder visit(BitwiseLeftShift expr) {
         visitBinaryExpression(expr, " << ");
+        return buffer;
     }
 
     public void visitOldOracleJoinBinaryExpression(OldOracleJoinBinaryExpression expression,
@@ -241,18 +253,20 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(GreaterThan greaterThan) {
+    public StringBuilder visit(GreaterThan greaterThan) {
         visitOldOracleJoinBinaryExpression(greaterThan, " > ");
+        return buffer;
     }
 
     @Override
-    public void visit(GreaterThanEquals greaterThanEquals) {
+    public StringBuilder visit(GreaterThanEquals greaterThanEquals) {
         visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(InExpression inExpression) {
+    public StringBuilder visit(InExpression inExpression) {
         inExpression.getLeftExpression().accept(this);
         if (inExpression
                 .getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
@@ -266,24 +280,27 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         buffer.append(" IN ");
         inExpression.getRightExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(IncludesExpression includesExpression) {
+    public StringBuilder visit(IncludesExpression includesExpression) {
         includesExpression.getLeftExpression().accept(this);
         buffer.append(" INCLUDES ");
         includesExpression.getRightExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(ExcludesExpression excludesExpression) {
+    public StringBuilder visit(ExcludesExpression excludesExpression) {
         excludesExpression.getLeftExpression().accept(this);
         buffer.append(" EXCLUDES ");
         excludesExpression.getRightExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(FullTextSearch fullTextSearch) {
+    public StringBuilder visit(FullTextSearch fullTextSearch) {
         // Build a list of matched columns
         String columnsListCommaSeperated = "";
         Iterator<Column> iterator = fullTextSearch.getMatchColumns().iterator();
@@ -294,22 +311,24 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 columnsListCommaSeperated += ",";
             }
         }
-        buffer.append("MATCH (" + columnsListCommaSeperated + ") AGAINST ("
-                + fullTextSearch.getAgainstValue()
-                + (fullTextSearch.getSearchModifier() != null
+        buffer.append("MATCH (").append(columnsListCommaSeperated).append(") AGAINST (")
+                .append(fullTextSearch.getAgainstValue())
+                .append(fullTextSearch.getSearchModifier() != null
                         ? " " + fullTextSearch.getSearchModifier()
                         : "")
-                + ")");
+                .append(")");
+        return buffer;
     }
 
     @Override
-    public void visit(SignedExpression signedExpression) {
+    public StringBuilder visit(SignedExpression signedExpression) {
         buffer.append(signedExpression.getSign());
         signedExpression.getExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(IsNullExpression isNullExpression) {
+    public StringBuilder visit(IsNullExpression isNullExpression) {
         isNullExpression.getLeftExpression().accept(this);
         if (isNullExpression.isUseNotNull()) {
             buffer.append(" NOTNULL");
@@ -326,10 +345,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" IS NULL");
             }
         }
+        return buffer;
     }
 
     @Override
-    public void visit(IsBooleanExpression isBooleanExpression) {
+    public StringBuilder visit(IsBooleanExpression isBooleanExpression) {
         isBooleanExpression.getLeftExpression().accept(this);
         if (isBooleanExpression.isTrue()) {
             if (isBooleanExpression.isNot()) {
@@ -344,19 +364,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append(" IS FALSE");
             }
         }
+        return buffer;
     }
 
     @Override
-    public void visit(JdbcParameter jdbcParameter) {
+    public StringBuilder visit(JdbcParameter jdbcParameter) {
         buffer.append(jdbcParameter.getParameterCharacter());
         if (jdbcParameter.isUseFixedIndex()) {
             buffer.append(jdbcParameter.getIndex());
         }
 
+        return buffer;
     }
 
     @Override
-    public void visit(LikeExpression likeExpression) {
+    public StringBuilder visit(LikeExpression likeExpression) {
         String keywordStr = likeExpression.getLikeKeyWord() == LikeExpression.KeyWord.SIMILAR_TO
                 ? " SIMILAR TO"
                 : likeExpression.getLikeKeyWord().toString();
@@ -377,20 +399,22 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" ESCAPE ");
             likeExpression.getEscape().accept(this);
         }
+        return buffer;
     }
 
     @Override
-    public void visit(ExistsExpression existsExpression) {
+    public StringBuilder visit(ExistsExpression existsExpression) {
         if (existsExpression.isNot()) {
             buffer.append("NOT EXISTS ");
         } else {
             buffer.append("EXISTS ");
         }
         existsExpression.getRightExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(MemberOfExpression memberOfExpression) {
+    public StringBuilder visit(MemberOfExpression memberOfExpression) {
         memberOfExpression.getLeftExpression().accept(this);
         if (memberOfExpression.isNot()) {
             buffer.append(" NOT MEMBER OF ");
@@ -398,88 +422,102 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" MEMBER OF ");
         }
         memberOfExpression.getRightExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(LongValue longValue) {
+    public StringBuilder visit(LongValue longValue) {
         buffer.append(longValue.getStringValue());
 
+        return buffer;
     }
 
     @Override
-    public void visit(MinorThan minorThan) {
+    public StringBuilder visit(MinorThan minorThan) {
         visitOldOracleJoinBinaryExpression(minorThan, " < ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(MinorThanEquals minorThanEquals) {
+    public StringBuilder visit(MinorThanEquals minorThanEquals) {
         visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(Multiplication multiplication) {
+    public StringBuilder visit(Multiplication multiplication) {
         visitBinaryExpression(multiplication, " * ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(NotEqualsTo notEqualsTo) {
+    public StringBuilder visit(NotEqualsTo notEqualsTo) {
         visitOldOracleJoinBinaryExpression(notEqualsTo,
                 " " + notEqualsTo.getStringExpression() + " ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(DoubleAnd doubleAnd) {
+    public StringBuilder visit(DoubleAnd doubleAnd) {
         visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(Contains contains) {
+    public StringBuilder visit(Contains contains) {
         visitOldOracleJoinBinaryExpression(contains, " " + contains.getStringExpression() + " ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(ContainedBy containedBy) {
+    public StringBuilder visit(ContainedBy containedBy) {
         visitOldOracleJoinBinaryExpression(containedBy,
                 " " + containedBy.getStringExpression() + " ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(NullValue nullValue) {
+    public StringBuilder visit(NullValue nullValue) {
         buffer.append(nullValue.toString());
 
+        return buffer;
     }
 
     @Override
-    public void visit(OrExpression orExpression) {
+    public StringBuilder visit(OrExpression orExpression) {
         visitBinaryExpression(orExpression, " OR ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(XorExpression xorExpression) {
+    public StringBuilder visit(XorExpression xorExpression) {
         visitBinaryExpression(xorExpression, " XOR ");
 
+        return buffer;
     }
 
     @Override
-    public void visit(StringValue stringValue) {
+    public StringBuilder visit(StringValue stringValue) {
         if (stringValue.getPrefix() != null) {
             buffer.append(stringValue.getPrefix());
         }
         buffer.append("'").append(stringValue.getValue()).append("'");
 
+        return buffer;
     }
 
     @Override
-    public void visit(Subtraction subtraction) {
+    public StringBuilder visit(Subtraction subtraction) {
         visitBinaryExpression(subtraction, " - ");
+        return buffer;
     }
 
     protected void visitBinaryExpression(BinaryExpression binaryExpression, String operator) {
@@ -490,7 +528,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(Select selectBody) {
+    public StringBuilder visit(Select selectBody) {
         if (selectVisitor != null) {
             if (selectBody.getWithItemsList() != null) {
                 buffer.append("WITH ");
@@ -507,10 +545,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
             selectBody.accept(selectVisitor);
         }
+        return buffer;
     }
 
     @Override
-    public void visit(TranscodingFunction transcodingFunction) {
+    public StringBuilder visit(TranscodingFunction transcodingFunction) {
         if (transcodingFunction.isTranscodeStyle()) {
             buffer.append("CONVERT( ");
             transcodingFunction.getExpression().accept(this);
@@ -531,9 +570,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" )");
         }
 
+        return buffer;
     }
 
-    public void visit(TrimFunction trimFunction) {
+    public StringBuilder visit(TrimFunction trimFunction) {
         buffer.append("Trim(");
 
         if (trimFunction.getTrimSpecification() != null) {
@@ -550,17 +590,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             trimFunction.getFromExpression().accept(this);
         }
         buffer.append(" )");
+        return buffer;
     }
 
     @Override
-    public void visit(RangeExpression rangeExpression) {
+    public StringBuilder visit(RangeExpression rangeExpression) {
         rangeExpression.getStartExpression().accept(this);
         buffer.append(":");
         rangeExpression.getEndExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(Column tableColumn) {
+    public StringBuilder visit(Column tableColumn) {
         final Table table = tableColumn.getTable();
         String tableName = null;
         if (table != null) {
@@ -579,11 +621,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (tableColumn.getArrayConstructor() != null) {
             tableColumn.getArrayConstructor().accept(this);
         }
+        return buffer;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public void visit(Function function) {
+    public StringBuilder visit(Function function) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
         }
@@ -664,38 +707,43 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (function.isEscaped()) {
             buffer.append("}");
         }
+        return buffer;
     }
 
     @Override
-    public void visit(ParenthesedSelect selectBody) {
+    public StringBuilder visit(ParenthesedSelect selectBody) {
         selectBody.getSelect().accept(this);
+        return buffer;
     }
 
-    public SelectVisitor getSelectVisitor() {
+    public SelectVisitor<StringBuilder> getSelectVisitor() {
         return selectVisitor;
     }
 
-    public void setSelectVisitor(SelectVisitor visitor) {
+    public void setSelectVisitor(SelectVisitor<StringBuilder> visitor) {
         selectVisitor = visitor;
     }
 
     @Override
-    public void visit(DateValue dateValue) {
+    public StringBuilder visit(DateValue dateValue) {
         buffer.append("{d '").append(dateValue.getValue().toString()).append("'}");
+        return buffer;
     }
 
     @Override
-    public void visit(TimestampValue timestampValue) {
+    public StringBuilder visit(TimestampValue timestampValue) {
         buffer.append("{ts '").append(timestampValue.getValue().toString()).append("'}");
+        return buffer;
     }
 
     @Override
-    public void visit(TimeValue timeValue) {
+    public StringBuilder visit(TimeValue timeValue) {
         buffer.append("{t '").append(timeValue.getValue().toString()).append("'}");
+        return buffer;
     }
 
     @Override
-    public void visit(CaseExpression caseExpression) {
+    public StringBuilder visit(CaseExpression caseExpression) {
         buffer.append(caseExpression.isUsingBrackets() ? "(" : "").append("CASE ");
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
@@ -715,52 +763,60 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append("END").append(caseExpression.isUsingBrackets() ? ")" : "");
+        return buffer;
     }
 
     @Override
-    public void visit(WhenClause whenClause) {
+    public StringBuilder visit(WhenClause whenClause) {
         buffer.append("WHEN ");
         whenClause.getWhenExpression().accept(this);
         buffer.append(" THEN ");
         whenClause.getThenExpression().accept(this);
         buffer.append(" ");
+        return buffer;
     }
 
     @Override
-    public void visit(AnyComparisonExpression anyComparisonExpression) {
+    public StringBuilder visit(AnyComparisonExpression anyComparisonExpression) {
         buffer.append(anyComparisonExpression.getAnyType().name());
 
         // VALUES or SELECT
         anyComparisonExpression.getSelect().accept((ExpressionVisitor) this);
+        return buffer;
     }
 
     @Override
-    public void visit(Concat concat) {
+    public StringBuilder visit(Concat concat) {
         visitBinaryExpression(concat, " || ");
+        return buffer;
     }
 
     @Override
-    public void visit(Matches matches) {
+    public StringBuilder visit(Matches matches) {
         visitOldOracleJoinBinaryExpression(matches, " @@ ");
+        return buffer;
     }
 
     @Override
-    public void visit(BitwiseAnd bitwiseAnd) {
+    public StringBuilder visit(BitwiseAnd bitwiseAnd) {
         visitBinaryExpression(bitwiseAnd, " & ");
+        return buffer;
     }
 
     @Override
-    public void visit(BitwiseOr bitwiseOr) {
+    public StringBuilder visit(BitwiseOr bitwiseOr) {
         visitBinaryExpression(bitwiseOr, " | ");
+        return buffer;
     }
 
     @Override
-    public void visit(BitwiseXor bitwiseXor) {
+    public StringBuilder visit(BitwiseXor bitwiseXor) {
         visitBinaryExpression(bitwiseXor, " ^ ");
+        return buffer;
     }
 
     @Override
-    public void visit(CastExpression cast) {
+    public StringBuilder visit(CastExpression cast) {
         if (cast.isImplicitCast()) {
             buffer.append(cast.getColDataType()).append(" ");
             cast.getLeftExpression().accept(this);
@@ -783,17 +839,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append("::");
             buffer.append(cast.getColDataType());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(Modulo modulo) {
+    public StringBuilder visit(Modulo modulo) {
         visitBinaryExpression(modulo, " % ");
+        return buffer;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.MissingBreakInSwitch"})
-    public void visit(AnalyticExpression aexpr) {
+    public StringBuilder visit(AnalyticExpression aexpr) {
         String name = aexpr.getName();
         Expression expression = aexpr.getExpression();
         Expression offset = aexpr.getOffset();
@@ -878,7 +936,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         switch (aexpr.getType()) {
             case FILTER_ONLY:
-                return;
+                return null;
             case WITHIN_GROUP:
                 buffer.append("WITHIN GROUP");
                 break;
@@ -937,18 +995,20 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
             buffer.append(")");
         }
+        return buffer;
     }
 
     @Override
-    public void visit(ExtractExpression eexpr) {
+    public StringBuilder visit(ExtractExpression eexpr) {
         buffer.append("EXTRACT(").append(eexpr.getName());
         buffer.append(" FROM ");
         eexpr.getExpression().accept(this);
         buffer.append(')');
+        return buffer;
     }
 
     @Override
-    public void visit(IntervalExpression intervalExpression) {
+    public StringBuilder visit(IntervalExpression intervalExpression) {
         if (intervalExpression.isUsingIntervalKeyword()) {
             buffer.append("INTERVAL ");
         }
@@ -960,111 +1020,130 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (intervalExpression.getIntervalType() != null) {
             buffer.append(" ").append(intervalExpression.getIntervalType());
         }
+        return buffer;
     }
 
     @Override
-    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    public StringBuilder visit(JdbcNamedParameter jdbcNamedParameter) {
         buffer.append(jdbcNamedParameter.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(OracleHierarchicalExpression oexpr) {
+    public StringBuilder visit(OracleHierarchicalExpression oexpr) {
         buffer.append(oexpr.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(RegExpMatchOperator rexpr) {
+    public StringBuilder visit(RegExpMatchOperator rexpr) {
         visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ");
+        return buffer;
     }
 
 
     @Override
-    public void visit(JsonExpression jsonExpr) {
+    public StringBuilder visit(JsonExpression jsonExpr) {
         buffer.append(jsonExpr.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(JsonOperator jsonExpr) {
+    public StringBuilder visit(JsonOperator jsonExpr) {
         visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ");
+        return buffer;
     }
 
     @Override
-    public void visit(UserVariable var) {
+    public StringBuilder visit(UserVariable var) {
         buffer.append(var.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(NumericBind bind) {
+    public StringBuilder visit(NumericBind bind) {
         buffer.append(bind.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(KeepExpression aexpr) {
+    public StringBuilder visit(KeepExpression aexpr) {
         buffer.append(aexpr.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(MySQLGroupConcat groupConcat) {
+    public StringBuilder visit(MySQLGroupConcat groupConcat) {
         buffer.append(groupConcat.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(ExpressionList<?> expressionList) {
+    public StringBuilder visit(ExpressionList<?> expressionList) {
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(this, buffer);
         expressionListDeParser.deParse(expressionList);
+        return buffer;
     }
 
     @Override
-    public void visit(RowConstructor rowConstructor) {
+    public StringBuilder visit(RowConstructor rowConstructor) {
         if (rowConstructor.getName() != null) {
             buffer.append(rowConstructor.getName());
         }
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(this, buffer);
         expressionListDeParser.deParse(rowConstructor);
+        return buffer;
     }
 
     @Override
-    public void visit(RowGetExpression rowGetExpression) {
+    public StringBuilder visit(RowGetExpression rowGetExpression) {
         rowGetExpression.getExpression().accept(this);
         buffer.append(".").append(rowGetExpression.getColumnName());
+        return null;
     }
 
     @Override
-    public void visit(OracleHint hint) {
+    public StringBuilder visit(OracleHint hint) {
         buffer.append(hint.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(TimeKeyExpression timeKeyExpression) {
+    public StringBuilder visit(TimeKeyExpression timeKeyExpression) {
         buffer.append(timeKeyExpression.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(DateTimeLiteralExpression literal) {
+    public StringBuilder visit(DateTimeLiteralExpression literal) {
         buffer.append(literal.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(NextValExpression nextVal) {
+    public StringBuilder visit(NextValExpression nextVal) {
         buffer.append(nextVal.isUsingNextValueFor() ? "NEXT VALUE FOR " : "NEXTVAL FOR ")
                 .append(nextVal.getName());
+        return buffer;
     }
 
     @Override
-    public void visit(CollateExpression col) {
+    public StringBuilder visit(CollateExpression col) {
         buffer.append(col.getLeftExpression().toString()).append(" COLLATE ")
                 .append(col.getCollate());
+        return buffer;
     }
 
     @Override
-    public void visit(SimilarToExpression expr) {
+    public StringBuilder visit(SimilarToExpression expr) {
         visitBinaryExpression(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ");
+        return buffer;
     }
 
     @Override
-    public void visit(ArrayExpression array) {
+    public StringBuilder visit(ArrayExpression array) {
         array.getObjExpression().accept(this);
         buffer.append("[");
         if (array.getIndexExpression() != null) {
@@ -1080,10 +1159,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append("]");
+        return buffer;
     }
 
     @Override
-    public void visit(ArrayConstructor aThis) {
+    public StringBuilder visit(ArrayConstructor aThis) {
         if (aThis.isArrayKeyword()) {
             buffer.append("ARRAY");
         }
@@ -1098,6 +1178,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             expression.accept(this);
         }
         buffer.append("]");
+        return buffer;
     }
 
     @Override
@@ -1106,14 +1187,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public void visit(VariableAssignment var) {
+    public StringBuilder visit(VariableAssignment var) {
         var.getVariable().accept(this);
         buffer.append(" ").append(var.getOperation()).append(" ");
         var.getExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(XMLSerializeExpr expr) {
+    public StringBuilder visit(XMLSerializeExpr expr) {
         // xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
         buffer.append("xmlserialize(xmlagg(xmltext(");
         expr.getExpression().accept(this);
@@ -1128,81 +1210,94 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
         buffer.append(") AS ").append(expr.getDataType()).append(")");
+        return buffer;
     }
 
     @Override
-    public void visit(TimezoneExpression var) {
+    public StringBuilder visit(TimezoneExpression var) {
         var.getLeftExpression().accept(this);
 
         for (Expression expr : var.getTimezoneExpressions()) {
             buffer.append(" AT TIME ZONE ");
             expr.accept(this);
         }
+        return buffer;
     }
 
     @Override
-    public void visit(JsonAggregateFunction expression) {
+    public StringBuilder visit(JsonAggregateFunction expression) {
         expression.append(buffer);
+        return buffer;
     }
 
     @Override
-    public void visit(JsonFunction expression) {
+    public StringBuilder visit(JsonFunction expression) {
         expression.append(buffer);
+        return buffer;
     }
 
     @Override
-    public void visit(ConnectByRootOperator connectByRootOperator) {
+    public StringBuilder visit(ConnectByRootOperator connectByRootOperator) {
         buffer.append("CONNECT_BY_ROOT ");
         connectByRootOperator.getColumn().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+    public StringBuilder visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
         buffer.append(oracleNamedFunctionParameter.getName()).append(" => ");
 
         oracleNamedFunctionParameter.getExpression().accept(this);
+        return buffer;
     }
 
     @Override
-    public void visit(AllColumns allColumns) {
+    public StringBuilder visit(AllColumns allColumns) {
         buffer.append(allColumns.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
+    public StringBuilder visit(AllTableColumns allTableColumns) {
         buffer.append(allTableColumns.toString());
+        return buffer;
     }
 
     @Override
-    public void visit(AllValue allValue) {
+    public StringBuilder visit(AllValue allValue) {
         buffer.append(allValue);
+        return buffer;
     }
 
     @Override
-    public void visit(IsDistinctExpression isDistinctExpression) {
+    public StringBuilder visit(IsDistinctExpression isDistinctExpression) {
         buffer.append(isDistinctExpression.getLeftExpression())
                 .append(isDistinctExpression.getStringExpression())
                 .append(isDistinctExpression.getRightExpression());
+        return buffer;
     }
 
     @Override
-    public void visit(GeometryDistance geometryDistance) {
+    public StringBuilder visit(GeometryDistance geometryDistance) {
         visitOldOracleJoinBinaryExpression(geometryDistance,
                 " " + geometryDistance.getStringExpression() + " ");
+        return buffer;
     }
 
     @Override
-    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+    public StringBuilder visit(TSQLLeftJoin tsqlLeftJoin) {
         visitBinaryExpression(tsqlLeftJoin, " *= ");
+        return buffer;
     }
 
     @Override
-    public void visit(TSQLRightJoin tsqlRightJoin) {
+    public StringBuilder visit(TSQLRightJoin tsqlRightJoin) {
         visitBinaryExpression(tsqlRightJoin, " =* ");
+        return buffer;
     }
 
     @Override
-    public void visit(StructType structType) {
+    public StringBuilder visit(StructType structType) {
         if (structType.getDialect() != StructType.Dialect.DUCKDB
                 && structType.getKeyword() != null) {
             buffer.append(structType.getKeyword());
@@ -1271,10 +1366,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
             buffer.append(")");
         }
+        return buffer;
     }
 
     @Override
-    public void visit(LambdaExpression lambdaExpression) {
+    public StringBuilder visit(LambdaExpression lambdaExpression) {
         if (lambdaExpression.getIdentifiers().size() == 1) {
             buffer.append(lambdaExpression.getIdentifiers().get(0));
         } else {
@@ -1288,6 +1384,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         buffer.append(" -> ");
         lambdaExpression.getExpression().accept(this);
+        return buffer;
     }
 
 }
