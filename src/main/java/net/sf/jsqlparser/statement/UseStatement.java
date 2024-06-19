@@ -49,8 +49,8 @@ public class UseStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     public UseStatement withName(String name) {

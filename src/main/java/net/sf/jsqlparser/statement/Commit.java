@@ -11,10 +11,10 @@ package net.sf.jsqlparser.statement;
 
 public class Commit implements Statement {
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
-    
+
     @Override
     public String toString() {
         return "COMMIT";

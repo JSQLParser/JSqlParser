@@ -14,8 +14,7 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public T visit(ParenthesedSelect parenthesedSelect) {
-        parenthesedSelect.getSelect().accept(this);
-        return null;
+        return parenthesedSelect.getSelect().accept(this);
     }
 
     @Override

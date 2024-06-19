@@ -17,9 +17,10 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 /**
  *
  * @author are
- * @see  <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm">ALTER SESSION</a>
+ * @see <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm">ALTER
+ *      SESSION</a>
  */
-public class AlterSession implements Statement  {
+public class AlterSession implements Statement {
     private AlterSessionOperation operation;
     private List<String> parameters;
 
@@ -43,15 +44,15 @@ public class AlterSession implements Statement  {
     public void setParameters(List<String> parameters) {
         this.parameters = parameters;
     }
-    
+
     private static void appendParamaters(StringBuilder builder, List<String> parameters) {
-        for (String s: parameters) {
+        for (String s : parameters) {
             builder.append(" ").append(s);
         }
     }
 
     @Override
-    @SuppressWarnings({"PMD.ExcessiveMethodLength", "PMD.CyclomaticComplexity"})  
+    @SuppressWarnings({"PMD.ExcessiveMethodLength", "PMD.CyclomaticComplexity"})
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ALTER SESSION ");
@@ -81,72 +82,72 @@ public class AlterSession implements Statement  {
             case DISABLE_GUARD:
                 builder.append("DISABLE GUARD");
                 break;
-            
+
             case ENABLE_PARALLEL_DML:
                 builder.append("ENABLE PARALLEL DML");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case DISABLE_PARALLEL_DML:
                 builder.append("DISABLE PARALLEL DML");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case FORCE_PARALLEL_DML:
                 builder.append("FORCE PARALLEL DML");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case ENABLE_PARALLEL_DDL:
                 builder.append("ENABLE PARALLEL DDL");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case DISABLE_PARALLEL_DDL:
                 builder.append("DISABLE PARALLEL DDL");
                 break;
-                
+
             case FORCE_PARALLEL_DDL:
                 builder.append("FORCE PARALLEL DDL");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case ENABLE_PARALLEL_QUERY:
                 builder.append("ENABLE PARALLEL QUERY");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case DISABLE_PARALLEL_QUERY:
                 builder.append("DISABLE PARALLEL QUERY");
                 break;
-                
+
             case FORCE_PARALLEL_QUERY:
                 builder.append("FORCE PARALLEL QUERY");
                 appendParamaters(builder, parameters);
                 break;
-                
+
             case ENABLE_RESUMABLE:
                 builder.append("ENABLE RESUMABLE");
                 appendParamaters(builder, parameters);
                 break;
-            
+
             case DISABLE_RESUMABLE:
                 builder.append("DISABLE RESUMABLE");
                 break;
-            
+
             case SET:
                 builder.append("SET");
                 appendParamaters(builder, parameters);
                 break;
             default:
                 // not going to happen
-                
+
         }
         return builder.toString();
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 }

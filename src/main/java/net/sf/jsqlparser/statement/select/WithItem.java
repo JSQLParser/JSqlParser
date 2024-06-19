@@ -59,8 +59,8 @@ public class WithItem extends ParenthesedSelect {
     }
 
     @Override
-    public void accept(SelectVisitor visitor) {
-        visitor.visit(this);
+    public <T> T accept(SelectVisitor<T> selectVisitor) {
+        return selectVisitor.visit(this);
     }
 
 

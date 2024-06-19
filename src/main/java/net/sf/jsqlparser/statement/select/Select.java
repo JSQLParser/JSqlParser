@@ -389,10 +389,10 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return appendTo(new StringBuilder()).toString();
     }
 
-    public abstract void accept(SelectVisitor<?> selectVisitor);
+    public abstract <T> T accept(SelectVisitor<T> selectVisitor);
 
-    public void accept(StatementVisitor<?> statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     @Override

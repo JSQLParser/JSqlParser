@@ -38,8 +38,8 @@ public class DescribeStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     public DescribeStatement withTable(Table table) {

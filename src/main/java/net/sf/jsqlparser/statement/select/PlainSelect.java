@@ -322,8 +322,8 @@ public class PlainSelect extends Select {
     }
 
     @Override
-    public void accept(SelectVisitor selectVisitor) {
-        selectVisitor.visit(this);
+    public <T> T accept(SelectVisitor<T> selectVisitor) {
+        return selectVisitor.visit(this);
     }
 
     public OptimizeFor getOptimizeFor() {

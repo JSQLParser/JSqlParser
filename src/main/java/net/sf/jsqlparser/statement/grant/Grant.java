@@ -26,8 +26,8 @@ public class Grant implements Statement {
     private List<String> users;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     public String getRole() {
@@ -47,11 +47,12 @@ public class Grant implements Statement {
     }
 
     public String getObjectName() {
-        return objectName.size()==0?null:objectName.stream()
-                .map(part -> part==null?"":part)
-                .collect(joining("."));
+        return objectName.isEmpty() ? null
+                : objectName.stream()
+                        .map(part -> part == null ? "" : part)
+                        .collect(joining("."));
     }
-    
+
     public List<String> getObjectNameParts() {
         return objectName;
     }
@@ -60,7 +61,7 @@ public class Grant implements Statement {
         this.objectName.clear();
         this.objectName.add(objectName);
     }
-    
+
     public void setObjectName(List<String> objectName) {
         this.objectName.clear();
         this.objectName.addAll(objectName);
@@ -115,7 +116,7 @@ public class Grant implements Statement {
         this.setObjectName(objectName);
         return this;
     }
-    
+
     public Grant withObjectName(List<String> objectName) {
         this.setObjectName(objectName);
         return this;

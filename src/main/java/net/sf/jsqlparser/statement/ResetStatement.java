@@ -25,7 +25,7 @@ public final class ResetStatement implements Statement {
     public void add(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -41,8 +41,8 @@ public final class ResetStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
 }

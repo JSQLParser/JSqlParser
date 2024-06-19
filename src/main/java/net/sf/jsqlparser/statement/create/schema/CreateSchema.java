@@ -25,8 +25,8 @@ public class CreateSchema implements Statement {
     private List<Statement> statements = new ArrayList<>();
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     /**

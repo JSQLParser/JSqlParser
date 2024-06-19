@@ -24,11 +24,13 @@ public class SavepointStatement implements Statement {
     }
 
     public void setSavepointName(String savepointName) {
-        this.savepointName = Objects.requireNonNull(savepointName, "The Savepoint Name must not be NULL.");
+        this.savepointName =
+                Objects.requireNonNull(savepointName, "The Savepoint Name must not be NULL.");
     }
 
     public SavepointStatement(String savepointName) {
-        this.savepointName = Objects.requireNonNull(savepointName, "The Savepoint Name must not be NULL.");
+        this.savepointName =
+                Objects.requireNonNull(savepointName, "The Savepoint Name must not be NULL.");
     }
 
     @Override
@@ -37,7 +39,7 @@ public class SavepointStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-         statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 }

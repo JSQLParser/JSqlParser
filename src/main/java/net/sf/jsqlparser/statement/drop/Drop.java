@@ -33,8 +33,8 @@ public class Drop implements Statement {
     private boolean isUsingTemporary;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     public Table getName() {
@@ -74,7 +74,7 @@ public class Drop implements Statement {
     }
 
     public void setUsingTemporary(boolean useTemporary) {
-        this.isUsingTemporary=useTemporary;
+        this.isUsingTemporary = useTemporary;
     }
 
     public Drop withUsingTemporary(boolean useTemporary) {

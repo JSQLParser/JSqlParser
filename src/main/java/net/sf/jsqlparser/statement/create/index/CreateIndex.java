@@ -43,8 +43,8 @@ public class CreateIndex implements Statement {
     private boolean usingIfNotExists = false;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
     public Index getIndex() {

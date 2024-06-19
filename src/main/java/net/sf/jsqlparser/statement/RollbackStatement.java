@@ -30,10 +30,10 @@ package net.sf.jsqlparser.statement;
  * @author are
  */
 public class RollbackStatement implements Statement {
-    private boolean usingWorkKeyword=false;
-    private boolean usingSavepointKeyword=false;
-    private String savepointName=null;
-    private String forceDistributedTransactionIdentifier=null;
+    private boolean usingWorkKeyword = false;
+    private boolean usingSavepointKeyword = false;
+    private String savepointName = null;
+    private String forceDistributedTransactionIdentifier = null;
 
     public boolean isUsingWorkKeyword() {
         return usingWorkKeyword;
@@ -43,7 +43,7 @@ public class RollbackStatement implements Statement {
         this.usingWorkKeyword = usingWorkKeyword;
         return this;
     }
-    
+
     public void setUsingWorkKeyword(boolean usingWorkKeyword) {
         this.usingWorkKeyword = usingWorkKeyword;
     }
@@ -51,7 +51,7 @@ public class RollbackStatement implements Statement {
     public boolean isUsingSavepointKeyword() {
         return usingSavepointKeyword;
     }
-    
+
     public RollbackStatement withUsingSavepointKeyword(boolean usingSavepointKeyword) {
         this.usingSavepointKeyword = usingSavepointKeyword;
         return this;
@@ -64,7 +64,7 @@ public class RollbackStatement implements Statement {
     public String getSavepointName() {
         return savepointName;
     }
-    
+
     public RollbackStatement withSavepointName(String savepointName) {
         this.savepointName = savepointName;
         return this;
@@ -77,36 +77,39 @@ public class RollbackStatement implements Statement {
     public String getForceDistributedTransactionIdentifier() {
         return forceDistributedTransactionIdentifier;
     }
-    
-    public RollbackStatement withForceDistributedTransactionIdentifier(String forceDistributedTransactionIdentifier) {
+
+    public RollbackStatement withForceDistributedTransactionIdentifier(
+            String forceDistributedTransactionIdentifier) {
         this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
         return this;
     }
 
-    public void setForceDistributedTransactionIdentifier(String forceDistributedTransactionIdentifier) {
+    public void setForceDistributedTransactionIdentifier(
+            String forceDistributedTransactionIdentifier) {
         this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
     }
 
     @Override
     public String toString() {
-        return "ROLLBACK " 
-          + ( usingWorkKeyword 
-                ? "WORK "
-                : "" )
-          + (savepointName!=null && savepointName.trim().length()!=0
-                ? "TO " + (usingSavepointKeyword
-                               ? "SAVEPOINT "
-                               : "") + savepointName
-                : forceDistributedTransactionIdentifier!=null && forceDistributedTransactionIdentifier.trim().length()!=0
-                       ? "FORCE " + forceDistributedTransactionIdentifier
-                        : ""
-                        
+        return "ROLLBACK "
+                + (usingWorkKeyword
+                        ? "WORK "
+                        : "")
+                + (savepointName != null && !savepointName.trim().isEmpty()
+                        ? "TO " + (usingSavepointKeyword
+                                ? "SAVEPOINT "
+                                : "") + savepointName
+                        : forceDistributedTransactionIdentifier != null
+                                && !forceDistributedTransactionIdentifier.trim().isEmpty()
+                                        ? "FORCE " + forceDistributedTransactionIdentifier
+                                        : ""
+
                 );
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-         statementVisitor.visit(this);
+    public <T> T accept(StatementVisitor<T> statementVisitor) {
+        return statementVisitor.visit(this);
     }
 
 }
