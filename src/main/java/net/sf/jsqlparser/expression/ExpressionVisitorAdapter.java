@@ -70,13 +70,13 @@ import java.util.Optional;
 public class ExpressionVisitorAdapter<T>
         implements ExpressionVisitor<T>, PivotVisitor<T>, SelectItemVisitor<T> {
 
-    private SelectVisitor<Void> selectVisitor;
+    private SelectVisitor<T> selectVisitor;
 
-    public SelectVisitor<Void> getSelectVisitor() {
+    public SelectVisitor<T> getSelectVisitor() {
         return selectVisitor;
     }
 
-    public void setSelectVisitor(SelectVisitor<Void> selectVisitor) {
+    public void setSelectVisitor(SelectVisitor<T> selectVisitor) {
         this.selectVisitor = selectVisitor;
     }
 
