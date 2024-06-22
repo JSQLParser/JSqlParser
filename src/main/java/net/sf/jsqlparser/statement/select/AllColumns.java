@@ -27,7 +27,7 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
             List<SelectItem<Column>> replaceExpressions) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
-        this.exceptKeyword = exceptColumns !=null ? "Except" : null;
+        this.exceptKeyword = exceptColumns != null ? "Except" : null;
     }
 
     public AllColumns(ExpressionList<Column> exceptColumns,
@@ -109,7 +109,7 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
 }

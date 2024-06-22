@@ -55,8 +55,8 @@ public class InsertValidator extends AbstractValidator<Insert> {
             // validateModelCondition (insert.getSetColumns().size() !=
             // insert.getSetExpressionList().size(), "model-error");
             for (UpdateSet updateSet : insert.getSetUpdateSets()) {
-                updateSet.getColumns().forEach(c -> c.accept(v));
-                updateSet.getValues().forEach(c -> c.accept(v));
+                updateSet.getColumns().forEach(c -> c.accept(v, null));
+                updateSet.getValues().forEach(c -> c.accept(v, null));
             }
         }
 
@@ -66,14 +66,14 @@ public class InsertValidator extends AbstractValidator<Insert> {
             // validateModelCondition (insert.getSetColumns().size() !=
             // insert.getSetExpressionList().size(), "model-error");
             for (UpdateSet updateSet : insert.getDuplicateUpdateSets()) {
-                updateSet.getColumns().forEach(c -> c.accept(v));
-                updateSet.getValues().forEach(c -> c.accept(v));
+                updateSet.getColumns().forEach(c -> c.accept(v, null));
+                updateSet.getValues().forEach(c -> c.accept(v, null));
             }
         }
 
         if (insert.getReturningClause() != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            insert.getReturningClause().forEach(c -> c.accept(v));
+            insert.getReturningClause().forEach(c -> c.accept(v, null));
         }
     }
 

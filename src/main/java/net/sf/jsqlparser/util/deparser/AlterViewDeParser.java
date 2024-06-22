@@ -15,7 +15,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 public class AlterViewDeParser extends AbstractDeParser<AlterView> {
 
-    private SelectVisitor selectVisitor;
+    private SelectVisitor<StringBuilder> selectVisitor;
 
     public AlterViewDeParser(StringBuilder buffer) {
         super(buffer);
@@ -25,7 +25,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         selectVisitor = selectDeParser;
     }
 
-    public AlterViewDeParser(StringBuilder buffer, SelectVisitor selectVisitor) {
+    public AlterViewDeParser(StringBuilder buffer, SelectVisitor<StringBuilder> selectVisitor) {
         super(buffer);
         this.selectVisitor = selectVisitor;
     }
@@ -43,7 +43,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         }
         buffer.append(" AS ");
 
-        alterView.getSelect().accept(selectVisitor);
+        alterView.getSelect().accept(selectVisitor, null);
     }
 
 }

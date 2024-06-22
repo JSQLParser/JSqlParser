@@ -54,8 +54,8 @@ public class TableFunction extends Function implements FromItem {
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 
     @Override

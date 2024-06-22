@@ -13,37 +13,37 @@ package net.sf.jsqlparser.statement.select;
 public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
-    public T visit(ParenthesedSelect parenthesedSelect) {
-        return parenthesedSelect.getSelect().accept(this);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S parameters) {
+        return parenthesedSelect.getSelect().accept(this, parameters);
     }
 
     @Override
-    public T visit(PlainSelect plainSelect) {
+    public <S> T visit(PlainSelect plainSelect, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(SetOperationList setOpList) {
+    public <S> T visit(SetOperationList setOpList, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(WithItem withItem) {
+    public <S> T visit(WithItem withItem, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(Values aThis) {
+    public <S> T visit(Values aThis, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(LateralSubSelect lateralSubSelect) {
+    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(TableStatement tableStatement) {
+    public <S> T visit(TableStatement tableStatement, S parameters) {
         return null;
     }
 }

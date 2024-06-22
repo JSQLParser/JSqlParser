@@ -22,13 +22,15 @@ import static java.util.stream.Collectors.joining;
 
 public class DeleteDeParser extends AbstractDeParser<Delete> {
 
-    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    private ExpressionVisitor<StringBuilder> expressionVisitor =
+            new ExpressionVisitorAdapter<StringBuilder>();
 
     public DeleteDeParser() {
         super(new StringBuilder());
     }
 
-    public DeleteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public DeleteDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -108,15 +110,15 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     protected void deparseWhereClause(Delete delete) {
         if (delete.getWhere() != null) {
             buffer.append(" WHERE ");
-            delete.getWhere().accept(expressionVisitor);
+            delete.getWhere().accept(expressionVisitor, null);
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 }

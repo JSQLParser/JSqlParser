@@ -120,7 +120,7 @@ public class StatementValidator extends AbstractValidator<Statement>
         validateFeature(Feature.select);
 
         SelectValidator selectValidator = getValidator(SelectValidator.class);
-        select.accept(selectValidator);
+        select.accept(selectValidator, null);
         return null;
     }
 

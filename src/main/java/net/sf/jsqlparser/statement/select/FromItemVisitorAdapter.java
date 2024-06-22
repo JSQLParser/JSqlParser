@@ -15,37 +15,37 @@ import net.sf.jsqlparser.schema.Table;
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
-    public T visit(Table table) {
+    public <S> T visit(Table table, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(ParenthesedSelect selectBody) {
+    public <S> T visit(ParenthesedSelect select, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(LateralSubSelect lateralSubSelect) {
+    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(TableFunction valuesList) {
+    public <S> T visit(TableFunction tableFunction, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(ParenthesedFromItem aThis) {
+    public <S> T visit(ParenthesedFromItem fromItem, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(Values values) {
+    public <S> T visit(Values values, S parameters) {
 
         return null;
     }

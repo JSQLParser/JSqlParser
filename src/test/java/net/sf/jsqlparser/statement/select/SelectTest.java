@@ -4372,22 +4372,22 @@ public class SelectTest {
         String sql = "select CURRENT_DATE + (dayofweek(MY_DUE_DATE) + 5) DAY FROM mytable";
         assertSqlCanBeParsedAndDeparsed(sql, true);
         Select select = (Select) CCJSqlParserUtil.parse(sql);
-        final List<SelectItem> list = new ArrayList<>();
-        select.accept(new SelectVisitorAdapter() {
+        final List<SelectItem<?>> list = new ArrayList<>();
+        select.accept(new SelectVisitorAdapter<Void>() {
             @Override
-            public Object visit(PlainSelect plainSelect) {
+            public <S> Void visit(PlainSelect plainSelect, S parameters) {
                 list.addAll(plainSelect.getSelectItems());
                 return null;
             }
-        });
+        }, null);
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectItem);
-        SelectItem item = list.get(0);
-        assertTrue(item.getExpression() instanceof Addition);
+        assertInstanceOf(SelectItem.class, list.get(0));
+        SelectItem<?> item = list.get(0);
+        assertInstanceOf(Addition.class, item.getExpression());
         Addition add = (Addition) item.getExpression();
 
-        assertTrue(add.getRightExpression() instanceof IntervalExpression);
+        assertInstanceOf(IntervalExpression.class, add.getRightExpression());
     }
 
     @Test
@@ -4402,19 +4402,19 @@ public class SelectTest {
         String sql = "SELECT INTERVAL 5 MONTH MONTH FROM mytable";
         assertSqlCanBeParsedAndDeparsed(sql);
         Select select = (Select) CCJSqlParserUtil.parse(sql);
-        final List<SelectItem> list = new ArrayList<>();
-        select.accept(new SelectVisitorAdapter() {
+        final List<SelectItem<?>> list = new ArrayList<>();
+        select.accept(new SelectVisitorAdapter<Void>() {
             @Override
-            public Object visit(PlainSelect plainSelect) {
+            public <S> Void visit(PlainSelect plainSelect, S parameters) {
                 list.addAll(plainSelect.getSelectItems());
                 return null;
             }
-        });
+        }, null);
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectItem);
-        SelectItem item = list.get(0);
-        assertTrue(item.getExpression() instanceof IntervalExpression);
+        assertInstanceOf(SelectItem.class, list.get(0));
+        SelectItem<?> item = list.get(0);
+        assertInstanceOf(IntervalExpression.class, item.getExpression());
         IntervalExpression interval = (IntervalExpression) item.getExpression();
         assertEquals("INTERVAL 5 MONTH", interval.toString());
         assertEquals("MONTH", item.getAlias().getName());
@@ -4426,14 +4426,14 @@ public class SelectTest {
         String sql = "select " + prefix + "'test' from foo";
         Statement statement = CCJSqlParserUtil.parse(sql);
         assertNotNull(statement);
-        statement.accept(new StatementVisitorAdapter() {
+        statement.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public Object visit(Select select) {
-                select.accept(new SelectVisitorAdapter() {
+            public Void visit(Select select) {
+                select.accept(new SelectVisitorAdapter<Void>() {
                     @Override
-                    public Object visit(PlainSelect plainSelect) {
-                        SelectItem typedExpression =
-                                (SelectItem) plainSelect.getSelectItems().get(0);
+                    public <S> Void visit(PlainSelect plainSelect, S parameters) {
+                        SelectItem<?> typedExpression =
+                                (SelectItem<?>) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
                         assertNull(typedExpression.getAlias());
                         StringValue value = (StringValue) typedExpression.getExpression();
@@ -4441,7 +4441,7 @@ public class SelectTest {
                         assertEquals("test", value.getValue());
                         return null;
                     }
-                });
+                }, null);
                 return null;
             }
         });

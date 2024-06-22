@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +23,8 @@ public class SetOperationList extends Select {
     private List<OrderByElement> orderByElements;
 
     @Override
-    public <T> T accept(SelectVisitor<T> selectVisitor) {
-        return selectVisitor.visit(this);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
+        return selectVisitor.visit(this, arguments);
     }
 
     public List<OrderByElement> getOrderByElements() {

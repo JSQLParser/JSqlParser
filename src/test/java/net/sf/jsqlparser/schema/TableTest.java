@@ -58,7 +58,7 @@ public class TableTest {
         SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer) {
 
             @Override
-            public StringBuilder visit(Table tableName) {
+            public <S> StringBuilder visit(Table tableName, S parameters) {
                 System.out.println(tableName);
                 tableName.setDatabase(database); // Exception
                 System.out.println(tableName.getDatabase());
@@ -66,7 +66,7 @@ public class TableTest {
             }
         };
 
-        deparser.visit((PlainSelect) select);
+        deparser.visit((PlainSelect) select, null);
 
     }
 

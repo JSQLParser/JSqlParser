@@ -95,8 +95,8 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <K, S> K accept(ExpressionVisitor<K> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
 
     @Override

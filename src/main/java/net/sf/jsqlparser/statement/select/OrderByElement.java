@@ -53,8 +53,8 @@ public class OrderByElement implements Serializable {
         return ascDescPresent;
     }
 
-    public void accept(OrderByVisitor orderByVisitor) {
-        orderByVisitor.visit(this);
+    public <T, S> T accept(OrderByVisitor<T> orderByVisitor, S arguments) {
+        return orderByVisitor.visit(this, arguments);
     }
 
     public Expression getExpression() {

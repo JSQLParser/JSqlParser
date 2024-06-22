@@ -23,8 +23,8 @@ public class PivotXml extends Pivot {
     private boolean inAny = false;
 
     @Override
-    public void accept(PivotVisitor pivotVisitor) {
-        pivotVisitor.visit(this);
+    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S arguments) {
+        return pivotVisitor.visit(this, arguments);
     }
 
     public Select getInSelect() {
@@ -91,7 +91,7 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml withMultiInItems(List<SelectItem<ExpressionList>> multiInItems) {
+    public PivotXml withMultiInItems(List<SelectItem<ExpressionList<?>>> multiInItems) {
         return (PivotXml) super.withMultiInItems(multiInItems);
     }
 
@@ -126,12 +126,13 @@ public class PivotXml extends Pivot {
     }
 
     @Override
-    public PivotXml addMultiInItems(SelectItem<ExpressionList>... multiInItems) {
+    public PivotXml addMultiInItems(SelectItem<ExpressionList<?>>... multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }
 
     @Override
-    public PivotXml addMultiInItems(Collection<? extends SelectItem<ExpressionList>> multiInItems) {
+    public PivotXml addMultiInItems(
+            Collection<? extends SelectItem<ExpressionList<?>>> multiInItems) {
         return (PivotXml) super.addMultiInItems(multiInItems);
     }
 

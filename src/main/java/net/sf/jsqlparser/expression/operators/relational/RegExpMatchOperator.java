@@ -19,7 +19,8 @@ public class RegExpMatchOperator extends BinaryExpression {
     private RegExpMatchOperatorType operatorType;
 
     public RegExpMatchOperator(RegExpMatchOperatorType operatorType) {
-        this.operatorType = Objects.requireNonNull(operatorType, "The provided RegExpMatchOperatorType must not be NULL.");
+        this.operatorType = Objects.requireNonNull(operatorType,
+                "The provided RegExpMatchOperatorType must not be NULL.");
     }
 
     public RegExpMatchOperatorType getOperatorType() {
@@ -27,8 +28,8 @@ public class RegExpMatchOperator extends BinaryExpression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
 
     @Override

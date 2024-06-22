@@ -14,9 +14,10 @@ import net.sf.jsqlparser.statement.select.Values;
 
 public class ValuesStatementDeParser extends AbstractDeParser<Values> {
 
-    private final ExpressionVisitor expressionVisitor;
+    private final ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public ValuesStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public ValuesStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -24,7 +25,7 @@ public class ValuesStatementDeParser extends AbstractDeParser<Values> {
     @Override
     public void deParse(Values values) {
         buffer.append("VALUES ");
-        values.getExpressions().accept(expressionVisitor);
+        values.getExpressions().accept(expressionVisitor, null);
         if (values.getAlias() != null) {
             buffer.append(" ").append(values.getAlias());
         }

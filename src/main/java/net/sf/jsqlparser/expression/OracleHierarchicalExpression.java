@@ -51,8 +51,8 @@ public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements E
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
 
     @Override

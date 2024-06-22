@@ -36,12 +36,12 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
 
     @Override
     public void deParse(TableStatement tableStatement) {
-        tableStatement.accept(this);
+        tableStatement.accept(this, null);
     }
 
     public void visit(Offset offset) {
         buffer.append(" OFFSET ");
-        offset.getOffset().accept(expressionVisitor);
+        offset.getOffset().accept(expressionVisitor, null);
         if (offset.getOffsetParam() != null) {
             buffer.append(" ").append(offset.getOffsetParam());
         }
@@ -49,43 +49,43 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     @Override
-    public StringBuilder visit(ParenthesedSelect parenthesedSelect) {
+    public <S> StringBuilder visit(ParenthesedSelect parenthesedSelect, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(PlainSelect plainSelect) {
+    public <S> StringBuilder visit(PlainSelect plainSelect, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(SetOperationList setOpList) {
+    public <S> StringBuilder visit(SetOperationList setOperationList, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(WithItem withItem) {
+    public <S> StringBuilder visit(WithItem withItem, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Values aThis) {
+    public <S> StringBuilder visit(Values values, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(LateralSubSelect lateralSubSelect) {
+    public <S> StringBuilder visit(LateralSubSelect lateralSubSelect, S parameters) {
 
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(TableStatement tableStatement) {
+    public <S> StringBuilder visit(TableStatement tableStatement, S parameters) {
         buffer.append("TABLE ");
         buffer.append(tableStatement.getTable());
         if (tableStatement.getOrderByElements() != null) {

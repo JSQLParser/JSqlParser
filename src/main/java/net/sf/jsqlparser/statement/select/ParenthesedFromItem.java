@@ -62,8 +62,8 @@ public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

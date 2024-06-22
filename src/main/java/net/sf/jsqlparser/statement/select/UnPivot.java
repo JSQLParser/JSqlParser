@@ -25,8 +25,8 @@ public class UnPivot implements Serializable {
     private List<SelectItem<?>> unpivotInClause;
     private Alias alias;
 
-    public void accept(PivotVisitor pivotVisitor) {
-        pivotVisitor.visit(this);
+    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S arguments) {
+        return pivotVisitor.visit(this, arguments);
     }
 
     public boolean getIncludeNulls() {

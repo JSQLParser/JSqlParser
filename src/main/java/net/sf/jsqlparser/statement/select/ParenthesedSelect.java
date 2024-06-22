@@ -142,13 +142,13 @@ public class ParenthesedSelect extends Select implements FromItem {
     }
 
     @Override
-    public <T> T accept(SelectVisitor<T> selectVisitor) {
-        return selectVisitor.visit(this);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
+        return selectVisitor.visit(this, arguments);
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {

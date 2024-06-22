@@ -176,11 +176,11 @@ public class TablesNamesFinderTest {
         String sql = "select --+ HINT\ncol2 from mytable";
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
         final OracleHint[] holder = new OracleHint[1];
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder() {
+        TablesNamesFinder<Void> tablesNamesFinder = new TablesNamesFinder<Void>() {
 
             @Override
-            public Object visit(OracleHint hint) {
-                super.visit(hint);
+            public <K> Void visit(OracleHint hint, K parameters) {
+                super.visit(hint, parameters);
                 holder[0] = hint;
                 return null;
             }
@@ -194,7 +194,7 @@ public class TablesNamesFinderTest {
     public void testGetTablesIssue194() throws Exception {
         String sql = "SELECT 1";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        TablesNamesFinder<Void> tablesNamesFinder = new TablesNamesFinder<Void>();
         Set<String> tableList = tablesNamesFinder.getTables(statement);
         assertEquals(0, tableList.size());
     }

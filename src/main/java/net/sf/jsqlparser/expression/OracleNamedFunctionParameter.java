@@ -21,8 +21,10 @@ public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements E
     private final Expression expression;
 
     public OracleNamedFunctionParameter(String name, Expression expression) {
-        this.name = Objects.requireNonNull(name, "The NAME of the OracleNamedFunctionParameter must not be null.");
-        this.expression = Objects.requireNonNull(expression, "The EXPRESSION of the OracleNamedFunctionParameter must not be null.");
+        this.name = Objects.requireNonNull(name,
+                "The NAME of the OracleNamedFunctionParameter must not be null.");
+        this.expression = Objects.requireNonNull(expression,
+                "The EXPRESSION of the OracleNamedFunctionParameter must not be null.");
     }
 
     public String getName() {
@@ -34,18 +36,18 @@ public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements E
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
-    
+
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(name)
-          .append(" => ")
-          .append(expression);
-        
+                .append(" => ")
+                .append(expression);
+
         return builder;
     }
-    
+
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();

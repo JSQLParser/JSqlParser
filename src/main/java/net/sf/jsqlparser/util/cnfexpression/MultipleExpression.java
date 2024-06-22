@@ -34,8 +34,8 @@ public abstract class MultipleExpression extends ASTNodeAccessImpl implements Ex
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(new NullValue());
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S parameters) {
+        return expressionVisitor.visit(new NullValue(), parameters);
     }
 
     public List<Expression> getList() {

@@ -118,7 +118,7 @@ public class HowToUseSample {
 
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
-        SelectItem selectItem =
+        SelectItem<?> selectItem =
                 select.getSelectItems().get(0);
         Assertions.assertEquals(
                 new LongValue(1), selectItem.getExpression());
@@ -138,34 +138,33 @@ public class HowToUseSample {
 
         // Define an Expression Visitor reacting on any Expression
         // Overwrite the visit() methods for each Expression Class
-        ExpressionVisitorAdapter expressionVisitorAdapter = new ExpressionVisitorAdapter() {
-            public Object visit(EqualsTo equalsTo) {
-                equalsTo.getLeftExpression().accept(this);
-                equalsTo.getRightExpression().accept(this);
-                return null;
-            }
+        ExpressionVisitorAdapter<Void> expressionVisitorAdapter =
+                new ExpressionVisitorAdapter<Void>() {
+                    public <K> Void visit(EqualsTo equalsTo, K parameters) {
+                        equalsTo.getLeftExpression().accept(this, parameters);
+                        equalsTo.getRightExpression().accept(this, parameters);
+                        return null;
+                    }
 
-            public Object visit(Column column) {
-                System.out.println("Found a Column " + column.getColumnName());
-                return null;
-            }
-        };
+                    public <K> Void visit(Column column) {
+                        System.out.println("Found a Column " + column.getColumnName());
+                        return null;
+                    }
+                };
 
         // Define a Select Visitor reacting on a Plain Select invoking the Expression Visitor on the
         // Where Clause
-        SelectVisitorAdapter selectVisitorAdapter = new SelectVisitorAdapter() {
+        SelectVisitorAdapter<Void> selectVisitorAdapter = new SelectVisitorAdapter<Void>() {
             @Override
-            public Object visit(PlainSelect plainSelect) {
-                plainSelect.getWhere().accept(expressionVisitorAdapter);
-                return null;
+            public <K> Void visit(PlainSelect plainSelect, K parameters) {
+                return plainSelect.getWhere().accept(expressionVisitorAdapter, parameters);
             }
         };
 
         // Define a Statement Visitor for dispatching the Statements
-        StatementVisitorAdapter statementVisitor = new StatementVisitorAdapter() {
-            public Object visit(Select select) {
-                select.accept(selectVisitorAdapter);
-                return null;
+        StatementVisitorAdapter<Void> statementVisitor = new StatementVisitorAdapter<Void>() {
+            public Void visit(Select select) {
+                return select.accept(selectVisitorAdapter, null);
             }
         };
 

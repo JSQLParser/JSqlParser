@@ -37,7 +37,7 @@ public class CreateViewDeParserTest {
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, b) {
 
             @Override
-            public StringBuilder visit(Column tableColumn) {
+            public <K> StringBuilder visit(Column tableColumn, K parameters) {
                 final Table table = tableColumn.getTable();
                 String tableName = null;
                 if (table != null) {
@@ -52,7 +52,7 @@ public class CreateViewDeParserTest {
                 }
 
                 getBuffer().append("\"").append(tableColumn.getColumnName()).append("\"");
-                return null;
+                return buffer;
             }
         };
 

@@ -27,8 +27,8 @@ public class SimilarToExpression extends BinaryExpression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
+        return expressionVisitor.visit(this, arguments);
     }
 
     @Override
@@ -38,7 +38,8 @@ public class SimilarToExpression extends BinaryExpression {
 
     @Override
     public String toString() {
-        String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression() + " " + getRightExpression();
+        String retval = getLeftExpression() + " " + (not ? "NOT " : "") + getStringExpression()
+                + " " + getRightExpression();
         if (escape != null) {
             retval += " ESCAPE " + "'" + escape + "'";
         }

@@ -55,8 +55,13 @@ public class Values extends Select implements FromItem {
     }
 
     @Override
-    public <T> T accept(SelectVisitor<T> selectVisitor) {
-        return selectVisitor.visit(this);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
+        return selectVisitor.visit(this, arguments);
+    }
+
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 
     public Values withExpressions(ExpressionList<Expression> expressions) {
@@ -74,11 +79,6 @@ public class Values extends Select implements FromItem {
         }
         this.expressions.addAll(expressions);
         return this;
-    }
-
-    @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
     }
 
     @Override

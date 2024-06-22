@@ -68,12 +68,13 @@ public class LateralSubSelect extends ParenthesedSelect {
         return prefix + super.toString();
     }
 
-    public <T> T accept(SelectVisitor<T> selectVisitor) {
-        return selectVisitor.visit(this);
+    @Override
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
+        return selectVisitor.visit(this, arguments);
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 }

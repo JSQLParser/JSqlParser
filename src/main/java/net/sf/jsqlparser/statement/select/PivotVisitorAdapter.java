@@ -13,19 +13,19 @@ package net.sf.jsqlparser.statement.select;
 public class PivotVisitorAdapter<T> implements PivotVisitor<T> {
 
     @Override
-    public T visit(Pivot pivot) {
+    public <S> T visit(Pivot pivot, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(PivotXml pivot) {
+    public <S> T visit(PivotXml pivot, S parameters) {
 
         return null;
     }
 
     @Override
-    public T visit(UnPivot unpivot) {
+    public <S> T visit(UnPivot unpivot, S parameters) {
 
         return null;
     }

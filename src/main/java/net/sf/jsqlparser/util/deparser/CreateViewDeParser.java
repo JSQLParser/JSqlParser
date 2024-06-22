@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 public class CreateViewDeParser extends AbstractDeParser<CreateView> {
 
-    private final SelectVisitor selectVisitor;
+    private final SelectVisitor<StringBuilder> selectVisitor;
 
     public CreateViewDeParser(StringBuilder buffer) {
         super(buffer);
@@ -29,7 +29,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         selectVisitor = selectDeParser;
     }
 
-    public CreateViewDeParser(StringBuilder buffer, SelectVisitor selectVisitor) {
+    public CreateViewDeParser(StringBuilder buffer, SelectVisitor<StringBuilder> selectVisitor) {
         super(buffer);
         this.selectVisitor = selectVisitor;
     }
@@ -81,7 +81,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         buffer.append(" AS ");
 
         Select select = createView.getSelect();
-        select.accept(selectVisitor);
+        select.accept(selectVisitor, null);
         if (createView.isWithReadOnly()) {
             buffer.append(" WITH READ ONLY");
         }

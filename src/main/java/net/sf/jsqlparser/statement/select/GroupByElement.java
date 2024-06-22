@@ -30,8 +30,8 @@ public class GroupByElement implements Serializable {
         return groupByExpressions.isUsingBrackets();
     }
 
-    public void accept(GroupByVisitor groupByVisitor) {
-        groupByVisitor.visit(this);
+    public <T, S> T accept(GroupByVisitor<T> groupByVisitor, S arguments) {
+        return groupByVisitor.visit(this, arguments);
     }
 
     public ExpressionList getGroupByExpressionList() {

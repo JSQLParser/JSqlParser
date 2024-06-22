@@ -11,17 +11,17 @@ package net.sf.jsqlparser.statement.select;
 
 public interface SelectVisitor<T> {
 
-    T visit(ParenthesedSelect parenthesedSelect);
+    <S> T visit(ParenthesedSelect parenthesedSelect, S parameters);
 
-    T visit(PlainSelect plainSelect);
+    <S> T visit(PlainSelect plainSelect, S parameters);
 
-    T visit(SetOperationList setOpList);
+    <S> T visit(SetOperationList setOpList, S parameters);
 
-    T visit(WithItem withItem);
+    <S> T visit(WithItem withItem, S parameters);
 
-    T visit(Values aThis);
+    <S> T visit(Values aThis, S parameters);
 
-    T visit(LateralSubSelect lateralSubSelect);
+    <S> T visit(LateralSubSelect lateralSubSelect, S parameters);
 
-    T visit(TableStatement tableStatement);
+    <S> T visit(TableStatement tableStatement, S parameters);
 }

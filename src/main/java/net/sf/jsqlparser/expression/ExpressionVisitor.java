@@ -60,197 +60,197 @@ import net.sf.jsqlparser.statement.select.Select;
 
 public interface ExpressionVisitor<T> {
 
-    T visit(BitwiseRightShift aThis);
+    <S> T visit(BitwiseRightShift bitwiseRightShift, S parameters);
 
-    T visit(BitwiseLeftShift aThis);
+    <S> T visit(BitwiseLeftShift bitwiseLeftShift, S parameters);
 
-    T visit(NullValue nullValue);
+    <S> T visit(NullValue nullValue, S parameters);
 
-    T visit(Function function);
+    <S> T visit(Function function, S parameters);
 
-    T visit(SignedExpression signedExpression);
+    <S> T visit(SignedExpression signedExpression, S parameters);
 
-    T visit(JdbcParameter jdbcParameter);
+    <S> T visit(JdbcParameter jdbcParameter, S parameters);
 
-    T visit(JdbcNamedParameter jdbcNamedParameter);
+    <S> T visit(JdbcNamedParameter jdbcNamedParameter, S parameters);
 
-    T visit(DoubleValue doubleValue);
+    <S> T visit(DoubleValue doubleValue, S parameters);
 
-    T visit(LongValue longValue);
+    <S> T visit(LongValue longValue, S parameters);
 
-    T visit(HexValue hexValue);
+    <S> T visit(HexValue hexValue, S parameters);
 
-    T visit(DateValue dateValue);
+    <S> T visit(DateValue dateValue, S parameters);
 
-    T visit(TimeValue timeValue);
+    <S> T visit(TimeValue timeValue, S parameters);
 
-    T visit(TimestampValue timestampValue);
+    <S> T visit(TimestampValue timestampValue, S parameters);
 
-    T visit(StringValue stringValue);
+    <S> T visit(StringValue stringValue, S parameters);
 
-    T visit(Addition addition);
+    <S> T visit(Addition addition, S parameters);
 
-    T visit(Division division);
+    <S> T visit(Division division, S parameters);
 
-    T visit(IntegerDivision division);
+    <S> T visit(IntegerDivision integerDivision, S parameters);
 
-    T visit(Multiplication multiplication);
+    <S> T visit(Multiplication multiplication, S parameters);
 
-    T visit(Subtraction subtraction);
+    <S> T visit(Subtraction subtraction, S parameters);
 
-    T visit(AndExpression andExpression);
+    <S> T visit(AndExpression andExpression, S parameters);
 
-    T visit(OrExpression orExpression);
+    <S> T visit(OrExpression orExpression, S parameters);
 
-    T visit(XorExpression orExpression);
+    <S> T visit(XorExpression xorExpression, S parameters);
 
-    T visit(Between between);
+    <S> T visit(Between between, S parameters);
 
-    T visit(OverlapsCondition overlapsCondition);
+    <S> T visit(OverlapsCondition overlapsCondition, S parameters);
 
-    T visit(EqualsTo equalsTo);
+    <S> T visit(EqualsTo equalsTo, S parameters);
 
-    T visit(GreaterThan greaterThan);
+    <S> T visit(GreaterThan greaterThan, S parameters);
 
-    T visit(GreaterThanEquals greaterThanEquals);
+    <S> T visit(GreaterThanEquals greaterThanEquals, S parameters);
 
-    T visit(InExpression inExpression);
+    <S> T visit(InExpression inExpression, S parameters);
 
-    T visit(IncludesExpression includesExpression);
+    <S> T visit(IncludesExpression includesExpression, S parameters);
 
-    T visit(ExcludesExpression excludesExpression);
+    <S> T visit(ExcludesExpression excludesExpression, S parameters);
 
-    T visit(FullTextSearch fullTextSearch);
+    <S> T visit(FullTextSearch fullTextSearch, S parameters);
 
-    T visit(IsNullExpression isNullExpression);
+    <S> T visit(IsNullExpression isNullExpression, S parameters);
 
-    T visit(IsBooleanExpression isBooleanExpression);
+    <S> T visit(IsBooleanExpression isBooleanExpression, S parameters);
 
-    T visit(LikeExpression likeExpression);
+    <S> T visit(LikeExpression likeExpression, S parameters);
 
-    T visit(MinorThan minorThan);
+    <S> T visit(MinorThan minorThan, S parameters);
 
-    T visit(MinorThanEquals minorThanEquals);
+    <S> T visit(MinorThanEquals minorThanEquals, S parameters);
 
-    T visit(NotEqualsTo notEqualsTo);
+    <S> T visit(NotEqualsTo notEqualsTo, S parameters);
 
-    T visit(DoubleAnd doubleAnd);
+    <S> T visit(DoubleAnd doubleAnd, S parameters);
 
-    T visit(Contains contains);
+    <S> T visit(Contains contains, S parameters);
 
-    T visit(ContainedBy containedBy);
+    <S> T visit(ContainedBy containedBy, S parameters);
 
-    T visit(ParenthesedSelect selectBody);
+    <S> T visit(ParenthesedSelect select, S parameters);
 
-    T visit(Column tableColumn);
+    <S> T visit(Column column, S parameters);
 
-    T visit(CaseExpression caseExpression);
+    <S> T visit(CaseExpression caseExpression, S parameters);
 
-    T visit(WhenClause whenClause);
+    <S> T visit(WhenClause whenClause, S parameters);
 
-    T visit(ExistsExpression existsExpression);
+    <S> T visit(ExistsExpression existsExpression, S parameters);
 
-    T visit(MemberOfExpression memberOfExpression);
+    <S> T visit(MemberOfExpression memberOfExpression, S parameters);
 
-    T visit(AnyComparisonExpression anyComparisonExpression);
+    <S> T visit(AnyComparisonExpression anyComparisonExpression, S parameters);
 
-    T visit(Concat concat);
+    <S> T visit(Concat concat, S parameters);
 
-    T visit(Matches matches);
+    <S> T visit(Matches matches, S parameters);
 
-    T visit(BitwiseAnd bitwiseAnd);
+    <S> T visit(BitwiseAnd bitwiseAnd, S parameters);
 
-    T visit(BitwiseOr bitwiseOr);
+    <S> T visit(BitwiseOr bitwiseOr, S parameters);
 
-    T visit(BitwiseXor bitwiseXor);
+    <S> T visit(BitwiseXor bitwiseXor, S parameters);
 
-    T visit(CastExpression cast);
+    <S> T visit(CastExpression castExpression, S parameters);
 
-    T visit(Modulo modulo);
+    <S> T visit(Modulo modulo, S parameters);
 
-    T visit(AnalyticExpression aexpr);
+    <S> T visit(AnalyticExpression analyticExpression, S parameters);
 
-    T visit(ExtractExpression eexpr);
+    <S> T visit(ExtractExpression extractExpression, S parameters);
 
-    T visit(IntervalExpression iexpr);
+    <S> T visit(IntervalExpression intervalExpression, S parameters);
 
-    T visit(OracleHierarchicalExpression oexpr);
+    <S> T visit(OracleHierarchicalExpression hierarchicalExpression, S parameters);
 
-    T visit(RegExpMatchOperator rexpr);
+    <S> T visit(RegExpMatchOperator regExpMatchOperator, S parameters);
 
-    T visit(JsonExpression jsonExpr);
+    <S> T visit(JsonExpression jsonExpression, S parameters);
 
-    T visit(JsonOperator jsonExpr);
+    <S> T visit(JsonOperator jsonOperator, S parameters);
 
-    T visit(UserVariable var);
+    <S> T visit(UserVariable userVariable, S parameters);
 
-    T visit(NumericBind bind);
+    <S> T visit(NumericBind numericBind, S parameters);
 
-    T visit(KeepExpression aexpr);
+    <S> T visit(KeepExpression keepExpression, S parameters);
 
-    T visit(MySQLGroupConcat groupConcat);
+    <S> T visit(MySQLGroupConcat groupConcat, S parameters);
 
-    T visit(ExpressionList<?> expressionList);
+    <S> T visit(ExpressionList<? extends Expression> expressionList, S parameters);
 
-    T visit(RowConstructor<?> rowConstructor);
+    <S> T visit(RowConstructor<? extends Expression> rowConstructor, S parameters);
 
-    T visit(RowGetExpression rowGetExpression);
+    <S> T visit(RowGetExpression rowGetExpression, S parameters);
 
-    T visit(OracleHint hint);
+    <S> T visit(OracleHint hint, S parameters);
 
-    T visit(TimeKeyExpression timeKeyExpression);
+    <S> T visit(TimeKeyExpression timeKeyExpression, S parameters);
 
-    T visit(DateTimeLiteralExpression literal);
+    <S> T visit(DateTimeLiteralExpression dateTimeLiteralExpression, S parameters);
 
-    T visit(NotExpression aThis);
+    <S> T visit(NotExpression notExpression, S parameters);
 
-    T visit(NextValExpression aThis);
+    <S> T visit(NextValExpression nextValExpression, S parameters);
 
-    T visit(CollateExpression aThis);
+    <S> T visit(CollateExpression collateExpression, S parameters);
 
-    T visit(SimilarToExpression aThis);
+    <S> T visit(SimilarToExpression similarToExpression, S parameters);
 
-    T visit(ArrayExpression aThis);
+    <S> T visit(ArrayExpression arrayExpression, S parameters);
 
-    T visit(ArrayConstructor aThis);
+    <S> T visit(ArrayConstructor arrayConstructor, S parameters);
 
-    T visit(VariableAssignment aThis);
+    <S> T visit(VariableAssignment variableAssignment, S parameters);
 
-    T visit(XMLSerializeExpr aThis);
+    <S> T visit(XMLSerializeExpr xmlSerializeExpr, S parameters);
 
-    T visit(TimezoneExpression aThis);
+    <S> T visit(TimezoneExpression timezoneExpression, S parameters);
 
-    T visit(JsonAggregateFunction aThis);
+    <S> T visit(JsonAggregateFunction jsonAggregateFunction, S parameters);
 
-    T visit(JsonFunction aThis);
+    <S> T visit(JsonFunction jsonFunction, S parameters);
 
-    T visit(ConnectByRootOperator aThis);
+    <S> T visit(ConnectByRootOperator connectByRootOperator, S parameters);
 
-    T visit(OracleNamedFunctionParameter aThis);
+    <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S parameters);
 
-    T visit(AllColumns allColumns);
+    <S> T visit(AllColumns allColumns, S parameters);
 
-    T visit(AllTableColumns allTableColumns);
+    <S> T visit(AllTableColumns allTableColumns, S parameters);
 
-    T visit(AllValue allValue);
+    <S> T visit(AllValue allValue, S parameters);
 
-    T visit(IsDistinctExpression isDistinctExpression);
+    <S> T visit(IsDistinctExpression isDistinctExpression, S parameters);
 
-    T visit(GeometryDistance geometryDistance);
+    <S> T visit(GeometryDistance geometryDistance, S parameters);
 
-    T visit(Select selectBody);
+    <S> T visit(Select select, S parameters);
 
-    T visit(TranscodingFunction transcodingFunction);
+    <S> T visit(TranscodingFunction transcodingFunction, S parameters);
 
-    T visit(TrimFunction trimFunction);
+    <S> T visit(TrimFunction trimFunction, S parameters);
 
-    T visit(RangeExpression rangeExpression);
+    <S> T visit(RangeExpression rangeExpression, S parameters);
 
-    T visit(TSQLLeftJoin tsqlLeftJoin);
+    <S> T visit(TSQLLeftJoin tsqlLeftJoin, S parameters);
 
-    T visit(TSQLRightJoin tsqlRightJoin);
+    <S> T visit(TSQLRightJoin tsqlRightJoin, S parameters);
 
-    T visit(StructType structType);
+    <S> T visit(StructType structType, S parameters);
 
-    T visit(LambdaExpression lambdaExpression);
+    <S> T visit(LambdaExpression lambdaExpression, S parameters);
 }

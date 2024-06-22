@@ -17,20 +17,22 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
 /**
  * @author gitmotte
  */
-public class OrderByValidator extends AbstractValidator<OrderByElement> implements OrderByVisitor {
+public class OrderByValidator<Void> extends AbstractValidator<OrderByElement>
+        implements OrderByVisitor<Void> {
 
     @Override
     public void validate(OrderByElement element) {
-        element.accept(this);
+        element.accept(this, null);
     }
 
     @Override
-    public void visit(OrderByElement orderBy) {
+    public <S> Void visit(OrderByElement orderBy, S parameters) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.orderBy);
             validateOptionalFeature(c, orderBy.getNullOrdering(), Feature.orderByNullOrdering);
         }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
+        return null;
     }
 
 }

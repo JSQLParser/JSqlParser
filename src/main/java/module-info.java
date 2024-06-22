@@ -9,6 +9,7 @@
  */
 module net.sf.jsqlparser {
     requires java.sql;
+    requires java.desktop;
 
     exports net.sf.jsqlparser;
     exports net.sf.jsqlparser.expression;

@@ -132,7 +132,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         String name = getIndex(NAME_IDX);
         if (name != null && name.contains("@")) {
             int pos = name.lastIndexOf('@');
-            if (pos > 0 && name.length() > 1) {
+            if (pos > 0) {
                 name = name.substring(pos + 1);
             }
         }
@@ -198,12 +198,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
+        return fromItemVisitor.visit(this, arguments);
     }
 
-    public void accept(IntoTableVisitor intoTableVisitor) {
-        intoTableVisitor.visit(this);
+    public <T, S> T accept(IntoTableVisitor<T> intoTableVisitor, S arguments) {
+        return intoTableVisitor.visit(this, arguments);
     }
 
     @Override

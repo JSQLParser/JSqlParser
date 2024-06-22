@@ -24,13 +24,13 @@ public class AssortedFeatureTests {
     static class ReplaceColumnAndLongValues extends ExpressionDeParser {
 
         @Override
-        public StringBuilder visit(StringValue stringValue) {
+        public <K> StringBuilder visit(StringValue stringValue, K parameters) {
             this.getBuffer().append("?");
             return null;
         }
 
         @Override
-        public StringBuilder visit(LongValue longValue) {
+        public <K> StringBuilder visit(LongValue longValue, K parameters) {
             this.getBuffer().append("?");
             return null;
         }

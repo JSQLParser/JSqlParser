@@ -50,21 +50,21 @@ public abstract class ConnectExpressionsVisitor<T>
     protected abstract BinaryExpression createBinaryExpression();
 
     @Override
-    public T visit(ParenthesedSelect parenthesedSelect) {
-        parenthesedSelect.getSelect().accept(this);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S parameters) {
+        parenthesedSelect.getSelect().accept(this, parameters);
         return null;
     }
 
     @Override
-    public T visit(LateralSubSelect lateralSubSelect) {
-        lateralSubSelect.getSelect().accept(this);
+    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
+        lateralSubSelect.getSelect().accept(this, parameters);
         return null;
     }
 
     @Override
-    public T visit(PlainSelect plainSelect) {
+    public <S> T visit(PlainSelect plainSelect, S parameters) {
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this);
+            item.accept(this, parameters);
         }
 
         if (itemsExpr.size() > 1) {
@@ -90,31 +90,31 @@ public abstract class ConnectExpressionsVisitor<T>
     }
 
     @Override
-    public T visit(SetOperationList setOpList) {
+    public <S> T visit(SetOperationList setOpList, S parameters) {
         for (Select select : setOpList.getSelects()) {
-            select.accept(this);
+            select.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public T visit(WithItem withItem) {
+    public <S> T visit(WithItem withItem, S parameters) {
         return null;
     }
 
     @Override
-    public T visit(SelectItem<?> selectItem) {
+    public <S> T visit(SelectItem<? extends Expression> selectItem, S parameters) {
         itemsExpr.add(selectItem);
         return null;
     }
 
     @Override
-    public T visit(Values aThis) {
+    public <S> T visit(Values aThis, S parameters) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public T visit(TableStatement tableStatement) {
+    public <S> T visit(TableStatement tableStatement, S parameters) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

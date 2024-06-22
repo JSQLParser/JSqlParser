@@ -27,11 +27,11 @@ public class Pivot implements Serializable {
     private List<SelectItem<Function>> functionItems;
     private ExpressionList<Column> forColumns;
     private List<SelectItem<?>> singleInItems;
-    private List<SelectItem<ExpressionList>> multiInItems;
+    private List<SelectItem<ExpressionList<?>>> multiInItems;
     private Alias alias;
 
-    public void accept(PivotVisitor pivotVisitor) {
-        pivotVisitor.visit(this);
+    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S arguments) {
+        return pivotVisitor.visit(this, arguments);
     }
 
     public List<SelectItem<?>> getSingleInItems() {
@@ -42,11 +42,11 @@ public class Pivot implements Serializable {
         this.singleInItems = singleInItems;
     }
 
-    public List<SelectItem<ExpressionList>> getMultiInItems() {
+    public List<SelectItem<ExpressionList<?>>> getMultiInItems() {
         return multiInItems;
     }
 
-    public void setMultiInItems(List<SelectItem<ExpressionList>> multiInItems) {
+    public void setMultiInItems(List<SelectItem<ExpressionList<?>>> multiInItems) {
         this.multiInItems = multiInItems;
     }
 
@@ -104,7 +104,7 @@ public class Pivot implements Serializable {
         return this;
     }
 
-    public Pivot withMultiInItems(List<SelectItem<ExpressionList>> multiInItems) {
+    public Pivot withMultiInItems(List<SelectItem<ExpressionList<?>>> multiInItems) {
         this.setMultiInItems(multiInItems);
         return this;
     }
@@ -153,15 +153,15 @@ public class Pivot implements Serializable {
         return this.withSingleInItems(collection);
     }
 
-    public Pivot addMultiInItems(SelectItem<ExpressionList>... multiInItems) {
-        List<SelectItem<ExpressionList>> collection =
+    public Pivot addMultiInItems(SelectItem<ExpressionList<?>>... multiInItems) {
+        List<SelectItem<ExpressionList<?>>> collection =
                 Optional.ofNullable(getMultiInItems()).orElseGet(ArrayList::new);
         Collections.addAll(collection, multiInItems);
         return this.withMultiInItems(collection);
     }
 
-    public Pivot addMultiInItems(Collection<? extends SelectItem<ExpressionList>> multiInItems) {
-        List<SelectItem<ExpressionList>> collection =
+    public Pivot addMultiInItems(Collection<? extends SelectItem<ExpressionList<?>>> multiInItems) {
+        List<SelectItem<ExpressionList<?>>> collection =
                 Optional.ofNullable(getMultiInItems()).orElseGet(ArrayList::new);
         collection.addAll(multiInItems);
         return this.withMultiInItems(collection);

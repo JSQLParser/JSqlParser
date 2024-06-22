@@ -33,7 +33,7 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                iter.next().accept(expressionDeParser);
+                iter.next().accept(expressionDeParser, null);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
@@ -46,13 +46,13 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
             buffer.append(merge.getOracleHint()).append(" ");
         }
         buffer.append("INTO ");
-        merge.getTable().accept(selectDeParser);
+        merge.getTable().accept(selectDeParser, null);
 
         buffer.append(" USING ");
-        merge.getFromItem().accept(selectDeParser);
+        merge.getFromItem().accept(selectDeParser, null);
 
         buffer.append(" ON ");
-        merge.getOnCondition().accept(expressionDeParser);
+        merge.getOnCondition().accept(expressionDeParser, null);
 
         List<MergeOperation> operations = merge.getOperations();
         if (operations != null && !operations.isEmpty()) {
@@ -69,7 +69,7 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
         buffer.append(" WHEN MATCHED");
         if (mergeDelete.getAndPredicate() != null) {
             buffer.append(" AND ");
-            mergeDelete.getAndPredicate().accept(expressionDeParser);
+            mergeDelete.getAndPredicate().accept(expressionDeParser, null);
         }
         buffer.append(" THEN DELETE");
     }
@@ -79,19 +79,19 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
         buffer.append(" WHEN MATCHED");
         if (mergeUpdate.getAndPredicate() != null) {
             buffer.append(" AND ");
-            mergeUpdate.getAndPredicate().accept(expressionDeParser);
+            mergeUpdate.getAndPredicate().accept(expressionDeParser, null);
         }
         buffer.append(" THEN UPDATE SET ");
         deparseUpdateSets(mergeUpdate.getUpdateSets(), buffer, expressionDeParser);
 
         if (mergeUpdate.getWhereCondition() != null) {
             buffer.append(" WHERE ");
-            mergeUpdate.getWhereCondition().accept(expressionDeParser);
+            mergeUpdate.getWhereCondition().accept(expressionDeParser, null);
         }
 
         if (mergeUpdate.getDeleteWhereCondition() != null) {
             buffer.append(" DELETE WHERE ");
-            mergeUpdate.getDeleteWhereCondition().accept(expressionDeParser);
+            mergeUpdate.getDeleteWhereCondition().accept(expressionDeParser, null);
         }
     }
 
@@ -100,18 +100,18 @@ public class MergeDeParser extends AbstractDeParser<Merge> implements MergeOpera
         buffer.append(" WHEN NOT MATCHED");
         if (mergeInsert.getAndPredicate() != null) {
             buffer.append(" AND ");
-            mergeInsert.getAndPredicate().accept(expressionDeParser);
+            mergeInsert.getAndPredicate().accept(expressionDeParser, null);
         }
         buffer.append(" THEN INSERT ");
         if (mergeInsert.getColumns() != null) {
-            mergeInsert.getColumns().accept(expressionDeParser);
+            mergeInsert.getColumns().accept(expressionDeParser, null);
         }
         buffer.append(" VALUES ");
-        mergeInsert.getValues().accept(expressionDeParser);
+        mergeInsert.getValues().accept(expressionDeParser, null);
 
         if (mergeInsert.getWhereCondition() != null) {
             buffer.append(" WHERE ");
-            mergeInsert.getWhereCondition().accept(expressionDeParser);
+            mergeInsert.getWhereCondition().accept(expressionDeParser, null);
         }
     }
 

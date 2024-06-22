@@ -13,15 +13,15 @@ import net.sf.jsqlparser.schema.Table;
 
 public interface FromItemVisitor<T> {
 
-    T visit(Table tableName);
+    <S> T visit(Table tableName, S parameters);
 
-    T visit(ParenthesedSelect selectBody);
+    <S> T visit(ParenthesedSelect selectBody, S parameters);
 
-    T visit(LateralSubSelect lateralSubSelect);
+    <S> T visit(LateralSubSelect lateralSubSelect, S parameters);
 
-    T visit(TableFunction tableFunction);
+    <S> T visit(TableFunction tableFunction, S parameters);
 
-    T visit(ParenthesedFromItem aThis);
+    <S> T visit(ParenthesedFromItem aThis, S parameters);
 
-    T visit(Values values);
+    <S> T visit(Values values, S parameters);
 }

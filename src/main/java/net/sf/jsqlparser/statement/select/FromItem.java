@@ -14,7 +14,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccess;
 
 public interface FromItem extends ASTNodeAccess {
 
-    void accept(FromItemVisitor fromItemVisitor);
+    <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments);
 
     Alias getAlias();
 

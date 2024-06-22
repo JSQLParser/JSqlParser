@@ -20,14 +20,15 @@ import java.util.Iterator;
 
 public class InsertDeParser extends AbstractDeParser<Insert> {
 
-    private ExpressionVisitor expressionVisitor;
-    private SelectVisitor selectVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
+    private SelectVisitor<StringBuilder> selectVisitor;
 
     public InsertDeParser() {
         super(new StringBuilder());
     }
 
-    public InsertDeParser(ExpressionVisitor expressionVisitor, SelectVisitor selectVisitor,
+    public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            SelectVisitor<StringBuilder> selectVisitor,
             StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
@@ -42,7 +43,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             buffer.append("WITH ");
             for (Iterator<WithItem> iter = insert.getWithItemsList().iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
-                withItem.accept(this.selectVisitor);
+                withItem.accept(this.selectVisitor, null);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
@@ -82,7 +83,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         if (insert.getSelect() != null) {
             buffer.append(" ");
             Select select = insert.getSelect();
-            select.accept(selectVisitor);
+            select.accept(selectVisitor, null);
         }
 
         if (insert.getSetUpdateSets() != null) {
@@ -110,19 +111,19 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public SelectVisitor getSelectVisitor() {
+    public SelectVisitor<StringBuilder> getSelectVisitor() {
         return selectVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 
-    public void setSelectVisitor(SelectVisitor visitor) {
+    public void setSelectVisitor(SelectVisitor<StringBuilder> visitor) {
         selectVisitor = visitor;
     }
 }

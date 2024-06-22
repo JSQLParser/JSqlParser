@@ -209,7 +209,7 @@ public class TablesNamesFinder<Void>
 
         // @todo: assess this carefully, maybe we want to remove more specifically
         // only Aliases on WithItems, Parenthesed Selects and Lateral Selects
-        tables.removeAll(otherItemNames);
+        otherItemNames.forEach(tables::remove);
 
         return tables;
     }
@@ -225,48 +225,53 @@ public class TablesNamesFinder<Void>
     }
 
     public static Set<String> findTables(String sqlStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
         return tablesNamesFinder.getTables(CCJSqlParserUtil.parse(sqlStr));
     }
 
     public static Set<String> findTablesOrOtherSources(String sqlStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
         return tablesNamesFinder.getTablesOrOtherSources(CCJSqlParserUtil.parse(sqlStr));
     }
 
     @Override
-    public Void visit(Select select) {
+    public <S> Void visit(Select select, S parameters) {
         List<WithItem> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, parameters);
             }
         }
-        select.accept((SelectVisitor<?>) this);
+        select.accept((SelectVisitor<?>) this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(TranscodingFunction transcodingFunction) {
-        transcodingFunction.getExpression().accept(this);
+    public Void visit(Select select) {
+        return visit(select, null);
+    }
+
+    @Override
+    public <S> Void visit(TranscodingFunction transcodingFunction, S parameters) {
+        transcodingFunction.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(TrimFunction trimFunction) {
+    public <S> Void visit(TrimFunction trimFunction, S parameters) {
         if (trimFunction.getExpression() != null) {
-            trimFunction.getExpression().accept(this);
+            trimFunction.getExpression().accept(this, parameters);
         }
         if (trimFunction.getFromExpression() != null) {
-            trimFunction.getFromExpression().accept(this);
+            trimFunction.getFromExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(RangeExpression rangeExpression) {
-        rangeExpression.getStartExpression().accept(this);
-        rangeExpression.getEndExpression().accept(this);
+    public <S> Void visit(RangeExpression rangeExpression, S parameters) {
+        rangeExpression.getStartExpression().accept(this, parameters);
+        rangeExpression.getEndExpression().accept(this, parameters);
         return null;
     }
 
@@ -280,66 +285,66 @@ public class TablesNamesFinder<Void>
 
     public Set<String> getTables(Expression expr) {
         init(true);
-        expr.accept(this);
+        expr.accept(this, null);
         return tables;
     }
 
     public static Set<String> findTablesInExpression(String exprStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
         return tablesNamesFinder.getTables(CCJSqlParserUtil.parseExpression(exprStr));
     }
 
     @Override
-    public Void visit(WithItem withItem) {
+    public <S> Void visit(WithItem withItem, S parameters) {
         otherItemNames.add(withItem.getAlias().getName());
-        withItem.getSelect().accept((SelectVisitor<?>) this);
+        withItem.getSelect().accept((SelectVisitor<?>) this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(ParenthesedSelect select) {
+    public <S> Void visit(ParenthesedSelect select, S parameters) {
         if (select.getAlias() != null) {
             otherItemNames.add(select.getAlias().getName());
         }
         List<WithItem> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, parameters);
             }
         }
-        select.getSelect().accept((SelectVisitor<?>) this);
+        select.getSelect().accept((SelectVisitor<?>) this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(PlainSelect plainSelect) {
+    public <S> Void visit(PlainSelect plainSelect, S parameters) {
         List<WithItem> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, parameters);
             }
         }
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem<?> item : plainSelect.getSelectItems()) {
-                item.accept(this);
+                item.accept(this, parameters);
             }
         }
 
         if (plainSelect.getFromItem() != null) {
-            plainSelect.getFromItem().accept(this);
+            plainSelect.getFromItem().accept(this, parameters);
         }
 
-        visitJoins(plainSelect.getJoins());
+        visitJoins(plainSelect.getJoins(), parameters);
         if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(this);
+            plainSelect.getWhere().accept(this, parameters);
         }
 
         if (plainSelect.getHaving() != null) {
-            plainSelect.getHaving().accept(this);
+            plainSelect.getHaving().accept(this, parameters);
         }
 
         if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(this);
+            plainSelect.getOracleHierarchical().accept(this, parameters);
         }
         return null;
     }
@@ -355,7 +360,7 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(Table tableName) {
+    public <S> Void visit(Table tableName, S parameters) {
         String tableWholeName = extractTableName(tableName);
         if (!otherItemNames.contains(tableWholeName)) {
             tables.add(tableWholeName);
@@ -364,279 +369,279 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(Addition addition) {
+    public <S> Void visit(Addition addition, S parameters) {
         visitBinaryExpression(addition);
         return null;
     }
 
     @Override
-    public Void visit(AndExpression andExpression) {
+    public <S> Void visit(AndExpression andExpression, S parameters) {
         visitBinaryExpression(andExpression);
         return null;
     }
 
     @Override
-    public Void visit(Between between) {
-        between.getLeftExpression().accept(this);
-        between.getBetweenExpressionStart().accept(this);
-        between.getBetweenExpressionEnd().accept(this);
+    public <S> Void visit(Between between, S parameters) {
+        between.getLeftExpression().accept(this, parameters);
+        between.getBetweenExpressionStart().accept(this, parameters);
+        between.getBetweenExpressionEnd().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(OverlapsCondition overlapsCondition) {
-        overlapsCondition.getLeft().accept(this);
-        overlapsCondition.getRight().accept(this);
+    public <S> Void visit(OverlapsCondition overlapsCondition, S parameters) {
+        overlapsCondition.getLeft().accept(this, parameters);
+        overlapsCondition.getRight().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(Column tableColumn) {
+    public <S> Void visit(Column tableColumn, S parameters) {
         if (allowColumnProcessing && tableColumn.getTable() != null
                 && tableColumn.getTable().getName() != null) {
-            visit(tableColumn.getTable());
+            visit(tableColumn.getTable(), parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(Division division) {
+    public <S> Void visit(Division division, S parameters) {
         visitBinaryExpression(division);
         return null;
     }
 
     @Override
-    public Void visit(IntegerDivision division) {
+    public <S> Void visit(IntegerDivision division, S parameters) {
         visitBinaryExpression(division);
         return null;
     }
 
     @Override
-    public Void visit(DoubleValue doubleValue) {
+    public <S> Void visit(DoubleValue doubleValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(EqualsTo equalsTo) {
+    public <S> Void visit(EqualsTo equalsTo, S parameters) {
         visitBinaryExpression(equalsTo);
         return null;
     }
 
     @Override
-    public Void visit(Function function) {
+    public <S> Void visit(Function function, S parameters) {
         ExpressionList<?> exprList = function.getParameters();
         if (exprList != null) {
-            visit(exprList);
+            visit(exprList, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(GreaterThan greaterThan) {
+    public <S> Void visit(GreaterThan greaterThan, S parameters) {
         visitBinaryExpression(greaterThan);
         return null;
     }
 
     @Override
-    public Void visit(GreaterThanEquals greaterThanEquals) {
+    public <S> Void visit(GreaterThanEquals greaterThanEquals, S parameters) {
         visitBinaryExpression(greaterThanEquals);
         return null;
     }
 
     @Override
-    public Void visit(InExpression inExpression) {
-        inExpression.getLeftExpression().accept(this);
-        inExpression.getRightExpression().accept(this);
+    public <S> Void visit(InExpression inExpression, S parameters) {
+        inExpression.getLeftExpression().accept(this, parameters);
+        inExpression.getRightExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(IncludesExpression includesExpression) {
-        includesExpression.getLeftExpression().accept(this);
-        includesExpression.getRightExpression().accept(this);
+    public <S> Void visit(IncludesExpression includesExpression, S parameters) {
+        includesExpression.getLeftExpression().accept(this, parameters);
+        includesExpression.getRightExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(ExcludesExpression excludesExpression) {
-        excludesExpression.getLeftExpression().accept(this);
-        excludesExpression.getRightExpression().accept(this);
+    public <S> Void visit(ExcludesExpression excludesExpression, S parameters) {
+        excludesExpression.getLeftExpression().accept(this, parameters);
+        excludesExpression.getRightExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(FullTextSearch fullTextSearch) {
-
-        return null;
-    }
-
-    @Override
-    public Void visit(SignedExpression signedExpression) {
-        signedExpression.getExpression().accept(this);
-        return null;
-    }
-
-    @Override
-    public Void visit(IsNullExpression isNullExpression) {
+    public <S> Void visit(FullTextSearch fullTextSearch, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(IsBooleanExpression isBooleanExpression) {
+    public <S> Void visit(SignedExpression signedExpression, S parameters) {
+        signedExpression.getExpression().accept(this, parameters);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(IsNullExpression isNullExpression, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(JdbcParameter jdbcParameter) {
+    public <S> Void visit(IsBooleanExpression isBooleanExpression, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(LikeExpression likeExpression) {
+    public <S> Void visit(JdbcParameter jdbcParameter, S parameters) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(LikeExpression likeExpression, S parameters) {
         visitBinaryExpression(likeExpression);
         return null;
     }
 
     @Override
-    public Void visit(ExistsExpression existsExpression) {
-        existsExpression.getRightExpression().accept(this);
+    public <S> Void visit(ExistsExpression existsExpression, S parameters) {
+        existsExpression.getRightExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(MemberOfExpression memberOfExpression) {
-        memberOfExpression.getLeftExpression().accept(this);
-        memberOfExpression.getRightExpression().accept(this);
+    public <S> Void visit(MemberOfExpression memberOfExpression, S parameters) {
+        memberOfExpression.getLeftExpression().accept(this, parameters);
+        memberOfExpression.getRightExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(LongValue longValue) {
+    public <S> Void visit(LongValue longValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(MinorThan minorThan) {
+    public <S> Void visit(MinorThan minorThan, S parameters) {
         visitBinaryExpression(minorThan);
         return null;
     }
 
     @Override
-    public Void visit(MinorThanEquals minorThanEquals) {
+    public <S> Void visit(MinorThanEquals minorThanEquals, S parameters) {
         visitBinaryExpression(minorThanEquals);
         return null;
     }
 
     @Override
-    public Void visit(Multiplication multiplication) {
+    public <S> Void visit(Multiplication multiplication, S parameters) {
         visitBinaryExpression(multiplication);
         return null;
     }
 
     @Override
-    public Void visit(NotEqualsTo notEqualsTo) {
+    public <S> Void visit(NotEqualsTo notEqualsTo, S parameters) {
         visitBinaryExpression(notEqualsTo);
         return null;
     }
 
     @Override
-    public Void visit(DoubleAnd doubleAnd) {
+    public <S> Void visit(DoubleAnd doubleAnd, S parameters) {
         visitBinaryExpression(doubleAnd);
         return null;
     }
 
     @Override
-    public Void visit(Contains contains) {
+    public <S> Void visit(Contains contains, S parameters) {
         visitBinaryExpression(contains);
         return null;
     }
 
     @Override
-    public Void visit(ContainedBy containedBy) {
+    public <S> Void visit(ContainedBy containedBy, S parameters) {
         visitBinaryExpression(containedBy);
         return null;
     }
 
     @Override
-    public Void visit(NullValue nullValue) {
+    public <S> Void visit(NullValue nullValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(OrExpression orExpression) {
+    public <S> Void visit(OrExpression orExpression, S parameters) {
         visitBinaryExpression(orExpression);
         return null;
     }
 
     @Override
-    public Void visit(XorExpression xorExpression) {
+    public <S> Void visit(XorExpression xorExpression, S parameters) {
         visitBinaryExpression(xorExpression);
         return null;
     }
 
     @Override
-    public Void visit(StringValue stringValue) {
+    public <S> Void visit(StringValue stringValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(Subtraction subtraction) {
+    public <S> Void visit(Subtraction subtraction, S parameters) {
         visitBinaryExpression(subtraction);
         return null;
     }
 
     @Override
-    public Void visit(NotExpression notExpr) {
-        notExpr.getExpression().accept(this);
+    public <S> Void visit(NotExpression notExpr, S parameters) {
+        notExpr.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(BitwiseRightShift expr) {
+    public <S> Void visit(BitwiseRightShift expr, S parameters) {
         visitBinaryExpression(expr);
         return null;
     }
 
     @Override
-    public Void visit(BitwiseLeftShift expr) {
+    public <S> Void visit(BitwiseLeftShift expr, S parameters) {
         visitBinaryExpression(expr);
         return null;
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
-        binaryExpression.getLeftExpression().accept(this);
-        binaryExpression.getRightExpression().accept(this);
+        binaryExpression.getLeftExpression().accept(this, null);
+        binaryExpression.getRightExpression().accept(this, null);
     }
 
     @Override
-    public Void visit(ExpressionList<?> expressionList) {
+    public <S> Void visit(ExpressionList<?> expressionList, S parameters) {
         for (Expression expression : expressionList) {
-            expression.accept(this);
+            expression.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(DateValue dateValue) {
+    public <S> Void visit(DateValue dateValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(TimestampValue timestampValue) {
+    public <S> Void visit(TimestampValue timestampValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(TimeValue timeValue) {
+    public <S> Void visit(TimeValue timeValue, S parameters) {
 
         return null;
     }
@@ -648,17 +653,17 @@ public class TablesNamesFinder<Void>
      * CaseExpression)
      */
     @Override
-    public Void visit(CaseExpression caseExpression) {
+    public <S> Void visit(CaseExpression caseExpression, S parameters) {
         if (caseExpression.getSwitchExpression() != null) {
-            caseExpression.getSwitchExpression().accept(this);
+            caseExpression.getSwitchExpression().accept(this, parameters);
         }
         if (caseExpression.getWhenClauses() != null) {
             for (WhenClause when : caseExpression.getWhenClauses()) {
-                when.accept(this);
+                when.accept(this, parameters);
             }
         }
         if (caseExpression.getElseExpression() != null) {
-            caseExpression.getElseExpression().accept(this);
+            caseExpression.getElseExpression().accept(this, parameters);
         }
         return null;
     }
@@ -670,126 +675,128 @@ public class TablesNamesFinder<Void>
      * net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.WhenClause)
      */
     @Override
-    public Void visit(WhenClause whenClause) {
+    public <S> Void visit(WhenClause whenClause, S parameters) {
         if (whenClause.getWhenExpression() != null) {
-            whenClause.getWhenExpression().accept(this);
+            whenClause.getWhenExpression().accept(this, parameters);
         }
         if (whenClause.getThenExpression() != null) {
-            whenClause.getThenExpression().accept(this);
+            whenClause.getThenExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSelect().accept((ExpressionVisitor) this);
+    public <S> Void visit(AnyComparisonExpression anyComparisonExpression, S parameters) {
+        anyComparisonExpression.getSelect().accept((ExpressionVisitor<?>) this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(Concat concat) {
+    public <S> Void visit(Concat concat, S parameters) {
         visitBinaryExpression(concat);
         return null;
     }
 
     @Override
-    public Void visit(Matches matches) {
+    public <S> Void visit(Matches matches, S parameters) {
         visitBinaryExpression(matches);
         return null;
     }
 
     @Override
-    public Void visit(BitwiseAnd bitwiseAnd) {
+    public <S> Void visit(BitwiseAnd bitwiseAnd, S parameters) {
         visitBinaryExpression(bitwiseAnd);
         return null;
     }
 
     @Override
-    public Void visit(BitwiseOr bitwiseOr) {
+    public <S> Void visit(BitwiseOr bitwiseOr, S parameters) {
         visitBinaryExpression(bitwiseOr);
         return null;
     }
 
     @Override
-    public Void visit(BitwiseXor bitwiseXor) {
+    public <S> Void visit(BitwiseXor bitwiseXor, S parameters) {
         visitBinaryExpression(bitwiseXor);
         return null;
     }
 
     @Override
-    public Void visit(CastExpression cast) {
-        cast.getLeftExpression().accept(this);
+    public <S> Void visit(CastExpression cast, S parameters) {
+        cast.getLeftExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(Modulo modulo) {
+    public <S> Void visit(Modulo modulo, S parameters) {
         visitBinaryExpression(modulo);
         return null;
     }
 
     @Override
-    public Void visit(AnalyticExpression analytic) {
+    public <S> Void visit(AnalyticExpression analytic, S parameters) {
         if (analytic.getExpression() != null) {
-            analytic.getExpression().accept(this);
+            analytic.getExpression().accept(this, parameters);
         }
         if (analytic.getDefaultValue() != null) {
-            analytic.getDefaultValue().accept(this);
+            analytic.getDefaultValue().accept(this, parameters);
         }
         if (analytic.getOffset() != null) {
-            analytic.getOffset().accept(this);
+            analytic.getOffset().accept(this, parameters);
         }
         if (analytic.getKeep() != null) {
-            analytic.getKeep().accept(this);
+            analytic.getKeep().accept(this, parameters);
         }
         if (analytic.getFuncOrderBy() != null) {
             for (OrderByElement element : analytic.getOrderByElements()) {
-                element.getExpression().accept(this);
+                element.getExpression().accept(this, parameters);
             }
         }
 
         if (analytic.getWindowElement() != null) {
-            analytic.getWindowElement().getRange().getStart().getExpression().accept(this);
-            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this);
-            analytic.getWindowElement().getOffset().getExpression().accept(this);
+            analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
+                    parameters);
+            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
+                    parameters);
+            analytic.getWindowElement().getOffset().getExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(SetOperationList list) {
+    public <S> Void visit(SetOperationList list, S parameters) {
         List<WithItem> withItemsList = list.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, parameters);
             }
         }
         for (Select selectBody : list.getSelects()) {
-            selectBody.accept((SelectVisitor<?>) this);
+            selectBody.accept((SelectVisitor<?>) this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(ExtractExpression eexpr) {
+    public <S> Void visit(ExtractExpression eexpr, S parameters) {
         if (eexpr.getExpression() != null) {
-            eexpr.getExpression().accept(this);
+            eexpr.getExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(LateralSubSelect lateralSubSelect) {
+    public <S> Void visit(LateralSubSelect lateralSubSelect, S parameters) {
         if (lateralSubSelect.getAlias() != null) {
             otherItemNames.add(lateralSubSelect.getAlias().getName());
         }
-        lateralSubSelect.getSelect().accept((SelectVisitor<?>) this);
+        lateralSubSelect.getSelect().accept((SelectVisitor<?>) this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(TableStatement tableStatement) {
-        tableStatement.getTable().accept(this);
+    public <S> Void visit(TableStatement tableStatement, S parameters) {
+        tableStatement.getTable().accept(this, null);
         return null;
     }
 
@@ -808,169 +815,169 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(IntervalExpression iexpr) {
+    public <S> Void visit(IntervalExpression iexpr, S parameters) {
         if (iexpr.getExpression() != null) {
-            iexpr.getExpression().accept(this);
+            iexpr.getExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(JdbcNamedParameter jdbcNamedParameter) {
+    public <S> Void visit(JdbcNamedParameter jdbcNamedParameter, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(OracleHierarchicalExpression oexpr) {
+    public <S> Void visit(OracleHierarchicalExpression oexpr, S parameters) {
         if (oexpr.getStartExpression() != null) {
-            oexpr.getStartExpression().accept(this);
+            oexpr.getStartExpression().accept(this, parameters);
         }
 
         if (oexpr.getConnectExpression() != null) {
-            oexpr.getConnectExpression().accept(this);
+            oexpr.getConnectExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(RegExpMatchOperator rexpr) {
+    public <S> Void visit(RegExpMatchOperator rexpr, S parameters) {
         visitBinaryExpression(rexpr);
         return null;
     }
 
     @Override
-    public Void visit(JsonExpression jsonExpr) {
+    public <S> Void visit(JsonExpression jsonExpr, S parameters) {
         if (jsonExpr.getExpression() != null) {
-            jsonExpr.getExpression().accept(this);
+            jsonExpr.getExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(JsonOperator jsonExpr) {
+    public <S> Void visit(JsonOperator jsonExpr, S parameters) {
         visitBinaryExpression(jsonExpr);
         return null;
     }
 
     @Override
-    public Void visit(AllColumns allColumns) {
+    public <S> Void visit(AllColumns allColumns, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(AllTableColumns allTableColumns) {
+    public <S> Void visit(AllTableColumns allTableColumns, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(AllValue allValue) {
+    public <S> Void visit(AllValue allValue, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(IsDistinctExpression isDistinctExpression) {
+    public <S> Void visit(IsDistinctExpression isDistinctExpression, S parameters) {
         visitBinaryExpression(isDistinctExpression);
         return null;
     }
 
     @Override
-    public Void visit(SelectItem<?> item) {
-        item.getExpression().accept(this);
+    public <S> Void visit(SelectItem<?> item, S parameters) {
+        item.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(UserVariable var) {
-
-        return null;
-    }
-
-    @Override
-    public Void visit(NumericBind bind) {
-
+    public <S> Void visit(UserVariable var, S parameters) {
 
         return null;
     }
 
     @Override
-    public Void visit(KeepExpression aexpr) {
+    public <S> Void visit(NumericBind bind, S parameters) {
+
 
         return null;
     }
 
     @Override
-    public Void visit(MySQLGroupConcat groupConcat) {
+    public <S> Void visit(KeepExpression aexpr, S parameters) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MySQLGroupConcat groupConcat, S parameters) {
 
         return null;
     }
 
     @Override
     public Void visit(Delete delete) {
-        visit(delete.getTable());
+        visit(delete.getTable(), null);
 
         if (delete.getUsingList() != null) {
             for (Table using : delete.getUsingList()) {
-                visit(using);
+                visit(using, null);
             }
         }
 
-        visitJoins(delete.getJoins());
+        visitJoins(delete.getJoins(), null);
 
         if (delete.getWhere() != null) {
-            delete.getWhere().accept(this);
+            delete.getWhere().accept(this, null);
         }
         return null;
     }
 
     @Override
     public Void visit(Update update) {
-        visit(update.getTable());
+        visit(update.getTable(), null);
         if (update.getWithItemsList() != null) {
             for (WithItem withItem : update.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, null);
             }
         }
 
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
-                join.getRightItem().accept(this);
+                join.getRightItem().accept(this, null);
             }
         }
         if (update.getExpressions() != null) {
             for (Expression expression : update.getExpressions()) {
-                expression.accept(this);
+                expression.accept(this, null);
             }
         }
 
         if (update.getFromItem() != null) {
-            update.getFromItem().accept(this);
+            update.getFromItem().accept(this, null);
         }
 
         if (update.getJoins() != null) {
             for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getRightItem().accept(this, null);
                 for (Expression expression : join.getOnExpressions()) {
-                    expression.accept(this);
+                    expression.accept(this, null);
                 }
             }
         }
 
         if (update.getWhere() != null) {
-            update.getWhere().accept(this);
+            update.getWhere().accept(this, null);
         }
         return null;
     }
 
     @Override
     public Void visit(Insert insert) {
-        visit(insert.getTable());
+        visit(insert.getTable(), null);
         if (insert.getWithItemsList() != null) {
             for (WithItem withItem : insert.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, null);
             }
         }
         if (insert.getSelect() != null) {
@@ -980,19 +987,19 @@ public class TablesNamesFinder<Void>
     }
 
     public Void visit(Analyze analyze) {
-        visit(analyze.getTable());
+        visit(analyze.getTable(), null);
         return null;
     }
 
     @Override
     public Void visit(Drop drop) {
-        visit(drop.getName());
+        visit(drop.getName(), null);
         return null;
     }
 
     @Override
     public Void visit(Truncate truncate) {
-        visit(truncate.getTable());
+        visit(truncate.getTable(), null);
         return null;
     }
 
@@ -1008,9 +1015,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public Void visit(CreateTable create) {
-        visit(create.getTable());
+        visit(create.getTable(), null);
         if (create.getSelect() != null) {
-            create.getSelect().accept((SelectVisitor<?>) this);
+            create.getSelect().accept((SelectVisitor<?>) this, null);
         }
         return null;
     }
@@ -1056,50 +1063,48 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(RowConstructor<?> rowConstructor) {
+    public <S> Void visit(RowConstructor<?> rowConstructor, S parameters) {
         for (Expression expr : rowConstructor) {
-            expr.accept(this);
+            expr.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(RowGetExpression rowGetExpression) {
-        rowGetExpression.getExpression().accept(this);
+    public <S> Void visit(RowGetExpression rowGetExpression, S parameters) {
+        rowGetExpression.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(HexValue hexValue) {
-
-
+    public <S> Void visit(HexValue hexValue, S parameters) {
         return null;
     }
 
     @Override
     public Void visit(Merge merge) {
-        visit(merge.getTable());
+        visit(merge.getTable(), null);
         if (merge.getWithItemsList() != null) {
             for (WithItem withItem : merge.getWithItemsList()) {
-                withItem.accept((SelectVisitor<?>) this);
+                withItem.accept((SelectVisitor<?>) this, null);
             }
         }
 
         if (merge.getFromItem() != null) {
-            merge.getFromItem().accept(this);
+            merge.getFromItem().accept(this, null);
         }
         return null;
     }
 
-    @Override
-    public Void visit(OracleHint hint) {
 
+    @Override
+    public <S> Void visit(OracleHint hint, S parameters) {
         return null;
     }
 
     @Override
-    public Void visit(TableFunction tableFunction) {
-        visit(tableFunction.getFunction());
+    public <S> Void visit(TableFunction tableFunction, S parameters) {
+        visit(tableFunction.getFunction(), null);
         return null;
     }
 
@@ -1110,35 +1115,30 @@ public class TablesNamesFinder<Void>
 
     @Override
     public Void visit(RefreshMaterializedViewStatement materializedView) {
-        visit(materializedView.getView());
+        visit(materializedView.getView(), null);
         return null;
     }
 
     @Override
-    public Void visit(TimeKeyExpression timeKeyExpression) {
-
+    public <S> Void visit(TimeKeyExpression timeKeyExpression, S parameters) {
         return null;
     }
 
     @Override
-    public Void visit(DateTimeLiteralExpression literal) {
-
-
+    public <S> Void visit(DateTimeLiteralExpression literal, S parameters) {
         return null;
     }
 
     @Override
     public Void visit(Commit commit) {
-
-
         return null;
     }
 
     @Override
     public Void visit(Upsert upsert) {
-        visit(upsert.getTable());
+        visit(upsert.getTable(), null);
         if (upsert.getExpressions() != null) {
-            upsert.getExpressions().accept(this);
+            upsert.getExpressions().accept(this, null);
         }
         if (upsert.getSelect() != null) {
             visit(upsert.getSelect());
@@ -1148,18 +1148,17 @@ public class TablesNamesFinder<Void>
 
     @Override
     public Void visit(UseStatement use) {
-
         return null;
     }
 
     @Override
-    public Void visit(ParenthesedFromItem parenthesis) {
+    public <S> Void visit(ParenthesedFromItem parenthesis, S parameters) {
         if (parenthesis.getAlias() != null) {
             otherItemNames.add(parenthesis.getAlias().getName());
         }
-        parenthesis.getFromItem().accept(this);
+        parenthesis.getFromItem().accept(this, parameters);
         // support join keyword in fromItem
-        visitJoins(parenthesis.getJoins());
+        visitJoins(parenthesis.getJoins(), parameters);
         return null;
     }
 
@@ -1168,15 +1167,15 @@ public class TablesNamesFinder<Void>
      *
      * @param joins join sql block
      */
-    private void visitJoins(List<Join> joins) {
+    private <S> void visitJoins(List<Join> joins, S parameters) {
         if (joins == null) {
             return;
         }
         for (Join join : joins) {
-            join.getFromItem().accept(this);
-            join.getRightItem().accept(this);
+            join.getFromItem().accept(this, parameters);
+            join.getRightItem().accept(this, parameters);
             for (Expression expression : join.getOnExpressions()) {
-                expression.accept(this);
+                expression.accept(this, parameters);
             }
         }
     }
@@ -1192,93 +1191,88 @@ public class TablesNamesFinder<Void>
     @Override
     public Void visit(Comment comment) {
         if (comment.getTable() != null) {
-            visit(comment.getTable());
+            visit(comment.getTable(), null);
         }
         if (comment.getColumn() != null) {
             Table table = comment.getColumn().getTable();
             if (table != null) {
-                visit(table);
+                visit(table, null);
             }
         }
         return null;
     }
 
     @Override
-    public Void visit(Values values) {
-        values.getExpressions().accept(this);
+    public <S> Void visit(Values values, S parameters) {
+        values.getExpressions().accept(this, parameters);
         return null;
     }
 
     @Override
     public Void visit(DescribeStatement describe) {
-        describe.getTable().accept(this);
+        describe.getTable().accept(this, null);
         return null;
     }
 
     @Override
     public Void visit(ExplainStatement explain) {
         if (explain.getStatement() != null) {
-            explain.getStatement().accept((StatementVisitor) this);
+            explain.getStatement().accept((StatementVisitor<?>) this);
         }
         return null;
     }
 
     @Override
-    public Void visit(NextValExpression nextVal) {
-
+    public <S> Void visit(NextValExpression nextVal, S parameters) {
         return null;
     }
 
     @Override
-    public Void visit(CollateExpression col) {
-        col.getLeftExpression().accept(this);
+    public <S> Void visit(CollateExpression col, S parameters) {
+        col.getLeftExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(ShowStatement aThis) {
-
+    public Void visit(ShowStatement showStatement) {
         return null;
     }
 
     @Override
-    public Void visit(SimilarToExpression expr) {
+    public <S> Void visit(SimilarToExpression expr, S parameters) {
         visitBinaryExpression(expr);
         return null;
     }
 
     @Override
     public Void visit(DeclareStatement aThis) {
-
         return null;
     }
 
     @Override
     public Void visit(Grant grant) {
-
-
         return null;
     }
 
     @Override
-    public Void visit(ArrayExpression array) {
-        array.getObjExpression().accept(this);
+    public <S> Void visit(ArrayExpression array, S parameters) {
+        array.getObjExpression().accept(this, parameters);
         if (array.getStartIndexExpression() != null) {
-            array.getIndexExpression().accept(this);
+            array.getIndexExpression().accept(this, parameters);
         }
         if (array.getStartIndexExpression() != null) {
-            array.getStartIndexExpression().accept(this);
+            array.getStartIndexExpression().accept(this, parameters);
         }
         if (array.getStopIndexExpression() != null) {
-            array.getStopIndexExpression().accept(this);
+            array.getStopIndexExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(ArrayConstructor array) {
+    public <S> Void visit(ArrayConstructor array, S parameters) {
         for (Expression expression : array.getExpressions()) {
-            expression.accept(this);
+            expression.accept(this, parameters);
         }
         return null;
     }
@@ -1308,42 +1302,42 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(TSQLLeftJoin tsqlLeftJoin) {
+    public <S> Void visit(TSQLLeftJoin tsqlLeftJoin, S parameters) {
         visitBinaryExpression(tsqlLeftJoin);
         return null;
     }
 
     @Override
-    public Void visit(TSQLRightJoin tsqlRightJoin) {
+    public <S> Void visit(TSQLRightJoin tsqlRightJoin, S parameters) {
         visitBinaryExpression(tsqlRightJoin);
         return null;
     }
 
     @Override
-    public Void visit(StructType structType) {
+    public <S> Void visit(StructType structType, S parameters) {
         if (structType.getArguments() != null) {
             for (SelectItem<?> selectItem : structType.getArguments()) {
-                selectItem.getExpression().accept(this);
+                selectItem.getExpression().accept(this, parameters);
             }
         }
         return null;
     }
 
     @Override
-    public Void visit(LambdaExpression lambdaExpression) {
-        lambdaExpression.getExpression().accept(this);
+    public <S> Void visit(LambdaExpression lambdaExpression, S parameters) {
+        lambdaExpression.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(VariableAssignment var) {
-        var.getVariable().accept(this);
-        var.getExpression().accept(this);
+    public <S> Void visit(VariableAssignment var, S parameters) {
+        var.getVariable().accept(this, parameters);
+        var.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
-    public Void visit(XMLSerializeExpr aThis) {
+    public <S> Void visit(XMLSerializeExpr aThis, S parameters) {
 
         return null;
     }
@@ -1360,8 +1354,8 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(TimezoneExpression aThis) {
-        aThis.getLeftExpression().accept(this);
+    public <S> Void visit(TimezoneExpression aThis, S parameters) {
+        aThis.getLeftExpression().accept(this, parameters);
         return null;
     }
 
@@ -1383,33 +1377,34 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(JsonAggregateFunction expression) {
+    public <S> Void visit(JsonAggregateFunction expression, S parameters) {
         Expression expr = expression.getExpression();
         if (expr != null) {
-            expr.accept(this);
+            expr.accept(this, parameters);
         }
 
         expr = expression.getFilterExpression();
         if (expr != null) {
-            expr.accept(this);
+            expr.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(JsonFunction expression) {
+    public <S> Void visit(JsonFunction expression, S parameters) {
         for (JsonFunctionExpression expr : expression.getExpressions()) {
-            expr.getExpression().accept(this);
+            expr.getExpression().accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public Void visit(ConnectByRootOperator connectByRootOperator) {
-        connectByRootOperator.getColumn().accept(this);
+    public <S> Void visit(ConnectByRootOperator connectByRootOperator, S parameters) {
+        connectByRootOperator.getColumn().accept(this, parameters);
         return null;
     }
 
+    @Override
     public Void visit(IfElseStatement ifElseStatement) {
         ifElseStatement.getIfStatement().accept(this);
         if (ifElseStatement.getElseStatement() != null) {
@@ -1418,16 +1413,17 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
-    public Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
-        oracleNamedFunctionParameter.getExpression().accept(this);
+    @Override
+    public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S parameters) {
+        oracleNamedFunctionParameter.getExpression().accept(this, parameters);
         return null;
     }
 
     @Override
     public Void visit(RenameTableStatement renameTableStatement) {
         for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
-            e.getKey().accept(this);
-            e.getValue().accept(this);
+            e.getKey().accept(this, null);
+            e.getValue().accept(this, null);
         }
         return null;
     }
@@ -1435,7 +1431,7 @@ public class TablesNamesFinder<Void>
     @Override
     public Void visit(PurgeStatement purgeStatement) {
         if (purgeStatement.getPurgeObjectType() == PurgeObjectType.TABLE) {
-            ((Table) purgeStatement.getObject()).accept(this);
+            ((Table) purgeStatement.getObject()).accept(this, null);
         }
         return null;
     }
@@ -1453,7 +1449,7 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public Void visit(GeometryDistance geometryDistance) {
+    public <S> Void visit(GeometryDistance geometryDistance, S parameters) {
         visitBinaryExpression(geometryDistance);
         return null;
     }

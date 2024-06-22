@@ -40,36 +40,36 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     private String prefix = "A";
 
     @Override
-    public T visit(ParenthesedSelect parenthesedSelect) {
-        parenthesedSelect.getSelect().accept(this);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S parameters) {
+        parenthesedSelect.getSelect().accept(this, parameters);
         return null;
     }
 
     @Override
-    public T visit(PlainSelect plainSelect) {
+    public <S> T visit(PlainSelect plainSelect, S parameters) {
         firstRun = true;
         counter = 0;
         aliases.clear();
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this);
+            item.accept(this, parameters);
         }
         firstRun = false;
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this);
+            item.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public T visit(SetOperationList setOpList) {
-        for (Select select : setOpList.getSelects()) {
-            select.accept(this);
+    public <S> T visit(SetOperationList setOperationList, S parameters) {
+        for (Select select : setOperationList.getSelects()) {
+            select.accept(this, parameters);
         }
         return null;
     }
 
     @Override
-    public T visit(SelectItem<?> selectExpressionItem) {
+    public <S> T visit(SelectItem<?> selectExpressionItem, S parameters) {
         if (firstRun) {
             if (selectExpressionItem.getAlias() != null) {
                 aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
@@ -99,23 +99,23 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     }
 
     @Override
-    public T visit(WithItem withItem) {
+    public <S> T visit(WithItem withItem, S parameters) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public T visit(Values aThis) {
+    public <S> T visit(Values values, S parameters) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public T visit(LateralSubSelect lateralSubSelect) {
-        lateralSubSelect.getSelect().accept(this);
+    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
+        lateralSubSelect.getSelect().accept(this, parameters);
         return null;
     }
 
     @Override
-    public T visit(TableStatement tableStatement) {
+    public <S> T visit(TableStatement tableStatement, S parameters) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 }
