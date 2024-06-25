@@ -140,6 +140,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         return buffer;
     }
 
+    public StringBuilder visit(ParenthesedSelect select) {
+        return visit(select, null);
+    }
+
+
     public void visit(Top top) {
         buffer.append(top).append(" ");
     }

@@ -72,6 +72,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         setDatabase(database);
     }
 
+    public Table(String catalogName, String schemaName, String tableName) {
+        setName(tableName);
+        setSchemaName(schemaName);
+        setDatabase(new Database(catalogName));
+    }
+
     public Table(List<String> partItems) {
         this.partItems = new ArrayList<>(partItems);
         Collections.reverse(this.partItems);
@@ -86,6 +92,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.partDelimiters = new ArrayList<>(partDelimiters);
         Collections.reverse(this.partItems);
         Collections.reverse(this.partDelimiters);
+    }
+
+    public String getCatalogName() {
+        return getIndex(DATABASE_IDX);
     }
 
     public Database getDatabase() {
