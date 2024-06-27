@@ -383,10 +383,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(SelectItem<?> selectExpressionItem, S context) {
-        selectExpressionItem.getExpression().accept(expressionVisitor, context);
-        if (selectExpressionItem.getAlias() != null) {
-            buffer.append(selectExpressionItem.getAlias().toString());
+    public <S> StringBuilder visit(SelectItem<?> selectItem, S context) {
+        selectItem.getExpression().accept(expressionVisitor, context);
+        if (selectItem.getAlias() != null) {
+            buffer.append(selectItem.getAlias().toString());
         }
         return buffer;
     }
