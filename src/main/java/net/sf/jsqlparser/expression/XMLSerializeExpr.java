@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+
 import static java.util.stream.Collectors.joining;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -22,8 +24,8 @@ public class XMLSerializeExpr extends ASTNodeAccessImpl implements Expression {
     private ColDataType dataType;
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public Expression getExpression() {

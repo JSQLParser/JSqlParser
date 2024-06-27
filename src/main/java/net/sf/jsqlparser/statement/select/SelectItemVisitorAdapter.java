@@ -14,7 +14,7 @@ import net.sf.jsqlparser.expression.Expression;
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectItemVisitorAdapter<T> implements SelectItemVisitor<T> {
     @Override
-    public <S> T visit(SelectItem<? extends Expression> item, S parameters) {
+    public <S> T visit(SelectItem<? extends Expression> item, S context) {
         return null;
     }
 }

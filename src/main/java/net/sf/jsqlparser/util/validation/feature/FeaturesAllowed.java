@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 import net.sf.jsqlparser.parser.feature.ModifyableFeatureSet;
@@ -30,18 +31,13 @@ import net.sf.jsqlparser.util.validation.ValidationException;
  */
 public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureSet {
 
-    private static final String SEPERATOR_REGEX = " \\+ ";
-    private static final String SEPERATOR = " + ";
-
     public static final FeaturesAllowed JDBC = new FeaturesAllowed("jdbc",
             // always allowed if used with jdbc
             Feature.jdbcParameter,
             Feature.jdbcNamedParameter).unmodifyable();
-
     public static final FeaturesAllowed EXPRESSIONS =
             new FeaturesAllowed("EXPRESSIONS", Feature.exprLike,
                     Feature.exprSimilarTo);
-
     /**
      * all {@link Feature}' within SQL SELECT without modification features like
      * {@link Feature#selectInto}, but jdbc-features like {@link Feature#jdbcParameter} and
@@ -90,53 +86,14 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.tableStatement,
 
             Feature.function).unmodifyable();
-
-    /**
-     * all {@link Feature}' for SQL INSERT including {@link #SELECT} and {@link Feature#selectInto}
-     */
-    public static final FeaturesAllowed INSERT =
-            new FeaturesAllowed("INSERT", Feature.insert, Feature.insertFromSelect,
-                    Feature.insertModifierIgnore, Feature.insertModifierPriority,
-                    Feature.insertReturningAll,
-                    Feature.insertReturningExpressionList, Feature.insertUseSet,
-                    Feature.insertValues, Feature.selectInto).add(SELECT).unmodifyable();
-
-    /**
-     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
-     */
-    public static final FeaturesAllowed UPDATE = new FeaturesAllowed("UPDATE", Feature.update,
-            Feature.updateJoins,
-            Feature.updateFrom, Feature.updateLimit, Feature.updateOrderBy, Feature.updateReturning,
-            Feature.updateUseSelect)
-            .add(SELECT).unmodifyable();
-
-    /**
-     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
-     */
-    public static final FeaturesAllowed DELETE =
-            new FeaturesAllowed("DELETE", Feature.delete, Feature.deleteJoin,
-                    Feature.deleteLimit, Feature.deleteOrderBy, Feature.deleteTables,
-                    Feature.deleteReturningExpressionList,
-                    Feature.truncate)
-                    .add(SELECT).unmodifyable();
-
     /**
      * all {@link Feature}' for SQL MERGE other similar commands
      */
     public static final FeaturesAllowed MERGE =
             new FeaturesAllowed("MERGE", Feature.merge, Feature.upsert,
                     Feature.insertUseDuplicateKeyUpdate).unmodifyable();
-
-    /**
-     * all DML {@link Feature}'s
-     */
-    public static final FeaturesAllowed DML =
-            new FeaturesAllowed("DML").add(SELECT, INSERT, UPDATE, DELETE, MERGE)
-                    .unmodifyable();
-
     public static final FeaturesAllowed EXECUTE =
             new FeaturesAllowed("EXECUTE", Feature.execute).unmodifyable();
-
     /**
      * all "CREATE" {@link Feature}'s
      */
@@ -148,7 +105,6 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.createTableFromSelect,
             Feature.createTrigger,
             Feature.createView).unmodifyable();
-
     /**
      * all "ALTER" {@link Feature}'s
      */
@@ -156,7 +112,6 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterView, Feature.alterIndex)
                     .unmodifyable();
-
     /**
      * all "DROP" {@link Feature}'s
      */
@@ -167,13 +122,45 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
                     Feature.dropIndexIfExists, Feature.dropViewIfExists, Feature.dropSchemaIfExists,
                     Feature.dropSequenceIfExists)
                     .unmodifyable();
-
+    private static final String SEPERATOR_REGEX = " \\+ ";
+    /**
+     * all {@link Feature}' for SQL INSERT including {@link #SELECT} and {@link Feature#selectInto}
+     */
+    public static final FeaturesAllowed INSERT =
+            new FeaturesAllowed("INSERT", Feature.insert, Feature.insertFromSelect,
+                    Feature.insertModifierIgnore, Feature.insertModifierPriority,
+                    Feature.insertReturningAll,
+                    Feature.insertReturningExpressionList, Feature.insertUseSet,
+                    Feature.insertValues, Feature.selectInto).add(SELECT).unmodifyable();
+    /**
+     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
+     */
+    public static final FeaturesAllowed UPDATE = new FeaturesAllowed("UPDATE", Feature.update,
+            Feature.updateJoins,
+            Feature.updateFrom, Feature.updateLimit, Feature.updateOrderBy, Feature.updateReturning,
+            Feature.updateUseSelect)
+            .add(SELECT).unmodifyable();
+    /**
+     * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
+     */
+    public static final FeaturesAllowed DELETE =
+            new FeaturesAllowed("DELETE", Feature.delete, Feature.deleteJoin,
+                    Feature.deleteLimit, Feature.deleteOrderBy, Feature.deleteTables,
+                    Feature.deleteReturningExpressionList,
+                    Feature.truncate)
+                    .add(SELECT).unmodifyable();
+    /**
+     * all DML {@link Feature}'s
+     */
+    public static final FeaturesAllowed DML =
+            new FeaturesAllowed("DML").add(SELECT, INSERT, UPDATE, DELETE, MERGE)
+                    .unmodifyable();
     /**
      * all DDL {@link Feature}'s
      */
     public static final FeaturesAllowed DDL =
             new FeaturesAllowed("DDL").add(CREATE, ALTER, DROP).unmodifyable();
-
+    private static final String SEPERATOR = " + ";
     private Set<String> names = new LinkedHashSet<>();
     private Set<Feature> features = new HashSet<>();
 

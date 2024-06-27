@@ -12,9 +12,8 @@ package net.sf.jsqlparser.util.validation;
 import net.sf.jsqlparser.JSQLParserException;
 
 /**
- * wraps a {@link JSQLParserException} to add to the errors collected by
- * validation
- * 
+ * wraps a {@link JSQLParserException} to add to the errors collected by validation
+ *
  * @author gitmotte
  */
 public class ParseException extends ValidationException {

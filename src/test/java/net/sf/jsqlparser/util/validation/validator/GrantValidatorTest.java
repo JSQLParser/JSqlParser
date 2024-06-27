@@ -21,7 +21,8 @@ public class GrantValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateGrant() throws JSQLParserException {
-        for (String sql : Arrays.asList("GRANT SELECT ON t1 TO u", "GRANT SELECT, INSERT ON t1 TO u, u2",
+        for (String sql : Arrays.asList("GRANT SELECT ON t1 TO u",
+                "GRANT SELECT, INSERT ON t1 TO u, u2",
                 "GRANT role1 TO u, u2", "GRANT SELECT, INSERT, UPDATE, DELETE ON T1 TO ADMIN_ROLE",
                 "GRANT ROLE_1 TO TEST_ROLE_1, TEST_ROLE_2")) {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
@@ -30,7 +31,8 @@ public class GrantValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidateGrantNotAllowed() throws JSQLParserException {
-        for (String sql : Arrays.asList("GRANT SELECT ON t1 TO u", "GRANT SELECT, INSERT ON t1 TO u, u2",
+        for (String sql : Arrays.asList("GRANT SELECT ON t1 TO u",
+                "GRANT SELECT, INSERT ON t1 TO u, u2",
                 "GRANT role1 TO u, u2", "GRANT SELECT, INSERT, UPDATE, DELETE ON T1 TO ADMIN_ROLE",
                 "GRANT ROLE_1 TO TEST_ROLE_1, TEST_ROLE_2")) {
             validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.grant);

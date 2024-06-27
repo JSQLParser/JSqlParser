@@ -31,7 +31,8 @@ public class ValidationTestAsserts {
      * @param errors
      * @param feature
      */
-    public static void assertNotSupported(Collection<ValidationException> errors, Feature... feature) {
+    public static void assertNotSupported(Collection<ValidationException> errors,
+            Feature... feature) {
         assertEquals(toSet(f -> f + " not supported.", feature), toErrorsSet(errors));
     }
 
@@ -39,7 +40,8 @@ public class ValidationTestAsserts {
      * @param errors
      * @param feature
      */
-    public static void assertNotAllowed(Collection<ValidationException> errors, Feature... feature) {
+    public static void assertNotAllowed(Collection<ValidationException> errors,
+            Feature... feature) {
         assertEquals(toSet(f -> f + " not allowed.", feature), toErrorsSet(errors));
     }
 
@@ -48,9 +50,11 @@ public class ValidationTestAsserts {
      * @param checkForExists
      * @param names
      */
-    public static void assertMetadata(Collection<ValidationException> errors, boolean checkForExists, String... names) {
+    public static void assertMetadata(Collection<ValidationException> errors,
+            boolean checkForExists, String... names) {
         assertEquals(Stream.of(names).map(
-                f -> String.format("%s does %sexist.", f, checkForExists ? "not " : "")).collect(Collectors.toSet()),
+                f -> String.format("%s does %sexist.", f, checkForExists ? "not " : ""))
+                .collect(Collectors.toSet()),
                 toErrorsSet(errors));
     }
 
@@ -60,7 +64,8 @@ public class ValidationTestAsserts {
      */
     public static void assertErrorsSize(Collection<?> errors, int size) {
         assertNotNull(errors);
-        assertEquals(size, errors.size(), String.format("Expected %d errors, but got: %s", size, errors.toString()));
+        assertEquals(size, errors.size(),
+                String.format("Expected %d errors, but got: %s", size, errors.toString()));
     }
 
     /**
@@ -79,7 +84,8 @@ public class ValidationTestAsserts {
      * @param statementCount
      * @param versions
      */
-    public static void validateNoErrors(String sql, int statementCount, ValidationCapability... versions) {
+    public static void validateNoErrors(String sql, int statementCount,
+            ValidationCapability... versions) {
         Validation validation = new Validation( //
                 Arrays.asList(versions), sql);
         List<ValidationError> errors = validation.validate();
@@ -113,7 +119,8 @@ public class ValidationTestAsserts {
     public static void validateMetadata(String sql, int statementCount, int errorCount,
             DatabaseMetaDataValidation allowed,
             boolean exists, String... names) {
-        validateMetadata(sql, statementCount, errorCount, Collections.singleton(allowed), exists, names);
+        validateMetadata(sql, statementCount, errorCount, Collections.singleton(allowed), exists,
+                names);
     }
 
     /**
@@ -136,11 +143,13 @@ public class ValidationTestAsserts {
      * @param errorCount
      * @param allowed - the allowed feature
      * @param features - the features not allowed, assert errormessages against
-     * {@link #assertNotAllowed(Collection, Feature...)}
+     *        {@link #assertNotAllowed(Collection, Feature...)}
      */
-    public static void validateNotAllowed(String sql, int statementCount, int errorCount, FeaturesAllowed allowed,
+    public static void validateNotAllowed(String sql, int statementCount, int errorCount,
+            FeaturesAllowed allowed,
             Feature... features) {
-        validateNotAllowed(sql, statementCount, errorCount, Collections.singleton(allowed), features);
+        validateNotAllowed(sql, statementCount, errorCount, Collections.singleton(allowed),
+                features);
     }
 
     /**
@@ -149,7 +158,7 @@ public class ValidationTestAsserts {
      * @param errorCount
      * @param allowed - the allowed features
      * @param features - the features not allowed, assert errormessages against
-     * {@link #assertNotAllowed(Collection, Feature...)}
+     *        {@link #assertNotAllowed(Collection, Feature...)}
      */
     public static void validateNotAllowed(String sql, int statementCount, int errorCount,
             Collection<FeaturesAllowed> allowed,
@@ -159,23 +168,21 @@ public class ValidationTestAsserts {
     }
 
     /**
-     * @param sql
-     * @param statementCount
-     * @param errorCount
-     * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
+     * @param sql @param statementCount @param errorCount @param supported - the supported
+     * features @param features - the features not supported, assert errormessages against null null
+     * {@link #assertNotSupported(Collection, Feature...)
      */
-    public static void validateNotSupported(String sql, int statementCount, int errorCount, Version supported,
+    public static void validateNotSupported(String sql, int statementCount, int errorCount,
+            Version supported,
             Feature... features) {
-        validateNotSupported(sql, statementCount, errorCount, Collections.singleton(supported), features);
+        validateNotSupported(sql, statementCount, errorCount, Collections.singleton(supported),
+                features);
     }
 
     /**
-     * @param sql
-     * @param statementCount
-     * @param errorCount
-     * @param supported - the supported features
-     * @param features - the features not supported, assert errormessages against null null     {@link #assertNotSupported(Collection, Feature...)
+     * @param sql @param statementCount @param errorCount @param supported - the supported
+     * features @param features - the features not supported, assert errormessages against null null
+     * {@link #assertNotSupported(Collection, Feature...)
      */
     public static void validateNotSupported(String sql, int statementCount, int errorCount,
             Collection<Version> supported, Feature... features) {

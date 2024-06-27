@@ -11,11 +11,11 @@
 package net.sf.jsqlparser.statement.alter;
 
 import java.util.List;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
- *
  * @author are
  * @see <a href="https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm">ALTER
  *      SESSION</a>
@@ -27,6 +27,12 @@ public class AlterSession implements Statement {
     public AlterSession(AlterSessionOperation operation, List<String> parameters) {
         this.operation = operation;
         this.parameters = parameters;
+    }
+
+    private static void appendParameters(StringBuilder builder, List<String> parameters) {
+        for (String s : parameters) {
+            builder.append(" ").append(s);
+        }
     }
 
     public AlterSessionOperation getOperation() {
@@ -43,12 +49,6 @@ public class AlterSession implements Statement {
 
     public void setParameters(List<String> parameters) {
         this.parameters = parameters;
-    }
-
-    private static void appendParamaters(StringBuilder builder, List<String> parameters) {
-        for (String s : parameters) {
-            builder.append(" ").append(s);
-        }
     }
 
     @Override
@@ -68,7 +68,7 @@ public class AlterSession implements Statement {
                 break;
             case CLOSE_DATABASE_LINK:
                 builder.append("CLOSE DATABASE LINK ");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
             case ENABLE_COMMIT_IN_PROCEDURE:
                 builder.append("ENABLE COMMIT IN PROCEDURE");
@@ -85,22 +85,22 @@ public class AlterSession implements Statement {
 
             case ENABLE_PARALLEL_DML:
                 builder.append("ENABLE PARALLEL DML");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case DISABLE_PARALLEL_DML:
                 builder.append("DISABLE PARALLEL DML");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case FORCE_PARALLEL_DML:
                 builder.append("FORCE PARALLEL DML");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case ENABLE_PARALLEL_DDL:
                 builder.append("ENABLE PARALLEL DDL");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case DISABLE_PARALLEL_DDL:
@@ -109,12 +109,12 @@ public class AlterSession implements Statement {
 
             case FORCE_PARALLEL_DDL:
                 builder.append("FORCE PARALLEL DDL");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case ENABLE_PARALLEL_QUERY:
                 builder.append("ENABLE PARALLEL QUERY");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case DISABLE_PARALLEL_QUERY:
@@ -123,12 +123,12 @@ public class AlterSession implements Statement {
 
             case FORCE_PARALLEL_QUERY:
                 builder.append("FORCE PARALLEL QUERY");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case ENABLE_RESUMABLE:
                 builder.append("ENABLE RESUMABLE");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
 
             case DISABLE_RESUMABLE:
@@ -137,7 +137,7 @@ public class AlterSession implements Statement {
 
             case SET:
                 builder.append("SET");
-                appendParamaters(builder, parameters);
+                appendParameters(builder, parameters);
                 break;
             default:
                 // not going to happen
@@ -147,7 +147,7 @@ public class AlterSession implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 }

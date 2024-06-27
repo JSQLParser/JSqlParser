@@ -11,10 +11,10 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+
 import net.sf.jsqlparser.expression.Expression;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class IfElseStatement implements Statement {
@@ -40,28 +40,28 @@ public class IfElseStatement implements Statement {
         return ifStatement;
     }
 
-    public void setElseStatement(Statement elseStatement) {
-        this.elseStatement = elseStatement;
-    }
-
     public Statement getElseStatement() {
         return elseStatement;
     }
 
-    public void setUsingSemicolonForElseStatement(boolean usingSemicolonForElseStatement) {
-        this.usingSemicolonForElseStatement = usingSemicolonForElseStatement;
+    public void setElseStatement(Statement elseStatement) {
+        this.elseStatement = elseStatement;
     }
 
     public boolean isUsingSemicolonForElseStatement() {
         return usingSemicolonForElseStatement;
     }
 
-    public void setUsingSemicolonForIfStatement(boolean usingSemicolonForIfStatement) {
-        this.usingSemicolonForIfStatement = usingSemicolonForIfStatement;
+    public void setUsingSemicolonForElseStatement(boolean usingSemicolonForElseStatement) {
+        this.usingSemicolonForElseStatement = usingSemicolonForElseStatement;
     }
 
     public boolean isUsingSemicolonForIfStatement() {
         return usingSemicolonForIfStatement;
+    }
+
+    public void setUsingSemicolonForIfStatement(boolean usingSemicolonForIfStatement) {
+        this.usingSemicolonForIfStatement = usingSemicolonForIfStatement;
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
@@ -81,8 +81,8 @@ public class IfElseStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
 }

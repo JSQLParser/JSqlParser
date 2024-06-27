@@ -17,7 +17,8 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
 /**
  * @author gitmotte
  */
-public class MergeValidator extends AbstractValidator<Merge> implements MergeOperationVisitor {
+public class MergeValidator<Void> extends AbstractValidator<Merge>
+        implements MergeOperationVisitor<Void> {
 
 
     @Override
@@ -27,18 +28,23 @@ public class MergeValidator extends AbstractValidator<Merge> implements MergeOpe
         }
         validateOptionalExpression(merge.getOnCondition());
         if (merge.getOperations() != null) {
-            merge.getOperations().forEach(operation -> operation.accept(this));
+            merge.getOperations().forEach(operation -> operation.accept(this, null));
         }
         validateOptionalFromItems(merge.getFromItem());
     }
 
     @Override
-    public void visit(MergeDelete mergeDelete) {
+    public <S> Void visit(MergeDelete mergeDelete, S context) {
         validateOptionalExpression(mergeDelete.getAndPredicate());
+        return null;
+    }
+
+    public void visit(MergeDelete mergeDelete) {
+        visit(mergeDelete, null);
     }
 
     @Override
-    public void visit(MergeUpdate mergeUpdate) {
+    public <S> Void visit(MergeUpdate mergeUpdate, S context) {
         validateOptionalExpression(mergeUpdate.getAndPredicate());
         for (UpdateSet updateSet : mergeUpdate.getUpdateSets()) {
             validateOptionalExpressions(updateSet.getColumns());
@@ -46,12 +52,23 @@ public class MergeValidator extends AbstractValidator<Merge> implements MergeOpe
         }
         validateOptionalExpression(mergeUpdate.getDeleteWhereCondition());
         validateOptionalExpression(mergeUpdate.getWhereCondition());
+        return null;
+    }
+
+    public void visit(MergeUpdate mergeUpdate) {
+        visit(mergeUpdate, null);
     }
 
     @Override
-    public void visit(MergeInsert mergeInsert) {
+    public <S> Void visit(MergeInsert mergeInsert, S context) {
         validateOptionalExpression(mergeInsert.getAndPredicate());
         validateOptionalExpressions(mergeInsert.getColumns());
         validateOptionalExpressions(mergeInsert.getValues());
+
+        return null;
+    }
+
+    public void visit(MergeInsert mergeInsert) {
+        visit(mergeInsert, null);
     }
 }

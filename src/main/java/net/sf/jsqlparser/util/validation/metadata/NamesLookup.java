@@ -13,11 +13,11 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
- * A strategy for transformation of database-names before lookup in
- * database-catalog-metadata
+ * A strategy for transformation of database-names before lookup in database-catalog-metadata
  */
 public enum NamesLookup implements UnaryOperator<String> {
-    UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(UnaryOperator.identity());
+    UPPERCASE(String::toUpperCase), LOWERCASE(String::toLowerCase), NO_TRANSFORMATION(
+            UnaryOperator.identity());
 
     private Function<String, String> strategy;
 

@@ -23,7 +23,7 @@ class IsNullExpressionTest {
 
     @Test
     void testStringConstructor() {
-        IsNullExpression isNullExpression= new IsNullExpression("x", true);
+        IsNullExpression isNullExpression = new IsNullExpression("x", true);
         TestUtils.assertExpressionCanBeDeparsedAs(isNullExpression, "x IS NOT NULL");
     }
 }

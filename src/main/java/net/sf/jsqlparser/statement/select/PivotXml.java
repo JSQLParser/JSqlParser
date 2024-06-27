@@ -23,8 +23,8 @@ public class PivotXml extends Pivot {
     private boolean inAny = false;
 
     @Override
-    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S arguments) {
-        return pivotVisitor.visit(this, arguments);
+    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S context) {
+        return pivotVisitor.visit(this, context);
     }
 
     public Select getInSelect() {

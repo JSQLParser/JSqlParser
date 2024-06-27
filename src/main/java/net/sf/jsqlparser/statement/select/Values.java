@@ -55,13 +55,13 @@ public class Values extends Select implements FromItem {
     }
 
     @Override
-    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
-        return selectVisitor.visit(this, arguments);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
     @Override
-    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
-        return fromItemVisitor.visit(this, arguments);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
     public Values withExpressions(ExpressionList<Expression> expressions) {

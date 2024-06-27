@@ -18,17 +18,17 @@ import java.util.List;
 
 public class CreateSynonym implements Statement {
 
+    public Synonym synonym;
     private boolean orReplace;
     private boolean publicSynonym;
-    public Synonym synonym;
     private List<String> forList = new ArrayList<>();
-
-    public void setSynonym(Synonym synonym) {
-        this.synonym = synonym;
-    }
 
     public Synonym getSynonym() {
         return synonym;
+    }
+
+    public void setSynonym(Synonym synonym) {
+        this.synonym = synonym;
     }
 
     public boolean isOrReplace() {
@@ -47,12 +47,12 @@ public class CreateSynonym implements Statement {
         this.publicSynonym = publicSynonym;
     }
 
-    public void setForList(List<String> forList) {
-        this.forList = forList;
-    }
-
     public List<String> getForList() {
         return forList;
+    }
+
+    public void setForList(List<String> forList) {
+        this.forList = forList;
     }
 
     public String getFor() {
@@ -67,8 +67,8 @@ public class CreateSynonym implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override

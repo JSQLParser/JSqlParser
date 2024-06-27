@@ -58,7 +58,8 @@ public class JSQLParserExceptionTest {
         assertFalse(sw.toString().contains("BRATKARTOFFEL"));
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ex1.printStackTrace(new PrintStream(bos, true));
-        assertFalse(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("BRATKARTOFFEL"));
+        assertFalse(
+                new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("BRATKARTOFFEL"));
     }
 
     @Test

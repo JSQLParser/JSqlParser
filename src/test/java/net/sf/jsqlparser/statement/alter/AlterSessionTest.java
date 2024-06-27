@@ -35,16 +35,20 @@ public class AlterSessionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE COMMIT IN PROCEDURE", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE GUARD", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DML", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DML PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DML PARALLEL 10",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DDL", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DDL PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL DDL PARALLEL 10",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL QUERY", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL QUERY PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION ENABLE PARALLEL QUERY PARALLEL 10",
+                true);
     }
 
     @Test
     public void testAlterSessionDisable() throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION DISABLE COMMIT IN PROCEDURE", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION DISABLE COMMIT IN PROCEDURE",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION DISABLE GUARD", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION DISABLE PARALLEL DML", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION DISABLE PARALLEL DDL", true);
@@ -54,17 +58,21 @@ public class AlterSessionTest {
     @Test
     public void testAlterSessionForceParallel() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DML", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DML PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DML PARALLEL 10",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DDL", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DDL PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL DDL PARALLEL 10",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL QUERY", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL QUERY PARALLEL 10", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION FORCE PARALLEL QUERY PARALLEL 10",
+                true);
     }
 
     @Test
     public void testAlterSessionSet() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION SET ddl_lock_timeout=7200", true);
-        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION SET ddl_lock_timeout = 7200", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER SESSION SET ddl_lock_timeout = 7200",
+                true);
     }
 
     @Test
@@ -75,7 +83,8 @@ public class AlterSessionTest {
 
     @Test
     public void testObject() {
-        AlterSession alterSession = new AlterSession(AlterSessionOperation.FORCE_PARALLEL_QUERY, Collections.emptyList());
+        AlterSession alterSession = new AlterSession(AlterSessionOperation.FORCE_PARALLEL_QUERY,
+                Collections.emptyList());
         assertEquals(AlterSessionOperation.FORCE_PARALLEL_QUERY, alterSession.getOperation());
 
         alterSession.setOperation(AlterSessionOperation.DISABLE_PARALLEL_DML);

@@ -15,15 +15,14 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Truncate implements Statement {
 
-    private Table table;
     boolean cascade; // to support TRUNCATE TABLE ... CASCADE
-
     boolean tableToken; // to support TRUNCATE without TABLE
     boolean only; // to support TRUNCATE with ONLY
+    private Table table;
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Table getTable() {

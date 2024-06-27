@@ -10,10 +10,12 @@
 package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.SQLException;
+
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
  * database-errors wrapping a {@link SQLException} or PersistenceException
+ *
  * @author gitmotte
  */
 public class DatabaseException extends ValidationException {

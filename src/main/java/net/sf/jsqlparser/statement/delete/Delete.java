@@ -103,20 +103,20 @@ public class Delete implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Table getTable() {
         return table;
     }
 
-    public Expression getWhere() {
-        return where;
-    }
-
     public void setTable(Table name) {
         table = name;
+    }
+
+    public Expression getWhere() {
+        return where;
     }
 
     public void setWhere(Expression expression) {
@@ -309,28 +309,28 @@ public class Delete implements Statement {
         return this;
     }
 
-    public void setModifierPriority(DeleteModifierPriority modifierPriority) {
-        this.modifierPriority = modifierPriority;
-    }
-
     public DeleteModifierPriority getModifierPriority() {
         return modifierPriority;
     }
 
-    public void setModifierIgnore(boolean modifierIgnore) {
-        this.modifierIgnore = modifierIgnore;
-    }
-
-    public void setModifierQuick(boolean modifierQuick) {
-        this.modifierQuick = modifierQuick;
+    public void setModifierPriority(DeleteModifierPriority modifierPriority) {
+        this.modifierPriority = modifierPriority;
     }
 
     public boolean isModifierIgnore() {
         return modifierIgnore;
     }
 
+    public void setModifierIgnore(boolean modifierIgnore) {
+        this.modifierIgnore = modifierIgnore;
+    }
+
     public boolean isModifierQuick() {
         return modifierQuick;
+    }
+
+    public void setModifierQuick(boolean modifierQuick) {
+        this.modifierQuick = modifierQuick;
     }
 
     public Delete addTables(Table... tables) {

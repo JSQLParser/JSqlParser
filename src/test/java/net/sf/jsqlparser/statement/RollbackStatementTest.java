@@ -21,11 +21,13 @@ public class RollbackStatementTest {
                 .withUsingWorkKeyword(true)
                 .withUsingSavepointKeyword(true)
                 .withSavepointName("mySavePoint")
-                .withForceDistributedTransactionIdentifier("$ForceDistributedTransactionIdentifier");
+                .withForceDistributedTransactionIdentifier(
+                        "$ForceDistributedTransactionIdentifier");
 
         assertTrue(rollbackStatement.isUsingSavepointKeyword());
         assertEquals("mySavePoint", rollbackStatement.getSavepointName());
-        assertEquals("$ForceDistributedTransactionIdentifier", rollbackStatement.getForceDistributedTransactionIdentifier());
+        assertEquals("$ForceDistributedTransactionIdentifier",
+                rollbackStatement.getForceDistributedTransactionIdentifier());
     }
 
 }

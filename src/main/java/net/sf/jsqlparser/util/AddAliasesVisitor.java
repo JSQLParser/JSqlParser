@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -40,36 +41,36 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     private String prefix = "A";
 
     @Override
-    public <S> T visit(ParenthesedSelect parenthesedSelect, S parameters) {
-        parenthesedSelect.getSelect().accept(this, parameters);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S context) {
+        parenthesedSelect.getSelect().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(PlainSelect plainSelect, S parameters) {
+    public <S> T visit(PlainSelect plainSelect, S context) {
         firstRun = true;
         counter = 0;
         aliases.clear();
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this, parameters);
+            item.accept(this, context);
         }
         firstRun = false;
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this, parameters);
+            item.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(SetOperationList setOperationList, S parameters) {
+    public <S> T visit(SetOperationList setOperationList, S context) {
         for (Select select : setOperationList.getSelects()) {
-            select.accept(this, parameters);
+            select.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(SelectItem<?> selectExpressionItem, S parameters) {
+    public <S> T visit(SelectItem<?> selectExpressionItem, S context) {
         if (firstRun) {
             if (selectExpressionItem.getAlias() != null) {
                 aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
@@ -99,23 +100,23 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     }
 
     @Override
-    public <S> T visit(WithItem withItem, S parameters) {
+    public <S> T visit(WithItem withItem, S context) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public <S> T visit(Values values, S parameters) {
+    public <S> T visit(Values values, S context) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
-        lateralSubSelect.getSelect().accept(this, parameters);
+    public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
+        lateralSubSelect.getSelect().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(TableStatement tableStatement, S parameters) {
+    public <S> T visit(TableStatement tableStatement, S context) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 }

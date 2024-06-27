@@ -21,12 +21,12 @@ public class Offset implements Serializable {
         return offsetExpression;
     }
 
-    public String getOffsetParam() {
-        return offsetParam;
-    }
-
     public void setOffset(Expression offsetExpression) {
         this.offsetExpression = offsetExpression;
+    }
+
+    public String getOffsetParam() {
+        return offsetParam;
     }
 
     public void setOffsetParam(String s) {
@@ -36,7 +36,7 @@ public class Offset implements Serializable {
 
     @Override
     public String toString() {
-        return " OFFSET " +  offsetExpression + (offsetParam != null ? " " + offsetParam : "");
+        return " OFFSET " + offsetExpression + (offsetParam != null ? " " + offsetParam : "");
     }
 
     public Offset withOffset(Expression offsetExpression) {

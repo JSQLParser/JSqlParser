@@ -12,10 +12,9 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Table;
 
 /**
+ * @author jxnu-liguobin
  * @see <a href="https://dev.mysql.com/doc/refman/8.2/en/table.html"></a> `TABLE table_name [ORDER
  *      BY column_name] [LIMIT number [OFFSET number]]` Union not currently supported
- *
- * @author jxnu-liguobin
  */
 public class TableStatement extends Select {
 
@@ -53,7 +52,7 @@ public class TableStatement extends Select {
     }
 
     @Override
-    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
-        return selectVisitor.visit(this, arguments);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 }

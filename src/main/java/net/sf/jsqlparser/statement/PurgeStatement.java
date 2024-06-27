@@ -11,11 +11,11 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  * @see <a href=
  *      "https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9018.htm">Purge</a>
@@ -51,8 +51,8 @@ public class PurgeStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @SuppressWarnings({"PMD.MissingBreakInSwitch", "PMD.SwitchStmtsShouldHaveDefault",

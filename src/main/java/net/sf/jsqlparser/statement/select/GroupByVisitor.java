@@ -11,5 +11,9 @@ package net.sf.jsqlparser.statement.select;
 
 public interface GroupByVisitor<T> {
 
-    <S> T visit(GroupByElement groupBy, S parameters);
+    <S> T visit(GroupByElement groupBy, S context);
+
+    default void visit(GroupByElement groupBy) {
+        this.visit(groupBy, null);
+    }
 }

@@ -33,7 +33,7 @@ public class AnalyzeTest {
 
         assertDeparse(new Analyze().withTable(new Table("mytab")), statement);
     }
-    
+
     @Test
     public void testAnalyze2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ANALYZE mytable");

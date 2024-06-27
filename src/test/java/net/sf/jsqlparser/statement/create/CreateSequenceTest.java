@@ -24,7 +24,8 @@ public class CreateSequenceTest {
     public void testCreateSequence_noParams() throws JSQLParserException {
         String statement = "CREATE SEQUENCE my_seq";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_seq")), statement);
+        assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_seq")),
+                statement);
     }
 
     @Test
@@ -32,8 +33,10 @@ public class CreateSequenceTest {
         String statement = "CREATE SEQUENCE db.schema.my_seq INCREMENT BY 1";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateSequence().withSequence(
-                new Sequence().withDatabase(new Database("db")).withSchemaName("schema").withName("my_seq")
-                        .addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))), statement);
+                new Sequence().withDatabase(new Database("db")).withSchemaName("schema")
+                        .withName("my_seq")
+                        .addParameters(new Parameter(ParameterType.INCREMENT_BY).withValue(1L))),
+                statement);
     }
 
     @Test
@@ -117,7 +120,8 @@ public class CreateSequenceTest {
     @Test
     public void testCreateSequence_preservesParamOrder() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_sec INCREMENT BY 2 START WITH 10");
-        assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
         String statement = "CREATE SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new CreateSequence().withSequence(new Sequence().withName("my_sec")

@@ -32,7 +32,8 @@ public class SequenceTest {
 
     @Test
     public void testSetDatabase() {
-        Sequence sequence = new Sequence().withName("foo").withSchemaName("bar").withDatabase(new Database("default"));
+        Sequence sequence = new Sequence().withName("foo").withSchemaName("bar")
+                .withDatabase(new Database("default"));
 
         assertThat(sequence.getDatabase().getDatabaseName()).isEqualTo("default");
         assertThat(sequence.getFullyQualifiedName()).isEqualTo("default.bar.foo");

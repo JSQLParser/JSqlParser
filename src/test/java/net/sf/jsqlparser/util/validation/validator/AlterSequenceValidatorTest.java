@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Test;
 
 public class AlterSequenceValidatorTest extends ValidationTestAsserts {
 
-    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[]{DatabaseType.ORACLE,
-        DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2};
+    private static final DatabaseType DATABASES_SUPPORTING_SEQUENCES[] = new DatabaseType[] {
+            DatabaseType.ORACLE,
+            DatabaseType.SQLSERVER, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.H2};
 
     @Test
     public void testValidatorAlterSequence() throws JSQLParserException {
-        for (String sql : Arrays.asList("ALTER SEQUENCE my_seq", "ALTER SEQUENCE my_seq INCREMENT BY 1",
+        for (String sql : Arrays.asList("ALTER SEQUENCE my_seq",
+                "ALTER SEQUENCE my_seq INCREMENT BY 1",
                 "ALTER SEQUENCE my_seq START WITH 10", "ALTER SEQUENCE my_seq MAXVALUE 5",
                 "ALTER SEQUENCE my_seq NOMAXVALUE", "ALTER SEQUENCE my_seq MINVALUE 5",
                 "ALTER SEQUENCE my_seq NOMINVALUE", "ALTER SEQUENCE my_seq CYCLE",

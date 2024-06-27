@@ -4428,10 +4428,10 @@ public class SelectTest {
         assertNotNull(statement);
         statement.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public Void visit(Select select) {
+            public <S> Void visit(Select select, S context) {
                 select.accept(new SelectVisitorAdapter<Void>() {
                     @Override
-                    public <S> Void visit(PlainSelect plainSelect, S parameters) {
+                    public <K> Void visit(PlainSelect plainSelect, K context) {
                         SelectItem<?> typedExpression =
                                 (SelectItem<?>) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
@@ -4441,7 +4441,7 @@ public class SelectTest {
                         assertEquals("test", value.getValue());
                         return null;
                     }
-                }, null);
+                }, context);
                 return null;
             }
         });

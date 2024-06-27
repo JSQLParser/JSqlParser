@@ -28,7 +28,7 @@ public class GroupByValidator<Void> extends AbstractValidator<GroupByElement>
     }
 
     @Override
-    public <S> Void visit(GroupByElement groupBy, S parameters) {
+    public <S> Void visit(GroupByElement groupBy, S context) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.selectGroupBy);
             if (isNotEmpty(groupBy.getGroupingSets())) {

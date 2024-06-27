@@ -26,9 +26,19 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
         this.value = val;
     }
 
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public String getValue() {
@@ -62,16 +72,6 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
 
     public LongValue getLongValue() {
         return new LongValue(getLong());
-    }
-
-    public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
-        }
-        return data;
     }
 
     // `X'C3BC'` --> `'ü'`

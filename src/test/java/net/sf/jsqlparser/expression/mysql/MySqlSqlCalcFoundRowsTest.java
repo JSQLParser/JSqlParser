@@ -62,8 +62,8 @@ public class MySqlSqlCalcFoundRowsTest {
 
         statement.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public Void visit(Select select) {
-                select.accept(selectVisitorAdapter, null);
+            public <S> Void visit(Select select, S context) {
+                select.accept(selectVisitorAdapter, context);
                 return null;
             }
 

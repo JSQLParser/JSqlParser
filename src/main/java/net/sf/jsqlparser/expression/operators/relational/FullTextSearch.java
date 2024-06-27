@@ -32,12 +32,16 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
 
     }
 
+    public ExpressionList<Column> getMatchColumns() {
+        return this._matchColumns;
+    }
+
     public void setMatchColumns(ExpressionList<Column> columns) {
         this._matchColumns = columns;
     }
 
-    public ExpressionList<Column> getMatchColumns() {
-        return this._matchColumns;
+    public Expression getAgainstValue() {
+        return this._againstValue;
     }
 
     public void setAgainstValue(StringValue val) {
@@ -52,21 +56,17 @@ public class FullTextSearch extends ASTNodeAccessImpl implements Expression {
         this._againstValue = val;
     }
 
-    public Expression getAgainstValue() {
-        return this._againstValue;
+    public String getSearchModifier() {
+        return this._searchModifier;
     }
 
     public void setSearchModifier(String val) {
         this._searchModifier = val;
     }
 
-    public String getSearchModifier() {
-        return this._searchModifier;
-    }
-
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.util.Collection;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 
 public class ExcludeConstraint extends Index {
@@ -74,7 +75,8 @@ public class ExcludeConstraint extends Index {
     }
 
     @Override
-    public ExcludeConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
+    public ExcludeConstraint addColumns(
+            Collection<? extends ColumnParams> functionDeclarationParts) {
         return (ExcludeConstraint) super.addColumns(functionDeclarationParts);
     }
 

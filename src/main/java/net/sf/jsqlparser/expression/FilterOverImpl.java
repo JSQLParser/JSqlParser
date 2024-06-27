@@ -10,12 +10,12 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- *
  * @author tw
  */
 public class FilterOverImpl extends ASTNodeAccessImpl {
@@ -32,7 +32,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setAnalyticType(AnalyticType analyticType) {
         this.analyticType = analyticType;
     }
-    
+
     public FilterOverImpl withAnalyticType(AnalyticType analyticType) {
         this.setAnalyticType(analyticType);
         return this;
@@ -45,7 +45,7 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         orderBy.setOrderByElements(orderByElements);
     }
-    
+
     public FilterOverImpl withOrderByElements(List<OrderByElement> orderByElements) {
         this.setOrderByElements(orderByElements);
         return this;
@@ -59,14 +59,15 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+            boolean brackets) {
         partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
     }
 
     public boolean isPartitionByBrackets() {
         return partitionBy.isBrackets();
     }
-    
+
     public Expression getFilterExpression() {
         return filterExpression;
     }
@@ -88,13 +89,14 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
     public void setWindowElement(WindowElement windowElement) {
         this.windowElement = windowElement;
     }
-    
+
     public FilterOverImpl withWindowElement(WindowElement windowElement) {
         this.setWindowElement(windowElement);
         return this;
     }
-    
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity", "PMD.MissingBreakInSwitch"})
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.MissingBreakInSwitch"})
     public StringBuilder append(StringBuilder builder) {
         if (filterExpression != null) {
             builder.append("FILTER (WHERE ");

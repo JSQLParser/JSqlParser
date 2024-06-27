@@ -15,7 +15,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 
 public class AlterViewDeParser extends AbstractDeParser<AlterView> {
 
-    private SelectVisitor<StringBuilder> selectVisitor;
+    private final SelectVisitor<StringBuilder> selectVisitor;
 
     public AlterViewDeParser(StringBuilder buffer) {
         super(buffer);

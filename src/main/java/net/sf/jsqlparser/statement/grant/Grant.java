@@ -14,7 +14,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import static java.util.stream.Collectors.joining;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -26,8 +28,8 @@ public class Grant implements Statement {
     private List<String> users;
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public String getRole() {
@@ -53,10 +55,6 @@ public class Grant implements Statement {
                         .collect(joining("."));
     }
 
-    public List<String> getObjectNameParts() {
-        return objectName;
-    }
-
     public void setObjectName(String objectName) {
         this.objectName.clear();
         this.objectName.add(objectName);
@@ -65,6 +63,10 @@ public class Grant implements Statement {
     public void setObjectName(List<String> objectName) {
         this.objectName.clear();
         this.objectName.addAll(objectName);
+    }
+
+    public List<String> getObjectNameParts() {
+        return objectName;
     }
 
     public List<String> getUsers() {

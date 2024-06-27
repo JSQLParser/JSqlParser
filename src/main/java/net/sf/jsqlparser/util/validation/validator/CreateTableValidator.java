@@ -26,17 +26,21 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.createTable);
             validateFeature(c, createTable.isUnlogged(), Feature.createTableUnlogged);
-            validateOptionalFeature(c, createTable.getCreateOptionsStrings(), Feature.createTableCreateOptionStrings);
-            validateOptionalFeature(c, createTable.getTableOptionsStrings(), Feature.createTableTableOptionStrings);
+            validateOptionalFeature(c, createTable.getCreateOptionsStrings(),
+                    Feature.createTableCreateOptionStrings);
+            validateOptionalFeature(c, createTable.getTableOptionsStrings(),
+                    Feature.createTableTableOptionStrings);
             validateFeature(c, createTable.isIfNotExists(), Feature.createTableIfNotExists);
-            validateOptionalFeature(c, createTable.getRowMovement(), Feature.createTableRowMovement);
+            validateOptionalFeature(c, createTable.getRowMovement(),
+                    Feature.createTableRowMovement);
             validateOptionalFeature(c, createTable.getSelect(), Feature.createTableFromSelect);
-            if (isNotEmpty(createTable.getIndexes()) ) {
+            if (isNotEmpty(createTable.getIndexes())) {
                 for (Index i : createTable.getIndexes()) {
                     validateName(c, NamedObject.index, i.getName());
                 }
             }
-            validateName(c, NamedObject.table, createTable.getTable().getFullyQualifiedName(), false);
+            validateName(c, NamedObject.table, createTable.getTable().getFullyQualifiedName(),
+                    false);
         }
 
         if (createTable.getSelect() != null) {

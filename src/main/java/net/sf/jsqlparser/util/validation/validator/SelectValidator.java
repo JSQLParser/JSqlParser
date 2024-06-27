@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -53,10 +54,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
-    public <S> Void visit(PlainSelect plainSelect, S parameters) {
+    public <S> Void visit(PlainSelect plainSelect, S context) {
         if (isNotEmpty(plainSelect.getWithItemsList())) {
             plainSelect.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, parameters));
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
         }
 
         for (ValidationCapability c : getCapabilities()) {
@@ -114,13 +115,13 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         // to correctly recognize aliased tables
         // @todo: fix this properly, I don't understand functional syntax
         // validateOptionalList(plainSelect.getSelectItems(), () -> this, SelectItem::accept,
-        // parameters);
+        // context);
 
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 
         if (plainSelect.getGroupBy() != null) {
-            plainSelect.getGroupBy().accept(getValidator(GroupByValidator.class), parameters);
+            plainSelect.getGroupBy().accept(getValidator(GroupByValidator.class), context);
         }
 
         validateOptionalExpression(plainSelect.getHaving());
@@ -142,30 +143,30 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(SelectItem<?> selectExpressionItem, S parameters) {
+    public <S> Void visit(SelectItem<?> selectExpressionItem, S context) {
         selectExpressionItem.getExpression().accept(getValidator(ExpressionValidator.class),
-                parameters);
+                context);
         return null;
     }
 
     @Override
-    public <S> Void visit(ParenthesedSelect selectBody, S parameters) {
+    public <S> Void visit(ParenthesedSelect selectBody, S context) {
         if (isNotEmpty(selectBody.getWithItemsList())) {
             selectBody.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, parameters));
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
         }
-        selectBody.getSelect().accept(this, parameters);
-        validateOptional(selectBody.getPivot(), p -> p.accept(this, parameters));
+        selectBody.getSelect().accept(this, context);
+        validateOptional(selectBody.getPivot(), p -> p.accept(this, context));
         return null;
     }
 
     @Override
-    public <S> Void visit(Table table, S parameters) {
+    public <S> Void visit(Table table, S context) {
         validateNameWithAlias(NamedObject.table, table.getFullyQualifiedName(),
                 ValidationUtil.getAlias(table.getAlias()));
 
-        validateOptional(table.getPivot(), p -> p.accept(this, parameters));
-        validateOptional(table.getUnPivot(), up -> up.accept(this, parameters));
+        validateOptional(table.getPivot(), p -> p.accept(this, context));
+        validateOptional(table.getUnPivot(), up -> up.accept(this, context));
 
         MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null && isNotEmpty(indexHint.getIndexNames())) {
@@ -179,14 +180,14 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(Pivot pivot, S parameters) {
+    public <S> Void visit(Pivot pivot, S context) {
         validateFeature(Feature.pivot);
         validateOptionalExpressions(pivot.getForColumns());
         return null;
     }
 
     @Override
-    public <S> Void visit(UnPivot unpivot, S parameters) {
+    public <S> Void visit(UnPivot unpivot, S context) {
         validateFeature(Feature.unpivot);
 
         validateOptionalExpressions(unpivot.getUnPivotForClause());
@@ -195,15 +196,15 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(PivotXml pivot, S parameters) {
+    public <S> Void visit(PivotXml pivot, S context) {
         validateFeature(Feature.pivotXml);
         validateOptionalExpressions(pivot.getForColumns());
         if (isNotEmpty(pivot.getFunctionItems())) {
             ExpressionValidator v = getValidator(ExpressionValidator.class);
-            pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v, parameters));
+            pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v, context));
         }
         if (pivot.getInSelect() != null) {
-            pivot.getInSelect().accept(this, parameters);
+            pivot.getInSelect().accept(this, context);
         }
         return null;
     }
@@ -260,10 +261,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(SetOperationList setOperation, S parameters) {
+    public <S> Void visit(SetOperationList setOperation, S context) {
         if (isNotEmpty(setOperation.getWithItemsList())) {
             setOperation.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, parameters));
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
         }
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.setOperation);
@@ -282,7 +283,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         }
 
         if (isNotEmpty(setOperation.getSelects())) {
-            setOperation.getSelects().forEach(s -> s.accept(this, parameters));
+            setOperation.getSelects().forEach(s -> s.accept(this, context));
         }
 
         validateOptionalOrderByElements(setOperation.getOrderByElements());
@@ -302,55 +303,55 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(WithItem withItem, S parameters) {
+    public <S> Void visit(WithItem withItem, S context) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.withItem);
             validateFeature(c, withItem.isRecursive(), Feature.withItemRecursive);
         }
         if (isNotEmpty(withItem.getWithItemList())) {
-            withItem.getWithItemList().forEach(wi -> wi.accept(this, parameters));
+            withItem.getWithItemList().forEach(wi -> wi.accept(this, context));
         }
-        withItem.getSelect().accept(this, parameters);
+        withItem.getSelect().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> Void visit(LateralSubSelect lateralSubSelect, S parameters) {
+    public <S> Void visit(LateralSubSelect lateralSubSelect, S context) {
         if (isNotEmpty(lateralSubSelect.getWithItemsList())) {
             lateralSubSelect.getWithItemsList()
-                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, parameters));
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
         }
 
         validateFeature(Feature.lateralSubSelect);
-        validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this, parameters));
-        validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this, parameters));
-        validateOptional(lateralSubSelect.getSelect(), e -> e.accept(this, parameters));
+        validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this, context));
+        validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this, context));
+        validateOptional(lateralSubSelect.getSelect(), e -> e.accept(this, context));
         return null;
     }
 
     @Override
-    public <S> Void visit(TableStatement tableStatement, S parameters) {
+    public <S> Void visit(TableStatement tableStatement, S context) {
         getValidator(TableStatementValidator.class).validate(tableStatement);
         return null;
     }
 
     @Override
-    public <S> Void visit(TableFunction tableFunction, S parameters) {
+    public <S> Void visit(TableFunction tableFunction, S context) {
         validateFeature(Feature.tableFunction);
 
-        validateOptional(tableFunction.getPivot(), p -> p.accept(this, parameters));
-        validateOptional(tableFunction.getUnPivot(), up -> up.accept(this, parameters));
+        validateOptional(tableFunction.getPivot(), p -> p.accept(this, context));
+        validateOptional(tableFunction.getUnPivot(), up -> up.accept(this, context));
         return null;
     }
 
     @Override
-    public <S> Void visit(ParenthesedFromItem parenthesis, S parameters) {
-        validateOptional(parenthesis.getFromItem(), e -> e.accept(this, parameters));
+    public <S> Void visit(ParenthesedFromItem parenthesis, S context) {
+        validateOptional(parenthesis.getFromItem(), e -> e.accept(this, context));
         return null;
     }
 
     @Override
-    public <S> Void visit(Values values, S parameters) {
+    public <S> Void visit(Values values, S context) {
         getValidator(ValuesStatementValidator.class).validate(values);
         return null;
     }
@@ -358,5 +359,61 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     @Override
     public void validate(SelectItem<?> statement) {
         statement.accept(this, null);
+    }
+
+    public void visit(PlainSelect plainSelect) {
+        visit(plainSelect, null);
+    }
+
+    public void visit(SelectItem<?> selectExpressionItem) {
+        visit(selectExpressionItem, null);
+    }
+
+    public void visit(ParenthesedSelect selectBody) {
+        visit(selectBody, null);
+    }
+
+    public void visit(Table table) {
+        visit(table, null);
+    }
+
+    public void visit(Pivot pivot) {
+        visit(pivot, null);
+    }
+
+    public void visit(UnPivot unpivot) {
+        visit(unpivot, null);
+    }
+
+    public void visit(PivotXml pivot) {
+        visit(pivot, null);
+    }
+
+    public void visit(SetOperationList setOperation) {
+        visit(setOperation, null);
+    }
+
+    public void visit(WithItem withItem) {
+        visit(withItem, null);
+    }
+
+    public void visit(LateralSubSelect lateralSubSelect) {
+        visit(lateralSubSelect, null);
+    }
+
+    public void visit(TableStatement tableStatement) {
+        visit(tableStatement, null);
+    }
+
+    public void visit(TableFunction tableFunction) {
+        visit(tableFunction, null);
+    }
+
+    public void visit(ParenthesedFromItem parenthesis) {
+        visit(parenthesis, null);
+    }
+
+    public void visit(Values values) {
+        visit(values, null);
     }
 }

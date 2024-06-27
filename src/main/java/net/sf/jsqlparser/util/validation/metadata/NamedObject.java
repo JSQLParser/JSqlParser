@@ -27,32 +27,18 @@ public enum NamedObject {
      */
     view,
     /**
-     * a name constisting of min 2 (the table-reference) and max. 4 identifiers,
-     * i.e. [catalog].[schema].[table].[columnName]
+     * a name constisting of min 2 (the table-reference) and max. 4 identifiers, i.e.
+     * [catalog].[schema].[table].[columnName]
      */
-    column,
-    index,
-    constraint,
-    uniqueConstraint,
+    column, index, constraint, uniqueConstraint,
     /**
      * a name constisting of max. 3 identifiers, i.e. [catalog].[schema].[sequence]
      */
-    sequence,
-    synonym,
-    procedure,
-    user,
-    role,
-    trigger,
-    alias;
-
-    public boolean equalsIgnoreCase(String name) {
-        return name().equalsIgnoreCase(name);
-    }
+    sequence, synonym, procedure, user, role, trigger, alias;
 
     /**
      * @param name
-     * @return <code>null</code>, if not found, otherwise the
-     *         {@link NamedObject}
+     * @return <code>null</code>, if not found, otherwise the {@link NamedObject}
      */
     public static NamedObject forName(String name) {
         for (NamedObject o : values()) {
@@ -61,5 +47,9 @@ public enum NamedObject {
             }
         }
         return null;
+    }
+
+    public boolean equalsIgnoreCase(String name) {
+        return name().equalsIgnoreCase(name);
     }
 }

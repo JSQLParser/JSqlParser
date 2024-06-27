@@ -59,8 +59,8 @@ public class WithItem extends ParenthesedSelect {
     }
 
     @Override
-    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
-        return selectVisitor.visit(this, arguments);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
 

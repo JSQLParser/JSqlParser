@@ -39,7 +39,7 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
         tableStatement.accept(this, null);
     }
 
-    public void visit(Offset offset) {
+    public void deparse(Offset offset) {
         buffer.append(" OFFSET ");
         offset.getOffset().accept(expressionVisitor, null);
         if (offset.getOffsetParam() != null) {
@@ -49,43 +49,43 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     @Override
-    public <S> StringBuilder visit(ParenthesedSelect parenthesedSelect, S parameters) {
+    public <S> StringBuilder visit(ParenthesedSelect parenthesedSelect, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(PlainSelect plainSelect, S parameters) {
+    public <S> StringBuilder visit(PlainSelect plainSelect, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(SetOperationList setOperationList, S parameters) {
+    public <S> StringBuilder visit(SetOperationList setOperationList, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(WithItem withItem, S parameters) {
+    public <S> StringBuilder visit(WithItem withItem, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Values values, S parameters) {
+    public <S> StringBuilder visit(Values values, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(LateralSubSelect lateralSubSelect, S parameters) {
+    public <S> StringBuilder visit(LateralSubSelect lateralSubSelect, S context) {
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TableStatement tableStatement, S parameters) {
+    public <S> StringBuilder visit(TableStatement tableStatement, S context) {
         buffer.append("TABLE ");
         buffer.append(tableStatement.getTable());
         if (tableStatement.getOrderByElements() != null) {
@@ -97,7 +97,7 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
             new LimitDeparser(expressionVisitor, buffer).deParse(tableStatement.getLimit());
         }
         if (tableStatement.getOffset() != null) {
-            visit(tableStatement.getOffset());
+            deparse(tableStatement.getOffset());
         }
 
         // TODO UNION

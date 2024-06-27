@@ -11,17 +11,17 @@ package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
 import java.util.Objects;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
 public class JsonFunction extends ASTNodeAccessImpl implements Expression {
-    private JsonFunctionType functionType;
     private final ArrayList<JsonKeyValuePair> keyValuePairs = new ArrayList<>();
     private final ArrayList<JsonFunctionExpression> expressions = new ArrayList<>();
+    private JsonFunctionType functionType;
     private JsonAggregateOnNullType onNullType;
     private JsonAggregateUniqueKeysType uniqueKeysType;
 
@@ -97,16 +97,16 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                         "The Type of the JSON Aggregate Function must not be null");
     }
 
-    public JsonFunction withType(JsonFunctionType type) {
-        this.setType(type);
-        return this;
-    }
-
     public void setType(String typeName) {
         this.functionType = JsonFunctionType.valueOf(
                 Objects.requireNonNull(typeName,
                         "The Type of the JSON Aggregate Function must not be null")
                         .toUpperCase());
+    }
+
+    public JsonFunction withType(JsonFunctionType type) {
+        this.setType(type);
+        return this;
     }
 
     public JsonFunction withType(String typeName) {
@@ -115,8 +115,8 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     // avoid countless Builder --> String conversion

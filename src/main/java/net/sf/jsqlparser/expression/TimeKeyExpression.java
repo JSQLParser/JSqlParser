@@ -24,8 +24,8 @@ public class TimeKeyExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public String getStringValue() {

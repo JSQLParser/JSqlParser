@@ -33,15 +33,14 @@ public class TableFunction extends Function implements FromItem {
         return function;
     }
 
-    @Deprecated
-    public Function getExpression() {
-        return getFunction();
-    }
-
-
     public TableFunction setFunction(Function function) {
         this.function = function;
         return this;
+    }
+
+    @Deprecated
+    public Function getExpression() {
+        return getFunction();
     }
 
     public String getPrefix() {
@@ -54,8 +53,8 @@ public class TableFunction extends Function implements FromItem {
     }
 
     @Override
-    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
-        return fromItemVisitor.visit(this, arguments);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
     @Override

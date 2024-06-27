@@ -32,7 +32,8 @@ import org.junit.jupiter.api.Test;
 public class RenameTableStatementTest {
 
     /**
-     * This test will parse and deparse the statement and assures the functional coverage by JSQLParser.
+     * This test will parse and deparse the statement and assures the functional coverage by
+     * JSQLParser.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */
@@ -65,8 +66,8 @@ public class RenameTableStatementTest {
     }
 
     /**
-     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the TableNamesFinder needed
-     * for the Code Coverage.
+     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the
+     * TableNamesFinder needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */
@@ -82,8 +83,8 @@ public class RenameTableStatementTest {
     }
 
     /**
-     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the ExpressionValidator
-     * needed for the Code Coverage.
+     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the
+     * ExpressionValidator needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */
@@ -101,7 +102,8 @@ public class RenameTableStatementTest {
         sqlStr = "ALTER TABLE public.oldTableName RENAME TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        // this needs to succeed according to: https://docs.oracle.com/cd/B28359_01/server.111/b28286/statements_3001.htm
+        // this needs to succeed according to:
+        // https://docs.oracle.com/cd/B28359_01/server.111/b28286/statements_3001.htm
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
 
         // this needs to succeed
@@ -110,7 +112,7 @@ public class RenameTableStatementTest {
         sqlStr = "ALTER TABLE IF EXISTS public.oldTableName RENAME TO newTableName";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        //  should fail when IF EXISTS is not supported in Oracle 11
+        // should fail when IF EXISTS is not supported in Oracle 11
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.ORACLE);
 
         // this needs to succeed

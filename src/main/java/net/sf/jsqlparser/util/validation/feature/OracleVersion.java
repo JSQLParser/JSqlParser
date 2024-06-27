@@ -55,7 +55,8 @@ public enum OracleVersion implements Version {
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html
                     // see "row_limiting_clause"
-                    Feature.offset, Feature.offsetParam, Feature.fetch, Feature.fetchFirst, Feature.fetchNext,
+                    Feature.offset, Feature.offsetParam, Feature.fetch, Feature.fetchFirst,
+                    Feature.fetchNext,
 
                     // https://www.oracletutorial.com/oracle-basics/oracle-select-distinct/
                     Feature.distinct, Feature.selectUnique,
@@ -129,7 +130,8 @@ public enum OracleVersion implements Version {
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-MATERIALIZED-VIEW.htm
                     Feature.createViewMaterialized,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-TABLE.html
-                    Feature.createTable, Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
+                    Feature.createTable, Feature.createTableCreateOptionStrings,
+                    Feature.createTableTableOptionStrings,
                     Feature.createTableFromSelect, Feature.createTableRowMovement,
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/CREATE-INDEX.html
                     Feature.createIndex,
@@ -143,7 +145,8 @@ public enum OracleVersion implements Version {
                     Feature.commit,
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/COMMENT.html
-                    Feature.comment, Feature.commentOnTable, Feature.commentOnColumn, Feature.commentOnView,
+                    Feature.comment, Feature.commentOnTable, Feature.commentOnColumn,
+                    Feature.commentOnView,
 
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/rcmrf/DESCRIBE.html
                     Feature.describe,
@@ -154,7 +157,8 @@ public enum OracleVersion implements Version {
                     // https://www.oracletutorial.com/oracle-basics/oracle-merge/
                     Feature.merge,
 
-                    Feature.createFunction, Feature.createProcedure, Feature.functionalStatement, Feature.block,
+                    Feature.createFunction, Feature.createProcedure, Feature.functionalStatement,
+                    Feature.block,
                     Feature.declare,
 
                     // special oracle features

@@ -19,7 +19,8 @@ public class ValidationUtilTest extends ValidationTestAsserts {
     @Test
     public void testMap() {
         assertEquals(Arrays.asList("col2", "col1"),
-                ValidationUtil.map(Arrays.asList(new Column("col2"), new Column("col1")), Column::getColumnName));
+                ValidationUtil.map(Arrays.asList(new Column("col2"), new Column("col1")),
+                        Column::getColumnName));
     }
 
 }

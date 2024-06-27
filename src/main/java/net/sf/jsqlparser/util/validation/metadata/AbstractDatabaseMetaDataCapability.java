@@ -18,11 +18,9 @@ import java.util.function.BiPredicate;
 import java.util.function.UnaryOperator;
 
 /**
- * Adapter class always throwing {@link UnsupportedOperationException} for all
- * exists - methods.
+ * Adapter class always throwing {@link UnsupportedOperationException} for all exists - methods.
  *
  * @author gitmotte
- *
  */
 public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMetaDataValidation {
 
@@ -33,22 +31,24 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     /**
      * With caching enabled - see {@link #isCacheResults()}
-     * 
+     *
      * @param connection
      * @param namesLookup - see {@link NamesLookup}
      * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator, boolean)
      */
-    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
+    public AbstractDatabaseMetaDataCapability(Connection connection,
+            UnaryOperator<String> namesLookup) {
         this(connection, namesLookup, true);
     }
 
     /**
      * @param connection
-     * @param namesLookup  - see {@link NamesLookup}
+     * @param namesLookup - see {@link NamesLookup}
      * @param cacheResults - whether the results should be cached for later lookups
      * @see #AbstractDatabaseMetaDataCapability(Connection, UnaryOperator)
      */
-    public AbstractDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
+    public AbstractDatabaseMetaDataCapability(Connection connection,
+            UnaryOperator<String> namesLookup,
             boolean cacheResults) {
         this.connection = connection;
         this.namesLookup = namesLookup;
@@ -81,31 +81,32 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
         named.setAliasLookup(getNamesLookup().apply(named.getAlias()));
 
         switch (named.getNamedObject()) {
-        case table:
-            return cache(named, this::tableExists);
-        case column:
-            return cache(named, this::columnExists);
-        case schema:
-            return cache(named, this::schemaExists);
-        case index:
-            return cache(named, this::indexExists);
-        case database:
-            return cache(named, this::databaseExists);
-        case constraint:
-        case uniqueConstraint:
-            return cache(named, this::constraintExists);
-        case view:
-            return cache(named, this::viewExists);
-        case procedure:
-            return cache(named, this::procedureExists);
-        case user:
-            return cache(named, this::userExists);
-        case role:
-            return cache(named, this::roleExists);
-        default:
+            case table:
+                return cache(named, this::tableExists);
+            case column:
+                return cache(named, this::columnExists);
+            case schema:
+                return cache(named, this::schemaExists);
+            case index:
+                return cache(named, this::indexExists);
+            case database:
+                return cache(named, this::databaseExists);
+            case constraint:
+            case uniqueConstraint:
+                return cache(named, this::constraintExists);
+            case view:
+                return cache(named, this::viewExists);
+            case procedure:
+                return cache(named, this::procedureExists);
+            case user:
+                return cache(named, this::userExists);
+            case role:
+                return cache(named, this::roleExists);
+            default:
         }
         throw new UnsupportedOperationException(
-                named.getFqn() + ": evaluation of " + named.getNamedObject() + "-name not implemented.");
+                named.getFqn() + ": evaluation of " + named.getNamedObject()
+                        + "-name not implemented.");
     }
 
     protected boolean cache(Named named, BiPredicate<Map<Named, Boolean>, Named> fn) {
@@ -159,7 +160,8 @@ public abstract class AbstractDatabaseMetaDataCapability implements DatabaseMeta
 
     protected UnsupportedOperationException unsupported(Named name) {
         return new UnsupportedOperationException(
-                name.getFqn() + ": evaluation of " + name.getNamedObject() + "-name not supported.");
+                name.getFqn() + ": evaluation of " + name.getNamedObject()
+                        + "-name not supported.");
     }
 
 }

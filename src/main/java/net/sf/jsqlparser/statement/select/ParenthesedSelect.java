@@ -22,15 +22,6 @@ public class ParenthesedSelect extends Select implements FromItem {
     UnPivot unPivot;
     Select select;
 
-    private static Alias getAliasFromItem(FromItem fromItem) {
-        if (fromItem instanceof Table && fromItem.getAlias() == null) {
-            Table t = (Table) fromItem;
-            return new Alias(t.getName(), true);
-        } else {
-            return new Alias(fromItem.getAlias().getName(), true);
-        }
-    }
-
     public ParenthesedSelect() {}
 
     public ParenthesedSelect(FromItem fromItem) {
@@ -78,6 +69,15 @@ public class ParenthesedSelect extends Select implements FromItem {
         this.alias = getAliasFromItem(fromItem);
     }
 
+    private static Alias getAliasFromItem(FromItem fromItem) {
+        if (fromItem instanceof Table && fromItem.getAlias() == null) {
+            Table t = (Table) fromItem;
+            return new Alias(t.getName(), true);
+        } else {
+            return new Alias(fromItem.getAlias().getName(), true);
+        }
+    }
+
     @Override
     public Alias getAlias() {
         return alias;
@@ -115,6 +115,10 @@ public class ParenthesedSelect extends Select implements FromItem {
         return select;
     }
 
+    public void setSelect(Select select) {
+        this.select = select;
+    }
+
     public Values getValues() {
         return (Values) select;
     }
@@ -125,10 +129,6 @@ public class ParenthesedSelect extends Select implements FromItem {
 
     public SetOperationList getSetOperationList() {
         return (SetOperationList) select;
-    }
-
-    public void setSelect(Select select) {
-        this.select = select;
     }
 
     public ParenthesedSelect withSelect(Select selectBody) {
@@ -142,13 +142,13 @@ public class ParenthesedSelect extends Select implements FromItem {
     }
 
     @Override
-    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
-        return selectVisitor.visit(this, arguments);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
     @Override
-    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
-        return fromItemVisitor.visit(this, arguments);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {

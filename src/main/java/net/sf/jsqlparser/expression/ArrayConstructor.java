@@ -16,6 +16,15 @@ public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
     private ExpressionList<?> expressions;
     private boolean arrayKeyword;
 
+    public ArrayConstructor(ExpressionList<?> expressions, boolean arrayKeyword) {
+        this.expressions = expressions;
+        this.arrayKeyword = arrayKeyword;
+    }
+
+    public ArrayConstructor(Expression... expressions) {
+        this(new ExpressionList<Expression>(expressions), false);
+    }
+
     public ExpressionList<?> getExpressions() {
         return expressions;
     }
@@ -32,18 +41,9 @@ public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
         this.arrayKeyword = arrayKeyword;
     }
 
-    public ArrayConstructor(ExpressionList<?> expressions, boolean arrayKeyword) {
-        this.expressions = expressions;
-        this.arrayKeyword = arrayKeyword;
-    }
-
-    public ArrayConstructor(Expression... expressions) {
-        this(new ExpressionList<Expression>(expressions), false);
-    }
-
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

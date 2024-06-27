@@ -15,7 +15,7 @@ import net.sf.jsqlparser.schema.Table;
 public class IntoTableVisitorAdapter<T> implements IntoTableVisitor<T> {
 
     @Override
-    public <S> T visit(Table tableName, S parameters) {
+    public <S> T visit(Table tableName, S context) {
         return null;
     }
 }

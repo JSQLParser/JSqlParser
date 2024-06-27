@@ -13,14 +13,6 @@ import java.io.Serializable;
 
 public class WindowElement implements Serializable {
 
-    public enum Type {
-        ROWS, RANGE;
-
-        public static Type from(String type) {
-            return Enum.valueOf(Type.class, type.toUpperCase());
-        }
-    }
-
     private Type type;
     private WindowOffset offset;
     private WindowRange range;
@@ -75,6 +67,14 @@ public class WindowElement implements Serializable {
     public WindowElement withRange(WindowRange range) {
         this.setRange(range);
         return this;
+    }
+
+    public enum Type {
+        ROWS, RANGE;
+
+        public static Type from(String type) {
+            return Enum.valueOf(Type.class, type.toUpperCase());
+        }
     }
 
 }

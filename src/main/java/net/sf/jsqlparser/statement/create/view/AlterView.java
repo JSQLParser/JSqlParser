@@ -28,11 +28,6 @@ public class AlterView implements Statement {
     private boolean useReplace = false;
     private List<String> columnNames = null;
 
-    @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
-    }
-
     public Table getView() {
         return view;
     }
@@ -116,5 +111,10 @@ public class AlterView implements Statement {
 
     public <E extends Select> E getSelectBody(Class<E> type) {
         return type.cast(getSelect());
+    }
+
+    @Override
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 }

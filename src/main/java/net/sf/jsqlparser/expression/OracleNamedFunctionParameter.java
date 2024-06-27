@@ -10,10 +10,10 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.Objects;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements Expression {
@@ -36,8 +36,8 @@ public class OracleNamedFunctionParameter extends ASTNodeAccessImpl implements E
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

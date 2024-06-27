@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -32,29 +33,36 @@ public class Drop implements Statement {
 
     private boolean isUsingTemporary;
 
+    public static String formatFuncParams(List<String> params) {
+        if (params == null) {
+            return "";
+        }
+        return params.isEmpty() ? "()" : PlainSelect.getStringList(params, true, true);
+    }
+
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Table getName() {
         return name;
     }
 
-    public List<String> getParameters() {
-        return parameters;
-    }
-
-    public String getType() {
-        return type;
-    }
-
     public void setName(Table string) {
         name = string;
     }
 
+    public List<String> getParameters() {
+        return parameters;
+    }
+
     public void setParameters(List<String> list) {
         parameters = list;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public void setType(String string) {
@@ -115,13 +123,6 @@ public class Drop implements Statement {
         }
 
         return sql;
-    }
-
-    public static String formatFuncParams(List<String> params) {
-        if (params == null) {
-            return "";
-        }
-        return params.isEmpty() ? "()" : PlainSelect.getStringList(params, true, true);
     }
 
     public List<String> getParamsByType(String type) {

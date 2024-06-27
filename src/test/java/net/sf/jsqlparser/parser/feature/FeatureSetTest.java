@@ -19,7 +19,8 @@ public class FeatureSetTest {
     @Test
     public void testGetNotContained() {
         assertEquals(EnumSet.of(Feature.select), new FeaturesAllowed(Feature.select, Feature.update) //
-                .getNotContained(new FeaturesAllowed(Feature.update, Feature.delete).getFeatures()));
+                .getNotContained(
+                        new FeaturesAllowed(Feature.update, Feature.delete).getFeatures()));
     }
 
     @Test

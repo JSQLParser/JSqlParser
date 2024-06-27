@@ -11,11 +11,11 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.List;
 import java.util.Objects;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  * @see <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER
  *      SESSION</a>
@@ -32,6 +32,12 @@ public class AlterSystemStatement implements Statement {
                 "The PARAMETERS List must not be null although it can be empty.");
     }
 
+    private static void appendParameters(StringBuilder builder, List<String> parameters) {
+        for (String s : parameters) {
+            builder.append(" ").append(s);
+        }
+    }
+
     public AlterSystemOperation getOperation() {
         return operation;
     }
@@ -41,14 +47,8 @@ public class AlterSystemStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
-    }
-
-    private static void appendParameters(StringBuilder builder, List<String> parameters) {
-        for (String s : parameters) {
-            builder.append(" ").append(s);
-        }
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

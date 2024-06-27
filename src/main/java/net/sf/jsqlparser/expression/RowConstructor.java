@@ -42,7 +42,7 @@ public class RowConstructor<T extends Expression> extends ParenthesedExpressionL
     }
 
     @Override
-    public <K, S> K accept(ExpressionVisitor<K> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <K, S> K accept(ExpressionVisitor<K> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

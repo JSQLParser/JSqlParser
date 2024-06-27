@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement;
 
 /**
- *
  * @author tobens
  */
 public enum DeclareType {

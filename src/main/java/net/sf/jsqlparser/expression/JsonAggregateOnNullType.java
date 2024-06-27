@@ -26,7 +26,6 @@
 package net.sf.jsqlparser.expression;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum JsonAggregateOnNullType {

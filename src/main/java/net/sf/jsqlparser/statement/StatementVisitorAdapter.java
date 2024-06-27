@@ -41,253 +41,250 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
-    public T visit(Comment comment) {
+    public <S> T visit(Comment comment, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Commit commit) {
+    public <S> T visit(Commit commit, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Select select) {
+    public <S> T visit(Select select, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Delete delete) {
+    public <S> T visit(Delete delete, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Update update) {
+    public <S> T visit(Update update, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Insert insert) {
+    public <S> T visit(Insert insert, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Drop drop) {
+    public <S> T visit(Drop drop, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Truncate truncate) {
+    public <S> T visit(Truncate truncate, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(CreateIndex createIndex) {
+    public <S> T visit(CreateIndex createIndex, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(CreateSchema aThis) {
+    public <S> T visit(CreateSchema createSchema, S context) {
         return null;
     }
 
     @Override
-    public T visit(CreateTable createTable) {
-
-        return null;
-    }
-
-    @Override
-    public T visit(CreateView createView) {
+    public <S> T visit(CreateTable createTable, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Alter alter) {
+    public <S> T visit(CreateView createView, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Statements stmts) {
-        for (Statement statement : stmts) {
-            statement.accept(this);
+    public <S> T visit(Alter alter, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Statements statements, S context) {
+        for (Statement statement : statements) {
+            statement.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public T visit(Execute execute) {
+    public <S> T visit(Execute execute, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(SetStatement set) {
+    public <S> T visit(SetStatement set, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(ResetStatement reset) {
+    public <S> T visit(ResetStatement reset, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(Merge merge) {
+    public <S> T visit(Merge merge, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(AlterView alterView) {
+    public <S> T visit(AlterView alterView, S context) {
         return null;
     }
 
     @Override
-    public T visit(Upsert upsert) {
+    public <S> T visit(Upsert upsert, S context) {
         return null;
     }
 
     @Override
-    public T visit(UseStatement use) {
+    public <S> T visit(UseStatement use, S context) {
         return null;
     }
 
     @Override
-    public T visit(Block block) {
+    public <S> T visit(Block block, S context) {
         return null;
     }
 
     @Override
-    public T visit(DescribeStatement describe) {
+    public <S> T visit(DescribeStatement describe, S context) {
         return null;
     }
 
     @Override
-    public T visit(ExplainStatement aThis) {
+    public <S> T visit(ExplainStatement explainStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(ShowStatement aThis) {
+    public <S> T visit(ShowStatement showStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(ShowColumnsStatement set) {
+    public <S> T visit(ShowColumnsStatement showColumnsStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(ShowIndexStatement set) {
+    public <S> T visit(ShowIndexStatement showIndexStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(ShowTablesStatement showTables) {
+    public <S> T visit(ShowTablesStatement showTables, S context) {
         return null;
     }
 
     @Override
-    public T visit(DeclareStatement aThis) {
+    public <S> T visit(DeclareStatement declareStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(Grant grant) {
+    public <S> T visit(Grant grant, S context) {
         return null;
     }
 
     @Override
-    public T visit(CreateSequence createSequence) {
+    public <S> T visit(CreateSequence createSequence, S context) {
         return null;
     }
 
     @Override
-    public T visit(AlterSequence alterSequence) {
+    public <S> T visit(AlterSequence alterSequence, S context) {
         return null;
     }
 
     @Override
-    public T visit(CreateFunctionalStatement createFunctionalStatement) {
+    public <S> T visit(CreateFunctionalStatement createFunctionalStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(CreateSynonym createSynonym) {
+    public <S> T visit(CreateSynonym createSynonym, S context) {
         return null;
     }
 
     @Override
-    public T visit(Analyze analyze) {
+    public <S> T visit(Analyze analyze, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(SavepointStatement savepointStatement) {
+    public <S> T visit(SavepointStatement savepointStatement, S context) {
         // @todo: do something usefully here
         return null;
     }
 
     @Override
-    public T visit(RollbackStatement rollbackStatement) {
+    public <S> T visit(RollbackStatement rollbackStatement, S context) {
         // @todo: do something usefully here
         return null;
     }
 
     @Override
-    public T visit(AlterSession alterSession) {
+    public <S> T visit(AlterSession alterSession, S context) {
         // @todo: do something usefully here
         return null;
     }
 
     @Override
-    public T visit(IfElseStatement ifElseStatement) {
-        ifElseStatement.getIfStatement().accept(this);
+    public <S> T visit(IfElseStatement ifElseStatement, S context) {
+        ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {
-            ifElseStatement.getElseStatement().accept(this);
+            ifElseStatement.getElseStatement().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public T visit(RenameTableStatement renameTableStatement) {
-        // @todo: do something usefully here
+    public <S> T visit(RenameTableStatement renameTableStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(PurgeStatement purgeStatement) {
-        // @todo: do something usefully here
+    public <S> T visit(PurgeStatement purgeStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(AlterSystemStatement alterSystemStatement) {
+    public <S> T visit(AlterSystemStatement alterSystemStatement, S context) {
         return null;
     }
 
     @Override
-    public T visit(UnsupportedStatement unsupportedStatement) {
+    public <S> T visit(UnsupportedStatement unsupportedStatement, S context) {
 
         return null;
     }
 
     @Override
-    public T visit(RefreshMaterializedViewStatement materializedView) {
-
+    public <S> T visit(RefreshMaterializedViewStatement materializedView, S context) {
         return null;
     }
 }

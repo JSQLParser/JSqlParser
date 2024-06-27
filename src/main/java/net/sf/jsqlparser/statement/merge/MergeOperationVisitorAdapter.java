@@ -10,19 +10,19 @@
 package net.sf.jsqlparser.statement.merge;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class MergeOperationVisitorAdapter implements MergeOperationVisitor {
+public class MergeOperationVisitorAdapter<T> implements MergeOperationVisitor<T> {
     @Override
-    public void visit(MergeDelete mergeDelete) {
-
+    public <S> T visit(MergeDelete mergeDelete, S context) {
+        return null;
     }
 
     @Override
-    public void visit(MergeUpdate mergeUpdate) {
-
+    public <S> T visit(MergeUpdate mergeUpdate, S context) {
+        return null;
     }
 
     @Override
-    public void visit(MergeInsert mergeInsert) {
-
+    public <S> T visit(MergeInsert mergeInsert, S context) {
+        return null;
     }
 }

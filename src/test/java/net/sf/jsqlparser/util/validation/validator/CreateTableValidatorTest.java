@@ -33,13 +33,15 @@ public class CreateTableValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationCreateTableWithIndex() throws JSQLParserException {
-        String sql = "CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))";
+        String sql =
+                "CREATE TABLE test_descending_indexes (c1 INT, c2 INT, INDEX idx1 (c1 ASC, c2 DESC))";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
     @Test
     public void testValidationCreateTableWithIndex2() throws JSQLParserException {
-        String sql = "CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\") TABLESPACE \"T_SPACE\"";
+        String sql =
+                "CREATE TABLE TABLE1 (COLUMN1 VARCHAR2 (15), COLUMN2 VARCHAR2 (15), CONSTRAINT P_PK PRIMARY KEY (COLUMN1) USING INDEX TABLESPACE \"T_INDEX\") TABLESPACE \"T_SPACE\"";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
@@ -51,7 +53,8 @@ public class CreateTableValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationCreateTableForeignKeyPrimaryKey() throws JSQLParserException {
-        String sql = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES ra_user(id))";
+        String sql =
+                "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES ra_user(id))";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 

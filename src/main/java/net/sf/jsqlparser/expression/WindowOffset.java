@@ -13,14 +13,6 @@ import java.io.Serializable;
 
 public class WindowOffset implements Serializable {
 
-    public enum Type {
-        PRECEDING, FOLLOWING, CURRENT, EXPR;
-
-        public static Type from(String type) {
-            return Enum.valueOf(Type.class, type.toUpperCase());
-        }
-    }
-
     private Expression expression;
     private Type type;
 
@@ -81,6 +73,14 @@ public class WindowOffset implements Serializable {
 
     public <E extends Expression> E getExpression(Class<E> type) {
         return type.cast(getExpression());
+    }
+
+    public enum Type {
+        PRECEDING, FOLLOWING, CURRENT, EXPR;
+
+        public static Type from(String type) {
+            return Enum.valueOf(Type.class, type.toUpperCase());
+        }
     }
 
 }

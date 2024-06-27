@@ -23,40 +23,40 @@ public class SetOperationList extends Select {
     private List<OrderByElement> orderByElements;
 
     @Override
-    public <T, S> T accept(SelectVisitor<T> selectVisitor, S arguments) {
-        return selectVisitor.visit(this, arguments);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }
 
-    public List<Select> getSelects() {
-        return selects;
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
     }
 
-    public Select getSelect(int index) {
-        return selects.get(index);
+    public List<Select> getSelects() {
+        return selects;
     }
 
     public void setSelects(List<Select> selects) {
         this.selects = selects;
     }
 
-    public void setOperations(List<SetOperation> operations) {
-        this.operations = operations;
+    public Select getSelect(int index) {
+        return selects.get(index);
     }
 
     public List<SetOperation> getOperations() {
         return operations;
     }
 
-    public SetOperation getOperation(int index) {
-        return operations.get(index);
+    public void setOperations(List<SetOperation> operations) {
+        this.operations = operations;
     }
 
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
+    public SetOperation getOperation(int index) {
+        return operations.get(index);
     }
 
     public void setBracketsOpsAndSelects(List<Select> select, List<SetOperation> ops) {

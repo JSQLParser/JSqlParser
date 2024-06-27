@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -107,55 +108,56 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(CreateIndex createIndex) {
+    public <S> StringBuilder visit(CreateIndex createIndex, S context) {
         CreateIndexDeParser createIndexDeParser = new CreateIndexDeParser(buffer);
         createIndexDeParser.deParse(createIndex);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateTable createTable) {
+    public <S> StringBuilder visit(CreateTable createTable, S context) {
         CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, buffer);
         createTableDeParser.deParse(createTable);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateView createView) {
+    public <S> StringBuilder visit(CreateView createView, S context) {
         CreateViewDeParser createViewDeParser = new CreateViewDeParser(buffer);
         createViewDeParser.deParse(createView);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(RefreshMaterializedViewStatement materializedViewStatement) {
+    public <S> StringBuilder visit(RefreshMaterializedViewStatement materializedViewStatement,
+            S context) {
         new RefreshMaterializedViewStatementDeParser(buffer).deParse(materializedViewStatement);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(AlterView alterView) {
+    public <S> StringBuilder visit(AlterView alterView, S context) {
         AlterViewDeParser alterViewDeParser = new AlterViewDeParser(buffer);
         alterViewDeParser.deParse(alterView);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Delete delete) {
+    public <S> StringBuilder visit(Delete delete, S context) {
         DeleteDeParser deleteDeParser = new DeleteDeParser(expressionDeParser, buffer);
         deleteDeParser.deParse(delete);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Drop drop) {
+    public <S> StringBuilder visit(Drop drop, S context) {
         DropDeParser dropDeParser = new DropDeParser(buffer);
         dropDeParser.deParse(drop);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Insert insert) {
+    public <S> StringBuilder visit(Insert insert, S context) {
         InsertDeParser insertDeParser =
                 new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
@@ -163,13 +165,13 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(Select select) {
-        select.accept(selectDeParser, null);
+    public <S> StringBuilder visit(Select select, S context) {
+        select.accept(selectDeParser, context);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Truncate truncate) {
+    public <S> StringBuilder visit(Truncate truncate, S context) {
         buffer.append("TRUNCATE");
         if (truncate.isTableToken()) {
             buffer.append(" TABLE");
@@ -188,41 +190,41 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(Update update) {
+    public <S> StringBuilder visit(Update update, S context) {
         UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, buffer);
         updateDeParser.deParse(update);
 
         return buffer;
     }
 
-    public StringBuilder visit(Analyze analyzer) {
+    public <S> StringBuilder visit(Analyze analyzer, S context) {
         buffer.append("ANALYZE ");
         buffer.append(analyzer.getTable());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Alter alter) {
+    public <S> StringBuilder visit(Alter alter, S context) {
         AlterDeParser alterDeParser = new AlterDeParser(buffer);
         alterDeParser.deParse(alter);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Statements stmts) {
-        stmts.accept(this);
+    public <S> StringBuilder visit(Statements statements, S context) {
+        statements.accept(this, context);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Execute execute) {
+    public <S> StringBuilder visit(Execute execute, S context) {
         ExecuteDeParser executeDeParser = new ExecuteDeParser(expressionDeParser, buffer);
         executeDeParser.deParse(execute);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(SetStatement set) {
+    public <S> StringBuilder visit(SetStatement set, S context) {
         SetStatementDeParser setStatementDeparser =
                 new SetStatementDeParser(expressionDeParser, buffer);
         setStatementDeparser.deParse(set);
@@ -230,7 +232,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(ResetStatement reset) {
+    public <S> StringBuilder visit(ResetStatement reset, S context) {
         ResetStatementDeParser setStatementDeparser =
                 new ResetStatementDeParser(expressionDeParser, buffer);
         setStatementDeparser.deParse(reset);
@@ -239,31 +241,31 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
-    public StringBuilder visit(Merge merge) {
+    public <S> StringBuilder visit(Merge merge, S context) {
         new MergeDeParser(expressionDeParser, selectDeParser, buffer).deParse(merge);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(SavepointStatement savepointStatement) {
+    public <S> StringBuilder visit(SavepointStatement savepointStatement, S context) {
         buffer.append(savepointStatement.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(RollbackStatement rollbackStatement) {
+    public <S> StringBuilder visit(RollbackStatement rollbackStatement, S context) {
         buffer.append(rollbackStatement.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Commit commit) {
+    public <S> StringBuilder visit(Commit commit, S context) {
         buffer.append(commit.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Upsert upsert) {
+    public <S> StringBuilder visit(Upsert upsert, S context) {
         UpsertDeParser upsertDeParser =
                 new UpsertDeParser(expressionDeParser, selectDeParser, buffer);
         upsertDeParser.deParse(upsert);
@@ -271,35 +273,35 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(UseStatement use) {
+    public <S> StringBuilder visit(UseStatement use, S context) {
         new UseStatementDeParser(buffer).deParse(use);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(ShowColumnsStatement show) {
+    public <S> StringBuilder visit(ShowColumnsStatement show, S context) {
         new ShowColumnsStatementDeParser(buffer).deParse(show);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(ShowIndexStatement showIndexes) {
+    public <S> StringBuilder visit(ShowIndexStatement showIndexes, S context) {
         new ShowIndexStatementDeParser(buffer).deParse(showIndexes);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(ShowTablesStatement showTables) {
+    public <S> StringBuilder visit(ShowTablesStatement showTables, S context) {
         new ShowTablesStatementDeparser(buffer).deParse(showTables);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Block block) {
+    public <S> StringBuilder visit(Block block, S context) {
         buffer.append("BEGIN\n");
         if (block.getStatements() != null) {
             for (Statement stmt : block.getStatements().getStatements()) {
-                stmt.accept(this);
+                stmt.accept(this, context);
                 buffer.append(";\n");
             }
         }
@@ -311,13 +313,13 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(Comment comment) {
+    public <S> StringBuilder visit(Comment comment, S context) {
         buffer.append(comment.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(DescribeStatement describe) {
+    public <S> StringBuilder visit(DescribeStatement describe, S context) {
         buffer.append(describe.getDescribeType());
         buffer.append(" ");
         buffer.append(describe.getTable());
@@ -325,108 +327,107 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
-    public StringBuilder visit(ExplainStatement explain) {
+    public <S> StringBuilder visit(ExplainStatement explainStatement, S context) {
         buffer.append("EXPLAIN ");
-        if (explain.getTable() != null) {
-            buffer.append(explain.getTable());
-        } else if (explain.getOptions() != null) {
-            buffer.append(explain.getOptions().values().stream()
+        if (explainStatement.getTable() != null) {
+            buffer.append(explainStatement.getTable());
+        } else if (explainStatement.getOptions() != null) {
+            buffer.append(explainStatement.getOptions().values().stream()
                     .map(ExplainStatement.Option::formatOption).collect(Collectors.joining(" ")));
             buffer.append(" ");
         }
-        if (explain.getStatement() != null) {
-            explain.getStatement().accept(this);
-
+        if (explainStatement.getStatement() != null) {
+            explainStatement.getStatement().accept(this, context);
         }
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(ShowStatement show) {
-        new ShowStatementDeParser(buffer).deParse(show);
+    public <S> StringBuilder visit(ShowStatement showStatement, S context) {
+        new ShowStatementDeParser(buffer).deParse(showStatement);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(DeclareStatement declare) {
-        new DeclareStatementDeParser(expressionDeParser, buffer).deParse(declare);
+    public <S> StringBuilder visit(DeclareStatement declareStatement, S context) {
+        new DeclareStatementDeParser(expressionDeParser, buffer).deParse(declareStatement);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(Grant grant) {
+    public <S> StringBuilder visit(Grant grant, S context) {
         GrantDeParser grantDeParser = new GrantDeParser(buffer);
         grantDeParser.deParse(grant);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateSchema aThis) {
+    public <S> StringBuilder visit(CreateSchema aThis, S context) {
         buffer.append(aThis.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateSequence createSequence) {
+    public <S> StringBuilder visit(CreateSequence createSequence, S context) {
         new CreateSequenceDeParser(buffer).deParse(createSequence);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(AlterSequence alterSequence) {
+    public <S> StringBuilder visit(AlterSequence alterSequence, S context) {
         new AlterSequenceDeParser(buffer).deParse(alterSequence);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateFunctionalStatement createFunctionalStatement) {
+    public <S> StringBuilder visit(CreateFunctionalStatement createFunctionalStatement, S context) {
         buffer.append(createFunctionalStatement.toString());
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(CreateSynonym createSynonym) {
+    public <S> StringBuilder visit(CreateSynonym createSynonym, S context) {
         new CreateSynonymDeparser(buffer).deParse(createSynonym);
         return buffer;
     }
 
     @Override
     void deParse(Statement statement) {
-        statement.accept(this);
+        statement.accept(this, null);
     }
 
     @Override
-    public StringBuilder visit(AlterSession alterSession) {
+    public <S> StringBuilder visit(AlterSession alterSession, S context) {
         new AlterSessionDeParser(buffer).deParse(alterSession);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(IfElseStatement ifElseStatement) {
+    public <S> StringBuilder visit(IfElseStatement ifElseStatement, S context) {
         ifElseStatement.appendTo(buffer);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(RenameTableStatement renameTableStatement) {
+    public <S> StringBuilder visit(RenameTableStatement renameTableStatement, S context) {
         renameTableStatement.appendTo(buffer);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(PurgeStatement purgeStatement) {
+    public <S> StringBuilder visit(PurgeStatement purgeStatement, S context) {
         purgeStatement.appendTo(buffer);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(AlterSystemStatement alterSystemStatement) {
+    public <S> StringBuilder visit(AlterSystemStatement alterSystemStatement, S context) {
         alterSystemStatement.appendTo(buffer);
         return buffer;
     }
 
     @Override
-    public StringBuilder visit(UnsupportedStatement unsupportedStatement) {
+    public <S> StringBuilder visit(UnsupportedStatement unsupportedStatement, S context) {
         unsupportedStatement.appendTo(buffer);
         return buffer;
     }

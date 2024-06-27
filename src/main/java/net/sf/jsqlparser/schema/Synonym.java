@@ -23,8 +23,7 @@ public class Synonym extends ASTNodeAccessImpl implements MultiPartName {
     private static final int SERVER_IDX = 3;
     private List<String> partItems = new ArrayList<>();
 
-    public Synonym() {
-    }
+    public Synonym() {}
 
     public Synonym(List<String> partItems) {
         this.partItems = new ArrayList<>(partItems);

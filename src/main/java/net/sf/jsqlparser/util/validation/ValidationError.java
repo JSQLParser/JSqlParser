@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.statement.Statement;
 
 public class ValidationError {
@@ -50,6 +51,10 @@ public class ValidationError {
         return capability;
     }
 
+    public void setCapability(ValidationCapability databaseType) {
+        this.capability = databaseType;
+    }
+
     /**
      * @return the parsed {@link Statement}, if parsing was possible
      */
@@ -57,19 +62,15 @@ public class ValidationError {
         return parsedStatement;
     }
 
+    public void setParsedStatement(Statement parsedStatement) {
+        this.parsedStatement = parsedStatement;
+    }
+
     /**
      * @return the statements (may be more than one) given for validation
      */
     public String getStatements() {
         return statements;
-    }
-
-    public void setCapability(ValidationCapability databaseType) {
-        this.capability = databaseType;
-    }
-
-    public void setParsedStatement(Statement parsedStatement) {
-        this.parsedStatement = parsedStatement;
     }
 
     public ValidationError withCapability(ValidationCapability databaseType) {
@@ -85,7 +86,8 @@ public class ValidationError {
     @Override
     public String toString() {
         return "ValidationError [\nstatement=" + statements + "\ncapability="
-                + (capability != null ? capability.getName() : "<null>") + "\nerrors=" + errors + "\n]";
+                + (capability != null ? capability.getName() : "<null>") + "\nerrors=" + errors
+                + "\n]";
     }
 
 

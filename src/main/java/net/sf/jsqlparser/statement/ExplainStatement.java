@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
 
@@ -28,6 +29,10 @@ public class ExplainStatement implements Statement {
         // empty constructor
     }
 
+    public ExplainStatement(Select select) {
+        this.select = select;
+    }
+
     public Table getTable() {
         return table;
     }
@@ -35,10 +40,6 @@ public class ExplainStatement implements Statement {
     public ExplainStatement setTable(Table table) {
         this.table = table;
         return this;
-    }
-
-    public ExplainStatement(Select select) {
-        this.select = select;
     }
 
     public Select getStatement() {
@@ -63,7 +64,7 @@ public class ExplainStatement implements Statement {
 
     /**
      * Returns the first option that matches this optionType
-     * 
+     *
      * @param optionType the option type to retrieve an Option for
      * @return an option of that type, or null. In case of duplicate options, the first found option
      *         will be returned.
@@ -97,8 +98,8 @@ public class ExplainStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public enum OptionType {

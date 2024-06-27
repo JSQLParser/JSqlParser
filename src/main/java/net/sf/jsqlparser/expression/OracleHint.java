@@ -33,6 +33,17 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
         return SINGLE_LINE.matcher(comment).find() || MULTI_LINE.matcher(comment).find();
     }
 
+    public static OracleHint getHintFromSelectBody(Select selectBody) {
+
+        if (selectBody instanceof PlainSelect) {
+            return ((PlainSelect) selectBody).getOracleHint();
+        } else if (selectBody instanceof ParenthesedSelect) {
+            return getHintFromSelectBody(((ParenthesedSelect) selectBody).getSelect());
+        } else {
+            return null;
+        }
+    }
+
     public final void setComment(String comment) {
         Matcher m;
         m = SINGLE_LINE.matcher(comment);
@@ -65,8 +76,8 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override
@@ -86,16 +97,5 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
     public OracleHint withSingleLine(boolean singleLine) {
         this.setSingleLine(singleLine);
         return this;
-    }
-
-    public static OracleHint getHintFromSelectBody(Select selectBody) {
-
-        if (selectBody instanceof PlainSelect) {
-            return ((PlainSelect) selectBody).getOracleHint();
-        } else if (selectBody instanceof ParenthesedSelect) {
-            return getHintFromSelectBody(((ParenthesedSelect) selectBody).getSelect());
-        } else {
-            return null;
-        }
     }
 }

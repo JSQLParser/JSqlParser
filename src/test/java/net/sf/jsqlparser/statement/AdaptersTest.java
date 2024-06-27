@@ -38,29 +38,29 @@ public class AdaptersTest {
         final Stack<Pair<String, String>> params = new Stack<>();
         stmnt.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public Void visit(Select select) {
+            public <S> Void visit(Select select, S context) {
                 select.accept(new SelectVisitorAdapter<Void>() {
                     @Override
-                    public <S> Void visit(PlainSelect plainSelect, S parameters) {
+                    public <K> Void visit(PlainSelect plainSelect, K context) {
                         plainSelect.getWhere().accept(new ExpressionVisitorAdapter<Void>() {
                             @Override
-                            protected <K> Void visitBinaryExpression(BinaryExpression expr,
-                                    K parameters) {
+                            protected <J> Void visitBinaryExpression(BinaryExpression expr,
+                                    J context) {
                                 if (!(expr instanceof AndExpression)) {
                                     params.push(new Pair<>(null, null));
                                 }
-                                return super.visitBinaryExpression(expr, parameters);
+                                return super.visitBinaryExpression(expr, context);
                             }
 
                             @Override
-                            public <K> Void visit(Column column, K parameters) {
+                            public <J> Void visit(Column column, J context) {
                                 params.push(new Pair<>(column.getColumnName(),
                                         params.pop().getRight()));
                                 return null;
                             }
 
                             @Override
-                            public <K> Void visit(JdbcNamedParameter parameter, K parameters) {
+                            public <J> Void visit(JdbcNamedParameter parameter, J context) {
                                 params.push(new Pair<>(params.pop().getLeft(),
                                         parameter.getName()));
                                 return null;

@@ -13,7 +13,7 @@ package net.sf.jsqlparser.statement.select;
 public class OrderByVisitorAdapter<T> implements OrderByVisitor<T> {
 
     @Override
-    public <S> T visit(OrderByElement orderBy, S parameters) {
+    public <S> T visit(OrderByElement orderBy, S context) {
         return null;
     }
 }

@@ -21,8 +21,8 @@ import java.util.List;
 
 public final class SetStatement implements Statement {
 
-    private String effectParameter;
     private final List<NameExpr> values = new ArrayList<>();
+    private String effectParameter;
 
     public SetStatement() {
         // empty constructor
@@ -52,6 +52,10 @@ public final class SetStatement implements Statement {
         return isUseEqual(0);
     }
 
+    public SetStatement setUseEqual(boolean useEqual) {
+        return setUseEqual(0, useEqual);
+    }
+
     public SetStatement withUseEqual(int idx, boolean useEqual) {
         this.setUseEqual(idx, useEqual);
         return this;
@@ -67,21 +71,16 @@ public final class SetStatement implements Statement {
         return this;
     }
 
-    public SetStatement setUseEqual(boolean useEqual) {
-        return setUseEqual(0, useEqual);
-    }
-
-
     public Object getName() {
         return getName(0);
     }
 
-    public Object getName(int idx) {
-        return values.get(idx).name;
-    }
-
     public void setName(String name) {
         setName(0, name);
+    }
+
+    public Object getName(int idx) {
+        return values.get(idx).name;
     }
 
     public void setName(int idx, String name) {
@@ -96,12 +95,12 @@ public final class SetStatement implements Statement {
         return getExpressions(0);
     }
 
-    public void setExpressions(int idx, ExpressionList<?> expressions) {
-        values.get(idx).expressions = expressions;
-    }
-
     public void setExpressions(ExpressionList<?> expressions) {
         setExpressions(0, expressions);
+    }
+
+    public void setExpressions(int idx, ExpressionList<?> expressions) {
+        values.get(idx).expressions = expressions;
     }
 
     private String toString(NameExpr ne) {
@@ -146,14 +145,33 @@ public final class SetStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
+    }
+
+    public String getEffectParameter() {
+        return effectParameter;
+    }
+
+    public void setEffectParameter(String effectParameter) {
+        this.effectParameter = effectParameter;
+    }
+
+    public SetStatement withEffectParameter(String effectParameter) {
+        this.effectParameter = effectParameter;
+        return this;
     }
 
     static class NameExpr implements Serializable {
         Object name;
         ExpressionList expressions;
         boolean useEqual;
+
+        public NameExpr(Object name, ExpressionList<?> expressions, boolean useEqual) {
+            this.name = name;
+            this.expressions = expressions;
+            this.useEqual = useEqual;
+        }
 
         public Object getName() {
             return name;
@@ -178,24 +196,5 @@ public final class SetStatement implements Statement {
         public void setUseEqual(boolean useEqual) {
             this.useEqual = useEqual;
         }
-
-        public NameExpr(Object name, ExpressionList<?> expressions, boolean useEqual) {
-            this.name = name;
-            this.expressions = expressions;
-            this.useEqual = useEqual;
-        }
-    }
-
-    public String getEffectParameter() {
-        return effectParameter;
-    }
-
-    public void setEffectParameter(String effectParameter) {
-        this.effectParameter = effectParameter;
-    }
-
-    public SetStatement withEffectParameter(String effectParameter) {
-        this.effectParameter = effectParameter;
-        return this;
     }
 }

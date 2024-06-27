@@ -26,7 +26,6 @@
 package net.sf.jsqlparser.statement;
 
 /**
- *
  * @author are
  */
 public class RollbackStatement implements Statement {
@@ -39,17 +38,21 @@ public class RollbackStatement implements Statement {
         return usingWorkKeyword;
     }
 
+    public void setUsingWorkKeyword(boolean usingWorkKeyword) {
+        this.usingWorkKeyword = usingWorkKeyword;
+    }
+
     public RollbackStatement withUsingWorkKeyword(boolean usingWorkKeyword) {
         this.usingWorkKeyword = usingWorkKeyword;
         return this;
     }
 
-    public void setUsingWorkKeyword(boolean usingWorkKeyword) {
-        this.usingWorkKeyword = usingWorkKeyword;
-    }
-
     public boolean isUsingSavepointKeyword() {
         return usingSavepointKeyword;
+    }
+
+    public void setUsingSavepointKeyword(boolean usingSavepointKeyword) {
+        this.usingSavepointKeyword = usingSavepointKeyword;
     }
 
     public RollbackStatement withUsingSavepointKeyword(boolean usingSavepointKeyword) {
@@ -57,12 +60,12 @@ public class RollbackStatement implements Statement {
         return this;
     }
 
-    public void setUsingSavepointKeyword(boolean usingSavepointKeyword) {
-        this.usingSavepointKeyword = usingSavepointKeyword;
-    }
-
     public String getSavepointName() {
         return savepointName;
+    }
+
+    public void setSavepointName(String savepointName) {
+        this.savepointName = savepointName;
     }
 
     public RollbackStatement withSavepointName(String savepointName) {
@@ -70,23 +73,19 @@ public class RollbackStatement implements Statement {
         return this;
     }
 
-    public void setSavepointName(String savepointName) {
-        this.savepointName = savepointName;
-    }
-
     public String getForceDistributedTransactionIdentifier() {
         return forceDistributedTransactionIdentifier;
+    }
+
+    public void setForceDistributedTransactionIdentifier(
+            String forceDistributedTransactionIdentifier) {
+        this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
     }
 
     public RollbackStatement withForceDistributedTransactionIdentifier(
             String forceDistributedTransactionIdentifier) {
         this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
         return this;
-    }
-
-    public void setForceDistributedTransactionIdentifier(
-            String forceDistributedTransactionIdentifier) {
-        this.forceDistributedTransactionIdentifier = forceDistributedTransactionIdentifier;
     }
 
     @Override
@@ -108,8 +107,8 @@ public class RollbackStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
 }

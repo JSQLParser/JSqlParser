@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -37,9 +38,9 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public abstract class ConnectExpressionsVisitor<T>
         implements SelectVisitor<T>, SelectItemVisitor<T> {
 
-    private String alias = "expr";
     private final List<SelectItem<? extends Expression>> itemsExpr =
             new LinkedList<SelectItem<? extends Expression>>();
+    private String alias = "expr";
 
     public ConnectExpressionsVisitor() {}
 
@@ -50,21 +51,21 @@ public abstract class ConnectExpressionsVisitor<T>
     protected abstract BinaryExpression createBinaryExpression();
 
     @Override
-    public <S> T visit(ParenthesedSelect parenthesedSelect, S parameters) {
-        parenthesedSelect.getSelect().accept(this, parameters);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S context) {
+        parenthesedSelect.getSelect().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(LateralSubSelect lateralSubSelect, S parameters) {
-        lateralSubSelect.getSelect().accept(this, parameters);
+    public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
+        lateralSubSelect.getSelect().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(PlainSelect plainSelect, S parameters) {
+    public <S> T visit(PlainSelect plainSelect, S context) {
         for (SelectItem<?> item : plainSelect.getSelectItems()) {
-            item.accept(this, parameters);
+            item.accept(this, context);
         }
 
         if (itemsExpr.size() > 1) {
@@ -90,31 +91,31 @@ public abstract class ConnectExpressionsVisitor<T>
     }
 
     @Override
-    public <S> T visit(SetOperationList setOpList, S parameters) {
+    public <S> T visit(SetOperationList setOpList, S context) {
         for (Select select : setOpList.getSelects()) {
-            select.accept(this, parameters);
+            select.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(WithItem withItem, S parameters) {
+    public <S> T visit(WithItem withItem, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(SelectItem<? extends Expression> selectItem, S parameters) {
+    public <S> T visit(SelectItem<? extends Expression> selectItem, S context) {
         itemsExpr.add(selectItem);
         return null;
     }
 
     @Override
-    public <S> T visit(Values aThis, S parameters) {
+    public <S> T visit(Values aThis, S context) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public <S> T visit(TableStatement tableStatement, S parameters) {
+    public <S> T visit(TableStatement tableStatement, S context) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

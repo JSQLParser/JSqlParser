@@ -24,34 +24,36 @@ import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
 import net.sf.jsqlparser.util.validation.ValidationException;
 
 /**
- * Validates against schema by jdbc-metadata in a very basic way with simple
- * caching and comparing names by {@link String#equalsIgnoreCase(String)}
+ * Validates against schema by jdbc-metadata in a very basic way with simple caching and comparing
+ * names by {@link String#equalsIgnoreCase(String)}
  *
  * @author gitmotte
- *
  */
 public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapability {
 
     private static final String VIEW = "VIEW";
     private static final String TABLE = "TABLE";
     private static final String COLUMN = "COLUMN";
-    private static final Logger LOG = Logger.getLogger(JdbcDatabaseMetaDataCapability.class.getName());
+    private static final Logger LOG =
+            Logger.getLogger(JdbcDatabaseMetaDataCapability.class.getName());
 
     /**
      * @param connection
      * @param namesLookup - see {@link NamesLookup}
      */
-    public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup) {
+    public JdbcDatabaseMetaDataCapability(Connection connection,
+            UnaryOperator<String> namesLookup) {
         super(connection, namesLookup);
     }
 
     /**
      * @param connection
-     * @param namesLookup  - see {@link NamesLookup}
+     * @param namesLookup - see {@link NamesLookup}
      * @param cacheResults - whether the results should be cached for later lookups
      */
     public JdbcDatabaseMetaDataCapability(Connection connection, UnaryOperator<String> namesLookup,
@@ -61,7 +63,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    protected boolean columnExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+    protected boolean columnExists(Map<Named, Boolean> results, Named named)
+            throws ValidationException {
         String[] names = splitAndValidateMinMax(COLUMN, named.getFqnLookup(), 1, 4);
         String columnName = names[names.length - 1];
 
@@ -70,7 +73,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                 : named.getParents();
 
         int lastIndexOf = named.getFqnLookup().lastIndexOf(".");
-        String fqnParent = lastIndexOf != -1 ? named.getFqnLookup().substring(0, lastIndexOf) : null;
+        String fqnParent =
+                lastIndexOf != -1 ? named.getFqnLookup().substring(0, lastIndexOf) : null;
 
         // try to match parents in results
         Predicate<? super Named> predicate = null;
@@ -101,7 +105,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                     throw createDatabaseException(fqn, COLUMN, e);
                 }
             } else if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine(String.format("%s does not exists, cannot evaluate COLUMN from %s", fqn, named.getFqn()));
+                LOG.fine(String.format("%s does not exists, cannot evaluate COLUMN from %s", fqn,
+                        named.getFqn()));
             }
         }
         return false;
@@ -113,12 +118,14 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
     }
 
     @Override
-    protected boolean viewExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+    protected boolean viewExists(Map<Named, Boolean> results, Named named)
+            throws ValidationException {
         return jdbcMetadataTables(named, VIEW);
     }
 
     @Override
-    protected boolean tableExists(Map<Named, Boolean> results, Named named) throws ValidationException {
+    protected boolean tableExists(Map<Named, Boolean> results, Named named)
+            throws ValidationException {
         return jdbcMetadataTables(named, TABLE);
     }
 
@@ -142,8 +149,9 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
 
 
         List<String> tables = new ArrayList<>();
-        try (ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern,
-                new String[] { type })) {
+        try (ResultSet rs =
+                connection.getMetaData().getTables(catalog, schemaPattern, tableNamePattern,
+                        new String[] {type})) {
             while (rs.next()) {
                 String tableCat = rs.getString("TABLE_CAT");
                 String tableSchem = rs.getString("TABLE_SCHEM");
@@ -156,10 +164,10 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
                                     tables.add(String.join(".", tableCat, tableSchem, tableName));
                                 }
                             } else {
-                                tables.add(String.join(".",  tableSchem, tableName));
+                                tables.add(String.join(".", tableSchem, tableName));
                             }
                         }
-                    }  else {
+                    } else {
                         tables.add(tableName);
                     }
                 }
@@ -184,7 +192,8 @@ public class JdbcDatabaseMetaDataCapability extends AbstractDatabaseMetaDataCapa
         String[] names = fqn.split("\\.");
         if (names.length < min || names.length > max) {
             throw new UnexpectedValidationException(String.format(
-                    "%s path-elements count needs to be between %s and %s for %s", fqn, min, max, type));
+                    "%s path-elements count needs to be between %s and %s for %s", fqn, min, max,
+                    type));
         }
         return names;
     }

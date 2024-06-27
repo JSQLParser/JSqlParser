@@ -27,28 +27,28 @@ public class Between extends ASTNodeAccessImpl implements Expression {
         return betweenExpressionEnd;
     }
 
-    public Expression getBetweenExpressionStart() {
-        return betweenExpressionStart;
-    }
-
-    public Expression getLeftExpression() {
-        return leftExpression;
-    }
-
-    public boolean isNot() {
-        return not;
-    }
-
     public void setBetweenExpressionEnd(Expression expression) {
         betweenExpressionEnd = expression;
+    }
+
+    public Expression getBetweenExpressionStart() {
+        return betweenExpressionStart;
     }
 
     public void setBetweenExpressionStart(Expression expression) {
         betweenExpressionStart = expression;
     }
 
+    public Expression getLeftExpression() {
+        return leftExpression;
+    }
+
     public void setLeftExpression(Expression expression) {
         leftExpression = expression;
+    }
+
+    public boolean isNot() {
+        return not;
     }
 
     public void setNot(boolean b) {
@@ -56,8 +56,8 @@ public class Between extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

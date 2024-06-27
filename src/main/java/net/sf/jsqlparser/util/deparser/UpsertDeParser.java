@@ -89,12 +89,12 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
         return expressionVisitor;
     }
 
-    public SelectVisitor<StringBuilder> getSelectVisitor() {
-        return selectVisitor;
-    }
-
     public void setExpressionVisitor(ExpressionDeParser visitor) {
         expressionVisitor = visitor;
+    }
+
+    public SelectVisitor<StringBuilder> getSelectVisitor() {
+        return selectVisitor;
     }
 
     public void setSelectVisitor(SelectDeParser visitor) {

@@ -28,21 +28,25 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationExec() throws Exception {
         for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1",
-                "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
+                "EXEC procedure @param = 'foo'",
+                "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
             validateNoErrors(sql, 1, DatabaseType.SQLSERVER);
         }
     }
 
     @Test
     public void testValidationCall() throws Exception {
-        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO", "CALL myproc ('a', 2, 'b')")) {
-            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.POSTGRESQL, DatabaseType.MYSQL);
+        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO",
+                "CALL myproc ('a', 2, 'b')")) {
+            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.POSTGRESQL,
+                    DatabaseType.MYSQL);
         }
     }
 
     @Test
     public void testValidationCallNotSupported() throws Exception {
-        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO", "CALL myproc ('a', 2, 'b')")) {
+        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO",
+                "CALL myproc ('a', 2, 'b')")) {
             validateNotSupported(sql, 1, 1, DatabaseType.SQLSERVER, Feature.executeCall);
         }
     }
@@ -50,22 +54,27 @@ public class ExecuteValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationExecuteNotAllowed() throws Exception {
         for (String sql : Arrays.asList("EXECUTE myproc 'a', 2, 'b'")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute, Feature.executeExecute);
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute,
+                    Feature.executeExecute);
         }
     }
 
     @Test
     public void testValidationExecNotAllowed() throws Exception {
         for (String sql : Arrays.asList("EXEC myproc 'a', 2, 'b'", "EXEC procedure @param = 1",
-                "EXEC procedure @param = 'foo'", "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute, Feature.executeExec);
+                "EXEC procedure @param = 'foo'",
+                "EXEC procedure @param = 'foo', @param2 = 'foo2'")) {
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute,
+                    Feature.executeExec);
         }
     }
 
     @Test
     public void testValidationCallNotAllowed() throws Exception {
-        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO", "CALL myproc ('a', 2, 'b')")) {
-            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute, Feature.executeCall);
+        for (String sql : Arrays.asList("CALL myproc 'a', 2, 'b'", "CALL BAR.FOO",
+                "CALL myproc ('a', 2, 'b')")) {
+            validateNotAllowed(sql, 1, 1, FeaturesAllowed.DML, Feature.execute,
+                    Feature.executeCall);
         }
     }
 

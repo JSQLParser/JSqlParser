@@ -20,17 +20,17 @@ public class AlterSequence implements Statement {
 
     public Sequence sequence;
 
-    public void setSequence(Sequence sequence) {
-        this.sequence = sequence;
-    }
-
     public Sequence getSequence() {
         return sequence;
     }
 
+    public void setSequence(Sequence sequence) {
+        this.sequence = sequence;
+    }
+
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override

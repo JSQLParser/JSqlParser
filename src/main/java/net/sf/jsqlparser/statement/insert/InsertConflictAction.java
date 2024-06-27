@@ -21,7 +21,7 @@ import java.util.Objects;
 
 /**
  * https://www.postgresql.org/docs/current/sql-insert.html
- * 
+ *
  * <pre>
  * conflict_action is one of:
  *
@@ -36,10 +36,8 @@ import java.util.Objects;
 
 public class InsertConflictAction implements Serializable {
     ConflictActionType conflictActionType;
-
-    private List<UpdateSet> updateSets;
-
     Expression whereExpression;
+    private List<UpdateSet> updateSets;
 
     public InsertConflictAction(ConflictActionType conflictActionType) {
         this.conflictActionType = Objects.requireNonNull(conflictActionType,

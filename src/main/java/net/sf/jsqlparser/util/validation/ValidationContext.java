@@ -46,13 +46,13 @@ public class ValidationContext {
         return this;
     }
 
+    public FeatureConfiguration getConfiguration() {
+        return configuration;
+    }
+
     public ValidationContext setConfiguration(FeatureConfiguration configuration) {
         this.configuration = configuration;
         return this;
-    }
-
-    public FeatureConfiguration getConfiguration() {
-        return configuration;
     }
 
     public boolean getAsBoolean(Feature f) {

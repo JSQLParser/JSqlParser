@@ -25,7 +25,8 @@ public class GroupByValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testValidationHaving() throws JSQLParserException {
-        String sql = "SELECT MAX(tab1.b) FROM tab1 WHERE a > 34 GROUP BY tab1.b HAVING MAX(tab1.b) > 56";
+        String sql =
+                "SELECT MAX(tab1.b) FROM tab1 WHERE a > 34 GROUP BY tab1.b HAVING MAX(tab1.b) > 56";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
     }
 
@@ -34,7 +35,8 @@ public class GroupByValidatorTest extends ValidationTestAsserts {
         for (String sql : Arrays.asList(
                 "SELECT COL_1, COL_2, COL_3, COL_4, COL_5, COL_6 FROM TABLE_1 GROUP BY GROUPING SETS ((COL_1, COL_2, COL_3, COL_4), (COL_5, COL_6))",
                 "SELECT COL_1 FROM TABLE_1 GROUP BY GROUPING SETS (COL_1)")) {
-            validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL, DatabaseType.SQLSERVER);
+            validateNoErrors(sql, 1, DatabaseType.ORACLE, DatabaseType.POSTGRESQL,
+                    DatabaseType.SQLSERVER);
         }
     }
 

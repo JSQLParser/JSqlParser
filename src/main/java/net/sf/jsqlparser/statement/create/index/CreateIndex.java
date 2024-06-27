@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.create.index;
 import static java.util.stream.Collectors.joining;
 
 import java.util.*;
+
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
@@ -22,6 +23,7 @@ public class CreateIndex implements Statement {
     private Index index;
     private List<String> tailParameters;
     private boolean indexTypeBeforeOn = false;
+    private boolean usingIfNotExists = false;
 
     public boolean isIndexTypeBeforeOn() {
         return indexTypeBeforeOn;
@@ -40,11 +42,9 @@ public class CreateIndex implements Statement {
         return this;
     }
 
-    private boolean usingIfNotExists = false;
-
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Index getIndex() {

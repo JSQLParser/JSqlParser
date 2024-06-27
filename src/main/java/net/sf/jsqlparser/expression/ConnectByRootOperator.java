@@ -26,11 +26,11 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.Objects;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
 /**
- *
  * @author are
  */
 public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expression {
@@ -46,8 +46,8 @@ public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expressi
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

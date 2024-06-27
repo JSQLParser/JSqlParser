@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -30,12 +31,12 @@ public final class DeclareStatement implements Statement {
 
     public DeclareStatement() {}
 
-    public void setUserVariable(UserVariable userVariable) {
-        this.userVariable = userVariable;
-    }
-
     public UserVariable getUserVariable() {
         return userVariable;
+    }
+
+    public void setUserVariable(UserVariable userVariable) {
+        this.userVariable = userVariable;
     }
 
     /**
@@ -54,12 +55,16 @@ public final class DeclareStatement implements Statement {
         return declareType;
     }
 
+    public void setDeclareType(DeclareType declareType) {
+        this.declareType = declareType;
+    }
+
     public String getTypeName() {
         return typeName;
     }
 
-    public void setDeclareType(DeclareType declareType) {
-        this.declareType = declareType;
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     public void addType(ColDataType colDataType, Expression defaultExpr) {
@@ -91,32 +96,28 @@ public final class DeclareStatement implements Statement {
         return this;
     }
 
-    public void setTypeDefExprList(List<TypeDefExpr> expr) {
-        this.typeDefExprList = expr;
-    }
-
     public List<TypeDefExpr> getTypeDefExprList() {
         return this.typeDefExprList;
+    }
+
+    public void setTypeDefExprList(List<TypeDefExpr> expr) {
+        this.typeDefExprList = expr;
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {
         columnDefinitions.add(colDef);
     }
 
-    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
-        this.columnDefinitions = columnDefinitions;
-    }
-
     public List<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
 
-    public List<TypeDefExpr> getTypeDefinitions() {
-        return typeDefExprList;
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
+    public List<TypeDefExpr> getTypeDefinitions() {
+        return typeDefExprList;
     }
 
     @Override
@@ -156,8 +157,8 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public DeclareStatement withUserVariable(UserVariable userVariable) {

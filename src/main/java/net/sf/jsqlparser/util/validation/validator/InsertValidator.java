@@ -45,7 +45,7 @@ public class InsertValidator extends AbstractValidator<Insert> {
         validateOptionalExpressions(insert.getColumns());
 
         if (insert.getSelect() instanceof Values) {
-            insert.getSelect().accept(getValidator(StatementValidator.class));
+            insert.getSelect().accept(getValidator(StatementValidator.class), null);
             validateOptionalExpressions(insert.getValues().getExpressions());
         }
 

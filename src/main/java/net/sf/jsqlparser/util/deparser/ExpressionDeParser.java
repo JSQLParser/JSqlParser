@@ -151,104 +151,104 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(Addition addition, S parameters) {
-        visitBinaryExpression(addition, " + ", null);
+    public <S> StringBuilder visit(Addition addition, S context) {
+        deparse(addition, " + ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(AndExpression andExpression, S parameters) {
-        visitBinaryExpression(andExpression, andExpression.isUseOperator() ? " && " : " AND ",
+    public <S> StringBuilder visit(AndExpression andExpression, S context) {
+        deparse(andExpression, andExpression.isUseOperator() ? " && " : " AND ",
                 null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Between between, S parameters) {
-        between.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(Between between, S context) {
+        between.getLeftExpression().accept(this, context);
         if (between.isNot()) {
             buffer.append(" NOT");
         }
 
         buffer.append(" BETWEEN ");
-        between.getBetweenExpressionStart().accept(this, parameters);
+        between.getBetweenExpressionStart().accept(this, context);
         buffer.append(" AND ");
-        between.getBetweenExpressionEnd().accept(this, parameters);
+        between.getBetweenExpressionEnd().accept(this, context);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(OverlapsCondition overlapsCondition, S parameters) {
+    public <S> StringBuilder visit(OverlapsCondition overlapsCondition, S context) {
         buffer.append(overlapsCondition.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(EqualsTo equalsTo, S parameters) {
-        visitOldOracleJoinBinaryExpression(equalsTo, " = ", null);
+    public <S> StringBuilder visit(EqualsTo equalsTo, S context) {
+        deparse(equalsTo, " = ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Division division, S parameters) {
-        visitBinaryExpression(division, " / ", null);
+    public <S> StringBuilder visit(Division division, S context) {
+        deparse(division, " / ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(IntegerDivision division, S parameters) {
-        visitBinaryExpression(division, " DIV ", null);
+    public <S> StringBuilder visit(IntegerDivision division, S context) {
+        deparse(division, " DIV ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(DoubleValue doubleValue, S parameters) {
+    public <S> StringBuilder visit(DoubleValue doubleValue, S context) {
         buffer.append(doubleValue.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(HexValue hexValue, S parameters) {
+    public <S> StringBuilder visit(HexValue hexValue, S context) {
         buffer.append(hexValue.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(NotExpression notExpr, S parameters) {
+    public <S> StringBuilder visit(NotExpression notExpr, S context) {
         if (notExpr.isExclamationMark()) {
             buffer.append("! ");
         } else {
             buffer.append(NOT);
         }
-        notExpr.getExpression().accept(this, parameters);
+        notExpr.getExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(BitwiseRightShift expr, S parameters) {
-        visitBinaryExpression(expr, " >> ", null);
+    public <S> StringBuilder visit(BitwiseRightShift expr, S context) {
+        deparse(expr, " >> ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(BitwiseLeftShift expr, S parameters) {
-        visitBinaryExpression(expr, " << ", null);
+    public <S> StringBuilder visit(BitwiseLeftShift expr, S context) {
+        deparse(expr, " << ", null);
         return buffer;
     }
 
-    public <S> StringBuilder visitOldOracleJoinBinaryExpression(
+    public <S> StringBuilder deparse(
             OldOracleJoinBinaryExpression expression,
-            String operator, S parameters) {
+            String operator, S context) {
         // if (expression.isNot()) {
         // buffer.append(NOT);
         // }
-        expression.getLeftExpression().accept(this, parameters);
+        expression.getLeftExpression().accept(this, context);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
         }
         buffer.append(operator);
-        expression.getRightExpression().accept(this, parameters);
+        expression.getRightExpression().accept(this, context);
         if (expression.getOldOracleJoinSyntax() == EqualsTo.ORACLE_JOIN_LEFT) {
             buffer.append("(+)");
         }
@@ -257,21 +257,70 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(GreaterThan greaterThan, S parameters) {
-        visitOldOracleJoinBinaryExpression(greaterThan, " > ", null);
+    public <S> StringBuilder visit(GreaterThan greaterThan, S context) {
+        deparse(greaterThan, " > ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(GreaterThanEquals greaterThanEquals, S parameters) {
-        visitOldOracleJoinBinaryExpression(greaterThanEquals, " >= ", null);
+    public <S> StringBuilder visit(GreaterThanEquals greaterThanEquals, S context) {
+        deparse(greaterThanEquals, " >= ", null);
 
         return buffer;
     }
 
+    public void visit(Addition addition) {
+        visit(addition, null);
+    }
+
+    public void visit(AndExpression andExpression) {
+        visit(andExpression, null);
+    }
+
+    public void visit(Between between) {
+        visit(between, null);
+    }
+
+    public void visit(OverlapsCondition overlapsCondition) {
+        visit(overlapsCondition, null);
+    }
+
+    public void visit(EqualsTo equalsTo) {
+        visit(equalsTo, null);
+    }
+
+    public void visit(Division division) {
+        visit(division, null);
+    }
+
+    public void visit(IntegerDivision division) {
+        visit(division, null);
+    }
+
+    public void visit(DoubleValue doubleValue) {
+        visit(doubleValue, null);
+    }
+
+    public void visit(HexValue hexValue) {
+        visit(hexValue, null);
+    }
+
+    public void visit(NotExpression notExpr) {
+        visit(notExpr, null);
+    }
+
+    public void visit(BitwiseRightShift expr) {
+        visit(expr, null);
+    }
+
+    public void visit(BitwiseLeftShift expr) {
+        visit(expr, null);
+    }
+
+
     @Override
-    public <S> StringBuilder visit(InExpression inExpression, S parameters) {
-        inExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(InExpression inExpression, S context) {
+        inExpression.getLeftExpression().accept(this, context);
         if (inExpression
                 .getOldOracleJoinSyntax() == SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT) {
             buffer.append("(+)");
@@ -283,36 +332,36 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" NOT");
         }
         buffer.append(" IN ");
-        inExpression.getRightExpression().accept(this, parameters);
+        inExpression.getRightExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(IncludesExpression includesExpression, S parameters) {
-        includesExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(IncludesExpression includesExpression, S context) {
+        includesExpression.getLeftExpression().accept(this, context);
         buffer.append(" INCLUDES ");
-        includesExpression.getRightExpression().accept(this, parameters);
+        includesExpression.getRightExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(ExcludesExpression excludesExpression, S parameters) {
-        excludesExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(ExcludesExpression excludesExpression, S context) {
+        excludesExpression.getLeftExpression().accept(this, context);
         buffer.append(" EXCLUDES ");
-        excludesExpression.getRightExpression().accept(this, parameters);
+        excludesExpression.getRightExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(FullTextSearch fullTextSearch, S parameters) {
+    public <S> StringBuilder visit(FullTextSearch fullTextSearch, S context) {
         // Build a list of matched columns
-        String columnsListCommaSeperated = "";
+        StringBuilder columnsListCommaSeperated = new StringBuilder();
         Iterator<Column> iterator = fullTextSearch.getMatchColumns().iterator();
         while (iterator.hasNext()) {
             Column col = iterator.next();
-            columnsListCommaSeperated += col.getFullyQualifiedName();
+            columnsListCommaSeperated.append(col.getFullyQualifiedName());
             if (iterator.hasNext()) {
-                columnsListCommaSeperated += ",";
+                columnsListCommaSeperated.append(",");
             }
         }
         buffer.append("MATCH (").append(columnsListCommaSeperated).append(") AGAINST (")
@@ -325,15 +374,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(SignedExpression signedExpression, S parameters) {
+    public <S> StringBuilder visit(SignedExpression signedExpression, S context) {
         buffer.append(signedExpression.getSign());
-        signedExpression.getExpression().accept(this, parameters);
+        signedExpression.getExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(IsNullExpression isNullExpression, S parameters) {
-        isNullExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(IsNullExpression isNullExpression, S context) {
+        isNullExpression.getLeftExpression().accept(this, context);
         if (isNullExpression.isUseNotNull()) {
             buffer.append(" NOTNULL");
         } else if (isNullExpression.isUseIsNull()) {
@@ -353,8 +402,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(IsBooleanExpression isBooleanExpression, S parameters) {
-        isBooleanExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(IsBooleanExpression isBooleanExpression, S context) {
+        isBooleanExpression.getLeftExpression().accept(this, context);
         if (isBooleanExpression.isTrue()) {
             if (isBooleanExpression.isNot()) {
                 buffer.append(" IS NOT TRUE");
@@ -372,7 +421,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(JdbcParameter jdbcParameter, S parameters) {
+    public <S> StringBuilder visit(JdbcParameter jdbcParameter, S context) {
         buffer.append(jdbcParameter.getParameterCharacter());
         if (jdbcParameter.isUseFixedIndex()) {
             buffer.append(jdbcParameter.getIndex());
@@ -382,12 +431,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(LikeExpression likeExpression, S parameters) {
+    public <S> StringBuilder visit(LikeExpression likeExpression, S context) {
         String keywordStr = likeExpression.getLikeKeyWord() == LikeExpression.KeyWord.SIMILAR_TO
                 ? " SIMILAR TO"
                 : likeExpression.getLikeKeyWord().toString();
 
-        likeExpression.getLeftExpression().accept(this, parameters);
+        likeExpression.getLeftExpression().accept(this, context);
         buffer.append(" ");
         if (likeExpression.isNot()) {
             buffer.append("NOT ");
@@ -396,122 +445,167 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (likeExpression.isUseBinary()) {
             buffer.append("BINARY ");
         }
-        likeExpression.getRightExpression().accept(this, parameters);
+        likeExpression.getRightExpression().accept(this, context);
 
         Expression escape = likeExpression.getEscape();
         if (escape != null) {
             buffer.append(" ESCAPE ");
-            likeExpression.getEscape().accept(this, parameters);
+            likeExpression.getEscape().accept(this, context);
         }
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(ExistsExpression existsExpression, S parameters) {
+    public <S> StringBuilder visit(ExistsExpression existsExpression, S context) {
         if (existsExpression.isNot()) {
             buffer.append("NOT EXISTS ");
         } else {
             buffer.append("EXISTS ");
         }
-        existsExpression.getRightExpression().accept(this, parameters);
+        existsExpression.getRightExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(MemberOfExpression memberOfExpression, S parameters) {
-        memberOfExpression.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(MemberOfExpression memberOfExpression, S context) {
+        memberOfExpression.getLeftExpression().accept(this, context);
         if (memberOfExpression.isNot()) {
             buffer.append(" NOT MEMBER OF ");
         } else {
             buffer.append(" MEMBER OF ");
         }
-        memberOfExpression.getRightExpression().accept(this, parameters);
+        memberOfExpression.getRightExpression().accept(this, context);
         return buffer;
     }
 
+    public void visit(InExpression inExpression) {
+        visit(inExpression, null);
+    }
+
+    public void visit(IncludesExpression includesExpression) {
+        visit(includesExpression, null);
+    }
+
+    public void visit(ExcludesExpression excludesExpression) {
+        visit(excludesExpression, null);
+    }
+
+    public void visit(FullTextSearch fullTextSearch) {
+        visit(fullTextSearch, null);
+    }
+
+    public void visit(SignedExpression signedExpression) {
+        visit(signedExpression, null);
+    }
+
+    public void visit(IsNullExpression isNullExpression) {
+        visit(isNullExpression, null);
+    }
+
+    public void visit(IsBooleanExpression isBooleanExpression) {
+        visit(isBooleanExpression, null);
+    }
+
+    public void visit(JdbcParameter jdbcParameter) {
+        visit(jdbcParameter, null);
+    }
+
+    public void visit(LikeExpression likeExpression) {
+        visit(likeExpression, null);
+    }
+
+    public void visit(ExistsExpression existsExpression) {
+        visit(existsExpression, null);
+    }
+
+    public void visit(MemberOfExpression memberOfExpression) {
+        visit(memberOfExpression, null);
+    }
+
+
     @Override
-    public <S> StringBuilder visit(LongValue longValue, S parameters) {
+    public <S> StringBuilder visit(LongValue longValue, S context) {
         buffer.append(longValue.getStringValue());
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(MinorThan minorThan, S parameters) {
-        visitOldOracleJoinBinaryExpression(minorThan, " < ", null);
+    public <S> StringBuilder visit(MinorThan minorThan, S context) {
+        deparse(minorThan, " < ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(MinorThanEquals minorThanEquals, S parameters) {
-        visitOldOracleJoinBinaryExpression(minorThanEquals, " <= ", null);
+    public <S> StringBuilder visit(MinorThanEquals minorThanEquals, S context) {
+        deparse(minorThanEquals, " <= ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Multiplication multiplication, S parameters) {
-        visitBinaryExpression(multiplication, " * ", null);
+    public <S> StringBuilder visit(Multiplication multiplication, S context) {
+        deparse(multiplication, " * ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(NotEqualsTo notEqualsTo, S parameters) {
-        visitOldOracleJoinBinaryExpression(notEqualsTo,
+    public <S> StringBuilder visit(NotEqualsTo notEqualsTo, S context) {
+        deparse(notEqualsTo,
                 " " + notEqualsTo.getStringExpression() + " ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(DoubleAnd doubleAnd, S parameters) {
-        visitOldOracleJoinBinaryExpression(doubleAnd, " " + doubleAnd.getStringExpression() + " ",
+    public <S> StringBuilder visit(DoubleAnd doubleAnd, S context) {
+        deparse(doubleAnd, " " + doubleAnd.getStringExpression() + " ",
                 null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Contains contains, S parameters) {
-        visitOldOracleJoinBinaryExpression(contains, " " + contains.getStringExpression() + " ",
+    public <S> StringBuilder visit(Contains contains, S context) {
+        deparse(contains, " " + contains.getStringExpression() + " ",
                 null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(ContainedBy containedBy, S parameters) {
-        visitOldOracleJoinBinaryExpression(containedBy,
+    public <S> StringBuilder visit(ContainedBy containedBy, S context) {
+        deparse(containedBy,
                 " " + containedBy.getStringExpression() + " ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(NullValue nullValue, S parameters) {
+    public <S> StringBuilder visit(NullValue nullValue, S context) {
         buffer.append(nullValue.toString());
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(OrExpression orExpression, S parameters) {
-        visitBinaryExpression(orExpression, " OR ", null);
+    public <S> StringBuilder visit(OrExpression orExpression, S context) {
+        deparse(orExpression, " OR ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(XorExpression xorExpression, S parameters) {
-        visitBinaryExpression(xorExpression, " XOR ", null);
+    public <S> StringBuilder visit(XorExpression xorExpression, S context) {
+        deparse(xorExpression, " XOR ", null);
 
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(StringValue stringValue, S parameters) {
+    public <S> StringBuilder visit(StringValue stringValue, S context) {
         if (stringValue.getPrefix() != null) {
             buffer.append(stringValue.getPrefix());
         }
@@ -521,22 +615,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(Subtraction subtraction, S parameters) {
-        visitBinaryExpression(subtraction, " - ", null);
+    public <S> StringBuilder visit(Subtraction subtraction, S context) {
+        deparse(subtraction, " - ", null);
         return buffer;
     }
 
-    protected <S> StringBuilder visitBinaryExpression(BinaryExpression binaryExpression,
-            String operator, S parameters) {
-        binaryExpression.getLeftExpression().accept(this, parameters);
+    protected <S> void deparse(BinaryExpression binaryExpression,
+            String operator, S context) {
+        binaryExpression.getLeftExpression().accept(this, context);
         buffer.append(operator);
-        binaryExpression.getRightExpression().accept(this, parameters);
+        binaryExpression.getRightExpression().accept(this, context);
 
-        return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Select select, S parameters) {
+    public <S> StringBuilder visit(Select select, S context) {
         if (selectVisitor != null) {
             if (select.getWithItemsList() != null) {
                 buffer.append("WITH ");
@@ -557,10 +650,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(TranscodingFunction transcodingFunction, S parameters) {
+    public <S> StringBuilder visit(TranscodingFunction transcodingFunction, S context) {
         if (transcodingFunction.isTranscodeStyle()) {
             buffer.append("CONVERT( ");
-            transcodingFunction.getExpression().accept(this, parameters);
+            transcodingFunction.getExpression().accept(this, context);
             buffer.append(" USING ")
                     .append(transcodingFunction.getTranscodingName())
                     .append(" )");
@@ -569,7 +662,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     .append("CONVERT( ")
                     .append(transcodingFunction.getColDataType())
                     .append(", ");
-            transcodingFunction.getExpression().accept(this, parameters);
+            transcodingFunction.getExpression().accept(this, context);
 
             String transCodingName = transcodingFunction.getTranscodingName();
             if (transCodingName != null && !transCodingName.isEmpty()) {
@@ -581,7 +674,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         return buffer;
     }
 
-    public <S> StringBuilder visit(TrimFunction trimFunction, S parameters) {
+    public <S> StringBuilder visit(TrimFunction trimFunction, S context) {
         buffer.append("Trim(");
 
         if (trimFunction.getTrimSpecification() != null) {
@@ -590,27 +683,92 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         if (trimFunction.getExpression() != null) {
             buffer.append(" ");
-            trimFunction.getExpression().accept(this, parameters);
+            trimFunction.getExpression().accept(this, context);
         }
 
         if (trimFunction.getFromExpression() != null) {
             buffer.append(trimFunction.isUsingFromKeyword() ? " FROM " : ", ");
-            trimFunction.getFromExpression().accept(this, parameters);
+            trimFunction.getFromExpression().accept(this, context);
         }
         buffer.append(" )");
         return buffer;
     }
 
+    public void visit(LongValue longValue) {
+        visit(longValue, null);
+    }
+
+    public void visit(MinorThan minorThan) {
+        visit(minorThan, null);
+    }
+
+    public void visit(MinorThanEquals minorThanEquals) {
+        visit(minorThanEquals, null);
+    }
+
+    public void visit(Multiplication multiplication) {
+        visit(multiplication, null);
+    }
+
+    public void visit(NotEqualsTo notEqualsTo) {
+        visit(notEqualsTo, null);
+    }
+
+    public void visit(DoubleAnd doubleAnd) {
+        visit(doubleAnd, null);
+    }
+
+    public void visit(Contains contains) {
+        visit(contains, null);
+    }
+
+    public void visit(ContainedBy containedBy) {
+        visit(containedBy, null);
+    }
+
+    public void visit(NullValue nullValue) {
+        visit(nullValue, null);
+    }
+
+    public void visit(OrExpression orExpression) {
+        visit(orExpression, null);
+    }
+
+    public void visit(XorExpression xorExpression) {
+        visit(xorExpression, null);
+    }
+
+    public void visit(StringValue stringValue) {
+        visit(stringValue, null);
+    }
+
+    public void visit(Subtraction subtraction) {
+        visit(subtraction, null);
+    }
+
+    public void visit(Select select) {
+        visit(select, null);
+    }
+
+    public void visit(TranscodingFunction transcodingFunction) {
+        visit(transcodingFunction, null);
+    }
+
+    public void visit(TrimFunction trimFunction) {
+        visit(trimFunction, null);
+    }
+
+
     @Override
-    public <S> StringBuilder visit(RangeExpression rangeExpression, S parameters) {
-        rangeExpression.getStartExpression().accept(this, parameters);
+    public <S> StringBuilder visit(RangeExpression rangeExpression, S context) {
+        rangeExpression.getStartExpression().accept(this, context);
         buffer.append(":");
-        rangeExpression.getEndExpression().accept(this, parameters);
+        rangeExpression.getEndExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Column tableColumn, S parameters) {
+    public <S> StringBuilder visit(Column tableColumn, S context) {
         final Table table = tableColumn.getTable();
         String tableName = null;
         if (table != null) {
@@ -627,14 +785,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(tableColumn.getColumnName());
 
         if (tableColumn.getArrayConstructor() != null) {
-            tableColumn.getArrayConstructor().accept(this, parameters);
+            tableColumn.getArrayConstructor().accept(this, context);
         }
         return buffer;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public <S> StringBuilder visit(Function function, S parameters) {
+    public <S> StringBuilder visit(Function function, S context) {
         if (function.isEscaped()) {
             buffer.append("{fn ");
         }
@@ -652,16 +810,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 buffer.append("UNIQUE ");
             }
             if (function.getNamedParameters() != null) {
-                function.getNamedParameters().accept(this, parameters);
+                function.getNamedParameters().accept(this, context);
             }
             if (function.getParameters() != null) {
-                function.getParameters().accept(this, parameters);
+                function.getParameters().accept(this, context);
             }
 
             Function.HavingClause havingClause = function.getHavingClause();
             if (havingClause != null) {
                 buffer.append(" HAVING ").append(havingClause.getHavingType()).append(" ");
-                havingClause.getExpression().accept(this, parameters);
+                havingClause.getExpression().accept(this, context);
             }
 
             if (function.getNullHandling() != null && !function.isIgnoreNullsOutside()) {
@@ -719,8 +877,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(ParenthesedSelect selectBody, S parameters) {
-        selectBody.getSelect().accept(this, parameters);
+    public <S> StringBuilder visit(ParenthesedSelect selectBody, S context) {
+        selectBody.getSelect().accept(this, context);
         return buffer;
     }
 
@@ -733,40 +891,40 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(DateValue dateValue, S parameters) {
+    public <S> StringBuilder visit(DateValue dateValue, S context) {
         buffer.append("{d '").append(dateValue.getValue().toString()).append("'}");
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TimestampValue timestampValue, S parameters) {
+    public <S> StringBuilder visit(TimestampValue timestampValue, S context) {
         buffer.append("{ts '").append(timestampValue.getValue().toString()).append("'}");
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TimeValue timeValue, S parameters) {
+    public <S> StringBuilder visit(TimeValue timeValue, S context) {
         buffer.append("{t '").append(timeValue.getValue().toString()).append("'}");
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(CaseExpression caseExpression, S parameters) {
+    public <S> StringBuilder visit(CaseExpression caseExpression, S context) {
         buffer.append(caseExpression.isUsingBrackets() ? "(" : "").append("CASE ");
         Expression switchExp = caseExpression.getSwitchExpression();
         if (switchExp != null) {
-            switchExp.accept(this, parameters);
+            switchExp.accept(this, context);
             buffer.append(" ");
         }
 
         for (Expression exp : caseExpression.getWhenClauses()) {
-            exp.accept(this, parameters);
+            exp.accept(this, context);
         }
 
         Expression elseExp = caseExpression.getElseExpression();
         if (elseExp != null) {
             buffer.append("ELSE ");
-            elseExp.accept(this, parameters);
+            elseExp.accept(this, context);
             buffer.append(" ");
         }
 
@@ -775,66 +933,111 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(WhenClause whenClause, S parameters) {
+    public <S> StringBuilder visit(WhenClause whenClause, S context) {
         buffer.append("WHEN ");
-        whenClause.getWhenExpression().accept(this, parameters);
+        whenClause.getWhenExpression().accept(this, context);
         buffer.append(" THEN ");
-        whenClause.getThenExpression().accept(this, parameters);
+        whenClause.getThenExpression().accept(this, context);
         buffer.append(" ");
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(AnyComparisonExpression anyComparisonExpression, S parameters) {
+    public <S> StringBuilder visit(AnyComparisonExpression anyComparisonExpression, S context) {
         buffer.append(anyComparisonExpression.getAnyType().name());
 
         // VALUES or SELECT
-        anyComparisonExpression.getSelect().accept(this, parameters);
+        anyComparisonExpression.getSelect().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Concat concat, S parameters) {
-        visitBinaryExpression(concat, " || ", null);
+    public <S> StringBuilder visit(Concat concat, S context) {
+        deparse(concat, " || ", null);
+        return buffer;
+    }
+
+    public void visit(RangeExpression rangeExpression) {
+        visit(rangeExpression, null);
+    }
+
+    public void visit(Column tableColumn) {
+        visit(tableColumn, null);
+    }
+
+    public void visit(Function function) {
+        visit(function, null);
+    }
+
+    public void visit(ParenthesedSelect selectBody) {
+        visit(selectBody, null);
+    }
+
+    public void visit(DateValue dateValue) {
+        visit(dateValue, null);
+    }
+
+    public void visit(TimestampValue timestampValue) {
+        visit(timestampValue, null);
+    }
+
+    public void visit(TimeValue timeValue) {
+        visit(timeValue, null);
+    }
+
+    public void visit(CaseExpression caseExpression) {
+        visit(caseExpression, null);
+    }
+
+    public void visit(WhenClause whenClause) {
+        visit(whenClause, null);
+    }
+
+    public void visit(AnyComparisonExpression anyComparisonExpression) {
+        visit(anyComparisonExpression, null);
+    }
+
+    public void visit(Concat concat) {
+        visit(concat, null);
+    }
+
+
+    @Override
+    public <S> StringBuilder visit(Matches matches, S context) {
+        deparse(matches, " @@ ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(Matches matches, S parameters) {
-        visitOldOracleJoinBinaryExpression(matches, " @@ ", null);
+    public <S> StringBuilder visit(BitwiseAnd bitwiseAnd, S context) {
+        deparse(bitwiseAnd, " & ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(BitwiseAnd bitwiseAnd, S parameters) {
-        visitBinaryExpression(bitwiseAnd, " & ", null);
+    public <S> StringBuilder visit(BitwiseOr bitwiseOr, S context) {
+        deparse(bitwiseOr, " | ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(BitwiseOr bitwiseOr, S parameters) {
-        visitBinaryExpression(bitwiseOr, " | ", null);
+    public <S> StringBuilder visit(BitwiseXor bitwiseXor, S context) {
+        deparse(bitwiseXor, " ^ ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(BitwiseXor bitwiseXor, S parameters) {
-        visitBinaryExpression(bitwiseXor, " ^ ", null);
-        return buffer;
-    }
-
-    @Override
-    public <S> StringBuilder visit(CastExpression cast, S parameters) {
+    public <S> StringBuilder visit(CastExpression cast, S context) {
         if (cast.isImplicitCast()) {
             buffer.append(cast.getColDataType()).append(" ");
-            cast.getLeftExpression().accept(this, parameters);
+            cast.getLeftExpression().accept(this, context);
         } else if (cast.isUseCastKeyword()) {
             String formatStr = cast.getFormat() != null && !cast.getFormat().isEmpty()
                     ? " FORMAT " + cast.getFormat()
                     : "";
 
             buffer.append(cast.keyword).append("(");
-            cast.getLeftExpression().accept(this, parameters);
+            cast.getLeftExpression().accept(this, context);
             buffer.append(" AS ");
             buffer.append(
                     cast.getColumnDefinitions().size() > 1
@@ -843,7 +1046,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(formatStr);
             buffer.append(")");
         } else {
-            cast.getLeftExpression().accept(this, parameters);
+            cast.getLeftExpression().accept(this, context);
             buffer.append("::");
             buffer.append(cast.getColDataType());
         }
@@ -851,53 +1054,54 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(Modulo modulo, S parameters) {
-        visitBinaryExpression(modulo, " % ", null);
+    public <S> StringBuilder visit(Modulo modulo, S context) {
+        deparse(modulo, " % ", null);
         return buffer;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.MissingBreakInSwitch"})
-    public <S> StringBuilder visit(AnalyticExpression aexpr, S parameters) {
-        String name = aexpr.getName();
-        Expression expression = aexpr.getExpression();
-        Expression offset = aexpr.getOffset();
-        Expression defaultValue = aexpr.getDefaultValue();
-        boolean isAllColumns = aexpr.isAllColumns();
-        KeepExpression keep = aexpr.getKeep();
-        ExpressionList partitionExpressionList = aexpr.getPartitionExpressionList();
-        List<OrderByElement> orderByElements = aexpr.getOrderByElements();
-        WindowElement windowElement = aexpr.getWindowElement();
+    public <S> StringBuilder visit(AnalyticExpression analyticExpression, S context) {
+        String name = analyticExpression.getName();
+        Expression expression = analyticExpression.getExpression();
+        Expression offset = analyticExpression.getOffset();
+        Expression defaultValue = analyticExpression.getDefaultValue();
+        boolean isAllColumns = analyticExpression.isAllColumns();
+        KeepExpression keep = analyticExpression.getKeep();
+        ExpressionList<?> partitionExpressionList = analyticExpression.getPartitionExpressionList();
+        List<OrderByElement> orderByElements = analyticExpression.getOrderByElements();
+        WindowElement windowElement = analyticExpression.getWindowElement();
 
         buffer.append(name).append("(");
-        if (aexpr.isDistinct()) {
+        if (analyticExpression.isDistinct()) {
             buffer.append("DISTINCT ");
         }
-        if (aexpr.isUnique()) {
+        if (analyticExpression.isUnique()) {
             buffer.append("UNIQUE ");
         }
         if (expression != null) {
-            expression.accept(this, parameters);
+            expression.accept(this, context);
             if (offset != null) {
                 buffer.append(", ");
-                offset.accept(this, parameters);
+                offset.accept(this, context);
                 if (defaultValue != null) {
                     buffer.append(", ");
-                    defaultValue.accept(this, parameters);
+                    defaultValue.accept(this, context);
                 }
             }
         } else if (isAllColumns) {
             buffer.append("*");
         }
-        Function.HavingClause havingClause = aexpr.getHavingClause();
+        Function.HavingClause havingClause = analyticExpression.getHavingClause();
         if (havingClause != null) {
             buffer.append(" HAVING ").append(havingClause.getHavingType()).append(" ");
-            havingClause.getExpression().accept(this, parameters);
+            havingClause.getExpression().accept(this, context);
         }
 
-        if (aexpr.getNullHandling() != null && !aexpr.isIgnoreNullsOutside()) {
-            switch (aexpr.getNullHandling()) {
+        if (analyticExpression.getNullHandling() != null
+                && !analyticExpression.isIgnoreNullsOutside()) {
+            switch (analyticExpression.getNullHandling()) {
                 case IGNORE_NULLS:
                     buffer.append(" IGNORE NULLS");
                     break;
@@ -906,33 +1110,34 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     break;
             }
         }
-        if (aexpr.getFuncOrderBy() != null) {
+        if (analyticExpression.getFuncOrderBy() != null) {
             buffer.append(" ORDER BY ");
-            buffer.append(aexpr.getFuncOrderBy().stream().map(OrderByElement::toString)
+            buffer.append(analyticExpression.getFuncOrderBy().stream().map(OrderByElement::toString)
                     .collect(joining(", ")));
         }
 
-        if (aexpr.getLimit() != null) {
-            new LimitDeparser(this, buffer).deParse(aexpr.getLimit());
+        if (analyticExpression.getLimit() != null) {
+            new LimitDeparser(this, buffer).deParse(analyticExpression.getLimit());
         }
 
         buffer.append(") ");
         if (keep != null) {
-            keep.accept(this, parameters);
+            keep.accept(this, context);
             buffer.append(" ");
         }
 
-        if (aexpr.getFilterExpression() != null) {
+        if (analyticExpression.getFilterExpression() != null) {
             buffer.append("FILTER (WHERE ");
-            aexpr.getFilterExpression().accept(this, parameters);
+            analyticExpression.getFilterExpression().accept(this, context);
             buffer.append(")");
-            if (aexpr.getType() != AnalyticType.FILTER_ONLY) {
+            if (analyticExpression.getType() != AnalyticType.FILTER_ONLY) {
                 buffer.append(" ");
             }
         }
 
-        if (aexpr.getNullHandling() != null && aexpr.isIgnoreNullsOutside()) {
-            switch (aexpr.getNullHandling()) {
+        if (analyticExpression.getNullHandling() != null
+                && analyticExpression.isIgnoreNullsOutside()) {
+            switch (analyticExpression.getNullHandling()) {
                 case IGNORE_NULLS:
                     buffer.append(" IGNORE NULLS ");
                     break;
@@ -942,7 +1147,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
 
-        switch (aexpr.getType()) {
+        switch (analyticExpression.getType()) {
             case FILTER_ONLY:
                 return null;
             case WITHIN_GROUP:
@@ -950,34 +1155,35 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 break;
             case WITHIN_GROUP_OVER:
                 buffer.append("WITHIN GROUP (");
-                aexpr.getWindowDefinition().getOrderBy().toStringOrderByElements(buffer);
+                analyticExpression.getWindowDefinition().getOrderBy()
+                        .toStringOrderByElements(buffer);
                 buffer.append(") OVER (");
-                aexpr.getWindowDefinition().getPartitionBy().toStringPartitionBy(buffer);
+                analyticExpression.getWindowDefinition().getPartitionBy()
+                        .toStringPartitionBy(buffer);
                 buffer.append(")");
                 break;
             default:
                 buffer.append("OVER");
         }
 
-        if (aexpr.getWindowName() != null) {
-            buffer.append(" ").append(aexpr.getWindowName());
-        } else if (aexpr.getType() != AnalyticType.WITHIN_GROUP_OVER) {
+        if (analyticExpression.getWindowName() != null) {
+            buffer.append(" ").append(analyticExpression.getWindowName());
+        } else if (analyticExpression.getType() != AnalyticType.WITHIN_GROUP_OVER) {
             buffer.append(" (");
 
             if (partitionExpressionList != null
-                    && !partitionExpressionList.getExpressions().isEmpty()) {
+                    && !partitionExpressionList.isEmpty()) {
                 buffer.append("PARTITION BY ");
-                if (aexpr.isPartitionByBrackets()) {
+                if (analyticExpression.isPartitionByBrackets()) {
                     buffer.append("(");
                 }
-                List<Expression> expressions = partitionExpressionList.getExpressions();
-                for (int i = 0; i < expressions.size(); i++) {
+                for (int i = 0; i < ((List<?>) partitionExpressionList).size(); i++) {
                     if (i > 0) {
                         buffer.append(", ");
                     }
-                    expressions.get(i).accept(this, parameters);
+                    ((List<Expression>) partitionExpressionList).get(i).accept(this, context);
                 }
-                if (aexpr.isPartitionByBrackets()) {
+                if (analyticExpression.isPartitionByBrackets()) {
                     buffer.append(")");
                 }
                 buffer.append(" ");
@@ -1007,21 +1213,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(ExtractExpression eexpr, S parameters) {
-        buffer.append("EXTRACT(").append(eexpr.getName());
+    public <S> StringBuilder visit(ExtractExpression extractExpression, S context) {
+        buffer.append("EXTRACT(").append(extractExpression.getName());
         buffer.append(" FROM ");
-        eexpr.getExpression().accept(this, parameters);
+        extractExpression.getExpression().accept(this, context);
         buffer.append(')');
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(IntervalExpression intervalExpression, S parameters) {
+    public <S> StringBuilder visit(IntervalExpression intervalExpression, S context) {
         if (intervalExpression.isUsingIntervalKeyword()) {
             buffer.append("INTERVAL ");
         }
         if (intervalExpression.getExpression() != null) {
-            intervalExpression.getExpression().accept(this, parameters);
+            intervalExpression.getExpression().accept(this, context);
         } else {
             buffer.append(intervalExpression.getParameter());
         }
@@ -1031,63 +1237,96 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         return buffer;
     }
 
+    public void visit(Matches matches) {
+        visit(matches, null);
+    }
+
+    public void visit(BitwiseAnd bitwiseAnd) {
+        visit(bitwiseAnd, null);
+    }
+
+    public void visit(BitwiseOr bitwiseOr) {
+        visit(bitwiseOr, null);
+    }
+
+    public void visit(BitwiseXor bitwiseXor) {
+        visit(bitwiseXor, null);
+    }
+
+    public void visit(CastExpression cast) {
+        visit(cast, null);
+    }
+
+    public void visit(AnalyticExpression analyticExpression) {
+        visit(analyticExpression, null);
+    }
+
+    public void visit(ExtractExpression extractExpression) {
+        visit(extractExpression, null);
+    }
+
+    public void visit(IntervalExpression intervalExpression) {
+        visit(intervalExpression, null);
+    }
+
+
     @Override
-    public <S> StringBuilder visit(JdbcNamedParameter jdbcNamedParameter, S parameters) {
+    public <S> StringBuilder visit(JdbcNamedParameter jdbcNamedParameter, S context) {
         buffer.append(jdbcNamedParameter.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(OracleHierarchicalExpression oexpr, S parameters) {
-        buffer.append(oexpr.toString());
+    public <S> StringBuilder visit(OracleHierarchicalExpression hierarchicalExpression, S context) {
+        buffer.append(hierarchicalExpression.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(RegExpMatchOperator rexpr, S parameters) {
-        visitBinaryExpression(rexpr, " " + rexpr.getStringExpression() + " ", null);
+    public <S> StringBuilder visit(RegExpMatchOperator regExpMatchOperator, S context) {
+        deparse(regExpMatchOperator, " " + regExpMatchOperator.getStringExpression() + " ", null);
         return buffer;
     }
 
 
     @Override
-    public <S> StringBuilder visit(JsonExpression jsonExpr, S parameters) {
+    public <S> StringBuilder visit(JsonExpression jsonExpr, S context) {
         buffer.append(jsonExpr.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(JsonOperator jsonExpr, S parameters) {
-        visitBinaryExpression(jsonExpr, " " + jsonExpr.getStringExpression() + " ", null);
+    public <S> StringBuilder visit(JsonOperator jsonExpr, S context) {
+        deparse(jsonExpr, " " + jsonExpr.getStringExpression() + " ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(UserVariable var, S parameters) {
+    public <S> StringBuilder visit(UserVariable var, S context) {
         buffer.append(var.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(NumericBind bind, S parameters) {
+    public <S> StringBuilder visit(NumericBind bind, S context) {
         buffer.append(bind.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(KeepExpression aexpr, S parameters) {
-        buffer.append(aexpr.toString());
+    public <S> StringBuilder visit(KeepExpression keepExpression, S context) {
+        buffer.append(keepExpression.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(MySQLGroupConcat groupConcat, S parameters) {
+    public <S> StringBuilder visit(MySQLGroupConcat groupConcat, S context) {
         buffer.append(groupConcat.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(ExpressionList<?> expressionList, S parameters) {
+    public <S> StringBuilder visit(ExpressionList<? extends Expression> expressionList, S context) {
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(this, buffer);
         expressionListDeParser.deParse(expressionList);
@@ -1095,7 +1334,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(RowConstructor<?> rowConstructor, S parameters) {
+    public <S> StringBuilder visit(RowConstructor<?> rowConstructor, S context) {
         if (rowConstructor.getName() != null) {
             buffer.append(rowConstructor.getName());
         }
@@ -1106,63 +1345,136 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(RowGetExpression rowGetExpression, S parameters) {
-        rowGetExpression.getExpression().accept(this, parameters);
+    public <S> StringBuilder visit(RowGetExpression rowGetExpression, S context) {
+        rowGetExpression.getExpression().accept(this, context);
         buffer.append(".").append(rowGetExpression.getColumnName());
         return null;
     }
 
     @Override
-    public <S> StringBuilder visit(OracleHint hint, S parameters) {
+    public <S> StringBuilder visit(OracleHint hint, S context) {
         buffer.append(hint.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TimeKeyExpression timeKeyExpression, S parameters) {
+    public <S> StringBuilder visit(TimeKeyExpression timeKeyExpression, S context) {
         buffer.append(timeKeyExpression.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(DateTimeLiteralExpression literal, S parameters) {
+    public <S> StringBuilder visit(DateTimeLiteralExpression literal, S context) {
         buffer.append(literal.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(NextValExpression nextVal, S parameters) {
+    public <S> StringBuilder visit(NextValExpression nextVal, S context) {
         buffer.append(nextVal.isUsingNextValueFor() ? "NEXT VALUE FOR " : "NEXTVAL FOR ")
                 .append(nextVal.getName());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(CollateExpression col, S parameters) {
+    public <S> StringBuilder visit(CollateExpression col, S context) {
         buffer.append(col.getLeftExpression().toString()).append(" COLLATE ")
                 .append(col.getCollate());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(SimilarToExpression expr, S parameters) {
-        visitBinaryExpression(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ", null);
+    public <S> StringBuilder visit(SimilarToExpression expr, S context) {
+        deparse(expr, (expr.isNot() ? " NOT" : "") + " SIMILAR TO ", null);
         return buffer;
     }
 
+    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+        visit(jdbcNamedParameter, null);
+    }
+
+    public void visit(OracleHierarchicalExpression hierarchicalExpression) {
+        visit(hierarchicalExpression, null);
+    }
+
+    public void visit(RegExpMatchOperator regExpMatchOperator) {
+        visit(regExpMatchOperator, null);
+    }
+
+    public void visit(JsonExpression jsonExpr) {
+        visit(jsonExpr, null);
+    }
+
+    public void visit(JsonOperator jsonExpr) {
+        visit(jsonExpr, null);
+    }
+
+    public void visit(UserVariable userVariable) {
+        visit(userVariable, null);
+    }
+
+    public void visit(NumericBind numericBind) {
+        visit(numericBind, null);
+    }
+
+    public void visit(KeepExpression keepExpression) {
+        visit(keepExpression, null);
+    }
+
+    public void visit(MySQLGroupConcat groupConcat) {
+        visit(groupConcat, null);
+    }
+
+    public void visit(ExpressionList<?> expressionList) {
+        visit(expressionList, null);
+    }
+
+    public void visit(RowConstructor<?> rowConstructor) {
+        visit(rowConstructor, null);
+    }
+
+    public void visit(RowGetExpression rowGetExpression) {
+        visit(rowGetExpression, null);
+    }
+
+    public void visit(OracleHint hint) {
+        visit(hint, null);
+    }
+
+    public void visit(TimeKeyExpression timeKeyExpression) {
+        visit(timeKeyExpression, null);
+    }
+
+    public void visit(DateTimeLiteralExpression literal) {
+        visit(literal, null);
+    }
+
+    public void visit(NextValExpression nextVal) {
+        visit(nextVal, null);
+    }
+
+    public void visit(CollateExpression col) {
+        visit(col, null);
+    }
+
+    public void visit(SimilarToExpression expr) {
+        visit(expr, null);
+    }
+
+
     @Override
-    public <S> StringBuilder visit(ArrayExpression array, S parameters) {
-        array.getObjExpression().accept(this, parameters);
+    public <S> StringBuilder visit(ArrayExpression array, S context) {
+        array.getObjExpression().accept(this, context);
         buffer.append("[");
         if (array.getIndexExpression() != null) {
-            array.getIndexExpression().accept(this, parameters);
+            array.getIndexExpression().accept(this, context);
         } else {
             if (array.getStartIndexExpression() != null) {
-                array.getStartIndexExpression().accept(this, parameters);
+                array.getStartIndexExpression().accept(this, context);
             }
             buffer.append(":");
             if (array.getStopIndexExpression() != null) {
-                array.getStopIndexExpression().accept(this, parameters);
+                array.getStopIndexExpression().accept(this, context);
             }
         }
 
@@ -1171,7 +1483,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(ArrayConstructor aThis, S parameters) {
+    public <S> StringBuilder visit(ArrayConstructor aThis, S context) {
         if (aThis.isArrayKeyword()) {
             buffer.append("ARRAY");
         }
@@ -1183,7 +1495,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             } else {
                 first = false;
             }
-            expression.accept(this, parameters);
+            expression.accept(this, context);
         }
         buffer.append("]");
         return buffer;
@@ -1195,18 +1507,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(VariableAssignment var, S parameters) {
-        var.getVariable().accept(this, parameters);
+    public <S> StringBuilder visit(VariableAssignment var, S context) {
+        var.getVariable().accept(this, context);
         buffer.append(" ").append(var.getOperation()).append(" ");
-        var.getExpression().accept(this, parameters);
+        var.getExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(XMLSerializeExpr expr, S parameters) {
+    public <S> StringBuilder visit(XMLSerializeExpr expr, S context) {
         // xmlserialize(xmlagg(xmltext(COMMENT_LINE) ORDER BY COMMENT_SEQUENCE) as varchar(1024))
         buffer.append("xmlserialize(xmlagg(xmltext(");
-        expr.getExpression().accept(this, parameters);
+        expr.getExpression().accept(this, context);
         buffer.append(")");
         if (expr.getOrderByElements() != null) {
             buffer.append(" ORDER BY ");
@@ -1222,64 +1534,64 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(TimezoneExpression var, S parameters) {
-        var.getLeftExpression().accept(this, parameters);
+    public <S> StringBuilder visit(TimezoneExpression var, S context) {
+        var.getLeftExpression().accept(this, context);
 
         for (Expression expr : var.getTimezoneExpressions()) {
             buffer.append(" AT TIME ZONE ");
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(JsonAggregateFunction expression, S parameters) {
+    public <S> StringBuilder visit(JsonAggregateFunction expression, S context) {
         expression.append(buffer);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(JsonFunction expression, S parameters) {
+    public <S> StringBuilder visit(JsonFunction expression, S context) {
         expression.append(buffer);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(ConnectByRootOperator connectByRootOperator, S parameters) {
+    public <S> StringBuilder visit(ConnectByRootOperator connectByRootOperator, S context) {
         buffer.append("CONNECT_BY_ROOT ");
-        connectByRootOperator.getColumn().accept(this, parameters);
+        connectByRootOperator.getColumn().accept(this, context);
         return buffer;
     }
 
     @Override
     public <S> StringBuilder visit(OracleNamedFunctionParameter oracleNamedFunctionParameter,
-            S parameters) {
+            S context) {
         buffer.append(oracleNamedFunctionParameter.getName()).append(" => ");
 
-        oracleNamedFunctionParameter.getExpression().accept(this, parameters);
+        oracleNamedFunctionParameter.getExpression().accept(this, context);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(AllColumns allColumns, S parameters) {
+    public <S> StringBuilder visit(AllColumns allColumns, S context) {
         buffer.append(allColumns.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(AllTableColumns allTableColumns, S parameters) {
+    public <S> StringBuilder visit(AllTableColumns allTableColumns, S context) {
         buffer.append(allTableColumns.toString());
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(AllValue allValue, S parameters) {
+    public <S> StringBuilder visit(AllValue allValue, S context) {
         buffer.append(allValue);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(IsDistinctExpression isDistinctExpression, S parameters) {
+    public <S> StringBuilder visit(IsDistinctExpression isDistinctExpression, S context) {
         buffer.append(isDistinctExpression.getLeftExpression())
                 .append(isDistinctExpression.getStringExpression())
                 .append(isDistinctExpression.getRightExpression());
@@ -1287,26 +1599,26 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(GeometryDistance geometryDistance, S parameters) {
-        visitOldOracleJoinBinaryExpression(geometryDistance,
+    public <S> StringBuilder visit(GeometryDistance geometryDistance, S context) {
+        deparse(geometryDistance,
                 " " + geometryDistance.getStringExpression() + " ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TSQLLeftJoin tsqlLeftJoin, S parameters) {
-        visitBinaryExpression(tsqlLeftJoin, " *= ", null);
+    public <S> StringBuilder visit(TSQLLeftJoin tsqlLeftJoin, S context) {
+        this.deparse(tsqlLeftJoin, " *= ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(TSQLRightJoin tsqlRightJoin, S parameters) {
-        visitBinaryExpression(tsqlRightJoin, " =* ", null);
+    public <S> StringBuilder visit(TSQLRightJoin tsqlRightJoin, S context) {
+        this.deparse(tsqlRightJoin, " =* ", null);
         return buffer;
     }
 
     @Override
-    public <S> StringBuilder visit(StructType structType, S parameters) {
+    public <S> StringBuilder visit(StructType structType, S context) {
         if (structType.getDialect() != StructType.Dialect.DUCKDB
                 && structType.getKeyword() != null) {
             buffer.append(structType.getKeyword());
@@ -1342,7 +1654,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     }
                     buffer.append(e.getAlias().getName());
                     buffer.append(" : ");
-                    e.getExpression().accept(this, parameters);
+                    e.getExpression().accept(this, context);
                 }
                 buffer.append(" }");
             } else {
@@ -1352,7 +1664,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     if (0 < i++) {
                         buffer.append(",");
                     }
-                    e.getExpression().accept(this, parameters);
+                    e.getExpression().accept(this, context);
                     if (e.getAlias() != null) {
                         buffer.append(" as ");
                         buffer.append(e.getAlias().getName());
@@ -1379,7 +1691,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(LambdaExpression lambdaExpression, S parameters) {
+    public <S> StringBuilder visit(LambdaExpression lambdaExpression, S context) {
         if (lambdaExpression.getIdentifiers().size() == 1) {
             buffer.append(lambdaExpression.getIdentifiers().get(0));
         } else {
@@ -1392,8 +1704,82 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         buffer.append(" -> ");
-        lambdaExpression.getExpression().accept(this, parameters);
+        lambdaExpression.getExpression().accept(this, context);
         return buffer;
     }
+
+    public void visit(ArrayExpression array) {
+        visit(array, null);
+    }
+
+    public void visit(ArrayConstructor aThis) {
+        visit(aThis, null);
+    }
+
+
+    public void visit(VariableAssignment var) {
+        visit(var, null);
+    }
+
+    public void visit(XMLSerializeExpr expr) {
+        visit(expr, null);
+    }
+
+    public void visit(TimezoneExpression var) {
+        visit(var, null);
+    }
+
+    public void visit(JsonAggregateFunction expression) {
+        visit(expression, null);
+    }
+
+    public void visit(JsonFunction expression) {
+        visit(expression, null);
+    }
+
+    public void visit(ConnectByRootOperator connectByRootOperator) {
+        visit(connectByRootOperator, null);
+    }
+
+    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
+        visit(oracleNamedFunctionParameter, null);
+    }
+
+    public void visit(AllColumns allColumns) {
+        visit(allColumns, null);
+    }
+
+    public void visit(AllTableColumns allTableColumns) {
+        visit(allTableColumns, null);
+    }
+
+    public void visit(AllValue allValue) {
+        visit(allValue, null);
+    }
+
+    public void visit(IsDistinctExpression isDistinctExpression) {
+        visit(isDistinctExpression, null);
+    }
+
+    public void visit(GeometryDistance geometryDistance) {
+        visit(geometryDistance, null);
+    }
+
+    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+        visit(tsqlLeftJoin, null);
+    }
+
+    public void visit(TSQLRightJoin tsqlRightJoin) {
+        visit(tsqlRightJoin, null);
+    }
+
+    public void visit(StructType structType) {
+        visit(structType, null);
+    }
+
+    public void visit(LambdaExpression lambdaExpression) {
+        visit(lambdaExpression, null);
+    }
+
 
 }

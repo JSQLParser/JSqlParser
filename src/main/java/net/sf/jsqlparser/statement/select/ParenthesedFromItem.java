@@ -42,6 +42,10 @@ public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
         return joins;
     }
 
+    public void setJoins(List<Join> list) {
+        joins = list;
+    }
+
     public Join getJoin(int index) {
         return joins.get(index);
     }
@@ -57,13 +61,9 @@ public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
         return this;
     }
 
-    public void setJoins(List<Join> list) {
-        joins = list;
-    }
-
     @Override
-    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
-        return fromItemVisitor.visit(this, arguments);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

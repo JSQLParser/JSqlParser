@@ -26,13 +26,17 @@ public class OrderByValidator<Void> extends AbstractValidator<OrderByElement>
     }
 
     @Override
-    public <S> Void visit(OrderByElement orderBy, S parameters) {
+    public <S> Void visit(OrderByElement orderBy, S context) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.orderBy);
             validateOptionalFeature(c, orderBy.getNullOrdering(), Feature.orderByNullOrdering);
         }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
         return null;
+    }
+
+    public void visit(OrderByElement orderBy) {
+        visit(orderBy, null);
     }
 
 }

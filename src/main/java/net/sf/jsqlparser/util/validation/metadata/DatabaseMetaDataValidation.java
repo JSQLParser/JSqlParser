@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.metadata;
 
 import java.sql.SQLException;
 import java.util.function.Consumer;
+
 import net.sf.jsqlparser.util.validation.UnexpectedValidationException;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationContext;
@@ -37,7 +38,8 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
         } catch (ValidationException ve) {
             errorConsumer.accept(ve);
         } catch (UnsupportedOperationException uoe) {
-            errorConsumer.accept(new ValidationException("This Operation " + named.toString() + "  is not supported yet.", uoe));
+            errorConsumer.accept(new ValidationException(
+                    "This Operation " + named.toString() + "  is not supported yet.", uoe));
         } catch (Exception e) {
             errorConsumer.accept(getUnexpectedErrorMessage(named, e));
         }
@@ -45,15 +47,11 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
 
     /**
      * @param named
-     * @return <code>true</code>, if the object exists, <code>false</code>
-     *         otherwise.
-     * @throws ValidationException           - on specific errors like
-     *                                       {@link DatabaseException} on
-     *                                       database-errors wrapping a
-     *                                       {@link SQLException} or
-     *                                       PersistenceException
-     * @throws UnsupportedOperationException - if testing of given
-     *                                       {@link NamedObject} is not supported.
+     * @return <code>true</code>, if the object exists, <code>false</code> otherwise.
+     * @throws ValidationException - on specific errors like {@link DatabaseException} on
+     *         database-errors wrapping a {@link SQLException} or PersistenceException
+     * @throws UnsupportedOperationException - if testing of given {@link NamedObject} is not
+     *         supported.
      */
     boolean exists(Named named);
 
@@ -63,7 +61,8 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      * @return a new {@link ValidationException}
      */
     default ValidationException getErrorMessage(Named named, boolean checkForExists) {
-        return toError(String.format("%s does %sexist.", named.getFqn(), checkForExists ? "not " : ""));
+        return toError(
+                String.format("%s does %sexist.", named.getFqn(), checkForExists ? "not " : ""));
     }
 
     /**
@@ -73,7 +72,9 @@ public interface DatabaseMetaDataValidation extends ValidationCapability {
      */
     default ValidationException getUnexpectedErrorMessage(Named named, Exception cause) {
         return new UnexpectedValidationException(
-                named.getFqn() + ": cannot validate " + named.getNamedObject() + "-name. detail: " + cause.getMessage(), cause);
+                named.getFqn() + ": cannot validate " + named.getNamedObject() + "-name. detail: "
+                        + cause.getMessage(),
+                cause);
     }
 
     @Override

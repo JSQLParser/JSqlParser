@@ -31,6 +31,7 @@ public class CreateSchemaTest {
     public void testSimpleCreateWithAuth() throws JSQLParserException {
         String statement = "CREATE SCHEMA myschema AUTHORIZATION myauth";
         assertSqlCanBeParsedAndDeparsed(statement);
-        assertDeparse(new CreateSchema().withSchemaName("myschema").withAuthorization("myauth"), statement);
+        assertDeparse(new CreateSchema().withSchemaName("myschema").withAuthorization("myauth"),
+                statement);
     }
 }

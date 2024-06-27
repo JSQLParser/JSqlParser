@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Fetch implements Serializable {
+    private final List<String> fetchParameters = new ArrayList<>();
     private Expression expression = null;
     private boolean isFetchParamFirst = false;
-    private final List<String> fetchParameters = new ArrayList<>();
 
     @Deprecated
     public long getRowCount() {
@@ -51,6 +51,11 @@ public class Fetch implements Serializable {
         return expression instanceof JdbcParameter ? (JdbcParameter) expression : null;
     }
 
+    @Deprecated
+    public void setFetchJdbcParameter(JdbcParameter jdbc) {
+        this.setExpression(jdbc);
+    }
+
     public Fetch addFetchParameter(String parameter) {
         fetchParameters.add(parameter);
         return this;
@@ -69,21 +74,16 @@ public class Fetch implements Serializable {
         return parameterStr.trim();
     }
 
-    public boolean isFetchParamFirst() {
-        return isFetchParamFirst;
-    }
-
-    @Deprecated
-    public void setFetchJdbcParameter(JdbcParameter jdbc) {
-        this.setExpression(jdbc);
-    }
-
     @Deprecated
     public void setFetchParam(String s) {
         fetchParameters.clear();
         if (s != null) {
             fetchParameters.addAll(Arrays.asList(s.trim().split("\\s+")));
         }
+    }
+
+    public boolean isFetchParamFirst() {
+        return isFetchParamFirst;
     }
 
     public void setFetchParamFirst(boolean b) {

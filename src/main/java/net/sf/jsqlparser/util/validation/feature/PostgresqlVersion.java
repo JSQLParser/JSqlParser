@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.feature;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 
 /**

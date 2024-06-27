@@ -81,357 +81,357 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
-    public <S> T visit(NullValue nullValue, S parameters) {
+    public <S> T visit(NullValue nullValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(Function function, S parameters) {
+    public <S> T visit(Function function, S context) {
         if (function.getParameters() != null) {
-            function.getParameters().accept(this, parameters);
+            function.getParameters().accept(this, context);
         }
         if (function.getKeep() != null) {
-            function.getKeep().accept(this, parameters);
+            function.getKeep().accept(this, context);
         }
         if (function.getOrderByElements() != null) {
             for (OrderByElement orderByElement : function.getOrderByElements()) {
-                orderByElement.getExpression().accept(this, parameters);
+                orderByElement.getExpression().accept(this, context);
             }
         }
         return null;
     }
 
     @Override
-    public <S> T visit(SignedExpression signedExpression, S parameters) {
-        signedExpression.getExpression().accept(this, parameters);
+    public <S> T visit(SignedExpression signedExpression, S context) {
+        signedExpression.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(JdbcParameter jdbcParameter, S parameters) {
-
-        return null;
-    }
-
-    @Override
-    public <S> T visit(JdbcNamedParameter jdbcNamedParameter, S parameters) {
+    public <S> T visit(JdbcParameter jdbcParameter, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(DoubleValue doubleValue, S parameters) {
+    public <S> T visit(JdbcNamedParameter jdbcNamedParameter, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(LongValue longValue, S parameters) {
+    public <S> T visit(DoubleValue doubleValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(DateValue dateValue, S parameters) {
+    public <S> T visit(LongValue longValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(TimeValue timeValue, S parameters) {
+    public <S> T visit(DateValue dateValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(TimestampValue timestampValue, S parameters) {
+    public <S> T visit(TimeValue timeValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(StringValue stringValue, S parameters) {
+    public <S> T visit(TimestampValue timestampValue, S context) {
+
         return null;
     }
 
     @Override
-    public <S> T visit(Addition addition, S parameters) {
-        visitBinaryExpression(addition, parameters);
+    public <S> T visit(StringValue stringValue, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(Division division, S parameters) {
-        visitBinaryExpression(division, parameters);
+    public <S> T visit(Addition addition, S context) {
+        visitBinaryExpression(addition, context);
         return null;
     }
 
     @Override
-    public <S> T visit(IntegerDivision integerDivision, S parameters) {
-        visitBinaryExpression(integerDivision, parameters);
+    public <S> T visit(Division division, S context) {
+        visitBinaryExpression(division, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Multiplication multiplication, S parameters) {
-        visitBinaryExpression(multiplication, parameters);
+    public <S> T visit(IntegerDivision integerDivision, S context) {
+        visitBinaryExpression(integerDivision, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Subtraction subtraction, S parameters) {
-        visitBinaryExpression(subtraction, parameters);
+    public <S> T visit(Multiplication multiplication, S context) {
+        visitBinaryExpression(multiplication, context);
         return null;
     }
 
     @Override
-    public <S> T visit(AndExpression andExpression, S parameters) {
-        visitBinaryExpression(andExpression, parameters);
+    public <S> T visit(Subtraction subtraction, S context) {
+        visitBinaryExpression(subtraction, context);
         return null;
     }
 
     @Override
-    public <S> T visit(OrExpression orExpression, S parameters) {
-        visitBinaryExpression(orExpression, parameters);
+    public <S> T visit(AndExpression andExpression, S context) {
+        visitBinaryExpression(andExpression, context);
         return null;
     }
 
     @Override
-    public <S> T visit(XorExpression xorExpression, S parameters) {
-        visitBinaryExpression(xorExpression, parameters);
+    public <S> T visit(OrExpression orExpression, S context) {
+        visitBinaryExpression(orExpression, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Between between, S parameters) {
-        between.getLeftExpression().accept(this, parameters);
-        between.getBetweenExpressionStart().accept(this, parameters);
-        between.getBetweenExpressionEnd().accept(this, parameters);
+    public <S> T visit(XorExpression xorExpression, S context) {
+        visitBinaryExpression(xorExpression, context);
         return null;
     }
 
-    public <S> T visit(OverlapsCondition overlapsCondition, S parameters) {
-        overlapsCondition.getLeft().accept(this, parameters);
-        overlapsCondition.getRight().accept(this, parameters);
+    @Override
+    public <S> T visit(Between between, S context) {
+        between.getLeftExpression().accept(this, context);
+        between.getBetweenExpressionStart().accept(this, context);
+        between.getBetweenExpressionEnd().accept(this, context);
+        return null;
+    }
+
+    public <S> T visit(OverlapsCondition overlapsCondition, S context) {
+        overlapsCondition.getLeft().accept(this, context);
+        overlapsCondition.getRight().accept(this, context);
         return null;
     }
 
 
     @Override
-    public <S> T visit(EqualsTo equalsTo, S parameters) {
-        visitBinaryExpression(equalsTo, parameters);
+    public <S> T visit(EqualsTo equalsTo, S context) {
+        visitBinaryExpression(equalsTo, context);
         return null;
     }
 
     @Override
-    public <S> T visit(GreaterThan greaterThan, S parameters) {
-        visitBinaryExpression(greaterThan, parameters);
+    public <S> T visit(GreaterThan greaterThan, S context) {
+        visitBinaryExpression(greaterThan, context);
         return null;
     }
 
     @Override
-    public <S> T visit(GreaterThanEquals greaterThanEquals, S parameters) {
-        visitBinaryExpression(greaterThanEquals, parameters);
+    public <S> T visit(GreaterThanEquals greaterThanEquals, S context) {
+        visitBinaryExpression(greaterThanEquals, context);
         return null;
     }
 
     @Override
-    public <S> T visit(InExpression inExpression, S parameters) {
-        inExpression.getLeftExpression().accept(this, parameters);
-        inExpression.getRightExpression().accept(this, parameters);
+    public <S> T visit(InExpression inExpression, S context) {
+        inExpression.getLeftExpression().accept(this, context);
+        inExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(IncludesExpression includesExpression, S parameters) {
-        includesExpression.getLeftExpression().accept(this, parameters);
-        includesExpression.getRightExpression().accept(this, parameters);
+    public <S> T visit(IncludesExpression includesExpression, S context) {
+        includesExpression.getLeftExpression().accept(this, context);
+        includesExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(ExcludesExpression excludesExpression, S parameters) {
-        excludesExpression.getLeftExpression().accept(this, parameters);
-        excludesExpression.getRightExpression().accept(this, parameters);
+    public <S> T visit(ExcludesExpression excludesExpression, S context) {
+        excludesExpression.getLeftExpression().accept(this, context);
+        excludesExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(IsNullExpression isNullExpression, S parameters) {
-        isNullExpression.getLeftExpression().accept(this, parameters);
+    public <S> T visit(IsNullExpression isNullExpression, S context) {
+        isNullExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(FullTextSearch fullTextSearch, S parameters) {
+    public <S> T visit(FullTextSearch fullTextSearch, S context) {
         for (Column col : fullTextSearch.getMatchColumns()) {
-            col.accept(this, parameters);
+            col.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(IsBooleanExpression isBooleanExpression, S parameters) {
-        isBooleanExpression.getLeftExpression().accept(this, parameters);
+    public <S> T visit(IsBooleanExpression isBooleanExpression, S context) {
+        isBooleanExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(LikeExpression likeExpression, S parameters) {
-        visitBinaryExpression(likeExpression, parameters);
+    public <S> T visit(LikeExpression likeExpression, S context) {
+        visitBinaryExpression(likeExpression, context);
         return null;
     }
 
     @Override
-    public <S> T visit(MinorThan minorThan, S parameters) {
-        visitBinaryExpression(minorThan, parameters);
+    public <S> T visit(MinorThan minorThan, S context) {
+        visitBinaryExpression(minorThan, context);
         return null;
     }
 
     @Override
-    public <S> T visit(MinorThanEquals minorThanEquals, S parameters) {
-        visitBinaryExpression(minorThanEquals, parameters);
+    public <S> T visit(MinorThanEquals minorThanEquals, S context) {
+        visitBinaryExpression(minorThanEquals, context);
         return null;
     }
 
     @Override
-    public <S> T visit(NotEqualsTo notEqualsTo, S parameters) {
-        visitBinaryExpression(notEqualsTo, parameters);
+    public <S> T visit(NotEqualsTo notEqualsTo, S context) {
+        visitBinaryExpression(notEqualsTo, context);
         return null;
     }
 
     @Override
-    public <S> T visit(DoubleAnd doubleAnd, S parameters) {
-        visitBinaryExpression(doubleAnd, parameters);
+    public <S> T visit(DoubleAnd doubleAnd, S context) {
+        visitBinaryExpression(doubleAnd, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Contains contains, S parameters) {
-        visitBinaryExpression(contains, parameters);
+    public <S> T visit(Contains contains, S context) {
+        visitBinaryExpression(contains, context);
         return null;
     }
 
     @Override
-    public <S> T visit(ContainedBy containedBy, S parameters) {
-        visitBinaryExpression(containedBy, parameters);
+    public <S> T visit(ContainedBy containedBy, S context) {
+        visitBinaryExpression(containedBy, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Column column, S parameters) {
+    public <S> T visit(Column column, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(ParenthesedSelect select, S parameters) {
-        visit((Select) select, parameters);
+    public <S> T visit(ParenthesedSelect select, S context) {
+        visit((Select) select, context);
         if (select.getPivot() != null) {
-            select.getPivot().accept(this, parameters);
+            select.getPivot().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(CaseExpression caseExpression, S parameters) {
+    public <S> T visit(CaseExpression caseExpression, S context) {
         if (caseExpression.getSwitchExpression() != null) {
-            caseExpression.getSwitchExpression().accept(this, parameters);
+            caseExpression.getSwitchExpression().accept(this, context);
         }
         for (Expression x : caseExpression.getWhenClauses()) {
-            x.accept(this, parameters);
+            x.accept(this, context);
         }
         if (caseExpression.getElseExpression() != null) {
-            caseExpression.getElseExpression().accept(this, parameters);
+            caseExpression.getElseExpression().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(WhenClause whenClause, S parameters) {
-        whenClause.getWhenExpression().accept(this, parameters);
-        whenClause.getThenExpression().accept(this, parameters);
+    public <S> T visit(WhenClause whenClause, S context) {
+        whenClause.getWhenExpression().accept(this, context);
+        whenClause.getThenExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(ExistsExpression existsExpression, S parameters) {
-        existsExpression.getRightExpression().accept(this, parameters);
+    public <S> T visit(ExistsExpression existsExpression, S context) {
+        existsExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(MemberOfExpression memberOfExpression, S parameters) {
-        memberOfExpression.getRightExpression().accept(this, parameters);
+    public <S> T visit(MemberOfExpression memberOfExpression, S context) {
+        memberOfExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(AnyComparisonExpression anyComparisonExpression, S parameters) {
+    public <S> T visit(AnyComparisonExpression anyComparisonExpression, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(Concat concat, S parameters) {
-        visitBinaryExpression(concat, parameters);
+    public <S> T visit(Concat concat, S context) {
+        visitBinaryExpression(concat, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Matches matches, S parameters) {
-        visitBinaryExpression(matches, parameters);
+    public <S> T visit(Matches matches, S context) {
+        visitBinaryExpression(matches, context);
         return null;
     }
 
     @Override
-    public <S> T visit(BitwiseAnd bitwiseAnd, S parameters) {
-        visitBinaryExpression(bitwiseAnd, parameters);
+    public <S> T visit(BitwiseAnd bitwiseAnd, S context) {
+        visitBinaryExpression(bitwiseAnd, context);
         return null;
     }
 
     @Override
-    public <S> T visit(BitwiseOr bitwiseOr, S parameters) {
-        visitBinaryExpression(bitwiseOr, parameters);
+    public <S> T visit(BitwiseOr bitwiseOr, S context) {
+        visitBinaryExpression(bitwiseOr, context);
         return null;
     }
 
     @Override
-    public <S> T visit(BitwiseXor bitwiseXor, S parameters) {
-        visitBinaryExpression(bitwiseXor, parameters);
+    public <S> T visit(BitwiseXor bitwiseXor, S context) {
+        visitBinaryExpression(bitwiseXor, context);
         return null;
     }
 
     @Override
-    public <S> T visit(CastExpression castExpression, S parameters) {
-        castExpression.getLeftExpression().accept(this, parameters);
+    public <S> T visit(CastExpression castExpression, S context) {
+        castExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Modulo modulo, S parameters) {
-        visitBinaryExpression(modulo, parameters);
+    public <S> T visit(Modulo modulo, S context) {
+        visitBinaryExpression(modulo, context);
         return null;
     }
 
     @Override
-    public <S> T visit(AnalyticExpression analyticExpression, S parameters) {
+    public <S> T visit(AnalyticExpression analyticExpression, S context) {
         if (analyticExpression.getExpression() != null) {
-            analyticExpression.getExpression().accept(this, parameters);
+            analyticExpression.getExpression().accept(this, context);
         }
         if (analyticExpression.getDefaultValue() != null) {
-            analyticExpression.getDefaultValue().accept(this, parameters);
+            analyticExpression.getDefaultValue().accept(this, context);
         }
         if (analyticExpression.getOffset() != null) {
-            analyticExpression.getOffset().accept(this, parameters);
+            analyticExpression.getOffset().accept(this, context);
         }
         if (analyticExpression.getKeep() != null) {
-            analyticExpression.getKeep().accept(this, parameters);
+            analyticExpression.getKeep().accept(this, context);
         }
         if (analyticExpression.getFuncOrderBy() != null) {
             for (OrderByElement element : analyticExpression.getOrderByElements()) {
-                element.getExpression().accept(this, parameters);
+                element.getExpression().accept(this, context);
             }
         }
         if (analyticExpression.getWindowElement() != null) {
@@ -444,383 +444,383 @@ public class ExpressionVisitorAdapter<T>
              */
             Optional.ofNullable(analyticExpression.getWindowElement().getRange())
                     .map(WindowRange::getStart)
-                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, parameters));
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, context));
             Optional.ofNullable(analyticExpression.getWindowElement().getRange())
                     .map(WindowRange::getEnd)
-                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, parameters));
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, context));
             Optional.ofNullable(analyticExpression.getWindowElement().getOffset())
-                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, parameters));
+                    .map(WindowOffset::getExpression).ifPresent(e -> e.accept(this, context));
         }
         return null;
     }
 
     @Override
-    public <S> T visit(ExtractExpression extractExpression, S parameters) {
-        extractExpression.getExpression().accept(this, parameters);
+    public <S> T visit(ExtractExpression extractExpression, S context) {
+        extractExpression.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(IntervalExpression intervalExpression, S parameters) {
+    public <S> T visit(IntervalExpression intervalExpression, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(OracleHierarchicalExpression hierarchicalExpression, S parameters) {
-        hierarchicalExpression.getConnectExpression().accept(this, parameters);
-        hierarchicalExpression.getStartExpression().accept(this, parameters);
+    public <S> T visit(OracleHierarchicalExpression hierarchicalExpression, S context) {
+        hierarchicalExpression.getConnectExpression().accept(this, context);
+        hierarchicalExpression.getStartExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(RegExpMatchOperator regExpMatchOperator, S parameters) {
-        visitBinaryExpression(regExpMatchOperator, parameters);
+    public <S> T visit(RegExpMatchOperator regExpMatchOperator, S context) {
+        visitBinaryExpression(regExpMatchOperator, context);
         return null;
     }
 
     @Override
-    public <S> T visit(ExpressionList<? extends Expression> expressionList, S parameters) {
+    public <S> T visit(ExpressionList<? extends Expression> expressionList, S context) {
         for (Expression expr : expressionList) {
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(RowConstructor<? extends Expression> rowConstructor, S parameters) {
+    public <S> T visit(RowConstructor<? extends Expression> rowConstructor, S context) {
         for (Expression expr : rowConstructor) {
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(NotExpression notExpr, S parameters) {
-        notExpr.getExpression().accept(this, parameters);
+    public <S> T visit(NotExpression notExpr, S context) {
+        notExpr.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(BitwiseRightShift bitwiseRightShift, S parameters) {
-        visitBinaryExpression(bitwiseRightShift, parameters);
+    public <S> T visit(BitwiseRightShift bitwiseRightShift, S context) {
+        visitBinaryExpression(bitwiseRightShift, context);
         return null;
     }
 
     @Override
-    public <S> T visit(BitwiseLeftShift bitwiseLeftShift, S parameters) {
-        visitBinaryExpression(bitwiseLeftShift, parameters);
+    public <S> T visit(BitwiseLeftShift bitwiseLeftShift, S context) {
+        visitBinaryExpression(bitwiseLeftShift, context);
         return null;
     }
 
-    protected <S> T visitBinaryExpression(BinaryExpression binaryExpression, S parameters) {
-        binaryExpression.getLeftExpression().accept(this, parameters);
-        binaryExpression.getRightExpression().accept(this, parameters);
-        return null;
-    }
-
-    @Override
-    public <S> T visit(JsonExpression jsonExpr, S parameters) {
-        jsonExpr.getExpression().accept(this, parameters);
+    protected <S> T visitBinaryExpression(BinaryExpression binaryExpression, S context) {
+        binaryExpression.getLeftExpression().accept(this, context);
+        binaryExpression.getRightExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(JsonOperator jsonOperator, S parameters) {
-        visitBinaryExpression(jsonOperator, parameters);
+    public <S> T visit(JsonExpression jsonExpr, S context) {
+        jsonExpr.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(UserVariable userVariable, S parameters) {
-
+    public <S> T visit(JsonOperator jsonOperator, S context) {
+        visitBinaryExpression(jsonOperator, context);
         return null;
     }
 
     @Override
-    public <S> T visit(NumericBind numericBind, S parameters) {
+    public <S> T visit(UserVariable userVariable, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(KeepExpression keepExpression, S parameters) {
+    public <S> T visit(NumericBind numericBind, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(KeepExpression keepExpression, S context) {
         for (OrderByElement element : keepExpression.getOrderByElements()) {
-            element.getExpression().accept(this, parameters);
+            element.getExpression().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(MySQLGroupConcat groupConcat, S parameters) {
+    public <S> T visit(MySQLGroupConcat groupConcat, S context) {
         for (Expression expr : groupConcat.getExpressionList()) {
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
         if (groupConcat.getOrderByElements() != null) {
             for (OrderByElement element : groupConcat.getOrderByElements()) {
-                element.getExpression().accept(this, parameters);
+                element.getExpression().accept(this, context);
             }
         }
         return null;
     }
 
     @Override
-    public <S> T visit(Pivot pivot, S parameters) {
+    public <S> T visit(Pivot pivot, S context) {
         for (SelectItem<?> item : pivot.getFunctionItems()) {
-            item.getExpression().accept(this, parameters);
+            item.getExpression().accept(this, context);
         }
         for (Column col : pivot.getForColumns()) {
-            col.accept(this, parameters);
+            col.accept(this, context);
         }
         if (pivot.getSingleInItems() != null) {
             for (SelectItem<?> item : pivot.getSingleInItems()) {
-                item.getExpression().accept(this, parameters);
+                item.getExpression().accept(this, context);
             }
         }
 
         if (pivot.getMultiInItems() != null) {
             for (SelectItem<ExpressionList<?>> item : pivot.getMultiInItems()) {
-                item.getExpression().accept(this, parameters);
+                item.getExpression().accept(this, context);
             }
         }
         return null;
     }
 
     @Override
-    public <S> T visit(PivotXml pivotXml, S parameters) {
+    public <S> T visit(PivotXml pivotXml, S context) {
         for (SelectItem<?> item : pivotXml.getFunctionItems()) {
-            item.getExpression().accept(this, parameters);
+            item.getExpression().accept(this, context);
         }
         for (Column col : pivotXml.getForColumns()) {
-            col.accept(this, parameters);
+            col.accept(this, context);
         }
         if (pivotXml.getInSelect() != null && selectVisitor != null) {
-            pivotXml.getInSelect().accept(selectVisitor, parameters);
+            pivotXml.getInSelect().accept(selectVisitor, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(UnPivot unpivot, S parameters) {
-        unpivot.accept(this, parameters);
+    public <S> T visit(UnPivot unpivot, S context) {
+        unpivot.accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(AllColumns allColumns, S parameters) {
+    public <S> T visit(AllColumns allColumns, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(AllTableColumns allTableColumns, S parameters) {
+    public <S> T visit(AllTableColumns allTableColumns, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(AllValue allValue, S parameters) {
+    public <S> T visit(AllValue allValue, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(IsDistinctExpression isDistinctExpression, S parameters) {
-        visitBinaryExpression(isDistinctExpression, parameters);
+    public <S> T visit(IsDistinctExpression isDistinctExpression, S context) {
+        visitBinaryExpression(isDistinctExpression, context);
         return null;
     }
 
     @Override
-    public <S> T visit(SelectItem<? extends Expression> selectItem, S parameters) {
-        selectItem.getExpression().accept(this, parameters);
+    public <S> T visit(SelectItem<? extends Expression> selectItem, S context) {
+        selectItem.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(RowGetExpression rowGetExpression, S parameters) {
-        rowGetExpression.getExpression().accept(this, parameters);
+    public <S> T visit(RowGetExpression rowGetExpression, S context) {
+        rowGetExpression.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(HexValue hexValue, S parameters) {
-
-        return null;
-    }
-
-    @Override
-    public <S> T visit(OracleHint hint, S parameters) {
+    public <S> T visit(HexValue hexValue, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(TimeKeyExpression timeKeyExpression, S parameters) {
+    public <S> T visit(OracleHint hint, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(DateTimeLiteralExpression dateTimeLiteralExpression, S parameters) {
+    public <S> T visit(TimeKeyExpression timeKeyExpression, S context) {
+
         return null;
     }
 
     @Override
-    public <S> T visit(NextValExpression nextValExpression, S parameters) {
+    public <S> T visit(DateTimeLiteralExpression dateTimeLiteralExpression, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(CollateExpression collateExpression, S parameters) {
-        collateExpression.getLeftExpression().accept(this, parameters);
+    public <S> T visit(NextValExpression nextValExpression, S context) {
         return null;
     }
 
     @Override
-    public <S> T visit(SimilarToExpression similarToExpression, S parameters) {
-        visitBinaryExpression(similarToExpression, parameters);
+    public <S> T visit(CollateExpression collateExpression, S context) {
+        collateExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(ArrayExpression arrayExpression, S parameters) {
-        arrayExpression.getObjExpression().accept(this, parameters);
+    public <S> T visit(SimilarToExpression similarToExpression, S context) {
+        visitBinaryExpression(similarToExpression, context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ArrayExpression arrayExpression, S context) {
+        arrayExpression.getObjExpression().accept(this, context);
         if (arrayExpression.getIndexExpression() != null) {
-            arrayExpression.getIndexExpression().accept(this, parameters);
+            arrayExpression.getIndexExpression().accept(this, context);
         }
         if (arrayExpression.getStartIndexExpression() != null) {
-            arrayExpression.getStartIndexExpression().accept(this, parameters);
+            arrayExpression.getStartIndexExpression().accept(this, context);
         }
         if (arrayExpression.getStopIndexExpression() != null) {
-            arrayExpression.getStopIndexExpression().accept(this, parameters);
+            arrayExpression.getStopIndexExpression().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(ArrayConstructor arrayConstructor, S parameters) {
+    public <S> T visit(ArrayConstructor arrayConstructor, S context) {
         for (Expression expression : arrayConstructor.getExpressions()) {
-            expression.accept(this, parameters);
+            expression.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(VariableAssignment variableAssignment, S parameters) {
-        variableAssignment.getVariable().accept(this, parameters);
-        variableAssignment.getExpression().accept(this, parameters);
+    public <S> T visit(VariableAssignment variableAssignment, S context) {
+        variableAssignment.getVariable().accept(this, context);
+        variableAssignment.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(XMLSerializeExpr xmlSerializeExpr, S parameters) {
-        xmlSerializeExpr.getExpression().accept(this, parameters);
+    public <S> T visit(XMLSerializeExpr xmlSerializeExpr, S context) {
+        xmlSerializeExpr.getExpression().accept(this, context);
         for (OrderByElement elm : xmlSerializeExpr.getOrderByElements()) {
-            elm.getExpression().accept(this, parameters);
+            elm.getExpression().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(TimezoneExpression timezoneExpression, S parameters) {
-        timezoneExpression.getLeftExpression().accept(this, parameters);
+    public <S> T visit(TimezoneExpression timezoneExpression, S context) {
+        timezoneExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(JsonAggregateFunction jsonAggregateFunction, S parameters) {
+    public <S> T visit(JsonAggregateFunction jsonAggregateFunction, S context) {
         Expression expr = jsonAggregateFunction.getExpression();
         if (expr != null) {
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
 
         expr = jsonAggregateFunction.getFilterExpression();
         if (expr != null) {
-            expr.accept(this, parameters);
+            expr.accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(JsonFunction jsonFunction, S parameters) {
+    public <S> T visit(JsonFunction jsonFunction, S context) {
         for (JsonFunctionExpression expr : jsonFunction.getExpressions()) {
-            expr.getExpression().accept(this, parameters);
+            expr.getExpression().accept(this, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(ConnectByRootOperator connectByRootOperator, S parameters) {
-        connectByRootOperator.getColumn().accept(this, parameters);
+    public <S> T visit(ConnectByRootOperator connectByRootOperator, S context) {
+        connectByRootOperator.getColumn().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S parameters) {
-        oracleNamedFunctionParameter.getExpression().accept(this, parameters);
+    public <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
+        oracleNamedFunctionParameter.getExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(GeometryDistance geometryDistance, S parameters) {
-        visitBinaryExpression(geometryDistance, parameters);
+    public <S> T visit(GeometryDistance geometryDistance, S context) {
+        visitBinaryExpression(geometryDistance, context);
         return null;
     }
 
     @Override
-    public <S> T visit(Select select, S parameters) {
+    public <S> T visit(Select select, S context) {
         if (selectVisitor != null) {
             if (select.getWithItemsList() != null) {
                 for (WithItem item : select.getWithItemsList()) {
-                    item.accept(selectVisitor, parameters);
+                    item.accept(selectVisitor, context);
                 }
             }
-            select.accept(selectVisitor, parameters);
+            select.accept(selectVisitor, context);
         }
         return null;
     }
 
     @Override
-    public <S> T visit(TranscodingFunction transcodingFunction, S parameters) {
+    public <S> T visit(TranscodingFunction transcodingFunction, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(TrimFunction trimFunction, S parameters) {
+    public <S> T visit(TrimFunction trimFunction, S context) {
 
         return null;
     }
 
     @Override
-    public <S> T visit(RangeExpression rangeExpression, S parameters) {
-        rangeExpression.getStartExpression().accept(this, parameters);
-        rangeExpression.getEndExpression().accept(this, parameters);
+    public <S> T visit(RangeExpression rangeExpression, S context) {
+        rangeExpression.getStartExpression().accept(this, context);
+        rangeExpression.getEndExpression().accept(this, context);
         return null;
     }
 
     @Override
-    public <S> T visit(TSQLLeftJoin tsqlLeftJoin, S parameters) {
-        visitBinaryExpression(tsqlLeftJoin, parameters);
+    public <S> T visit(TSQLLeftJoin tsqlLeftJoin, S context) {
+        visitBinaryExpression(tsqlLeftJoin, context);
         return null;
     }
 
     @Override
-    public <S> T visit(TSQLRightJoin tsqlRightJoin, S parameters) {
-        visitBinaryExpression(tsqlRightJoin, parameters);
+    public <S> T visit(TSQLRightJoin tsqlRightJoin, S context) {
+        visitBinaryExpression(tsqlRightJoin, context);
         return null;
     }
 
     @Override
-    public <S> T visit(StructType structType, S parameters) {
+    public <S> T visit(StructType structType, S context) {
         // @todo: visit the ColType also
         if (structType.getArguments() != null) {
             for (SelectItem<?> selectItem : structType.getArguments()) {
-                visit(selectItem, parameters);
+                visit(selectItem, context);
             }
         }
         return null;
     }
 
     @Override
-    public <S> T visit(LambdaExpression lambdaExpression, S parameters) {
-        lambdaExpression.getExpression().accept(this, parameters);
+    public <S> T visit(LambdaExpression lambdaExpression, S context) {
+        lambdaExpression.getExpression().accept(this, context);
         return null;
     }
 

@@ -140,13 +140,13 @@ public class HowToUseSample {
         // Overwrite the visit() methods for each Expression Class
         ExpressionVisitorAdapter<Void> expressionVisitorAdapter =
                 new ExpressionVisitorAdapter<Void>() {
-                    public <K> Void visit(EqualsTo equalsTo, K parameters) {
-                        equalsTo.getLeftExpression().accept(this, parameters);
-                        equalsTo.getRightExpression().accept(this, parameters);
+                    public <K> Void visit(EqualsTo equalsTo, K context) {
+                        equalsTo.getLeftExpression().accept(this, context);
+                        equalsTo.getRightExpression().accept(this, context);
                         return null;
                     }
 
-                    public <K> Void visit(Column column) {
+                    public <K> Void visit(Column column, K context) {
                         System.out.println("Found a Column " + column.getColumnName());
                         return null;
                     }
@@ -156,15 +156,15 @@ public class HowToUseSample {
         // Where Clause
         SelectVisitorAdapter<Void> selectVisitorAdapter = new SelectVisitorAdapter<Void>() {
             @Override
-            public <K> Void visit(PlainSelect plainSelect, K parameters) {
-                return plainSelect.getWhere().accept(expressionVisitorAdapter, parameters);
+            public <K> Void visit(PlainSelect plainSelect, K context) {
+                return plainSelect.getWhere().accept(expressionVisitorAdapter, context);
             }
         };
 
         // Define a Statement Visitor for dispatching the Statements
         StatementVisitorAdapter<Void> statementVisitor = new StatementVisitorAdapter<Void>() {
-            public Void visit(Select select) {
-                return select.accept(selectVisitorAdapter, null);
+            public <K> Void visit(Select select, K context) {
+                return select.accept(selectVisitorAdapter, context);
             }
         };
 

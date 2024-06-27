@@ -25,7 +25,8 @@ public class AllowedTypesValidation implements ValidationCapability {
         Object arg = context.getOptional(AllowedTypesContext.argument, Object.class);
         Boolean allowNull = context.getOptional(AllowedTypesContext.allow_null, Boolean.class);
         @SuppressWarnings("unchecked")
-        Collection<Class<?>> allowedTypes = context.get(AllowedTypesContext.allowed_types, Collection.class);
+        Collection<Class<?>> allowedTypes =
+                context.get(AllowedTypesContext.allowed_types, Collection.class);
         if (arg != null) {
             boolean error = true;
             for (Class<?> cls : allowedTypes) {
@@ -35,7 +36,8 @@ public class AllowedTypesValidation implements ValidationCapability {
                 }
             }
             if (error) {
-                errorConsumer.accept(toError(arg.getClass() + " is not a valid argument - expected one of " + allowedTypes));
+                errorConsumer.accept(toError(arg.getClass()
+                        + " is not a valid argument - expected one of " + allowedTypes));
             }
         } else if (Boolean.FALSE.equals(allowNull)) {
             errorConsumer.accept(toError("argument is missing one of " + allowedTypes));

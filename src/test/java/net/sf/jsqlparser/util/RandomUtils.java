@@ -69,7 +69,8 @@ public class RandomUtils {
     /**
      * @param <T>
      * @param type
-     * @return a random non-<code>null</code> value for given type or <code>null</code> if not supported.
+     * @return a random non-<code>null</code> value for given type or <code>null</code> if not
+     *         supported.
      */
     public static <T> T getRandomValueForType(Class<T> type) {
         Object value = null;
@@ -125,14 +126,18 @@ public class RandomUtils {
                     if (type.isEnum()) {
                         @SuppressWarnings("unchecked")
                         EnumSet<?> enums = EnumSet.allOf(type.asSubclass(Enum.class));
-                        value = new ArrayList<>(enums).get(RandomUtils.RANDOM.nextInt(enums.size()));
+                        value = new ArrayList<>(enums)
+                                .get(RandomUtils.RANDOM.nextInt(enums.size()));
                     } else {
                         try {
                             value = type.getConstructor().newInstance();
-                        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                        } catch (InstantiationException | IllegalAccessException
+                                | IllegalArgumentException
+                                | InvocationTargetException | NoSuchMethodException
+                                | SecurityException e) {
                             // cannot get default instance with empty constructor
-                            LOG.log(Level.WARNING, "cannot get default instance with reflection for type " + type);
+                            LOG.log(Level.WARNING,
+                                    "cannot get default instance with reflection for type " + type);
                         }
                     }
                 }

@@ -13,5 +13,9 @@ import net.sf.jsqlparser.schema.Table;
 
 public interface IntoTableVisitor<T> {
 
-    <S> T visit(Table tableName, S parameters);
+    <S> T visit(Table tableName, S context);
+
+    default void visit(Table tableName) {
+        this.visit(tableName, null);
+    }
 }

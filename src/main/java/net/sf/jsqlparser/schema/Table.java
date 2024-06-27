@@ -12,6 +12,7 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -102,11 +103,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return new Database(getIndex(DATABASE_IDX));
     }
 
-    public Table withDatabase(Database database) {
-        setDatabase(database);
-        return this;
-    }
-
     public void setDatabase(Database database) {
         setIndex(DATABASE_IDX, database.getDatabaseName());
         if (database.getServer() != null) {
@@ -114,17 +110,22 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         }
     }
 
+    public Table withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
+    }
+
+    public void setSchemaName(String schemaName) {
+        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public Table withSchemaName(String schemaName) {
         setSchemaName(schemaName);
         return this;
-    }
-
-    public void setSchemaName(String schemaName) {
-        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public String getName() {
@@ -136,6 +137,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
             }
         }
         return name;
+    }
+
+    public void setName(String name) {
+        setIndex(NAME_IDX, name);
     }
 
     public String getDBLinkName() {
@@ -152,10 +157,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public Table withName(String name) {
         this.setName(name);
         return this;
-    }
-
-    public void setName(String name) {
-        setIndex(NAME_IDX, name);
     }
 
     @Override
@@ -208,12 +209,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     @Override
-    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S arguments) {
-        return fromItemVisitor.visit(this, arguments);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
-    public <T, S> T accept(IntoTableVisitor<T> intoTableVisitor, S arguments) {
-        return intoTableVisitor.visit(this, arguments);
+    public <T, S> T accept(IntoTableVisitor<T> intoTableVisitor, S context) {
+        return intoTableVisitor.visit(this, context);
     }
 
     @Override

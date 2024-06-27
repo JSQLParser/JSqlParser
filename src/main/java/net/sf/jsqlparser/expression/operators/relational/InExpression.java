@@ -30,6 +30,11 @@ public class InExpression extends ASTNodeAccessImpl
     }
 
     @Override
+    public int getOldOracleJoinSyntax() {
+        return oldOracleJoinSyntax;
+    }
+
+    @Override
     public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
         this.oldOracleJoinSyntax = oldOracleJoinSyntax;
         if (oldOracleJoinSyntax < 0 || oldOracleJoinSyntax > 1) {
@@ -39,22 +44,17 @@ public class InExpression extends ASTNodeAccessImpl
         }
     }
 
-    @Override
-    public int getOldOracleJoinSyntax() {
-        return oldOracleJoinSyntax;
-    }
-
     public Expression getLeftExpression() {
         return leftExpression;
+    }
+
+    public final void setLeftExpression(Expression expression) {
+        leftExpression = expression;
     }
 
     public InExpression withLeftExpression(Expression expression) {
         this.setLeftExpression(expression);
         return this;
-    }
-
-    public final void setLeftExpression(Expression expression) {
-        leftExpression = expression;
     }
 
     public boolean isGlobal() {
@@ -83,8 +83,8 @@ public class InExpression extends ASTNodeAccessImpl
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     private String getLeftExpressionString() {

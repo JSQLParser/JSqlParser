@@ -115,12 +115,12 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         return expressionVisitor;
     }
 
-    public SelectVisitor<StringBuilder> getSelectVisitor() {
-        return selectVisitor;
-    }
-
     public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
+    }
+
+    public SelectVisitor<StringBuilder> getSelectVisitor() {
+        return selectVisitor;
     }
 
     public void setSelectVisitor(SelectVisitor<StringBuilder> visitor) {

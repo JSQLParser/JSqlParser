@@ -11,28 +11,27 @@ package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.EnumSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * <p>
- * The DatabaseType is named like the identifier used within the
- * jdbc-connection-url (upper case), this may change in future, therefore use
- * {@link #get(String)} to retrieve the {@link DatabaseType}.
+ * The DatabaseType is named like the identifier used within the jdbc-connection-url (upper case),
+ * this may change in future, therefore use {@link #get(String)} to retrieve the
+ * {@link DatabaseType}.
  * </p>
  */
 public enum DatabaseType implements FeatureSetValidation, Version {
 
     ANSI_SQL("ANSI SQL", SQLVersion.values()),
     // DBMS
-    ORACLE(OracleVersion.values()),
-    MYSQL(MySqlVersion.values()),
-    SQLSERVER(SqlServerVersion.values()),
-    MARIADB(MariaDbVersion.values()),
-    POSTGRESQL(PostgresqlVersion.values()),
-    H2(H2Version.values());
+    ORACLE(OracleVersion.values()), MYSQL(MySqlVersion.values()), SQLSERVER(
+            SqlServerVersion.values()), MARIADB(MariaDbVersion.values()), POSTGRESQL(
+                    PostgresqlVersion.values()), H2(H2Version.values());
 
-    public static final DatabaseType[] DATABASES = new DatabaseType[] { ORACLE, MYSQL, SQLSERVER, MARIADB, POSTGRESQL,
-            H2 };
+    public static final DatabaseType[] DATABASES =
+            new DatabaseType[] {ORACLE, MYSQL, SQLSERVER, MARIADB, POSTGRESQL,
+                    H2};
 
     private String name;
     private Version[] versions;
@@ -55,7 +54,8 @@ public enum DatabaseType implements FeatureSetValidation, Version {
     /**
      * @param jdbcIdentifier - the database-identifier-part of jdbc-url
      * @return the {@link DatabaseType}
-     * @throws IllegalArgumentException - if the specified jdbcIdentifier cannot be mapped to a {@link DatabaseType}
+     * @throws IllegalArgumentException - if the specified jdbcIdentifier cannot be mapped to a
+     *         {@link DatabaseType}
      * @throws NullPointerException if {@code jdbcIdentifier} is null
      */
     public static DatabaseType get(String jdbcIdentifier) {
@@ -63,7 +63,7 @@ public enum DatabaseType implements FeatureSetValidation, Version {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public String getName() {

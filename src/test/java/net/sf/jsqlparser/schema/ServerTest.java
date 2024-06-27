@@ -57,7 +57,8 @@ public class ServerTest {
         final Server server = new Server("SERVER", "INSTANCE");
         assertEquals("SERVER", server.getServerName());
         assertEquals("INSTANCE", server.getInstanceName());
-        assertEquals(String.format("[%s\\%s]", "SERVER", "INSTANCE"), server.getFullyQualifiedName());
+        assertEquals(String.format("[%s\\%s]", "SERVER", "INSTANCE"),
+                server.getFullyQualifiedName());
     }
 
     @Test

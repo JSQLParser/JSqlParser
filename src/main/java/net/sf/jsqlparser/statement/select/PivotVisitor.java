@@ -11,10 +11,21 @@ package net.sf.jsqlparser.statement.select;
 
 public interface PivotVisitor<T> {
 
-    <S> T visit(Pivot pivot, S parameters);
+    <S> T visit(Pivot pivot, S context);
 
-    <S> T visit(PivotXml pivot, S parameters);
+    default void visit(Pivot pivot) {
+        this.visit(pivot, null);
+    }
 
-    <S> T visit(UnPivot unpivot, S parameters);
+    <S> T visit(PivotXml pivotXml, S context);
 
+    default void visit(PivotXml pivotXml) {
+        this.visit(pivotXml, null);
+    }
+
+    <S> T visit(UnPivot unpivot, S context);
+
+    default void visit(UnPivot unpivot) {
+        this.visit(unpivot, null);
+    }
 }

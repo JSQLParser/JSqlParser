@@ -17,14 +17,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index implements Serializable {
 
+    private final List<String> name = new ArrayList<>();
     private String type;
     private String using;
     private List<ColumnParams> columns;
-    private final List<String> name = new ArrayList<>();
     private List<String> idxSpec;
     private String commentText;
 
@@ -32,6 +33,10 @@ public class Index implements Serializable {
         return columns.stream()
                 .map(col -> col.columnName)
                 .collect(toList());
+    }
+
+    public void setColumnsNames(List<String> list) {
+        columns = list.stream().map(ColumnParams::new).collect(toList());
     }
 
     @Deprecated
@@ -73,34 +78,6 @@ public class Index implements Serializable {
         return name.isEmpty() ? null : String.join(".", name);
     }
 
-    public List<String> getNameParts() {
-        return Collections.unmodifiableList(name);
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * In postgresql, the index type (Btree, GIST, etc.) is indicated with a USING clause. Please
-     * note that: Oracle - the type might be BITMAP, indicating a bitmap kind of index MySQL - the
-     * type might be FULLTEXT or SPATIAL
-     * 
-     * @param using
-     */
-    public void setUsing(String using) {
-        this.using = using;
-    }
-
-    public void setColumnsNames(List<String> list) {
-        columns = list.stream().map(ColumnParams::new).collect(toList());
-    }
-
-    public Index withColumnsNames(List<String> list) {
-        setColumnsNames(list);
-        return this;
-    }
-
     public void setName(String name) {
         this.name.clear();
         this.name.add(name);
@@ -111,12 +88,36 @@ public class Index implements Serializable {
         this.name.addAll(name);
     }
 
+    public List<String> getNameParts() {
+        return Collections.unmodifiableList(name);
+    }
+
+    public String getType() {
+        return type;
+    }
+
     public void setType(String string) {
         type = string;
     }
 
+    public Index withColumnsNames(List<String> list) {
+        setColumnsNames(list);
+        return this;
+    }
+
     public String getUsing() {
         return using;
+    }
+
+    /**
+     * In postgresql, the index type (Btree, GIST, etc.) is indicated with a USING clause. Please
+     * note that: Oracle - the type might be BITMAP, indicating a bitmap kind of index MySQL - the
+     * type might be FULLTEXT or SPATIAL
+     *
+     * @param using
+     */
+    public void setUsing(String using) {
+        this.using = using;
     }
 
     public List<String> getIndexSpec() {
@@ -166,6 +167,14 @@ public class Index implements Serializable {
         return this;
     }
 
+    public String getCommentText() {
+        return commentText;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
+    }
+
     public static class ColumnParams implements Serializable {
         public final String columnName;
         public final List<String> params;
@@ -192,13 +201,5 @@ public class Index implements Serializable {
         public String toString() {
             return columnName + (params != null ? " " + String.join(" ", params) : "");
         }
-    }
-
-    public String getCommentText() {
-        return commentText;
-    }
-
-    public void setCommentText(String commentText) {
-        this.commentText = commentText;
     }
 }

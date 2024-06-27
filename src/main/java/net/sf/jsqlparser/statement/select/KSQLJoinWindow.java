@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
 import static net.sf.jsqlparser.statement.select.KSQLWindow.TimeUnit;
 
 public class KSQLJoinWindow extends ASTNodeAccessImpl {
@@ -21,6 +22,10 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     private TimeUnit beforeTimeUnit;
     private long afterDuration;
     private TimeUnit afterTimeUnit;
+
+    public final static TimeUnit from(String timeUnitStr) {
+        return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
+    }
 
     public boolean isBeforeAfterWindow() {
         return beforeAfter;
@@ -115,9 +120,5 @@ public class KSQLJoinWindow extends ASTNodeAccessImpl {
     public KSQLJoinWindow withAfterTimeUnit(TimeUnit afterTimeUnit) {
         this.setAfterTimeUnit(afterTimeUnit);
         return this;
-    }
-
-    public final static TimeUnit from(String timeUnitStr) {
-        return Enum.valueOf(TimeUnit.class, timeUnitStr.toUpperCase());
     }
 }

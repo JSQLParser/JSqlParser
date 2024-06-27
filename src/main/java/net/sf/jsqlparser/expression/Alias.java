@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 public class Alias implements Serializable {

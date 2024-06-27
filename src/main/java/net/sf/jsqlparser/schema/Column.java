@@ -12,6 +12,7 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -152,8 +153,8 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override
@@ -181,11 +182,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return this;
     }
 
-    public void setCommentText(String commentText) {
-        this.commentText = commentText;
-    }
-
     public String getCommentText() {
         return commentText;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
     }
 }

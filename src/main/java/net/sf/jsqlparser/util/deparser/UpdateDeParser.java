@@ -125,8 +125,8 @@ public class UpdateDeParser extends AbstractDeParser<Update>
     }
 
     @Override
-    public <S> StringBuilder visit(OrderByElement orderBy, S parameters) {
-        orderBy.getExpression().accept(expressionVisitor, parameters);
+    public <S> StringBuilder visit(OrderByElement orderBy, S context) {
+        orderBy.getExpression().accept(expressionVisitor, context);
         if (!orderBy.isAsc()) {
             buffer.append(" DESC");
         } else if (orderBy.isAscDescPresent()) {

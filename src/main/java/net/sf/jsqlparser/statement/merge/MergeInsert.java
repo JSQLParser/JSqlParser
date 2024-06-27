@@ -58,8 +58,8 @@ public class MergeInsert implements Serializable, MergeOperation {
     }
 
     @Override
-    public void accept(MergeOperationVisitor mergeOperationVisitor) {
-        mergeOperationVisitor.visit(this);
+    public <S, T> T accept(MergeOperationVisitor<T> mergeOperationVisitor, S context) {
+        return mergeOperationVisitor.visit(this, context);
     }
 
     @Override

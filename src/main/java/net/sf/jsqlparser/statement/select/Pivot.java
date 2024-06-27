@@ -30,8 +30,8 @@ public class Pivot implements Serializable {
     private List<SelectItem<ExpressionList<?>>> multiInItems;
     private Alias alias;
 
-    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S arguments) {
-        return pivotVisitor.visit(this, arguments);
+    public <T, S> T accept(PivotVisitor<T> pivotVisitor, S context) {
+        return pivotVisitor.visit(this, context);
     }
 
     public List<SelectItem<?>> getSingleInItems() {

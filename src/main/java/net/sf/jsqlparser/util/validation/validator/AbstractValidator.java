@@ -45,12 +45,10 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractValidator<S> implements Validator<S> {
 
-    private ValidationContext context = new ValidationContext();
-
     private final Map<ValidationCapability, Set<ValidationException>> errors = new HashMap<>();
-
     private final Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards =
             new HashMap<>();
+    private ValidationContext context = new ValidationContext();
 
     public <T extends AbstractValidator<?>> T getValidator(Class<T> type) {
         return type.cast(validatorForwards.computeIfAbsent(type, this::newObject));

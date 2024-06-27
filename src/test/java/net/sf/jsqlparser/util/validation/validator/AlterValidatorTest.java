@@ -35,44 +35,54 @@ public class AlterValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testAlterTablePrimaryKeyDeferrable() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE", 1,
+                DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTablePrimaryKeyNotDeferrable() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) NOT DEFERRABLE", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) NOT DEFERRABLE", 1,
+                DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTablePrimaryKeyValidate() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) VALIDATE", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) VALIDATE", 1,
+                DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTablePrimaryKeyNoValidate() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) NOVALIDATE", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) NOVALIDATE", 1,
+                DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTablePrimaryKeyDeferrableValidate() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE VALIDATE", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE VALIDATE", 1,
+                DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTablePrimaryKeyDeferrableDisableNoValidate() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE", 1,
+        validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id) DEFERRABLE DISABLE NOVALIDATE",
+                1,
                 DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableUniqueKey() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)", 1,
+        validateNoErrors(
+                "ALTER TABLE `schema_migrations` ADD UNIQUE KEY `unique_schema_migrations` (`version`)",
+                1,
                 DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableForgeignKey() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE", 1,
+        validateNoErrors(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE",
+                1,
                 DatabaseType.DATABASES);
     }
 
@@ -110,13 +120,17 @@ public class AlterValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testAlterTableForgeignKey3() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT", 1,
+        validateNoErrors(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE RESTRICT",
+                1,
                 DatabaseType.DATABASES);
     }
 
     @Test
     public void testAlterTableForgeignKey4() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL", 1,
+        validateNoErrors(
+                "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE SET NULL",
+                1,
                 DatabaseType.DATABASES);
     }
 
@@ -127,7 +141,8 @@ public class AlterValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
-        validateNoErrors("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL", 1, DatabaseType.DATABASES);
+        validateNoErrors("ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL", 1,
+                DatabaseType.DATABASES);
     }
 
 }

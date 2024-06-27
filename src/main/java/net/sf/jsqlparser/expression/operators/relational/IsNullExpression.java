@@ -36,12 +36,12 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
         return leftExpression;
     }
 
-    public boolean isNot() {
-        return not;
-    }
-
     public void setLeftExpression(Expression expression) {
         leftExpression = expression;
+    }
+
+    public boolean isNot() {
+        return not;
     }
 
     public void setNot(boolean b) {
@@ -66,8 +66,8 @@ public class IsNullExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

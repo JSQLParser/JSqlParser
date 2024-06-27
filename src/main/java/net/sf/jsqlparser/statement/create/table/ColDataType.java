@@ -52,12 +52,12 @@ public class ColDataType implements Serializable {
         return argumentsStringList;
     }
 
-    public String getDataType() {
-        return dataType;
-    }
-
     public void setArgumentsStringList(List<String> list) {
         argumentsStringList = list;
+    }
+
+    public String getDataType() {
+        return dataType;
     }
 
     public void setDataType(String string) {

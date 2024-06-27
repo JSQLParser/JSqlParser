@@ -17,8 +17,8 @@ import java.util.List;
 
 public class TimezoneExpression extends ASTNodeAccessImpl implements Expression {
 
-    private Expression leftExpression;
     private final ExpressionList<Expression> timezoneExpressions = new ExpressionList<>();
+    private Expression leftExpression;
 
     public TimezoneExpression() {
         leftExpression = null;
@@ -39,8 +39,8 @@ public class TimezoneExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public List<Expression> getTimezoneExpressions() {

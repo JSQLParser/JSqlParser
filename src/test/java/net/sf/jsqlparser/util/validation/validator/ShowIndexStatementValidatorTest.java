@@ -19,9 +19,9 @@ import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 /**
-*
-* @author Jayant Kumar Yadav
-*/
+ *
+ * @author Jayant Kumar Yadav
+ */
 
 public class ShowIndexStatementValidatorTest extends ValidationTestAsserts {
 
@@ -32,7 +32,7 @@ public class ShowIndexStatementValidatorTest extends ValidationTestAsserts {
         }
     }
 
-    
+
     @Test
     public void testValidationShowIndexNotAllowed() throws Exception {
         for (String sql : Arrays.asList("SHOW INDEX FROM mydatabase")) {

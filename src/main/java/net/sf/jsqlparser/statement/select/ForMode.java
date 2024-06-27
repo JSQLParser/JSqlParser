@@ -24,11 +24,11 @@ public enum ForMode {
 
     private final String value;
 
-    public String getValue() {
-        return value;
-    }
-
     ForMode(String s) {
         this.value = s;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

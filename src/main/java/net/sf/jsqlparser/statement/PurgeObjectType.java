@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum PurgeObjectType {

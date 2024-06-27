@@ -27,7 +27,7 @@ abstract class AbstractDeParser<S> {
     }
 
     public static void deparseUpdateSets(List<UpdateSet> updateSets, StringBuilder buffer,
-            ExpressionVisitor visitor) {
+            ExpressionVisitor<StringBuilder> visitor) {
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(visitor, buffer);
         int j = 0;

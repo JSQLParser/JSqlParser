@@ -18,8 +18,7 @@ public class SQLServerHints implements Serializable {
     private Boolean noLock;
     private String indexName;
 
-    public SQLServerHints() {
-    }
+    public SQLServerHints() {}
 
     public SQLServerHints withNoLock() {
         this.noLock = true;

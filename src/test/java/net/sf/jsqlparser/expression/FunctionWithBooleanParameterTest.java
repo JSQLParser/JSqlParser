@@ -21,8 +21,7 @@ import org.junit.jupiter.api.Test;
  */
 public class FunctionWithBooleanParameterTest {
 
-    public FunctionWithBooleanParameterTest() {
-    }
+    public FunctionWithBooleanParameterTest() {}
 
     @Test
     public void testParseOpLowerTotally() throws Exception {

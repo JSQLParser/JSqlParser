@@ -42,7 +42,8 @@ public enum SqlServerVersion implements Version {
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/top-transact-sql?view=sql-server-ver15
                     Feature.top,
                     // https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
-                    Feature.offset, Feature.offsetParam, Feature.fetch, Feature.fetchFirst, Feature.fetchNext,
+                    Feature.offset, Feature.offsetParam, Feature.fetch, Feature.fetchFirst,
+                    Feature.fetchNext,
 
                     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-except-and-intersect-transact-sql?view=sql-server-ver15
                     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-operators-union-transact-sql?view=sql-server-ver15
@@ -94,7 +95,7 @@ public enum SqlServerVersion implements Version {
                     Feature.execute,
                     Feature.executeExec, Feature.executeExecute,
 
-                    //https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-local-variable-transact-sql?view=sql-server-ver15
+                    // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/set-local-variable-transact-sql?view=sql-server-ver15
                     Feature.set,
 
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver15
@@ -114,7 +115,8 @@ public enum SqlServerVersion implements Version {
                     Feature.createTableFromSelect,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-function-transact-sql?view=sql-server-ver15
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-procedure-transact-sql?view=sql-server-ver15
-                    Feature.functionalStatement, Feature.createProcedure, Feature.createFunction, Feature.block,
+                    Feature.functionalStatement, Feature.createProcedure, Feature.createFunction,
+                    Feature.block,
                     Feature.declare,
                     // https://docs.microsoft.com/en-us/sql/t-sql/statements/create-schema-transact-sql?view=sql-server-ver15
                     Feature.createSchema,
@@ -133,8 +135,7 @@ public enum SqlServerVersion implements Version {
                     Feature.selectForXmlPath,
                     Feature.use, Feature.allowSquareBracketQuotation, //
                     Feature.pivot, Feature.unpivot, Feature.pivotXml,
-                    Feature.selectGroupByGroupingSets
-                    ));
+                    Feature.selectGroupByGroupingSets));
 
     private Set<Feature> features;
     private String versionString;
@@ -154,7 +155,8 @@ public enum SqlServerVersion implements Version {
      * @param unsupported
      * @see #copy() to copy from previous version
      */
-    SqlServerVersion(String versionString, Set<Feature> featuresSupported, Set<Feature> unsupported) {
+    SqlServerVersion(String versionString, Set<Feature> featuresSupported,
+            Set<Feature> unsupported) {
         this.versionString = versionString;
         this.features = featuresSupported;
         this.features.removeAll(unsupported);

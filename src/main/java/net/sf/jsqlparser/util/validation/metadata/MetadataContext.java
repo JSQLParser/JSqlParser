@@ -17,8 +17,7 @@ public enum MetadataContext implements ContextKey {
      */
     named,
     /**
-     * <code>true</code>, check for existence,
-     * <code>false</code>, check for non-existence
+     * <code>true</code>, check for existence, <code>false</code>, check for non-existence
      */
     exists
 }

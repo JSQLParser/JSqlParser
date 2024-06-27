@@ -41,8 +41,9 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         if (createTable.isUnlogged()) {
             buffer.append("UNLOGGED ");
         }
-        String params = PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
-        if (!"".equals(params)) {
+        String params =
+                PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
+        if (!params.isEmpty()) {
             buffer.append(params).append(' ');
         }
 
@@ -63,7 +64,8 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         }
         if (createTable.getColumnDefinitions() != null) {
             buffer.append(" (");
-            for (Iterator<ColumnDefinition> iter = createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
+            for (Iterator<ColumnDefinition> iter =
+                    createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
                 ColumnDefinition columnDefinition = iter.next();
                 buffer.append(columnDefinition.getColumnName());
                 buffer.append(" ");
@@ -96,7 +98,8 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         }
 
         if (createTable.getRowMovement() != null) {
-            buffer.append(' ').append(createTable.getRowMovement().getMode().toString()).append(" ROW MOVEMENT");
+            buffer.append(' ').append(createTable.getRowMovement().getMode().toString())
+                    .append(" ROW MOVEMENT");
         }
         if (createTable.getSelect() != null) {
             buffer.append(" AS ");
@@ -104,7 +107,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
                 buffer.append("(");
             }
             Select sel = createTable.getSelect();
-            sel.accept(this.statementDeParser);
+            sel.accept(this.statementDeParser, null);
             if (createTable.isSelectParenthesis()) {
                 buffer.append(")");
             }

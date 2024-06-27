@@ -6,6 +6,7 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import java.util.regex.Pattern;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class NextValExpression extends ASTNodeAccessImpl implements Expression {
@@ -59,7 +60,7 @@ public class NextValExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S arguments) {
-        return expressionVisitor.visit(this, arguments);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

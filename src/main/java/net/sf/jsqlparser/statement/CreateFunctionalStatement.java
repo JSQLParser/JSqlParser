@@ -40,15 +40,15 @@ public abstract class CreateFunctionalStatement implements Statement {
         this.functionDeclarationParts = functionDeclarationParts;
     }
 
-    public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
-        this.functionDeclarationParts = functionDeclarationParts;
-    }
-
     /**
      * @return the declaration parts after {@code CREATE FUNCTION|PROCEDURE}
      */
     public List<String> getFunctionDeclarationParts() {
         return functionDeclarationParts;
+    }
+
+    public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        this.functionDeclarationParts = functionDeclarationParts;
     }
 
     /**
@@ -85,8 +85,8 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override

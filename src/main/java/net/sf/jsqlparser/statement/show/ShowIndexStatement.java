@@ -13,7 +13,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
- *
  * @author Jayant Kumar Yadav
  */
 
@@ -43,8 +42,8 @@ public class ShowIndexStatement implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public ShowIndexStatement withTableName(String tableName) {

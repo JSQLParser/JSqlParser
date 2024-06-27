@@ -64,12 +64,12 @@ public class Update implements Statement {
         return updateSets;
     }
 
-    public UpdateSet getUpdateSet(int index) {
-        return updateSets.get(index);
-    }
-
     public void setUpdateSets(List<UpdateSet> updateSets) {
         this.updateSets = updateSets;
+    }
+
+    public UpdateSet getUpdateSet(int index) {
+        return updateSets.get(index);
     }
 
     public Update withUpdateSets(List<UpdateSet> updateSets) {
@@ -78,8 +78,8 @@ public class Update implements Statement {
     }
 
     @Override
-    public <T> T accept(StatementVisitor<T> statementVisitor) {
-        return statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public List<WithItem> getWithItemsList() {
@@ -113,12 +113,12 @@ public class Update implements Statement {
         return table;
     }
 
-    public Expression getWhere() {
-        return where;
-    }
-
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public Expression getWhere() {
+        return where;
     }
 
     public void setWhere(Expression expression) {
@@ -151,17 +151,17 @@ public class Update implements Statement {
     }
 
     @Deprecated
-    public List<Expression> getExpressions() {
-        return updateSets.get(0).values;
-    }
-
-    @Deprecated
     public void setColumns(List<Column> list) {
         if (updateSets.isEmpty()) {
             updateSets.add(new UpdateSet());
         }
         updateSets.get(0).columns.clear();
         updateSets.get(0).columns.addAll(list);
+    }
+
+    @Deprecated
+    public List<Expression> getExpressions() {
+        return updateSets.get(0).values;
     }
 
     @Deprecated
@@ -233,20 +233,20 @@ public class Update implements Statement {
         // todo
     }
 
-    public void setOrderByElements(List<OrderByElement> orderByElements) {
-        this.orderByElements = orderByElements;
-    }
-
-    public void setLimit(Limit limit) {
-        this.limit = limit;
-    }
-
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }
 
+    public void setOrderByElements(List<OrderByElement> orderByElements) {
+        this.orderByElements = orderByElements;
+    }
+
     public Limit getLimit() {
         return limit;
+    }
+
+    public void setLimit(Limit limit) {
+        this.limit = limit;
     }
 
     public ReturningClause getReturningClause() {
