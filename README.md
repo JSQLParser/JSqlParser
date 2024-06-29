@@ -46,7 +46,7 @@ Assertions.assertEquals("b", b.getColumnName());
 }
 ```
 
-JSQLParser-4.9 is the last JDK8 compatible version and any future development will depend on JDK11.
+JSQLParser-4.9 is the last JDK8 compatible version. The upcoming JSQLParser-5.0 will depend on JDK11 and introduces API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
 
 ## [Supported Grammar and Syntax](https://jsqlparser.github.io/JSqlParser/syntax.html)
 
