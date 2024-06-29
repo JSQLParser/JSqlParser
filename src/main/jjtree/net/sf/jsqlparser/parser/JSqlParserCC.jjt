@@ -4619,15 +4619,16 @@ JdbcNamedParameter JdbcNamedParameter() : {
 }
 
 OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
-    String name;
+    Token token = null;
+    String name = null;
     Expression expression;
 }
 {
-    name=RelObjectNameExt2()
+    ( name=RelObjectNameExt2() | token=<K_OUTER> )
     <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
     expression=Expression()
     {
-        return new OracleNamedFunctionParameter(name, expression);
+        return new OracleNamedFunctionParameter(name != null ? name : token.image, expression);
     }
 }
 
