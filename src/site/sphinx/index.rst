@@ -12,7 +12,8 @@ Java SQL Parser Library
 
    usage
    contribution
-   migration
+   migration47
+   migration50
    SQL Grammar Stable <syntax_stable>
    SQL Grammar Snapshot <syntax_snapshot>
    Unsupported Grammar <unsupported>
@@ -51,6 +52,7 @@ Java SQL Parser Library
 
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
+The upcoming 5.0 release will depend on Java 11 and introduces new Visitors. Please see the :ref:`Migration to 5.0` guide.
 
 Latest stable release: |JSQLPARSER_STABLE_VERSION_LINK|
 
