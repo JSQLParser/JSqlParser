@@ -106,8 +106,10 @@ public class AlterSequenceTest {
     @Test
     public void testAlterSequence_preservesParamOrder() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec INCREMENT BY 2 START WITH 10");
-        assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
-        assertSqlCanBeParsedAndDeparsed("ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 NOCACHE");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER SEQUENCE my_sec START WITH 2 INCREMENT BY 5 CACHE 200 CYCLE");
     }
 
     @Test

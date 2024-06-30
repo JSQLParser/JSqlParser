@@ -12,7 +12,8 @@ package net.sf.jsqlparser.statement.create.table;
 import java.io.Serializable;
 
 /**
- * Holds data for the {@code row_movement} clause: https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2204697
+ * Holds data for the {@code row_movement} clause:
+ * https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2204697
  */
 public class RowMovement implements Serializable {
 

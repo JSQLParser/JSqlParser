@@ -21,20 +21,11 @@ import java.util.List;
  */
 
 public class ReturningClause extends ArrayList<SelectItem<?>> {
-    enum Keyword {
-        RETURN, RETURNING;
-
-        public static Keyword from(String keyword) {
-            return Enum.valueOf(Keyword.class, keyword.toUpperCase());
-        }
-    }
-
-    private Keyword keyword;
-
     /**
      * List of output targets like Table or UserVariable
      */
     private final List<Object> dataItems;
+    private Keyword keyword;
 
     public ReturningClause(Keyword keyword, List<SelectItem<?>> selectItems,
             List<Object> dataItems) {
@@ -78,7 +69,7 @@ public class ReturningClause extends ArrayList<SelectItem<?>> {
             builder.append(get(i));
         }
 
-        if (dataItems != null && dataItems.size() > 0) {
+        if (dataItems != null && !dataItems.isEmpty()) {
             builder.append(" INTO ");
             for (int i = 0; i < dataItems.size(); i++) {
                 if (i > 0) {
@@ -93,5 +84,13 @@ public class ReturningClause extends ArrayList<SelectItem<?>> {
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();
+    }
+
+    public enum Keyword {
+        RETURN, RETURNING;
+
+        public static Keyword from(String keyword) {
+            return Enum.valueOf(Keyword.class, keyword.toUpperCase());
+        }
     }
 }

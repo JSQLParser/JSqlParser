@@ -14,7 +14,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import static java.util.stream.Collectors.joining;
+
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -26,8 +28,8 @@ public class Grant implements Statement {
     private List<String> users;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public String getRole() {
@@ -47,23 +49,24 @@ public class Grant implements Statement {
     }
 
     public String getObjectName() {
-        return objectName.size()==0?null:objectName.stream()
-                .map(part -> part==null?"":part)
-                .collect(joining("."));
-    }
-    
-    public List<String> getObjectNameParts() {
-        return objectName;
+        return objectName.isEmpty() ? null
+                : objectName.stream()
+                        .map(part -> part == null ? "" : part)
+                        .collect(joining("."));
     }
 
     public void setObjectName(String objectName) {
         this.objectName.clear();
         this.objectName.add(objectName);
     }
-    
+
     public void setObjectName(List<String> objectName) {
         this.objectName.clear();
         this.objectName.addAll(objectName);
+    }
+
+    public List<String> getObjectNameParts() {
+        return objectName;
     }
 
     public List<String> getUsers() {
@@ -115,7 +118,7 @@ public class Grant implements Statement {
         this.setObjectName(objectName);
         return this;
     }
-    
+
     public Grant withObjectName(List<String> objectName) {
         this.setObjectName(objectName);
         return this;

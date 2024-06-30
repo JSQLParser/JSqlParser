@@ -15,15 +15,15 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class JsonOperator extends BinaryExpression {
 
-    private String op; //"@>"
+    private String op; // "@>"
 
     public JsonOperator(String op) {
         this.op = op;
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

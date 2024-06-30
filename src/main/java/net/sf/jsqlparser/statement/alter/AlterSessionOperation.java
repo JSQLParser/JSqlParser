@@ -11,7 +11,6 @@
 package net.sf.jsqlparser.statement.alter;
 
 /**
- *
  * @author are
  */
 public enum AlterSessionOperation {

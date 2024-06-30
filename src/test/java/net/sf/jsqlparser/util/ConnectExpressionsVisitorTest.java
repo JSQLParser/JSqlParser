@@ -23,19 +23,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectExpressionsVisitorTest {
 
-    private CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
     public void testVisit_PlainSelect_concat() throws JSQLParserException {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
-        ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor() {
+        ConnectExpressionsVisitor<Void> instance = new ConnectExpressionsVisitor<>() {
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Concat();
             }
         };
-        select.accept(instance);
+        select.accept(instance, null);
 
         assertEquals("SELECT a || b || c AS expr FROM test", select.toString());
     }
@@ -44,13 +44,13 @@ public class ConnectExpressionsVisitorTest {
     public void testVisit_PlainSelect_addition() throws JSQLParserException {
         String sql = "select a,b,c from test";
         Select select = (Select) parserManager.parse(new StringReader(sql));
-        ConnectExpressionsVisitor instance = new ConnectExpressionsVisitor("testexpr") {
+        ConnectExpressionsVisitor<Void> instance = new ConnectExpressionsVisitor<>("testexpr") {
             @Override
             protected BinaryExpression createBinaryExpression() {
                 return new Addition();
             }
         };
-        select.accept(instance);
+        select.accept(instance, null);
 
         assertEquals("SELECT a + b + c AS testexpr FROM test", select.toString());
     }

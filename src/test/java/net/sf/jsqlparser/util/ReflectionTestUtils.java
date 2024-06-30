@@ -30,13 +30,15 @@ import org.opentest4j.TestAbortedException;
  */
 public class ReflectionTestUtils {
 
-    public static final Predicate<Method> GETTER_METHODS = m -> !void.class.isAssignableFrom(m.getReturnType())
-            && m.getParameterCount() == 0
-            && (m.getName().startsWith("get") || m.getName().startsWith("is"));
+    public static final Predicate<Method> GETTER_METHODS =
+            m -> !void.class.isAssignableFrom(m.getReturnType())
+                    && m.getParameterCount() == 0
+                    && (m.getName().startsWith("get") || m.getName().startsWith("is"));
 
-    public static final Predicate<Method> SETTER_METHODS = m -> void.class.isAssignableFrom(m.getReturnType())
-            && m.getParameterCount() == 1
-            && m.getName().startsWith("set");
+    public static final Predicate<Method> SETTER_METHODS =
+            m -> void.class.isAssignableFrom(m.getReturnType())
+                    && m.getParameterCount() == 1
+                    && m.getName().startsWith("set");
 
     public static final Predicate<Method> CHAINING_METHODS = m -> m.getDeclaringClass()
             .isAssignableFrom(m.getReturnType())
@@ -51,21 +53,27 @@ public class ReflectionTestUtils {
      * </ul>
      *
      * @param objs
-     * @param testMethodFilter - additional filter to skip some methods (by returning <code>false</code>).
-     * Default-Filters: null     {@link #notDeclaredInObjectClass(Method)},
-     *                         {@link #GETTER_METHODS}, {@link #SETTER_METHODS},
-     *                         {@link #CHAINING_METHODS}
+     * @param testMethodFilter - additional filter to skip some methods (by returning
+     *        <code>false</code>). Default-Filters: null {@link #notDeclaredInObjectClass(Method)},
+     *        {@link #GETTER_METHODS}, {@link #SETTER_METHODS}, {@link #CHAINING_METHODS}
      */
     @SafeVarargs
-    public static void testGetterSetterChaining(List<Object> objs, Predicate<Method>... testMethodFilter) {
+    public static void testGetterSetterChaining(List<Object> objs,
+            Predicate<Method>... testMethodFilter) {
         RandomUtils.pushObjects(objs);
         objs.forEach(o -> {
-            testMethodInvocation(o, ReflectionTestUtils::anyReturnType, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, GETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
-            testMethodInvocation(o, ReflectionTestUtils::noReturnTypeValid, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, SETTER_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
-            testMethodInvocation(o, ReflectionTestUtils::returnTypeThis, ReflectionTestUtils::reflectiveNonNullArgs,
-                    ArrayUtils.insert(0, testMethodFilter, CHAINING_METHODS, ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::anyReturnType,
+                    ReflectionTestUtils::reflectiveNonNullArgs,
+                    ArrayUtils.insert(0, testMethodFilter, GETTER_METHODS,
+                            ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::noReturnTypeValid,
+                    ReflectionTestUtils::reflectiveNonNullArgs,
+                    ArrayUtils.insert(0, testMethodFilter, SETTER_METHODS,
+                            ReflectionTestUtils::notDeclaredInObjectClass));
+            testMethodInvocation(o, ReflectionTestUtils::returnTypeThis,
+                    ReflectionTestUtils::reflectiveNonNullArgs,
+                    ArrayUtils.insert(0, testMethodFilter, CHAINING_METHODS,
+                            ReflectionTestUtils::notDeclaredInObjectClass));
         });
     }
 
@@ -117,7 +125,8 @@ public class ReflectionTestUtils {
      * @param methodFilters
      */
     @SafeVarargs
-    public static void testMethodInvocation(Object object, BiPredicate<Object, Method> returnTypeCheck,
+    public static void testMethodInvocation(Object object,
+            BiPredicate<Object, Method> returnTypeCheck,
             Function<Method, Object[]> argsFunction,
             Predicate<Method>... methodFilters) {
         log(Level.INFO, "testing methods of class " + object.getClass());
@@ -137,7 +146,8 @@ public class ReflectionTestUtils {
                 } catch (Exception e) {
                     assertFalse(
                             false,
-                            String.format("%s throws on invocation on object: %s", m.toGenericString(),
+                            String.format("%s throws on invocation on object: %s",
+                                    m.toGenericString(),
                                     object.getClass()));
                 }
             }
@@ -145,7 +155,8 @@ public class ReflectionTestUtils {
     }
 
     /**
-     * Invoke one method of given object with args provided by #argsFunction, and test it's return-value
+     * Invoke one method of given object with args provided by #argsFunction, and test it's
+     * return-value
      *
      * @param method
      * @param returnValueCheck
@@ -161,11 +172,14 @@ public class ReflectionTestUtils {
         try {
             Object returnValue = method.invoke(object, argsFunction.apply(method));
             if (!void.class.isAssignableFrom(method.getReturnType())) {
-                assertTrue(returnValueCheck.test(returnValue, method), "unexpected return-value with type " + returnValue.getClass() + " for method "
-                        + method.toGenericString());
+                assertTrue(returnValueCheck.test(returnValue, method),
+                        "unexpected return-value with type " + returnValue.getClass()
+                                + " for method "
+                                + method.toGenericString());
             }
         } catch (TestAbortedException tae) {
-            log(Level.INFO, "skip methods " + method.toGenericString() + ", detail: " + tae.getMessage());
+            log(Level.INFO,
+                    "skip methods " + method.toGenericString() + ", detail: " + tae.getMessage());
         }
     }
 

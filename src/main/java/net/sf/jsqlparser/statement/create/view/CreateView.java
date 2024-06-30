@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create.view;
 
 import java.util.List;
+
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -34,8 +35,8 @@ public class CreateView implements Statement {
     private List<String> viewCommentOptions = null;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Table getView() {

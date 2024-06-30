@@ -9,12 +9,23 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface PivotVisitor {
+public interface PivotVisitor<T> {
 
-    void visit(Pivot pivot);
+    <S> T visit(Pivot pivot, S context);
 
-    void visit(PivotXml pivot);
+    default void visit(Pivot pivot) {
+        this.visit(pivot, null);
+    }
 
-    void visit(UnPivot unpivot);
+    <S> T visit(PivotXml pivotXml, S context);
 
+    default void visit(PivotXml pivotXml) {
+        this.visit(pivotXml, null);
+    }
+
+    <S> T visit(UnPivot unpivot, S context);
+
+    default void visit(UnPivot unpivot) {
+        this.visit(unpivot, null);
+    }
 }

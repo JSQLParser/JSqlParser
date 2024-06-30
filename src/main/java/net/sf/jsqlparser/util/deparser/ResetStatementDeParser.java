@@ -14,9 +14,10 @@ import net.sf.jsqlparser.statement.ResetStatement;
 
 public class ResetStatementDeParser extends AbstractDeParser<ResetStatement> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public ResetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public ResetStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -27,11 +28,11 @@ public class ResetStatementDeParser extends AbstractDeParser<ResetStatement> {
         buffer.append(set.getName());
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 }

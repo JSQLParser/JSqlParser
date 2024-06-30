@@ -79,8 +79,8 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
         this.expression = expression;
     }
 
-    public void accept(SelectItemVisitor selectItemVisitor) {
-        selectItemVisitor.visit(this);
+    public <K, S> K accept(SelectItemVisitor<K> selectItemVisitor, S context) {
+        return selectItemVisitor.visit(this, context);
     }
 
     @Override

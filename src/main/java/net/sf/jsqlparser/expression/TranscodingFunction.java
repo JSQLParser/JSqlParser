@@ -80,8 +80,8 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
         return this;
     }
 
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

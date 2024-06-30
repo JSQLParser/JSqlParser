@@ -94,10 +94,6 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
         return appendTo(new StringBuilder()).toString();
     }
 
-    @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
-    }
 
     @Override
     public SimpleNode getASTNode() {
@@ -107,5 +103,10 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
     @Override
     public void setASTNode(SimpleNode node) {
         this.node = node;
+    }
+
+    @Override
+    public <K, S> K accept(ExpressionVisitor<K> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

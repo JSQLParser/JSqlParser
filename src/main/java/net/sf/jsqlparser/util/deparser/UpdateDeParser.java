@@ -19,15 +19,17 @@ import net.sf.jsqlparser.statement.update.Update;
 
 import java.util.Iterator;
 
-public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByVisitor {
+public class UpdateDeParser extends AbstractDeParser<Update>
+        implements OrderByVisitor<StringBuilder> {
 
-    private ExpressionVisitor expressionVisitor = new ExpressionVisitorAdapter();
+    private ExpressionVisitor<StringBuilder> expressionVisitor = new ExpressionVisitorAdapter<>();
 
     public UpdateDeParser() {
         super(new StringBuilder());
     }
 
-    public UpdateDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public UpdateDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -105,7 +107,7 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     protected void deparseWhereClause(Update update) {
         if (update.getWhere() != null) {
             buffer.append(" WHERE ");
-            update.getWhere().accept(expressionVisitor);
+            update.getWhere().accept(expressionVisitor, null);
         }
     }
 
@@ -114,17 +116,17 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
     }
 
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 
     @Override
-    public void visit(OrderByElement orderBy) {
-        orderBy.getExpression().accept(expressionVisitor);
+    public <S> StringBuilder visit(OrderByElement orderBy, S context) {
+        orderBy.getExpression().accept(expressionVisitor, context);
         if (!orderBy.isAsc()) {
             buffer.append(" DESC");
         } else if (orderBy.isAscDescPresent()) {
@@ -136,5 +138,6 @@ public class UpdateDeParser extends AbstractDeParser<Update> implements OrderByV
                     ? "NULLS FIRST"
                     : "NULLS LAST");
         }
+        return buffer;
     }
 }

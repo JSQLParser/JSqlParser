@@ -17,7 +17,7 @@ import java.util.EnumSet;
 
 /**
  * A {@code SHOW TABLES} statement
- * 
+ *
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/show-tables.html">MySQL show tables</a>
  */
 public class ShowTablesStatement implements Statement {
@@ -98,8 +98,8 @@ public class ShowTablesStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public enum SelectionMode {

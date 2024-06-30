@@ -31,7 +31,8 @@ public class FullTextSearchExpressionTest {
     public void testIssue1223() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("select\n" + "c.*,\n"
                 + "match (name) against (?) as full_text\n" + "from\n" + "commodity c\n" + "where\n"
-                + "match (name) against (?)\n" + "and c.deleted = 0\n" + "order by\n" + "full_text desc",
+                + "match (name) against (?)\n" + "and c.deleted = 0\n" + "order by\n"
+                + "full_text desc",
                 true);
     }
 }

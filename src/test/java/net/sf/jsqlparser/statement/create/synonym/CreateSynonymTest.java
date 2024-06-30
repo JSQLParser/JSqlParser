@@ -21,17 +21,20 @@ public class CreateSynonymTest {
 
     @Test
     public void createPublic() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
     }
 
     @Test
     public void createWithReplace() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("CREATE OR REPLACE SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE OR REPLACE SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
     }
 
     @Test
     public void createWithReplacePublic() throws Exception {
-        assertSqlCanBeParsedAndDeparsed("CREATE OR REPLACE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE OR REPLACE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
     }
 
     /**
@@ -41,12 +44,14 @@ public class CreateSynonymTest {
      */
     @Test
     public void createWithDbLink() throws Exception {
-        assertSqlCanBeParsedAndDeparsed("CREATE PUBLIC SYNONYM emp_table FOR hr.employees@remote.us.oracle.com");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE PUBLIC SYNONYM emp_table FOR hr.employees@remote.us.oracle.com");
     }
 
     @Test
     public void synonymAttributes() throws Exception {
-        final CreateSynonym createSynonym = (CreateSynonym) CCJSqlParserUtil.parse("CREATE OR REPLACE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
+        final CreateSynonym createSynonym = (CreateSynonym) CCJSqlParserUtil
+                .parse("CREATE OR REPLACE PUBLIC SYNONYM TBL_TABLE_NAME FOR SCHEMA.T_TBL_NAME");
 
         assertThat(createSynonym.isOrReplace()).isTrue();
         assertThat(createSynonym.isPublicSynonym()).isTrue();
@@ -54,6 +59,7 @@ public class CreateSynonymTest {
         assertThat(createSynonym.getFor()).isEqualTo("SCHEMA.T_TBL_NAME");
 
         assertEquals(2, createSynonym.getForList().size());
-        assertEquals("NEW_TBL_TABLE_NAME", createSynonym.withSynonym(new Synonym().withName("NEW_TBL_TABLE_NAME")).getSynonym().getName());
+        assertEquals("NEW_TBL_TABLE_NAME", createSynonym
+                .withSynonym(new Synonym().withName("NEW_TBL_TABLE_NAME")).getSynonym().getName());
     }
 }

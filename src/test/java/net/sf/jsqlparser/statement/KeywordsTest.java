@@ -35,8 +35,9 @@ public class KeywordsTest {
         File file = new File("src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt");
         List<String> keywords = new ArrayList<>();
         try {
-            keywords.addAll( ParserKeywordsUtils.getAllKeywordsUsingRegex(file) );
-            for (String reserved: ParserKeywordsUtils.getReservedKeywords(ParserKeywordsUtils.RESTRICTED_JSQLPARSER)) {
+            keywords.addAll(ParserKeywordsUtils.getAllKeywordsUsingRegex(file));
+            for (String reserved : ParserKeywordsUtils
+                    .getReservedKeywords(ParserKeywordsUtils.RESTRICTED_JSQLPARSER)) {
                 keywords.remove(reserved);
             }
         } catch (Exception ex) {
@@ -48,7 +49,7 @@ public class KeywordsTest {
     @ParameterizedTest(name = "Keyword {0}")
     @MethodSource("keyWords")
     public void testRelObjectNameWithoutValue(String keyword) throws JSQLParserException {
-        String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s",  keyword);
+        String sqlStr = String.format("SELECT %1$s.%1$s AS %1$s from %1$s.%1$s AS %1$s", keyword);
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 

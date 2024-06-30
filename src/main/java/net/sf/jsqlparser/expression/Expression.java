@@ -14,6 +14,13 @@ import net.sf.jsqlparser.parser.ASTNodeAccess;
 
 public interface Expression extends ASTNodeAccess, Model {
 
-    void accept(ExpressionVisitor expressionVisitor);
+    <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context);
+
+    default <T> void accept(ExpressionVisitor<T> expressionVisitor) {
+        this.accept(expressionVisitor, null);
+    }
+
+    ;
+
 
 }

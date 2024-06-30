@@ -10,8 +10,8 @@
 package net.sf.jsqlparser.util.validation;
 
 /**
- * the context key - a ValidationCapability should define constants of expected
- * context - values needed for validation.
+ * the context key - a ValidationCapability should define constants of expected context - values
+ * needed for validation.
  */
 public interface ContextKey {
 

@@ -15,9 +15,9 @@ import java.util.Objects;
 
 public class IntervalExpression extends ASTNodeAccessImpl implements Expression {
 
+    private final boolean intervalKeyword;
     private String parameter = null;
     private String intervalType = null;
-    private final boolean intervalKeyword;
     private Expression expression = null;
 
     public IntervalExpression() {
@@ -71,8 +71,8 @@ public class IntervalExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public IntervalExpression withParameter(String parameter) {

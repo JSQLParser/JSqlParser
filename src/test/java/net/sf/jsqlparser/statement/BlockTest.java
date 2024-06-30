@@ -28,17 +28,17 @@ public class BlockTest {
     @Test
     public void testGetStatements() throws JSQLParserException {
         String sqlStr = "begin\n"
-                        + "select * from feature;\n"
-                        + "end;";
+                + "select * from feature;\n"
+                + "end;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test
     public void testBlock2() throws JSQLParserException {
-        String sqlStr="begin\n"
-                      + "update table1 set a = 'xx' where b = 'condition1';\n"
-                      + "update table1 set a = 'xx' where b = 'condition2';\n"
-                      + "end;";
+        String sqlStr = "begin\n"
+                + "update table1 set a = 'xx' where b = 'condition1';\n"
+                + "update table1 set a = 'xx' where b = 'condition2';\n"
+                + "end;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
@@ -54,26 +54,26 @@ public class BlockTest {
         Block block = new Block();
         block.setStatements(null);
         assertEquals("BEGIN\n"
-                     + "END", block.toString());
+                + "END", block.toString());
     }
 
     @Test
     public void testIfElseBlock() throws JSQLParserException {
         String sqlStr = "if (a=b) begin\n"
-                        + "update table1 set a = 'xx' where b = 'condition1';\n"
-                        + "update table1 set a = 'xx' where b = 'condition2';\n"
-                        + "end";
+                + "update table1 set a = 'xx' where b = 'condition1';\n"
+                + "update table1 set a = 'xx' where b = 'condition2';\n"
+                + "end";
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         String sqlStr2 = "if (a=b) begin\n"
-                         + "update table1 set a = 'xx' where b = 'condition1';\n"
-                         + "update table1 set a = 'xx' where b = 'condition2';\n"
-                         + "end;\n"
-                         + "else begin\n"
-                         + "update table1 set a = 'xx' where b = 'condition1';\n"
-                         + "update table1 set a = 'xx' where b = 'condition2';\n"
-                         + "end;";
+                + "update table1 set a = 'xx' where b = 'condition1';\n"
+                + "update table1 set a = 'xx' where b = 'condition2';\n"
+                + "end;\n"
+                + "else begin\n"
+                + "update table1 set a = 'xx' where b = 'condition1';\n"
+                + "update table1 set a = 'xx' where b = 'condition2';\n"
+                + "end;";
 
         Statements statements = CCJSqlParserUtil.parseStatements(sqlStr2);
         for (Statement stm : statements.getStatements()) {

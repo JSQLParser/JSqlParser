@@ -24,13 +24,15 @@ public class AssortedFeatureTests {
     static class ReplaceColumnAndLongValues extends ExpressionDeParser {
 
         @Override
-        public void visit(StringValue stringValue) {
+        public <K> StringBuilder visit(StringValue stringValue, K parameters) {
             this.getBuffer().append("?");
+            return null;
         }
 
         @Override
-        public void visit(LongValue longValue) {
+        public <K> StringBuilder visit(LongValue longValue, K parameters) {
             this.getBuffer().append("?");
+            return null;
         }
     }
 
@@ -53,8 +55,10 @@ public class AssortedFeatureTests {
     @Test
     public void testIssue1608() throws JSQLParserException {
         System.out.println(cleanStatement("SELECT 'abc', 5 FROM mytable WHERE col='test'"));
-        System.out.println(cleanStatement("UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY'"));
-        System.out.println(cleanStatement("INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')"));
+        System.out.println(
+                cleanStatement("UPDATE table1 A SET A.columna = 'XXX' WHERE A.cod_table = 'YYY'"));
+        System.out.println(cleanStatement(
+                "INSERT INTO example (num, name, address, tel) VALUES (1, 'name', 'test ', '1234-1234')"));
         System.out.println(cleanStatement("DELETE FROM table1 where col=5 and col2=4"));
     }
 }

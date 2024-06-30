@@ -1,11 +1,6 @@
 /*
- * #%L
- * JSQLParser library
- * %%
- * Copyright (C) 2004 - 2020 JSQLParser
- * %%
- * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
- * #L%
+ * #%L JSQLParser library %% Copyright (C) 2004 - 2020 JSQLParser %% Dual licensed under GNU LGPL
+ * 2.1 or Apache License 2.0 #L%
  */
 package net.sf.jsqlparser.statement.create.sequence;
 
@@ -20,17 +15,17 @@ public class CreateSequence implements Statement {
 
     public Sequence sequence;
 
-    public void setSequence(Sequence sequence) {
-        this.sequence = sequence;
-    }
-
     public Sequence getSequence() {
         return sequence;
     }
 
+    public void setSequence(Sequence sequence) {
+        this.sequence = sequence;
+    }
+
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override

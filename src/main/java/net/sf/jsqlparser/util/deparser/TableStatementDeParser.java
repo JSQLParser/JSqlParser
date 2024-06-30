@@ -24,23 +24,24 @@ import net.sf.jsqlparser.statement.select.WithItem;
  * @author jxnu-liguobin
  */
 public class TableStatementDeParser extends AbstractDeParser<TableStatement>
-        implements SelectVisitor {
+        implements SelectVisitor<StringBuilder> {
 
-    private final ExpressionVisitor expressionVisitor;
+    private final ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public TableStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public TableStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
 
     @Override
     public void deParse(TableStatement tableStatement) {
-        tableStatement.accept(this);
+        tableStatement.accept(this, null);
     }
 
-    public void visit(Offset offset) {
+    public void deparse(Offset offset) {
         buffer.append(" OFFSET ");
-        offset.getOffset().accept(expressionVisitor);
+        offset.getOffset().accept(expressionVisitor, null);
         if (offset.getOffsetParam() != null) {
             buffer.append(" ").append(offset.getOffsetParam());
         }
@@ -48,37 +49,43 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     @Override
-    public void visit(ParenthesedSelect parenthesedSelect) {
+    public <S> StringBuilder visit(ParenthesedSelect parenthesedSelect, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(PlainSelect plainSelect) {
+    public <S> StringBuilder visit(PlainSelect plainSelect, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(SetOperationList setOpList) {
+    public <S> StringBuilder visit(SetOperationList setOperationList, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(WithItem withItem) {
+    public <S> StringBuilder visit(WithItem withItem, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(Values aThis) {
+    public <S> StringBuilder visit(Values values, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
+    public <S> StringBuilder visit(LateralSubSelect lateralSubSelect, S context) {
 
+        return buffer;
     }
 
     @Override
-    public void visit(TableStatement tableStatement) {
+    public <S> StringBuilder visit(TableStatement tableStatement, S context) {
         buffer.append("TABLE ");
         buffer.append(tableStatement.getTable());
         if (tableStatement.getOrderByElements() != null) {
@@ -90,9 +97,10 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
             new LimitDeparser(expressionVisitor, buffer).deParse(tableStatement.getLimit());
         }
         if (tableStatement.getOffset() != null) {
-            visit(tableStatement.getOffset());
+            deparse(tableStatement.getOffset());
         }
 
         // TODO UNION
+        return buffer;
     }
 }

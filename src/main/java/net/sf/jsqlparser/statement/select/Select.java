@@ -75,9 +75,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
      * <p>
      * The same as getStringList(list, true, false)
      *
-     * @see #getStringList(List, boolean, boolean)
      * @param list list of objects with toString methods
      * @return comma separated list of the elements in the list
+     * @see #getStringList(List, boolean, boolean)
      */
     public static String getStringList(List<?> list) {
         return getStringList(list, true, false);
@@ -158,12 +158,12 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         this.oracleSiblings = oracleSiblings;
     }
 
-    public void setNoWait(boolean noWait) {
-        this.noWait = noWait;
-    }
-
     public boolean isNoWait() {
         return this.noWait;
+    }
+
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
     }
 
     public Select withOracleSiblings(boolean oracleSiblings) {
@@ -297,21 +297,21 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     }
 
     /**
-     * Sets the {@link Wait} for this SELECT
-     *
-     * @param wait the {@link Wait} for this SELECT
-     */
-    public void setWait(final Wait wait) {
-        this.wait = wait;
-    }
-
-    /**
      * Returns the value of the {@link Wait} set for this SELECT
      *
      * @return the value of the {@link Wait} set for this SELECT
      */
     public Wait getWait() {
         return wait;
+    }
+
+    /**
+     * Sets the {@link Wait} for this SELECT
+     *
+     * @param wait the {@link Wait} for this SELECT
+     */
+    public void setWait(final Wait wait) {
+        this.wait = wait;
     }
 
     public boolean isSkipLocked() {
@@ -389,15 +389,15 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return appendTo(new StringBuilder()).toString();
     }
 
-    public abstract void accept(SelectVisitor selectVisitor);
+    public abstract <T, S> T accept(SelectVisitor<T> selectVisitor, S context);
 
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Deprecated

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
@@ -30,21 +31,21 @@ public class GroupByElement implements Serializable {
         return groupByExpressions.isUsingBrackets();
     }
 
-    public void accept(GroupByVisitor groupByVisitor) {
-        groupByVisitor.visit(this);
+    public <T, S> T accept(GroupByVisitor<T> groupByVisitor, S context) {
+        return groupByVisitor.visit(this, context);
     }
 
     public ExpressionList getGroupByExpressionList() {
         return groupByExpressions;
     }
 
-    public void setGroupByExpressions(ExpressionList groupByExpressions) {
-        this.groupByExpressions = groupByExpressions;
-    }
-
     @Deprecated
     public ExpressionList getGroupByExpressions() {
         return groupByExpressions;
+    }
+
+    public void setGroupByExpressions(ExpressionList groupByExpressions) {
+        this.groupByExpressions = groupByExpressions;
     }
 
     @Deprecated

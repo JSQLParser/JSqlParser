@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 
 public class ExpressionValidatorTest extends ValidationTestAsserts {
 
-    private static final FeaturesAllowed EXPRESSIONS = FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.EXPRESSIONS);
+    private static final FeaturesAllowed EXPRESSIONS =
+            FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.EXPRESSIONS);
 
     @Test
     public void testAddition() {
@@ -50,13 +51,16 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testParenthesis() {
-        validateNoErrors("SELECT CASE WHEN ((a = b) OR b = c) AND (d <> a) AND d <> c THEN c ELSE d END", 1,
+        validateNoErrors(
+                "SELECT CASE WHEN ((a = b) OR b = c) AND (d <> a) AND d <> c THEN c ELSE d END", 1,
                 EXPRESSIONS);
     }
 
     @Test
     public void testMatches() throws JSQLParserException {
-        validateNoErrors("SELECT * FROM team WHERE team.search_column @@ to_tsquery('new & york & yankees')", 1,
+        validateNoErrors(
+                "SELECT * FROM team WHERE team.search_column @@ to_tsquery('new & york & yankees')",
+                1,
                 EXPRESSIONS);
     }
 
@@ -111,7 +115,8 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testJdbcNamedParameter() {
-        validateNoErrors("SELECT func (:param1, :param2) ", 1, EXPRESSIONS.copy().add(FeaturesAllowed.JDBC));
+        validateNoErrors("SELECT func (:param1, :param2) ", 1,
+                EXPRESSIONS.copy().add(FeaturesAllowed.JDBC));
     }
 
     @Test
@@ -153,13 +158,16 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testExists() {
-        validateNoErrors("SELECT * FROM tab t WHERE EXISTS (select 1 FROM tab2 t2 WHERE t2.id = t.id)", 1,
+        validateNoErrors(
+                "SELECT * FROM tab t WHERE EXISTS (select 1 FROM tab2 t2 WHERE t2.id = t.id)", 1,
                 EXPRESSIONS);
     }
 
     @Test
     public void testInterval() throws JSQLParserException {
-        validateNoErrors("SELECT DATE_ADD(start_date, INTERVAL duration MINUTE) AS end_datetime FROM appointment", 1,
+        validateNoErrors(
+                "SELECT DATE_ADD(start_date, INTERVAL duration MINUTE) AS end_datetime FROM appointment",
+                1,
                 EXPRESSIONS);
         validateNoErrors("SELECT 5 + INTERVAL '3 days'", 1,
                 EXPRESSIONS);
@@ -190,19 +198,25 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testOneColumnFullTextSearchMySQL() throws JSQLParserException {
-        validateNoErrors("SELECT MATCH (col1) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl", 1,
+        validateNoErrors(
+                "SELECT MATCH (col1) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl",
+                1,
                 EXPRESSIONS);
     }
 
     @Test
     public void testAnalyticFunctionFilter() throws JSQLParserException {
-        validateNoErrors("SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table", 1,
+        validateNoErrors(
+                "SELECT COUNT(*) FILTER (WHERE name = 'Raj') OVER (PARTITION BY name ) FROM table",
+                1,
                 EXPRESSIONS);
     }
 
     @Test
     public void testAtTimeZoneExpression() throws JSQLParserException {
-        validateNoErrors("SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl", 1,
+        validateNoErrors(
+                "SELECT DATE(date1 AT TIME ZONE 'UTC' AT TIME ZONE 'australia/sydney') AS another_date FROM mytbl",
+                1,
                 EXPRESSIONS);
     }
 
@@ -224,9 +238,13 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testJsonAggregartFunctionExpression() throws JSQLParserException {
-        validateNoErrors("SELECT JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM mytbl", 1,
+        validateNoErrors(
+                "SELECT JSON_ARRAYAGG( a FORMAT JSON ABSENT ON NULL ) FILTER( WHERE name = 'Raj' ) OVER( PARTITION BY name ) FROM mytbl",
+                1,
                 EXPRESSIONS);
-        validateNoErrors("SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL) FROM mytbl", 1,
+        validateNoErrors(
+                "SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL) FROM mytbl",
+                1,
                 EXPRESSIONS);
     }
 

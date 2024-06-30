@@ -11,18 +11,20 @@ package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
     OrderByDeParser() {
         super(new StringBuilder());
     }
 
-    public OrderByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public OrderByDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -39,17 +41,18 @@ public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
             buffer.append(" ORDER BY ");
         }
 
-        for (Iterator<OrderByElement> iter = orderByElementList.iterator(); iter.hasNext();) {
-            OrderByElement orderByElement = iter.next();
+        for (Iterator<OrderByElement> iterator = orderByElementList.iterator(); iterator
+                .hasNext();) {
+            OrderByElement orderByElement = iterator.next();
             deParseElement(orderByElement);
-            if (iter.hasNext()) {
+            if (iterator.hasNext()) {
                 buffer.append(", ");
             }
         }
     }
 
     public void deParseElement(OrderByElement orderBy) {
-        orderBy.getExpression().accept(expressionVisitor);
+        orderBy.getExpression().accept(expressionVisitor, null);
         if (!orderBy.isAsc()) {
             buffer.append(" DESC");
         } else if (orderBy.isAscDescPresent()) {
@@ -66,7 +69,7 @@ public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
         }
     }
 
-    void setExpressionVisitor(ExpressionVisitor expressionVisitor) {
+    void setExpressionVisitor(ExpressionVisitor<StringBuilder> expressionVisitor) {
         this.expressionVisitor = expressionVisitor;
     }
 

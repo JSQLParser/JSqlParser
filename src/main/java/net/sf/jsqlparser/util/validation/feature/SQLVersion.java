@@ -12,12 +12,12 @@ package net.sf.jsqlparser.util.validation.feature;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
- * Enum containing the ANSI SQL Standard Versions - features are not guaranteed
- * to be complete, just add them if you are sure they are part of the standard
- * :)
+ * Enum containing the ANSI SQL Standard Versions - features are not guaranteed to be complete, just
+ * add them if you are sure they are part of the standard :)
  *
  * @author gitmotte
  * @see <a href=

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -28,15 +29,14 @@ public final class DeclareStatement implements Statement {
     private List<TypeDefExpr> typeDefExprList = new ArrayList<>();
     private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
 
-    public DeclareStatement() {
+    public DeclareStatement() {}
+
+    public UserVariable getUserVariable() {
+        return userVariable;
     }
 
     public void setUserVariable(UserVariable userVariable) {
         this.userVariable = userVariable;
-    }
-
-    public UserVariable getUserVariable() {
-        return userVariable;
     }
 
     /**
@@ -55,30 +55,38 @@ public final class DeclareStatement implements Statement {
         return declareType;
     }
 
+    public void setDeclareType(DeclareType declareType) {
+        this.declareType = declareType;
+    }
+
     public String getTypeName() {
         return typeName;
     }
 
-    public void setDeclareType(DeclareType declareType) {
-        this.declareType = declareType;
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     public void addType(ColDataType colDataType, Expression defaultExpr) {
         addTypeDefExprList(new TypeDefExpr(colDataType, defaultExpr));
     }
 
-    public void addType(UserVariable userVariable, ColDataType colDataType, Expression defaultExpr) {
+    public void addType(UserVariable userVariable, ColDataType colDataType,
+            Expression defaultExpr) {
         addTypeDefExprList(new TypeDefExpr(userVariable, colDataType, defaultExpr));
     }
 
     public DeclareStatement addTypeDefExprList(TypeDefExpr... typeDefExpressions) {
-        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+        List<TypeDefExpr> collection =
+                Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, typeDefExpressions);
         return this.withTypeDefExprList(collection);
     }
 
-    public DeclareStatement addTypeDefExprList(Collection<? extends TypeDefExpr> typeDefExpressions) {
-        List<TypeDefExpr> collection = Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
+    public DeclareStatement addTypeDefExprList(
+            Collection<? extends TypeDefExpr> typeDefExpressions) {
+        List<TypeDefExpr> collection =
+                Optional.ofNullable(getTypeDefExprList()).orElseGet(ArrayList::new);
         collection.addAll(typeDefExpressions);
         return this.withTypeDefExprList(collection);
     }
@@ -88,32 +96,28 @@ public final class DeclareStatement implements Statement {
         return this;
     }
 
-    public void setTypeDefExprList(List<TypeDefExpr> expr) {
-        this.typeDefExprList = expr;
+    public List<TypeDefExpr> getTypeDefExprList() {
+        return this.typeDefExprList;
     }
 
-    public List<TypeDefExpr> getTypeDefExprList() {
-        return this.typeDefExprList ;
+    public void setTypeDefExprList(List<TypeDefExpr> expr) {
+        this.typeDefExprList = expr;
     }
 
     public void addColumnDefinition(ColumnDefinition colDef) {
         columnDefinitions.add(colDef);
     }
 
-    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
-        this.columnDefinitions = columnDefinitions;
-    }
-
     public List<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
 
-    public List<TypeDefExpr> getTypeDefinitions() {
-        return typeDefExprList;
+    public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+        this.columnDefinitions = columnDefinitions;
     }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
+    public List<TypeDefExpr> getTypeDefinitions() {
+        return typeDefExprList;
     }
 
     @Override
@@ -153,8 +157,8 @@ public final class DeclareStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public DeclareStatement withUserVariable(UserVariable userVariable) {
@@ -178,14 +182,17 @@ public final class DeclareStatement implements Statement {
     }
 
     public DeclareStatement addColumnDefinitions(ColumnDefinition... statements) {
-        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        List<ColumnDefinition> collection =
+                Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, statements);
         return this.withColumnDefinitions(collection);
     }
 
 
-    public DeclareStatement addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
-        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+    public DeclareStatement addColumnDefinitions(
+            Collection<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection =
+                Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
         return this.withColumnDefinitions(collection);
     }
@@ -200,7 +207,8 @@ public final class DeclareStatement implements Statement {
             this(null, colDataType, defaultExpr);
         }
 
-        public TypeDefExpr(UserVariable userVariable, ColDataType colDataType, Expression defaultExpr) {
+        public TypeDefExpr(UserVariable userVariable, ColDataType colDataType,
+                Expression defaultExpr) {
             this.userVariable = userVariable;
             this.colDataType = colDataType;
             this.defaultExpr = defaultExpr;

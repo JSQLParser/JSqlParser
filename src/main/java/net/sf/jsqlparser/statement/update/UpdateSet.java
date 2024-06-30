@@ -36,28 +36,38 @@ public class UpdateSet implements Serializable {
         this.values.add(value);
     }
 
-    public ExpressionList<Column> getColumns() {
-        return columns;
+    public final static StringBuilder appendUpdateSetsTo(StringBuilder builder,
+            Collection<UpdateSet> updateSets) {
+        int j = 0;
+        for (UpdateSet updateSet : updateSets) {
+            updateSet.appendTo(builder, j);
+            j++;
+        }
+        return builder;
     }
 
-    public Column getColumn(int index) {
-        return columns.get(index);
+    public ExpressionList<Column> getColumns() {
+        return columns;
     }
 
     public void setColumns(ExpressionList<Column> columns) {
         this.columns = Objects.requireNonNull(columns);
     }
 
+    public Column getColumn(int index) {
+        return columns.get(index);
+    }
+
     public ExpressionList<?> getValues() {
         return values;
     }
 
-    public Expression getValue(int index) {
-        return values.get(index);
-    }
-
     public void setValues(ExpressionList values) {
         this.values = Objects.requireNonNull(values);
+    }
+
+    public Expression getValue(int index) {
+        return values.get(index);
     }
 
     public void add(Column column, Expression value) {
@@ -93,16 +103,6 @@ public class UpdateSet implements Serializable {
 
     public void add(ExpressionList<?> expressionList) {
         values.addAll(expressionList);
-    }
-
-    public final static StringBuilder appendUpdateSetsTo(StringBuilder builder,
-            Collection<UpdateSet> updateSets) {
-        int j = 0;
-        for (UpdateSet updateSet : updateSets) {
-            updateSet.appendTo(builder, j);
-            j++;
-        }
-        return builder;
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})

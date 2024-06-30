@@ -88,9 +88,9 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(delete);
 
-        then(where).should().accept(expressionDeParser);
-        then(orderByElement1Expression).should().accept(expressionDeParser);
-        then(orderByElement2Expression).should().accept(expressionDeParser);
+        then(where).should().accept(expressionDeParser, null);
+        then(orderByElement1Expression).should().accept(expressionDeParser, null);
+        then(orderByElement2Expression).should().accept(expressionDeParser, null);
     }
 
     @Test
@@ -125,11 +125,11 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(insert.withWithItemsList(withItemsList));
 
-        then(withItem1).should().accept((SelectVisitor) selectDeParser);
-        then(withItem2).should().accept((SelectVisitor) selectDeParser);
-        then(select).should().accept(selectDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
+        then(withItem1).should().accept((SelectVisitor<?>) selectDeParser, null);
+        then(withItem2).should().accept((SelectVisitor<?>) selectDeParser, null);
+        then(select).should().accept(selectDeParser, null);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class StatementDeParserTest {
 
         // then(withItem1).should().accept((SelectVisitor) selectDeParser);
         // then(withItem2).should().accept((SelectVisitor) selectDeParser);
-        then(plainSelect).should().accept(selectDeParser);
+        then(plainSelect).should().accept(selectDeParser, null);
     }
 
     @Test
@@ -182,13 +182,13 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(update);
 
-        then(expressionDeParser).should().visit(column1);
-        then(expressionDeParser).should().visit(column2);
-        then(expression1).should().accept(expressionDeParser);
-        then(expression2).should().accept(expressionDeParser);
-        then(where).should().accept(expressionDeParser);
-        then(orderByElement1Expression).should().accept(expressionDeParser);
-        then(orderByElement2Expression).should().accept(expressionDeParser);
+        then(expressionDeParser).should().visit(column1, null);
+        then(expressionDeParser).should().visit(column2, null);
+        then(expression1).should().accept(expressionDeParser, null);
+        then(expression2).should().accept(expressionDeParser, null);
+        then(where).should().accept(expressionDeParser, null);
+        then(orderByElement1Expression).should().accept(expressionDeParser, null);
+        then(orderByElement2Expression).should().accept(expressionDeParser, null);
     }
 
     @Test
@@ -221,18 +221,18 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(update);
 
-        then(expressionDeParser).should().visit(column1);
-        then(expressionDeParser).should().visit(column2);
-        then(where).should().accept(expressionDeParser);
-        then(orderByElement1Expression).should().accept(expressionDeParser);
-        then(orderByElement2Expression).should().accept(expressionDeParser);
+        then(expressionDeParser).should().visit(column1, null);
+        then(expressionDeParser).should().visit(column2, null);
+        then(where).should().accept(expressionDeParser, null);
+        then(orderByElement1Expression).should().accept(expressionDeParser, null);
+        then(orderByElement2Expression).should().accept(expressionDeParser, null);
     }
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void shouldUseProvidedDeParserWhenDeParsingExecute() {
         Execute execute = new Execute();
-        ExpressionList expressions = new ExpressionList();
+        ExpressionList<Expression> expressions = new ExpressionList<>();
         Expression expression1 = mock(Expression.class);
         Expression expression2 = mock(Expression.class);
 
@@ -242,8 +242,8 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(execute);
 
-        then(expression1).should().accept(expressionDeParser);
-        then(expression2).should().accept(expressionDeParser);
+        then(expression1).should().accept(expressionDeParser, null);
+        then(expression2).should().accept(expressionDeParser, null);
     }
 
     @Test
@@ -251,14 +251,14 @@ public class StatementDeParserTest {
     public void shouldUseProvidedDeParserWhenDeParsingSetStatement() {
         String name = "name";
         Expression expression = mock(Expression.class);
-        ExpressionList expressions = new ExpressionList();
+        ExpressionList<Expression> expressions = new ExpressionList<>();
         expressions.add(expression);
 
         SetStatement setStatement = new SetStatement(name, expressions);
 
         statementDeParser.visit(setStatement);
 
-        then(expression).should().accept(expressionDeParser);
+        then(expression).should().accept(expressionDeParser, null);
     }
 
     // private Matcher<ReplaceDeParser> replaceDeParserWithDeParsers(final
@@ -309,9 +309,9 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(upsert);
 
-        then(select).should().accept(selectDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser);
+        then(select).should().accept(selectDeParser, null);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
+        then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
     }
 
     @Test
@@ -327,21 +327,21 @@ public class StatementDeParserTest {
     public void testIssue1500AllColumns() throws JSQLParserException {
         String sqlStr = "select count(*) from some_table";
         PlainSelect selectBody = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
-        selectBody.accept(new SelectDeParser());
+        selectBody.accept(new SelectDeParser(), null);
     }
 
     @Test
     public void testIssue1836() throws JSQLParserException {
         String sqlStr = "TABLE columns ORDER BY column_name LIMIT 10 OFFSET 10;";
         TableStatement tableStatement = (TableStatement) CCJSqlParserUtil.parse(sqlStr);
-        tableStatement.accept(tableStatementDeParser);
+        tableStatement.accept(tableStatementDeParser, null);
     }
 
     @Test
     public void testIssue1500AllTableColumns() throws JSQLParserException {
         String sqlStr = "select count(a.*) from some_table a";
         PlainSelect selectBody = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
-        selectBody.accept(new SelectDeParser());
+        selectBody.accept(new SelectDeParser(), null);
     }
 
     @Test
@@ -354,13 +354,15 @@ public class StatementDeParserTest {
         StringBuilder builder = new StringBuilder();
         ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
             @Override
-            public void visit(StringValue stringValue) {
+            public <K> StringBuilder visit(StringValue stringValue, K parameters) {
                 buffer.append("?");
+                return null;
             }
 
             @Override
-            public void visit(LongValue longValue) {
+            public <K> StringBuilder visit(LongValue longValue, K parameters) {
                 buffer.append("?");
+                return null;
             }
         };
 

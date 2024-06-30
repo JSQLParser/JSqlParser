@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.util.Collection;
 import java.util.List;
+
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class NamedConstraint extends Index {

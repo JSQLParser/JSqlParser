@@ -22,14 +22,16 @@ public class AlterViewValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidateAlterView() throws JSQLParserException {
         for (String sql : Arrays.asList("ALTER VIEW myview AS SELECT * FROM mytab")) {
-            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL, DatabaseType.SQLSERVER);
+            validateNoErrors(sql, 1, DatabaseType.MARIADB, DatabaseType.MYSQL,
+                    DatabaseType.SQLSERVER);
         }
     }
 
     @Test
     public void testValidateAlterViewNotSupported() throws JSQLParserException {
         for (String sql : Arrays.asList("REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab")) {
-            for (DatabaseType type : Arrays.asList(DatabaseType.MARIADB, DatabaseType.MYSQL, DatabaseType.SQLSERVER)) {
+            for (DatabaseType type : Arrays.asList(DatabaseType.MARIADB, DatabaseType.MYSQL,
+                    DatabaseType.SQLSERVER)) {
                 validateNotSupported(sql, 1, 1, type, Feature.alterViewReplace);
             }
         }
@@ -40,7 +42,8 @@ public class AlterViewValidatorTest extends ValidationTestAsserts {
         validateNotAllowed("ALTER VIEW myview AS SELECT * FROM mytab", 1, 1,
                 FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView);
         validateNotAllowed("REPLACE VIEW myview(a, b) AS SELECT a, b FROM mytab", 1, 1,
-                FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView, Feature.alterViewReplace);
+                FeaturesAllowed.CREATE.copy().add(FeaturesAllowed.SELECT), Feature.alterView,
+                Feature.alterViewReplace);
     }
 
 }

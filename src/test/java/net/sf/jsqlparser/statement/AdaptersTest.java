@@ -36,35 +36,40 @@ public class AdaptersTest {
         Statement stmnt = CCJSqlParserUtil.parse(sql);
 
         final Stack<Pair<String, String>> params = new Stack<>();
-        stmnt.accept(new StatementVisitorAdapter() {
+        stmnt.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public void visit(Select select) {
-                select.accept(new SelectVisitorAdapter() {
+            public <S> Void visit(Select select, S context) {
+                select.accept(new SelectVisitorAdapter<Void>() {
                     @Override
-                    public void visit(PlainSelect plainSelect) {
-                        plainSelect.getWhere().accept(new ExpressionVisitorAdapter() {
+                    public <K> Void visit(PlainSelect plainSelect, K context) {
+                        plainSelect.getWhere().accept(new ExpressionVisitorAdapter<Void>() {
                             @Override
-                            protected void visitBinaryExpression(BinaryExpression expr) {
+                            protected <J> Void visitBinaryExpression(BinaryExpression expr,
+                                    J context) {
                                 if (!(expr instanceof AndExpression)) {
                                     params.push(new Pair<>(null, null));
                                 }
-                                super.visitBinaryExpression(expr);
+                                return super.visitBinaryExpression(expr, context);
                             }
 
                             @Override
-                            public void visit(Column column) {
+                            public <J> Void visit(Column column, J context) {
                                 params.push(new Pair<>(column.getColumnName(),
                                         params.pop().getRight()));
+                                return null;
                             }
 
                             @Override
-                            public void visit(JdbcNamedParameter parameter) {
+                            public <J> Void visit(JdbcNamedParameter parameter, J context) {
                                 params.push(new Pair<>(params.pop().getLeft(),
                                         parameter.getName()));
+                                return null;
                             }
-                        });
+                        }, null);
+                        return null;
                     }
-                });
+                }, null);
+                return null;
             }
         });
 

@@ -20,11 +20,10 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  */
 public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
-    private String value = "";
-    private String prefix = null;
-
     public static final List<String> ALLOWED_PREFIXES =
             Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8", "Q");
+    private String value = "";
+    private String prefix = null;
 
     public StringValue() {
         // empty constructor
@@ -57,8 +56,16 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         return value;
     }
 
+    public void setValue(String string) {
+        value = string;
+    }
+
     public String getPrefix() {
         return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public String getNotExcapedValue() {
@@ -73,17 +80,9 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         return buffer.toString();
     }
 
-    public void setValue(String string) {
-        value = string;
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

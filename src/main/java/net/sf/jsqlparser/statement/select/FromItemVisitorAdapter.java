@@ -12,35 +12,41 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Table;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class FromItemVisitorAdapter implements FromItemVisitor {
+public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
-    public void visit(Table table) {
+    public <S> T visit(Table table, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(ParenthesedSelect selectBody) {
+    public <S> T visit(ParenthesedSelect select, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
+    public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(TableFunction valuesList) {
+    public <S> T visit(TableFunction tableFunction, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(ParenthesedFromItem aThis) {
+    public <S> T visit(ParenthesedFromItem fromItem, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Values values) {
+    public <S> T visit(Values values, S context) {
 
+        return null;
     }
 }

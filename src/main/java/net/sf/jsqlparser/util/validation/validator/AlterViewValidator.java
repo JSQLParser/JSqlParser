@@ -27,7 +27,7 @@ public class AlterViewValidator extends AbstractValidator<AlterView> {
             validateName(c, NamedObject.view, alterView.getView().getFullyQualifiedName());
             validateOptionalColumnNames(c, alterView.getColumnNames());
         }
-        alterView.getSelect().accept(getValidator(SelectValidator.class));
+        alterView.getSelect().accept(getValidator(SelectValidator.class), null);
     }
 
 }

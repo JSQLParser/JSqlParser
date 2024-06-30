@@ -21,9 +21,10 @@ import java.util.List;
 public class ExpressionListDeParser<T extends Expression>
         extends AbstractDeParser<ExpressionList<?>> {
 
-    private final ExpressionVisitor expressionVisitor;
+    private final ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public ExpressionListDeParser(ExpressionVisitor expressionVisitor, StringBuilder builder) {
+    public ExpressionListDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder builder) {
         super(builder);
         this.expressionVisitor = expressionVisitor;
     }
@@ -36,32 +37,30 @@ public class ExpressionListDeParser<T extends Expression>
                 : ", ";
         // @todo: remove this NameExpressionList related part
         List<String> names = expressionList instanceof NamedExpressionList
-                ? ((NamedExpressionList) expressionList).getNames()
+                ? ((NamedExpressionList<?>) expressionList).getNames()
                 : Collections.nCopies(expressionList.size(), "");
 
-        if (expressionList != null) {
-            if (expressionList instanceof ParenthesedExpressionList<?>) {
-                buffer.append("(");
-            }
-            int i = 0;
-            for (Expression expression : expressionList) {
-                if (i > 0) {
-                    buffer.append(comma);
-                }
-
-                // @todo: remove this NameExpressionList related part
-                String name = names.get(i);
-                if (!name.equals("")) {
-                    buffer.append(name);
-                    buffer.append(" ");
-                }
-                expression.accept(expressionVisitor);
-                i++;
+        if (expressionList instanceof ParenthesedExpressionList<?>) {
+            buffer.append("(");
+        }
+        int i = 0;
+        for (Expression expression : expressionList) {
+            if (i > 0) {
+                buffer.append(comma);
             }
 
-            if (expressionList instanceof ParenthesedExpressionList<?>) {
-                buffer.append(")");
+            // @todo: remove this NameExpressionList related part
+            String name = names.get(i);
+            if (!name.isEmpty()) {
+                buffer.append(name);
+                buffer.append(" ");
             }
+            expression.accept(expressionVisitor, null);
+            i++;
+        }
+
+        if (expressionList instanceof ParenthesedExpressionList<?>) {
+            buffer.append(")");
         }
     }
 }

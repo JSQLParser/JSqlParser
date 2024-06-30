@@ -33,10 +33,10 @@ public class DeleteValidator extends AbstractValidator<Delete> {
         }
 
         SelectValidator v = getValidator(SelectValidator.class);
-        delete.getTable().accept(v);
+        delete.getTable().accept(v, null);
 
         if (isNotEmpty(delete.getTables())) {
-            delete.getTables().forEach(t -> t.accept(v));
+            delete.getTables().forEach(t -> t.accept(v, null));
         }
 
         validateOptionalExpression(delete.getWhere());
@@ -49,7 +49,7 @@ public class DeleteValidator extends AbstractValidator<Delete> {
         }
 
         if (delete.getReturningClause() != null) {
-            delete.getReturningClause().forEach(c -> c.accept(v));
+            delete.getReturningClause().forEach(c -> c.accept(v, null));
         }
 
     }

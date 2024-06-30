@@ -17,7 +17,10 @@ public class SafeCastExpressionTest {
 
     @Test
     public void testSafeCast() throws JSQLParserException {
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("SAFE_CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))", true);
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("SAFE_CAST(ROW(dataid, value, calcMark) AS testcol)", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "SAFE_CAST(ROW(dataid, value, calcMark) AS ROW(datapointid CHAR, value CHAR, calcMark CHAR))",
+                true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "SAFE_CAST(ROW(dataid, value, calcMark) AS testcol)", true);
     }
 }

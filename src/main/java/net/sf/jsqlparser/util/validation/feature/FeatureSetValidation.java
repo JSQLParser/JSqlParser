@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.Set;
 import java.util.function.Consumer;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;

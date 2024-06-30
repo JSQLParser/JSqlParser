@@ -110,7 +110,7 @@ public enum Feature {
     limitOffset,
     /**
      * "OFFSET offset"
-     * 
+     *
      * @see Offset
      */
     offset,
@@ -127,7 +127,7 @@ public enum Feature {
     fetch,
     /**
      * "FETCH FIRST row_count (ROW | ROWS) ONLY"
-     * 
+     *
      * @see Fetch#isFetchParamFirst()
      */
     fetchFirst,
@@ -465,7 +465,6 @@ public enum Feature {
     executeUsing,
     /**
      * SQL "REPLACE" statement is allowed
-     *
      */
     @Deprecated
     replace,
@@ -787,7 +786,8 @@ public enum Feature {
     /**
      * allows Backslash '\' as Escape Character
      */
-    allowBackslashEscapeCharacter(false),;
+    allowBackslashEscapeCharacter(false),
+    ;
 
     private final Object value;
     private final boolean configurable;

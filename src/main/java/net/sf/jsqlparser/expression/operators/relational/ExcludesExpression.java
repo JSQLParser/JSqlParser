@@ -29,13 +29,13 @@ public class ExcludesExpression extends ASTNodeAccessImpl implements Expression 
         return leftExpression;
     }
 
+    public final void setLeftExpression(Expression expression) {
+        leftExpression = expression;
+    }
+
     public ExcludesExpression withLeftExpression(Expression expression) {
         this.setLeftExpression(expression);
         return this;
-    }
-
-    public final void setLeftExpression(Expression expression) {
-        leftExpression = expression;
     }
 
     public Expression getRightExpression() {
@@ -47,8 +47,8 @@ public class ExcludesExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

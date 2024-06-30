@@ -19,26 +19,26 @@ import java.util.Objects;
  */
 public final class TimestampValue extends ASTNodeAccessImpl implements Expression {
 
+    private static final char QUOTATION = '\'';
     private Timestamp value;
     private String rawValue;
-    private static final char QUOTATION = '\'';
 
     public TimestampValue() {
         // empty constructor
     }
 
     public TimestampValue(String value) {
-    //        if (value == null) {
-    //            throw new IllegalArgumentException("null string");
-    //        } else {
-    //            setRawValue(value);
-    //        }
-              setRawValue(Objects.requireNonNull(value, "The Timestamp string value must not be null."));
+        // if (value == null) {
+        // throw new IllegalArgumentException("null string");
+        // } else {
+        // setRawValue(value);
+        // }
+        setRawValue(Objects.requireNonNull(value, "The Timestamp string value must not be null."));
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public Timestamp getValue() {

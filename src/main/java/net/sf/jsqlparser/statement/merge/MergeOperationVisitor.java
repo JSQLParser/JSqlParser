@@ -9,11 +9,11 @@
  */
 package net.sf.jsqlparser.statement.merge;
 
-public interface MergeOperationVisitor {
+public interface MergeOperationVisitor<T> {
 
-    void visit(MergeDelete mergeDelete);
+    <S> T visit(MergeDelete mergeDelete, S context);
 
-    void visit(MergeUpdate mergeUpdate);
+    <S> T visit(MergeUpdate mergeUpdate, S context);
 
-    void visit(MergeInsert mergeInsert);
+    <S> T visit(MergeInsert mergeInsert, S context);
 }

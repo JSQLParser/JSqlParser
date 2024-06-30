@@ -13,7 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 
 /**
  * lateral sub select
- * 
+ *
  * @author tobens
  */
 public class LateralSubSelect extends ParenthesedSelect {
@@ -68,12 +68,13 @@ public class LateralSubSelect extends ParenthesedSelect {
         return prefix + super.toString();
     }
 
-    public void accept(SelectVisitor selectVisitor) {
-        selectVisitor.visit(this);
+    @Override
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 }

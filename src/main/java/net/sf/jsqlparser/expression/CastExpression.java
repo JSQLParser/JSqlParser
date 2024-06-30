@@ -78,7 +78,6 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     }
 
 
-
     public CastExpression(String keyword) {
         this.keyword = keyword;
     }
@@ -87,16 +86,62 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         this("CAST");
     }
 
+    public static boolean isOf(ColDataType colDataType, DataType... types) {
+        return Set.of(types).contains(DataType.from(colDataType.getDataType()));
+    }
+
+    public static boolean isTime(ColDataType colDataType) {
+        return isOf(colDataType, DataType.TIME, DataType.TIME_WITH_TIME_ZONE,
+                DataType.TIME_WITHOUT_TIME_ZONE);
+    }
+
+    public static boolean isTimeStamp(ColDataType colDataType) {
+        return isOf(colDataType, DataType.TIMESTAMP_NS, DataType.TIMESTAMP,
+                DataType.TIMESTAMP_WITHOUT_TIME_ZONE,
+                DataType.DATETIME, DataType.TIMESTAMP_MS, DataType.TIMESTAMP_S,
+                DataType.TIMESTAMPTZ, DataType.TIMESTAMP_WITH_TIME_ZONE);
+    }
+
+    public static boolean isDate(ColDataType colDataType) {
+        return isOf(colDataType, DataType.DATE);
+    }
+
+    public static boolean isBLOB(ColDataType colDataType) {
+        return isOf(colDataType, DataType.BLOB, DataType.BYTEA, DataType.BINARY, DataType.VARBINARY,
+                DataType.BYTES, DataType.VARBYTE);
+    }
+
+    public static boolean isFloat(ColDataType colDataType) {
+        return isOf(colDataType, DataType.REAL, DataType.FLOAT4, DataType.FLOAT, DataType.DOUBLE,
+                DataType.DOUBLE_PRECISION, DataType.FLOAT8);
+    }
+
+    public static boolean isInteger(ColDataType colDataType) {
+        return isOf(colDataType, DataType.TINYINT, DataType.INT1, DataType.SMALLINT, DataType.INT2,
+                DataType.SHORT, DataType.INTEGER, DataType.INT4, DataType.INT, DataType.SIGNED,
+                DataType.BIGINT, DataType.INT8, DataType.LONG, DataType.HUGEINT, DataType.UTINYINT,
+                DataType.USMALLINT, DataType.UINTEGER, DataType.UBIGINT, DataType.UHUGEINT);
+    }
+
+    public static boolean isDecimal(ColDataType colDataType) {
+        return isOf(colDataType, DataType.DECIMAL, DataType.NUMBER, DataType.NUMERIC);
+    }
+
+    public static boolean isText(ColDataType colDataType) {
+        return isOf(colDataType, DataType.VARCHAR, DataType.NVARCHAR, DataType.CHAR, DataType.NCHAR,
+                DataType.BPCHAR, DataType.STRING, DataType.TEXT, DataType.CLOB);
+    }
+
     public ColDataType getColDataType() {
         return colDataType;
     }
 
-    public ArrayList<ColumnDefinition> getColumnDefinitions() {
-        return columnDefinitions;
-    }
-
     public void setColDataType(ColDataType colDataType) {
         this.colDataType = colDataType;
+    }
+
+    public ArrayList<ColumnDefinition> getColumnDefinitions() {
+        return columnDefinitions;
     }
 
     public void addColumnDefinition(ColumnDefinition columnDefinition) {
@@ -121,8 +166,8 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Deprecated
@@ -187,6 +232,46 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         return type.cast(getLeftExpression());
     }
 
+    public boolean isOf(CastExpression anotherCast) {
+        return this.colDataType.equals(anotherCast.colDataType);
+    }
+
+    public boolean isOf(DataType... types) {
+        return Set.of(types).contains(DataType.from(colDataType.getDataType()));
+    }
+
+    public boolean isTime() {
+        return isTime(this.colDataType);
+    }
+
+    public boolean isTimeStamp() {
+        return isTimeStamp(this.colDataType);
+    }
+
+    public boolean isDate() {
+        return isDate(this.colDataType);
+    }
+
+    public boolean isBLOB() {
+        return isBLOB(this.colDataType);
+    }
+
+    public boolean isFloat() {
+        return isFloat(this.colDataType);
+    }
+
+    public boolean isInteger() {
+        return isInteger(this.colDataType);
+    }
+
+    public boolean isDecimal() {
+        return isDecimal(this.colDataType);
+    }
+
+    public boolean isText() {
+        return isText(this.colDataType);
+    }
+
     public enum DataType {
         ARRAY, BIT, BITSTRING, BLOB, BYTEA, BINARY, VARBINARY, BYTES, BOOLEAN, BOOL, ENUM, INTERVAL, LIST, MAP, STRUCT, TINYINT, INT1, SMALLINT, INT2, SHORT, INTEGER, INT4, INT, SIGNED, BIGINT, INT8, LONG, HUGEINT, UTINYINT, USMALLINT, UINTEGER, UBIGINT, UHUGEINT, DECIMAL, NUMBER, NUMERIC, REAL, FLOAT4, FLOAT, DOUBLE, DOUBLE_PRECISION, FLOAT8, FLOAT64, UUID, VARCHAR, NVARCHAR, CHAR, NCHAR, BPCHAR, STRING, TEXT, CLOB, DATE, TIME, TIME_WITHOUT_TIME_ZONE, TIMETZ, TIME_WITH_TIME_ZONE, TIMESTAMP_NS, TIMESTAMP, TIMESTAMP_WITHOUT_TIME_ZONE, DATETIME, TIMESTAMP_MS, TIMESTAMP_S, TIMESTAMPTZ, TIMESTAMP_WITH_TIME_ZONE, UNKNOWN, VARBYTE;
 
@@ -206,91 +291,5 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
                 return DataType.UNKNOWN;
             }
         }
-    }
-
-    public boolean isOf(CastExpression anotherCast) {
-        return this.colDataType.equals(anotherCast.colDataType);
-    }
-
-    public static boolean isOf(ColDataType colDataType, DataType... types) {
-        return Set.of(types).contains(DataType.from(colDataType.getDataType()));
-    }
-
-    public boolean isOf(DataType... types) {
-        return Set.of(types).contains(DataType.from(colDataType.getDataType()));
-    }
-
-    public static boolean isTime(ColDataType colDataType) {
-        return isOf(colDataType, DataType.TIME, DataType.TIME_WITH_TIME_ZONE,
-                DataType.TIME_WITHOUT_TIME_ZONE);
-    }
-
-    public boolean isTime() {
-        return isTime(this.colDataType);
-    }
-
-    public static boolean isTimeStamp(ColDataType colDataType) {
-        return isOf(colDataType, DataType.TIMESTAMP_NS, DataType.TIMESTAMP,
-                DataType.TIMESTAMP_WITHOUT_TIME_ZONE,
-                DataType.DATETIME, DataType.TIMESTAMP_MS, DataType.TIMESTAMP_S,
-                DataType.TIMESTAMPTZ, DataType.TIMESTAMP_WITH_TIME_ZONE);
-    }
-
-    public boolean isTimeStamp() {
-        return isTimeStamp(this.colDataType);
-    }
-
-    public static boolean isDate(ColDataType colDataType) {
-        return isOf(colDataType, DataType.DATE);
-    }
-
-    public boolean isDate() {
-        return isDate(this.colDataType);
-    }
-
-    public static boolean isBLOB(ColDataType colDataType) {
-        return isOf(colDataType, DataType.BLOB, DataType.BYTEA, DataType.BINARY, DataType.VARBINARY,
-                DataType.BYTES, DataType.VARBYTE);
-    }
-
-    public boolean isBLOB() {
-        return isBLOB(this.colDataType);
-    }
-
-    public static boolean isFloat(ColDataType colDataType) {
-        return isOf(colDataType, DataType.REAL, DataType.FLOAT4, DataType.FLOAT, DataType.DOUBLE,
-                DataType.DOUBLE_PRECISION, DataType.FLOAT8);
-    }
-
-    public boolean isFloat() {
-        return isFloat(this.colDataType);
-    }
-
-    public static boolean isInteger(ColDataType colDataType) {
-        return isOf(colDataType, DataType.TINYINT, DataType.INT1, DataType.SMALLINT, DataType.INT2,
-                DataType.SHORT, DataType.INTEGER, DataType.INT4, DataType.INT, DataType.SIGNED,
-                DataType.BIGINT, DataType.INT8, DataType.LONG, DataType.HUGEINT, DataType.UTINYINT,
-                DataType.USMALLINT, DataType.UINTEGER, DataType.UBIGINT, DataType.UHUGEINT);
-    }
-
-    public boolean isInteger() {
-        return isInteger(this.colDataType);
-    }
-
-    public static boolean isDecimal(ColDataType colDataType) {
-        return isOf(colDataType, DataType.DECIMAL, DataType.NUMBER, DataType.NUMERIC);
-    }
-
-    public boolean isDecimal() {
-        return isDecimal(this.colDataType);
-    }
-
-    public static boolean isText(ColDataType colDataType) {
-        return isOf(colDataType, DataType.VARCHAR, DataType.NVARCHAR, DataType.CHAR, DataType.NCHAR,
-                DataType.BPCHAR, DataType.STRING, DataType.TEXT, DataType.CLOB);
-    }
-
-    public boolean isText() {
-        return isText(this.colDataType);
     }
 }

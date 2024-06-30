@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -29,18 +30,16 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
 
+    private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
     private AlterOperation operation;
     private String optionalSpecifier;
     private String newTableName;
     private String columnName;
-    private String columnOldName;
     // private ColDataType dataType;
-
+    private String columnOldName;
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
-
     private List<ColumnDropDefault> columnDropDefaultList;
-
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
@@ -48,9 +47,6 @@ public class AlterExpression implements Serializable {
     private Index oldIndex = null;
     private String constraintName;
     private boolean usingIfExists;
-
-    private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
-
     private List<String> fkColumns;
     private String fkSourceSchema;
 

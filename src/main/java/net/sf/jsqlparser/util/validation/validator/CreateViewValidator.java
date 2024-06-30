@@ -38,7 +38,7 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
         }
         SelectValidator v = getValidator(SelectValidator.class);
         Select select = createView.getSelect();
-        select.accept(v);
+        select.accept(v, null);
     }
 
 }

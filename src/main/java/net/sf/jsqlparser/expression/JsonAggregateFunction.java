@@ -11,19 +11,17 @@ package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import java.util.Objects;
+
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 
 public class JsonAggregateFunction extends FilterOverImpl implements Expression {
-    private JsonFunctionType functionType;
-
-    private Expression expression = null;
     private final OrderByClause expressionOrderBy = new OrderByClause();
-
+    private JsonFunctionType functionType;
+    private Expression expression = null;
     private boolean usingKeyKeyword = false;
     private String key;
     private boolean usingValueKeyword = false;
@@ -70,17 +68,17 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                 "The Type of the JSON Aggregate Function must not be null");
     }
 
-    public JsonAggregateFunction withType(JsonFunctionType type) {
-        this.setType(type);
-        return this;
-    }
-
     public void setType(String typeName) {
         this.functionType = JsonFunctionType
                 .valueOf(Objects
                         .requireNonNull(typeName,
                                 "The Type of the JSON Aggregate Function must not be null")
                         .toUpperCase());
+    }
+
+    public JsonAggregateFunction withType(JsonFunctionType type) {
+        this.setType(type);
+        return this;
     }
 
     public JsonAggregateFunction withType(String typeName) {
@@ -181,8 +179,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     // avoid countless Builder --> String conversion

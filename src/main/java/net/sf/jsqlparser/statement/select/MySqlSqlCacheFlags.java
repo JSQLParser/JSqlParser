@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.select;
 
 /**
- *
  * @author tw
  */
 public enum MySqlSqlCacheFlags {

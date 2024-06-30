@@ -58,11 +58,9 @@ class StructTypeTest {
         // @todo: check why the white-space after the "{" is needed?!
         String sqlStr = "SELECT { t:'abc',len:5}";
         List<SelectItem<?>> selectItems = List.of(
-                new SelectItem<>("abc", "t")
-                , new SelectItem<>(5, "len")
-        );
+                new SelectItem<>("abc", "t"), new SelectItem<>(5, "len"));
         StructType struct = new StructType(StructType.Dialect.DUCKDB, selectItems);
-        PlainSelect select = new PlainSelect().withSelectItems( new SelectItem<>(struct));
+        PlainSelect select = new PlainSelect().withSelectItems(new SelectItem<>(struct));
         TestUtils.assertStatementCanBeDeparsedAs(select, sqlStr, true);
     }
 

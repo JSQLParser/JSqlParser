@@ -15,9 +15,10 @@ import net.sf.jsqlparser.statement.DeclareType;
 
 public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public DeclareStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public DeclareStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -28,7 +29,7 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
         buffer.append("DECLARE ");
 
         if (declare.getUserVariable() != null) {
-            declare.getUserVariable().accept(expressionVisitor);
+            declare.getUserVariable().accept(expressionVisitor, null);
         }
 
         if (declare.getType() == DeclareType.AS) {
@@ -54,24 +55,24 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
                     }
                     DeclareStatement.TypeDefExpr type = declare.getTypeDefinitions().get(i);
                     if (type.userVariable != null) {
-                        type.userVariable.accept(expressionVisitor);
+                        type.userVariable.accept(expressionVisitor, null);
                         buffer.append(" ");
                     }
                     buffer.append(type.colDataType.toString());
                     if (type.defaultExpr != null) {
                         buffer.append(" = ");
-                        type.defaultExpr.accept(expressionVisitor);
+                        type.defaultExpr.accept(expressionVisitor, null);
                     }
                 }
             }
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 }

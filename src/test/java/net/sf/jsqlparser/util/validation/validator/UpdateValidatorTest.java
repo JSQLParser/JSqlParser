@@ -27,7 +27,8 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidationUpdateNotAllowed() throws JSQLParserException {
         String sql = "UPDATE tab1 SET ref = ? WHERE id = ?;";
-        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC), Feature.update);
+        validateNotAllowed(sql, 1, 1, FeaturesAllowed.SELECT.copy().add(FeaturesAllowed.JDBC),
+                Feature.update);
     }
 
     @Test
@@ -38,13 +39,15 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testUpdateMultiTable() throws JSQLParserException {
-        String sql = "UPDATE T1, T2 SET T1.C2 = T2.C2, T2.C3 = 'UPDATED' WHERE T1.C1 = T2.C1 AND T1.C2 < 10";
+        String sql =
+                "UPDATE T1, T2 SET T1.C2 = T2.C2, T2.C3 = 'UPDATED' WHERE T1.C1 = T2.C1 AND T1.C2 < 10";
         validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
     }
 
     @Test
     public void testUpdateWithSelect() throws JSQLParserException {
-        String sql = "UPDATE mytable t1 SET (col1, col2, col3) = (SELECT a, b, c FROM mytable2 t2 WHERE t2.id = t1.id)";
+        String sql =
+                "UPDATE mytable t1 SET (col1, col2, col3) = (SELECT a, b, c FROM mytable2 t2 WHERE t2.id = t1.id)";
         validateNoErrors(sql, 1, DatabaseType.ORACLE);
     }
 
@@ -56,7 +59,8 @@ public class UpdateValidatorTest extends ValidationTestAsserts {
 
     @Test
     public void testUpdateWithReturningList() throws JSQLParserException {
-        String sql = "UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1, col_2, col_3";
+        String sql =
+                "UPDATE tablename SET col = 'thing' WHERE id = 1 RETURNING col_1, col_2, col_3";
         validateNoErrors(sql, 1, DatabaseType.POSTGRESQL, DatabaseType.ORACLE);
     }
 

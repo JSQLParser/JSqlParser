@@ -19,40 +19,84 @@ public class SimpleCharStream {
      */
     @SuppressWarnings("checkstyle:constantname")
     public static final boolean staticFlag = false;
-    int bufsize;
-    int available;
-    int tokenBegin;
     /**
      * Position in buffer.
      */
     public int bufpos = -1;
     protected int bufline[];
     protected int bufcolumn[];
-
     protected int column = 0;
     protected int line = 1;
-
     protected boolean prevCharIsCR = false;
     protected boolean prevCharIsLF = false;
-
     protected Provider inputStream;
-    private boolean isStringProvider;
-
     protected char[] buffer;
     protected int maxNextCharInd = 0;
     protected int inBuf = 0;
     protected int tabSize = 1;
     protected boolean trackLineColumn = true;
-
     protected int totalCharsRead = 0;
     protected int absoluteTokenBegin = 0;
+    int bufsize;
+    int available;
+    int tokenBegin;
+    private boolean isStringProvider;
 
-    public void setTabSize(int i) {
-        tabSize = i;
+    /**
+     * Constructor
+     *
+     * @param dstream
+     * @param startline
+     * @param startcolumn
+     * @param buffersize
+     */
+    public SimpleCharStream(Provider dstream, int startline,
+            int startcolumn, int buffersize) {
+        inputStream = dstream;
+        isStringProvider = dstream instanceof StringProvider;
+        line = startline;
+        column = startcolumn - 1;
+
+        if (isStringProvider) {
+            int bs = ((StringProvider) inputStream)._string.length();
+            available = bufsize = bs;
+            bufline = new int[bs];
+            bufcolumn = new int[bs];
+        } else {
+            available = bufsize = buffersize;
+            buffer = new char[buffersize];
+            bufline = new int[buffersize];
+            bufcolumn = new int[buffersize];
+        }
+    }
+
+    /**
+     * Constructor
+     *
+     * @param dstream
+     * @param startline
+     * @param startcolumn
+     */
+    public SimpleCharStream(Provider dstream, int startline,
+            int startcolumn) {
+        this(dstream, startline, startcolumn, 4096);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param dstream
+     */
+    public SimpleCharStream(Provider dstream) {
+        this(dstream, 1, 1, 4096);
     }
 
     public int getTabSize() {
         return tabSize;
+    }
+
+    public void setTabSize(int i) {
+        tabSize = i;
     }
 
     public final int getAbsoluteTokenBegin() {
@@ -129,7 +173,8 @@ public class SimpleCharStream {
                 }
                 maxNextCharInd = i;
             } else {
-                if ((i = inputStream.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
+                if ((i = inputStream.read(buffer, maxNextCharInd,
+                        available - maxNextCharInd)) == -1) {
                     inputStream.close();
                     throw new IOException();
                 } else {
@@ -149,6 +194,7 @@ public class SimpleCharStream {
 
     /**
      * Start.
+     *
      * @return the character read
      * @throws IOException
      */
@@ -204,6 +250,7 @@ public class SimpleCharStream {
 
     /**
      * Read a character.
+     *
      * @return the character read
      * @throws IOException
      */
@@ -231,7 +278,6 @@ public class SimpleCharStream {
         return c;
     }
 
-    
     /**
      * @return the column
      * @deprecated @see #getEndColumn
@@ -241,7 +287,6 @@ public class SimpleCharStream {
         return bufcolumn[bufpos];
     }
 
-    
     /**
      * @return the line
      * @deprecated @see #getEndLine
@@ -281,6 +326,7 @@ public class SimpleCharStream {
 
     /**
      * Backup a number of characters.
+     *
      * @param amount
      */
     public void backup(int amount) {
@@ -293,53 +339,8 @@ public class SimpleCharStream {
     }
 
     /**
-     * Constructor
-     * @param dstream
-     * @param startline
-     * @param startcolumn
-     * @param buffersize
-     */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn, int buffersize) {
-        inputStream = dstream;
-        isStringProvider = dstream instanceof StringProvider;
-        line = startline;
-        column = startcolumn - 1;
-
-        if (isStringProvider) {
-            int bs = ((StringProvider) inputStream)._string.length();
-            available = bufsize = bs;
-            bufline = new int[bs];
-            bufcolumn = new int[bs];
-        } else {
-            available = bufsize = buffersize;
-            buffer = new char[buffersize];
-            bufline = new int[buffersize];
-            bufcolumn = new int[buffersize];
-        }
-    }
-
-    /**
-     * Constructor
-     * @param dstream
-     * @param startline
-     * @param startcolumn
-     */
-    public SimpleCharStream(Provider dstream, int startline,
-            int startcolumn) {
-        this(dstream, startline, startcolumn, 4096);
-    }
-
-    /**
-     * Constructor
-     * @param dstream
-     */
-    public SimpleCharStream(Provider dstream) {
-        this(dstream, 1, 1, 4096);
-    }
-
-    /**
      * Reinitialise.
+     *
      * @param dstream
      * @param startline
      * @param startcolumn
@@ -371,6 +372,7 @@ public class SimpleCharStream {
 
     /**
      * Reinitialise.
+     *
      * @param dstream
      * @param startline
      * @param startcolumn
@@ -380,10 +382,11 @@ public class SimpleCharStream {
         ReInit(dstream, startline, startcolumn, 4096);
     }
 
-   /**
-    * Reinitialise.
-    * @param dstream
-    */
+    /**
+     * Reinitialise.
+     *
+     * @param dstream
+     */
     public void ReInit(Provider dstream) {
         ReInit(dstream, 1, 1, 4096);
     }
@@ -420,10 +423,11 @@ public class SimpleCharStream {
 
         if (isStringProvider) {
             String str = ((StringProvider) inputStream)._string;
-            if ((bufpos + 1) >= len) {            
+            if ((bufpos + 1) >= len) {
                 str.getChars(bufpos - len + 1, bufpos - len + 1 + len, ret, 0);
             } else {
-                str.getChars(bufsize - (len - bufpos - 1), bufsize - (len - bufpos - 1) + len - bufpos - 1, ret, 0);
+                str.getChars(bufsize - (len - bufpos - 1),
+                        bufsize - (len - bufpos - 1) + len - bufpos - 1, ret, 0);
                 str.getChars(0, bufpos + 1, ret, len - bufpos - 1);
             }
         } else {
@@ -450,6 +454,7 @@ public class SimpleCharStream {
 
     /**
      * Method to adjust line and column numbers for the start of a token.
+     *
      * @param newLine
      * @param newCol
      */

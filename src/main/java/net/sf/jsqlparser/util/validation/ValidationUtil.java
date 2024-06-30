@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.expression.Alias;
 
 public class ValidationUtil {

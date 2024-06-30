@@ -9,19 +9,47 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface SelectVisitor {
+public interface SelectVisitor<T> {
 
-    void visit(ParenthesedSelect parenthesedSelect);
+    <S> T visit(ParenthesedSelect parenthesedSelect, S context);
 
-    void visit(PlainSelect plainSelect);
+    default void visit(ParenthesedSelect parenthesedSelect) {
+        this.visit(parenthesedSelect, null);
+    }
 
-    void visit(SetOperationList setOpList);
+    <S> T visit(PlainSelect plainSelect, S context);
 
-    void visit(WithItem withItem);
+    default void visit(PlainSelect plainSelect) {
+        this.visit(plainSelect, null);
+    }
 
-    void visit(Values aThis);
+    <S> T visit(SetOperationList setOpList, S context);
 
-    void visit(LateralSubSelect lateralSubSelect);
+    default void visit(SetOperationList setOpList) {
+        this.visit(setOpList, null);
+    }
 
-    void visit(TableStatement tableStatement);
+    <S> T visit(WithItem withItem, S context);
+
+    default void visit(WithItem withItem) {
+        this.visit(withItem, null);
+    }
+
+    <S> T visit(Values values, S context);
+
+    default void visit(Values values) {
+        this.visit(values, null);
+    }
+
+    <S> T visit(LateralSubSelect lateralSubSelect, S context);
+
+    default void visit(LateralSubSelect lateralSubSelect) {
+        this.visit(lateralSubSelect, null);
+    }
+
+    <S> T visit(TableStatement tableStatement, S context);
+
+    default void visit(TableStatement tableStatement) {
+        this.visit(tableStatement, null);
+    }
 }

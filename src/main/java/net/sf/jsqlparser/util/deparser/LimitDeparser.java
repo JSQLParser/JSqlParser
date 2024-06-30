@@ -13,9 +13,9 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.Limit;
 
 public class LimitDeparser extends AbstractDeParser<Limit> {
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public LimitDeparser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public LimitDeparser(ExpressionVisitor<StringBuilder> expressionVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -30,27 +30,27 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
                 buffer.append("ALL");
             } else {
                 if (null != limit.getOffset()) {
-                    limit.getOffset().accept(expressionVisitor);
+                    limit.getOffset().accept(expressionVisitor, null);
                     buffer.append(", ");
                 }
 
                 if (null != limit.getRowCount()) {
-                    limit.getRowCount().accept(expressionVisitor);
+                    limit.getRowCount().accept(expressionVisitor, null);
                 }
             }
         }
 
         if (limit.getByExpressions() != null) {
             buffer.append(" BY ");
-            limit.getByExpressions().accept(expressionVisitor);
+            limit.getByExpressions().accept(expressionVisitor, null);
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor expressionVisitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> expressionVisitor) {
         this.expressionVisitor = expressionVisitor;
     }
 }

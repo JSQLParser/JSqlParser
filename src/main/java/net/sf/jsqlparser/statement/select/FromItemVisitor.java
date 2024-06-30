@@ -11,17 +11,41 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.schema.Table;
 
-public interface FromItemVisitor {
+public interface FromItemVisitor<T> {
 
-    void visit(Table tableName);
+    <S> T visit(Table tableName, S context);
 
-    void visit(ParenthesedSelect selectBody);
+    default void visit(Table tableName) {
+        this.visit(tableName, null);
+    }
 
-    void visit(LateralSubSelect lateralSubSelect);
+    <S> T visit(ParenthesedSelect selectBody, S context);
 
-    void visit(TableFunction tableFunction);
+    default void visit(ParenthesedSelect selectBody) {
+        this.visit(selectBody, null);
+    }
 
-    void visit(ParenthesedFromItem aThis);
+    <S> T visit(LateralSubSelect lateralSubSelect, S context);
 
-    void visit(Values values);
+    default void visit(LateralSubSelect lateralSubSelect) {
+        this.visit(lateralSubSelect, null);
+    }
+
+    <S> T visit(TableFunction tableFunction, S context);
+
+    default void visit(TableFunction tableFunction) {
+        this.visit(tableFunction, null);
+    }
+
+    <S> T visit(ParenthesedFromItem parenthesedFromItem, S context);
+
+    default void visit(ParenthesedFromItem parenthesedFromItem) {
+        this.visit(parenthesedFromItem, null);
+    }
+
+    <S> T visit(Values values, S context);
+
+    default void visit(Values values) {
+        this.visit(values, null);
+    }
 }

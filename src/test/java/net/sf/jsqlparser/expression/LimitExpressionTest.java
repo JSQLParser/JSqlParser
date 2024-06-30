@@ -61,6 +61,6 @@ public class LimitExpressionTest {
         plainSelect = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
         AllValue allValue = plainSelect.getLimit().getRowCount(AllValue.class);
-        allValue.accept(new ExpressionVisitorAdapter());
+        allValue.accept(new ExpressionVisitorAdapter(), null);
     }
 }

@@ -19,26 +19,26 @@ import java.util.Map;
 
 /*
  * STRUCT<T>
- * 
+ *
  * Type Declaration Meaning STRUCT<INT64> Simple struct with a single unnamed 64-bit integer field.
  * STRUCT<x STRING(10)> Simple struct with a single parameterized string field named x. STRUCT<x
  * STRUCT<y INT64, z INT64>> A struct with a nested struct named x inside it. The struct x has two
  * fields, y and z, both of which are 64-bit integers. STRUCT<inner_array ARRAY<INT64>> A struct
  * containing an array named inner_array that holds 64-bit integer elements.
- * 
+ *
  * STRUCT( expr1 [AS field_name] [, ... ])
- * 
+ *
  * Syntax Output Type STRUCT(1,2,3) STRUCT<int64,int64,int64> STRUCT() STRUCT<> STRUCT('abc')
  * STRUCT<string> STRUCT(1, t.str_col) STRUCT<int64, str_col string> STRUCT(1 AS a, 'abc' AS b)
  * STRUCT<a int64, b string> STRUCT(str_col AS abc) STRUCT<abc string>
- * 
- * 
+ *
+ *
  * Struct Literals
- * 
+ *
  * Example Output Type (1, 2, 3) STRUCT<INT64, INT64, INT64> (1, 'abc') STRUCT<INT64, STRING>
  * STRUCT(1 AS foo, 'abc' AS bar) STRUCT<foo INT64, bar STRING> STRUCT<INT64, STRING>(1, 'abc')
  * STRUCT<INT64, STRING> STRUCT(1) STRUCT<INT64> STRUCT<INT64>(1) STRUCT<INT64>
- * 
+ *
  */
 public class StructType extends ASTNodeAccessImpl implements Expression {
     private Dialect dialect = Dialect.BIG_QUERY;;
@@ -188,8 +188,8 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public enum Dialect {

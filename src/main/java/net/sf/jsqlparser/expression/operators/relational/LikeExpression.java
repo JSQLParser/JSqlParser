@@ -14,14 +14,6 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 public class LikeExpression extends BinaryExpression {
-    public enum KeyWord {
-        LIKE, ILIKE, RLIKE, REGEXP, SIMILAR_TO;
-
-        public static KeyWord from(String keyword) {
-            return Enum.valueOf(KeyWord.class, keyword.toUpperCase().replaceAll("\\s+", "_"));
-        }
-    }
-
     private boolean not = false;
     private boolean useBinary = false;
     private Expression escapeExpression = null;
@@ -45,8 +37,8 @@ public class LikeExpression extends BinaryExpression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Deprecated
@@ -122,5 +114,13 @@ public class LikeExpression extends BinaryExpression {
     @Override
     public LikeExpression withRightExpression(Expression arg0) {
         return (LikeExpression) super.withRightExpression(arg0);
+    }
+
+    public enum KeyWord {
+        LIKE, ILIKE, RLIKE, REGEXP, SIMILAR_TO;
+
+        public static KeyWord from(String keyword) {
+            return Enum.valueOf(KeyWord.class, keyword.toUpperCase().replaceAll("\\s+", "_"));
+        }
     }
 }

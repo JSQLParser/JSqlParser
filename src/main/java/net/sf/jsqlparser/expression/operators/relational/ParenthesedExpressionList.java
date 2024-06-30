@@ -22,6 +22,7 @@ public class ParenthesedExpressionList<T extends Expression> extends ExpressionL
         addAll(expressions);
     }
 
+    @SafeVarargs
     public ParenthesedExpressionList(T... expressions) {
         addAll(Arrays.asList(expressions));
     }
@@ -31,7 +32,7 @@ public class ParenthesedExpressionList<T extends Expression> extends ExpressionL
     }
 
     public static ParenthesedExpressionList<?> from(ExpressionList<?> expressions) {
-        return new ParenthesedExpressionList(expressions);
+        return new ParenthesedExpressionList<>(expressions);
     }
 
     @Override

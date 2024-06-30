@@ -29,10 +29,6 @@ import static java.util.stream.Collectors.joining;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
 
-    public enum BigQuerySelectQualifier {
-        AS_STRUCT, AS_VALUE
-    }
-
     private Distinct distinct = null;
     private BigQuerySelectQualifier bigQuerySelectQualifier = null;
     private List<SelectItem<?>> selectItems;
@@ -56,20 +52,15 @@ public class PlainSelect extends Select {
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
     private boolean emitChanges = false;
-
     private List<WindowDefinition> windowDefinitions;
-
     /**
      * @see <a href=
      *      'https://clickhouse.com/docs/en/sql-reference/statements/select/from#final-modifier'>Clickhouse
      *      FINAL</a>
      */
     private boolean isUsingFinal = false;
-
     private boolean isUsingOnly = false;
-
     private boolean useWithNoLog = false;
-
     private Table intoTempTable = null;
 
     public PlainSelect() {}
@@ -135,12 +126,24 @@ public class PlainSelect extends Select {
         return fromItem;
     }
 
+    public void setFromItem(FromItem item) {
+        fromItem = item;
+    }
+
     public List<Table> getIntoTables() {
         return intoTables;
     }
 
+    public void setIntoTables(List<Table> intoTables) {
+        this.intoTables = intoTables;
+    }
+
     public List<SelectItem<?>> getSelectItems() {
         return selectItems;
+    }
+
+    public void setSelectItems(List<SelectItem<?>> list) {
+        selectItems = list;
     }
 
     public SelectItem<?> getSelectItem(int index) {
@@ -151,17 +154,13 @@ public class PlainSelect extends Select {
         return where;
     }
 
+    public void setWhere(Expression where) {
+        this.where = where;
+    }
+
     public PlainSelect withFromItem(FromItem item) {
         this.setFromItem(item);
         return this;
-    }
-
-    public void setFromItem(FromItem item) {
-        fromItem = item;
-    }
-
-    public void setIntoTables(List<Table> intoTables) {
-        this.intoTables = intoTables;
     }
 
     public PlainSelect withSelectItems(List<SelectItem<?>> list) {
@@ -171,10 +170,6 @@ public class PlainSelect extends Select {
 
     public PlainSelect withSelectItems(SelectItem<?>... selectItems) {
         return this.withSelectItems(Arrays.asList(selectItems));
-    }
-
-    public void setSelectItems(List<SelectItem<?>> list) {
-        selectItems = list;
     }
 
     public PlainSelect addSelectItems(SelectItem<?>... items) {
@@ -203,10 +198,6 @@ public class PlainSelect extends Select {
 
     public PlainSelect addSelectItem(Expression expression) {
         return addSelectItem(expression, null);
-    }
-
-    public void setWhere(Expression where) {
-        this.where = where;
     }
 
     public List<LateralView> getLateralViews() {
@@ -250,6 +241,10 @@ public class PlainSelect extends Select {
         return joins;
     }
 
+    public void setJoins(List<Join> list) {
+        joins = list;
+    }
+
     public Join getJoin(int index) {
         return joins.get(index);
     }
@@ -263,10 +258,6 @@ public class PlainSelect extends Select {
     public PlainSelect withJoins(List<Join> joins) {
         this.setJoins(joins);
         return this;
-    }
-
-    public void setJoins(List<Join> list) {
-        joins = list;
     }
 
     public boolean isUsingFinal() {
@@ -322,8 +313,8 @@ public class PlainSelect extends Select {
     }
 
     @Override
-    public void accept(SelectVisitor selectVisitor) {
-        selectVisitor.visit(this);
+    public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
+        return selectVisitor.visit(this, context);
     }
 
     public OptimizeFor getOptimizeFor() {
@@ -452,12 +443,12 @@ public class PlainSelect extends Select {
         this.ksqlWindow = ksqlWindow;
     }
 
-    public void setEmitChanges(boolean emitChanges) {
-        this.emitChanges = emitChanges;
-    }
-
     public boolean isEmitChanges() {
         return emitChanges;
+    }
+
+    public void setEmitChanges(boolean emitChanges) {
+        this.emitChanges = emitChanges;
     }
 
     public List<WindowDefinition> getWindowDefinitions() {
@@ -619,20 +610,20 @@ public class PlainSelect extends Select {
         return this;
     }
 
-    public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
-        this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
-    }
-
-    public void setMySqlSqlCacheFlag(MySqlSqlCacheFlags sqlCacheFlag) {
-        this.mySqlCacheFlag = sqlCacheFlag;
-    }
-
     public boolean getMySqlSqlCalcFoundRows() {
         return this.mySqlSqlCalcFoundRows;
     }
 
+    public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
+        this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
+    }
+
     public MySqlSqlCacheFlags getMySqlSqlCacheFlag() {
         return this.mySqlCacheFlag;
+    }
+
+    public void setMySqlSqlCacheFlag(MySqlSqlCacheFlags sqlCacheFlag) {
+        this.mySqlCacheFlag = sqlCacheFlag;
     }
 
     public PlainSelect withDistinct(Distinct distinct) {
@@ -745,5 +736,9 @@ public class PlainSelect extends Select {
 
     public <E extends Expression> E getHaving(Class<E> type) {
         return type.cast(getHaving());
+    }
+
+    public enum BigQuerySelectQualifier {
+        AS_STRUCT, AS_VALUE
     }
 }

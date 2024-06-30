@@ -32,14 +32,11 @@ public abstract class CreateFunctionalStatement implements Statement {
     protected CreateFunctionalStatement(String kind, List<String> functionDeclarationParts) {
         this(false, kind, functionDeclarationParts);
     }
-    
-    protected CreateFunctionalStatement(boolean orReplace, String kind, List<String> functionDeclarationParts) {
+
+    protected CreateFunctionalStatement(boolean orReplace, String kind,
+            List<String> functionDeclarationParts) {
         this.orReplace = orReplace;
         this.kind = kind;
-        this.functionDeclarationParts = functionDeclarationParts;
-    }
-
-    public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
         this.functionDeclarationParts = functionDeclarationParts;
     }
 
@@ -50,20 +47,23 @@ public abstract class CreateFunctionalStatement implements Statement {
         return functionDeclarationParts;
     }
 
+    public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        this.functionDeclarationParts = functionDeclarationParts;
+    }
+
     /**
      * @return the kind of functional statement
      */
     public String getKind() {
         return kind;
     }
-    
+
     public void setOrReplace(boolean orReplace) {
         this.orReplace = orReplace;
     }
 
     /**
-     * @return a whitespace appended String with the declaration parts with some
-     *         minimal formatting.
+     * @return a whitespace appended String with the declaration parts with some minimal formatting.
      */
     public String formatDeclaration() {
         StringBuilder declaration = new StringBuilder();
@@ -85,30 +85,35 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     @Override
     public String toString() {
-        return "CREATE " 
-                + (orReplace?"OR REPLACE ":"")
+        return "CREATE "
+                + (orReplace ? "OR REPLACE " : "")
                 + kind + " " + formatDeclaration();
     }
 
-    public CreateFunctionalStatement withFunctionDeclarationParts(List<String> functionDeclarationParts) {
+    public CreateFunctionalStatement withFunctionDeclarationParts(
+            List<String> functionDeclarationParts) {
         this.setFunctionDeclarationParts(functionDeclarationParts);
         return this;
     }
 
-    public CreateFunctionalStatement addFunctionDeclarationParts(String... functionDeclarationParts) {
-        List<String> collection = Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
+    public CreateFunctionalStatement addFunctionDeclarationParts(
+            String... functionDeclarationParts) {
+        List<String> collection =
+                Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         Collections.addAll(collection, functionDeclarationParts);
         return this.withFunctionDeclarationParts(collection);
     }
 
-    public CreateFunctionalStatement addFunctionDeclarationParts(Collection<String> functionDeclarationParts) {
-        List<String> collection = Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
+    public CreateFunctionalStatement addFunctionDeclarationParts(
+            Collection<String> functionDeclarationParts) {
+        List<String> collection =
+                Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         collection.addAll(functionDeclarationParts);
         return this.withFunctionDeclarationParts(collection);
     }

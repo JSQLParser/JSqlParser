@@ -34,12 +34,10 @@ public class WindowRange implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(" BETWEEN");
-        buffer.append(start);
-        buffer.append(" AND");
-        buffer.append(end);
-        return buffer.toString();
+        return " BETWEEN" +
+                start +
+                " AND" +
+                end;
     }
 
     public WindowRange withStart(WindowOffset start) {

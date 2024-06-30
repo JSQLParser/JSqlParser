@@ -12,10 +12,6 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class TrimFunction extends ASTNodeAccessImpl implements Expression {
-    public enum TrimSpecification {
-        LEADING, TRAILING, BOTH
-    }
-
     private TrimSpecification trimSpecification;
     private Expression expression;
     private Expression fromExpression;
@@ -92,8 +88,8 @@ public class TrimFunction extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
@@ -120,5 +116,9 @@ public class TrimFunction extends ASTNodeAccessImpl implements Expression {
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();
+    }
+
+    public enum TrimSpecification {
+        LEADING, TRAILING, BOTH
     }
 }

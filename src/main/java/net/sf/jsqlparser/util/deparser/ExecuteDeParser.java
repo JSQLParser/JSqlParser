@@ -17,9 +17,10 @@ import net.sf.jsqlparser.statement.execute.Execute;
 
 public class ExecuteDeParser extends AbstractDeParser<Execute> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public ExecuteDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public ExecuteDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -38,7 +39,7 @@ public class ExecuteDeParser extends AbstractDeParser<Execute> {
                 if (i > 0) {
                     buffer.append(", ");
                 }
-                expressions.get(i).accept(expressionVisitor);
+                expressions.get(i).accept(expressionVisitor, null);
             }
         }
         if (execute.isParenthesis()) {
@@ -46,11 +47,11 @@ public class ExecuteDeParser extends AbstractDeParser<Execute> {
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 }

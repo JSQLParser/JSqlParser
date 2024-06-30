@@ -188,14 +188,34 @@ import java.util.Set;
  * Override extractTableName method to modify the extracted table names (e.g. without schema).
  */
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
-public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, ExpressionVisitor,
-        SelectItemVisitor, StatementVisitor {
+public class TablesNamesFinder<Void>
+        implements SelectVisitor<Void>, FromItemVisitor<Void>, ExpressionVisitor<Void>,
+        SelectItemVisitor<Void>, StatementVisitor<Void> {
 
-    private static final String NOT_SUPPORTED_YET = "Not supported yet.";
     private Set<String> tables;
     private boolean allowColumnProcessing = false;
 
     private List<String> otherItemNames;
+
+    public static Set<String> findTables(String sqlStr) throws JSQLParserException {
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
+        return tablesNamesFinder.getTables(CCJSqlParserUtil.parse(sqlStr));
+    }
+
+    public static Set<String> findTablesOrOtherSources(String sqlStr) throws JSQLParserException {
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
+        return tablesNamesFinder.getTablesOrOtherSources(CCJSqlParserUtil.parse(sqlStr));
+    }
+
+    public static Set<String> findTablesInExpression(String exprStr) throws JSQLParserException {
+        TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
+        return tablesNamesFinder.getTables(CCJSqlParserUtil.parseExpression(exprStr));
+    }
+
+    private static <T> void throwUnsupported(T type) {
+        throw new UnsupportedOperationException(String.format(
+                "Finding tables from %s is not supported", type.getClass().getSimpleName()));
+    }
 
     @Deprecated
     public List<String> getTableList(Statement statement) {
@@ -204,18 +224,18 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     public Set<String> getTables(Statement statement) {
         init(false);
-        statement.accept(this);
+        statement.accept(this, null);
 
         // @todo: assess this carefully, maybe we want to remove more specifically
         // only Aliases on WithItems, Parenthesed Selects and Lateral Selects
-        tables.removeAll(otherItemNames);
+        otherItemNames.forEach(tables::remove);
 
         return tables;
     }
 
     public Set<String> getTablesOrOtherSources(Statement statement) {
         init(false);
-        statement.accept(this);
+        statement.accept(this, null);
 
         HashSet<String> tablesOrOtherSources = new HashSet<>(tables);
         tablesOrOtherSources.addAll(otherItemNames);
@@ -223,46 +243,45 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
         return tablesOrOtherSources;
     }
 
-    public static Set<String> findTables(String sqlStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-        return tablesNamesFinder.getTables(CCJSqlParserUtil.parse(sqlStr));
-    }
-
-    public static Set<String> findTablesOrOtherSources(String sqlStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-        return tablesNamesFinder.getTablesOrOtherSources(CCJSqlParserUtil.parse(sqlStr));
+    @Override
+    public <S> Void visit(Select select, S context) {
+        List<WithItem> withItemsList = select.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            for (WithItem withItem : withItemsList) {
+                withItem.accept((SelectVisitor<?>) this, context);
+            }
+        }
+        select.accept((SelectVisitor<?>) this, context);
+        return null;
     }
 
     @Override
     public void visit(Select select) {
-        List<WithItem> withItemsList = select.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
-            }
-        }
-        select.accept((SelectVisitor) this);
+        StatementVisitor.super.visit(select);
     }
 
     @Override
-    public void visit(TranscodingFunction transcodingFunction) {
-        transcodingFunction.getExpression().accept(this);
+    public <S> Void visit(TranscodingFunction transcodingFunction, S context) {
+        transcodingFunction.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(TrimFunction trimFunction) {
+    public <S> Void visit(TrimFunction trimFunction, S context) {
         if (trimFunction.getExpression() != null) {
-            trimFunction.getExpression().accept(this);
+            trimFunction.getExpression().accept(this, context);
         }
         if (trimFunction.getFromExpression() != null) {
-            trimFunction.getFromExpression().accept(this);
+            trimFunction.getFromExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(RangeExpression rangeExpression) {
-        rangeExpression.getStartExpression().accept(this);
-        rangeExpression.getEndExpression().accept(this);
+    public <S> Void visit(RangeExpression rangeExpression, S context) {
+        rangeExpression.getStartExpression().accept(this, context);
+        rangeExpression.getEndExpression().accept(this, context);
+        return null;
     }
 
     /**
@@ -275,65 +294,78 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
 
     public Set<String> getTables(Expression expr) {
         init(true);
-        expr.accept(this);
+        expr.accept(this, null);
         return tables;
     }
 
-    public static Set<String> findTablesInExpression(String exprStr) throws JSQLParserException {
-        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-        return tablesNamesFinder.getTables(CCJSqlParserUtil.parseExpression(exprStr));
+    @Override
+    public <S> Void visit(WithItem withItem, S context) {
+        otherItemNames.add(withItem.getAlias().getName());
+        withItem.getSelect().accept((SelectVisitor<?>) this, context);
+        return null;
     }
 
     @Override
     public void visit(WithItem withItem) {
-        otherItemNames.add(withItem.getAlias().getName());
-        withItem.getSelect().accept((SelectVisitor) this);
+        SelectVisitor.super.visit(withItem);
     }
 
     @Override
-    public void visit(ParenthesedSelect select) {
+    public <S> Void visit(ParenthesedSelect select, S context) {
         if (select.getAlias() != null) {
             otherItemNames.add(select.getAlias().getName());
         }
         List<WithItem> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this, context);
             }
         }
-        select.getSelect().accept((SelectVisitor) this);
+        select.getSelect().accept((SelectVisitor<?>) this, context);
+        return null;
     }
 
     @Override
-    public void visit(PlainSelect plainSelect) {
+    public void visit(ParenthesedSelect parenthesedSelect) {
+        SelectVisitor.super.visit(parenthesedSelect);
+    }
+
+    @Override
+    public <S> Void visit(PlainSelect plainSelect, S context) {
         List<WithItem> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this, context);
             }
         }
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem<?> item : plainSelect.getSelectItems()) {
-                item.accept(this);
+                item.accept(this, context);
             }
         }
 
         if (plainSelect.getFromItem() != null) {
-            plainSelect.getFromItem().accept(this);
+            plainSelect.getFromItem().accept(this, context);
         }
 
-        visitJoins(plainSelect.getJoins());
+        visitJoins(plainSelect.getJoins(), context);
         if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(this);
+            plainSelect.getWhere().accept(this, context);
         }
 
         if (plainSelect.getHaving() != null) {
-            plainSelect.getHaving().accept(this);
+            plainSelect.getHaving().accept(this, context);
         }
 
         if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(this);
+            plainSelect.getOracleHierarchical().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public void visit(PlainSelect plainSelect) {
+        SelectVisitor.super.visit(plainSelect);
     }
 
     /**
@@ -347,246 +379,295 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(Table tableName) {
+    public <S> Void visit(Table tableName, S context) {
         String tableWholeName = extractTableName(tableName);
         if (!otherItemNames.contains(tableWholeName)) {
             tables.add(tableWholeName);
         }
+        return null;
     }
 
     @Override
-    public void visit(Addition addition) {
+    public void visit(Table tableName) {
+        FromItemVisitor.super.visit(tableName);
+    }
+
+    @Override
+    public <S> Void visit(Addition addition, S context) {
         visitBinaryExpression(addition);
+        return null;
     }
 
     @Override
-    public void visit(AndExpression andExpression) {
+    public <S> Void visit(AndExpression andExpression, S context) {
         visitBinaryExpression(andExpression);
+        return null;
     }
 
     @Override
-    public void visit(Between between) {
-        between.getLeftExpression().accept(this);
-        between.getBetweenExpressionStart().accept(this);
-        between.getBetweenExpressionEnd().accept(this);
+    public <S> Void visit(Between between, S context) {
+        between.getLeftExpression().accept(this, context);
+        between.getBetweenExpressionStart().accept(this, context);
+        between.getBetweenExpressionEnd().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(OverlapsCondition overlapsCondition) {
-        overlapsCondition.getLeft().accept(this);
-        overlapsCondition.getRight().accept(this);
+    public <S> Void visit(OverlapsCondition overlapsCondition, S context) {
+        overlapsCondition.getLeft().accept(this, context);
+        overlapsCondition.getRight().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(Column tableColumn) {
+    public <S> Void visit(Column tableColumn, S context) {
         if (allowColumnProcessing && tableColumn.getTable() != null
                 && tableColumn.getTable().getName() != null) {
-            visit(tableColumn.getTable());
+            visit(tableColumn.getTable(), context);
         }
+        return null;
     }
 
     @Override
-    public void visit(Division division) {
+    public <S> Void visit(Division division, S context) {
         visitBinaryExpression(division);
+        return null;
     }
 
     @Override
-    public void visit(IntegerDivision division) {
+    public <S> Void visit(IntegerDivision division, S context) {
         visitBinaryExpression(division);
+        return null;
     }
 
     @Override
-    public void visit(DoubleValue doubleValue) {
+    public <S> Void visit(DoubleValue doubleValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(EqualsTo equalsTo) {
+    public <S> Void visit(EqualsTo equalsTo, S context) {
         visitBinaryExpression(equalsTo);
+        return null;
     }
 
     @Override
-    public void visit(Function function) {
-        ExpressionList exprList = function.getParameters();
+    public <S> Void visit(Function function, S context) {
+        ExpressionList<?> exprList = function.getParameters();
         if (exprList != null) {
-            visit(exprList);
+            visit(exprList, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(GreaterThan greaterThan) {
+    public <S> Void visit(GreaterThan greaterThan, S context) {
         visitBinaryExpression(greaterThan);
+        return null;
     }
 
     @Override
-    public void visit(GreaterThanEquals greaterThanEquals) {
+    public <S> Void visit(GreaterThanEquals greaterThanEquals, S context) {
         visitBinaryExpression(greaterThanEquals);
+        return null;
     }
 
     @Override
-    public void visit(InExpression inExpression) {
-        inExpression.getLeftExpression().accept(this);
-        inExpression.getRightExpression().accept(this);
+    public <S> Void visit(InExpression inExpression, S context) {
+        inExpression.getLeftExpression().accept(this, context);
+        inExpression.getRightExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(IncludesExpression includesExpression) {
-        includesExpression.getLeftExpression().accept(this);
-        includesExpression.getRightExpression().accept(this);
+    public <S> Void visit(IncludesExpression includesExpression, S context) {
+        includesExpression.getLeftExpression().accept(this, context);
+        includesExpression.getRightExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(ExcludesExpression excludesExpression) {
-        excludesExpression.getLeftExpression().accept(this);
-        excludesExpression.getRightExpression().accept(this);
+    public <S> Void visit(ExcludesExpression excludesExpression, S context) {
+        excludesExpression.getLeftExpression().accept(this, context);
+        excludesExpression.getRightExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(FullTextSearch fullTextSearch) {
+    public <S> Void visit(FullTextSearch fullTextSearch, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(SignedExpression signedExpression) {
-        signedExpression.getExpression().accept(this);
+    public <S> Void visit(SignedExpression signedExpression, S context) {
+        signedExpression.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(IsNullExpression isNullExpression) {
+    public <S> Void visit(IsNullExpression isNullExpression, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(IsBooleanExpression isBooleanExpression) {
+    public <S> Void visit(IsBooleanExpression isBooleanExpression, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(JdbcParameter jdbcParameter) {
+    public <S> Void visit(JdbcParameter jdbcParameter, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(LikeExpression likeExpression) {
+    public <S> Void visit(LikeExpression likeExpression, S context) {
         visitBinaryExpression(likeExpression);
+        return null;
     }
 
     @Override
-    public void visit(ExistsExpression existsExpression) {
-        existsExpression.getRightExpression().accept(this);
+    public <S> Void visit(ExistsExpression existsExpression, S context) {
+        existsExpression.getRightExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(MemberOfExpression memberOfExpression) {
-        memberOfExpression.getLeftExpression().accept(this);
-        memberOfExpression.getRightExpression().accept(this);
+    public <S> Void visit(MemberOfExpression memberOfExpression, S context) {
+        memberOfExpression.getLeftExpression().accept(this, context);
+        memberOfExpression.getRightExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(LongValue longValue) {
+    public <S> Void visit(LongValue longValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(MinorThan minorThan) {
+    public <S> Void visit(MinorThan minorThan, S context) {
         visitBinaryExpression(minorThan);
+        return null;
     }
 
     @Override
-    public void visit(MinorThanEquals minorThanEquals) {
+    public <S> Void visit(MinorThanEquals minorThanEquals, S context) {
         visitBinaryExpression(minorThanEquals);
+        return null;
     }
 
     @Override
-    public void visit(Multiplication multiplication) {
+    public <S> Void visit(Multiplication multiplication, S context) {
         visitBinaryExpression(multiplication);
+        return null;
     }
 
     @Override
-    public void visit(NotEqualsTo notEqualsTo) {
+    public <S> Void visit(NotEqualsTo notEqualsTo, S context) {
         visitBinaryExpression(notEqualsTo);
+        return null;
     }
 
     @Override
-    public void visit(DoubleAnd doubleAnd) {
+    public <S> Void visit(DoubleAnd doubleAnd, S context) {
         visitBinaryExpression(doubleAnd);
+        return null;
     }
 
     @Override
-    public void visit(Contains contains) {
+    public <S> Void visit(Contains contains, S context) {
         visitBinaryExpression(contains);
+        return null;
     }
 
     @Override
-    public void visit(ContainedBy containedBy) {
+    public <S> Void visit(ContainedBy containedBy, S context) {
         visitBinaryExpression(containedBy);
+        return null;
     }
 
     @Override
-    public void visit(NullValue nullValue) {
+    public <S> Void visit(NullValue nullValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(OrExpression orExpression) {
+    public <S> Void visit(OrExpression orExpression, S context) {
         visitBinaryExpression(orExpression);
+        return null;
     }
 
     @Override
-    public void visit(XorExpression xorExpression) {
+    public <S> Void visit(XorExpression xorExpression, S context) {
         visitBinaryExpression(xorExpression);
+        return null;
     }
 
     @Override
-    public void visit(StringValue stringValue) {
+    public <S> Void visit(StringValue stringValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Subtraction subtraction) {
+    public <S> Void visit(Subtraction subtraction, S context) {
         visitBinaryExpression(subtraction);
+        return null;
     }
 
     @Override
-    public void visit(NotExpression notExpr) {
-        notExpr.getExpression().accept(this);
+    public <S> Void visit(NotExpression notExpr, S context) {
+        notExpr.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseRightShift expr) {
+    public <S> Void visit(BitwiseRightShift expr, S context) {
         visitBinaryExpression(expr);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseLeftShift expr) {
+    public <S> Void visit(BitwiseLeftShift expr, S context) {
         visitBinaryExpression(expr);
+        return null;
     }
 
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
-        binaryExpression.getLeftExpression().accept(this);
-        binaryExpression.getRightExpression().accept(this);
+        binaryExpression.getLeftExpression().accept(this, null);
+        binaryExpression.getRightExpression().accept(this, null);
     }
 
     @Override
-    public void visit(ExpressionList<?> expressionList) {
+    public <S> Void visit(ExpressionList<?> expressionList, S context) {
         for (Expression expression : expressionList) {
-            expression.accept(this);
+            expression.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(DateValue dateValue) {
+    public <S> Void visit(DateValue dateValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(TimestampValue timestampValue) {
+    public <S> Void visit(TimestampValue timestampValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(TimeValue timeValue) {
+    public <S> Void visit(TimeValue timeValue, S context) {
 
+        return null;
     }
 
     /*
@@ -596,18 +677,19 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * CaseExpression)
      */
     @Override
-    public void visit(CaseExpression caseExpression) {
+    public <S> Void visit(CaseExpression caseExpression, S context) {
         if (caseExpression.getSwitchExpression() != null) {
-            caseExpression.getSwitchExpression().accept(this);
+            caseExpression.getSwitchExpression().accept(this, context);
         }
         if (caseExpression.getWhenClauses() != null) {
             for (WhenClause when : caseExpression.getWhenClauses()) {
-                when.accept(this);
+                when.accept(this, context);
             }
         }
         if (caseExpression.getElseExpression() != null) {
-            caseExpression.getElseExpression().accept(this);
+            caseExpression.getElseExpression().accept(this, context);
         }
+        return null;
     }
 
     /*
@@ -617,113 +699,144 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      * net.sf.jsqlparser.expression.ExpressionVisitor#visit(net.sf.jsqlparser.expression.WhenClause)
      */
     @Override
-    public void visit(WhenClause whenClause) {
+    public <S> Void visit(WhenClause whenClause, S context) {
         if (whenClause.getWhenExpression() != null) {
-            whenClause.getWhenExpression().accept(this);
+            whenClause.getWhenExpression().accept(this, context);
         }
         if (whenClause.getThenExpression() != null) {
-            whenClause.getThenExpression().accept(this);
+            whenClause.getThenExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(AnyComparisonExpression anyComparisonExpression) {
-        anyComparisonExpression.getSelect().accept((ExpressionVisitor) this);
+    public <S> Void visit(AnyComparisonExpression anyComparisonExpression, S context) {
+        anyComparisonExpression.getSelect().accept((ExpressionVisitor<?>) this, context);
+        return null;
     }
 
     @Override
-    public void visit(Concat concat) {
+    public <S> Void visit(Concat concat, S context) {
         visitBinaryExpression(concat);
+        return null;
     }
 
     @Override
-    public void visit(Matches matches) {
+    public <S> Void visit(Matches matches, S context) {
         visitBinaryExpression(matches);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseAnd bitwiseAnd) {
+    public <S> Void visit(BitwiseAnd bitwiseAnd, S context) {
         visitBinaryExpression(bitwiseAnd);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseOr bitwiseOr) {
+    public <S> Void visit(BitwiseOr bitwiseOr, S context) {
         visitBinaryExpression(bitwiseOr);
+        return null;
     }
 
     @Override
-    public void visit(BitwiseXor bitwiseXor) {
+    public <S> Void visit(BitwiseXor bitwiseXor, S context) {
         visitBinaryExpression(bitwiseXor);
+        return null;
     }
 
     @Override
-    public void visit(CastExpression cast) {
-        cast.getLeftExpression().accept(this);
+    public <S> Void visit(CastExpression cast, S context) {
+        cast.getLeftExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(Modulo modulo) {
+    public <S> Void visit(Modulo modulo, S context) {
         visitBinaryExpression(modulo);
+        return null;
     }
 
     @Override
-    public void visit(AnalyticExpression analytic) {
+    public <S> Void visit(AnalyticExpression analytic, S context) {
         if (analytic.getExpression() != null) {
-            analytic.getExpression().accept(this);
+            analytic.getExpression().accept(this, context);
         }
         if (analytic.getDefaultValue() != null) {
-            analytic.getDefaultValue().accept(this);
+            analytic.getDefaultValue().accept(this, context);
         }
         if (analytic.getOffset() != null) {
-            analytic.getOffset().accept(this);
+            analytic.getOffset().accept(this, context);
         }
         if (analytic.getKeep() != null) {
-            analytic.getKeep().accept(this);
+            analytic.getKeep().accept(this, context);
         }
         if (analytic.getFuncOrderBy() != null) {
             for (OrderByElement element : analytic.getOrderByElements()) {
-                element.getExpression().accept(this);
+                element.getExpression().accept(this, context);
             }
         }
 
         if (analytic.getWindowElement() != null) {
-            analytic.getWindowElement().getRange().getStart().getExpression().accept(this);
-            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this);
-            analytic.getWindowElement().getOffset().getExpression().accept(this);
+            analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
+                    context);
+            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
+                    context);
+            analytic.getWindowElement().getOffset().getExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(SetOperationList list) {
+    public <S> Void visit(SetOperationList list, S context) {
         List<WithItem> withItemsList = list.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem withItem : withItemsList) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this, context);
             }
         }
         for (Select selectBody : list.getSelects()) {
-            selectBody.accept((SelectVisitor) this);
+            selectBody.accept((SelectVisitor<?>) this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(ExtractExpression eexpr) {
+    public void visit(SetOperationList setOpList) {
+        SelectVisitor.super.visit(setOpList);
+    }
+
+    @Override
+    public <S> Void visit(ExtractExpression eexpr, S context) {
         if (eexpr.getExpression() != null) {
-            eexpr.getExpression().accept(this);
+            eexpr.getExpression().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(LateralSubSelect lateralSubSelect, S context) {
+        if (lateralSubSelect.getAlias() != null) {
+            otherItemNames.add(lateralSubSelect.getAlias().getName());
+        }
+        lateralSubSelect.getSelect().accept((SelectVisitor<?>) this, context);
+        return null;
     }
 
     @Override
     public void visit(LateralSubSelect lateralSubSelect) {
-        if (lateralSubSelect.getAlias() != null) {
-            otherItemNames.add(lateralSubSelect.getAlias().getName());
-        }
-        lateralSubSelect.getSelect().accept((SelectVisitor) this);
+        SelectVisitor.super.visit(lateralSubSelect);
+    }
+
+    @Override
+    public <S> Void visit(TableStatement tableStatement, S context) {
+        tableStatement.getTable().accept(this, null);
+        return null;
     }
 
     @Override
     public void visit(TableStatement tableStatement) {
-        tableStatement.getTable().accept(this);
+        SelectVisitor.super.visit(tableStatement);
     }
 
     /**
@@ -741,324 +854,494 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
     }
 
     @Override
-    public void visit(IntervalExpression iexpr) {
-        if (iexpr.getExpression() != null) {
-            iexpr.getExpression().accept(this);
+    public <S> Void visit(IntervalExpression intervalExpression, S context) {
+        if (intervalExpression.getExpression() != null) {
+            intervalExpression.getExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(JdbcNamedParameter jdbcNamedParameter) {
+    public <S> Void visit(JdbcNamedParameter jdbcNamedParameter, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(OracleHierarchicalExpression oexpr) {
-        if (oexpr.getStartExpression() != null) {
-            oexpr.getStartExpression().accept(this);
+    public <S> Void visit(OracleHierarchicalExpression hierarchicalExpression, S context) {
+        if (hierarchicalExpression.getStartExpression() != null) {
+            hierarchicalExpression.getStartExpression().accept(this, context);
         }
 
-        if (oexpr.getConnectExpression() != null) {
-            oexpr.getConnectExpression().accept(this);
+        if (hierarchicalExpression.getConnectExpression() != null) {
+            hierarchicalExpression.getConnectExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(RegExpMatchOperator rexpr) {
-        visitBinaryExpression(rexpr);
+    public <S> Void visit(RegExpMatchOperator regExpMatchOperator, S context) {
+        visitBinaryExpression(regExpMatchOperator);
+        return null;
     }
 
     @Override
-    public void visit(JsonExpression jsonExpr) {
+    public <S> Void visit(JsonExpression jsonExpr, S context) {
         if (jsonExpr.getExpression() != null) {
-            jsonExpr.getExpression().accept(this);
+            jsonExpr.getExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(JsonOperator jsonExpr) {
+    public <S> Void visit(JsonOperator jsonExpr, S context) {
         visitBinaryExpression(jsonExpr);
+        return null;
     }
 
     @Override
-    public void visit(AllColumns allColumns) {
+    public <S> Void visit(AllColumns allColumns, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(AllTableColumns allTableColumns) {
+    public <S> Void visit(AllTableColumns allTableColumns, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(AllValue allValue) {
+    public <S> Void visit(AllValue allValue, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(IsDistinctExpression isDistinctExpression) {
+    public <S> Void visit(IsDistinctExpression isDistinctExpression, S context) {
         visitBinaryExpression(isDistinctExpression);
+        return null;
     }
 
     @Override
-    public void visit(SelectItem item) {
-        item.getExpression().accept(this);
+    public <S> Void visit(SelectItem<?> item, S context) {
+        item.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(UserVariable var) {
-
+    public void visit(SelectItem<? extends Expression> selectItem) {
+        SelectItemVisitor.super.visit(selectItem);
     }
 
     @Override
-    public void visit(NumericBind bind) {
+    public <S> Void visit(UserVariable userVariable, S context) {
 
-
+        return null;
     }
 
     @Override
-    public void visit(KeepExpression aexpr) {
+    public <S> Void visit(NumericBind numericBind, S context) {
 
+
+        return null;
     }
 
     @Override
-    public void visit(MySQLGroupConcat groupConcat) {
+    public <S> Void visit(KeepExpression keepExpression, S context) {
 
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MySQLGroupConcat groupConcat, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Delete delete, S context) {
+        visit(delete.getTable(), context);
+
+        if (delete.getUsingList() != null) {
+            for (Table using : delete.getUsingList()) {
+                visit(using, context);
+            }
+        }
+
+        visitJoins(delete.getJoins(), context);
+
+        if (delete.getWhere() != null) {
+            delete.getWhere().accept(this, context);
+        }
+        return null;
     }
 
     @Override
     public void visit(Delete delete) {
-        visit(delete.getTable());
-
-        if (delete.getUsingList() != null) {
-            for (Table using : delete.getUsingList()) {
-                visit(using);
-            }
-        }
-
-        visitJoins(delete.getJoins());
-
-        if (delete.getWhere() != null) {
-            delete.getWhere().accept(this);
-        }
+        StatementVisitor.super.visit(delete);
     }
 
     @Override
-    public void visit(Update update) {
-        visit(update.getTable());
+    public <S> Void visit(Update update, S context) {
+        visit(update.getTable(), context);
         if (update.getWithItemsList() != null) {
             for (WithItem withItem : update.getWithItemsList()) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this, context);
             }
         }
 
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
-                join.getRightItem().accept(this);
+                join.getRightItem().accept(this, context);
             }
         }
         if (update.getExpressions() != null) {
             for (Expression expression : update.getExpressions()) {
-                expression.accept(this);
+                expression.accept(this, context);
             }
         }
 
         if (update.getFromItem() != null) {
-            update.getFromItem().accept(this);
+            update.getFromItem().accept(this, context);
         }
 
         if (update.getJoins() != null) {
             for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this);
+                join.getRightItem().accept(this, context);
                 for (Expression expression : join.getOnExpressions()) {
-                    expression.accept(this);
+                    expression.accept(this, context);
                 }
             }
         }
 
         if (update.getWhere() != null) {
-            update.getWhere().accept(this);
+            update.getWhere().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public void visit(Update update) {
+        StatementVisitor.super.visit(update);
+    }
+
+    @Override
+    public <S> Void visit(Insert insert, S context) {
+        visit(insert.getTable(), context);
+        if (insert.getWithItemsList() != null) {
+            for (WithItem withItem : insert.getWithItemsList()) {
+                withItem.accept((SelectVisitor<?>) this, context);
+            }
+        }
+        if (insert.getSelect() != null) {
+            visit(insert.getSelect(), context);
+        }
+        return null;
     }
 
     @Override
     public void visit(Insert insert) {
-        visit(insert.getTable());
-        if (insert.getWithItemsList() != null) {
-            for (WithItem withItem : insert.getWithItemsList()) {
-                withItem.accept((SelectVisitor) this);
-            }
-        }
-        if (insert.getSelect() != null) {
-            visit(insert.getSelect());
-        }
+        StatementVisitor.super.visit(insert);
     }
 
+    @Override
+    public <S> Void visit(Analyze analyze, S context) {
+        visit(analyze.getTable(), context);
+        return null;
+    }
+
+    @Override
     public void visit(Analyze analyze) {
-        visit(analyze.getTable());
+        StatementVisitor.super.visit(analyze);
+    }
+
+    @Override
+    public <S> Void visit(Drop drop, S context) {
+        visit(drop.getName(), context);
+        return null;
     }
 
     @Override
     public void visit(Drop drop) {
-        visit(drop.getName());
+        StatementVisitor.super.visit(drop);
+    }
+
+    @Override
+    public <S> Void visit(Truncate truncate, S context) {
+        visit(truncate.getTable(), context);
+        return null;
     }
 
     @Override
     public void visit(Truncate truncate) {
-        visit(truncate.getTable());
+        StatementVisitor.super.visit(truncate);
+    }
+
+    @Override
+    public <S> Void visit(CreateIndex createIndex, S context) {
+        throwUnsupported(createIndex);
+        return null;
     }
 
     @Override
     public void visit(CreateIndex createIndex) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(createIndex);
     }
 
     @Override
-    public void visit(CreateSchema aThis) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    public <S> Void visit(CreateSchema createSchema, S context) {
+        throwUnsupported(createSchema);
+        return null;
     }
 
     @Override
-    public void visit(CreateTable create) {
-        visit(create.getTable());
+    public void visit(CreateSchema createSchema) {
+        StatementVisitor.super.visit(createSchema);
+    }
+
+    @Override
+    public <S> Void visit(CreateTable create, S context) {
+        visit(create.getTable(), null);
         if (create.getSelect() != null) {
-            create.getSelect().accept((SelectVisitor) this);
+            create.getSelect().accept((SelectVisitor<?>) this, context);
         }
+        return null;
+    }
+
+    @Override
+    public void visit(CreateTable createTable) {
+        StatementVisitor.super.visit(createTable);
+    }
+
+    @Override
+    public <S> Void visit(CreateView createView, S context) {
+        throwUnsupported(createView);
+        return null;
     }
 
     @Override
     public void visit(CreateView createView) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(createView);
+    }
+
+    @Override
+    public <S> Void visit(Alter alter, S context) {
+        throwUnsupported(alter);
+        return null;
     }
 
     @Override
     public void visit(Alter alter) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(alter);
     }
 
     @Override
-    public void visit(Statements stmts) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    public <S> Void visit(Statements statements, S context) {
+        for (Statement statement : statements) {
+            statement.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(Statements statements) {
+        StatementVisitor.super.visit(statements);
+    }
+
+    @Override
+    public <S> Void visit(Execute execute, S context) {
+        throwUnsupported(execute);
+        return null;
     }
 
     @Override
     public void visit(Execute execute) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(execute);
+    }
+
+    @Override
+    public <S> Void visit(SetStatement setStatement, S context) {
+        throwUnsupported(setStatement);
+        return null;
     }
 
     @Override
     public void visit(SetStatement set) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(set);
+    }
+
+    @Override
+    public <S> Void visit(ResetStatement reset, S context) {
+        throwUnsupported(reset);
+        return null;
     }
 
     @Override
     public void visit(ResetStatement reset) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(reset);
     }
 
     @Override
-    public void visit(ShowColumnsStatement set) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+    public <S> Void visit(ShowColumnsStatement showColumnsStatement, S context) {
+        throwUnsupported(showColumnsStatement);
+        return null;
+    }
+
+    @Override
+    public void visit(ShowColumnsStatement showColumns) {
+        StatementVisitor.super.visit(showColumns);
+    }
+
+    @Override
+    public <S> Void visit(ShowIndexStatement showIndex, S context) {
+        throwUnsupported(showIndex);
+        return null;
     }
 
     @Override
     public void visit(ShowIndexStatement showIndex) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(showIndex);
     }
 
     @Override
-    public void visit(RowConstructor<?> rowConstructor) {
+    public <S> Void visit(RowConstructor<?> rowConstructor, S context) {
         for (Expression expr : rowConstructor) {
-            expr.accept(this);
+            expr.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(RowGetExpression rowGetExpression) {
-        rowGetExpression.getExpression().accept(this);
+    public <S> Void visit(RowGetExpression rowGetExpression, S context) {
+        rowGetExpression.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(HexValue hexValue) {
-
-
+    public <S> Void visit(HexValue hexValue, S context) {
+        return null;
     }
 
     @Override
-    public void visit(Merge merge) {
-        visit(merge.getTable());
+    public <S> Void visit(Merge merge, S context) {
+        visit(merge.getTable(), context);
         if (merge.getWithItemsList() != null) {
             for (WithItem withItem : merge.getWithItemsList()) {
-                withItem.accept((SelectVisitor) this);
+                withItem.accept((SelectVisitor<?>) this, context);
             }
         }
 
         if (merge.getFromItem() != null) {
-            merge.getFromItem().accept(this);
+            merge.getFromItem().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(OracleHint hint) {
+    public void visit(Merge merge) {
+        StatementVisitor.super.visit(merge);
+    }
 
+    @Override
+    public <S> Void visit(OracleHint hint, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(TableFunction tableFunction, S context) {
+        visit(tableFunction.getFunction(), null);
+        return null;
     }
 
     @Override
     public void visit(TableFunction tableFunction) {
-        visit(tableFunction.getFunction());
+        FromItemVisitor.super.visit(tableFunction);
+    }
+
+    @Override
+    public <S> Void visit(AlterView alterView, S context) {
+        throwUnsupported(alterView);
+        return null;
     }
 
     @Override
     public void visit(AlterView alterView) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
+        StatementVisitor.super.visit(alterView);
+    }
+
+    @Override
+    public <S> Void visit(RefreshMaterializedViewStatement materializedView, S context) {
+        visit(materializedView.getView(), context);
+        return null;
     }
 
     @Override
     public void visit(RefreshMaterializedViewStatement materializedView) {
-        visit(materializedView.getView());
+        StatementVisitor.super.visit(materializedView);
     }
 
     @Override
-    public void visit(TimeKeyExpression timeKeyExpression) {
-
+    public <S> Void visit(TimeKeyExpression timeKeyExpression, S context) {
+        return null;
     }
 
     @Override
-    public void visit(DateTimeLiteralExpression literal) {
+    public <S> Void visit(DateTimeLiteralExpression literal, S context) {
+        return null;
+    }
 
-
+    @Override
+    public <S> Void visit(Commit commit, S context) {
+        return null;
     }
 
     @Override
     public void visit(Commit commit) {
+        StatementVisitor.super.visit(commit);
+    }
 
-
+    @Override
+    public <S> Void visit(Upsert upsert, S context) {
+        visit(upsert.getTable(), context);
+        if (upsert.getExpressions() != null) {
+            upsert.getExpressions().accept(this, context);
+        }
+        if (upsert.getSelect() != null) {
+            visit(upsert.getSelect(), context);
+        }
+        return null;
     }
 
     @Override
     public void visit(Upsert upsert) {
-        visit(upsert.getTable());
-        if (upsert.getExpressions() != null) {
-            upsert.getExpressions().accept(this);
-        }
-        if (upsert.getSelect() != null) {
-            visit(upsert.getSelect());
-        }
+        StatementVisitor.super.visit(upsert);
+    }
+
+    @Override
+    public <S> Void visit(UseStatement use, S context) {
+        return null;
     }
 
     @Override
     public void visit(UseStatement use) {
-
+        StatementVisitor.super.visit(use);
     }
 
     @Override
-    public void visit(ParenthesedFromItem parenthesis) {
+    public <S> Void visit(ParenthesedFromItem parenthesis, S context) {
         if (parenthesis.getAlias() != null) {
             otherItemNames.add(parenthesis.getAlias().getName());
         }
-        parenthesis.getFromItem().accept(this);
+        parenthesis.getFromItem().accept(this, context);
         // support join keyword in fromItem
-        visitJoins(parenthesis.getJoins());
+        visitJoins(parenthesis.getJoins(), context);
+        return null;
+    }
+
+    @Override
+    public void visit(ParenthesedFromItem parenthesedFromItem) {
+        FromItemVisitor.super.visit(parenthesedFromItem);
     }
 
     /**
@@ -1066,259 +1349,391 @@ public class TablesNamesFinder implements SelectVisitor, FromItemVisitor, Expres
      *
      * @param joins join sql block
      */
-    private void visitJoins(List<Join> joins) {
+    private <S> void visitJoins(List<Join> joins, S context) {
         if (joins == null) {
             return;
         }
         for (Join join : joins) {
-            join.getFromItem().accept(this);
-            join.getRightItem().accept(this);
+            join.getFromItem().accept(this, context);
+            join.getRightItem().accept(this, context);
             for (Expression expression : join.getOnExpressions()) {
-                expression.accept(this);
+                expression.accept(this, context);
             }
         }
+    }
+
+    @Override
+    public <S> Void visit(Block block, S context) {
+        if (block.getStatements() != null) {
+            visit(block.getStatements(), context);
+        }
+        return null;
     }
 
     @Override
     public void visit(Block block) {
-        if (block.getStatements() != null) {
-            visit(block.getStatements());
-        }
+        StatementVisitor.super.visit(block);
     }
 
     @Override
-    public void visit(Comment comment) {
+    public <S> Void visit(Comment comment, S context) {
         if (comment.getTable() != null) {
-            visit(comment.getTable());
+            visit(comment.getTable(), context);
         }
         if (comment.getColumn() != null) {
             Table table = comment.getColumn().getTable();
             if (table != null) {
-                visit(table);
+                visit(table, context);
             }
         }
+        return null;
+    }
+
+    @Override
+    public void visit(Comment comment) {
+        StatementVisitor.super.visit(comment);
+    }
+
+    @Override
+    public <S> Void visit(Values values, S context) {
+        values.getExpressions().accept(this, context);
+        return null;
     }
 
     @Override
     public void visit(Values values) {
-        values.getExpressions().accept(this);
+        SelectVisitor.super.visit(values);
+    }
+
+    @Override
+    public <S> Void visit(DescribeStatement describe, S context) {
+        describe.getTable().accept(this, context);
+        return null;
     }
 
     @Override
     public void visit(DescribeStatement describe) {
-        describe.getTable().accept(this);
+        StatementVisitor.super.visit(describe);
     }
 
     @Override
-    public void visit(ExplainStatement explain) {
-        if (explain.getStatement() != null) {
-            explain.getStatement().accept((StatementVisitor) this);
+    public <S> Void visit(ExplainStatement explainStatement, S context) {
+        if (explainStatement.getStatement() != null) {
+            explainStatement.getStatement().accept((StatementVisitor<?>) this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(NextValExpression nextVal) {
-
+    public void visit(ExplainStatement explainStatement) {
+        StatementVisitor.super.visit(explainStatement);
     }
 
     @Override
-    public void visit(CollateExpression col) {
-        col.getLeftExpression().accept(this);
+    public <S> Void visit(NextValExpression nextVal, S context) {
+        return null;
     }
 
     @Override
-    public void visit(ShowStatement aThis) {
-
+    public <S> Void visit(CollateExpression collateExpression, S context) {
+        collateExpression.getLeftExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(SimilarToExpression expr) {
+    public <S> Void visit(ShowStatement showStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public void visit(ShowStatement showStatement) {
+        StatementVisitor.super.visit(showStatement);
+    }
+
+    @Override
+    public <S> Void visit(SimilarToExpression expr, S context) {
         visitBinaryExpression(expr);
+        return null;
     }
 
     @Override
-    public void visit(DeclareStatement aThis) {
+    public <S> Void visit(DeclareStatement declareStatement, S context) {
+        return null;
+    }
 
+    @Override
+    public void visit(DeclareStatement declareStatement) {
+        StatementVisitor.super.visit(declareStatement);
+    }
+
+    @Override
+    public <S> Void visit(Grant grant, S context) {
+        return null;
     }
 
     @Override
     public void visit(Grant grant) {
-
-
+        StatementVisitor.super.visit(grant);
     }
 
     @Override
-    public void visit(ArrayExpression array) {
-        array.getObjExpression().accept(this);
+    public <S> Void visit(ArrayExpression array, S context) {
+        array.getObjExpression().accept(this, context);
         if (array.getStartIndexExpression() != null) {
-            array.getIndexExpression().accept(this);
+            array.getIndexExpression().accept(this, context);
         }
         if (array.getStartIndexExpression() != null) {
-            array.getStartIndexExpression().accept(this);
+            array.getStartIndexExpression().accept(this, context);
         }
         if (array.getStopIndexExpression() != null) {
-            array.getStopIndexExpression().accept(this);
+            array.getStopIndexExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(ArrayConstructor array) {
+    public <S> Void visit(ArrayConstructor array, S context) {
         for (Expression expression : array.getExpressions()) {
-            expression.accept(this);
+            expression.accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateSequence createSequence, S context) {
+        throwUnsupported(createSequence);
+        return null;
     }
 
     @Override
     public void visit(CreateSequence createSequence) {
-        throw new UnsupportedOperationException(
-                "Finding tables from CreateSequence is not supported");
+        StatementVisitor.super.visit(createSequence);
+    }
+
+    @Override
+    public <S> Void visit(AlterSequence alterSequence, S context) {
+        throwUnsupported(alterSequence);
+        return null;
     }
 
     @Override
     public void visit(AlterSequence alterSequence) {
-        throw new UnsupportedOperationException(
-                "Finding tables from AlterSequence is not supported");
+        StatementVisitor.super.visit(alterSequence);
+    }
+
+    @Override
+    public <S> Void visit(CreateFunctionalStatement createFunctionalStatement, S context) {
+        throwUnsupported(createFunctionalStatement);
+        return null;
     }
 
     @Override
     public void visit(CreateFunctionalStatement createFunctionalStatement) {
-        throw new UnsupportedOperationException(
-                "Finding tables from CreateFunctionalStatement is not supported");
+        StatementVisitor.super.visit(createFunctionalStatement);
+    }
+
+    @Override
+    public <S> Void visit(ShowTablesStatement showTables, S context) {
+        throwUnsupported(showTables);
+        return null;
     }
 
     @Override
     public void visit(ShowTablesStatement showTables) {
-        throw new UnsupportedOperationException(
-                "Finding tables from ShowTablesStatement is not supported");
+        StatementVisitor.super.visit(showTables);
     }
 
     @Override
-    public void visit(TSQLLeftJoin tsqlLeftJoin) {
+    public <S> Void visit(TSQLLeftJoin tsqlLeftJoin, S context) {
         visitBinaryExpression(tsqlLeftJoin);
+        return null;
     }
 
     @Override
-    public void visit(TSQLRightJoin tsqlRightJoin) {
+    public <S> Void visit(TSQLRightJoin tsqlRightJoin, S context) {
         visitBinaryExpression(tsqlRightJoin);
+        return null;
     }
 
     @Override
-    public void visit(StructType structType) {
+    public <S> Void visit(StructType structType, S context) {
         if (structType.getArguments() != null) {
             for (SelectItem<?> selectItem : structType.getArguments()) {
-                selectItem.getExpression().accept(this);
+                selectItem.getExpression().accept(this, context);
             }
         }
+        return null;
     }
 
     @Override
-    public void visit(LambdaExpression lambdaExpression) {
-        lambdaExpression.getExpression().accept(this);
+    public <S> Void visit(LambdaExpression lambdaExpression, S context) {
+        lambdaExpression.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(VariableAssignment var) {
-        var.getVariable().accept(this);
-        var.getExpression().accept(this);
+    public <S> Void visit(VariableAssignment variableAssignment, S context) {
+        variableAssignment.getVariable().accept(this, context);
+        variableAssignment.getExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(XMLSerializeExpr aThis) {
+    public <S> Void visit(XMLSerializeExpr xmlSerializeExpr, S context) {
 
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateSynonym createSynonym, S context) {
+        throwUnsupported(createSynonym);
+        return null;
     }
 
     @Override
     public void visit(CreateSynonym createSynonym) {
-        throwUnsupported(createSynonym);
-    }
-
-    private static <T> void throwUnsupported(T type) {
-        throw new UnsupportedOperationException(String.format(
-                "Finding tables from %s is not supported", type.getClass().getSimpleName()));
+        StatementVisitor.super.visit(createSynonym);
     }
 
     @Override
-    public void visit(TimezoneExpression aThis) {
-        aThis.getLeftExpression().accept(this);
+    public <S> Void visit(TimezoneExpression timezoneExpression, S context) {
+        timezoneExpression.getLeftExpression().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(SavepointStatement savepointStatement) {}
+    public <S> Void visit(SavepointStatement savepointStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public void visit(SavepointStatement savepointStatement) {
+        StatementVisitor.super.visit(savepointStatement);
+    }
+
+    @Override
+    public <S> Void visit(RollbackStatement rollbackStatement, S context) {
+
+        return null;
+    }
 
     @Override
     public void visit(RollbackStatement rollbackStatement) {
+        StatementVisitor.super.visit(rollbackStatement);
+    }
 
+    @Override
+    public <S> Void visit(AlterSession alterSession, S context) {
+
+        return null;
     }
 
     @Override
     public void visit(AlterSession alterSession) {
-
+        StatementVisitor.super.visit(alterSession);
     }
 
     @Override
-    public void visit(JsonAggregateFunction expression) {
+    public <S> Void visit(JsonAggregateFunction expression, S context) {
         Expression expr = expression.getExpression();
         if (expr != null) {
-            expr.accept(this);
+            expr.accept(this, context);
         }
 
         expr = expression.getFilterExpression();
         if (expr != null) {
-            expr.accept(this);
+            expr.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(JsonFunction expression) {
+    public <S> Void visit(JsonFunction expression, S context) {
         for (JsonFunctionExpression expr : expression.getExpressions()) {
-            expr.getExpression().accept(this);
+            expr.getExpression().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(ConnectByRootOperator connectByRootOperator) {
-        connectByRootOperator.getColumn().accept(this);
+    public <S> Void visit(ConnectByRootOperator connectByRootOperator, S context) {
+        connectByRootOperator.getColumn().accept(this, context);
+        return null;
     }
 
-    public void visit(IfElseStatement ifElseStatement) {
-        ifElseStatement.getIfStatement().accept(this);
+    @Override
+    public <S> Void visit(IfElseStatement ifElseStatement, S context) {
+        ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {
-            ifElseStatement.getElseStatement().accept(this);
+            ifElseStatement.getElseStatement().accept(this, context);
         }
+        return null;
     }
 
-    public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {
-        oracleNamedFunctionParameter.getExpression().accept(this);
+    @Override
+    public void visit(IfElseStatement ifElseStatement) {
+        StatementVisitor.super.visit(ifElseStatement);
+    }
+
+    @Override
+    public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
+        oracleNamedFunctionParameter.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(RenameTableStatement renameTableStatement, S context) {
+        for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
+            e.getKey().accept(this, context);
+            e.getValue().accept(this, context);
+        }
+        return null;
     }
 
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
-        for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
-            e.getKey().accept(this);
-            e.getValue().accept(this);
+        StatementVisitor.super.visit(renameTableStatement);
+    }
+
+    @Override
+    public <S> Void visit(PurgeStatement purgeStatement, S context) {
+        if (purgeStatement.getPurgeObjectType() == PurgeObjectType.TABLE) {
+            ((Table) purgeStatement.getObject()).accept(this, context);
         }
+        return null;
     }
 
     @Override
     public void visit(PurgeStatement purgeStatement) {
-        if (purgeStatement.getPurgeObjectType() == PurgeObjectType.TABLE) {
-            ((Table) purgeStatement.getObject()).accept(this);
-        }
+        StatementVisitor.super.visit(purgeStatement);
+    }
+
+    @Override
+    public <S> Void visit(AlterSystemStatement alterSystemStatement, S context) {
+        // no tables involved in this statement
+        return null;
     }
 
     @Override
     public void visit(AlterSystemStatement alterSystemStatement) {
+        StatementVisitor.super.visit(alterSystemStatement);
+    }
+
+    @Override
+    public <S> Void visit(UnsupportedStatement unsupportedStatement, S context) {
         // no tables involved in this statement
+        return null;
     }
 
     @Override
     public void visit(UnsupportedStatement unsupportedStatement) {
-        // no tables involved in this statement
+        StatementVisitor.super.visit(unsupportedStatement);
     }
 
     @Override
-    public void visit(GeometryDistance geometryDistance) {
+    public <S> Void visit(GeometryDistance geometryDistance, S context) {
         visitBinaryExpression(geometryDistance);
+        return null;
     }
 
 }

@@ -17,9 +17,10 @@ import java.util.List;
 
 public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
 
-    private ExpressionVisitor expressionVisitor;
+    private ExpressionVisitor<StringBuilder> expressionVisitor;
 
-    public SetStatementDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public SetStatementDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
     }
@@ -44,17 +45,17 @@ public class SetStatementDeParser extends AbstractDeParser<SetStatement> {
                 if (j > 0) {
                     buffer.append(", ");
                 }
-                expressions.get(j).accept(expressionVisitor);
+                expressions.get(j).accept(expressionVisitor, null);
             }
         }
 
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
     }
 
-    public void setExpressionVisitor(ExpressionVisitor visitor) {
+    public void setExpressionVisitor(ExpressionVisitor<StringBuilder> visitor) {
         expressionVisitor = visitor;
     }
 }

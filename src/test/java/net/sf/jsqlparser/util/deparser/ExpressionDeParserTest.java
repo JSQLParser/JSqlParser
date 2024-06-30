@@ -38,7 +38,7 @@ public class ExpressionDeParserTest {
     private ExpressionDeParser expressionDeParser;
 
     @Mock
-    private SelectVisitor selectVisitor;
+    private SelectVisitor<StringBuilder> selectVisitor;
 
     private StringBuilder buffer;
 
@@ -55,7 +55,7 @@ public class ExpressionDeParserTest {
     public void shouldDeParseSimplestAnalyticExpression() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
         analyticExpression.setName("name");
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
         assertEquals("name() OVER ()", buffer.toString());
     }
 
@@ -67,9 +67,9 @@ public class ExpressionDeParserTest {
         analyticExpression.setName("name");
         analyticExpression.setExpression(expression);
 
-        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser, null);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name(expression) OVER ()", buffer.toString());
     }
@@ -84,10 +84,10 @@ public class ExpressionDeParserTest {
         analyticExpression.setExpression(expression);
         analyticExpression.setOffset(offset);
 
-        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
-        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser, null);
+        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser, null);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name(expression, offset) OVER ()", buffer.toString());
     }
@@ -104,11 +104,11 @@ public class ExpressionDeParserTest {
         analyticExpression.setOffset(offset);
         analyticExpression.setDefaultValue(defaultValue);
 
-        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser);
-        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser);
-        will(appendToBuffer("default value")).given(defaultValue).accept(expressionDeParser);
+        will(appendToBuffer("expression")).given(expression).accept(expressionDeParser, null);
+        will(appendToBuffer("offset")).given(offset).accept(expressionDeParser, null);
+        will(appendToBuffer("default value")).given(defaultValue).accept(expressionDeParser, null);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name(expression, offset, default value) OVER ()", buffer.toString());
     }
@@ -120,7 +120,7 @@ public class ExpressionDeParserTest {
         analyticExpression.setName("name");
         analyticExpression.setAllColumns(true);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name(*) OVER ()", buffer.toString());
     }
@@ -133,9 +133,9 @@ public class ExpressionDeParserTest {
         analyticExpression.setName("name");
         analyticExpression.setKeep(keep);
 
-        will(appendToBuffer("keep")).given(keep).accept(expressionDeParser);
+        will(appendToBuffer("keep")).given(keep).accept(expressionDeParser, null);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name() keep OVER ()", buffer.toString());
     }
@@ -143,7 +143,7 @@ public class ExpressionDeParserTest {
     @Test
     public void shouldDeParseComplexAnalyticExpressionWithPartitionExpressionList() {
         AnalyticExpression analyticExpression = new AnalyticExpression();
-        ExpressionList partitionExpressionList = new ExpressionList();
+        ExpressionList<Expression> partitionExpressionList = new ExpressionList<>();
         Expression partitionExpression1 = mock(Expression.class);
         Expression partitionExpression2 = mock(Expression.class);
 
@@ -153,11 +153,11 @@ public class ExpressionDeParserTest {
         partitionExpressionList.add(partitionExpression2);
 
         will(appendToBuffer("partition expression 1")).given(partitionExpression1)
-                .accept(expressionDeParser);
+                .accept(expressionDeParser, null);
         will(appendToBuffer("partition expression 2")).given(partitionExpression2)
-                .accept(expressionDeParser);
+                .accept(expressionDeParser, null);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name() OVER (PARTITION BY partition expression 1, partition expression 2 )",
                 buffer.toString());
@@ -180,7 +180,7 @@ public class ExpressionDeParserTest {
         will(appendToBuffer("order by element 2")).given(orderByDeParser)
                 .deParseElement(orderByElement2);
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name() OVER (ORDER BY order by element 1, order by element 2)",
                 buffer.toString());
@@ -206,7 +206,7 @@ public class ExpressionDeParserTest {
                 .deParseElement(orderByElement2);
         given(windowElement.toString()).willReturn("window element");
 
-        expressionDeParser.visit(analyticExpression);
+        expressionDeParser.visit(analyticExpression, null);
 
         assertEquals("name() OVER (ORDER BY order by element 1, order by element 2 window element)",
                 buffer.toString());

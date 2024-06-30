@@ -45,10 +45,10 @@ public class IfElseStatementTest {
 
     @Test
     public void testIfElseStatements1() throws Exception {
-        String sqlStr
-                = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1; ELSE CREATE TABLE tOrigin1 (ID VARCHAR (40));\n"
-                + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin2; ELSE CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
-                + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
+        String sqlStr =
+                "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1; ELSE CREATE TABLE tOrigin1 (ID VARCHAR (40));\n"
+                        + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin2; ELSE CREATE TABLE tOrigin2 (ID VARCHAR (40));\n"
+                        + "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin3; ELSE CREATE TABLE tOrigin3 (ID VARCHAR (40));\n";
 
         Statements result = CCJSqlParserUtil.parseStatements(sqlStr);
         assertEquals(sqlStr, result.toString());
@@ -86,8 +86,8 @@ public class IfElseStatementTest {
     @Test
     public void testValidation() {
         String sqlStr = "IF OBJECT_ID('tOrigin', 'U') IS NOT NULL DROP TABLE tOrigin1;";
-        List<ValidationError> errors
-                = Validation.validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);
+        List<ValidationError> errors = Validation
+                .validate(Arrays.asList(DatabaseType.SQLSERVER, FeaturesAllowed.DROP), sqlStr);
         ValidationTestAsserts.assertErrorsSize(errors, 0);
     }
 

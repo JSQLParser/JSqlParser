@@ -193,7 +193,7 @@ public class ParserKeywordsUtils {
      */
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            throw new IllegalArgumentException("No filename provided as parameters ARGS[0]");
+            throw new IllegalArgumentException("No filename provided aS context ARGS[0]");
         }
 
         File grammarFile = new File(args[0]);

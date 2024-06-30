@@ -25,7 +25,6 @@ import java.util.List;
  * condition part of the tree.
  *
  * @author messfish
- *
  */
 class CloneHelper {
 

@@ -10,27 +10,10 @@
 package net.sf.jsqlparser.statement.select;
 
 public class SampleClause {
-    public enum SampleKeyword {
-        SAMPLE, TABLESAMPLE;
-
-        public static SampleKeyword from(String sampleKeyword) {
-            return Enum.valueOf(SampleKeyword.class, sampleKeyword.toUpperCase());
-        }
-    }
-
-    public enum SampleMethod {
-        BERNOULLI, SYSTEM, BLOCK;
-
-        public static SampleMethod from(String sampleMethod) {
-            return Enum.valueOf(SampleMethod.class, sampleMethod.toUpperCase());
-        }
-    }
-
     private SampleKeyword keyword;
     private SampleMethod method;
     private Number percentageArgument;
     private Number repeatArgument;
-
     // Oracle Specific
     private Number seedArgument;
 
@@ -125,5 +108,21 @@ public class SampleClause {
 
     public String toString() {
         return appendTo(new StringBuilder()).toString();
+    }
+
+    public enum SampleKeyword {
+        SAMPLE, TABLESAMPLE;
+
+        public static SampleKeyword from(String sampleKeyword) {
+            return Enum.valueOf(SampleKeyword.class, sampleKeyword.toUpperCase());
+        }
+    }
+
+    public enum SampleMethod {
+        BERNOULLI, SYSTEM, BLOCK;
+
+        public static SampleMethod from(String sampleMethod) {
+            return Enum.valueOf(SampleMethod.class, sampleMethod.toUpperCase());
+        }
     }
 }

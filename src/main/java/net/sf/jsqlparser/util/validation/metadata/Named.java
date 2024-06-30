@@ -55,30 +55,28 @@ public class Named {
         return this;
     }
 
-    public Named setFqnLookup(String fqnLookup) {
-        this.fqnLookup = fqnLookup;
-        return this;
-    }
-
-    public Named setAliasLookup(String aliasLookup) {
-        this.aliasLookup = aliasLookup;
-        return this;
-    }
-
     /**
-     * @return the fqn transformed for catalog-lookup (uppercase/lowercase/..
-     *         depends on database)
+     * @return the fqn transformed for catalog-lookup (uppercase/lowercase/.. depends on database)
      */
     public String getFqnLookup() {
         return fqnLookup;
     }
 
+    public Named setFqnLookup(String fqnLookup) {
+        this.fqnLookup = fqnLookup;
+        return this;
+    }
+
     /**
-     * @return the alias transformed for catalog-lookup (uppercase/lowercase/..
-     *         depends on database)
+     * @return the alias transformed for catalog-lookup (uppercase/lowercase/.. depends on database)
      */
     public String getAliasLookup() {
         return aliasLookup;
+    }
+
+    public Named setAliasLookup(String aliasLookup) {
+        this.aliasLookup = aliasLookup;
+        return this;
     }
 
     @Override
@@ -121,7 +119,8 @@ public class Named {
 
     @Override
     public String toString() {
-        return "Named [namedObject=" + namedObject + ", fqn=" + fqn + ", alias=" + alias + ", parents=" + parents + "]";
+        return "Named [namedObject=" + namedObject + ", fqn=" + fqn + ", alias=" + alias
+                + ", parents=" + parents + "]";
     }
 
 

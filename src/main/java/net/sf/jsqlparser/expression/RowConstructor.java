@@ -36,8 +36,13 @@ public class RowConstructor<T extends Expression> extends ParenthesedExpressionL
         return (name != null ? name : "") + super.toString();
     }
 
-    public RowConstructor withName(String name) {
+    public RowConstructor<?> withName(String name) {
         this.setName(name);
         return this;
+    }
+
+    @Override
+    public <K, S> K accept(ExpressionVisitor<K> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

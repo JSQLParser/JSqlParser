@@ -40,11 +40,11 @@ import net.sf.jsqlparser.statement.Statements;
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
     public final static Logger LOGGER = Logger.getLogger(CCJSqlParserUtil.class.getName());
+    public final static int ALLOWED_NESTING_DEPTH = 10;
+
     static {
         LOGGER.setLevel(Level.OFF);
     }
-
-    public final static int ALLOWED_NESTING_DEPTH = 10;
 
     private CCJSqlParserUtil() {}
 
@@ -66,9 +66,9 @@ public final class CCJSqlParserUtil {
 
     /**
      * Parses an sql statement while allowing via consumer to configure the used parser before.
-     *
+     * <p>
      * For instance to activate SQLServer bracket quotation on could use:
-     *
+     * <p>
      * {@code
      * CCJSqlParserUtil.parse("select * from [mytable]", parser -> parser.withSquareBracketQuotation(true));
      * }

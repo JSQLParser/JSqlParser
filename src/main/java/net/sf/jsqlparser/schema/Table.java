@@ -12,6 +12,7 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
@@ -72,6 +73,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         setDatabase(database);
     }
 
+    public Table(String catalogName, String schemaName, String tableName) {
+        setName(tableName);
+        setSchemaName(schemaName);
+        setDatabase(new Database(catalogName));
+    }
+
     public Table(List<String> partItems) {
         this.partItems = new ArrayList<>(partItems);
         Collections.reverse(this.partItems);
@@ -88,13 +95,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         Collections.reverse(this.partDelimiters);
     }
 
-    public Database getDatabase() {
-        return new Database(getIndex(DATABASE_IDX));
+    public String getCatalogName() {
+        return getIndex(DATABASE_IDX);
     }
 
-    public Table withDatabase(Database database) {
-        setDatabase(database);
-        return this;
+    public Database getDatabase() {
+        return new Database(getIndex(DATABASE_IDX));
     }
 
     public void setDatabase(Database database) {
@@ -104,17 +110,22 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         }
     }
 
+    public Table withDatabase(Database database) {
+        setDatabase(database);
+        return this;
+    }
+
     public String getSchemaName() {
         return getIndex(SCHEMA_IDX);
+    }
+
+    public void setSchemaName(String schemaName) {
+        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public Table withSchemaName(String schemaName) {
         setSchemaName(schemaName);
         return this;
-    }
-
-    public void setSchemaName(String schemaName) {
-        setIndex(SCHEMA_IDX, schemaName);
     }
 
     public String getName() {
@@ -128,11 +139,15 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return name;
     }
 
+    public void setName(String name) {
+        setIndex(NAME_IDX, name);
+    }
+
     public String getDBLinkName() {
         String name = getIndex(NAME_IDX);
         if (name != null && name.contains("@")) {
             int pos = name.lastIndexOf('@');
-            if (pos > 0 && name.length() > 1) {
+            if (pos > 0) {
                 name = name.substring(pos + 1);
             }
         }
@@ -142,10 +157,6 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public Table withName(String name) {
         this.setName(name);
         return this;
-    }
-
-    public void setName(String name) {
-        setIndex(NAME_IDX, name);
     }
 
     @Override
@@ -198,12 +209,12 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     @Override
-    public void accept(FromItemVisitor fromItemVisitor) {
-        fromItemVisitor.visit(this);
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
     }
 
-    public void accept(IntoTableVisitor intoTableVisitor) {
-        intoTableVisitor.visit(this);
+    public <T, S> T accept(IntoTableVisitor<T> intoTableVisitor, S context) {
+        return intoTableVisitor.visit(this, context);
     }
 
     @Override

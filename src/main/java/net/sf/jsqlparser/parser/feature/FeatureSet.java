@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser.feature;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 
 public interface FeatureSet {
@@ -19,8 +20,8 @@ public interface FeatureSet {
     Set<Feature> getFeatures();
 
     /**
-     * @return <code>true</code> if the feature is identical to one of the features
-     *         contained in this set, <code>false</code> otherwise
+     * @return <code>true</code> if the feature is identical to one of the features contained in
+     *         this set, <code>false</code> otherwise
      */
     default boolean contains(Feature feature) {
         return getFeatures().contains(feature);
@@ -35,8 +36,7 @@ public interface FeatureSet {
 
     /**
      * @param features
-     * @return all features within this feature set which are not contained in given
-     *         set
+     * @return all features within this feature set which are not contained in given set
      */
     default Set<Feature> getNotContained(Collection<Feature> features) {
         Set<Feature> f = getFeaturesClone();
@@ -46,8 +46,7 @@ public interface FeatureSet {
 
     /**
      * @param features
-     * @return all features within this feature set which are contained in given
-     *         set too.
+     * @return all features within this feature set which are contained in given set too.
      */
     default Set<Feature> retainAll(Collection<Feature> features) {
         Set<Feature> f = getFeaturesClone();

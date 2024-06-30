@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -31,42 +32,45 @@ import net.sf.jsqlparser.statement.select.WithItem;
  *
  * @author tw
  */
-public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
+public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor<T> {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
-    private List<String> aliases = new LinkedList<String>();
+    private final List<String> aliases = new LinkedList<String>();
     private boolean firstRun = true;
     private int counter = 0;
     private String prefix = "A";
 
     @Override
-    public void visit(ParenthesedSelect parenthesedSelect) {
-        parenthesedSelect.getSelect().accept(this);
+    public <S> T visit(ParenthesedSelect parenthesedSelect, S context) {
+        parenthesedSelect.getSelect().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(PlainSelect plainSelect) {
+    public <S> T visit(PlainSelect plainSelect, S context) {
         firstRun = true;
         counter = 0;
         aliases.clear();
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            item.accept(this);
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+            item.accept(this, context);
         }
         firstRun = false;
-        for (SelectItem item : plainSelect.getSelectItems()) {
-            item.accept(this);
+        for (SelectItem<?> item : plainSelect.getSelectItems()) {
+            item.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(SetOperationList setOpList) {
-        for (Select select : setOpList.getSelects()) {
-            select.accept(this);
+    public <S> T visit(SetOperationList setOperationList, S context) {
+        for (Select select : setOperationList.getSelects()) {
+            select.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(SelectItem selectExpressionItem) {
+    public <S> T visit(SelectItem<?> selectExpressionItem, S context) {
         if (firstRun) {
             if (selectExpressionItem.getAlias() != null) {
                 aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
@@ -83,6 +87,7 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
                 }
             }
         }
+        return null;
     }
 
     protected String getNextAlias() {
@@ -95,26 +100,23 @@ public class AddAliasesVisitor implements SelectVisitor, SelectItemVisitor {
     }
 
     @Override
-    public void visit(WithItem withItem) {
-        throw new UnsupportedOperationException(NOT_SUPPORTED_YET); // To change body of generated
-                                                                    // methods, choose Tools |
-                                                                    // Templates.
+    public <S> T visit(WithItem withItem, S context) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public void visit(Values aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of
-                                                                       // generated methods, choose
-                                                                       // Tools | Templates.
+    public <S> T visit(Values values, S context) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override
-    public void visit(LateralSubSelect lateralSubSelect) {
-        lateralSubSelect.getSelect().accept(this);
+    public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
+        lateralSubSelect.getSelect().accept(this, context);
+        return null;
     }
 
     @Override
-    public void visit(TableStatement tableStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public <S> T visit(TableStatement tableStatement, S context) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 }

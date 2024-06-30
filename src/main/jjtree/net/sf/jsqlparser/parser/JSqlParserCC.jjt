@@ -2610,7 +2610,7 @@ List<SelectItem<?>> SelectItemsList():
 }
 
 
-SelectItem SelectItem() #SelectItem:
+SelectItem<?> SelectItem() #SelectItem:
 {
     Expression expression;
     Alias alias = null;
@@ -2631,7 +2631,7 @@ SelectItem SelectItem() #SelectItem:
     )
     [ LOOKAHEAD(2) alias=Alias() ]
     {
-        SelectItem selectItem = new SelectItem(expression, alias);
+        SelectItem<?> selectItem = new SelectItem(expression, alias);
         linkAST(selectItem,jjtThis);
         return selectItem;
     }
@@ -2798,7 +2798,7 @@ List<SelectItem<Function>> PivotFunctionItems():
     { return functionItems; }
 }
 
-SelectItem<ExpressionList> ExpressionListItem():
+SelectItem<ExpressionList<?>> ExpressionListItem():
 {
     ExpressionList expressionList;
     Alias alias = null;
@@ -2806,13 +2806,13 @@ SelectItem<ExpressionList> ExpressionListItem():
 {
     expressionList=ParenthesedExpressionList()
     [ alias=Alias() ]
-    { return new SelectItem<ExpressionList>(expressionList, alias); }
+    { return new SelectItem<ExpressionList<?>>(expressionList, alias); }
 }
 
-List<SelectItem<ExpressionList>> PivotMultiInItems():
+List<SelectItem<ExpressionList<?>>> PivotMultiInItems():
 {
-   List<SelectItem<ExpressionList>> retval = new ArrayList<SelectItem<ExpressionList>>();
-   SelectItem<ExpressionList> item;
+   List<SelectItem<ExpressionList<?>>> retval = new ArrayList<SelectItem<ExpressionList<?>>>();
+   SelectItem<ExpressionList<?>> item;
 }
 {
    item = ExpressionListItem() {retval.add(item);}
@@ -2826,7 +2826,7 @@ Pivot Pivot():
     List<SelectItem<Function>> functionItems;
     ExpressionList<Column> forColumns;
     List<SelectItem<?>> singleInItems = null;
-    List<SelectItem<ExpressionList>> multiInItems = null;
+    List<SelectItem<ExpressionList<?>>> multiInItems = null;
     Alias alias = null;
 }
 {
@@ -2854,7 +2854,7 @@ PivotXml PivotXml():
     List<SelectItem<Function>> functionItems;
     ExpressionList<Column> forColumns;
     List<SelectItem<?>> singleInItems = null;
-    List<SelectItem<ExpressionList>> multiInItems = null;
+    List<SelectItem<ExpressionList<?>>> multiInItems = null;
     Select inSelect = null;
 }
 {

@@ -45,7 +45,7 @@ public class ExecuteDeParserTest {
         Execute execute = new Execute();
         String name = "name";
 
-        ParenthesedExpressionList expressions = new ParenthesedExpressionList();
+        ParenthesedExpressionList<Expression> expressions = new ParenthesedExpressionList<>();
         expressions.add(new JdbcParameter());
         expressions.add(new JdbcParameter());
 
@@ -71,12 +71,12 @@ public class ExecuteDeParserTest {
         expressions.add(expression1);
         expressions.add(expression2);
 
-        ExpressionList exprList = new ExpressionList().addExpressions(expressions);
+        ExpressionList<?> exprList = new ExpressionList<>().addExpressions(expressions);
         execute.withName(name).withExprList(exprList);
 
         executeDeParser.deParse(execute);
 
-        then(expression1).should().accept(expressionVisitor);
-        then(expression2).should().accept(expressionVisitor);
+        then(expression1).should().accept(expressionVisitor, null);
+        then(expression2).should().accept(expressionVisitor, null);
     }
 }

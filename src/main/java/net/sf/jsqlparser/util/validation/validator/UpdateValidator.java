@@ -40,7 +40,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
         if (update.isUseSelect()) {
             validateOptionalExpressions(update.getColumns());
             validateOptional(update.getSelect(),
-                    e -> e.accept(getValidator(SelectValidator.class)));
+                    e -> e.accept(getValidator(SelectValidator.class), null));
         } else {
             validateOptionalExpressions(update.getColumns());
             validateOptionalExpressions(update.getExpressions());
@@ -61,7 +61,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
 
         if (update.getReturningClause() != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            update.getReturningClause().forEach(c -> c.accept(v));
+            update.getReturningClause().forEach(c -> c.accept(v, null));
         }
     }
 

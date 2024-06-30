@@ -25,7 +25,7 @@ public class Limit extends ASTNodeAccessImpl {
     /**
      * A query with the LIMIT n BY expressions clause selects the first n rows for each distinct
      * value of expressions. The key for LIMIT BY can contain any number of expressions.
-     * 
+     *
      * @see <a href=
      *      'https://clickhouse.com/docs/en/sql-reference/statements/select/limit-by'>ClickHouse
      *      LIMIT BY Clause</a>
@@ -36,12 +36,12 @@ public class Limit extends ASTNodeAccessImpl {
         return offset;
     }
 
-    public Expression getRowCount() {
-        return rowCount;
-    }
-
     public void setOffset(Expression l) {
         offset = l;
+    }
+
+    public Expression getRowCount() {
+        return rowCount;
     }
 
     public void setRowCount(Expression l) {

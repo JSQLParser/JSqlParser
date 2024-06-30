@@ -12,11 +12,12 @@ package net.sf.jsqlparser.util.validation.feature;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+
 import net.sf.jsqlparser.parser.feature.Feature;
 
 /**
  * Please add Features supported and place a link to public documentation
- * 
+ *
  * @author gitmotte
  * @see <a href=
  *      "https://dev.mysql.com/doc/refman/8.0/en/">https://dev.mysql.com/doc/refman/8.0/en/</a>

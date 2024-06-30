@@ -10,10 +10,10 @@
 package net.sf.jsqlparser.statement.select;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class OrderByVisitorAdapter implements OrderByVisitor {
+public class OrderByVisitorAdapter<T> implements OrderByVisitor<T> {
 
     @Override
-    public void visit(OrderByElement orderBy) {
-
+    public <S> T visit(OrderByElement orderBy, S context) {
+        return null;
     }
 }

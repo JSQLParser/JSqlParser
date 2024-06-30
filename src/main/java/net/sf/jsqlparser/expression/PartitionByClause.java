@@ -21,25 +21,27 @@ public class PartitionByClause implements Serializable {
     public ExpressionList getPartitionExpressionList() {
         return partitionExpressionList;
     }
-    
+
     public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList, boolean brackets) {
+    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+            boolean brackets) {
         this.partitionExpressionList = partitionExpressionList;
         this.brackets = brackets;
     }
 
     public void toStringPartitionBy(StringBuilder b) {
-        if (partitionExpressionList != null && !partitionExpressionList.getExpressions().isEmpty()) {
+        if (partitionExpressionList != null
+                && !partitionExpressionList.getExpressions().isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.
-                    getStringList(partitionExpressionList.getExpressions(), true, brackets));
+            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true,
+                    brackets));
             b.append(" ");
         }
     }
-    
+
     public boolean isBrackets() {
         return brackets;
     }

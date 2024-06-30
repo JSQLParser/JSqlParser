@@ -20,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the behavior of {@link net.sf.jsqlparser.statement.CreateFunctionalStatement funtion statements}
+ * Tests the behavior of {@link net.sf.jsqlparser.statement.CreateFunctionalStatement funtion
+ * statements}
  */
 public class CreateFunctionalStatementTest {
 
@@ -36,16 +37,17 @@ public class CreateFunctionalStatementTest {
 
     @Test
     public void createFunctionLong() throws JSQLParserException {
-        CreateFunction stm = (CreateFunction) CCJSqlParserUtil.parse("CREATE FUNCTION fun(query_from_time date) RETURNS TABLE(foo double precision, bar double precision)\n"
-                + "    LANGUAGE plpgsql\n"
-                + "    AS $$\n"
-                + "      BEGIN\n"
-                + "       RETURN QUERY\n"
-                + "      WITH bla AS (\n"
-                + "        SELECT * from foo)\n"
-                + "      Select * from bla;\n"
-                + "      END;\n"
-                + "      $$;");
+        CreateFunction stm = (CreateFunction) CCJSqlParserUtil.parse(
+                "CREATE FUNCTION fun(query_from_time date) RETURNS TABLE(foo double precision, bar double precision)\n"
+                        + "    LANGUAGE plpgsql\n"
+                        + "    AS $$\n"
+                        + "      BEGIN\n"
+                        + "       RETURN QUERY\n"
+                        + "      WITH bla AS (\n"
+                        + "        SELECT * from foo)\n"
+                        + "      Select * from bla;\n"
+                        + "      END;\n"
+                        + "      $$;");
         assertThat(stm).isNotNull();
         assertThat(stm.formatDeclaration()).contains("fun ( query_from_time date )");
     }
@@ -62,13 +64,14 @@ public class CreateFunctionalStatementTest {
 
     @Test
     public void createProcedureLong() throws JSQLParserException {
-        CreateProcedure stm = (CreateProcedure) CCJSqlParserUtil.parse("CREATE PROCEDURE remove_emp (employee_id NUMBER) AS\n"
-                + "   tot_emps NUMBER;\n"
-                + "   BEGIN\n"
-                + "      DELETE FROM employees\n"
-                + "      WHERE employees.employee_id = remove_emp.employee_id;\n"
-                + "   tot_emps := tot_emps - 1;\n"
-                + "   END;");
+        CreateProcedure stm = (CreateProcedure) CCJSqlParserUtil
+                .parse("CREATE PROCEDURE remove_emp (employee_id NUMBER) AS\n"
+                        + "   tot_emps NUMBER;\n"
+                        + "   BEGIN\n"
+                        + "      DELETE FROM employees\n"
+                        + "      WHERE employees.employee_id = remove_emp.employee_id;\n"
+                        + "   tot_emps := tot_emps - 1;\n"
+                        + "   END;");
         assertThat(stm).isNotNull();
         assertThat(stm.formatDeclaration()).contains("remove_emp ( employee_id NUMBER )");
     }

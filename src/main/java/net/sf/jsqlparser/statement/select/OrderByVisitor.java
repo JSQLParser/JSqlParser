@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-public interface OrderByVisitor {
+public interface OrderByVisitor<T> {
 
-    void visit(OrderByElement orderBy);
+    <S> T visit(OrderByElement orderBy, S context);
+
+    default void visit(OrderByElement orderBy) {
+        this.visit(orderBy, null);
+    }
 }

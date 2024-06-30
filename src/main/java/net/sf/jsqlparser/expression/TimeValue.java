@@ -25,15 +25,15 @@ public class TimeValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public TimeValue(String value) {
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             throw new IllegalArgumentException("value can neither be null nor empty.");
         }
         this.value = Time.valueOf(value.substring(1, value.length() - 1));
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public Time getValue() {

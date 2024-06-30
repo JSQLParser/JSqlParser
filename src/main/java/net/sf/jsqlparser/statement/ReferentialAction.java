@@ -62,9 +62,8 @@ public class ReferentialAction implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder(" ON ").append(getType().name()).append(" ")
-                .append(getAction().getAction())
-                .toString();
+        return " ON " + getType().name() + " " +
+                getAction().getAction();
     }
 
     @Override

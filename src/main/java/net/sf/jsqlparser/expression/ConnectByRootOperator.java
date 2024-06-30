@@ -26,18 +26,19 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.Objects;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 
 /**
- *
  * @author are
  */
 public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expression {
     private final Column column;
 
     public ConnectByRootOperator(Column column) {
-        this.column = Objects.requireNonNull(column, "The COLUMN of the ConnectByRoot Operator must not be null");
+        this.column = Objects.requireNonNull(column,
+                "The COLUMN of the ConnectByRoot Operator must not be null");
     }
 
     public Column getColumn() {
@@ -45,15 +46,15 @@ public class ConnectByRootOperator extends ASTNodeAccessImpl implements Expressi
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
-    
+
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("CONNECT_BY_ROOT ").append(column);
         return builder;
     }
-    
+
     @Override
     public String toString() {
         return appendTo(new StringBuilder()).toString();

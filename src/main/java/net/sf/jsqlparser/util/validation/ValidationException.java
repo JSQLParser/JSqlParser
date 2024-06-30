@@ -39,7 +39,8 @@ public class ValidationException extends RuntimeException {
         if (o.getClass().equals(this.getClass())) {
             // exact type match!
             ValidationException ve = (ValidationException) o;
-            return Objects.equals(getMessage(), ve.getMessage()) && Objects.equals(getCause(), ve.getCause());
+            return Objects.equals(getMessage(), ve.getMessage())
+                    && Objects.equals(getCause(), ve.getCause());
         } else {
             return false;
         }
@@ -47,11 +48,12 @@ public class ValidationException extends RuntimeException {
 
     @Override
     public int hashCode() {
-        return getMessage().hashCode() + (getCause() == null ? 0 : getCause().toString().hashCode());
+        return getMessage().hashCode()
+                + (getCause() == null ? 0 : getCause().toString().hashCode());
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return getClass().getSimpleName() + ": " + getMessage();
     }
 

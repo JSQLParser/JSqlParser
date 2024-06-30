@@ -27,7 +27,7 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
             List<SelectItem<Column>> replaceExpressions) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
-        this.exceptKeyword = exceptColumns !=null ? "Except" : null;
+        this.exceptKeyword = exceptColumns != null ? "Except" : null;
     }
 
     public AllColumns(ExpressionList<Column> exceptColumns,
@@ -45,6 +45,11 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return exceptColumns;
     }
 
+    public AllColumns setExceptColumns(ExpressionList<Column> exceptColumns) {
+        this.exceptColumns = exceptColumns;
+        return this;
+    }
+
     public ExpressionList<Column> addExceptColumn(Column column) {
         if (exceptColumns == null) {
             exceptColumns = new ExpressionList<>();
@@ -53,13 +58,13 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return exceptColumns;
     }
 
-    public AllColumns setExceptColumns(ExpressionList<Column> exceptColumns) {
-        this.exceptColumns = exceptColumns;
-        return this;
-    }
-
     public List<SelectItem<Column>> getReplaceExpressions() {
         return replaceExpressions;
+    }
+
+    public AllColumns setReplaceExpressions(List<SelectItem<Column>> replaceExpressions) {
+        this.replaceExpressions = replaceExpressions;
+        return this;
     }
 
     public List<SelectItem<Column>> addReplaceExpression(SelectItem<Column> selectItem) {
@@ -68,11 +73,6 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         }
         replaceExpressions.add(selectItem);
         return replaceExpressions;
-    }
-
-    public AllColumns setReplaceExpressions(List<SelectItem<Column>> replaceExpressions) {
-        this.replaceExpressions = replaceExpressions;
-        return this;
     }
 
     public String getExceptKeyword() {
@@ -109,7 +109,7 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

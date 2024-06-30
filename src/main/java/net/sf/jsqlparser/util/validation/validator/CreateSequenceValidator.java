@@ -1,11 +1,6 @@
 /*
- * #%L
- * JSQLParser library
- * %%
- * Copyright (C) 2004 - 2020 JSQLParser
- * %%
- * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
- * #L%
+ * #%L JSQLParser library %% Copyright (C) 2004 - 2020 JSQLParser %% Dual licensed under GNU LGPL
+ * 2.1 or Apache License 2.0 #L%
  */
 package net.sf.jsqlparser.util.validation.validator;
 
@@ -24,7 +19,8 @@ public class CreateSequenceValidator extends AbstractValidator<CreateSequence> {
     public void validate(CreateSequence statement) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(Feature.createSequence);
-            validateName(c, NamedObject.sequence, statement.getSequence().getFullyQualifiedName(), false);
+            validateName(c, NamedObject.sequence, statement.getSequence().getFullyQualifiedName(),
+                    false);
         }
     }
 }

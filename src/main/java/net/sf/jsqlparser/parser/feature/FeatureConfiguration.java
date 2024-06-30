@@ -24,7 +24,7 @@ public class FeatureConfiguration {
     public FeatureConfiguration() {
         // set default-value for all switchable features
         EnumSet.allOf(Feature.class).stream().filter(Feature::isConfigurable)
-        .forEach(f -> setValue(f, f.getDefaultValue()));
+                .forEach(f -> setValue(f, f.getDefaultValue()));
     }
 
     /**
@@ -46,8 +46,7 @@ public class FeatureConfiguration {
     /**
      * @param feature
      * @return the configured feature value - can be <code>null</code>
-     * @throws IllegalStateException - if given {@link Feature#isConfigurable()} ==
-     *                               false
+     * @throws IllegalStateException - if given {@link Feature#isConfigurable()} == false
      */
     public Object getValue(Feature feature) {
         if (feature.isConfigurable()) {

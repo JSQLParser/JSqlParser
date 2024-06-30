@@ -192,36 +192,38 @@ Traverse the Java Object Tree using the Visitor Patterns:
 
     // Define an Expression Visitor reacting on any Expression
     // Overwrite the visit() methods for each Expression Class
-    ExpressionVisitorAdapter expressionVisitorAdapter = new ExpressionVisitorAdapter() {
-        public void visit(EqualsTo equalsTo) {
-            equalsTo.getLeftExpression().accept(this);
-            equalsTo.getRightExpression().accept(this);
+    ExpressionVisitorAdapter<Void> expressionVisitorAdapter = new ExpressionVisitorAdapter<>() {
+        public <S> Void visit(EqualsTo equalsTo, S context) {
+            equalsTo.getLeftExpression().accept(this, context);
+            equalsTo.getRightExpression().accept(this, context);
+            return null;
         }
-        public void visit(Column column) {
+        public <S> Void visit(Column column, S context) {
             System.out.println("Found a Column " + column.getColumnName());
+            return null;
         }
     };
 
     // Define a Select Visitor reacting on a Plain Select invoking the Expression Visitor on the Where Clause
-    SelectVisitorAdapter selectVisitorAdapter = new SelectVisitorAdapter() {
+    SelectVisitorAdapter<Void> selectVisitorAdapter = new SelectVisitorAdapter<>() {
         @Override
-        public void visit(PlainSelect plainSelect) {
-            plainSelect.getWhere().accept(expressionVisitorAdapter);
+        public <S> Void visit(PlainSelect plainSelect, S context) {
+            return plainSelect.getWhere().accept(expressionVisitorAdapter, context);
         }
     };
 
     // Define a Statement Visitor for dispatching the Statements
-    StatementVisitorAdapter statementVisitor = new StatementVisitorAdapter() {
-        public void visit(Select select) {
-            select.getSelectBody().accept(selectVisitorAdapter);
+    StatementVisitorAdapter<Void> statementVisitor = new StatementVisitorAdapter<>() {
+        public <S> Void visit(Select select, S context) {
+            return select.getSelectBody().accept(selectVisitorAdapter, context);
         }
     };
 
     String sqlStr="select 1 from dual where a=b";
     Statement stmt = CCJSqlParserUtil.parse(sqlStr);
 
-    // Invoke the Statement Visitor
-    stmt.accept(statementVisitor);
+    // Invoke the Statement Visitor without a context
+    stmt.accept(statementVisitor, null);
 
 Find Table Names
 ==============================

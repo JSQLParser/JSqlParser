@@ -37,12 +37,12 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         Collections.reverse(this.partItems);
     }
 
-    public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
-    }
-
     public List<Parameter> getParameters() {
         return parameters;
+    }
+
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
     }
 
     public Database getDatabase() {

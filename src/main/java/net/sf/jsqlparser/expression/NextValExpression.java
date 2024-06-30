@@ -1,21 +1,18 @@
-/* -
- * #%L
- * JSQLParser library
- * %%
- * Copyright (C) 2004 - 2019 JSQLParser
- * %%
- * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
- * #L%
+/*
+ * - #%L JSQLParser library %% Copyright (C) 2004 - 2019 JSQLParser %% Dual licensed under GNU LGPL
+ * 2.1 or Apache License 2.0 #L%
  */
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
 import java.util.regex.Pattern;
+
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class NextValExpression extends ASTNodeAccessImpl implements Expression {
 
-    public static final Pattern NEXT_VALUE_PATTERN = Pattern.compile("NEXT\\s+VALUE\\s+FOR", Pattern.CASE_INSENSITIVE);
+    public static final Pattern NEXT_VALUE_PATTERN =
+            Pattern.compile("NEXT\\s+VALUE\\s+FOR", Pattern.CASE_INSENSITIVE);
     private final List<String> nameList;
     private boolean usingNextValueFor = false;
 
@@ -63,7 +60,7 @@ public class NextValExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 }

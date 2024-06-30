@@ -25,7 +25,8 @@ import org.junit.jupiter.api.Test;
 /**
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
- * @see <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER SESSION</a>
+ * @see <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER
+ *      SESSION</a>
  */
 public class AlterSystemTest {
 
@@ -48,8 +49,8 @@ public class AlterSystemTest {
     }
 
     /**
-     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the TableNamesFinder needed
-     * for the Code Coverage.
+     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the
+     * TableNamesFinder needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */
@@ -63,8 +64,8 @@ public class AlterSystemTest {
     }
 
     /**
-     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the ExpressionValidator
-     * needed for the Code Coverage.
+     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the
+     * ExpressionValidator needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */

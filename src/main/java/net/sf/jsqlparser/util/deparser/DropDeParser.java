@@ -39,7 +39,8 @@ public class DropDeParser extends AbstractDeParser<Drop> {
         }
 
         if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
-            buffer.append(" ").append(PlainSelect.getStringList(drop.getParameters(), false, false));
+            buffer.append(" ")
+                    .append(PlainSelect.getStringList(drop.getParameters(), false, false));
         }
     }
 

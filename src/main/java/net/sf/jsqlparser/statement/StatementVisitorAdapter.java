@@ -38,194 +38,253 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
-public class StatementVisitorAdapter implements StatementVisitor {
+public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
-    public void visit(Comment comment) {
+    public <S> T visit(Comment comment, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Commit commit) {
+    public <S> T visit(Commit commit, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Select select) {
+    public <S> T visit(Select select, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Delete delete) {
+    public <S> T visit(Delete delete, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Update update) {
+    public <S> T visit(Update update, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Insert insert) {
+    public <S> T visit(Insert insert, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Drop drop) {
+    public <S> T visit(Drop drop, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Truncate truncate) {
+    public <S> T visit(Truncate truncate, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(CreateIndex createIndex) {
+    public <S> T visit(CreateIndex createIndex, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(CreateSchema aThis) {}
-
-    @Override
-    public void visit(CreateTable createTable) {
-
+    public <S> T visit(CreateSchema createSchema, S context) {
+        return null;
     }
 
     @Override
-    public void visit(CreateView createView) {
+    public <S> T visit(CreateTable createTable, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Alter alter) {
+    public <S> T visit(CreateView createView, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Statements stmts) {
-        for (Statement statement : stmts.getStatements()) {
-            statement.accept(this);
+    public <S> T visit(Alter alter, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Statements statements, S context) {
+        for (Statement statement : statements) {
+            statement.accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(Execute execute) {
+    public <S> T visit(Execute execute, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(SetStatement set) {
+    public <S> T visit(SetStatement set, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(ResetStatement reset) {
+    public <S> T visit(ResetStatement reset, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(Merge merge) {
+    public <S> T visit(Merge merge, S context) {
 
+        return null;
     }
 
     @Override
-    public void visit(AlterView alterView) {}
-
-    @Override
-    public void visit(Upsert upsert) {}
-
-    @Override
-    public void visit(UseStatement use) {}
-
-    @Override
-    public void visit(Block block) {}
-
-    @Override
-    public void visit(DescribeStatement describe) {}
-
-    @Override
-    public void visit(ExplainStatement aThis) {}
-
-    @Override
-    public void visit(ShowStatement aThis) {}
-
-    @Override
-    public void visit(ShowColumnsStatement set) {}
-
-    @Override
-    public void visit(ShowIndexStatement set) {}
-
-    @Override
-    public void visit(ShowTablesStatement showTables) {}
-
-    @Override
-    public void visit(DeclareStatement aThis) {}
-
-    @Override
-    public void visit(Grant grant) {}
-
-    @Override
-    public void visit(CreateSequence createSequence) {}
-
-    @Override
-    public void visit(AlterSequence alterSequence) {}
-
-    @Override
-    public void visit(CreateFunctionalStatement createFunctionalStatement) {}
-
-    @Override
-    public void visit(CreateSynonym createSynonym) {}
-
-    @Override
-    public void visit(Analyze analyze) {
-
+    public <S> T visit(AlterView alterView, S context) {
+        return null;
     }
 
     @Override
-    public void visit(SavepointStatement savepointStatement) {
-        // @todo: do something usefull here
+    public <S> T visit(Upsert upsert, S context) {
+        return null;
     }
 
     @Override
-    public void visit(RollbackStatement rollbackStatement) {
-        // @todo: do something usefull here
+    public <S> T visit(UseStatement use, S context) {
+        return null;
     }
 
     @Override
-    public void visit(AlterSession alterSession) {
-        // @todo: do something usefull here
+    public <S> T visit(Block block, S context) {
+        return null;
     }
 
     @Override
-    public void visit(IfElseStatement ifElseStatement) {
-        ifElseStatement.getIfStatement().accept(this);
+    public <S> T visit(DescribeStatement describe, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ExplainStatement explainStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowStatement showStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowColumnsStatement showColumnsStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowIndexStatement showIndexStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowTablesStatement showTables, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DeclareStatement declareStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Grant grant, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateSequence createSequence, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterSequence alterSequence, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateFunctionalStatement createFunctionalStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateSynonym createSynonym, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Analyze analyze, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SavepointStatement savepointStatement, S context) {
+        // @todo: do something usefully here
+        return null;
+    }
+
+    @Override
+    public <S> T visit(RollbackStatement rollbackStatement, S context) {
+        // @todo: do something usefully here
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterSession alterSession, S context) {
+        // @todo: do something usefully here
+        return null;
+    }
+
+    @Override
+    public <S> T visit(IfElseStatement ifElseStatement, S context) {
+        ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {
-            ifElseStatement.getElseStatement().accept(this);
+            ifElseStatement.getElseStatement().accept(this, context);
         }
+        return null;
     }
 
     @Override
-    public void visit(RenameTableStatement renameTableStatement) {
-        // @todo: do something usefull here
+    public <S> T visit(RenameTableStatement renameTableStatement, S context) {
+        return null;
     }
 
     @Override
-    public void visit(PurgeStatement purgeStatement) {
-        // @todo: do something usefull here
+    public <S> T visit(PurgeStatement purgeStatement, S context) {
+        return null;
     }
 
     @Override
-    public void visit(AlterSystemStatement alterSystemStatement) {}
-
-    @Override
-    public void visit(UnsupportedStatement unsupportedStatement) {
-
+    public <S> T visit(AlterSystemStatement alterSystemStatement, S context) {
+        return null;
     }
 
     @Override
-    public void visit(RefreshMaterializedViewStatement materializedView) {
+    public <S> T visit(UnsupportedStatement unsupportedStatement, S context) {
 
+        return null;
+    }
+
+    @Override
+    public <S> T visit(RefreshMaterializedViewStatement materializedView, S context) {
+        return null;
     }
 }

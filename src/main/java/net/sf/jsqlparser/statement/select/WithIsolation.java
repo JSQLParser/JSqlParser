@@ -19,6 +19,7 @@ public class WithIsolation implements Serializable {
     public String getIsolation() {
         return this.isolation;
     }
+
     public void setIsolation(String s) {
         this.isolation = s;
     }

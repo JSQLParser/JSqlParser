@@ -53,8 +53,8 @@ public class PurgeStatementTest {
     }
 
     /**
-     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the TableNamesFinder needed
-     * for the Code Coverage.
+     * This test will trigger the method {@link TableNamesFinder#visit() Visit Method} in the
+     * TableNamesFinder needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */
@@ -69,8 +69,8 @@ public class PurgeStatementTest {
     }
 
     /**
-     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the ExpressionValidator
-     * needed for the Code Coverage.
+     * This test will trigger the method {@link ExpressionValidator#visit() Visit Method} in the
+     * ExpressionValidator needed for the Code Coverage.
      *
      * @throws net.sf.jsqlparser.JSQLParserException
      */

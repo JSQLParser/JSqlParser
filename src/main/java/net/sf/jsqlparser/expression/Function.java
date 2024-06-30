@@ -47,8 +47,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     public String getName() {
@@ -121,7 +121,6 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     /**
      * This is at the moment only necessary for AnalyticExpression initialization and not for normal
      * functions. Therefore there is no deparsing for it for normal functions.
-     *
      */
     public void setIgnoreNulls(boolean ignoreNulls) {
         this.nullHandling = ignoreNulls ? NullHandling.IGNORE_NULLS : null;
@@ -436,8 +435,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         }
 
         @Override
-        public void accept(ExpressionVisitor expressionVisitor) {
-            expression.accept(expressionVisitor);
+        public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+            return expression.accept(expressionVisitor, context);
         }
 
         public StringBuilder appendTo(StringBuilder builder) {

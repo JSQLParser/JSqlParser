@@ -13,10 +13,10 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements Expression {
 
+    boolean connectFirst = false;
     private Expression startExpression;
     private Expression connectExpression;
     private boolean noCycle = false;
-    boolean connectFirst = false;
 
     public Expression getStartExpression() {
         return startExpression;
@@ -51,8 +51,8 @@ public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements E
     }
 
     @Override
-    public void accept(ExpressionVisitor expressionVisitor) {
-        expressionVisitor.visit(this);
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
     }
 
     @Override

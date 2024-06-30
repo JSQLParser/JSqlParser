@@ -45,12 +45,10 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractValidator<S> implements Validator<S> {
 
-    private ValidationContext context = new ValidationContext();
-
-    private Map<ValidationCapability, Set<ValidationException>> errors = new HashMap<>();
-
-    private Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards =
+    private final Map<ValidationCapability, Set<ValidationException>> errors = new HashMap<>();
+    private final Map<Class<? extends AbstractValidator<?>>, AbstractValidator<?>> validatorForwards =
             new HashMap<>();
+    private ValidationContext context = new ValidationContext();
 
     public <T extends AbstractValidator<?>> T getValidator(Class<T> type) {
         return type.cast(validatorForwards.computeIfAbsent(type, this::newObject));
@@ -132,16 +130,16 @@ public abstract class AbstractValidator<S> implements Validator<S> {
     }
 
     protected void validateOptionalExpression(Expression expression) {
-        validateOptional(expression, e -> e.accept(getValidator(ExpressionValidator.class)));
+        validateOptional(expression, e -> e.accept(getValidator(ExpressionValidator.class), null));
     }
 
     protected void validateOptionalExpression(Expression expression, ExpressionValidator v) {
-        validateOptional(expression, e -> e.accept(v));
+        validateOptional(expression, e -> e.accept(v, null));
     }
 
     protected void validateOptionalExpressions(List<? extends Expression> expressions) {
         validateOptionalList(expressions, () -> getValidator(ExpressionValidator.class),
-                (o, v) -> o.accept(v));
+                (o, v) -> o.accept(v, null));
     }
 
     protected void validateOptionalFromItems(FromItem... fromItems) {
@@ -155,15 +153,15 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     protected void validateOptionalOrderByElements(List<OrderByElement> orderByElements) {
         validateOptionalList(orderByElements, () -> getValidator(OrderByValidator.class),
-                (o, v) -> o.accept(v));
+                (o, v) -> o.accept(v, null));
     }
 
     protected void validateOptionalFromItem(FromItem fromItem) {
-        validateOptional(fromItem, i -> i.accept(getValidator(SelectValidator.class)));
+        validateOptional(fromItem, i -> i.accept(getValidator(SelectValidator.class), null));
     }
 
     protected void validateOptionalFromItem(FromItem fromItem, SelectValidator v) {
-        validateOptional(fromItem, i -> i.accept(v));
+        validateOptional(fromItem, i -> i.accept(v, null));
     }
 
     /**

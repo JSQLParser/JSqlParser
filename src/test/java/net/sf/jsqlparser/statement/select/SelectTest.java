@@ -4372,21 +4372,22 @@ public class SelectTest {
         String sql = "select CURRENT_DATE + (dayofweek(MY_DUE_DATE) + 5) DAY FROM mytable";
         assertSqlCanBeParsedAndDeparsed(sql, true);
         Select select = (Select) CCJSqlParserUtil.parse(sql);
-        final List<SelectItem> list = new ArrayList<>();
-        select.accept(new SelectVisitorAdapter() {
+        final List<SelectItem<?>> list = new ArrayList<>();
+        select.accept(new SelectVisitorAdapter<Void>() {
             @Override
-            public void visit(PlainSelect plainSelect) {
+            public <S> Void visit(PlainSelect plainSelect, S parameters) {
                 list.addAll(plainSelect.getSelectItems());
+                return null;
             }
-        });
+        }, null);
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectItem);
-        SelectItem item = list.get(0);
-        assertTrue(item.getExpression() instanceof Addition);
+        assertInstanceOf(SelectItem.class, list.get(0));
+        SelectItem<?> item = list.get(0);
+        assertInstanceOf(Addition.class, item.getExpression());
         Addition add = (Addition) item.getExpression();
 
-        assertTrue(add.getRightExpression() instanceof IntervalExpression);
+        assertInstanceOf(IntervalExpression.class, add.getRightExpression());
     }
 
     @Test
@@ -4401,18 +4402,19 @@ public class SelectTest {
         String sql = "SELECT INTERVAL 5 MONTH MONTH FROM mytable";
         assertSqlCanBeParsedAndDeparsed(sql);
         Select select = (Select) CCJSqlParserUtil.parse(sql);
-        final List<SelectItem> list = new ArrayList<>();
-        select.accept(new SelectVisitorAdapter() {
+        final List<SelectItem<?>> list = new ArrayList<>();
+        select.accept(new SelectVisitorAdapter<Void>() {
             @Override
-            public void visit(PlainSelect plainSelect) {
+            public <S> Void visit(PlainSelect plainSelect, S parameters) {
                 list.addAll(plainSelect.getSelectItems());
+                return null;
             }
-        });
+        }, null);
 
         assertEquals(1, list.size());
-        assertTrue(list.get(0) instanceof SelectItem);
-        SelectItem item = list.get(0);
-        assertTrue(item.getExpression() instanceof IntervalExpression);
+        assertInstanceOf(SelectItem.class, list.get(0));
+        SelectItem<?> item = list.get(0);
+        assertInstanceOf(IntervalExpression.class, item.getExpression());
         IntervalExpression interval = (IntervalExpression) item.getExpression();
         assertEquals("INTERVAL 5 MONTH", interval.toString());
         assertEquals("MONTH", item.getAlias().getName());
@@ -4424,21 +4426,23 @@ public class SelectTest {
         String sql = "select " + prefix + "'test' from foo";
         Statement statement = CCJSqlParserUtil.parse(sql);
         assertNotNull(statement);
-        statement.accept(new StatementVisitorAdapter() {
+        statement.accept(new StatementVisitorAdapter<Void>() {
             @Override
-            public void visit(Select select) {
-                select.accept(new SelectVisitorAdapter() {
+            public <S> Void visit(Select select, S context) {
+                select.accept(new SelectVisitorAdapter<Void>() {
                     @Override
-                    public void visit(PlainSelect plainSelect) {
-                        SelectItem typedExpression =
-                                (SelectItem) plainSelect.getSelectItems().get(0);
+                    public <K> Void visit(PlainSelect plainSelect, K context) {
+                        SelectItem<?> typedExpression =
+                                (SelectItem<?>) plainSelect.getSelectItems().get(0);
                         assertNotNull(typedExpression);
                         assertNull(typedExpression.getAlias());
                         StringValue value = (StringValue) typedExpression.getExpression();
                         assertEquals(prefix.toUpperCase(), value.getPrefix());
                         assertEquals("test", value.getValue());
+                        return null;
                     }
-                });
+                }, context);
+                return null;
             }
         });
     }
@@ -5818,17 +5822,17 @@ public class SelectTest {
     @Test
     void testGroupByWithHaving() throws JSQLParserException {
         String sqlStr = "-- GROUP BY\n"
-                        + "SELECT  a\n"
-                        + "        , b\n"
-                        + "        , c\n"
-                        + "        , Sum( d )\n"
-                        + "FROM t\n"
-                        + "GROUP BY    a\n"
-                        + "            , b\n"
-                        + "            , c\n"
-                        + "HAVING Sum( d ) > 0\n"
-                        + "    AND Count( * ) > 1\n"
-                        + ";";
+                + "SELECT  a\n"
+                + "        , b\n"
+                + "        , c\n"
+                + "        , Sum( d )\n"
+                + "FROM t\n"
+                + "GROUP BY    a\n"
+                + "            , b\n"
+                + "            , c\n"
+                + "HAVING Sum( d ) > 0\n"
+                + "    AND Count( * ) > 1\n"
+                + ";";
         Statement stmt = assertSqlCanBeParsedAndDeparsed(sqlStr);
         Assertions.assertInstanceOf(Select.class, stmt);
     }

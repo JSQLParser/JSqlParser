@@ -58,7 +58,8 @@ public class DeleteTest {
     @Test
     public void testDeleteDoesNotAllowLimitOffset() {
         String statement = "DELETE FROM table1 WHERE A.cod_table = 'YYY' LIMIT 3,4";
-        assertThrows(JSQLParserException.class, () -> parserManager.parse(new StringReader(statement)));
+        assertThrows(JSQLParserException.class,
+                () -> parserManager.parse(new StringReader(statement)));
     }
 
     @Test
@@ -86,8 +87,10 @@ public class DeleteTest {
     }
 
     @Test
-    public void testDeleteFromTableUsingInnerJoinToAnotherTableWithAlias() throws JSQLParserException {
-        String stmt = "DELETE gc FROM guide_category AS gc LEFT JOIN guide AS g ON g.id_guide = gc.id_guide WHERE g.title IS NULL LIMIT 5";
+    public void testDeleteFromTableUsingInnerJoinToAnotherTableWithAlias()
+            throws JSQLParserException {
+        String stmt =
+                "DELETE gc FROM guide_category AS gc LEFT JOIN guide AS g ON g.id_guide = gc.id_guide WHERE g.title IS NULL LIMIT 5";
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
@@ -102,13 +105,12 @@ public class DeleteTest {
 
         assertOracleHintExists(sql, true, "SOMEHINT");
 
-        //@todo: add a testcase supposed to not finding a misplaced hint
+        // @todo: add a testcase supposed to not finding a misplaced hint
     }
 
     @Test
     public void testWith() throws JSQLParserException {
-        String statement
-                = ""
+        String statement = ""
                 + "WITH a\n"
                 + "     AS (SELECT 1 id_instrument_ref)\n"
                 + "     , b\n"
@@ -189,17 +191,14 @@ public class DeleteTest {
                 "  RETURNING name, price AS new_price";
         assertSqlCanBeParsedAndDeparsed(statement, true);
     }
+
     @Test
     public void testDeleteOutputClause() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "DELETE Sales.ShoppingCartItem OUTPUT DELETED.* FROM Sales"
-                , true
-        );
+                "DELETE Sales.ShoppingCartItem OUTPUT DELETED.* FROM Sales", true);
 
         assertSqlCanBeParsedAndDeparsed(
-                "DELETE Sales.ShoppingCartItem OUTPUT Sales.ShoppingCartItem FROM Sales"
-                , true
-        );
+                "DELETE Sales.ShoppingCartItem OUTPUT Sales.ShoppingCartItem FROM Sales", true);
 
         assertSqlCanBeParsedAndDeparsed(
                 "DELETE Production.ProductProductPhoto  \n" +
@@ -211,9 +210,8 @@ public class DeleteTest {
                         "FROM Production.ProductProductPhoto AS ph  \n" +
                         "JOIN Production.Product as p   \n" +
                         "    ON ph.ProductID = p.ProductID   \n" +
-                        "    WHERE p.ProductModelID BETWEEN 120 and 130"
-                , true
-        );
+                        "    WHERE p.ProductModelID BETWEEN 120 and 130",
+                true);
 
     }
 }

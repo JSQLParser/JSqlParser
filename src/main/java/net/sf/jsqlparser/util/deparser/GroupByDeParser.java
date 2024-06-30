@@ -15,15 +15,12 @@ import net.sf.jsqlparser.statement.select.GroupByElement;
 
 public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
 
-    private ExpressionListDeParser expressionListDeParser;
+    private final ExpressionListDeParser<?> expressionListDeParser;
 
-    GroupByDeParser() {
-        this(null, new StringBuilder());
-    }
-
-    public GroupByDeParser(ExpressionVisitor expressionVisitor, StringBuilder buffer) {
+    public GroupByDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            StringBuilder buffer) {
         super(buffer);
-        this.expressionListDeParser = new ExpressionListDeParser(expressionVisitor, buffer);
+        this.expressionListDeParser = new ExpressionListDeParser<>(expressionVisitor, buffer);
         this.buffer = buffer;
     }
 
@@ -39,7 +36,7 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
                 buffer.append(' ');
             }
             buffer.append("GROUPING SETS (");
-            for (ExpressionList expressionList : groupBy.getGroupingSets()) {
+            for (ExpressionList<?> expressionList : groupBy.getGroupingSets()) {
                 buffer.append(i++ > 0 ? ", " : "");
                 expressionListDeParser.deParse(expressionList);
             }

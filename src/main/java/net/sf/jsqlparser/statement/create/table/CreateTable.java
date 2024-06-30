@@ -42,8 +42,8 @@ public class CreateTable implements Statement {
     private SpannerInterleaveIn interleaveIn = null;
 
     @Override
-    public void accept(StatementVisitor statementVisitor) {
-        statementVisitor.visit(this);
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
     }
 
     public Table getTable() {
@@ -78,11 +78,12 @@ public class CreateTable implements Statement {
     }
 
     public void setColumns(List<String> columns) {
-        this.columns =columns;
+        this.columns = columns;
     }
 
     /**
-     * @return a list of options (as simple strings) of this table definition, as ("TYPE", "=", "MYISAM")
+     * @return a list of options (as simple strings) of this table definition, as ("TYPE", "=",
+     *         "MYISAM")
      */
     public List<String> getTableOptionsStrings() {
         return tableOptionsStrings;
@@ -102,8 +103,8 @@ public class CreateTable implements Statement {
 
     /**
      * @return a list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
-     * Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not inserted into
-     * this list.
+     *         Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not
+     *         inserted into this list.
      */
     public List<Index> getIndexes() {
         return indexes;
@@ -197,10 +198,12 @@ public class CreateTable implements Statement {
             sql += " " + rowMovement.getMode().toString() + " ROW MOVEMENT";
         }
         if (select != null) {
-            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString() + (selectParenthesis ? ")" : "");
+            sql += " AS " + (selectParenthesis ? "(" : "") + select.toString()
+                    + (selectParenthesis ? ")" : "");
         }
         if (likeTable != null) {
-            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString() + (selectParenthesis ? ")" : "");
+            sql += " LIKE " + (selectParenthesis ? "(" : "") + likeTable.toString()
+                    + (selectParenthesis ? ")" : "");
         }
         if (interleaveIn != null) {
             sql += ", " + interleaveIn;
@@ -259,25 +262,30 @@ public class CreateTable implements Statement {
     }
 
     public CreateTable addCreateOptionsStrings(String... createOptionsStrings) {
-        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
         Collections.addAll(collection, createOptionsStrings);
         return this.withCreateOptionsStrings(collection);
     }
 
     public CreateTable addCreateOptionsStrings(Collection<String> createOptionsStrings) {
-        List<String> collection = Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
+        List<String> collection =
+                Optional.ofNullable(getCreateOptionsStrings()).orElseGet(ArrayList::new);
         collection.addAll(createOptionsStrings);
         return this.withCreateOptionsStrings(collection);
     }
 
     public CreateTable addColumnDefinitions(ColumnDefinition... columnDefinitions) {
-        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+        List<ColumnDefinition> collection =
+                Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         Collections.addAll(collection, columnDefinitions);
         return this.withColumnDefinitions(collection);
     }
 
-    public CreateTable addColumnDefinitions(Collection<? extends ColumnDefinition> columnDefinitions) {
-        List<ColumnDefinition> collection = Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
+    public CreateTable addColumnDefinitions(
+            Collection<? extends ColumnDefinition> columnDefinitions) {
+        List<ColumnDefinition> collection =
+                Optional.ofNullable(getColumnDefinitions()).orElseGet(ArrayList::new);
         collection.addAll(columnDefinitions);
         return this.withColumnDefinitions(collection);
     }

@@ -45,12 +45,12 @@ public class Top extends ASTNodeAccessImpl implements Serializable {
         this.isPercentage = percentage;
     }
 
-    public void setWithTies(boolean withTies) {
-        this.isWithTies = withTies;
-    }
-
     public boolean isWithTies() {
         return isWithTies;
+    }
+
+    public void setWithTies(boolean withTies) {
+        this.isWithTies = withTies;
     }
 
     @Override

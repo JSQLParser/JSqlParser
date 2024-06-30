@@ -66,16 +66,16 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
             deparseUpdateSets(upsert.getUpdateSets(), buffer, expressionVisitor);
         } else {
             if (upsert.getColumns() != null) {
-                upsert.getColumns().accept(expressionVisitor);
+                upsert.getColumns().accept(expressionVisitor, null);
             }
 
             if (upsert.getExpressions() != null) {
-                upsert.getExpressions().accept(expressionVisitor);
+                upsert.getExpressions().accept(expressionVisitor, null);
             }
 
             if (upsert.getSelect() != null) {
                 buffer.append(" ");
-                upsert.getSelect().accept(selectVisitor);
+                upsert.getSelect().accept(selectVisitor, null);
             }
 
             if (upsert.getDuplicateUpdateSets() != null) {
@@ -85,16 +85,16 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
         }
     }
 
-    public ExpressionVisitor getExpressionVisitor() {
+    public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
-    }
-
-    public SelectVisitor getSelectVisitor() {
-        return selectVisitor;
     }
 
     public void setExpressionVisitor(ExpressionDeParser visitor) {
         expressionVisitor = visitor;
+    }
+
+    public SelectVisitor<StringBuilder> getSelectVisitor() {
+        return selectVisitor;
     }
 
     public void setSelectVisitor(SelectDeParser visitor) {

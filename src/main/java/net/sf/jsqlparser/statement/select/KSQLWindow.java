@@ -13,32 +13,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class KSQLWindow extends ASTNodeAccessImpl {
 
-    public enum TimeUnit {
-        DAY, HOUR, MINUTE, SECOND, MILLISECOND, DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS;
-
-        public static TimeUnit from(String unit) {
-            return Enum.valueOf(TimeUnit.class, unit.toUpperCase());
-        }
-    }
-
-    public enum WindowType {
-        HOPPING("HOPPING"), SESSION("SESSION"), TUMBLING("TUMBLING");
-
-        private String windowType;
-
-        WindowType(String windowType) {
-            this.windowType = windowType;
-        }
-
-        public String getWindowType() {
-            return windowType;
-        }
-
-        public static WindowType from(String type) {
-            return Enum.valueOf(WindowType.class, type.toUpperCase());
-        }
-    }
-
     private boolean hopping;
     private boolean tumbling;
     private boolean session;
@@ -46,6 +20,8 @@ public class KSQLWindow extends ASTNodeAccessImpl {
     private TimeUnit sizeTimeUnit;
     private long advanceDuration;
     private TimeUnit advanceTimeUnit;
+
+    public KSQLWindow() {}
 
     public boolean isHoppingWindow() {
         return hopping;
@@ -103,8 +79,6 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         this.advanceTimeUnit = advanceTimeUnit;
     }
 
-    public KSQLWindow() {}
-
     @Override
     public String toString() {
         if (isHoppingWindow()) {
@@ -135,6 +109,32 @@ public class KSQLWindow extends ASTNodeAccessImpl {
     public KSQLWindow withAdvanceTimeUnit(TimeUnit advanceTimeUnit) {
         this.setAdvanceTimeUnit(advanceTimeUnit);
         return this;
+    }
+
+    public enum TimeUnit {
+        DAY, HOUR, MINUTE, SECOND, MILLISECOND, DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS;
+
+        public static TimeUnit from(String unit) {
+            return Enum.valueOf(TimeUnit.class, unit.toUpperCase());
+        }
+    }
+
+    public enum WindowType {
+        HOPPING("HOPPING"), SESSION("SESSION"), TUMBLING("TUMBLING");
+
+        private String windowType;
+
+        WindowType(String windowType) {
+            this.windowType = windowType;
+        }
+
+        public static WindowType from(String type) {
+            return Enum.valueOf(WindowType.class, type.toUpperCase());
+        }
+
+        public String getWindowType() {
+            return windowType;
+        }
     }
 
 }

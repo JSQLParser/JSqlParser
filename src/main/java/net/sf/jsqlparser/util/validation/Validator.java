@@ -18,8 +18,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * @author gitmotte
  * @param <S>
+ * @author gitmotte
  */
 public interface Validator<S> {
 
@@ -46,8 +46,8 @@ public interface Validator<S> {
 
     /**
      * @param capabilities
-     * @return the filtered view of requested {@link ValidationCapability}'s mapped to a set
-     *         of error-messages
+     * @return the filtered view of requested {@link ValidationCapability}'s mapped to a set of
+     *         error-messages
      */
     default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(
             ValidationCapability... capabilities) {
@@ -56,13 +56,14 @@ public interface Validator<S> {
 
     /**
      * @param capabilities
-     * @return the filtered view of requested {@link ValidationCapability}'s mapped
-     *         to a set of error-messages
+     * @return the filtered view of requested {@link ValidationCapability}'s mapped to a set of
+     *         error-messages
      */
     default Map<ValidationCapability, Set<ValidationException>> getValidationErrors(
             Collection<ValidationCapability> capabilities) {
         Map<ValidationCapability, Set<ValidationException>> map = new HashMap<>();
-        for (Entry<ValidationCapability, Set<ValidationException>> e : getValidationErrors().entrySet()) {
+        for (Entry<ValidationCapability, Set<ValidationException>> e : getValidationErrors()
+                .entrySet()) {
             if (capabilities.contains(e.getKey())) {
                 map.put(e.getKey(), e.getValue());
             }

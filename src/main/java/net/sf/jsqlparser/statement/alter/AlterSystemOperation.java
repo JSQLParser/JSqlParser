@@ -11,7 +11,6 @@
 package net.sf.jsqlparser.statement.alter;
 
 /**
- *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  * @see <a href="https://docs.oracle.com/cd/B12037_01/server.101/b10759/statements_2013.htm">ALTER
  *      SESSION</a>
@@ -44,11 +43,6 @@ public enum AlterSystemOperation {
         this.label = label;
     }
 
-    @Override
-    public String toString() {
-        return label;
-    }
-
     public static AlterSystemOperation from(String operation) {
         // We can't use Enum.valueOf() since there White Space involved
         for (AlterSystemOperation alterSystemOperation : values()) {
@@ -57,5 +51,10 @@ public enum AlterSystemOperation {
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return label;
     }
 }
