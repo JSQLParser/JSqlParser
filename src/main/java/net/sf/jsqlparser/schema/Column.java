@@ -159,7 +159,8 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     @Override
     public String toString() {
-        return getFullyQualifiedName(true);
+        return getFullyQualifiedName(true)
+                + (commentText != null ? " /* " + commentText + "*/ " : "");
     }
 
     public Column withTable(Table table) {

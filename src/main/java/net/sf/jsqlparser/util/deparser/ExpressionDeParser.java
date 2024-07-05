@@ -787,6 +787,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (tableColumn.getArrayConstructor() != null) {
             tableColumn.getArrayConstructor().accept(this, context);
         }
+
+        if (tableColumn.getCommentText() != null) {
+            buffer.append(" /* ").append(tableColumn.getCommentText()).append("*/ ");
+        }
+
         return buffer;
     }
 

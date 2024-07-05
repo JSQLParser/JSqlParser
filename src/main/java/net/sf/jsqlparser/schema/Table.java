@@ -194,6 +194,14 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     public String getFullyQualifiedName() {
         StringBuilder fqn = new StringBuilder();
 
+        // remove any leading empty items
+        // only middle items can be suppressed (e.g. dbo..MY_TABLE )
+        while (!partItems.isEmpty() && (partItems.get(partItems.size() - 1) == null
+                || partItems.get(partItems.size() - 1).isEmpty())) {
+            partItems.remove(partItems.size() - 1);
+        }
+
+
         for (int i = partItems.size() - 1; i >= 0; i--) {
             String part = partItems.get(i);
             if (part == null) {
