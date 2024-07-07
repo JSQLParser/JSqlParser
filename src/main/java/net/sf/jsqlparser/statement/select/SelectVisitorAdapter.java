@@ -24,12 +24,15 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(SetOperationList setOpList, S context) {
+        for (Select select : setOpList.getSelects()) {
+            select.accept(this, context);
+        }
         return null;
     }
 
     @Override
     public <S> T visit(WithItem withItem, S context) {
-        return null;
+        return withItem.getSelect().accept(this, context);
     }
 
     @Override
@@ -39,7 +42,7 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
-        return null;
+        return lateralSubSelect.getSelect().accept(this, context);
     }
 
     @Override

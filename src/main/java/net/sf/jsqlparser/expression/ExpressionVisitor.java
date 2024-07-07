@@ -302,10 +302,6 @@ public interface ExpressionVisitor<T> {
 
     <S> T visit(ParenthesedSelect select, S context);
 
-    default void visit(ParenthesedSelect select) {
-        this.visit(select, null);
-    }
-
     <S> T visit(Column column, S context);
 
     default void visit(Column column) {
@@ -595,10 +591,6 @@ public interface ExpressionVisitor<T> {
     }
 
     <S> T visit(Select select, S context);
-
-    default void visit(Select select) {
-        this.visit(select, null);
-    }
 
     <S> T visit(TranscodingFunction transcodingFunction, S context);
 
