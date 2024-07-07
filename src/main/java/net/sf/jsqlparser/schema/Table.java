@@ -110,6 +110,11 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         }
     }
 
+    public Table setDatabaseName(String databaseName) {
+        this.setDatabase( new Database(databaseName) );
+        return this;
+    }
+
     public Table withDatabase(Database database) {
         setDatabase(database);
         return this;
@@ -119,8 +124,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getIndex(SCHEMA_IDX);
     }
 
-    public void setSchemaName(String schemaName) {
-        setIndex(SCHEMA_IDX, schemaName);
+    public Table setSchemaName(String schemaName) {
+        this.setIndex(SCHEMA_IDX, schemaName);
+        return this;
     }
 
     public Table withSchemaName(String schemaName) {
