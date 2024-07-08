@@ -85,8 +85,7 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(NullValue nullValue, S context) {
-
-        return null;
+        return visitExpression(nullValue, context);
     }
 
     @Override
@@ -113,42 +112,42 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(JdbcParameter jdbcParameter, S context) {
-        return null;
+        return visitExpression(jdbcParameter, context);
     }
 
     @Override
     public <S> T visit(JdbcNamedParameter jdbcNamedParameter, S context) {
-        return null;
+        return visitExpression(jdbcNamedParameter, context);
     }
 
     @Override
     public <S> T visit(DoubleValue doubleValue, S context) {
-        return null;
+        return visitExpression(doubleValue, context);
     }
 
     @Override
     public <S> T visit(LongValue longValue, S context) {
-        return null;
+        return visitExpression(longValue, context);
     }
 
     @Override
     public <S> T visit(DateValue dateValue, S context) {
-        return null;
+        return visitExpression(dateValue, context);
     }
 
     @Override
     public <S> T visit(TimeValue timeValue, S context) {
-        return null;
+        return visitExpression(timeValue, context);
     }
 
     @Override
     public <S> T visit(TimestampValue timestampValue, S context) {
-        return null;
+        return visitExpression(timestampValue, context);
     }
 
     @Override
     public <S> T visit(StringValue stringValue, S context) {
-        return null;
+        return visitExpression(stringValue, context);
     }
 
     @Override
@@ -290,7 +289,7 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(Column column, S context) {
-        return null;
+        return visitExpression(column, context);
     }
 
     @Override
@@ -334,7 +333,7 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(AnyComparisonExpression anyComparisonExpression, S context) {
-        return null;
+        return visitExpression(anyComparisonExpression, context);
     }
 
     @Override
@@ -460,6 +459,10 @@ public class ExpressionVisitorAdapter<T>
         return visitBinaryExpression(bitwiseLeftShift, context);
     }
 
+    protected <S> T visitExpression(Expression expression, S context) {
+        return null;
+    }
+
     protected <S> T visitExpressions(Expression expression, S context,
             ExpressionList<? extends Expression> subExpressions) {
         return visitExpressions(expression, context, (Collection<Expression>) subExpressions);
@@ -497,12 +500,12 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(UserVariable userVariable, S context) {
-        return null;
+        return visitExpression(userVariable, context);
     }
 
     @Override
     public <S> T visit(NumericBind numericBind, S context) {
-        return null;
+        return visitExpression(numericBind, context);
     }
 
     @Override
@@ -562,23 +565,22 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(UnPivot unpivot, S context) {
-        unpivot.accept(this, context);
-        return null;
+        return unpivot.accept(this, context);
     }
 
     @Override
     public <S> T visit(AllColumns allColumns, S context) {
-        return null;
+        return visitExpression(allColumns, context);
     }
 
     @Override
     public <S> T visit(AllTableColumns allTableColumns, S context) {
-        return null;
+        return visitExpression(allTableColumns, context);
     }
 
     @Override
     public <S> T visit(AllValue allValue, S context) {
-        return null;
+        return visitExpression(allValue, context);
     }
 
     @Override
@@ -598,27 +600,27 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(HexValue hexValue, S context) {
-        return null;
+        return visitExpression(hexValue, context);
     }
 
     @Override
     public <S> T visit(OracleHint hint, S context) {
-        return null;
+        return visitExpression(hint, context);
     }
 
     @Override
     public <S> T visit(TimeKeyExpression timeKeyExpression, S context) {
-        return null;
+        return visitExpression(timeKeyExpression, context);
     }
 
     @Override
     public <S> T visit(DateTimeLiteralExpression dateTimeLiteralExpression, S context) {
-        return null;
+        return visitExpression(dateTimeLiteralExpression, context);
     }
 
     @Override
     public <S> T visit(NextValExpression nextValExpression, S context) {
-        return null;
+        return visitExpression(nextValExpression, context);
     }
 
     @Override

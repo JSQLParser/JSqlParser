@@ -111,7 +111,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table setDatabaseName(String databaseName) {
-        this.setDatabase( new Database(databaseName) );
+        this.setDatabase(new Database(databaseName));
         return this;
     }
 
