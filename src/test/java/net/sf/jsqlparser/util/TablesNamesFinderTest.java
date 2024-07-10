@@ -497,5 +497,17 @@ public class TablesNamesFinderTest {
         assertThat(tables).containsExactlyInAnyOrder("a", "b");
         assertThat(tables).doesNotContain("a1");
     }
+
+    @Test
+    void testSubqueryAliasesIssue2035() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM (SELECT * FROM A) AS A \n" +
+                "JOIN B ON A.a = B.a \n" +
+                "JOIN C ON A.a = C.a;";
+        Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("A", "B", "C");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("B", "C");
+    }
 }
 

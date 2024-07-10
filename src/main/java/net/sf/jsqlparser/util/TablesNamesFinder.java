@@ -1330,9 +1330,6 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(ParenthesedFromItem parenthesis, S context) {
-        if (parenthesis.getAlias() != null) {
-            otherItemNames.add(parenthesis.getAlias().getName());
-        }
         parenthesis.getFromItem().accept(this, context);
         // support join keyword in fromItem
         visitJoins(parenthesis.getJoins(), context);
