@@ -172,6 +172,7 @@ import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 import java.util.ArrayList;
@@ -389,7 +390,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public void visit(Table tableName) {
-        FromItemVisitor.super.visit(tableName);
+        this.visit(tableName, null);
     }
 
     @Override
@@ -984,21 +985,24 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Update update, S context) {
-        visit(update.getTable(), context);
         if (update.getWithItemsList() != null) {
             for (WithItem withItem : update.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
 
+        visit(update.getTable(), context);
+
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
                 join.getRightItem().accept(this, context);
             }
         }
-        if (update.getExpressions() != null) {
-            for (Expression expression : update.getExpressions()) {
-                expression.accept(this, context);
+
+        if (update.getUpdateSets() != null) {
+            for (UpdateSet updateSet : update.getUpdateSets()) {
+                updateSet.getColumns().accept(this, context);
+                updateSet.getValues().accept(this, context);
             }
         }
 

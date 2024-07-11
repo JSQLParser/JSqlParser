@@ -21,6 +21,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -508,6 +510,56 @@ public class TablesNamesFinderTest {
 
         tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("B", "C");
+    }
+
+    @Test
+    void testTableRenamingIssue2028() throws JSQLParserException {
+        List<String> IGNORE_SCHEMAS =
+                Arrays.asList("mysql", "information_schema", "performance_schema");
+        final String prefix = "test_";
+
+        //@formatter:off
+        String sql =
+                "UPDATE table_1 a\n" +
+                "SET a.a1 = (    SELECT b1\n" +
+                "                FROM table_2 b\n" +
+                "                WHERE b.xx = 'xx' )\n" +
+                "    , a.a2 = (  SELECT b2\n" +
+                "                FROM table_2 b\n" +
+                "                WHERE b.yy = 'yy' )\n" +
+                ";";
+        String expected =
+                "UPDATE test_table_1 a\n" +
+                "SET a.a1 = (    SELECT b1\n" +
+                "                FROM test_table_2 b\n" +
+                "                WHERE b.xx = 'xx' )\n" +
+                "    , a.a2 = (  SELECT b2\n" +
+                "                FROM test_table_2 b\n" +
+                "                WHERE b.yy = 'yy' )\n" +
+                ";";
+        //@formatter:on
+
+        TablesNamesFinder finder = new TablesNamesFinder<Void>() {
+            @Override
+            public <S> Void visit(Table tableName, S context) {
+                String schemaName = tableName.getSchemaName();
+                if (schemaName != null && IGNORE_SCHEMAS.contains(schemaName.toLowerCase())) {
+                    return super.visit(tableName, context);
+                }
+                String originTableName = tableName.getName();
+                tableName.setName(prefix + originTableName);
+                if (originTableName.startsWith("`")) {
+                    tableName.setName("`" + prefix + originTableName.replace("`", "") + "`");
+                }
+                return super.visit(tableName, context);
+            }
+        };
+        finder.init(false);
+
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        statement.accept(finder);
+
+        TestUtils.assertStatementCanBeDeparsedAs(statement, expected, true);
     }
 }
 
