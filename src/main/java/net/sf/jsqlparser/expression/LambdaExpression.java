@@ -9,8 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +28,15 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     public LambdaExpression(List<String> identifiers, Expression expression) {
         this.identifiers = identifiers;
         this.expression = expression;
+    }
+
+    public static LambdaExpression from(ExpressionList<? extends Expression> expressionList,
+            Expression expression) {
+        List<String> identifiers = new ArrayList<>(expressionList.size());
+        for (Expression variable : expressionList) {
+            identifiers.add(variable.toString());
+        }
+        return new LambdaExpression(identifiers, expression);
     }
 
     public List<String> getIdentifiers() {

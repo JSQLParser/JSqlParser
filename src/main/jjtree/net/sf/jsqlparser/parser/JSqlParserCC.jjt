@@ -912,7 +912,7 @@ Statements Statements() #Statements: {
 
         )
 
-        (
+        (  LOOKAHEAD(2)
             ( <ST_SEMICOLON> )*
             try {
                 (
@@ -1932,7 +1932,7 @@ Column Column() #Column :
     data = RelObjectNames()
     [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
-    [ "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
+    [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
 
     [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
     {
@@ -4081,12 +4081,24 @@ ParenthesedExpressionList ParenthesedExpressionList():
 
 ExpressionList SimpleExpressionList():
 {
+    ExpressionList<Column> columns;
     ExpressionList expressions = new ExpressionList();
     Expression expr;
 }
 {
     expr=SimpleExpression() { expressions.add(expr); }
-    ( LOOKAHEAD(2, {!interrupted} ) "," ( LOOKAHEAD(2) expr=LambdaExpression() | expr=SimpleExpression()) { expressions.add(expr); } )*
+    (
+        LOOKAHEAD(2, {!interrupted} ) ","
+        (
+            // @todo: Check hot to avoid this expensive look ahead
+            LOOKAHEAD( LambdaExpression() ) expr=LambdaExpression()
+            |
+            expr=SimpleExpression()
+        )
+        {
+            expressions.add(expr);
+        }
+    )*
     {
         return expressions;
     }
@@ -4119,6 +4131,7 @@ ParenthesedExpressionList<Column> ParenthesedColumnList():
 
 ExpressionList ComplexExpressionList():
 {
+    ExpressionList<Column> columns;
     ExpressionList expressions = new ExpressionList();
     Expression expr;
 }
@@ -4135,7 +4148,9 @@ ExpressionList ComplexExpressionList():
         LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
-            | LOOKAHEAD(2) expr=LambdaExpression()
+            |
+            // @todo: Check hot to avoid this expensive look ahead
+            LOOKAHEAD( LambdaExpression() ) expr=LambdaExpression()
             | expr=Expression()
         ) { expressions.add(expr); }
     )*
@@ -4378,7 +4393,7 @@ Expression BitwiseXor():
 }
 {
     leftExpression=PrimaryExpression()  { result = leftExpression; }
-    (
+    (  LOOKAHEAD(2)
         "^"
         rightExpression=PrimaryExpression()
         {
@@ -4514,6 +4529,16 @@ Expression PrimaryExpression() #PrimaryExpression:
         |
         (
             list=ParenthesedExpressionList()
+             // Mutli-Variable Lambda Expression, e. g.
+            // SELECT map_filter(my_column, (k,v) -> v.my_inner_column = 'some_value')
+            [ LOOKAHEAD(2) "->"
+                  retval = Expression()
+                  {
+                      retval = LambdaExpression.from(list, retval);
+                  }
+            ]
+
+
             {
                 if (list.size() == 1) {
                     retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
@@ -4521,7 +4546,10 @@ Expression PrimaryExpression() #PrimaryExpression:
                     retval = list;
                 }
             }
-            ["." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+
+
+            // RowGet Expression
+            [ LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
         )
     )
 
@@ -4535,7 +4563,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     [ LOOKAHEAD(2) retval = ArrayExpression(retval) ]
 
-    ( "::" type=ColDataType() {
+    (  LOOKAHEAD(2) "::" type=ColDataType() {
             castExpr = new CastExpression();
             castExpr.setUseCastKeyword(false);
             castExpr.setLeftExpression(retval);
@@ -4546,8 +4574,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     // Check for JSON operands
     [
-        LOOKAHEAD(2) (
-            "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->")); }
+         LOOKAHEAD(2) (
+            "->" ( token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->")); }
             |
             "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->>")); }
             |
@@ -4781,17 +4809,6 @@ StructType StructType() #StruckType:
         type = new StructType(dialect, keyword, parameters, arguments);
         linkAST(type,jjtThis);
         return type;
-    }
-}
-
-Expression ParenthesedExpression():
-{
-    Expression expression;
-}
-{
-    "(" expression = PrimaryExpression()  ")"
-    {
-        return new ParenthesedExpressionList(expression);
     }
 }
 
@@ -5453,28 +5470,22 @@ FullTextSearch FullTextSearch() : {
 
 LambdaExpression LambdaExpression() #LambdaExpression:
 {
+    ExpressionList<Column> columns;
     String s;
-    ArrayList<String> identifiers = new ArrayList<String>();
     Expression expression;
     LambdaExpression lambdaExpression;
 }
 {
-//    wip, right now the Grammar works but collides with Multi Value Lists
-//    (
-//        LOOKAHEAD(3) "("
-//        s = RelObjectName() { identifiers.add(s); }
-//        ( "," s = RelObjectName() { identifiers.add(s); } )*
-//        ")"
-//    )
-//    |
     (
-        s = RelObjectName() { identifiers.add(s); }
+        columns = ParenthesedColumnList()
+        |
+        s = RelObjectName() { columns = new ExpressionList<Column>(new Column(s)); }
     )
 
     "->"
     expression = Expression()
     {
-        lambdaExpression = new LambdaExpression(identifiers, expression);
+        lambdaExpression = LambdaExpression.from(columns, expression);
         linkAST(lambdaExpression,jjtThis);
         return lambdaExpression;
     }
@@ -5559,7 +5570,7 @@ Function SimpleFunction():
         }
     }
 
-    [ "." (
+    [ LOOKAHEAD(2) "." (
         // tricky lookahead since we do need to support the following constructs
         // schema.f1().f2() - Function with Function Column
         // schema.f1().f2.f3 - Function with Attribute Column
@@ -5632,7 +5643,7 @@ Function InternalFunction(boolean escaped):
     ")"
 
 
-    [ "." (
+    [ LOOKAHEAD(2) "." (
             // tricky lookahead since we do need to support the following constructs
             // schema.f1().f2() - Function with Function Column
             // schema.f1().f2.f3 - Function with Attribute Column
@@ -5862,7 +5873,8 @@ CreateSchema CreateSchema():
             table.getTable().setSchemaName(schema.getSchemaName());
             schema.addStatement(table);
         }
-        | view = CreateView(false)
+        |
+        view = CreateView(false)
         {
             view.getView().setSchemaName(schema.getSchemaName());
             schema.addStatement(view);
@@ -6209,7 +6221,7 @@ ColDataType ColDataType():
 			| tk=<K_DATA>
         ) { schema = tk.image; }
 
-        [ "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
+        [ LOOKAHEAD(2) "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
         { colDataType.setDataType(schema); }
     )
 
@@ -7753,7 +7765,7 @@ String IdentifierChain():
 }
 {
     identifierChain=RelObjectNameExt2()
-    ( "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
 
     {
         return identifierChain;
