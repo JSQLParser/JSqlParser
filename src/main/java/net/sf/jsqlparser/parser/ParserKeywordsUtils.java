@@ -237,7 +237,7 @@ public class ParserKeywordsUtils {
                     while (tokenStringValueMatcher.find()) {
                         String tokenValue = tokenStringValueMatcher.group(1);
                         // test if pure US-ASCII
-                        if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("[A-Za-z]+")) {
+                        if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("\\w+")) {
                           allKeywords.add(tokenValue);
                         }
                     }
