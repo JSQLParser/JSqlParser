@@ -228,18 +228,73 @@ public class ParserKeywordsUtils {
         Matcher tokenBlockmatcher = tokenBlockPattern.matcher(content);
         while (tokenBlockmatcher.find()) {
             String tokenBlock = tokenBlockmatcher.group(0);
-            Matcher tokenStringValueMatcher = tokenStringValuePattern.matcher(tokenBlock);
-            while (tokenStringValueMatcher.find()) {
-                String tokenValue = tokenStringValueMatcher.group(1);
-                // test if pure US-ASCII
-                if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("[A-Za-z]+")) {
-                    allKeywords.add(tokenValue);
+            // remove single and multiline comments
+            tokenBlock = tokenBlock.replaceAll("(?sm)((\\/\\*.*?\\*\\/)|(\\/\\/.*?$))", "");
+            for (String tokenDefinition : getTokenDefinitions(tokenBlock)) {
+              // check if token definition is private
+              if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
+                    Matcher tokenStringValueMatcher = tokenStringValuePattern.matcher(tokenDefinition);
+                    while (tokenStringValueMatcher.find()) {
+                        String tokenValue = tokenStringValueMatcher.group(1);
+                        // test if pure US-ASCII
+                        if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("\\w+")) {
+                          allKeywords.add(tokenValue);
+                        }
+                    }
                 }
             }
         }
         return allKeywords;
     }
 
+    @SuppressWarnings({"PMD.EmptyWhileStmt"})
+    private static List<String> getTokenDefinitions(String tokenBlock) {
+        List<String> tokenDefinitions = new ArrayList<>();
+        int level = 0;
+        char openChar = '<';
+        char closeChar = '>';
+        char[] tokenBlockChars = tokenBlock.toCharArray();
+        int tokenDefinitionStart = -1;
+        for (int i = 0; i < tokenBlockChars.length; ++i) {
+            if (isQuotationMark(i, tokenBlockChars)) {
+                // skip everything inside quotation marks
+                while (!isQuotationMark(++i, tokenBlockChars)) {
+                  // skip until quotation ends
+                }
+            }
+
+            char character = tokenBlockChars[i];
+            if (character == openChar) {
+                if (level == 0) {
+                    tokenDefinitionStart = i;
+                }
+
+                ++level;
+            } else if (character == closeChar) {
+                --level;
+
+                if (level == 0 && tokenDefinitionStart >= 0) {
+                    tokenDefinitions.add(tokenBlock.substring(tokenDefinitionStart, i + 1));
+                    tokenDefinitionStart = -1;
+                }
+            }
+        }
+
+        return tokenDefinitions;
+    }
+
+    private static boolean isQuotationMark(int index, char[] str) {
+        if (str[index] == '\"') {
+            // check if quotation is escaped
+            if (index > 0 && str[index - 1] == '\\') {
+                return index > 1 && str[index - 2] == '\\';
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
     public static void buildGrammarForRelObjectNameWithoutValue(File file) throws Exception {
         Pattern methodBlockPattern = Pattern.compile(

@@ -52,7 +52,7 @@ class ParserKeywordsUtilsTest {
 
 
     private static void addTokenImage(TreeSet<String> allKeywords, RStringLiteral literal) {
-        if (CHARSET_ENCODER.canEncode(literal.image) && literal.image.matches("[A-Za-z]+")) {
+        if (CHARSET_ENCODER.canEncode(literal.image) && literal.image.matches("\\w+")) {
             allKeywords.add(literal.image);
         }
     }
