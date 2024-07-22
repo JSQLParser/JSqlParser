@@ -167,10 +167,6 @@ public class ParserKeywordsUtils {
             {"POSITION", RESTRICTED_JSQLPARSER},
             {"OVERLAY", RESTRICTED_JSQLPARSER},
             {"NEXTVAL", RESTRICTED_COLUMN},
-//            {"TINYTEXT", RESTRICTED_COLUMN},
-//            {"MEDIUMTEXT", RESTRICTED_COLUMN},
-//            {"TEXT", RESTRICTED_COLUMN},
-//            {"LONGTEXT", RESTRICTED_COLUMN},
 
             // @todo: Object Names should not start with Hex-Prefix, we shall not find that Token
             {"0x", RESTRICTED_JSQLPARSER}
