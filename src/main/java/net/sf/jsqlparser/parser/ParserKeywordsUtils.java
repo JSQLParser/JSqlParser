@@ -167,6 +167,10 @@ public class ParserKeywordsUtils {
             {"POSITION", RESTRICTED_JSQLPARSER},
             {"OVERLAY", RESTRICTED_JSQLPARSER},
             {"NEXTVAL", RESTRICTED_COLUMN},
+//            {"TINYTEXT", RESTRICTED_COLUMN},
+//            {"MEDIUMTEXT", RESTRICTED_COLUMN},
+//            {"TEXT", RESTRICTED_COLUMN},
+//            {"LONGTEXT", RESTRICTED_COLUMN},
 
             // @todo: Object Names should not start with Hex-Prefix, we shall not find that Token
             {"0x", RESTRICTED_JSQLPARSER}
@@ -312,7 +316,7 @@ public class ParserKeywordsUtils {
                 + "{    Token tk = null; }\n"
                 + "{\n"
                 // @todo: find a way to avoid those hardcoded compound tokens
-                + "    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> \n"
+                + "    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> \n"
                 + "      ");
 
         for (String keyword : allKeywords) {
