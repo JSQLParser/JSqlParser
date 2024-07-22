@@ -4528,6 +4528,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD( ParenthesedSelect() , {!interrupted} ) retval=ParenthesedSelect()
 
+        | LOOKAHEAD( Select() , {!interrupted} ) retval=Select()
+
         |
         (
             list=ParenthesedExpressionList()
