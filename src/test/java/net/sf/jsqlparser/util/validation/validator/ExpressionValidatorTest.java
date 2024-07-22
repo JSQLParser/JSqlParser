@@ -190,6 +190,12 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testRegexplike() throws JSQLParserException {
+        validateNoErrors("SELECT * FROM mytable WHERE first_name REGEXP_LIKE '^Ste(v|ph)en$'", 1,
+                EXPRESSIONS);
+    }
+
+    @Test
     public void testSimilarTo() throws JSQLParserException {
         validateNoErrors(
                 "SELECT * FROM mytable WHERE (w_id NOT SIMILAR TO '/foo/__/bar/(left|right)/[0-9]{4}-[0-9]{2}-[0-9]{2}(/[0-9]*)?')",
