@@ -206,7 +206,6 @@
                 <groupId>org.javacc.plugin</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
                 <version>3.0.3</version>
-                                
                 <executions>
                     <execution>
                         <id>javacc</id>
@@ -214,13 +213,18 @@
                         <goals>
                             <goal>jjtree-javacc</goal>
                         </goals>
+                        <configuration>
+                            <grammarEncoding>UTF-8</grammarEncoding>
+                            <isStatic>false</isStatic>
+                            <jdkVersion>1.8</jdkVersion>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>net.java.dev.javacc</groupId>
                         <artifactId>javacc</artifactId>
-                        <version>7.0.13</version>
+                        <version>[7.0.13,)</version>
                     </dependency>
                 </dependencies>
             </plugin>
