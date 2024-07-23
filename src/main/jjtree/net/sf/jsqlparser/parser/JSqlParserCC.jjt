@@ -2307,7 +2307,7 @@ List<LateralView> LateralViews():
 }
 {
     lateralView = LateralView() { lateralViews.add(lateralView); }
-    ( lateralView = LateralView() { lateralViews.add(lateralView); } )*
+    ( LOOKAHEAD(2) lateralView = LateralView() { lateralViews.add(lateralView); } )*
 
     {
         return lateralViews;
@@ -2412,11 +2412,11 @@ PlainSelect PlainSelect() #PlainSelect:
 
     [ LOOKAHEAD(2) intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
     [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
-        [ lateralViews=LateralViews() ]
+        [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
     [ LOOKAHEAD(3) <K_FROM> <K_ONLY> { plainSelect.setUsingOnly(true); } fromItem=FromItem()
-            [ lateralViews=LateralViews() ]
+            [ LOOKAHEAD(2) lateralViews=LateralViews() ]
             [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
 
