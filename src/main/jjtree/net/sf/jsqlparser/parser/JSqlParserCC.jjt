@@ -6151,7 +6151,7 @@ ColDataType DataType():
 }
 {
     (
-        tk=<K_TEXT_LITERAL> {
+        LOOKAHEAD(2) tk=<K_TEXT_LITERAL> {
             type = tk.image;
             return new ColDataType(type, precision, scale);
         }
