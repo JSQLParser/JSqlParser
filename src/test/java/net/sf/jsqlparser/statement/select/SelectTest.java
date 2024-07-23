@@ -2845,7 +2845,7 @@ public class SelectTest {
     }
 
     @Test
-    public void testRegexplike() throws JSQLParserException {
+    public void testRegexpLike() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
             "SELECT * FROM mytable WHERE first_name REGEXP_LIKE '^Ste(v|ph)en$'");
     }
