@@ -192,7 +192,7 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
     @Test
     public void testRegexpLike() throws JSQLParserException {
         validateNoErrors("SELECT * FROM mytable WHERE first_name REGEXP_LIKE '^Ste(v|ph)en$'", 1,
-            EXPRESSIONS);
+                EXPRESSIONS);
     }
 
     @Test
