@@ -789,8 +789,7 @@ public enum Feature {
     allowBackslashEscapeCharacter(false),
 
     /**
-     * allows sub selects without parentheses, e.g.
-     * `select * from dual where 1 = select 1`
+     * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`
      */
     allowUnparenthesizedSubSelects(false),
     ;
