@@ -787,6 +787,12 @@ public enum Feature {
      * allows Backslash '\' as Escape Character
      */
     allowBackslashEscapeCharacter(false),
+
+    /**
+     * allows sub selects without parentheses, e.g.
+     * `select * from dual where 1 = select 1`
+     */
+    allowUnparenthesizedSubSelects(false),
     ;
 
     private final Object value;

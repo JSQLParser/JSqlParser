@@ -4527,9 +4527,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD( ParenthesedSelect() , {!interrupted} ) retval=ParenthesedSelect()
+        | LOOKAHEAD( Select() , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
 
-        | LOOKAHEAD( Select() , {!interrupted} ) retval=Select()
+        | LOOKAHEAD( ParenthesedSelect() , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
 
         |
         (
@@ -5619,7 +5619,7 @@ Function InternalFunction(boolean escaped):
         (
             LOOKAHEAD(3) expressionList=ExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
             |
-            expr = Select() { expressionList = new ExpressionList(expr); }
+            LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = new ExpressionList(expr); }
         )
     ]
 
