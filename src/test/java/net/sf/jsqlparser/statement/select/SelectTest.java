@@ -5852,14 +5852,14 @@ public class SelectTest {
     public void testUnparenthesizedSubSelect(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
                 parser -> parser.withUnparenthesizedSubSelects(true));
-        
+
         Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
             @Override
             public void execute() throws Throwable {
                 TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
-                parser -> parser.withUnparenthesizedSubSelects(false));
+                        parser -> parser.withUnparenthesizedSubSelects(false));
             }
-            
+
         });
     }
 }
