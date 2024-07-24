@@ -9,9 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static java.util.stream.Collectors.joining;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Collectors;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -180,8 +183,14 @@ public class StatementDeParser extends AbstractDeParser<Statement>
             buffer.append(" ONLY");
         }
         buffer.append(" ");
-        buffer.append(truncate.getTable());
-
+        if (truncate.getTables() != null && !truncate.getTables().isEmpty()) {
+            buffer.append(truncate.getTables().stream()
+                .map(Table::toString)
+                .collect(joining(", ")));
+        }
+        else {
+            buffer.append(truncate.getTable());
+        }
         if (truncate.getCascade()) {
             buffer.append(" CASCADE");
         }
