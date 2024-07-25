@@ -68,8 +68,7 @@ public class Truncate implements Statement {
             sb.append(tables.stream()
                 .map(Table::toString)
                 .collect(joining(", ")));
-        }
-        else {
+        } else {
             sb.append(table);
         }
         if (cascade) {

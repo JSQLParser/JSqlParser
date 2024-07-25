@@ -187,8 +187,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
             buffer.append(truncate.getTables().stream()
                 .map(Table::toString)
                 .collect(joining(", ")));
-        }
-        else {
+        } else {
             buffer.append(truncate.getTable());
         }
         if (truncate.getCascade()) {
