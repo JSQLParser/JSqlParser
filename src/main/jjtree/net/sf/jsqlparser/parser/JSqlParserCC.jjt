@@ -6633,8 +6633,8 @@ Truncate Truncate():
     <K_TRUNCATE>
     [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}]
     [<K_ONLY>  { only = true; }]
-	  table=Table() { tables.add(table); } (LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
-	  [<K_CASCADE> { cascade = true; }]
+    table=Table() { tables.add(table); } (LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
+    [<K_CASCADE> { cascade = true; }]
     {
        if (only && tables.size() > 1 ) {
           throw new ParseException("Cannot TRUNCATE ONLY with multiple tables");
