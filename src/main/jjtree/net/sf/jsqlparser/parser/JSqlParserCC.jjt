@@ -6617,6 +6617,9 @@ Truncate Truncate():
 {
     Truncate truncate = new Truncate();
     Table table;
+    List<Table> tables = new ArrayList<Table>();
+    boolean only = false;
+    boolean cascade = false;
 }
 {
 /**
@@ -6627,13 +6630,23 @@ Truncate Truncate():
 *      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
 *
 */
-    <K_TRUNCATE> [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}] [<K_ONLY>  {truncate.setOnly(true);}]
-	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
+    <K_TRUNCATE>
+    [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}]
+    [<K_ONLY>  { only = true; }]
+    table=Table() { tables.add(table); } (LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
+    [<K_CASCADE> { cascade = true; }]
     {
-        return truncate;
+       if (only && tables.size() > 1 ) {
+          throw new ParseException("Cannot TRUNCATE ONLY with multiple tables");
+       } else {
+          return truncate
+             .withTables(tables)
+             .withTable(table)
+             .withOnly(only)
+             .withCascade(cascade);
+       }
     }
 }
-
 
 AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {
