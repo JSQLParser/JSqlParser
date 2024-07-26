@@ -65,6 +65,14 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
     }
 
+    public P withUnparenthesizedSubSelects() {
+        return withFeature(Feature.allowUnparenthesizedSubSelects, true);
+    }
+
+    public P withUnparenthesizedSubSelects(boolean allowUnparenthesizedSubSelects) {
+        return withFeature(Feature.allowUnparenthesizedSubSelects, allowUnparenthesizedSubSelects);
+    }
+
     public P withFeature(Feature f, boolean enabled) {
         getConfiguration().setValue(f, enabled);
         return me();

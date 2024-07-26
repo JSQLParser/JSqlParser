@@ -2845,6 +2845,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testRegexpLike() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM mytable WHERE first_name REGEXP_LIKE '^Ste(v|ph)en$'");
+    }
+
+    @Test
     public void testBooleanFunction1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable WHERE test_func(col1)";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -5835,5 +5841,25 @@ public class SelectTest {
                 + ";";
         Statement stmt = assertSqlCanBeParsedAndDeparsed(sqlStr);
         Assertions.assertInstanceOf(Select.class, stmt);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT SELECT 1",
+            "SELECT 1 WHERE 1 = SELECT 1",
+            "SELECT 1 WHERE 1 IN SELECT 1"
+    })
+    public void testUnparenthesizedSubSelect(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withUnparenthesizedSubSelects(true));
+
+        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                        parser -> parser.withUnparenthesizedSubSelects(false));
+            }
+
+        });
     }
 }

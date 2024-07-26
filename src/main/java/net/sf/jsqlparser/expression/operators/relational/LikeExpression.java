@@ -117,7 +117,7 @@ public class LikeExpression extends BinaryExpression {
     }
 
     public enum KeyWord {
-        LIKE, ILIKE, RLIKE, REGEXP, SIMILAR_TO;
+        LIKE, ILIKE, RLIKE, REGEXP_LIKE, REGEXP, SIMILAR_TO;
 
         public static KeyWord from(String keyword) {
             return Enum.valueOf(KeyWord.class, keyword.toUpperCase().replaceAll("\\s+", "_"));

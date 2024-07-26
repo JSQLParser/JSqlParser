@@ -75,4 +75,11 @@ class FunctionTest {
                 "  UNNEST(addresses) AS email";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testSubSelectParameterWithoutParentheses() throws JSQLParserException {
+        String sqlStr = "SELECT COALESCE(SELECT mycolumn FROM mytable, 0)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withUnparenthesizedSubSelects(true));
+    }
 }
