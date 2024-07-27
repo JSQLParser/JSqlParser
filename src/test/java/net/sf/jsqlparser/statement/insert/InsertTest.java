@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -590,4 +591,55 @@ public class InsertTest {
                         + "on conflict(xxx0, xxx1) do update set xxx1=?, update_time=?";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    public void testDefaultValues() throws JSQLParserException {
+        String statement = "INSERT INTO mytable DEFAULT VALUES";
+        //assertSqlCanBeParsedAndDeparsed(statement);
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE DEFAULT VALUES", insert.toString().toUpperCase());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable"))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void testDefaultValuesWithAlias() throws JSQLParserException {
+        String statement = "INSERT INTO mytable x DEFAULT VALUES";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE X DEFAULT VALUES", insert.toString().toUpperCase());
+        assertEquals("x", insert.getTable().getAlias().getName());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable")
+                        .withAlias(new Alias("x").withUseAs(false)))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void testDefaultValuesWithAliasAndAs() throws JSQLParserException {
+        String statement = "INSERT INTO mytable AS x DEFAULT VALUES";
+        assertSqlCanBeParsedAndDeparsed(statement);
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE AS X DEFAULT VALUES", insert.toString().toUpperCase());
+        assertEquals("x", insert.getTable().getAlias().getName());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable")
+                        .withAlias(new Alias("x").withUseAs(true)))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void throwsParseWhenDefaultKeyowrdUsedAsAlias() {
+        String statement = "INSERT INTO mytable default DEFAULT VALUES";
+        assertThrows(JSQLParserException.class,
+                () -> parserManager.parse(new StringReader(statement)));
+    }
+
 }

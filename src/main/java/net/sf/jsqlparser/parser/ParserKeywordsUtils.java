@@ -60,6 +60,7 @@ public class ParserKeywordsUtils {
             {"CREATE", RESTRICTED_ALIAS},
             {"CROSS", RESTRICTED_SQL2016},
             {"CURRENT", RESTRICTED_JSQLPARSER},
+            {"DEFAULT", RESTRICTED_ALIAS},
             {"DISTINCT", RESTRICTED_SQL2016},
             {"DOUBLE", RESTRICTED_ALIAS},
             {"ELSE", RESTRICTED_JSQLPARSER},
