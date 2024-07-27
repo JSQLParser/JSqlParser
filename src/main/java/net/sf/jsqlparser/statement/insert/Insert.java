@@ -37,6 +37,7 @@ public class Insert implements Statement {
     private OracleHint oracleHint = null;
     private ExpressionList<Column> columns;
     private Select select;
+    private boolean onlyDefaultValues = false;
     private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
@@ -162,7 +163,6 @@ public class Insert implements Statement {
         this.modifierIgnore = modifierIgnore;
     }
 
-
     @Deprecated
     public boolean isUseSet() {
         return setUpdateSets != null && !setUpdateSets.isEmpty();
@@ -174,6 +174,19 @@ public class Insert implements Statement {
 
     public void setWithItemsList(List<WithItem> withItemsList) {
         this.withItemsList = withItemsList;
+    }
+
+    public boolean isOnlyDefaultValues() {
+        return onlyDefaultValues;
+    }
+
+    public void setOnlyDefaultValues(boolean onlyDefaultValues) {
+        this.onlyDefaultValues = onlyDefaultValues;
+    }
+
+    public Insert withOnlyDefaultValues(boolean onlyDefaultValues) {
+        this.setOnlyDefaultValues(onlyDefaultValues);
+        return this;
     }
 
     public InsertConflictTarget getConflictTarget() {
@@ -229,6 +242,10 @@ public class Insert implements Statement {
         }
         sql.append("INTO ");
         sql.append(table).append(" ");
+
+        if (onlyDefaultValues) {
+            sql.append("DEFAULT VALUES");
+        }
 
         if (columns != null) {
             sql.append("(");
