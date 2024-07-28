@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import static java.util.stream.Collectors.joining;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.stream.Collectors;
 
@@ -185,8 +183,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         buffer.append(" ");
         if (truncate.getTables() != null && !truncate.getTables().isEmpty()) {
             buffer.append(truncate.getTables().stream()
-                .map(Table::toString)
-                .collect(joining(", ")));
+                    .map(Table::toString)
+                    .collect(Collectors.joining(", ")));
         } else {
             buffer.append(truncate.getTable());
         }
