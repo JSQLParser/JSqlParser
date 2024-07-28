@@ -306,7 +306,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(Block block, S context) {
         buffer.append("BEGIN\n");
         if (block.getStatements() != null) {
-            for (Statement stmt : block.getStatements().getStatements()) {
+            for (Statement stmt : block.getStatements()) {
                 stmt.accept(this, context);
                 buffer.append(";\n");
             }
