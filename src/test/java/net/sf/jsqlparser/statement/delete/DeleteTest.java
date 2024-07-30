@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.statement.delete;
 
 import java.io.StringReader;
+import java.util.List;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -22,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.WithItem;
 import org.junit.jupiter.api.Test;
 
 public class DeleteTest {
@@ -118,8 +123,19 @@ public class DeleteTest {
                 + "DELETE FROM cfe.instrument_ref\n"
                 + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
                 + "                            FROM   a)";
-
         assertSqlCanBeParsedAndDeparsed(statement, true);
+        Delete delete = (Delete) parserManager.parse(new StringReader(statement));
+        List<WithItem> withItems = delete.getWithItemsList();
+        assertEquals("cfe.instrument_ref", delete.getTable().getFullyQualifiedName());
+        assertEquals(2, withItems.size());
+        SelectItem selectItem1 = withItems.get(0).getSelect().getPlainSelect().getSelectItems().get(0);
+        assertEquals("1", selectItem1.getExpression().toString());
+        assertEquals(" id_instrument_ref", selectItem1.getAlias().toString());
+        assertEquals(" a", withItems.get(0).getAlias().toString());
+        SelectItem selectItem2 = withItems.get(1).getSelect().getPlainSelect().getSelectItems().get(0);
+        assertEquals("1", selectItem2.getExpression().toString());
+        assertEquals(" id_instrument_ref", selectItem2.getAlias().toString());
+        assertEquals(" b", withItems.get(1).getAlias().toString());
     }
 
     @Test

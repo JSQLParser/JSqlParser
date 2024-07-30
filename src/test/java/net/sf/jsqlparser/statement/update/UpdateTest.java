@@ -19,10 +19,12 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -229,8 +231,19 @@ public class UpdateTest {
                 + "SET id_instrument=null\n"
                 + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
                 + "                            FROM   a)";
-
         assertSqlCanBeParsedAndDeparsed(statement, true);
+        Update update = (Update) CCJSqlParserUtil.parse(statement);
+        List<WithItem> withItems = update.getWithItemsList();
+        assertEquals("cfe.instrument_ref", update.getTable().getFullyQualifiedName());
+        assertEquals(2, withItems.size());
+        assertEquals("SELECT 1 id_instrument_ref", withItems.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" a", withItems.get(0).getAlias().toString());
+        assertEquals("SELECT 1 id_instrument_ref", withItems.get(1).getSelect().getPlainSelect().toString());
+        assertEquals(" b", withItems.get(1).getAlias().toString());
+        assertEquals(1, update.getUpdateSets().size());
+        assertEquals("id_instrument", update.getUpdateSets().get(0).getColumn(0).toString());
+        assertEquals("NULL", update.getUpdateSets().get(0).getValue(0).toString());
+        assertEquals("id_instrument_ref = (SELECT id_instrument_ref FROM a)", update.getWhere().toString());
     }
 
     @Test
