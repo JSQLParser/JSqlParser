@@ -123,8 +123,7 @@ public class DeleteTest {
                 + "DELETE FROM cfe.instrument_ref\n"
                 + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
                 + "                            FROM   a)";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
-        Delete delete = (Delete) parserManager.parse(new StringReader(statement));
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(statement, true);
         List<WithItem> withItems = delete.getWithItemsList();
         assertEquals("cfe.instrument_ref", delete.getTable().getFullyQualifiedName());
         assertEquals(2, withItems.size());

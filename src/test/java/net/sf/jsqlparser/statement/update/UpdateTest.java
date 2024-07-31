@@ -231,8 +231,7 @@ public class UpdateTest {
                 + "SET id_instrument=null\n"
                 + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
                 + "                            FROM   a)";
-        assertSqlCanBeParsedAndDeparsed(statement, true);
-        Update update = (Update) CCJSqlParserUtil.parse(statement);
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(statement, true);
         List<WithItem> withItems = update.getWithItemsList();
         assertEquals("cfe.instrument_ref", update.getTable().getFullyQualifiedName());
         assertEquals(2, withItems.size());
@@ -281,9 +280,7 @@ public class UpdateTest {
                 + "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n"
                 + "WHERE b.payrefno = 'B370202091026000005'";
 
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         assertEquals(3, update.getUpdateSets().size());
 
         assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
