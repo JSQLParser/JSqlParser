@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.schema.Table;
@@ -47,16 +48,21 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.merge.*;
+import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
@@ -162,6 +168,47 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         InsertDeParser insertDeParser =
                 new InsertDeParser(expressionDeParser, selectDeParser, buffer);
         insertDeParser.deParse(insert);
+        return buffer;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ParenthesedInsert insert, S context) {
+        List<WithItem<?>> withItemsList = insert.getWithItemsList();
+        addWithItemsToBuffer(withItemsList, context);
+        buffer.append("(");
+        insert.getInsert().accept(this, context);
+        buffer.append(")");
+        return buffer;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ParenthesedUpdate update, S context) {
+        List<WithItem<?>> withItemsList = update.getWithItemsList();
+        addWithItemsToBuffer(withItemsList, context);
+        buffer.append("(");
+        update.getUpdate().accept(this, context);
+        buffer.append(")");
+        return buffer;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ParenthesedDelete delete, S context) {
+        List<WithItem<?>> withItemsList = delete.getWithItemsList();
+        addWithItemsToBuffer(withItemsList, context);
+        buffer.append("(");
+        delete.getDelete().accept(this, context);
+        buffer.append(")");
+        return buffer;
+    }
+
+    private <S> StringBuilder addWithItemsToBuffer(List<WithItem<?>> withItemsList, S context) {
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            buffer.append("WITH ");
+            for (WithItem<?> withItem : withItemsList) {
+                withItem.accept((SelectVisitor<?>) this, context);
+                buffer.append(" ");
+            }
+        }
         return buffer;
     }
 

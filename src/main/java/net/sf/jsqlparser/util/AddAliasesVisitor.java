@@ -100,7 +100,7 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     }
 
     @Override
-    public <S> T visit(WithItem withItem, S context) {
+    public <S> T visit(WithItem<?> withItem, S context) {
         throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 

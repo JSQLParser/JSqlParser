@@ -66,6 +66,9 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.test.TestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -1702,7 +1705,7 @@ public class SelectTest {
                 + "FROM EMPLOYEE AS THIS_EMP INNER JOIN DINFO INNER JOIN DINFOMAX "
                 + "WHERE THIS_EMP.JOB = 'SALESREP' AND THIS_EMP.WORKDEPT = DINFO.DEPTNO";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(2, withItems.size());
         assertEquals("SELECT OTHERS.WORKDEPT, AVG(OTHERS.SALARY), COUNT(*) FROM EMPLOYEE AS OTHERS GROUP BY OTHERS.WORKDEPT", withItems.get(0).getSelect().getPlainSelect().toString());
         assertEquals(" DINFO", withItems.get(0).getAlias().toString());
@@ -1714,7 +1717,7 @@ public class SelectTest {
     public void testWithRecursive() throws JSQLParserException {
         String statement = "WITH RECURSIVE t (n) AS ((SELECT 1) UNION ALL (SELECT n + 1 FROM t WHERE n < 100)) SELECT sum(n) FROM t";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT 1) UNION ALL (SELECT n + 1 FROM t WHERE n < 100))", withItems.get(0).getSelect().toString());
         assertEquals(" t", withItems.get(0).getAlias().toString());
@@ -2373,7 +2376,7 @@ public class SelectTest {
         String stmt =
                 "WITH test AS (SELECT mslink FROM feature) SELECT * FROM feature WHERE mslink IN (SELECT mslink FROM test)";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("SELECT mslink FROM feature", withItems.get(0).getSelect().getPlainSelect().toString());
         assertEquals(" test", withItems.get(0).getAlias().toString());
@@ -2390,7 +2393,7 @@ public class SelectTest {
         String stmt =
                 "WITH test AS ((SELECT mslink FROM tablea) UNION (SELECT mslink FROM tableb)) SELECT * FROM tablea WHERE mslink IN (SELECT mslink FROM test)";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT mslink FROM tablea) UNION (SELECT mslink FROM tableb))", withItems.get(0).getSelect().toString());
         assertEquals(" test", withItems.get(0).getAlias().toString());
@@ -2401,7 +2404,7 @@ public class SelectTest {
         String stmt =
                 "WITH test AS ((SELECT mslink FROM tablea) UNION ALL (SELECT mslink FROM tableb)) SELECT * FROM tablea WHERE mslink IN (SELECT mslink FROM test)";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT mslink FROM tablea) UNION ALL (SELECT mslink FROM tableb))", withItems.get(0).getSelect().toString());
         assertEquals(" test", withItems.get(0).getAlias().toString());
@@ -2412,7 +2415,7 @@ public class SelectTest {
         String stmt =
                 "WITH test AS ((SELECT mslink, CAST(tablea.fname AS varchar) FROM tablea INNER JOIN tableb ON tablea.mslink = tableb.mslink AND tableb.deleted = 0 WHERE tablea.fname IS NULL AND 1 = 0) UNION ALL (SELECT mslink FROM tableb)) SELECT * FROM tablea WHERE mslink IN (SELECT mslink FROM test)";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT mslink, CAST(tablea.fname AS varchar) FROM tablea INNER JOIN tableb ON tablea.mslink = tableb.mslink AND tableb.deleted = 0 WHERE tablea.fname IS NULL AND 1 = 0) UNION ALL (SELECT mslink FROM tableb))", withItems.get(0).getSelect().toString());
         assertEquals(" test", withItems.get(0).getAlias().toString());
@@ -2423,7 +2426,7 @@ public class SelectTest {
         String stmt =
                 "WITH hist AS ((SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, 0 AS level, CAST(gl.mslink AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 WHERE gl.parent IS NULL AND gl.mslink <> 0) UNION ALL (SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, hist.level + 1 AS level, CAST(hist.path + '.' + CAST(gl.mslink AS VARCHAR) AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 INNER JOIN hist ON gl.parent = hist.mslink WHERE gl.mslink <> 0)) SELECT mslink, space(level * 4) + txt AS txt, nr, feature, path FROM hist WHERE EXISTS (SELECT feature FROM tablec WHERE mslink = 0 AND ((feature IN (1, 2) AND hist.feature = 3) OR (feature IN (4) AND hist.feature = 2)))";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, 0 AS level, CAST(gl.mslink AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 WHERE gl.parent IS NULL AND gl.mslink <> 0) UNION ALL (SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, hist.level + 1 AS level, CAST(hist.path + '.' + CAST(gl.mslink AS VARCHAR) AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 INNER JOIN hist ON gl.parent = hist.mslink WHERE gl.mslink <> 0))", withItems.get(0).getSelect().toString());
         assertEquals(" hist", withItems.get(0).getAlias().toString());
@@ -2434,7 +2437,7 @@ public class SelectTest {
         String stmt =
                 "WITH hist AS ((SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, 0 AS level, CAST(gl.mslink AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 WHERE gl.parent IS NULL AND gl.mslink <> 0) UNION ALL (SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, hist.level + 1 AS level, CAST(hist.path + '.' + CAST(gl.mslink AS VARCHAR) AS VARCHAR) AS path, 5 AS feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 INNER JOIN hist ON gl.parent = hist.mslink WHERE gl.mslink <> 0)) SELECT * FROM hist";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("((SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, 0 AS level, CAST(gl.mslink AS VARCHAR) AS path, ae.feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 WHERE gl.parent IS NULL AND gl.mslink <> 0) UNION ALL (SELECT gl.mslink, ba.gl_name AS txt, ba.gl_nummer AS nr, hist.level + 1 AS level, CAST(hist.path + '.' + CAST(gl.mslink AS VARCHAR) AS VARCHAR) AS path, 5 AS feature FROM tablea AS gl INNER JOIN tableb AS ba ON gl.mslink = ba.gl_mslink INNER JOIN tablec AS ae ON gl.mslink = ae.mslink AND ae.deleted = 0 INNER JOIN hist ON gl.parent = hist.mslink WHERE gl.mslink <> 0))", withItems.get(0).getSelect().toString());
         assertEquals(" hist", withItems.get(0).getAlias().toString());
@@ -3166,10 +3169,10 @@ public class SelectTest {
     public void testSelectInnerWith() throws JSQLParserException {
         String stmt = "SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems1 = select.getWithItemsList();
+        List<WithItem<?>> withItems1 = select.getWithItemsList();
         assertNull(withItems1);
         ParenthesedSelect parenthesedSelect = (ParenthesedSelect) select.getPlainSelect().getFromItem();
-        List<WithItem> withItems2 = parenthesedSelect.getPlainSelect().getWithItemsList();
+        List<WithItem<?>> withItems2 = parenthesedSelect.getPlainSelect().getWithItemsList();
         assertEquals(1, withItems2.size());
         assertEquals("(SELECT 'a' aid FROM DUAL)", withItems2.get(0).getSelect().toString());
         assertEquals(" actor", withItems2.get(0).getAlias().toString());
@@ -3185,7 +3188,7 @@ public class SelectTest {
     public void testSelectInnerWithAndUnionIssue1084_2() throws JSQLParserException {
         String stmt = "WITH actor AS (SELECT 'b' aid FROM DUAL) SELECT aid FROM actor UNION SELECT aid FROM actor2";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("(SELECT 'b' aid FROM DUAL)", withItems.get(0).getSelect().toString());
         assertEquals(" actor", withItems.get(0).getAlias().toString());
@@ -4580,10 +4583,10 @@ public class SelectTest {
     public void testInnerWithBlock() throws JSQLParserException {
         String stmt = "select 1 from (with mytable1 as (select 2 ) select 3 from mytable1 ) first";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt, true);
-        List<WithItem> withItems1 = select.getWithItemsList();
+        List<WithItem<?>> withItems1 = select.getWithItemsList();
         assertNull(withItems1);
         ParenthesedSelect parenthesedSelect = (ParenthesedSelect) select.getPlainSelect().getFromItem();
-        List<WithItem> withItems2 = parenthesedSelect.getPlainSelect().getWithItemsList();
+        List<WithItem<?>> withItems2 = parenthesedSelect.getPlainSelect().getWithItemsList();
         assertEquals(1, withItems2.size());
         assertEquals("(SELECT 2)", withItems2.get(0).getSelect().toString());
         assertEquals(" mytable1", withItems2.get(0).getAlias().toString());
@@ -4730,7 +4733,7 @@ public class SelectTest {
     public void testWithAsRecursiveIssue874() throws JSQLParserException {
         String stmt = "WITH rn AS (SELECT rownum rn FROM dual CONNECT BY level <= (SELECT max(cases) FROM t1)) SELECT pname FROM t1, rn WHERE rn <= cases ORDER BY pname";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("(SELECT rownum rn FROM dual CONNECT BY level <= (SELECT max(cases) FROM t1))", withItems.get(0).getSelect().toString());
         assertEquals(" rn", withItems.get(0).getAlias().toString());
@@ -5172,7 +5175,7 @@ public class SelectTest {
     public void testKeywordCostsIssue1185() throws JSQLParserException {
         String stmt = "WITH costs AS (SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1) SELECT * FROM TESTSTMT";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("(SELECT * FROM MY_TABLE1 AS ALIAS_TABLE1)", withItems.get(0).getSelect().toString());
         assertEquals(" costs", withItems.get(0).getAlias().toString());
@@ -5192,7 +5195,7 @@ public class SelectTest {
     public void testWithValueListWithExtraBrackets1135() throws JSQLParserException {
         String stmt = "with sample_data(day, value) as (values ((0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))) select day, value from sample_data";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt, true);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals("VALUES ((0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16))", withItems.get(0).getSelect().getValues().toString());
         assertEquals(" sample_data", withItems.get(0).getAlias().toString());
@@ -5203,14 +5206,14 @@ public class SelectTest {
         String stmt1 = "with sample_data(\"DAY\") as (values 0, 1, 2)\n"
                 + "           select \"DAY\" from sample_data";
         Select select1 = (Select) assertSqlCanBeParsedAndDeparsed(stmt1, true);
-        List<WithItem> withItems1 = select1.getWithItemsList();
+        List<WithItem<?>> withItems1 = select1.getWithItemsList();
         assertEquals(1, withItems1.size());
         assertEquals("VALUES 0, 1, 2", withItems1.get(0).getSelect().getValues().toString());
         assertEquals(" sample_data", withItems1.get(0).getAlias().toString());
 
         String stmt2 = "with sample_data(day, value) as (values (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)) select day, value from sample_data";
         Select select2 = (Select) assertSqlCanBeParsedAndDeparsed(stmt2, true);
-        List<WithItem> withItems2 = select2.getWithItemsList();
+        List<WithItem<?>> withItems2 = select2.getWithItemsList();
         assertEquals(1, withItems2.size());
         assertEquals("VALUES (0, 13), (1, 12), (2, 15), (3, 4), (4, 8), (5, 16)", withItems2.get(0).getSelect().getValues().toString());
         assertEquals(" sample_data", withItems2.get(0).getAlias().toString());
@@ -5220,11 +5223,11 @@ public class SelectTest {
     public void testWithInsideWithIssue1186() throws JSQLParserException {
         String stmt = "WITH TESTSTMT1 AS ( WITH TESTSTMT2 AS (SELECT * FROM MY_TABLE2) SELECT col1, col2 FROM TESTSTMT2) SELECT * FROM TESTSTMT";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(stmt, true);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals(" TESTSTMT1", withItems.get(0).getAlias().toString());
         ParenthesedSelect parenthesedSelect = (ParenthesedSelect) withItems.get(0).getSelect();
-        List<WithItem> withItems2 = parenthesedSelect.getSelect().getWithItemsList();
+        List<WithItem<?>> withItems2 = parenthesedSelect.getSelect().getWithItemsList();
         assertEquals(1, withItems2.size());
         assertEquals("(SELECT * FROM MY_TABLE2)", withItems2.get(0).getSelect().toString());
         assertEquals(" TESTSTMT2", withItems2.get(0).getAlias().toString());
@@ -5731,15 +5734,15 @@ public class SelectTest {
         String sqlStr =
                 "with a as ( with b as ( with c as (select 1) select c.* from c) select b.* from b) select a.* from a";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        List<WithItem> withItems = select.getWithItemsList();
+        List<WithItem<?>> withItems = select.getWithItemsList();
         assertEquals(1, withItems.size());
         assertEquals(" a", withItems.get(0).getAlias().toString());
         ParenthesedSelect parenthesedSelect = (ParenthesedSelect) withItems.get(0).getSelect();
-        List<WithItem> withItems2 = parenthesedSelect.getSelect().getWithItemsList();
+        List<WithItem<?>> withItems2 = parenthesedSelect.getSelect().getWithItemsList();
         assertEquals(1, withItems2.size());
         assertEquals(" b", withItems2.get(0).getAlias().toString());
         ParenthesedSelect parenthesedSelect2 = (ParenthesedSelect) withItems2.get(0).getSelect();
-        List<WithItem> withItems3 = parenthesedSelect2.getSelect().getWithItemsList();
+        List<WithItem<?>> withItems3 = parenthesedSelect2.getSelect().getWithItemsList();
         assertEquals(1, withItems3.size());
         assertEquals("(SELECT 1)", withItems3.get(0).getSelect().toString());
         assertEquals(" c", withItems3.get(0).getAlias().toString());
@@ -5929,4 +5932,126 @@ public class SelectTest {
         Statement stmt = assertSqlCanBeParsedAndDeparsed(sqlStr);
         Assertions.assertInstanceOf(Select.class, stmt);
     }
+
+    @Test
+    void testInsertWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "   RETURNING y " +
+                ") " +
+                "SELECT y " +
+                "  FROM inserted";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        List<WithItem<?>> withItems = select.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Insert insert = withItems.get(0).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b", insert.getSelect().toString());
+        assertEquals(" RETURNING y", insert.getReturningClause().toString());
+        assertEquals("INSERT INTO x (foo) SELECT bar FROM b RETURNING y", insert.toString());
+        assertEquals(" inserted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testUpdateWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH updated AS ( " +
+                "   UPDATE x " +
+                "      SET foo = 1 " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "SELECT y " +
+                "  FROM updated";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        List<WithItem<?>> withItems = select.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Update update = withItems.get(0).getUpdate().getUpdate();
+        assertEquals("x", update.getTable().toString());
+        assertEquals("foo", update.getUpdateSets().get(0).getColumn(0).toString());
+        assertEquals("1", update.getUpdateSets().get(0).getValue(0).toString());
+        assertEquals("bar = 2", update.getWhere().toString());
+        assertEquals(" RETURNING y", update.getReturningClause().toString());
+        assertEquals(" updated", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "SELECT y " +
+                "  FROM deleted";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        List<WithItem<?>> withItems = select.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM deleted) " +
+                "   RETURNING w " +
+                ") " +
+                "SELECT w " +
+                "  FROM inserted";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        List<WithItem<?>> withItems = select.getWithItemsList();
+        assertEquals(2, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+        Insert insert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM deleted)", insert.getSelect().toString());
+        assertEquals(" RETURNING w", insert.getReturningClause().toString());
+        assertEquals("INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM deleted) RETURNING w", insert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @Test
+    void testSelectAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH selection AS ( " +
+                "   SELECT y " +
+                "     FROM z " +
+                "    WHERE foo = 'bar' " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM selection) " +
+                "   RETURNING w " +
+                ") " +
+                "SELECT w " +
+                "  FROM inserted";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        List<WithItem<?>> withItems = select.getWithItemsList();
+        assertEquals(2, withItems.size());
+        PlainSelect innerSelect = withItems.get(0).getSelect().getPlainSelect();
+        assertEquals("SELECT y FROM z WHERE foo = 'bar'", innerSelect.toString());
+        assertEquals(" selection", withItems.get(0).getAlias().toString());
+        Insert insert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM selection)", insert.getSelect().toString());
+        assertEquals(" RETURNING w", insert.getReturningClause().toString());
+        assertEquals("INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w", insert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
 }

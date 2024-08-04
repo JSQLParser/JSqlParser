@@ -29,9 +29,9 @@ public interface SelectVisitor<T> {
         this.visit(setOpList, null);
     }
 
-    <S> T visit(WithItem withItem, S context);
+    <S> T visit(WithItem<?> withItem, S context);
 
-    default void visit(WithItem withItem) {
+    default void visit(WithItem<?> withItem) {
         this.visit(withItem, null);
     }
 

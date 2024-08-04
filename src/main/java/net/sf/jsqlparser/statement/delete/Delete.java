@@ -33,7 +33,7 @@ import static java.util.stream.Collectors.joining;
 
 public class Delete implements Statement {
 
-    private List<WithItem> withItemsList;
+    private List<WithItem<?>> withItemsList;
     private Table table;
     private OracleHint oracleHint = null;
     private List<Table> tables;
@@ -67,28 +67,28 @@ public class Delete implements Statement {
         return this;
     }
 
-    public List<WithItem> getWithItemsList() {
+    public List<WithItem<?>> getWithItemsList() {
         return withItemsList;
     }
 
-    public void setWithItemsList(List<WithItem> withItemsList) {
+    public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
     }
 
-    public Delete withWithItemsList(List<WithItem> withItemsList) {
+    public Delete withWithItemsList(List<WithItem<?>> withItemsList) {
         this.setWithItemsList(withItemsList);
         return this;
     }
 
-    public Delete addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection =
+    public Delete addWithItemsList(WithItem<?>... withItemsList) {
+        List<WithItem<?>> collection =
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
-    public Delete addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection =
+    public Delete addWithItemsList(Collection<? extends WithItem<?>> withItemsList) {
+        List<WithItem<?>> collection =
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
@@ -177,8 +177,8 @@ public class Delete implements Statement {
         StringBuilder b = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             b.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem<?> withItem = iter.next();
                 b.append(withItem);
                 if (iter.hasNext()) {
                     b.append(",");

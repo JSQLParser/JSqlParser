@@ -41,8 +41,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = insert.getWithItemsList().iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter.hasNext();) {
+                WithItem<?> withItem = iter.next();
                 withItem.accept(this.selectVisitor, null);
                 if (iter.hasNext()) {
                     buffer.append(",");

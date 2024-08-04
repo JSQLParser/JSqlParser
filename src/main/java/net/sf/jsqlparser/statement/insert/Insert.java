@@ -43,7 +43,7 @@ public class Insert implements Statement {
     private boolean modifierIgnore = false;
     private ReturningClause returningClause;
     private List<UpdateSet> setUpdateSets = null;
-    private List<WithItem> withItemsList;
+    private List<WithItem<?>> withItemsList;
     private OutputClause outputClause;
     private InsertConflictTarget conflictTarget;
     private InsertConflictAction conflictAction;
@@ -168,11 +168,11 @@ public class Insert implements Statement {
         return setUpdateSets != null && !setUpdateSets.isEmpty();
     }
 
-    public List<WithItem> getWithItemsList() {
+    public List<WithItem<?>> getWithItemsList() {
         return withItemsList;
     }
 
-    public void setWithItemsList(List<WithItem> withItemsList) {
+    public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
     }
 
@@ -221,8 +221,8 @@ public class Insert implements Statement {
         StringBuilder sql = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             sql.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem<?> withItem = iter.next();
                 sql.append(withItem);
                 if (iter.hasNext()) {
                     sql.append(",");
@@ -293,7 +293,7 @@ public class Insert implements Statement {
         return sql.toString();
     }
 
-    public Insert withWithItemsList(List<WithItem> withList) {
+    public Insert withWithItemsList(List<WithItem<?>> withList) {
         this.withItemsList = withList;
         return this;
     }

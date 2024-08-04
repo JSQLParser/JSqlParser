@@ -99,7 +99,7 @@ public abstract class ConnectExpressionsVisitor<T>
     }
 
     @Override
-    public <S> T visit(WithItem withItem, S context) {
+    public <S> T visit(WithItem<?> withItem, S context) {
         return null;
     }
 

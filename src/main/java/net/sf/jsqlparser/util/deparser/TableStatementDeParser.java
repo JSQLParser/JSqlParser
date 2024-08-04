@@ -67,7 +67,7 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     @Override
-    public <S> StringBuilder visit(WithItem withItem, S context) {
+    public <S> StringBuilder visit(WithItem<?> withItem, S context) {
 
         return buffer;
     }

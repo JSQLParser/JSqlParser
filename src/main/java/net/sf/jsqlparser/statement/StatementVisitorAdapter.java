@@ -24,16 +24,19 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
@@ -65,13 +68,31 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(ParenthesedDelete delete, S context) {
+
+        return null;
+    }
+
+    @Override
     public <S> T visit(Update update, S context) {
 
         return null;
     }
 
     @Override
+    public <S> T visit(ParenthesedUpdate update, S context) {
+
+        return null;
+    }
+
+    @Override
     public <S> T visit(Insert insert, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ParenthesedInsert insert, S context) {
 
         return null;
     }
