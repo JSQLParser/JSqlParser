@@ -40,7 +40,8 @@ public class UpdateDeParser extends AbstractDeParser<Update>
     public void deParse(Update update) {
         if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem<?>> iter = update.getWithItemsList().iterator(); iter.hasNext();) {
+            for (Iterator<WithItem<?>> iter = update.getWithItemsList().iterator(); iter
+                    .hasNext();) {
                 WithItem<?> withItem = iter.next();
                 buffer.append(withItem);
                 if (iter.hasNext()) {

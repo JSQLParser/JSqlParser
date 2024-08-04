@@ -130,11 +130,13 @@ public class DeleteTest {
         List<WithItem<?>> withItems = delete.getWithItemsList();
         assertEquals("cfe.instrument_ref", delete.getTable().getFullyQualifiedName());
         assertEquals(2, withItems.size());
-        SelectItem selectItem1 = withItems.get(0).getSelect().getPlainSelect().getSelectItems().get(0);
+        SelectItem selectItem1 =
+                withItems.get(0).getSelect().getPlainSelect().getSelectItems().get(0);
         assertEquals("1", selectItem1.getExpression().toString());
         assertEquals(" id_instrument_ref", selectItem1.getAlias().toString());
         assertEquals(" a", withItems.get(0).getAlias().toString());
-        SelectItem selectItem2 = withItems.get(1).getSelect().getPlainSelect().getSelectItems().get(0);
+        SelectItem selectItem2 =
+                withItems.get(1).getSelect().getPlainSelect().getSelectItems().get(0);
         assertEquals("1", selectItem2.getExpression().toString());
         assertEquals(" id_instrument_ref", selectItem2.getAlias().toString());
         assertEquals(" b", withItems.get(1).getAlias().toString());
@@ -326,9 +328,12 @@ public class DeleteTest {
         assertEquals(" deleted", withItems.get(0).getAlias().toString());
         Insert insert = withItems.get(1).getInsert().getInsert();
         assertEquals("x", insert.getTable().toString());
-        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM deleted)", insert.getSelect().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM deleted)",
+                insert.getSelect().toString());
         assertEquals(" RETURNING w", insert.getReturningClause().toString());
-        assertEquals("INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM deleted) RETURNING w", insert.toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM deleted) RETURNING w",
+                insert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
     }
 
@@ -357,9 +362,12 @@ public class DeleteTest {
         assertEquals(" selection", withItems.get(0).getAlias().toString());
         Insert insert = withItems.get(1).getInsert().getInsert();
         assertEquals("x", insert.getTable().toString());
-        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM selection)", insert.getSelect().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM selection)",
+                insert.getSelect().toString());
         assertEquals(" RETURNING w", insert.getReturningClause().toString());
-        assertEquals("INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w", insert.toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
+                insert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
     }
 
