@@ -18,8 +18,6 @@ public class ParenthesedUpdate extends Update implements ParenthesedStatement {
     Alias alias;
     Update update;
 
-    public ParenthesedUpdate() {}
-
     @Override
     public Alias getAlias() {
         return alias;

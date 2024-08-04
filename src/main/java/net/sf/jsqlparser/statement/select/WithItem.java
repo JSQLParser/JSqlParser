@@ -25,6 +25,8 @@ public class WithItem<T extends ParenthesedStatement> {
 
     private T statement;
     private Alias alias;
+    private List<SelectItem<?>> withItemList;
+    private boolean recursive = false;
 
     public WithItem(T statement, Alias alias) {
         this.statement = statement;
@@ -34,9 +36,6 @@ public class WithItem<T extends ParenthesedStatement> {
     public WithItem() {
         this(null, (Alias) null);
     }
-
-    private List<SelectItem<?>> withItemList;
-    private boolean recursive = false;
 
     public T getParenthesedStatement() {
         return statement;

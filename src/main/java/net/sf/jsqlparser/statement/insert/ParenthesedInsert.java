@@ -17,8 +17,6 @@ public class ParenthesedInsert extends Insert implements ParenthesedStatement {
     Alias alias;
     Insert insert;
 
-    public ParenthesedInsert() {}
-
     @Override
     public Alias getAlias() {
         return alias;

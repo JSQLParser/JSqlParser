@@ -18,8 +18,6 @@ public class ParenthesedDelete extends Delete implements ParenthesedStatement {
     Alias alias;
     Delete delete;
 
-    public ParenthesedDelete() {}
-
     @Override
     public Alias getAlias() {
         return alias;
