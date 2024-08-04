@@ -36,7 +36,7 @@ import java.util.Optional;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Update implements Statement {
 
-    private List<WithItem> withItemsList;
+    private List<WithItem<?>> withItemsList;
     private Table table;
     private Expression where;
     private List<UpdateSet> updateSets;
@@ -82,28 +82,28 @@ public class Update implements Statement {
         return statementVisitor.visit(this, context);
     }
 
-    public List<WithItem> getWithItemsList() {
+    public List<WithItem<?>> getWithItemsList() {
         return withItemsList;
     }
 
-    public void setWithItemsList(List<WithItem> withItemsList) {
+    public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
     }
 
-    public Update withWithItemsList(List<WithItem> withItemsList) {
+    public Update withWithItemsList(List<WithItem<?>> withItemsList) {
         this.setWithItemsList(withItemsList);
         return this;
     }
 
-    public Update addWithItemsList(WithItem... withItemsList) {
-        List<WithItem> collection =
+    public Update addWithItemsList(WithItem<?>... withItemsList) {
+        List<WithItem<?>> collection =
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, withItemsList);
         return this.withWithItemsList(collection);
     }
 
-    public Update addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection =
+    public Update addWithItemsList(Collection<? extends WithItem<?>> withItemsList) {
+        List<WithItem<?>> collection =
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
@@ -282,8 +282,8 @@ public class Update implements Statement {
 
         if (withItemsList != null && !withItemsList.isEmpty()) {
             b.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem<?> withItem = iter.next();
                 b.append(withItem);
                 if (iter.hasNext()) {
                     b.append(",");

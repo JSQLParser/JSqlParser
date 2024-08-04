@@ -633,7 +633,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (selectVisitor != null) {
             if (select.getWithItemsList() != null) {
                 buffer.append("WITH ");
-                for (Iterator<WithItem> iter = select.getWithItemsList().iterator(); iter
+                for (Iterator<WithItem<?>> iter = select.getWithItemsList().iterator(); iter
                         .hasNext();) {
                     iter.next().accept(selectVisitor, null);
                     if (iter.hasNext()) {

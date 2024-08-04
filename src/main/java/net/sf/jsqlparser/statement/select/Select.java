@@ -25,7 +25,7 @@ import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression {
     protected Table forUpdateTable = null;
-    List<WithItem> withItemsList;
+    List<WithItem<?>> withItemsList;
     Limit limitBy;
     Limit limit;
     Offset offset;
@@ -126,27 +126,27 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return builder;
     }
 
-    public List<WithItem> getWithItemsList() {
+    public List<WithItem<?>> getWithItemsList() {
         return withItemsList;
     }
 
-    public void setWithItemsList(List<WithItem> withItemsList) {
+    public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
     }
 
-    public Select withWithItemsList(List<WithItem> withItemsList) {
+    public Select withWithItemsList(List<WithItem<?>> withItemsList) {
         this.setWithItemsList(withItemsList);
         return this;
     }
 
-    public Select addWithItemsList(Collection<? extends WithItem> withItemsList) {
-        List<WithItem> collection =
+    public Select addWithItemsList(Collection<? extends WithItem<?>> withItemsList) {
+        List<WithItem<?>> collection =
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
     }
 
-    public Select addWithItemsList(WithItem... withItemsList) {
+    public Select addWithItemsList(WithItem<?>... withItemsList) {
         return addWithItemsList(Arrays.asList(withItemsList));
     }
 
@@ -328,7 +328,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     public StringBuilder appendTo(StringBuilder builder) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
             builder.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem withItem = iter.next();
                 builder.append(withItem);
                 if (iter.hasNext()) {

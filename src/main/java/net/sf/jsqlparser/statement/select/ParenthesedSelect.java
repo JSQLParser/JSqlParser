@@ -12,11 +12,13 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ParenthesedStatement;
+import net.sf.jsqlparser.statement.StatementVisitor;
 
 import java.util.Collection;
 import java.util.List;
 
-public class ParenthesedSelect extends Select implements FromItem {
+public class ParenthesedSelect extends Select implements FromItem, ParenthesedStatement {
     Alias alias;
     Pivot pivot;
     UnPivot unPivot;
@@ -151,12 +153,16 @@ public class ParenthesedSelect extends Select implements FromItem {
         return fromItemVisitor.visit(this, context);
     }
 
+    @Override
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statementVisitor.visit(this, context);
+    }
+
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append("(").append(select).append(")");
         if (alias != null) {
             builder.append(alias);
         }
-
         if (pivot != null) {
             builder.append(" ").append(pivot);
         }

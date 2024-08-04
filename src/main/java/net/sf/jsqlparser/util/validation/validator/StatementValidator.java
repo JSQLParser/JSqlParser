@@ -46,16 +46,19 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -104,6 +107,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(ParenthesedDelete delete, S context) {
+        return visit(delete.getDelete(), context);
+    }
+
+    @Override
     public <S> Void visit(Drop drop, S context) {
         getValidator(DropValidator.class).validate(drop);
         return null;
@@ -113,6 +121,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(Insert insert, S context) {
         getValidator(InsertValidator.class).validate(insert);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(ParenthesedInsert insert, S context) {
+        return visit(insert.getInsert(), context);
     }
 
     @Override
@@ -135,6 +148,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(Update update, S context) {
         getValidator(UpdateValidator.class).validate(update);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(ParenthesedUpdate update, S context) {
+        return visit(update.getUpdate(), context);
     }
 
     @Override

@@ -743,7 +743,7 @@ Statement Statement() #Statement:
 Statement SingleStatement() :
 {
     Statement stm = null;
-    List<WithItem> with = null;
+    List<WithItem<?>> with = null;
 }
 {
         (
@@ -752,13 +752,13 @@ Statement SingleStatement() :
                 (
                     stm = SelectWithWithItems( with )
                     |
-                    stm = Insert( with )
+                    stm = InsertWithWithItems( with )
                     |
-                    stm = Update( with )
+                    stm = UpdateWithWithItems( with )
                     |
-                    stm = Delete( with )
+                    stm = DeleteWithWithItems( with )
                     |
-                    stm = Merge( with)
+                    stm = Merge( with )
                 )
             )
             |
@@ -1455,12 +1455,22 @@ ReturningClause ReturningClause():
     }
 }
 
-Update Update( List<WithItem> with ):
+Update UpdateWithWithItems( List<WithItem<?>> withItems ):
+{
+    Update update;
+}
+{
+    update = Update() { update.setWithItemsList( withItems );
+    return update;
+}
+}
+
+Update Update():
 {
     Update update = new Update();
     Table table = null;
     List<Join> startJoins = null;
-
+    List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
     Expression where = null;
     FromItem fromItem = null;
@@ -1558,10 +1568,21 @@ List<UpdateSet> UpdateSets():
     }
 }
 
-Insert Insert( List<WithItem> with ):
+Insert InsertWithWithItems( List<WithItem<?>> withItems ):
+{
+    Insert insert;
+}
+{
+    insert = Insert() { insert.setWithItemsList( withItems );
+    return insert;
+}
+}
+
+Insert Insert():
 {
     Insert insert = new Insert();
     Table table = null;
+    List<WithItem<?>> with = null;
     Column tableColumn = null;
     ExpressionList<Column> columns = new ExpressionList<Column>();
     Expression exp = null;
@@ -1762,11 +1783,22 @@ Upsert Upsert():
     }
 }
 
-Delete Delete( List<WithItem> with ):
+Delete DeleteWithWithItems( List<WithItem<?>> withItems ):
+{
+    Delete delete;
+}
+{
+    delete = Delete() { delete.setWithItemsList( withItems );
+    return delete;
+}
+}
+
+Delete Delete():
 {
     Delete delete = new Delete();
     Table table = null;
     List<Table> tables = new ArrayList<Table>();
+    List<WithItem<?>> with = null;
     Table usingTable = null;
     List<Table> usingList = new ArrayList<Table>();
     List<Join> joins = null;
@@ -1815,7 +1847,7 @@ Delete Delete( List<WithItem> with ):
     }
 }
 
-Statement Merge( List<WithItem> with ) : {
+Statement Merge( List<WithItem<?>> with ) : {
     Merge merge = new Merge();
     Table table;
     FromItem fromItem;
@@ -2120,7 +2152,7 @@ SampleClause SampleClause():
     }
 }
 
-Select SelectWithWithItems( List<WithItem> withItems):
+Select SelectWithWithItems( List<WithItem<?>> withItems):
 {
     Select select;
 }
@@ -2133,7 +2165,7 @@ Select SelectWithWithItems( List<WithItem> withItems):
 Select Select() #Select:
 {
     Select select = null;
-    List<WithItem> with = null;
+    List<WithItem<?>> with = null;
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
     Offset offset = null;
@@ -2194,6 +2226,48 @@ ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:
     {
         linkAST(parenthesedSelect,jjtThis);
         return parenthesedSelect.withSelect(select);
+    }
+}
+
+ParenthesedInsert ParenthesedInsert() #ParenthesedInsert:
+{
+    ParenthesedInsert parenthesedInsert = new ParenthesedInsert();
+    Insert insert;
+}
+{
+    "("
+    insert = Insert()
+    ")"
+    {
+        return parenthesedInsert.withInsert(insert);
+    }
+}
+
+ParenthesedUpdate ParenthesedUpdate() #ParenthesedUpdate:
+{
+    ParenthesedUpdate parenthesedUpdate = new ParenthesedUpdate();
+    Update update;
+}
+{
+    "("
+    update = Update()
+    ")"
+    {
+        return parenthesedUpdate.withUpdate(update);
+    }
+}
+
+ParenthesedDelete ParenthesedDelete() #ParenthesedDelete:
+{
+    ParenthesedDelete parenthesedDelete = new ParenthesedDelete();
+    Delete delete;
+}
+{
+    "("
+    delete = Delete()
+    ")"
+    {
+        return parenthesedDelete.withDelete(delete);
     }
 }
 
@@ -2550,9 +2624,9 @@ Select SetOperationList(Select select) #SetOperationList: {
     }
 }
 
-List<WithItem> WithList():
+List<WithItem<?>> WithList():
 {
-    List<WithItem> withItemsList = new ArrayList<WithItem>();
+    List<WithItem<?>> withItemsList = new ArrayList<WithItem<?>>();
     WithItem with = null;
 }
 {
@@ -2561,20 +2635,32 @@ List<WithItem> WithList():
      { return withItemsList; }
 }
 
-WithItem WithItem() #WithItem:
+WithItem<?> WithItem() #WithItem:
 {
-    WithItem withItem = new WithItem();
+    boolean recursive = false;
     String name;
-    List<SelectItem<?>> selectItems;
-    Select select;
+    List<SelectItem<?>> selectItems = null;
+    ParenthesedStatement statement;
 }
 {
-     [ LOOKAHEAD(2) <K_RECURSIVE>  { withItem.setRecursive(true); }   ]
-     name=RelObjectName()  { withItem.setAlias( new Alias( name, false)); }
-     [ "(" selectItems=SelectItemsList() ")" { withItem.setWithItemList(selectItems); } ]
-     <K_AS> select = ParenthesedSelect()  { withItem.setSelect(select); }
+     [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
+     name=RelObjectName()
+     [ "(" selectItems=SelectItemsList() ")" ]
+     <K_AS>
+     (
+         LOOKAHEAD(2) statement = ParenthesedSelect()
+         |
+         LOOKAHEAD(2) statement = ParenthesedInsert()
+         |
+         LOOKAHEAD(2) statement = ParenthesedUpdate()
+         |
+         LOOKAHEAD(2) statement = ParenthesedDelete()
+     )
      {
-        return withItem;
+        WithItem<?> withItem = new WithItem(statement, new Alias(name, false));
+        return withItem
+            .withRecursive(recursive)
+            .withWithItemList(selectItems);
      }
 }
 

@@ -24,16 +24,19 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
@@ -302,4 +305,23 @@ public interface StatementVisitor<T> {
     default void visit(UnsupportedStatement unsupportedStatement) {
         this.visit(unsupportedStatement, null);
     }
+
+    <S> T visit(ParenthesedInsert parenthesedInsert, S context);
+
+    default void visit(ParenthesedInsert parenthesedInsert) {
+        this.visit(parenthesedInsert, null);
+    }
+
+    <S> T visit(ParenthesedUpdate parenthesedUpdate, S context);
+
+    default void visit(ParenthesedUpdate parenthesedUpdate) {
+        this.visit(parenthesedUpdate, null);
+    }
+
+    <S> T visit(ParenthesedDelete parenthesedDelete, S context);
+
+    default void visit(ParenthesedDelete parenthesedDelete) {
+        this.visit(parenthesedDelete, null);
+    }
+
 }
