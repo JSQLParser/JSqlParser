@@ -371,9 +371,6 @@ public class InsertTest {
         assertEquals("mytab3", insert.getTable().getFullyQualifiedName());
         assertNull(insertWithItems);
         assertNull(selectWithItems);
-        System.out.println(insert);
-        System.out.println(insert.getPlainSelect());
-        System.out.println(insert.getPlainSelect().getWhere());
         ExistsExpression exists = (ExistsExpression) insert.getPlainSelect().getWhere();
         assertEquals("(WITH t AS (SELECT * FROM mytab2) SELECT * FROM t)", exists.getRightExpression().toString());
     }
