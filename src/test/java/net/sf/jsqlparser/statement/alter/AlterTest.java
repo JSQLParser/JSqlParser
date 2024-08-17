@@ -1024,20 +1024,24 @@ public class AlterTest {
     }
 
     @Test
-    public void testIssue2027() throws JSQLParserException{
+    public void testIssue2027() throws JSQLParserException {
         String sql = "ALTER TABLE `foo_bar` ADD COLUMN `baz` text";
         assertSqlCanBeParsedAndDeparsed(sql);
 
-        String sqlText = "ALTER TABLE `foo_bar` ADD COLUMN `baz` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
+        String sqlText =
+                "ALTER TABLE `foo_bar` ADD COLUMN `baz` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
         assertSqlCanBeParsedAndDeparsed(sqlText);
 
-        String sqlTinyText = "ALTER TABLE `foo_bar` ADD COLUMN `baz` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
+        String sqlTinyText =
+                "ALTER TABLE `foo_bar` ADD COLUMN `baz` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
         assertSqlCanBeParsedAndDeparsed(sqlTinyText);
 
-        String sqlMediumText = "ALTER TABLE `foo_bar` ADD COLUMN `baz` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
+        String sqlMediumText =
+                "ALTER TABLE `foo_bar` ADD COLUMN `baz` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
         assertSqlCanBeParsedAndDeparsed(sqlMediumText);
 
-        String sqlLongText = "ALTER TABLE `foo_bar` ADD COLUMN `baz` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
+        String sqlLongText =
+                "ALTER TABLE `foo_bar` ADD COLUMN `baz` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
         assertSqlCanBeParsedAndDeparsed(sqlLongText);
     }
 }
