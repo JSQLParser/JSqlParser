@@ -54,6 +54,14 @@ public class WithItem<T extends ParenthesedStatement> {
         return alias;
     }
 
+    public String getAliasName() {
+        return alias != null ? alias.getName() : null;
+    }
+
+    public String getUnquotedAliasName() {
+        return alias != null ? alias.getUnquotedName() : null;
+    }
+
     public void setAlias(Alias alias) {
         this.alias = alias;
     }
@@ -98,8 +106,6 @@ public class WithItem<T extends ParenthesedStatement> {
                 builder.append(withItemList.get(i)).append(i < size - 1 ? "," : "");
             }
             builder.append(")");
-        } else {
-            builder.append("");
         }
         builder.append(" AS ");
         builder.append(statement);

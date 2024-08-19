@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import net.sf.jsqlparser.schema.MultiPartName;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 public class Alias implements Serializable {
@@ -36,6 +37,10 @@ public class Alias implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public String getUnquotedName() {
+        return MultiPartName.unquote(name);
     }
 
     public void setName(String name) {

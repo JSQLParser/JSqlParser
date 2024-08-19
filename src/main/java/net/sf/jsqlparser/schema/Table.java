@@ -108,7 +108,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public String getUnquotedDatabaseName() {
-        return unquote(getDatabaseName());
+        return MultiPartName.unquote(getDatabaseName());
     }
 
     public void setDatabase(Database database) {
@@ -133,7 +133,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public String getUnquotedSchemaName() {
-        return unquote(getSchemaName());
+        return MultiPartName.unquote(getSchemaName());
     }
 
     public Table setSchemaName(String schemaName) {
@@ -236,7 +236,7 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     @Override
     public String getUnquotedName() {
-        return unquote(getName());
+        return MultiPartName.unquote(getName());
     }
 
     @Override

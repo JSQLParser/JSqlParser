@@ -123,7 +123,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
     @Override
     public String getUnquotedName() {
-        return unquote(partItems.get(NAME_IDX));
+        return MultiPartName.unquote(partItems.get(NAME_IDX));
     }
 
     @Override

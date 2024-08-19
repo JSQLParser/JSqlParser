@@ -59,7 +59,7 @@ public final class Database implements MultiPartName {
 
     @Override
     public String getUnquotedName() {
-        return unquote(databaseName);
+        return MultiPartName.unquote(databaseName);
     }
 
     @Override

@@ -20,7 +20,7 @@ public interface MultiPartName {
      * @param quotedIdentifier the quoted identifier
      * @return the pure identifier without quotes
      */
-    default String unquote(String quotedIdentifier) {
+    static String unquote(String quotedIdentifier) {
         return quotedIdentifier != null
                 ? LEADING_TRAILING_QUOTES_PATTERN.matcher(quotedIdentifier).replaceAll("")
                 : null;
