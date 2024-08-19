@@ -9,7 +9,24 @@
  */
 package net.sf.jsqlparser.schema;
 
+import java.util.regex.Pattern;
+
 public interface MultiPartName {
+    Pattern LEADING_TRAILING_QUOTES_PATTERN = Pattern.compile("^[\"\\[`]+|[\"\\]`]+$");
+
+    /**
+     * Removes leading and trailing quotes from a SQL quoted identifier
+     *
+     * @param quotedIdentifier the quoted identifier
+     * @return the pure identifier without quotes
+     */
+    default String unquote(String quotedIdentifier) {
+        return quotedIdentifier != null
+                ? LEADING_TRAILING_QUOTES_PATTERN.matcher(quotedIdentifier).replaceAll("")
+                : null;
+    }
 
     String getFullyQualifiedName();
+
+    String getUnquotedName();
 }

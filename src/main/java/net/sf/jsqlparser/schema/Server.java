@@ -70,6 +70,11 @@ public final class Server implements MultiPartName {
     }
 
     @Override
+    public String getUnquotedName() {
+        return unquote(serverName);
+    }
+
+    @Override
     public String toString() {
         return getFullyQualifiedName();
     }
