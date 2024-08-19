@@ -53,7 +53,6 @@ public class StatementSeparatorTest {
     void testOracleBlock() throws JSQLParserException {
         String sqlStr = "BEGIN\n" + "\n" + "SELECT * FROM TABLE;\n" + "\n" + "END\n" + "/\n";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        System.out.println(statement);
     }
 
     @Test
@@ -69,7 +68,6 @@ public class StatementSeparatorTest {
         String sqlStr =
                 "select name,\ngoods from test_table where option includes ('option1', 'option2')";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        System.out.println(statement);
     }
 
     @Test
@@ -77,6 +75,5 @@ public class StatementSeparatorTest {
         String sqlStr =
                 "select name,\ngoods from test_table where option excludes ('option1', 'option2')";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        System.out.println(statement);
     }
 }
