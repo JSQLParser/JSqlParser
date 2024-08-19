@@ -75,4 +75,12 @@ class FunctionTest {
                 "  UNNEST(addresses) AS email";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testSimpleFunctionIssue2059() throws JSQLParserException {
+        String sqlStr = "select count(*) from zzz";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> {
+            parser.withAllowComplexParsing(false);
+        });
+    }
 }

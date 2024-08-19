@@ -5587,7 +5587,6 @@ Function Function() #Function:
 {
     (
         "{" <K_FN> function = InternalFunction(true) "}"
-        | LOOKAHEAD( SimpleFunction(), { getAsBoolean(Feature.allowComplexParsing) }) function = SimpleFunction()
         | LOOKAHEAD(3) function = SpecialStringFunctionWithNamedParameters()
         | function = InternalFunction(false)
     )
@@ -5623,57 +5622,6 @@ Function SpecialStringFunctionWithNamedParameters() :
     }
 }
 
-// a simplified function with only one parameter
-// useful for parsing nested functions fast
-Function SimpleFunction():
-{
-    Function function = new Function();
-    ObjectNames name;
-    Expression expr=null;
-    Expression attributeExpression = null;
-    Column attributeColumn = null;
-}
-{
-    name = RelObjectNames()
-    "("
-    [
-        (
-            "*" { expr = new AllColumns(); }
-            |
-            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns()
-            |
-            LOOKAHEAD( 3 ) expr = ParenthesedSelect()
-            |
-            LOOKAHEAD( SimpleFunction() ) expr = SimpleFunction()
-            |
-            LOOKAHEAD( RegularCondition() ) expr = RegularCondition()
-            |
-            LOOKAHEAD( SimpleExpressionList() )  expr = SimpleExpressionList()
-        )
-    ]
-    ")"
-    {
-        function.setName(name.getNames());
-        if (expr!=null) {
-            function.setParameters(expr);
-        }
-    }
-
-    [ LOOKAHEAD(2) "." (
-        // tricky lookahead since we do need to support the following constructs
-        // schema.f1().f2() - Function with Function Column
-        // schema.f1().f2.f3 - Function with Attribute Column
-        LOOKAHEAD( Function() ) attributeExpression=Function() { function.setAttribute(attributeExpression); }
-        |
-        attributeColumn=Column() { function.setAttribute(attributeColumn); }
-      )
-    ]
-
-    {
-        return function;
-    }
-}
-
 Function InternalFunction(boolean escaped):
 {
     Token prefixToken = null;
@@ -5701,6 +5649,10 @@ Function InternalFunction(boolean escaped):
             )
         ]
         (
+            "*" { expr = new AllColumns(); expressionList = new ExpressionList(expr); }
+            |
+            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns() { expressionList = new ExpressionList(expr); }
+            |
             LOOKAHEAD(3) expressionList=ExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
             |
             expr = Select() { expressionList = new ExpressionList(expr); }
