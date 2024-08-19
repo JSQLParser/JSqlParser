@@ -24,6 +24,7 @@ public class CreateSchema implements Statement {
     private String schemaName;
     private List<String> schemaPath;
     private List<Statement> statements = new ArrayList<>();
+    private boolean hasIfNotExists = false;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -103,8 +104,20 @@ public class CreateSchema implements Statement {
         return statements;
     }
 
+    public boolean hasIfNotExists() {
+        return hasIfNotExists;
+    }
+
+    public CreateSchema setIfNotExists(boolean hasIfNotExists) {
+        this.hasIfNotExists = hasIfNotExists;
+        return this;
+    }
+
     public String toString() {
         String sql = "CREATE SCHEMA";
+        if (hasIfNotExists) {
+            sql += " IF NOT EXISTS";
+        }
         if (schemaName != null) {
             sql += " " + schemaName;
         }
