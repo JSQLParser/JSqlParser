@@ -37,6 +37,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | CURRENT              | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| DEFAULT              | Yes         |           |
++----------------------+-------------+-----------+
 | DISTINCT             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | DOUBLE               | Yes         |           | 
