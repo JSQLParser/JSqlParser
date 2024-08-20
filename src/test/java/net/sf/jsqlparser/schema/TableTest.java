@@ -22,6 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  *
@@ -65,9 +66,7 @@ public class TableTest {
                 return null;
             }
         };
-
         deparser.visit((PlainSelect) select, null);
-
     }
 
     @Test
@@ -85,5 +84,32 @@ public class TableTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(
                         "the length of the delimiters list must be 1 less than nameParts");
+    }
+
+    @Test
+    void testBigQueryFullQuotedName() throws JSQLParserException {
+        String sqlStr = "select * from `d.s.t`";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        Table table = (Table) select.getFromItem();
+
+        assertEquals("\"d\"", table.getCatalogName());
+        assertEquals("\"s\"", table.getSchemaName());
+        assertEquals("\"t\"", table.getName());
+
+        assertEquals("d", table.getUnquotedDatabaseName());
+        assertEquals("s", table.getUnquotedSchemaName());
+        assertEquals("t", table.getUnquotedName());
+
+        sqlStr = "select * from `s.t`";
+        select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+        table = (Table) select.getFromItem();
+
+        assertNull(table.getCatalogName());
+        assertEquals("\"s\"", table.getSchemaName());
+        assertEquals("\"t\"", table.getName());
+
+        assertNull(table.getUnquotedDatabaseName());
+        assertEquals("s", table.getUnquotedSchemaName());
+        assertEquals("t", table.getUnquotedName());
     }
 }

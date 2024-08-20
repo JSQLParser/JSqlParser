@@ -187,10 +187,6 @@ test {
     environment = [ 'EXPORT_TEST_TO_FILE': 'True' ]
     useJUnitPlatform()
 
-    jacoco {
-        excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']
-    }
-
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "1G"

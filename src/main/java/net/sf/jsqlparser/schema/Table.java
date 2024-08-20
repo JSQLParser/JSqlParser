@@ -63,36 +63,44 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
     public Table(String schemaName, String name) {
-        setName(name);
         setSchemaName(schemaName);
+        setName(name);
     }
 
     public Table(Database database, String schemaName, String name) {
-        setName(name);
-        setSchemaName(schemaName);
         setDatabase(database);
+        setSchemaName(schemaName);
+        setName(name);
     }
 
     public Table(String catalogName, String schemaName, String tableName) {
-        setName(tableName);
         setSchemaName(schemaName);
         setDatabase(new Database(catalogName));
+        setName(tableName);
     }
 
     public Table(List<String> partItems) {
-        this.partItems = new ArrayList<>(partItems);
-        Collections.reverse(this.partItems);
+        if (partItems.size() == 1) {
+            setName(partItems.get(0));
+        } else {
+            this.partItems = new ArrayList<>(partItems);
+            Collections.reverse(this.partItems);
+        }
     }
 
     public Table(List<String> partItems, List<String> partDelimiters) {
-        if (partDelimiters.size() != partItems.size() - 1) {
-            throw new IllegalArgumentException(
-                    "the length of the delimiters list must be 1 less than nameParts");
+        if (partItems.size() == 1) {
+            setName(partItems.get(0));
+        } else {
+            if (partDelimiters.size() != partItems.size() - 1) {
+                throw new IllegalArgumentException(
+                        "the length of the delimiters list must be 1 less than nameParts");
+            }
+            this.partItems = new ArrayList<>(partItems);
+            this.partDelimiters = new ArrayList<>(partDelimiters);
+            Collections.reverse(this.partItems);
+            Collections.reverse(this.partDelimiters);
         }
-        this.partItems = new ArrayList<>(partItems);
-        this.partDelimiters = new ArrayList<>(partDelimiters);
-        Collections.reverse(this.partItems);
-        Collections.reverse(this.partDelimiters);
     }
 
     public String getCatalogName() {
@@ -159,7 +167,17 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
 
     public void setName(String name) {
-        setIndex(NAME_IDX, name);
+        // BigQuery seems to allow things like: `catalogName.schemaName.tableName` in only one pair
+        // of quotes
+        if (MultiPartName.isQuoted(name) && name.contains(".")) {
+            partItems.clear();
+            for (String unquotedIdentifier : MultiPartName.unquote(name).split("\\.")) {
+                partItems.add("\"" + unquotedIdentifier + "\"");
+            }
+            Collections.reverse(partItems);
+        } else {
+            setIndex(NAME_IDX, name);
+        }
     }
 
     public String getDBLinkName() {
