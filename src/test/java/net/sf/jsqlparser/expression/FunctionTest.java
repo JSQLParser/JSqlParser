@@ -77,6 +77,13 @@ class FunctionTest {
     }
 
     @Test
+    void testSubSelectParameterWithoutParentheses() throws JSQLParserException {
+        String sqlStr = "SELECT COALESCE(SELECT mycolumn FROM mytable, 0)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withUnparenthesizedSubSelects(true));
+    }
+
+    @Test
     void testSimpleFunctionIssue2059() throws JSQLParserException {
         String sqlStr = "select count(*) from zzz";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> {

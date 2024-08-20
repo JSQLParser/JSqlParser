@@ -194,6 +194,10 @@ test {
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "1G"
+
+    jacoco {
+        excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']
+    }
 }
 
 coveralls {
@@ -201,14 +205,6 @@ coveralls {
 }
 
 jacocoTestReport {
-    // Jacoco can't handle the TokenManager class
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                    "**CCJSqlParserTokenManager**"
-            ])
-        }))
-    }
     dependsOn test // tests are required to run before generating the report
     reports {
         xml.required = false

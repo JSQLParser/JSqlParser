@@ -18,8 +18,10 @@ import org.junit.jupiter.api.Timeout;
 import java.util.logging.Logger;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  *
@@ -35,14 +37,15 @@ public class NestedBracketsPerformanceTest {
     public void testIssue766() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat(concat('1','2'),'3'),'4'),'5'),'6'),'7'),'8'),'9'),'10'),'11'),'12'),'13'),'14'),'15'),'16'),'17'),'18'),'19'),'20'),'21'),col1 FROM tbl t1",
-                true);
+                true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
     @Timeout(2000)
     public void testIssue766_2() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT concat(concat(concat('1', '2'), '3'), '4'), col1 FROM tbl t1");
+                "SELECT concat(concat(concat('1', '2'), '3'), '4'), col1 FROM tbl t1", true,
+                parser -> parser.withTimeOut(60000));
     }
 
     @Test
@@ -50,7 +53,7 @@ public class NestedBracketsPerformanceTest {
     public void testIssue235() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT CASE WHEN ( CASE WHEN ( CASE WHEN ( CASE WHEN ( 1 ) THEN 0 END ) THEN 0 END ) THEN 0 END ) THEN 0 END FROM a",
-                true);
+                true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
@@ -71,7 +74,7 @@ public class NestedBracketsPerformanceTest {
                 + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" + "ELSE CASE\n"
                 + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
                 + "ELSE CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END END END END END END END END END END END END END END COLUMNALIAS\n"
-                + "FROM TABLE1", true);
+                + "FROM TABLE1", true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
@@ -92,26 +95,31 @@ public class NestedBracketsPerformanceTest {
                 + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n" + "ELSE (CASE\n"
                 + "WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT'\n"
                 + "ELSE (CASE WHEN WDGFLD.PORTTYPE = 1 THEN 'INPUT PORT' ELSE '0' END) END) END) END) END) END) END) END) END) END) END) END) END) END COLUMNALIAS\n"
-                + "FROM TABLE1", true);
+                + "FROM TABLE1", true, parser -> parser.withTimeOut(60000));
+    }
+
+    @Test
+    @Timeout(10000)
+    public void testIssue496() throws JSQLParserException {
+        Assertions.assertThrowsExactly(JSQLParserException.class, new Executable() {
+            @Override
+            public void execute() throws Throwable {
+                assertSqlCanBeParsedAndDeparsed(
+                        "select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m",
+                        true, parser -> parser.withTimeOut(6000));
+            }
+        });
+
     }
 
     @Test
     @Timeout(2000)
-    @Disabled
-    public void testIssue496() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "select isNull(charLen(TEST_ID,0)+ isNull(charLen(TEST_DVC,0)+ isNull(charLen(TEST_NO,0)+ isNull(charLen(ATEST_ID,0)+ isNull(charLen(TESTNO,0)+ isNull(charLen(TEST_CTNT,0)+ isNull(charLen(TEST_MESG_CTNT,0)+ isNull(charLen(TEST_DTM,0)+ isNull(charLen(TEST_DTT,0)+ isNull(charLen(TEST_ADTT,0)+ isNull(charLen(TEST_TCD,0)+ isNull(charLen(TEST_PD,0)+ isNull(charLen(TEST_VAL,0)+ isNull(charLen(TEST_YN,0)+ isNull(charLen(TEST_DTACM,0)+ isNull(charLen(TEST_MST,0) from test_info_m",
-                true);
-    }
-
-    @Test
-    // @Todo Investigate performance deterioration since JSQLParser 5.0pre development
     public void testIssue856() throws JSQLParserException {
         String sql = "SELECT "
                 + buildRecursiveBracketExpression(
                         "if(month(today()) = 3, sum(\"Table5\".\"Month 002\"), $1)", "0", 3)
                 + " FROM mytbl";
-        assertSqlCanBeParsedAndDeparsed(sql);
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
@@ -127,6 +135,7 @@ public class NestedBracketsPerformanceTest {
     // maxDepth = 10 collides with the Parser Timeout = 6 seconds
     // @todo: implement methods to set the Parser Timeout explicitly and on demand
     @Test
+    @Timeout(20000)
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
         // Temporally set the maxDepth to be 6, was 8 before this
         doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 6);
@@ -135,18 +144,22 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(2000)
     public void testIssue1013() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable");
+        assertSqlCanBeParsedAndDeparsed("SELECT ((((((((((((((((tblA)))))))))))))))) FROM mytable",
+                true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
     @Timeout(2000)
     public void testIssue1013_2() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((((((((((((((((tblA))))))))))))))))");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((((((((((((((((tblA))))))))))))))))", true,
+                parser -> parser.withTimeOut(60000));
     }
 
     @Test
+    @Timeout(2000)
     public void testIssue1013_3() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (((tblA)))");
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM (((tblA)))", true,
+                parser -> parser.withTimeOut(60000));
     }
 
     @Test
@@ -158,7 +171,7 @@ public class NestedBracketsPerformanceTest {
         }
         String sql = "SELECT * FROM " + s;
         LOG.info("testing " + sql);
-        assertSqlCanBeParsedAndDeparsed(sql);
+        assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withTimeOut(60000));
     }
 
     /**
@@ -166,7 +179,8 @@ public class NestedBracketsPerformanceTest {
      *
      * @throws JSQLParserException
      */
-    // @Test(timeout = 6000)
+    @Test
+    @Timeout(2000)
     public void testIncreaseOfParseTime() throws JSQLParserException {
         // Temporally set the maxDepth to be 6, was 50 before this
         doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 6);
@@ -180,7 +194,7 @@ public class NestedBracketsPerformanceTest {
             String sql = "SELECT " + buildRecursiveBracketExpression(template, finalExpression, i)
                     + " FROM mytbl";
             long startTime = System.currentTimeMillis();
-            assertSqlCanBeParsedAndDeparsed(sql, true);
+            assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withTimeOut(60000));
             long durationTime = System.currentTimeMillis() - startTime;
 
             if (i > 0) {
@@ -199,6 +213,7 @@ public class NestedBracketsPerformanceTest {
     }
 
     @Test
+    @Timeout(2000)
     public void testRecursiveBracketExpression() {
         assertEquals("concat('A','B')",
                 buildRecursiveBracketExpression("concat($1,'B')", "'A'", 0));
@@ -227,10 +242,11 @@ public class NestedBracketsPerformanceTest {
                         + "ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(ROUND(0\n"
                         + ",0),0),0),0),0),0),0),0)\n" + ",0),0),0),0),0),0),0),0)\n"
                         + ",0),0),0),0),0),0),0),0)\n" + ",0),0),0),0),0),0),0),0)",
-                true);
+                true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
+    @Timeout(2000)
     public void testDeepFunctionParameters() throws JSQLParserException {
         String sqlStr = "SELECT  a.*\n"
                 + "        , To_Char( a.eingangsdat, 'MM.YY' ) AS eingmonat\n"
@@ -354,7 +370,7 @@ public class NestedBracketsPerformanceTest {
                 + "                FROM beschfehler\n"
                 + "                WHERE beschfehler_id = a.beschwkat_id ), 0 ) > 0\n";
 
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> parser.withTimeOut(60000));
     }
 
     @Test
