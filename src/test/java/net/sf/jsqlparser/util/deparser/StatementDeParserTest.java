@@ -108,7 +108,7 @@ public class StatementDeParserTest {
         duplicateUpdateSets.add(new UpdateSet(duplicateUpdateColumn2, duplicateUpdateExpression2));
 
         PlainSelect select = mock(PlainSelect.class);
-        List<WithItem> withItemsList = new ArrayList<WithItem>();
+        List<WithItem<?>> withItemsList = new ArrayList<WithItem<?>>();
         WithItem withItem1 = spy(new WithItem());
         WithItem withItem2 = spy(new WithItem());
         ParenthesedSelect withItem1SubSelect = mock(ParenthesedSelect.class);
@@ -140,7 +140,7 @@ public class StatementDeParserTest {
         WithItem withItem2 = spy(new WithItem());
         withItem2.setSelect(mock(ParenthesedSelect.class));
 
-        List<WithItem> withItemsList = new ArrayList<WithItem>();
+        List<WithItem<?>> withItemsList = new ArrayList<WithItem<?>>();
         withItemsList.add(withItem1);
         withItemsList.add(withItem2);
 
@@ -289,7 +289,7 @@ public class StatementDeParserTest {
         Expression duplicateUpdateExpression1 = mock(Expression.class);
         Expression duplicateUpdateExpression2 = mock(Expression.class);
         PlainSelect select = mock(PlainSelect.class);
-        List<WithItem> withItemsList = new ArrayList<WithItem>();
+        List<WithItem<?>> withItemsList = new ArrayList<WithItem<?>>();
         WithItem withItem1 = spy(new WithItem());
         WithItem withItem2 = spy(new WithItem());
         ParenthesedSelect withItem1SubSelect = mock(ParenthesedSelect.class);

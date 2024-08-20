@@ -34,4 +34,10 @@ public class CreateSchemaTest {
         assertDeparse(new CreateSchema().withSchemaName("myschema").withAuthorization("myauth"),
                 statement);
     }
+
+    @Test
+    void testIfNotExistsIssue2061() throws JSQLParserException {
+        String sqlStr = "CREATE SCHEMA IF NOT EXISTS sales_kpi";
+        assertSqlCanBeParsedAndDeparsed(sqlStr);
+    }
 }

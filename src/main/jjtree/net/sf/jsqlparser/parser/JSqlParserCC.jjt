@@ -744,7 +744,7 @@ Statement Statement() #Statement:
 Statement SingleStatement() :
 {
     Statement stm = null;
-    List<WithItem> with = null;
+    List<WithItem<?>> with = null;
 }
 {
         (
@@ -753,13 +753,13 @@ Statement SingleStatement() :
                 (
                     stm = SelectWithWithItems( with )
                     |
-                    stm = Insert( with )
+                    stm = InsertWithWithItems( with )
                     |
-                    stm = Update( with )
+                    stm = UpdateWithWithItems( with )
                     |
-                    stm = Delete( with )
+                    stm = DeleteWithWithItems( with )
                     |
-                    stm = Merge( with)
+                    stm = Merge( with )
                 )
             )
             |
@@ -1456,12 +1456,22 @@ ReturningClause ReturningClause():
     }
 }
 
-Update Update( List<WithItem> with ):
+Update UpdateWithWithItems( List<WithItem<?>> withItems ):
+{
+    Update update;
+}
+{
+    update = Update() { update.setWithItemsList( withItems );
+    return update;
+}
+}
+
+Update Update():
 {
     Update update = new Update();
     Table table = null;
     List<Join> startJoins = null;
-
+    List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
     Expression where = null;
     FromItem fromItem = null;
@@ -1559,10 +1569,21 @@ List<UpdateSet> UpdateSets():
     }
 }
 
-Insert Insert( List<WithItem> with ):
+Insert InsertWithWithItems( List<WithItem<?>> withItems ):
+{
+    Insert insert;
+}
+{
+    insert = Insert() { insert.setWithItemsList( withItems );
+    return insert;
+}
+}
+
+Insert Insert():
 {
     Insert insert = new Insert();
     Table table = null;
+    List<WithItem<?>> with = null;
     Column tableColumn = null;
     ExpressionList<Column> columns = new ExpressionList<Column>();
     Expression exp = null;
@@ -1603,6 +1624,8 @@ Insert Insert( List<WithItem> with ):
     [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
 
     (
+        <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
+        |
         (
             <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); }
         )
@@ -1761,11 +1784,22 @@ Upsert Upsert():
     }
 }
 
-Delete Delete( List<WithItem> with ):
+Delete DeleteWithWithItems( List<WithItem<?>> withItems ):
+{
+    Delete delete;
+}
+{
+    delete = Delete() { delete.setWithItemsList( withItems );
+    return delete;
+}
+}
+
+Delete Delete():
 {
     Delete delete = new Delete();
     Table table = null;
     List<Table> tables = new ArrayList<Table>();
+    List<WithItem<?>> with = null;
     Table usingTable = null;
     List<Table> usingList = new ArrayList<Table>();
     List<Join> joins = null;
@@ -1814,7 +1848,7 @@ Delete Delete( List<WithItem> with ):
     }
 }
 
-Statement Merge( List<WithItem> with ) : {
+Statement Merge( List<WithItem<?>> with ) : {
     Merge merge = new Merge();
     Table table;
     FromItem fromItem;
@@ -1974,7 +2008,7 @@ String RelObjectName() :
     (result = RelObjectNameWithoutValue()
         | tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON>  | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE>
         | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> | tk=<K_CONNECT> | tk=<K_IGNORE >
-        | tk=<K_QUALIFY>
+        | tk=<K_QUALIFY> | tk=<K_DEFAULT>
         )
 
     { return tk!=null ? tk.image : result; }
@@ -2119,7 +2153,7 @@ SampleClause SampleClause():
     }
 }
 
-Select SelectWithWithItems( List<WithItem> withItems):
+Select SelectWithWithItems( List<WithItem<?>> withItems):
 {
     Select select;
 }
@@ -2132,7 +2166,7 @@ Select SelectWithWithItems( List<WithItem> withItems):
 Select Select() #Select:
 {
     Select select = null;
-    List<WithItem> with = null;
+    List<WithItem<?>> with = null;
     List<OrderByElement> orderByElements = null;
     Limit limit = null;
     Offset offset = null;
@@ -2193,6 +2227,48 @@ ParenthesedSelect ParenthesedSelect() #ParenthesedSelect:
     {
         linkAST(parenthesedSelect,jjtThis);
         return parenthesedSelect.withSelect(select);
+    }
+}
+
+ParenthesedInsert ParenthesedInsert() #ParenthesedInsert:
+{
+    ParenthesedInsert parenthesedInsert = new ParenthesedInsert();
+    Insert insert;
+}
+{
+    "("
+    insert = Insert()
+    ")"
+    {
+        return parenthesedInsert.withInsert(insert);
+    }
+}
+
+ParenthesedUpdate ParenthesedUpdate() #ParenthesedUpdate:
+{
+    ParenthesedUpdate parenthesedUpdate = new ParenthesedUpdate();
+    Update update;
+}
+{
+    "("
+    update = Update()
+    ")"
+    {
+        return parenthesedUpdate.withUpdate(update);
+    }
+}
+
+ParenthesedDelete ParenthesedDelete() #ParenthesedDelete:
+{
+    ParenthesedDelete parenthesedDelete = new ParenthesedDelete();
+    Delete delete;
+}
+{
+    "("
+    delete = Delete()
+    ")"
+    {
+        return parenthesedDelete.withDelete(delete);
     }
 }
 
@@ -2549,9 +2625,9 @@ Select SetOperationList(Select select) #SetOperationList: {
     }
 }
 
-List<WithItem> WithList():
+List<WithItem<?>> WithList():
 {
-    List<WithItem> withItemsList = new ArrayList<WithItem>();
+    List<WithItem<?>> withItemsList = new ArrayList<WithItem<?>>();
     WithItem with = null;
 }
 {
@@ -2560,20 +2636,32 @@ List<WithItem> WithList():
      { return withItemsList; }
 }
 
-WithItem WithItem() #WithItem:
+WithItem<?> WithItem() #WithItem:
 {
-    WithItem withItem = new WithItem();
+    boolean recursive = false;
     String name;
-    List<SelectItem<?>> selectItems;
-    Select select;
+    List<SelectItem<?>> selectItems = null;
+    ParenthesedStatement statement;
 }
 {
-     [ LOOKAHEAD(2) <K_RECURSIVE>  { withItem.setRecursive(true); }   ]
-     name=RelObjectName()  { withItem.setAlias( new Alias( name, false)); }
-     [ "(" selectItems=SelectItemsList() ")" { withItem.setWithItemList(selectItems); } ]
-     <K_AS> select = ParenthesedSelect()  { withItem.setSelect(select); }
+     [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
+     name=RelObjectName()
+     [ "(" selectItems=SelectItemsList() ")" ]
+     <K_AS>
+     (
+         LOOKAHEAD(2) statement = ParenthesedSelect()
+         |
+         LOOKAHEAD(2) statement = ParenthesedInsert()
+         |
+         LOOKAHEAD(2) statement = ParenthesedUpdate()
+         |
+         LOOKAHEAD(2) statement = ParenthesedDelete()
+     )
      {
-        return withItem;
+        WithItem<?> withItem = new WithItem(statement, new Alias(name, false));
+        return withItem
+            .withRecursive(recursive)
+            .withWithItemList(selectItems);
      }
 }
 
@@ -5503,7 +5591,6 @@ Function Function() #Function:
 {
     (
         "{" <K_FN> function = InternalFunction(true) "}"
-        | LOOKAHEAD( SimpleFunction(), { getAsBoolean(Feature.allowComplexParsing) }) function = SimpleFunction()
         | LOOKAHEAD(3) function = SpecialStringFunctionWithNamedParameters()
         | function = InternalFunction(false)
     )
@@ -5539,57 +5626,6 @@ Function SpecialStringFunctionWithNamedParameters() :
     }
 }
 
-// a simplified function with only one parameter
-// useful for parsing nested functions fast
-Function SimpleFunction():
-{
-    Function function = new Function();
-    ObjectNames name;
-    Expression expr=null;
-    Expression attributeExpression = null;
-    Column attributeColumn = null;
-}
-{
-    name = RelObjectNames()
-    "("
-    [
-        (
-            "*" { expr = new AllColumns(); }
-            |
-            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns()
-            |
-            LOOKAHEAD( 3 ) expr = ParenthesedSelect()
-            |
-            LOOKAHEAD( SimpleFunction() ) expr = SimpleFunction()
-            |
-            LOOKAHEAD( RegularCondition() ) expr = RegularCondition()
-            |
-            LOOKAHEAD( SimpleExpressionList() )  expr = SimpleExpressionList()
-        )
-    ]
-    ")"
-    {
-        function.setName(name.getNames());
-        if (expr!=null) {
-            function.setParameters(expr);
-        }
-    }
-
-    [ LOOKAHEAD(2) "." (
-        // tricky lookahead since we do need to support the following constructs
-        // schema.f1().f2() - Function with Function Column
-        // schema.f1().f2.f3 - Function with Attribute Column
-        LOOKAHEAD( Function() ) attributeExpression=Function() { function.setAttribute(attributeExpression); }
-        |
-        attributeColumn=Column() { function.setAttribute(attributeColumn); }
-      )
-    ]
-
-    {
-        return function;
-    }
-}
-
 Function InternalFunction(boolean escaped):
 {
     Token prefixToken = null;
@@ -5617,6 +5653,10 @@ Function InternalFunction(boolean escaped):
             )
         ]
         (
+            "*" { expr = new AllColumns(); expressionList = new ExpressionList(expr); }
+            |
+            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns() { expressionList = new ExpressionList(expr); }
+            |
             LOOKAHEAD(3) expressionList=ExpressionList() [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
             |
             LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = new ExpressionList(expr); }
@@ -5862,7 +5902,7 @@ CreateSchema CreateSchema():
     List<Statement> statements = new ArrayList<Statement>();
 }
 {
-    <K_SCHEMA>
+    <K_SCHEMA> [ <K_IF> <K_NOT> <K_EXISTS> { schema.setIfNotExists(true); } ]
     [ ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); } ]
     [ <K_AUTHORIZATION>
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
@@ -6621,6 +6661,9 @@ Truncate Truncate():
 {
     Truncate truncate = new Truncate();
     Table table;
+    List<Table> tables = new ArrayList<Table>();
+    boolean only = false;
+    boolean cascade = false;
 }
 {
 /**
@@ -6631,13 +6674,23 @@ Truncate Truncate():
 *      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
 *
 */
-    <K_TRUNCATE> [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}] [<K_ONLY>  {truncate.setOnly(true);}]
-	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
+    <K_TRUNCATE>
+    [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}]
+    [<K_ONLY>  { only = true; }]
+    table=Table() { tables.add(table); } (LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
+    [<K_CASCADE> { cascade = true; }]
     {
-        return truncate;
+       if (only && tables.size() > 1 ) {
+          throw new ParseException("Cannot TRUNCATE ONLY with multiple tables");
+       } else {
+          return truncate
+             .withTables(tables)
+             .withTable(table)
+             .withOnly(only)
+             .withCascade(cascade);
+       }
     }
 }
-
 
 AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {

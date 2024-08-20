@@ -37,12 +37,13 @@ public class Insert implements Statement {
     private OracleHint oracleHint = null;
     private ExpressionList<Column> columns;
     private Select select;
+    private boolean onlyDefaultValues = false;
     private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
     private ReturningClause returningClause;
     private List<UpdateSet> setUpdateSets = null;
-    private List<WithItem> withItemsList;
+    private List<WithItem<?>> withItemsList;
     private OutputClause outputClause;
     private InsertConflictTarget conflictTarget;
     private InsertConflictAction conflictAction;
@@ -162,18 +163,30 @@ public class Insert implements Statement {
         this.modifierIgnore = modifierIgnore;
     }
 
-
     @Deprecated
     public boolean isUseSet() {
         return setUpdateSets != null && !setUpdateSets.isEmpty();
     }
 
-    public List<WithItem> getWithItemsList() {
+    public List<WithItem<?>> getWithItemsList() {
         return withItemsList;
     }
 
-    public void setWithItemsList(List<WithItem> withItemsList) {
+    public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
+    }
+
+    public boolean isOnlyDefaultValues() {
+        return onlyDefaultValues;
+    }
+
+    public void setOnlyDefaultValues(boolean onlyDefaultValues) {
+        this.onlyDefaultValues = onlyDefaultValues;
+    }
+
+    public Insert withOnlyDefaultValues(boolean onlyDefaultValues) {
+        this.setOnlyDefaultValues(onlyDefaultValues);
+        return this;
     }
 
     public InsertConflictTarget getConflictTarget() {
@@ -208,8 +221,8 @@ public class Insert implements Statement {
         StringBuilder sql = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             sql.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem<?> withItem = iter.next();
                 sql.append(withItem);
                 if (iter.hasNext()) {
                     sql.append(",");
@@ -229,6 +242,10 @@ public class Insert implements Statement {
         }
         sql.append("INTO ");
         sql.append(table).append(" ");
+
+        if (onlyDefaultValues) {
+            sql.append("DEFAULT VALUES");
+        }
 
         if (columns != null) {
             sql.append("(");
@@ -276,7 +293,7 @@ public class Insert implements Statement {
         return sql.toString();
     }
 
-    public Insert withWithItemsList(List<WithItem> withList) {
+    public Insert withWithItemsList(List<WithItem<?>> withList) {
         this.withItemsList = withList;
         return this;
     }

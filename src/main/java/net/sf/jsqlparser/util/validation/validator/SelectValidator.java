@@ -303,7 +303,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
-    public <S> Void visit(WithItem withItem, S context) {
+    public <S> Void visit(WithItem<?> withItem, S context) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.withItem);
             validateFeature(c, withItem.isRecursive(), Feature.withItemRecursive);
@@ -311,7 +311,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         if (isNotEmpty(withItem.getWithItemList())) {
             withItem.getWithItemList().forEach(wi -> wi.accept(this, context));
         }
-        withItem.getSelect().accept(this, context);
+        withItem.getSelect().accept((SelectVisitor<?>) this, context);
         return null;
     }
 
@@ -393,7 +393,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         visit(setOperation, null);
     }
 
-    public void visit(WithItem withItem) {
+    public void visit(WithItem<?> withItem) {
         visit(withItem, null);
     }
 
@@ -416,4 +416,5 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     public void visit(Values values) {
         visit(values, null);
     }
+
 }

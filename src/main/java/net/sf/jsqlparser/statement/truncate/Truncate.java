@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.truncate;
 
+import static java.util.stream.Collectors.joining;
+
+import java.util.List;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -19,6 +22,7 @@ public class Truncate implements Statement {
     boolean tableToken; // to support TRUNCATE without TABLE
     boolean only; // to support TRUNCATE with ONLY
     private Table table;
+    private List<Table> tables;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -29,8 +33,16 @@ public class Truncate implements Statement {
         return table;
     }
 
+    public List<Table> getTables() {
+        return tables;
+    }
+
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public void setTables(List<Table> tables) {
+        this.tables = tables;
     }
 
     public boolean getCascade() {
@@ -52,8 +64,13 @@ public class Truncate implements Statement {
             sb.append(" ONLY");
         }
         sb.append(" ");
-        sb.append(table);
-
+        if (tables != null && !tables.isEmpty()) {
+            sb.append(tables.stream()
+                .map(Table::toString)
+                .collect(joining(", ")));
+        } else {
+            sb.append(table);
+        }
         if (cascade) {
             sb.append(" CASCADE");
         }
@@ -83,6 +100,11 @@ public class Truncate implements Statement {
 
     public Truncate withTable(Table table) {
         this.setTable(table);
+        return this;
+    }
+
+    public Truncate withTables(List<Table> tables) {
+        this.setTables(tables);
         return this;
     }
 

@@ -107,6 +107,11 @@ public class Synonym extends ASTNodeAccessImpl implements MultiPartName {
     }
 
     @Override
+    public String getUnquotedName() {
+        return MultiPartName.unquote(partItems.get(NAME_IDX));
+    }
+
+    @Override
     public String toString() {
         StringBuilder sql = new StringBuilder(getFullyQualifiedName());
         return sql.toString();

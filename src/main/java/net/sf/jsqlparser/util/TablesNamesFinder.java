@@ -144,10 +144,12 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -171,6 +173,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -246,9 +249,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Select select, S context) {
-        List<WithItem> withItemsList = select.getWithItemsList();
+        List<WithItem<?>> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
+            for (WithItem<?> withItem : withItemsList) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -300,14 +303,14 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public <S> Void visit(WithItem withItem, S context) {
+    public <S> Void visit(WithItem<?> withItem, S context) {
         otherItemNames.add(withItem.getAlias().getName());
         withItem.getSelect().accept((SelectVisitor<?>) this, context);
         return null;
     }
 
     @Override
-    public void visit(WithItem withItem) {
+    public void visit(WithItem<?> withItem) {
         SelectVisitor.super.visit(withItem);
     }
 
@@ -316,9 +319,9 @@ public class TablesNamesFinder<Void>
         if (select.getAlias() != null) {
             otherItemNames.add(select.getAlias().getName());
         }
-        List<WithItem> withItemsList = select.getWithItemsList();
+        List<WithItem<?>> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
+            for (WithItem<?> withItem : withItemsList) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -333,9 +336,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PlainSelect plainSelect, S context) {
-        List<WithItem> withItemsList = plainSelect.getWithItemsList();
+        List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
+            for (WithItem<?> withItem : withItemsList) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -790,9 +793,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(SetOperationList list, S context) {
-        List<WithItem> withItemsList = list.getWithItemsList();
+        List<WithItem<?>> withItemsList = list.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem withItem : withItemsList) {
+            for (WithItem<?> withItem : withItemsList) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -984,9 +987,14 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(ParenthesedDelete delete, S context) {
+        return visit(delete.getDelete(), context);
+    }
+
+    @Override
     public <S> Void visit(Update update, S context) {
         if (update.getWithItemsList() != null) {
-            for (WithItem withItem : update.getWithItemsList()) {
+            for (WithItem<?> withItem : update.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -1026,6 +1034,11 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(ParenthesedUpdate update, S context) {
+        return visit(update.getUpdate(), context);
+    }
+
+    @Override
     public void visit(Update update) {
         StatementVisitor.super.visit(update);
     }
@@ -1034,7 +1047,7 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(Insert insert, S context) {
         visit(insert.getTable(), context);
         if (insert.getWithItemsList() != null) {
-            for (WithItem withItem : insert.getWithItemsList()) {
+            for (WithItem<?> withItem : insert.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
@@ -1042,6 +1055,11 @@ public class TablesNamesFinder<Void>
             visit(insert.getSelect(), context);
         }
         return null;
+    }
+
+    @Override
+    public <S> Void visit(ParenthesedInsert insert, S context) {
+        return visit(insert.getInsert(), context);
     }
 
     @Override
@@ -1231,7 +1249,7 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(Merge merge, S context) {
         visit(merge.getTable(), context);
         if (merge.getWithItemsList() != null) {
-            for (WithItem withItem : merge.getWithItemsList()) {
+            for (WithItem<?> withItem : merge.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }

@@ -42,10 +42,6 @@ public class MergeTest {
                 + "  INSERT (B.employee_id, B.bonus)\n"
                 + "  VALUES (E.employee_id, E.salary * 0.05)  ";
 
-        Statement statement = CCJSqlParserUtil.parse(sql);
-
-        System.out.println(statement.toString());
-
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 

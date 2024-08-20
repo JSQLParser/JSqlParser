@@ -40,8 +40,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     public void deParse(Delete delete) {
         if (delete.getWithItemsList() != null && !delete.getWithItemsList().isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = delete.getWithItemsList().iterator(); iter.hasNext();) {
-                WithItem withItem = iter.next();
+            for (Iterator<WithItem<?>> iter = delete.getWithItemsList().iterator(); iter
+                    .hasNext();) {
+                WithItem<?> withItem = iter.next();
                 buffer.append(withItem);
                 if (iter.hasNext()) {
                     buffer.append(",");

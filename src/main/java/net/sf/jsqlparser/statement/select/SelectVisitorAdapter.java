@@ -31,7 +31,7 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
     }
 
     @Override
-    public <S> T visit(WithItem withItem, S context) {
+    public <S> T visit(WithItem<?> withItem, S context) {
         return withItem.getSelect().accept(this, context);
     }
 

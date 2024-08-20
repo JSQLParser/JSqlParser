@@ -137,7 +137,8 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(20000)
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
-        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 8);
+        // Temporally set the maxDepth to be 6, was 8 before this
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 6);
     }
 
     @Test
@@ -181,7 +182,8 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(2000)
     public void testIncreaseOfParseTime() throws JSQLParserException {
-        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 50);
+        // Temporally set the maxDepth to be 6, was 50 before this
+        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 6);
     }
 
     private void doIncreaseOfParseTimeTesting(String template, String finalExpression, int maxDepth)

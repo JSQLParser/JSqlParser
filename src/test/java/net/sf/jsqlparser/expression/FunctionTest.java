@@ -82,4 +82,12 @@ class FunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
                 parser -> parser.withUnparenthesizedSubSelects(true));
     }
+
+    @Test
+    void testSimpleFunctionIssue2059() throws JSQLParserException {
+        String sqlStr = "select count(*) from zzz";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> {
+            parser.withAllowComplexParsing(false);
+        });
+    }
 }

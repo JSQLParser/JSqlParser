@@ -93,10 +93,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(ParenthesedSelect select, S context) {
-        List<WithItem> withItemsList = select.getWithItemsList();
+        List<WithItem<?>> withItemsList = select.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
-            for (WithItem withItem : withItemsList) {
+            for (WithItem<?> withItem : withItemsList) {
                 withItem.accept((SelectVisitor<?>) this, context);
                 buffer.append(" ");
             }
@@ -147,10 +147,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
     public <S> StringBuilder visit(PlainSelect plainSelect, S context) {
-        List<WithItem> withItemsList = plainSelect.getWithItemsList();
+        List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
                 iter.next().accept((SelectVisitor<?>) this, context);
                 if (iter.hasNext()) {
                     buffer.append(",");
@@ -602,10 +602,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(SetOperationList list, S context) {
-        List<WithItem> withItemsList = list.getWithItemsList();
+        List<WithItem<?>> withItemsList = list.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
                 iter.next().accept((SelectVisitor<?>) this, context);
                 if (iter.hasNext()) {
                     buffer.append(",");
@@ -640,7 +640,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(WithItem withItem, S context) {
+    public <S> StringBuilder visit(WithItem<?> withItem, S context) {
         if (withItem.isRecursive()) {
             buffer.append("RECURSIVE ");
         }
@@ -650,7 +650,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                     .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS ");
-        withItem.getSelect().accept(this, context);
+        StatementDeParser statementDeParser =
+                new StatementDeParser((ExpressionDeParser) expressionVisitor, this, buffer);
+        statementDeParser.deParse(withItem.getParenthesedStatement());
         return buffer;
     }
 
@@ -748,7 +750,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         visit(list, null);
     }
 
-    public void visit(WithItem withItem) {
+    public void visit(WithItem<?> withItem) {
         visit(withItem, null);
     }
 

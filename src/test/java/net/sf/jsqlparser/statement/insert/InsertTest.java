@@ -10,28 +10,31 @@
 package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.Values;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 import java.io.StringReader;
+import java.util.List;
 
+import static junit.framework.Assert.assertNull;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -276,12 +279,30 @@ public class InsertTest {
 
     @Test
     public void testInsertWithSelect() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a",
-                true);
-        assertSqlCanBeParsedAndDeparsed(
-                "INSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)",
-                true);
+        String sqlStr1 =
+                "INSERT INTO mytable (mycolumn) WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a";
+        Insert insert1 = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr1, true);
+        List<WithItem<?>> insertWithItems1 = insert1.getWithItemsList();
+        List<WithItem<?>> selectWithItems1 = insert1.getSelect().getWithItemsList();
+        assertEquals("mytable", insert1.getTable().getFullyQualifiedName());
+        assertNull(insertWithItems1);
+        assertEquals(1, selectWithItems1.size());
+        assertEquals("SELECT mycolumn FROM mytable",
+                selectWithItems1.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" a", selectWithItems1.get(0).getAlias().toString());
+
+        String sqlStr2 =
+                "INSERT INTO mytable (mycolumn) (WITH a AS (SELECT mycolumn FROM mytable) SELECT mycolumn FROM a)";
+        Insert insert2 = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr2, true);
+        List<WithItem<?>> insertWithItems2 = insert2.getWithItemsList();
+        assertEquals("mytable", insert2.getTable().getFullyQualifiedName());
+        assertNull(insertWithItems2);
+        ParenthesedSelect select = (ParenthesedSelect) insert2.getSelect();
+        List<WithItem<?>> selectWithItems2 = select.getSelect().getWithItemsList();
+        assertEquals(1, selectWithItems2.size());
+        assertEquals("SELECT mycolumn FROM mytable",
+                selectWithItems2.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" a", selectWithItems2.get(0).getAlias().toString());
     }
 
     @Test
@@ -347,9 +368,17 @@ public class InsertTest {
 
     @Test
     public void testWithDeparsingIssue406() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "insert into mytab3 (a,b,c) select a,b,c from mytab where exists(with t as (select * from mytab2) select * from t)",
-                true);
+        String sqlStr =
+                "insert into mytab3 (a,b,c) select a,b,c from mytab where exists(with t as (select * from mytab2) select * from t)";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        List<WithItem<?>> insertWithItems = insert.getWithItemsList();
+        List<WithItem<?>> selectWithItems = insert.getSelect().getWithItemsList();
+        assertEquals("mytab3", insert.getTable().getFullyQualifiedName());
+        assertNull(insertWithItems);
+        assertNull(selectWithItems);
+        ExistsExpression exists = (ExistsExpression) insert.getPlainSelect().getWhere();
+        assertEquals("(WITH t AS (SELECT * FROM mytab2) SELECT * FROM t)",
+                exists.getRightExpression().toString());
     }
 
     @Test
@@ -389,9 +418,18 @@ public class InsertTest {
 
     @Test
     public void testWithAtFront() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "WITH foo AS ( SELECT attr FROM bar ) INSERT INTO lalelu (attr) SELECT attr FROM foo",
-                true);
+        String sqlStr =
+                "WITH foo AS ( SELECT attr FROM bar ) INSERT INTO lalelu (attr) SELECT attr FROM foo";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        List<WithItem<?>> insertWithItems = insert.getWithItemsList();
+        assertEquals("lalelu", insert.getTable().getFullyQualifiedName());
+        assertEquals(1, insertWithItems.size());
+        assertEquals("SELECT attr FROM bar",
+                insertWithItems.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" foo", insertWithItems.get(0).getAlias().toString());
+        assertEquals("SELECT attr FROM foo", insert.getSelect().toString());
+        assertEquals("foo", insert.getSelect().getPlainSelect().getFromItem().toString());
+        assertEquals("[attr]", insert.getSelect().getPlainSelect().getSelectItems().toString());
     }
 
     @Test
@@ -426,8 +464,18 @@ public class InsertTest {
 
     @Test
     public void testWithListIssue282() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
-                "WITH myctl AS (SELECT a, b FROM mytable) INSERT INTO mytable SELECT a, b FROM myctl");
+        String sqlStr =
+                "WITH myctl AS (SELECT a, b FROM mytable) INSERT INTO mytable SELECT a, b FROM myctl";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        List<WithItem<?>> insertWithItems = insert.getWithItemsList();
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals(1, insertWithItems.size());
+        assertEquals("SELECT a, b FROM mytable",
+                insertWithItems.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" myctl", insertWithItems.get(0).getAlias().toString());
+        assertEquals("SELECT a, b FROM myctl", insert.getSelect().toString());
+        assertEquals("myctl", insert.getSelect().getPlainSelect().getFromItem().toString());
+        assertEquals("[a, b]", insert.getSelect().getPlainSelect().getSelectItems().toString());
     }
 
     @Test
@@ -467,8 +515,20 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed("insert into table1 (tf1,tf2,tf2)\n"
                 + "((select sf1,sf2,sf3 from s1)" + "union " + "(select rf1,rf2,rf2 from r1))",
                 true);
+    }
 
-        assertSqlCanBeParsedAndDeparsed("(with a as (select * from dual) select * from a)", true);
+    @Test
+    public void testWithSelectFromDual() throws JSQLParserException {
+        String sqlStr = "(with a as (select * from dual) select * from a)";
+        ParenthesedSelect parenthesedSelect =
+                (ParenthesedSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        List<WithItem<?>> withItems = parenthesedSelect.getSelect().getWithItemsList();
+        assertEquals(1, withItems.size());
+        assertEquals("SELECT * FROM dual",
+                withItems.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" a", withItems.get(0).getAlias().toString());
+        assertEquals("a", parenthesedSelect.getPlainSelect().getFromItem().toString());
+        assertEquals("[*]", parenthesedSelect.getPlainSelect().getSelectItems().toString());
     }
 
     @Test
@@ -527,6 +587,12 @@ public class InsertTest {
         String sqlStr = "WITH a ( a, b , c ) \n" + "AS (SELECT  1 , 2 , 3 )\n"
                 + "insert into test\n" + "select * from a";
         Insert insert = (Insert) CCJSqlParserUtil.parse(sqlStr);
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals("test", insert.getTable().getFullyQualifiedName());
+        assertEquals(1, withItems.size());
+        assertEquals("[1, 2, 3]",
+                withItems.get(0).getSelect().getPlainSelect().getSelectItems().toString());
+        assertEquals(" a", withItems.get(0).getAlias().toString());
 
         Expression whereExpression = CCJSqlParserUtil.parseExpression("a=1", false);
         Expression valueExpression = CCJSqlParserUtil.parseExpression("b/2", false);
@@ -590,4 +656,185 @@ public class InsertTest {
                         + "on conflict(xxx0, xxx1) do update set xxx1=?, update_time=?";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    public void testDefaultValues() throws JSQLParserException {
+        String statement = "INSERT INTO mytable DEFAULT VALUES";
+        // assertSqlCanBeParsedAndDeparsed(statement);
+        Insert insert = (Insert) parserManager.parse(new StringReader(statement));
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE DEFAULT VALUES", insert.toString().toUpperCase());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable"))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void testDefaultValuesWithAlias() throws JSQLParserException {
+        String statement = "INSERT INTO mytable x DEFAULT VALUES";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(statement);
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE X DEFAULT VALUES", insert.toString().toUpperCase());
+        assertEquals("x", insert.getTable().getAlias().getName());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable")
+                        .withAlias(new Alias("x").withUseAs(false)))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void testDefaultValuesWithAliasAndAs() throws JSQLParserException {
+        String statement = "INSERT INTO mytable AS x DEFAULT VALUES";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(statement);
+        assertEquals("mytable", insert.getTable().getFullyQualifiedName());
+        assertEquals("INSERT INTO MYTABLE AS X DEFAULT VALUES", insert.toString().toUpperCase());
+        assertEquals("x", insert.getTable().getAlias().getName());
+        assertTrue(insert.isOnlyDefaultValues());
+        assertDeparse(new Insert()
+                .withTable(new Table("mytable")
+                        .withAlias(new Alias("x").withUseAs(true)))
+                .withOnlyDefaultValues(true), statement);
+    }
+
+    @Test
+    public void throwsParseWhenDefaultKeyowrdUsedAsAlias() {
+        String statement = "INSERT INTO mytable default DEFAULT VALUES";
+        assertThrows(JSQLParserException.class,
+                () -> parserManager.parse(new StringReader(statement)));
+    }
+
+    @Test
+    void testInsertWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "   RETURNING y " +
+                ") " +
+                "INSERT INTO z (blah) " +
+                "SELECT y FROM inserted";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", insert.getTable().toString());
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Insert innerInsert = withItems.get(0).getInsert().getInsert();
+        assertEquals("x", innerInsert.getTable().toString());
+        assertEquals("SELECT bar FROM b", innerInsert.getSelect().toString());
+        assertEquals(" RETURNING y", innerInsert.getReturningClause().toString());
+        assertEquals("INSERT INTO x (foo) SELECT bar FROM b RETURNING y", innerInsert.toString());
+        assertEquals(" inserted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testUpdateWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH updated AS ( " +
+                "   UPDATE x " +
+                "      SET foo = 1 " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "INSERT INTO z (blah) " +
+                "SELECT y FROM updated";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", insert.getTable().toString());
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Update update = withItems.get(0).getUpdate().getUpdate();
+        assertEquals("x", update.getTable().toString());
+        assertEquals("foo", update.getUpdateSets().get(0).getColumn(0).toString());
+        assertEquals("1", update.getUpdateSets().get(0).getValue(0).toString());
+        assertEquals("bar = 2", update.getWhere().toString());
+        assertEquals(" RETURNING y", update.getReturningClause().toString());
+        assertEquals(" updated", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "INSERT INTO z (blah) " +
+                "SELECT y FROM deleted";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", insert.getTable().toString());
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM deleted) " +
+                "   RETURNING w " +
+                ") " +
+                "INSERT INTO z (blah) " +
+                "SELECT w FROM inserted";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", insert.getTable().toString());
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals(2, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+        Insert innerInsert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", innerInsert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM deleted)",
+                innerInsert.getSelect().toString());
+        assertEquals(" RETURNING w", innerInsert.getReturningClause().toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM deleted) RETURNING w",
+                innerInsert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @Test
+    void testSelectAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH selection AS ( " +
+                "   SELECT y " +
+                "     FROM z " +
+                "    WHERE foo = 'bar' " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM selection) " +
+                "   RETURNING w " +
+                ") " +
+                "INSERT INTO z (blah) " +
+                "SELECT w FROM inserted";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", insert.getTable().toString());
+        List<WithItem<?>> withItems = insert.getWithItemsList();
+        assertEquals(2, withItems.size());
+        PlainSelect select = withItems.get(0).getSelect().getPlainSelect();
+        assertEquals("SELECT y FROM z WHERE foo = 'bar'", select.toString());
+        assertEquals(" selection", withItems.get(0).getAlias().toString());
+        Insert innerInsert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", innerInsert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM selection)",
+                innerInsert.getSelect().toString());
+        assertEquals(" RETURNING w", innerInsert.getReturningClause().toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
+                innerInsert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
 }

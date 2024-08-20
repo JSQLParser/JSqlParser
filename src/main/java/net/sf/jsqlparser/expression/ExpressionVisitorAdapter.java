@@ -711,7 +711,7 @@ public class ExpressionVisitorAdapter<T>
     public <S> T visit(Select select, S context) {
         if (selectVisitor != null) {
             if (select.getWithItemsList() != null) {
-                for (WithItem item : select.getWithItemsList()) {
+                for (WithItem<?> item : select.getWithItemsList()) {
                     item.accept(selectVisitor, context);
                 }
             }

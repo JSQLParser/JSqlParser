@@ -100,6 +100,10 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return columnName;
     }
 
+    public String getUnquotedColumnName() {
+        return MultiPartName.unquote(columnName);
+    }
+
     public void setColumnName(String string) {
         columnName = string;
     }
@@ -115,6 +119,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     @Override
     public String getFullyQualifiedName() {
         return getFullyQualifiedName(false);
+    }
+
+    @Override
+    public String getUnquotedName() {
+        return MultiPartName.unquote(columnName);
     }
 
     public String getFullyQualifiedName(boolean aliases) {

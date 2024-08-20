@@ -19,10 +19,15 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -229,8 +234,21 @@ public class UpdateTest {
                 + "SET id_instrument=null\n"
                 + "WHERE  id_instrument_ref = (SELECT id_instrument_ref\n"
                 + "                            FROM   a)";
-
-        assertSqlCanBeParsedAndDeparsed(statement, true);
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(statement, true);
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals("cfe.instrument_ref", update.getTable().getFullyQualifiedName());
+        assertEquals(2, withItems.size());
+        assertEquals("SELECT 1 id_instrument_ref",
+                withItems.get(0).getSelect().getPlainSelect().toString());
+        assertEquals(" a", withItems.get(0).getAlias().toString());
+        assertEquals("SELECT 1 id_instrument_ref",
+                withItems.get(1).getSelect().getPlainSelect().toString());
+        assertEquals(" b", withItems.get(1).getAlias().toString());
+        assertEquals(1, update.getUpdateSets().size());
+        assertEquals("id_instrument", update.getUpdateSets().get(0).getColumn(0).toString());
+        assertEquals("NULL", update.getUpdateSets().get(0).getValue(0).toString());
+        assertEquals("id_instrument_ref = (SELECT id_instrument_ref FROM a)",
+                update.getWhere().toString());
     }
 
     @Test
@@ -268,9 +286,7 @@ public class UpdateTest {
                 + "     , b.packageunit = '4101170402' -- this is supposed to be UpdateSet 3\n"
                 + "WHERE b.payrefno = 'B370202091026000005'";
 
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        Update update = (Update) CCJSqlParserUtil.parse(sqlStr);
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         assertEquals(3, update.getUpdateSets().size());
 
         assertEquals(3, update.getUpdateSets().get(0).getColumns().size());
@@ -380,4 +396,142 @@ public class UpdateTest {
         TestUtils.assertStatementCanBeDeparsedAs(update,
                 "UPDATE sys_dept SET (deleted, created) = (1,2)", true);
     }
+
+    @Test
+    void testInsertWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "   RETURNING y " +
+                ") " +
+                "   UPDATE z " +
+                "      SET foo = 1 " +
+                "    WHERE y IN (SELECT y FROM inserted) ";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", update.getTable().toString());
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Insert insert = withItems.get(0).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b", insert.getSelect().toString());
+        assertEquals(" RETURNING y", insert.getReturningClause().toString());
+        assertEquals("INSERT INTO x (foo) SELECT bar FROM b RETURNING y", insert.toString());
+        assertEquals(" inserted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testUpdateWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH updated AS ( " +
+                "   UPDATE x " +
+                "      SET foo = 1 " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "   UPDATE z " +
+                "      SET foo = 1 " +
+                "    WHERE y IN (SELECT y FROM inserted) ";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", update.getTable().toString());
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Update innerUpdate = withItems.get(0).getUpdate().getUpdate();
+        assertEquals("x", innerUpdate.getTable().toString());
+        assertEquals("foo", innerUpdate.getUpdateSets().get(0).getColumn(0).toString());
+        assertEquals("1", innerUpdate.getUpdateSets().get(0).getValue(0).toString());
+        assertEquals("bar = 2", innerUpdate.getWhere().toString());
+        assertEquals(" RETURNING y", innerUpdate.getReturningClause().toString());
+        assertEquals(" updated", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteWithinCte() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                "   UPDATE z " +
+                "      SET foo = 1 " +
+                "    WHERE y IN (SELECT y FROM inserted) ";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", update.getTable().toString());
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals(1, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+    }
+
+    @Test
+    void testDeleteAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH deleted AS ( " +
+                "   DELETE FROM x " +
+                "    WHERE bar = 2 " +
+                "   RETURNING y " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM deleted) " +
+                "   RETURNING w " +
+                ") " +
+                "   UPDATE z " +
+                "      SET foo = 1 " +
+                "    WHERE y IN (SELECT y FROM inserted) ";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", update.getTable().toString());
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals(2, withItems.size());
+        Delete delete = withItems.get(0).getDelete().getDelete();
+        assertEquals("x", delete.getTable().toString());
+        assertEquals("bar = 2", delete.getWhere().toString());
+        assertEquals(" RETURNING y", delete.getReturningClause().toString());
+        assertEquals(" deleted", withItems.get(0).getAlias().toString());
+        Insert insert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM deleted)",
+                insert.getSelect().toString());
+        assertEquals(" RETURNING w", insert.getReturningClause().toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM deleted) RETURNING w",
+                insert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @Test
+    void testSelectAndInsertWithin2Ctes() throws JSQLParserException {
+        String sqlStr = "WITH selection AS ( " +
+                "   SELECT y " +
+                "     FROM z " +
+                "    WHERE foo = 'bar' " +
+                ") " +
+                ", inserted AS ( " +
+                "   INSERT INTO x (foo) " +
+                "   SELECT bar FROM b " +
+                "    WHERE y IN (SELECT y FROM selection) " +
+                "   RETURNING w " +
+                ") " +
+                "   UPDATE z " +
+                "      SET foo = 1 " +
+                "    WHERE y IN (SELECT y FROM inserted) ";
+        Update update = (Update) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("z", update.getTable().toString());
+        List<WithItem<?>> withItems = update.getWithItemsList();
+        assertEquals(2, withItems.size());
+        PlainSelect select = withItems.get(0).getSelect().getPlainSelect();
+        assertEquals("SELECT y FROM z WHERE foo = 'bar'", select.toString());
+        assertEquals(" selection", withItems.get(0).getAlias().toString());
+        Insert insert = withItems.get(1).getInsert().getInsert();
+        assertEquals("x", insert.getTable().toString());
+        assertEquals("SELECT bar FROM b WHERE y IN (SELECT y FROM selection)",
+                insert.getSelect().toString());
+        assertEquals(" RETURNING w", insert.getReturningClause().toString());
+        assertEquals(
+                "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
+                insert.toString());
+        assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
 }

@@ -30,11 +30,11 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public void deParse(Merge merge) {
-        List<WithItem> withItemsList = merge.getWithItemsList();
+        List<WithItem<?>> withItemsList = merge.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             buffer.append("WITH ");
-            for (Iterator<WithItem> iter = withItemsList.iterator(); iter.hasNext();) {
-                iter.next().accept(expressionDeParser, null);
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept(selectDeParser, null);
                 if (iter.hasNext()) {
                     buffer.append(",");
                 }
