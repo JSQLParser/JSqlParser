@@ -383,8 +383,8 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public <S> Void visit(Table tableName, S context) {
-        String tableWholeName = extractTableName(tableName);
+    public <S> Void visit(Table table, S context) {
+        String tableWholeName = extractTableName(table);
         if (!otherItemNames.contains(tableWholeName)) {
             tables.add(tableWholeName);
         }
@@ -1149,13 +1149,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Alter alter, S context) {
-        throwUnsupported(alter);
-        return null;
+        return alter.getTable().accept(this, context);
     }
 
     @Override
     public void visit(Alter alter) {
-        StatementVisitor.super.visit(alter);
+        alter.getTable().accept(this, null);
     }
 
     @Override

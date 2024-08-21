@@ -539,19 +539,19 @@ public class TablesNamesFinderTest {
                 ";";
         //@formatter:on
 
-        TablesNamesFinder finder = new TablesNamesFinder<Void>() {
+        TablesNamesFinder<Void> finder = new TablesNamesFinder<>() {
             @Override
-            public <S> Void visit(Table tableName, S context) {
-                String schemaName = tableName.getSchemaName();
+            public <S> Void visit(Table table, S context) {
+                String schemaName = table.getSchemaName();
                 if (schemaName != null && IGNORE_SCHEMAS.contains(schemaName.toLowerCase())) {
-                    return super.visit(tableName, context);
+                    return super.visit(table, context);
                 }
-                String originTableName = tableName.getName();
-                tableName.setName(prefix + originTableName);
+                String originTableName = table.getName();
+                table.setName(prefix + originTableName);
                 if (originTableName.startsWith("`")) {
-                    tableName.setName("`" + prefix + originTableName.replace("`", "") + "`");
+                    table.setName("`" + prefix + originTableName.replace("`", "") + "`");
                 }
-                return super.visit(tableName, context);
+                return super.visit(table, context);
             }
         };
         finder.init(false);
@@ -560,6 +560,18 @@ public class TablesNamesFinderTest {
         statement.accept(finder);
 
         TestUtils.assertStatementCanBeDeparsedAs(statement, expected, true);
+    }
+
+    @Test
+    void testAlterTableIssue2062() throws JSQLParserException {
+        String sqlStr = "ALTER TABLE the_cool_db.the_table\n"
+                + "    ADD test VARCHAR (40)\n"
+                + ";";
+        Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
     }
 }
 
