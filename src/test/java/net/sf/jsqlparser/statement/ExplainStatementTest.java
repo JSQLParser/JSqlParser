@@ -17,4 +17,22 @@ class ExplainStatementTest {
         String sqlStr = "SUMMARIZE SELECT * FROM cfe.test;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testOracleExplainPlan() throws JSQLParserException {
+        String sqlStr = "EXPLAIN PLAN SELECT * FROM cfe.test;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testH2ExplainPlanFor() throws JSQLParserException {
+        String sqlStr = "EXPLAIN PLAN FOR SELECT * FROM cfe.test;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testH2ExplainAnalyze() throws JSQLParserException {
+        String sqlStr = "EXPLAIN ANALYZE SELECT * FROM cfe.test;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

@@ -18,3 +18,4 @@ explain plan
 
 --@FAILURE: Encountered unexpected token: "plan" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "set" "SET" recorded first on 2023年12月23日 下午1:38:33
+--@FAILURE: Encountered unexpected token: "plan" "PLAN" recorded first on 23 Aug 2024, 21:35:20

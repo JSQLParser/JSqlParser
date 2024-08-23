@@ -136,7 +136,7 @@ public class ExplainStatement implements Statement {
     }
 
     public enum OptionType {
-        ANALYZE, VERBOSE, COSTS, BUFFERS, FORMAT;
+        ANALYZE, VERBOSE, COSTS, BUFFERS, FORMAT, PLAN, PLAN_FOR;
 
         public static OptionType from(String type) {
             return Enum.valueOf(OptionType.class, type.toUpperCase());
@@ -165,7 +165,7 @@ public class ExplainStatement implements Statement {
         }
 
         public String formatOption() {
-            return type.name() + (value != null
+            return type.name().replace("_", " ") + (value != null
                     ? " " + value
                     : "");
         }
