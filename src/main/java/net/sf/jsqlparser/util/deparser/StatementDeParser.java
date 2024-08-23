@@ -381,7 +381,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(ExplainStatement explainStatement, S context) {
-        buffer.append("EXPLAIN ");
+        buffer.append(explainStatement.getKeyword()).append(" ");
         if (explainStatement.getTable() != null) {
             buffer.append(explainStatement.getTable());
         } else if (explainStatement.getOptions() != null) {

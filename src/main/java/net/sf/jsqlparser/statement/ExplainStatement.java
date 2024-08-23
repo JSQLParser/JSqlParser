@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.schema.Table;
@@ -20,17 +21,40 @@ import net.sf.jsqlparser.statement.select.Select;
  * An {@code EXPLAIN} statement
  */
 public class ExplainStatement implements Statement {
-
+    private String keyword;
     private Select select;
     private LinkedHashMap<OptionType, Option> options;
     private Table table;
 
+    public ExplainStatement(String keyword) {
+        this.keyword = keyword;
+    }
+
     public ExplainStatement() {
-        // empty constructor
+        this("EXPLAIN");
+    }
+
+    public ExplainStatement(String keyword, Table table) {
+        this.keyword = keyword;
+        this.table = table;
+        this.select = null;
+    }
+
+    public ExplainStatement(String keyword, Select select, List<Option> optionList) {
+        this.keyword = keyword;
+        this.select = select;
+        this.table = null;
+
+        if (optionList != null && !optionList.isEmpty()) {
+            options = new LinkedHashMap<>();
+            for (Option o : optionList) {
+                options.put(o.getType(), o);
+            }
+        }
     }
 
     public ExplainStatement(Select select) {
-        this.select = select;
+        this("EXPLAIN", select, null);
     }
 
     public Table getTable() {
@@ -76,25 +100,34 @@ public class ExplainStatement implements Statement {
         return options.get(optionType);
     }
 
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public ExplainStatement setKeyword(String keyword) {
+        this.keyword = keyword;
+        return this;
+    }
+
     @Override
     public String toString() {
-        StringBuilder statementBuilder = new StringBuilder("EXPLAIN");
+        StringBuilder builder = new StringBuilder(keyword);
         if (table != null) {
-            statementBuilder.append(" ").append(table);
+            builder.append(" ").append(table);
         } else {
             if (options != null) {
-                statementBuilder.append(" ");
-                statementBuilder.append(options.values().stream().map(Option::formatOption)
+                builder.append(" ");
+                builder.append(options.values().stream().map(Option::formatOption)
                         .collect(Collectors.joining(" ")));
             }
 
-            statementBuilder.append(" ");
+            builder.append(" ");
             if (select != null) {
-                statementBuilder.append(select.toString());
+                select.appendTo(builder);
             }
         }
 
-        return statementBuilder.toString();
+        return builder.toString();
     }
 
     @Override

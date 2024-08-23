@@ -573,5 +573,17 @@ public class TablesNamesFinderTest {
         tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
     }
+
+    @Test
+    void testInsertTableIssue() throws JSQLParserException {
+        String sqlStr = "INSERT INTO  the_cool_db.the_table\n"
+                + "    VALUES ( 'something' ) \n"
+                + ";";
+        Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
+
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
+    }
 }
 
