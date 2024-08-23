@@ -135,10 +135,10 @@ public class NestedBracketsPerformanceTest {
     // maxDepth = 10 collides with the Parser Timeout = 6 seconds
     // @todo: implement methods to set the Parser Timeout explicitly and on demand
     @Test
-    @Timeout(20000)
+    @Timeout(2000)
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
         // Temporally set the maxDepth to be 6, was 8 before this
-        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 6);
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 8);
     }
 
     @Test
@@ -165,9 +165,9 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(2000)
     public void testIssue1013_4() throws JSQLParserException {
-        String s = "tblA";
+        StringBuilder s = new StringBuilder("tblA");
         for (int i = 1; i < 100; i++) {
-            s = "(" + s + ")";
+            s = new StringBuilder("(" + s + ")");
         }
         String sql = "SELECT * FROM " + s;
         LOG.info("testing " + sql);
@@ -182,8 +182,7 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(2000)
     public void testIncreaseOfParseTime() throws JSQLParserException {
-        // Temporally set the maxDepth to be 6, was 50 before this
-        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 6);
+        doIncreaseOfParseTimeTesting("concat($1,'B')", "'A'", 50);
     }
 
     private void doIncreaseOfParseTimeTesting(String template, String finalExpression, int maxDepth)
@@ -194,7 +193,7 @@ public class NestedBracketsPerformanceTest {
             String sql = "SELECT " + buildRecursiveBracketExpression(template, finalExpression, i)
                     + " FROM mytbl";
             long startTime = System.currentTimeMillis();
-            assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withTimeOut(60000));
+            assertSqlCanBeParsedAndDeparsed(sql, true, parser -> parser.withTimeOut(12000));
             long durationTime = System.currentTimeMillis() - startTime;
 
             if (i > 0) {

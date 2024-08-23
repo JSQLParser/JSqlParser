@@ -1192,22 +1192,26 @@ ExplainStatement Explain():
     Select select;
     Table table;
     List<ExplainStatement.Option> options;
+    ExplainStatement es;
 }
 {
     ( tk=<K_EXPLAIN> | tk = <K_SUMMARIZE> )
     (
         LOOKAHEAD(3)(
-            options=ExplainStatementOptions()
+            options= ExplainStatementOptions()
             select = Select( )
             {
-                return new ExplainStatement(tk.image, select, options);
+                es = new ExplainStatement(tk.image, select, options);
             }
         )
         |
         (
-           table=Table( ) {  return new ExplainStatement(tk.image, table);  }
+           table=Table( ) {  es = new ExplainStatement(tk.image, table);  }
         )
     )
+    {
+        return es;
+    }
 }
 
 /**

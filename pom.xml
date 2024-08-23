@@ -32,7 +32,6 @@
             <version>[7.0.13,)</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -72,7 +71,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>[2.2.224,)</version>
+            <version>[2.3.232,)</version>
             <scope>test</scope>
         </dependency>
 
@@ -205,7 +204,6 @@
             <plugin>
                 <groupId>org.javacc.plugin</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
-                <version>3.0.3</version>
                 <executions>
                     <execution>
                         <id>javacc</id>
