@@ -27,7 +27,7 @@ public interface MultiPartName {
     }
 
     static boolean isQuoted(String identifier) {
-        return LEADING_TRAILING_QUOTES_PATTERN.matcher(identifier).find();
+        return identifier!=null && LEADING_TRAILING_QUOTES_PATTERN.matcher(identifier).find();
     }
 
     String getFullyQualifiedName();
