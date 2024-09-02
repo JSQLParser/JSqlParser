@@ -92,6 +92,30 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return table;
     }
 
+    public String getTableName() {
+        return table != null ? table.getName() : null;
+    }
+
+    public String getUnquotedTableName() {
+        return table != null ? table.getUnquotedName() : null;
+    }
+
+    public String getSchemaName() {
+        return table != null ? table.getSchemaName() : null;
+    }
+
+    public String getUnquotedSchemaName() {
+        return table != null ? table.getUnquotedSchemaName() : null;
+    }
+
+    public String getCatalogName() {
+        return table != null ? table.getCatalogName() : null;
+    }
+
+    public String getUnquotedCatalogName() {
+        return table != null ? table.getUnquotedCatalogName() : null;
+    }
+
     public void setTable(Table table) {
         this.table = table;
     }

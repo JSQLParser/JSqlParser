@@ -115,6 +115,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return getIndex(DATABASE_IDX);
     }
 
+    public String getUnquotedCatalogName() {
+        return MultiPartName.unquote(getDatabaseName());
+    }
+
     public String getUnquotedDatabaseName() {
         return MultiPartName.unquote(getDatabaseName());
     }
