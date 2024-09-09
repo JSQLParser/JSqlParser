@@ -25,7 +25,7 @@ You will need to have ``JDK 8`` or ``JDK 11`` installed. Please note that JSQLPa
   .. code-block:: shell
 
     git clone --depth 1 https://github.com/JSQLParser/JSqlParser.git
-    cd JSqlParser/
+    cd JSqlParser
     mvn install
 
 .. tab:: Gradle
@@ -33,7 +33,7 @@ You will need to have ``JDK 8`` or ``JDK 11`` installed. Please note that JSQLPa
   .. code-block:: shell
 
     git clone --depth 1 https://github.com/JSQLParser/JSqlParser.git
-    cd JSqlParser/
+    cd JSqlParser
     gradle publishToMavenLocal
 
 
