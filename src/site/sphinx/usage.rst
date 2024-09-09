@@ -24,16 +24,16 @@ You will need to have ``JDK 8`` or ``JDK 11`` installed. Please note that JSQLPa
 
   .. code-block:: shell
 
-    git clone https://github.com/JSQLParser/JSqlParser.git
-    cd jsqlformatter
+    git clone --depth 1 https://github.com/JSQLParser/JSqlParser.git
+    cd JSqlParser/
     mvn install
 
 .. tab:: Gradle
 
   .. code-block:: shell
 
-    git clone https://github.com/JSQLParser/JSqlParser.git
-    cd jsqlformatter
+    git clone --depth 1 https://github.com/JSQLParser/JSqlParser.git
+    cd JSqlParser/
     gradle publishToMavenLocal
 
 
