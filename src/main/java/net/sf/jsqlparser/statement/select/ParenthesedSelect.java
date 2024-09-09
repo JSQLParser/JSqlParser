@@ -160,15 +160,7 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
 
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append("(").append(select).append(")");
-        if (alias != null) {
-            builder.append(alias);
-        }
-        if (pivot != null) {
-            builder.append(" ").append(pivot);
-        }
-        if (unPivot != null) {
-            builder.append(" ").append(unPivot);
-        }
+        appendTo(builder, alias, pivot, unPivot);
         return builder;
     }
 }

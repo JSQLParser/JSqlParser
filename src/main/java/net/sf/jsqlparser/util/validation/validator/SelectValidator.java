@@ -139,6 +139,8 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFetch(plainSelect.getFetch());
         }
 
+        validateOptional(plainSelect.getPivot(), p -> p.accept(this, context));
+
         return null;
     }
 
@@ -155,7 +157,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             selectBody.getWithItemsList()
                     .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
         }
-        selectBody.getSelect().accept(this, context);
+        selectBody.getSelect().accept((SelectVisitor<Void>) this, context);
         validateOptional(selectBody.getPivot(), p -> p.accept(this, context));
         return null;
     }
@@ -204,7 +206,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             pivot.getFunctionItems().forEach(f -> f.getExpression().accept(v, context));
         }
         if (pivot.getInSelect() != null) {
-            pivot.getInSelect().accept(this, context);
+            pivot.getInSelect().accept((SelectVisitor<Void>) this, context);
         }
         return null;
     }
@@ -283,7 +285,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         }
 
         if (isNotEmpty(setOperation.getSelects())) {
-            setOperation.getSelects().forEach(s -> s.accept(this, context));
+            setOperation.getSelects().forEach(s -> s.accept((SelectVisitor<Void>) this, context));
         }
 
         validateOptionalOrderByElements(setOperation.getOrderByElements());
@@ -325,7 +327,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateFeature(Feature.lateralSubSelect);
         validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this, context));
         validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this, context));
-        validateOptional(lateralSubSelect.getSelect(), e -> e.accept(this, context));
+        validateOptional(lateralSubSelect.getSelect(), e -> e.accept((SelectVisitor<Void>) this, context));
         return null;
     }
 

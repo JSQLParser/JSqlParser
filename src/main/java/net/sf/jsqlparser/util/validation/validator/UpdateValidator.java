@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -40,7 +41,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
         if (update.isUseSelect()) {
             validateOptionalExpressions(update.getColumns());
             validateOptional(update.getSelect(),
-                    e -> e.accept(getValidator(SelectValidator.class), null));
+                    e -> e.accept((SelectVisitor<Void>) getValidator(SelectValidator.class), null));
         } else {
             validateOptionalExpressions(update.getColumns());
             validateOptionalExpressions(update.getExpressions());

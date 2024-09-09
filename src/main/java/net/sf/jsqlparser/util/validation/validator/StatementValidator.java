@@ -55,6 +55,7 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
@@ -133,7 +134,7 @@ public class StatementValidator extends AbstractValidator<Statement>
         validateFeature(Feature.select);
 
         SelectValidator selectValidator = getValidator(SelectValidator.class);
-        select.accept(selectValidator, null);
+        select.accept((SelectVisitor<Void>) selectValidator, null);
         return null;
     }
 

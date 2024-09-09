@@ -48,4 +48,22 @@ public interface FromItemVisitor<T> {
     default void visit(Values values) {
         this.visit(values, null);
     }
+
+    <S> T visit(PlainSelect plainSelect, S context);
+
+    default void visit(PlainSelect plainSelect) {
+        this.visit(plainSelect, null);
+    }
+
+    <S> T visit(SetOperationList setOperationList, S context);
+
+    default void visit(SetOperationList setOperationList) {
+        this.visit(setOperationList, null);
+    }
+
+    <S> T visit(TableStatement tableStatement, S context);
+
+    default void visit(TableStatement tableStatement) {
+        this.visit(tableStatement, null);
+    }
 }

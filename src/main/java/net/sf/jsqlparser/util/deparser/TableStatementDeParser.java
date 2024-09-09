@@ -10,15 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.select.LateralSubSelect;
-import net.sf.jsqlparser.statement.select.Offset;
-import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.TableStatement;
-import net.sf.jsqlparser.statement.select.Values;
-import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.select.*;
 
 /**
  * @author jxnu-liguobin
@@ -101,6 +93,10 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
         }
 
         // TODO UNION
+
+        tableStatement.appendTo(buffer, tableStatement.getAlias(), tableStatement.getPivot(),
+            tableStatement.getUnPivot());
+
         return buffer;
     }
 }

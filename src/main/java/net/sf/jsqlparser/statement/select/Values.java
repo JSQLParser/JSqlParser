@@ -48,9 +48,7 @@ public class Values extends Select implements FromItem {
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append("VALUES ");
         builder.append(expressions.toString());
-        if (alias != null) {
-            builder.append(" ").append(alias);
-        }
+        appendTo(builder, alias);
         return builder;
     }
 

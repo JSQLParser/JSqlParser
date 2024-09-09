@@ -103,7 +103,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
 
         buffer.append("(");
-        select.getSelect().accept(this, context);
+        select.getSelect().accept((SelectVisitor<StringBuilder>) this, context);
         buffer.append(")");
 
         if (select.getOrderByElements() != null) {
@@ -330,6 +330,20 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.isUseWithNoLog()) {
             buffer.append(" WITH NO LOG");
         }
+
+        Alias alias = plainSelect.getAlias();
+        if (alias != null) {
+            buffer.append(alias);
+        }
+        Pivot pivot = plainSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this, context);
+        }
+        UnPivot unpivot = plainSelect.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this, context);
+        }
+
         return buffer;
     }
 
@@ -618,7 +632,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             if (i != 0) {
                 buffer.append(' ').append(list.getOperations().get(i - 1)).append(' ');
             }
-            list.getSelects().get(i).accept(this, context);
+            list.getSelects().get(i).accept((SelectVisitor<StringBuilder>) this, context);
         }
         if (list.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(list.getOrderByElements());
@@ -636,6 +650,20 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (list.getIsolation() != null) {
             buffer.append(list.getIsolation().toString());
         }
+
+        Alias alias = list.getAlias();
+        if (alias != null) {
+            buffer.append(alias);
+        }
+        Pivot pivot = list.getPivot();
+        if (pivot != null) {
+            pivot.accept(this, context);
+        }
+        UnPivot unpivot = list.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this, context);
+        }
+
         return buffer;
     }
 
@@ -779,7 +807,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     void deParse(PlainSelect statement) {
-        statement.accept(this, null);
+        statement.accept((SelectVisitor<StringBuilder>) this, null);
     }
 
 }

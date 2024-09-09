@@ -27,6 +27,11 @@ public class SetOperationList extends Select {
         return selectVisitor.visit(this, context);
     }
 
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
+    }
+
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }

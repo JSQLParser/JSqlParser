@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -23,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression {
+public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression, FromItem {
     protected Table forUpdateTable = null;
     List<WithItem<?>> withItemsList;
     Limit limitBy;
@@ -40,6 +41,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     private boolean skipLocked;
     private Wait wait;
     private boolean noWait = false;
+    Alias alias;
+    Pivot pivot;
+    UnPivot unPivot;
 
     public static String orderByToString(List<OrderByElement> orderByElements) {
         return orderByToString(false, orderByElements);
@@ -322,6 +326,39 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         this.skipLocked = skipLocked;
     }
 
+    @Override
+    public Alias getAlias() {
+      return alias;
+    }
+
+    @Override
+    public void setAlias(Alias alias) {
+      this.alias = alias;
+    }
+
+    public Select withAlias(Alias alias) {
+      this.setAlias(alias);
+      return this;
+    }
+
+    @Override
+    public Pivot getPivot() {
+      return pivot;
+    }
+
+    @Override
+    public void setPivot(Pivot pivot) {
+      this.pivot = pivot;
+    }
+
+    public UnPivot getUnPivot() {
+      return unPivot;
+    }
+
+    public void setUnPivot(UnPivot unPivot) {
+      this.unPivot = unPivot;
+    }
+
     public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
@@ -380,6 +417,8 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
                 builder.append(" SKIP LOCKED");
             }
         }
+
+        appendTo(builder, alias, pivot, unPivot);
 
         return builder;
     }
