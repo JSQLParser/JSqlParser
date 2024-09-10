@@ -51,7 +51,8 @@ public interface FromItem extends ASTNodeAccess {
         return appendTo(builder, alias, null, null);
     }
 
-    default StringBuilder appendTo(StringBuilder builder, Alias alias, Pivot pivot, UnPivot unPivot) {
+    default StringBuilder appendTo(StringBuilder builder, Alias alias, Pivot pivot,
+            UnPivot unPivot) {
         if (alias != null) {
             builder.append(alias);
         }

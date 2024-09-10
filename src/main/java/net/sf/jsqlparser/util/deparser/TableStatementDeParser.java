@@ -95,7 +95,7 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
         // TODO UNION
 
         tableStatement.appendTo(buffer, tableStatement.getAlias(), tableStatement.getPivot(),
-            tableStatement.getUnPivot());
+                tableStatement.getUnPivot());
 
         return buffer;
     }

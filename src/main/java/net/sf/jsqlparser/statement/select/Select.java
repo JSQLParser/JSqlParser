@@ -328,35 +328,35 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     @Override
     public Alias getAlias() {
-      return alias;
+        return alias;
     }
 
     @Override
     public void setAlias(Alias alias) {
-      this.alias = alias;
+        this.alias = alias;
     }
 
     public Select withAlias(Alias alias) {
-      this.setAlias(alias);
-      return this;
+        this.setAlias(alias);
+        return this;
     }
 
     @Override
     public Pivot getPivot() {
-      return pivot;
+        return pivot;
     }
 
     @Override
     public void setPivot(Pivot pivot) {
-      this.pivot = pivot;
+        this.pivot = pivot;
     }
 
     public UnPivot getUnPivot() {
-      return unPivot;
+        return unPivot;
     }
 
     public void setUnPivot(UnPivot unPivot) {
-      this.unPivot = unPivot;
+        this.unPivot = unPivot;
     }
 
     public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);

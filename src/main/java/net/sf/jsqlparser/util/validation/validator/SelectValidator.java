@@ -327,7 +327,8 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateFeature(Feature.lateralSubSelect);
         validateOptional(lateralSubSelect.getPivot(), p -> p.accept(this, context));
         validateOptional(lateralSubSelect.getUnPivot(), up -> up.accept(this, context));
-        validateOptional(lateralSubSelect.getSelect(), e -> e.accept((SelectVisitor<Void>) this, context));
+        validateOptional(lateralSubSelect.getSelect(),
+                e -> e.accept((SelectVisitor<Void>) this, context));
         return null;
     }
 
