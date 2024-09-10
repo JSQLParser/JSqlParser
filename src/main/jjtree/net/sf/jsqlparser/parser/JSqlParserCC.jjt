@@ -3052,7 +3052,7 @@ FromItem FromItem() #FromItem:
 }
 {
     (
-        LOOKAHEAD(3) fromItem = Values()
+        LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem = Values()
         |
         LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
         |
@@ -3060,13 +3060,15 @@ FromItem FromItem() #FromItem:
         |
         LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
         |
-        LOOKAHEAD(3) (
+        LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) (
             fromItem=ParenthesedSelect()
             [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
             [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
         )
         |
         fromItem=LateralSubSelect()
+        |
+        LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
 
     [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
