@@ -317,6 +317,11 @@ public class PlainSelect extends Select {
         return selectVisitor.visit(this, context);
     }
 
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
+    }
+
     public OptimizeFor getOptimizeFor() {
         return optimizeFor;
     }

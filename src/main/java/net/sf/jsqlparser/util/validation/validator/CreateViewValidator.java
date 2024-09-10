@@ -14,6 +14,7 @@ import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.create.view.ForceOption;
 import net.sf.jsqlparser.statement.create.view.TemporaryOption;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -38,7 +39,7 @@ public class CreateViewValidator extends AbstractValidator<CreateView> {
         }
         SelectValidator v = getValidator(SelectValidator.class);
         Select select = createView.getSelect();
-        select.accept(v, null);
+        select.accept((SelectVisitor<Void>) v, null);
     }
 
 }

@@ -5963,7 +5963,11 @@ public class SelectTest {
     @ValueSource(strings = {
             "SELECT SELECT 1",
             "SELECT 1 WHERE 1 = SELECT 1",
-            "SELECT 1 WHERE 1 IN SELECT 1"
+            "SELECT 1 WHERE 1 IN SELECT 1",
+            "SELECT * FROM SELECT 1",
+            "SELECT * FROM SELECT SELECT 1",
+            "SELECT * FROM SELECT 1 WHERE 1 = SELECT 1",
+            "SELECT * FROM SELECT 1 WHERE 1 IN SELECT 1"
     })
     public void testUnparenthesizedSubSelect(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,

@@ -49,4 +49,22 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
         return null;
     }
+
+    @Override
+    public <S> T visit(PlainSelect plainSelect, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SetOperationList setOperationList, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(TableStatement tableStatement, S context) {
+
+        return null;
+    }
 }

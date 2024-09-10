@@ -214,7 +214,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Select select, S context) {
-        select.accept(selectDeParser, context);
+        select.accept((SelectVisitor<StringBuilder>) selectDeParser, context);
         return buffer;
     }
 

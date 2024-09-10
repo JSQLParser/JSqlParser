@@ -75,7 +75,7 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
 
             if (upsert.getSelect() != null) {
                 buffer.append(" ");
-                upsert.getSelect().accept(selectVisitor, null);
+                upsert.getSelect().accept((SelectVisitor<StringBuilder>) selectVisitor, null);
             }
 
             if (upsert.getDuplicateUpdateSets() != null) {

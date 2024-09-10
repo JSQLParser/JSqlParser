@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -35,7 +36,7 @@ public class UpsertValidator extends AbstractValidator<Upsert> {
     private void validateOptionalSelect(Select select) {
         if (select != null) {
             SelectValidator v = getValidator(SelectValidator.class);
-            select.accept(v, null);
+            select.accept((SelectVisitor<Void>) v, null);
         }
     }
 

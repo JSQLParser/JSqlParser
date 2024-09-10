@@ -55,4 +55,9 @@ public class TableStatement extends Select {
     public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
         return selectVisitor.visit(this, context);
     }
+
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
+    }
 }

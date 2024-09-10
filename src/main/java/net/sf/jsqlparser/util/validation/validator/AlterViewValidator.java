@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.view.AlterView;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
@@ -27,7 +28,8 @@ public class AlterViewValidator extends AbstractValidator<AlterView> {
             validateName(c, NamedObject.view, alterView.getView().getFullyQualifiedName());
             validateOptionalColumnNames(c, alterView.getColumnNames());
         }
-        alterView.getSelect().accept(getValidator(SelectValidator.class), null);
+        alterView.getSelect().accept((SelectVisitor<Void>) getValidator(SelectValidator.class),
+                null);
     }
 
 }

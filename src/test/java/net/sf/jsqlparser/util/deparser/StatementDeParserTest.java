@@ -127,7 +127,7 @@ public class StatementDeParserTest {
 
         then(withItem1).should().accept((SelectVisitor<?>) selectDeParser, null);
         then(withItem2).should().accept((SelectVisitor<?>) selectDeParser, null);
-        then(select).should().accept(selectDeParser, null);
+        then(select).should().accept((SelectVisitor<StringBuilder>) selectDeParser, null);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
     }
@@ -151,7 +151,7 @@ public class StatementDeParserTest {
 
         // then(withItem1).should().accept((SelectVisitor) selectDeParser);
         // then(withItem2).should().accept((SelectVisitor) selectDeParser);
-        then(plainSelect).should().accept(selectDeParser, null);
+        then(plainSelect).should().accept((SelectVisitor<StringBuilder>) selectDeParser, null);
     }
 
     @Test
@@ -309,7 +309,7 @@ public class StatementDeParserTest {
 
         statementDeParser.visit(upsert);
 
-        then(select).should().accept(selectDeParser, null);
+        then(select).should().accept((SelectVisitor<StringBuilder>) selectDeParser, null);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
     }
@@ -327,7 +327,7 @@ public class StatementDeParserTest {
     public void testIssue1500AllColumns() throws JSQLParserException {
         String sqlStr = "select count(*) from some_table";
         PlainSelect selectBody = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
-        selectBody.accept(new SelectDeParser(), null);
+        selectBody.accept((SelectVisitor<StringBuilder>) new SelectDeParser(), null);
     }
 
     @Test
@@ -341,7 +341,7 @@ public class StatementDeParserTest {
     public void testIssue1500AllTableColumns() throws JSQLParserException {
         String sqlStr = "select count(a.*) from some_table a";
         PlainSelect selectBody = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
-        selectBody.accept(new SelectDeParser(), null);
+        selectBody.accept((SelectVisitor<StringBuilder>) new SelectDeParser(), null);
     }
 
     @Test
