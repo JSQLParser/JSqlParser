@@ -75,6 +75,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | HAVING               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| HIGH                 | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | IF                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IIF                  | Yes         |           | 
@@ -95,6 +97,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | INTO                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| INVERSE              | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | IS                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | JOIN                 | Yes         | Yes       | 
@@ -106,6 +110,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | LIKE                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | LIMIT                | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| LOW                  | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | MINUS                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -136,6 +142,10 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | OPTIMIZE             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | PIVOT                | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| PLUS                 | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| PREFERRING           | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | PROCEDURE            | Yes         |           | 
 +----------------------+-------------+-----------+

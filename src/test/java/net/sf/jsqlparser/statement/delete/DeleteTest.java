@@ -30,7 +30,10 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class DeleteTest {
 
@@ -369,6 +372,20 @@ public class DeleteTest {
                 "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
                 insert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "DELETE FROM mytable PREFERRING HIGH mycolumn",
+        "DELETE FROM mytable PREFERRING LOW mycolumn",
+        "DELETE FROM mytable PREFERRING 1 = 1",
+        "DELETE FROM mytable PREFERRING (HIGH mycolumn)",
+        "DELETE FROM mytable PREFERRING INVERSE (HIGH mycolumn)",
+        "DELETE FROM mytable PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
+        "DELETE FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
+    })
+    public void testPreferringClause(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
 }

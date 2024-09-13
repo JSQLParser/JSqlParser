@@ -762,4 +762,29 @@ public class ExpressionVisitorAdapter<T>
         return lambdaExpression.getExpression().accept(this, context);
     }
 
+    @Override
+    public <S> T visit(HighExpression highExpression, S context) {
+        return highExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(LowExpression lowExpression, S context) {
+        return lowExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(Plus plus, S context) {
+        return visitBinaryExpression(plus, context);
+    }
+
+    @Override
+    public <S> T visit(PriorTo priorTo, S context) {
+        return visitBinaryExpression(priorTo, context);
+    }
+
+    @Override
+    public <S> T visit(Inverse inverse, S context) {
+        return inverse.getExpression().accept(this, context);
+    }
+
 }

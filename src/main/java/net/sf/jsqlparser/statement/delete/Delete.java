@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.delete;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
@@ -40,6 +41,7 @@ public class Delete implements Statement {
     private List<Table> usingList;
     private List<Join> joins;
     private Expression where;
+    private PreferringClause preferringClause;
     private Limit limit;
     private List<OrderByElement> orderByElements;
     private boolean hasFrom = true;
@@ -121,6 +123,14 @@ public class Delete implements Statement {
 
     public void setWhere(Expression expression) {
         where = expression;
+    }
+
+    public PreferringClause getPreferringClause() {
+        return preferringClause;
+    }
+
+    public void setPreferringClause(PreferringClause preferringClause) {
+        this.preferringClause = preferringClause;
     }
 
     public OracleHint getOracleHint() {
@@ -239,6 +249,10 @@ public class Delete implements Statement {
             b.append(" WHERE ").append(where);
         }
 
+        if (preferringClause != null) {
+            b.append(" ").append(preferringClause);
+        }
+
         if (orderByElements != null) {
             b.append(PlainSelect.orderByToString(orderByElements));
         }
@@ -286,6 +300,11 @@ public class Delete implements Statement {
 
     public Delete withWhere(Expression where) {
         this.setWhere(where);
+        return this;
+    }
+
+    public Delete withPreferringClause(PreferringClause preferringClause) {
+        this.setPreferringClause(preferringClause);
         return this;
     }
 

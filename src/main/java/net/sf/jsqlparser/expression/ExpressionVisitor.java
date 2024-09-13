@@ -24,34 +24,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
-import net.sf.jsqlparser.expression.operators.relational.Between;
-import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
-import net.sf.jsqlparser.expression.operators.relational.Contains;
-import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
-import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
-import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
-import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
-import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.expression.operators.relational.Matches;
-import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
-import net.sf.jsqlparser.expression.operators.relational.MinorThan;
-import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
-import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
-import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
-import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
-import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -632,5 +605,35 @@ public interface ExpressionVisitor<T> {
 
     default void visit(LambdaExpression lambdaExpression) {
         this.visit(lambdaExpression, null);
+    }
+
+    <S> T visit(HighExpression highExpression, S context);
+
+    default void visit(HighExpression highExpression) {
+        this.visit(highExpression, null);
+    }
+
+    <S> T visit(LowExpression lowExpression, S context);
+
+    default void visit(LowExpression lowExpression) {
+        this.visit(lowExpression, null);
+    }
+
+    <S> T visit(Plus plus, S context);
+
+    default void visit(Plus plus) {
+        this.visit(plus, null);
+    }
+
+    <S> T visit(PriorTo priorTo, S context);
+
+    default void visit(PriorTo priorTo) {
+        this.visit(priorTo, null);
+    }
+
+    <S> T visit(Inverse inverse, S context);
+
+    default void visit(Inverse inverse) {
+        this.visit(inverse, null);
     }
 }
