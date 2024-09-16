@@ -376,13 +376,13 @@ public class DeleteTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "DELETE FROM mytable PREFERRING HIGH mycolumn",
-        "DELETE FROM mytable PREFERRING LOW mycolumn",
-        "DELETE FROM mytable PREFERRING 1 = 1",
-        "DELETE FROM mytable PREFERRING (HIGH mycolumn)",
-        "DELETE FROM mytable PREFERRING INVERSE (HIGH mycolumn)",
-        "DELETE FROM mytable PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
-        "DELETE FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
+            "DELETE FROM mytable PREFERRING HIGH mycolumn",
+            "DELETE FROM mytable PREFERRING LOW mycolumn",
+            "DELETE FROM mytable PREFERRING 1 = 1",
+            "DELETE FROM mytable PREFERRING (HIGH mycolumn)",
+            "DELETE FROM mytable PREFERRING INVERSE (HIGH mycolumn)",
+            "DELETE FROM mytable PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
+            "DELETE FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
     })
     public void testPreferringClause(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr);

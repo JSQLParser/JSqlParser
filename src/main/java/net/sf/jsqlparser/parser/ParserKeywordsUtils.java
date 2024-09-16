@@ -237,14 +237,15 @@ public class ParserKeywordsUtils {
             // remove single and multiline comments
             tokenBlock = tokenBlock.replaceAll("(?sm)((\\/\\*.*?\\*\\/)|(\\/\\/.*?$))", "");
             for (String tokenDefinition : getTokenDefinitions(tokenBlock)) {
-              // check if token definition is private
-              if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
-                    Matcher tokenStringValueMatcher = tokenStringValuePattern.matcher(tokenDefinition);
+                // check if token definition is private
+                if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
+                    Matcher tokenStringValueMatcher =
+                            tokenStringValuePattern.matcher(tokenDefinition);
                     while (tokenStringValueMatcher.find()) {
                         String tokenValue = tokenStringValueMatcher.group(1);
                         // test if pure US-ASCII
                         if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("\\w+")) {
-                          allKeywords.add(tokenValue);
+                            allKeywords.add(tokenValue);
                         }
                     }
                 }
@@ -265,7 +266,7 @@ public class ParserKeywordsUtils {
             if (isQuotationMark(i, tokenBlockChars)) {
                 // skip everything inside quotation marks
                 while (!isQuotationMark(++i, tokenBlockChars)) {
-                  // skip until quotation ends
+                    // skip until quotation ends
                 }
             }
 

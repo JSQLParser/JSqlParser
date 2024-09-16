@@ -22,7 +22,7 @@ public class PreferringClause implements Serializable {
     }
 
     public void setPartitionExpressionList(ExpressionList expressionList,
-        boolean brackets) {
+            boolean brackets) {
         if (this.partitionBy == null) {
             this.partitionBy = new PartitionByClause();
         }

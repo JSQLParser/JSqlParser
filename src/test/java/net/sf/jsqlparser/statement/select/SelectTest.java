@@ -5985,14 +5985,14 @@ public class SelectTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "SELECT * FROM mytable PREFERRING HIGH mycolumn",
-        "SELECT * FROM mytable PREFERRING LOW mycolumn",
-        "SELECT * FROM mytable PREFERRING 1 = 1",
-        "SELECT * FROM mytable PREFERRING (HIGH mycolumn)",
-        "SELECT * FROM mytable PREFERRING INVERSE (HIGH mycolumn)",
-        "SELECT * FROM mytable PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
-        "SELECT * FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2",
-        "SELECT * FROM mytable PREFERRING HIGH mycolumn PARTITION BY mycolumn"
+            "SELECT * FROM mytable PREFERRING HIGH mycolumn",
+            "SELECT * FROM mytable PREFERRING LOW mycolumn",
+            "SELECT * FROM mytable PREFERRING 1 = 1",
+            "SELECT * FROM mytable PREFERRING (HIGH mycolumn)",
+            "SELECT * FROM mytable PREFERRING INVERSE (HIGH mycolumn)",
+            "SELECT * FROM mytable PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
+            "SELECT * FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2",
+            "SELECT * FROM mytable PREFERRING HIGH mycolumn PARTITION BY mycolumn"
     })
     public void testPreferringClause(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);

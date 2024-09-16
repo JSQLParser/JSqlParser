@@ -538,13 +538,13 @@ public class UpdateTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING LOW mycolumn",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING 1 = 1",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING (HIGH mycolumn)",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING INVERSE (HIGH mycolumn)",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
-        "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING LOW mycolumn",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING 1 = 1",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING (HIGH mycolumn)",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING INVERSE (HIGH mycolumn)",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
     })
     public void testPreferringClause(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr);
