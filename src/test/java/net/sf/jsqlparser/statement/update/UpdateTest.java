@@ -547,7 +547,7 @@ public class UpdateTest {
         "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
     })
     public void testPreferringClause(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
 }

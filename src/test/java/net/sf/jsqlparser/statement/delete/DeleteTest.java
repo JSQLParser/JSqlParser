@@ -385,7 +385,7 @@ public class DeleteTest {
         "DELETE FROM mytable PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
     })
     public void testPreferringClause(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
 }
