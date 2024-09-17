@@ -93,6 +93,9 @@ public class UpdateDeParser extends AbstractDeParser<Update>
 
         deparseWhereClause(update);
 
+        if (update.getPreferringClause() != null) {
+            buffer.append(" ").append(update.getPreferringClause());
+        }
         if (update.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
         }

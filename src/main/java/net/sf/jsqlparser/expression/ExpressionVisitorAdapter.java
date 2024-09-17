@@ -29,6 +29,7 @@ import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
@@ -36,6 +37,7 @@ import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -46,9 +48,12 @@ import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.Plus;
+import net.sf.jsqlparser.expression.operators.relational.PriorTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
-import net.sf.jsqlparser.expression.operators.relational.*;
+import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
+import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -760,6 +765,31 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(LambdaExpression lambdaExpression, S context) {
         return lambdaExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(HighExpression highExpression, S context) {
+        return highExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(LowExpression lowExpression, S context) {
+        return lowExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(Plus plus, S context) {
+        return visitBinaryExpression(plus, context);
+    }
+
+    @Override
+    public <S> T visit(PriorTo priorTo, S context) {
+        return visitBinaryExpression(priorTo, context);
+    }
+
+    @Override
+    public <S> T visit(Inverse inverse, S context) {
+        return inverse.getExpression().accept(this, context);
     }
 
 }

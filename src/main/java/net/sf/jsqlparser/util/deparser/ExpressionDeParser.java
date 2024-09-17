@@ -28,7 +28,9 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
+import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.Inverse;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
@@ -37,6 +39,7 @@ import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -103,6 +106,8 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.OldOracleJoinBinaryExpression;
+import net.sf.jsqlparser.expression.operators.relational.Plus;
+import net.sf.jsqlparser.expression.operators.relational.PriorTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
@@ -1711,5 +1716,30 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         buffer.append(" -> ");
         lambdaExpression.getExpression().accept(this, context);
         return buffer;
+    }
+
+    @Override
+    public <S> StringBuilder visit(HighExpression highExpression, S context) {
+        return buffer.append(highExpression.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(LowExpression lowExpression, S context) {
+        return buffer.append(lowExpression.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(Plus plus, S context) {
+        return buffer.append(plus.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(PriorTo priorTo, S context) {
+        return buffer.append(priorTo.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(Inverse inverse, S context) {
+        return buffer.append(inverse.toString());
     }
 }

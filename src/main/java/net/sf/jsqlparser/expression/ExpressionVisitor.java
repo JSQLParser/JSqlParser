@@ -48,6 +48,8 @@ import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.Plus;
+import net.sf.jsqlparser.expression.operators.relational.PriorTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
@@ -632,5 +634,35 @@ public interface ExpressionVisitor<T> {
 
     default void visit(LambdaExpression lambdaExpression) {
         this.visit(lambdaExpression, null);
+    }
+
+    <S> T visit(HighExpression highExpression, S context);
+
+    default void visit(HighExpression highExpression) {
+        this.visit(highExpression, null);
+    }
+
+    <S> T visit(LowExpression lowExpression, S context);
+
+    default void visit(LowExpression lowExpression) {
+        this.visit(lowExpression, null);
+    }
+
+    <S> T visit(Plus plus, S context);
+
+    default void visit(Plus plus) {
+        this.visit(plus, null);
+    }
+
+    <S> T visit(PriorTo priorTo, S context);
+
+    default void visit(PriorTo priorTo) {
+        this.visit(priorTo, null);
+    }
+
+    <S> T visit(Inverse inverse, S context);
+
+    default void visit(Inverse inverse) {
+        this.visit(inverse, null);
     }
 }

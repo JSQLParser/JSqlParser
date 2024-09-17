@@ -279,6 +279,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GUARD:"GUARD">
 |   <K_HAVING:"HAVING">
 |   <K_HASH:"HASH">
+|   <K_HIGH : "HIGH">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |   <K_HISTORY : "HISTORY">
 |   <K_HOPPING:"HOPPING">
@@ -301,6 +302,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INTERVAL:"INTERVAL">
 |   <K_INTO:"INTO">
 |   <K_INVALIDATE:"INVALIDATE">
+|   <K_INVERSE:"INVERSE">
 |   <K_IS:"IS">
 |   <K_ISNULL:"ISNULL">
 |   <K_JOIN:"JOIN">
@@ -324,6 +326,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LINK:"LINK">
 |   <K_LOG:"LOG">
 |   <K_LOOP:"LOOP">
+|   <K_LOW : "LOW">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCH: "MATCH">
 |   <K_MATCHED: "MATCHED">
@@ -377,6 +380,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PIVOT:"PIVOT">
 |   <K_PLACING:"PLACING">
 |   <K_PLAN:"PLAN">
+|   <K_PLUS:"PLUS">
+|   <K_PREFERRING: "PREFERRING">
 |   <K_PRECEDING: "PRECEDING">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
@@ -1486,6 +1491,7 @@ Update Update():
     List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
     Expression where = null;
+    PreferringClause preferringClause = null;
     FromItem fromItem = null;
     List<Join> joins = null;
     Limit limit = null;
@@ -1512,6 +1518,7 @@ Update Update():
       [ LOOKAHEAD(2) joins=JoinsList() ] ]
 
     [ where=WhereClause() { update.setWhere(where); } ]
+    [ preferringClause=PreferringClause() { update.setPreferringClause(preferringClause); } ]
 
     [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
     [ limit = PlainLimit() { update.setLimit(limit); } ]
@@ -1816,6 +1823,7 @@ Delete Delete():
     List<Table> usingList = new ArrayList<Table>();
     List<Join> joins = null;
     Expression where = null;
+    PreferringClause preferringClause = null;
     Limit limit = null;
     List<OrderByElement> orderByElements;
     boolean hasFrom = false;
@@ -1841,6 +1849,7 @@ Delete Delete():
     [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
           ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
+    [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
 
@@ -2439,6 +2448,9 @@ PlainSelect PlainSelect() #PlainSelect:
     Skip skip = null;
     First first = null;
     OracleHierarchicalExpression oracleHierarchicalQueryClause = null;
+    PreferringClause preferringClause = null;
+    ExpressionList expressionList = null;
+    boolean partitionByBrackets = false;
     List<Table> intoTables = null;
     Table updateTable = null;
     Wait wait = null;
@@ -2514,6 +2526,17 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
+    [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
+        [LOOKAHEAD(2) <K_PARTITION> <K_BY>
+            (
+                (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+                | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+            )
+            {
+                preferringClause.setPartitionExpressionList(expressionList, partitionByBrackets);
+            }
+        ]
+    ]
     // Oracle supports "HAVING" before "GROUP BY", we will simply parse that but won't pay special attention to the order
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
@@ -3298,6 +3321,145 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
     )
     {
         return result;
+    }
+}
+
+PreferringClause PreferringClause():
+{
+    Expression result = null;
+}
+{
+    <K_PREFERRING>
+    result=PreferenceTerm()
+
+    {
+        PreferringClause preferring = new PreferringClause(result);
+        return preferring;
+    }
+}
+
+Expression PreferenceTerm():
+{
+    Expression retval = null;
+}
+{
+    // recursively build preferenceterm inside Plus
+    // like Expression -> XorExpression -> OrExpression -> ...
+
+    retval=Plus()
+
+    {
+        return retval;
+    }
+}
+
+Expression Plus():
+{
+    Expression left, right, result;
+}
+{
+    left=PriorTo() { result = left; }
+    (
+        LOOKAHEAD(2)
+        <K_PLUS>
+        right=PriorTo()
+        {
+          result = new Plus(left, right);
+          left = result;
+        }
+    )*
+    {
+        return result;
+    }
+}
+
+Expression PriorTo():
+{
+    Expression left, right, result;
+}
+{
+    (
+          LOOKAHEAD(PreferenceTermTerminal(), {!interrupted}) left=PreferenceTermTerminal()
+        | "(" left=PreferenceTerm() ")" { left = new ParenthesedExpressionList(left); }
+    )
+    { result = left; }
+
+    (
+        LOOKAHEAD(2)
+        <K_PRIOR> <K_TO>
+        (
+              LOOKAHEAD(PreferenceTermTerminal(), {!interrupted}) right=PreferenceTermTerminal()
+            | "(" right=PreferenceTerm() ")" { left = new ParenthesedExpressionList(right); }
+        )
+        {
+            result = new PriorTo(left, right);
+            left = result;
+        }
+    )*
+    {
+        return result;
+    }
+}
+
+Expression PreferenceTermTerminal():
+{
+    Expression retval;
+}
+{
+    (
+          retval=HighExpression()
+        | retval=LowExpression()
+        | retval=Inverse()
+        | retval=Condition()
+    )
+
+    {
+        return retval;
+    }
+}
+
+Expression HighExpression() #HighExpression:
+{
+    Expression result;
+}
+{
+    <K_HIGH>
+    result=Expression()
+
+    {
+        HighExpression high = new HighExpression(result);
+        linkAST(high,jjtThis);
+        return high;
+    }
+}
+
+Expression LowExpression() #LowExpression:
+{
+    Expression result;
+}
+{
+    <K_LOW>
+    result=Expression()
+
+    {
+        LowExpression low = new LowExpression(result);
+        linkAST(low,jjtThis);
+        return low;
+    }
+}
+
+Expression Inverse() #Inverse:
+{
+    Expression result;
+}
+{
+    <K_INVERSE>
+    "(" result=PreferenceTerm() ")"
+
+    {
+        Inverse inverse = new Inverse(result);
+        linkAST(inverse,jjtThis);
+        return inverse;
     }
 }
 

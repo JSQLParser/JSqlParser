@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.update;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
@@ -39,6 +40,7 @@ public class Update implements Statement {
     private List<WithItem<?>> withItemsList;
     private Table table;
     private Expression where;
+    private PreferringClause preferringClause;
     private List<UpdateSet> updateSets;
     private FromItem fromItem;
     private List<Join> joins;
@@ -123,6 +125,14 @@ public class Update implements Statement {
 
     public void setWhere(Expression expression) {
         where = expression;
+    }
+
+    public PreferringClause getPreferringClause() {
+        return preferringClause;
+    }
+
+    public void setPreferringClause(PreferringClause preferringClause) {
+        this.preferringClause = preferringClause;
     }
 
     public OracleHint getOracleHint() {
@@ -336,6 +346,9 @@ public class Update implements Statement {
             b.append(" WHERE ");
             b.append(where);
         }
+        if (preferringClause != null) {
+            b.append(" ").append(preferringClause);
+        }
         if (orderByElements != null) {
             b.append(PlainSelect.orderByToString(orderByElements));
         }
@@ -397,6 +410,11 @@ public class Update implements Statement {
 
     public Update withWhere(Expression where) {
         this.setWhere(where);
+        return this;
+    }
+
+    public Update withPreferringClause(PreferringClause preferringClause) {
+        this.setPreferringClause(preferringClause);
         return this;
     }
 

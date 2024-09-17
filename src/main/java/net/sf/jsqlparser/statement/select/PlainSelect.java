@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Table;
 
@@ -46,6 +47,7 @@ public class PlainSelect extends Select {
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
+    private PreferringClause preferringClause = null;
     private OracleHint oracleHint = null;
     private boolean mySqlSqlCalcFoundRows = false;
     private MySqlSqlCacheFlags mySqlCacheFlag = null;
@@ -424,6 +426,14 @@ public class PlainSelect extends Select {
         this.oracleHierarchical = oracleHierarchical;
     }
 
+    public PreferringClause getPreferringClause() {
+        return preferringClause;
+    }
+
+    public void setPreferringClause(PreferringClause preferringClause) {
+        this.preferringClause = preferringClause;
+    }
+
     public OracleHint getOracleHint() {
         return oracleHint;
     }
@@ -555,6 +565,9 @@ public class PlainSelect extends Select {
             if (oracleHierarchical != null) {
                 builder.append(oracleHierarchical);
             }
+            if (preferringClause != null) {
+                builder.append(" ").append(preferringClause);
+            }
             if (groupBy != null) {
                 builder.append(" ").append(groupBy);
             }
@@ -673,6 +686,11 @@ public class PlainSelect extends Select {
 
     public PlainSelect withOracleHierarchical(OracleHierarchicalExpression oracleHierarchical) {
         this.setOracleHierarchical(oracleHierarchical);
+        return this;
+    }
+
+    public PlainSelect withPreferringClause(PreferringClause preferringClause) {
+        this.setPreferringClause(preferringClause);
         return this;
     }
 

@@ -260,6 +260,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             plainSelect.getOracleHierarchical().accept(expressionVisitor, context);
         }
 
+        if (plainSelect.getPreferringClause() != null) {
+            buffer.append(" ").append(plainSelect.getPreferringClause().toString());
+        }
+
         if (plainSelect.getGroupBy() != null) {
             buffer.append(" ");
             new GroupByDeParser(expressionVisitor, buffer).deParse(plainSelect.getGroupBy());

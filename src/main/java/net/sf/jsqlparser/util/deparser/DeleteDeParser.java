@@ -95,6 +95,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
 
         deparseWhereClause(delete);
 
+        if (delete.getPreferringClause() != null) {
+            buffer.append(" ").append(delete.getPreferringClause());
+        }
         if (delete.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
         }

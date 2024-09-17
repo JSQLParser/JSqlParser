@@ -28,7 +28,9 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
+import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.Inverse;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
@@ -38,6 +40,7 @@ import net.sf.jsqlparser.expression.JsonFunctionExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -102,6 +105,8 @@ import net.sf.jsqlparser.expression.operators.relational.MemberOfExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.Plus;
+import net.sf.jsqlparser.expression.operators.relational.PriorTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
@@ -1586,6 +1591,36 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(HighExpression highExpression, S context) {
+        highExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(LowExpression lowExpression, S context) {
+        lowExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Plus plus, S context) {
+        visitBinaryExpression(plus);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PriorTo priorTo, S context) {
+        visitBinaryExpression(priorTo);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Inverse inverse, S context) {
+        inverse.getExpression().accept(this, context);
         return null;
     }
 

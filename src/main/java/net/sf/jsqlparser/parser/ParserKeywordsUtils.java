@@ -79,6 +79,7 @@ public class ParserKeywordsUtils {
             {"GROUPING", RESTRICTED_ALIAS},
             {"QUALIFY", RESTRICTED_ALIAS},
             {"HAVING", RESTRICTED_SQL2016},
+            {"HIGH", RESTRICTED_JSQLPARSER},
             {"IF", RESTRICTED_SQL2016},
             {"IIF", RESTRICTED_ALIAS},
             {"IGNORE", RESTRICTED_ALIAS},
@@ -89,12 +90,14 @@ public class ParserKeywordsUtils {
             {"INTERSECT", RESTRICTED_SQL2016},
             {"INTERVAL", RESTRICTED_SQL2016},
             {"INTO", RESTRICTED_JSQLPARSER},
+            {"INVERSE", RESTRICTED_JSQLPARSER},
             {"IS", RESTRICTED_SQL2016},
             {"JOIN", RESTRICTED_JSQLPARSER},
             {"LATERAL", RESTRICTED_SQL2016},
             {"LEFT", RESTRICTED_SQL2016},
             {"LIKE", RESTRICTED_SQL2016},
             {"LIMIT", RESTRICTED_SQL2016},
+            {"LOW", RESTRICTED_JSQLPARSER},
             {"MINUS", RESTRICTED_SQL2016},
             {"NATURAL", RESTRICTED_SQL2016},
             {"NOCYCLE", RESTRICTED_JSQLPARSER},
@@ -110,6 +113,8 @@ public class ParserKeywordsUtils {
             {"OUTPUT", RESTRICTED_JSQLPARSER},
             {"OPTIMIZE ", RESTRICTED_JSQLPARSER},
             {"PIVOT", RESTRICTED_JSQLPARSER},
+            {"PLUS", RESTRICTED_JSQLPARSER},
+            {"PREFERRING", RESTRICTED_JSQLPARSER},
             {"PROCEDURE", RESTRICTED_ALIAS},
             {"PUBLIC", RESTRICTED_ALIAS},
             {"RETURNING", RESTRICTED_JSQLPARSER},
@@ -232,14 +237,15 @@ public class ParserKeywordsUtils {
             // remove single and multiline comments
             tokenBlock = tokenBlock.replaceAll("(?sm)((\\/\\*.*?\\*\\/)|(\\/\\/.*?$))", "");
             for (String tokenDefinition : getTokenDefinitions(tokenBlock)) {
-              // check if token definition is private
-              if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
-                    Matcher tokenStringValueMatcher = tokenStringValuePattern.matcher(tokenDefinition);
+                // check if token definition is private
+                if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
+                    Matcher tokenStringValueMatcher =
+                            tokenStringValuePattern.matcher(tokenDefinition);
                     while (tokenStringValueMatcher.find()) {
                         String tokenValue = tokenStringValueMatcher.group(1);
                         // test if pure US-ASCII
                         if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("\\w+")) {
-                          allKeywords.add(tokenValue);
+                            allKeywords.add(tokenValue);
                         }
                     }
                 }
@@ -260,7 +266,7 @@ public class ParserKeywordsUtils {
             if (isQuotationMark(i, tokenBlockChars)) {
                 // skip everything inside quotation marks
                 while (!isQuotationMark(++i, tokenBlockChars)) {
-                  // skip until quotation ends
+                    // skip until quotation ends
                 }
             }
 

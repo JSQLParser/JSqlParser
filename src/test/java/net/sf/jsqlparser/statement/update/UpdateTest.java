@@ -25,6 +25,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.StringReader;
 import java.util.List;
@@ -532,6 +534,20 @@ public class UpdateTest {
                 "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
                 insert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING LOW mycolumn",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING 1 = 1",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING (HIGH mycolumn)",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING INVERSE (HIGH mycolumn)",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PRIOR TO LOW mycolumn2",
+            "UPDATE mytable SET mycolumn1 = mycolumn2 PREFERRING HIGH mycolumn1 PLUS LOW mycolumn2"
+    })
+    public void testPreferringClause(String sqlStr) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
 }
