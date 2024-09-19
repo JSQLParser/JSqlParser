@@ -13,6 +13,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class FunctionTest {
     @Test
@@ -89,5 +91,21 @@ class FunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true, parser -> {
             parser.withAllowComplexParsing(false);
         });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "select LISTAGG(field, ',' on overflow truncate '...') from dual",
+            "select LISTAGG(field, ',' on overflow truncate '...' with count) from dual",
+            "select LISTAGG(field, ',' on overflow truncate '...' without count) from dual",
+            "select LISTAGG(field, ',' on overflow error) from dual", "SELECT department, \n" +
+                    "       LISTAGG(name, ', ' ON OVERFLOW TRUNCATE '... (truncated)' WITH COUNT) WITHIN GROUP (ORDER BY name)\n"
+                    +
+                    "       AS employee_names\n" +
+                    "FROM employees\n" +
+                    "GROUP BY department;"
+    })
+    void testListAggOnOverflow(String sqlStr) throws Exception {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

@@ -38,6 +38,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Limit limit = null;
     private KeepExpression keep = null;
+    private String onOverflowTruncate = null;
 
     public Function() {}
 
@@ -302,6 +303,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                 if (limit != null) {
                     b.append(limit);
                 }
+
+                if (onOverflowTruncate != null) {
+                    b.append(" ON OVERFLOW ").append(onOverflowTruncate);
+                }
+
                 b.append(")");
                 params = b.toString();
             } else {
@@ -397,6 +403,15 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
+    }
+
+    public String getOnOverflowTruncate() {
+        return onOverflowTruncate;
+    }
+
+    public Function setOnOverflowTruncate(String onOverflowTruncate) {
+        this.onOverflowTruncate = onOverflowTruncate;
+        return this;
     }
 
     public <E extends Expression> E getAttribute(Class<E> type) {

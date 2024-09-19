@@ -857,6 +857,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     orderByDeParser.deParseElement(orderByElement);
                 }
             }
+
+            if (function.getOnOverflowTruncate() != null) {
+                buffer.append(" ON OVERFLOW ").append(function.getOnOverflowTruncate());
+            }
+
             if (function.getLimit() != null) {
                 new LimitDeparser(this, buffer).deParse(function.getLimit());
             }
@@ -1125,6 +1130,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             buffer.append(" ORDER BY ");
             buffer.append(analyticExpression.getFuncOrderBy().stream().map(OrderByElement::toString)
                     .collect(joining(", ")));
+        }
+
+        if (analyticExpression.getOnOverflowTruncate() != null) {
+            buffer.append(" ON OVERFLOW ").append(analyticExpression.getOnOverflowTruncate());
         }
 
         if (analyticExpression.getLimit() != null) {

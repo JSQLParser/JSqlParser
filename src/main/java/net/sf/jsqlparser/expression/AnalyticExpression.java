@@ -40,6 +40,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
     private List<OrderByElement> funcOrderBy = null;
+    private String onOverflowTruncate = null;
+
     private String windowName = null; // refers to an external window definition (paritionBy,
     // orderBy, windowElement)
     private WindowDefinition windowDef = new WindowDefinition();
@@ -78,6 +80,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.ignoreNullsOutside = function.isIgnoreNullsOutside();
         this.nullHandling = function.getNullHandling();
         this.funcOrderBy = function.getOrderByElements();
+        this.onOverflowTruncate = function.getOnOverflowTruncate();
         this.limit = function.getLimit();
         this.keep = function.getKeep();
     }
@@ -94,6 +97,15 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         windowDef.orderBy.setOrderByElements(orderByElements);
+    }
+
+    public String getOnOverflowTruncate() {
+        return onOverflowTruncate;
+    }
+
+    public AnalyticExpression setOnOverflowTruncate(String onOverflowTruncate) {
+        this.onOverflowTruncate = onOverflowTruncate;
+        return this;
     }
 
     public KeepExpression getKeep() {
@@ -292,6 +304,10 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         if (funcOrderBy != null) {
             b.append(" ORDER BY ");
             b.append(funcOrderBy.stream().map(OrderByElement::toString).collect(joining(", ")));
+        }
+
+        if (onOverflowTruncate != null) {
+            b.append(" ON OVERFLOW ").append(onOverflowTruncate);
         }
 
         if (limit != null) {
