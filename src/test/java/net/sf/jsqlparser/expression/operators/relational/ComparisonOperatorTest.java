@@ -35,4 +35,12 @@ class ComparisonOperatorTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM foo WHERE a <& b");
         Assertions.assertInstanceOf(ContainedBy.class, CCJSqlParserUtil.parseExpression("a <& b"));
     }
+
+    @Test
+    void testCosineSimilarity() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT (embedding <=> '[3,1,2]') AS cosine_similarity FROM items;");
+        Assertions.assertInstanceOf(CosineSimilarity.class,
+                CCJSqlParserUtil.parseExpression("embedding <=> '[3,1,2]'"));
+    }
 }

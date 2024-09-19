@@ -4008,6 +4008,7 @@ Expression RegularCondition() #RegularCondition:
         | "-#" { result = new JsonOperator("-#"); }
         | "<->" { result = new GeometryDistance("<->"); }
         | "<#>" { result = new GeometryDistance("<#>"); }
+        | "<=>" { result = new CosineSimilarity(); }
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }

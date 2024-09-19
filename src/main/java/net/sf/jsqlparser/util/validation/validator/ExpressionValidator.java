@@ -85,6 +85,7 @@ import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.CosineSimilarity;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
@@ -1263,6 +1264,13 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(Inverse inverse) {
         visit(inverse, null);
+    }
+
+    @Override
+    public <S> Void visit(CosineSimilarity cosineSimilarity, S context) {
+        cosineSimilarity.getLeftExpression().accept(this, context);
+        cosineSimilarity.getRightExpression().accept(this, context);
+        return null;
     }
 
 }

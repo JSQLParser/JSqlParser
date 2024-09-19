@@ -84,6 +84,7 @@ import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.CosineSimilarity;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
@@ -1741,5 +1742,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(Inverse inverse, S context) {
         return buffer.append(inverse.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(CosineSimilarity cosineSimilarity, S context) {
+        deparse(cosineSimilarity,
+                " " + cosineSimilarity.getStringExpression() + " ", context);
+        return buffer;
     }
 }

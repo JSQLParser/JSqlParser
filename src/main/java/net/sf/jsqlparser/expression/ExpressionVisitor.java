@@ -27,6 +27,7 @@ import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.ContainedBy;
 import net.sf.jsqlparser.expression.operators.relational.Contains;
+import net.sf.jsqlparser.expression.operators.relational.CosineSimilarity;
 import net.sf.jsqlparser.expression.operators.relational.DoubleAnd;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExcludesExpression;
@@ -665,4 +666,6 @@ public interface ExpressionVisitor<T> {
     default void visit(Inverse inverse) {
         this.visit(inverse, null);
     }
+
+    <S> T visit(CosineSimilarity cosineSimilarity, S context);
 }
