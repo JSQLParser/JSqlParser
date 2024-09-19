@@ -11,6 +11,8 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
@@ -106,6 +108,29 @@ class JsonExpressionTest {
                         + "     ) table_a\n"
                         + "GROUP BY 1, 2, 3";
 
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT ( JSONB_AGG(variables) " +
+                    "   FILTER (WHERE variables IS NOT NULL) " +
+                    "   OVER (PARTITION BY deviceid ORDER BY time)->>-1 )::JSONB AS variables\n" +
+                    "FROM devices\n" +
+                    ";",
+            "SELECT ( JSONB_AGG(variables) " +
+                    "       FILTER (WHERE variables IS NOT NULL) " +
+                    "       OVER (PARTITION BY deviceid ORDER BY time)->>(0-1) )::JSONB AS variables\n"
+                    +
+                    "FROM devices\n" +
+                    ";",
+            "SELECT ( JSONB_AGG(variables) " +
+                    "   FILTER (WHERE variables IS NOT NULL) " +
+                    "   OVER (PARTITION BY deviceid ORDER BY time)->>(jsonb_array_length(JSONB_AGG(variables) FILTER (WHERE variables IS NOT NULL) OVER (PARTITION BY deviceid ORDER BY time))-1) )::JSONB AS variables\n"
+                    +
+                    "FROM devices\n" +
+                    ";"})
+    void testIssue2054(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statements;
@@ -58,7 +59,7 @@ public class PostgresTest {
         PlainSelect plainSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         SelectItem<?> selectExpressionItem =
                 plainSelect.getSelectItems().get(0);
-        Assertions.assertEquals("'key'",
+        Assertions.assertEquals(new StringValue("key"),
                 selectExpressionItem.getExpression(JsonExpression.class).getIdent(0).getKey());
     }
 

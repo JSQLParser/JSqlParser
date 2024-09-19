@@ -4706,6 +4706,7 @@ Expression ArrayExpression(Expression obj): {
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
+    Expression expression = null;
     CastExpression castExpr = null;
     TimezoneExpression timezoneExpr = null;
     Expression timezoneRightExpr = null;
@@ -4718,7 +4719,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     boolean dateExpressionAllowed = true;
     ExpressionList list;
 
-    final List<Map.Entry<String, String>> jsonIdents = new ArrayList<Map.Entry<String, String>>();
+    final List<Map.Entry<Expression, String>> jsonIdents = new ArrayList<Map.Entry<Expression, String>>();
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -4846,14 +4847,17 @@ Expression PrimaryExpression() #PrimaryExpression:
     [
          LOOKAHEAD(2) (
             LOOKAHEAD(2) (
-                "->" ( token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->")); }
+                token="->" expression=Expression()
                 |
-                "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"->>")); }
+                token="->>" expression=Expression()
                 |
-                "#>" token=<S_CHAR_LITERAL> { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"#>")); }
+                token="#>" expression=Expression()
                 |
-                "#>>" token=<S_CHAR_LITERAL> { jsonIdents.add(new AbstractMap.SimpleEntry<String, String>(token.image,"#>>")); }
+                token="#>>" expression=Expression()
             )
+            {
+                jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
+            }
         )+
         retval = JsonExpression(retval, jsonIdents)
     ]
@@ -5083,8 +5087,9 @@ StructType StructType() #StruckType:
     }
 }
 
-JsonExpression JsonExpression(Expression expr, List<Map.Entry<String, String>> idents) : {
+JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String>> idents) : {
   JsonExpression result = new JsonExpression(expr, idents);
+  Expression expression;
   Token token;
   ColDataType type = null;
   CastExpression castExpr = null;
@@ -5111,15 +5116,18 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<String, String>> i
         }
 
         (
-            LOOKAHEAD(2) (
-                "->" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->");}
-                |
-                "->>" (token=<S_CHAR_LITERAL> | token=<S_LONG>) {result.addIdent(token.image,"->>");}
-                |
-                "#>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>");}
-                |
-                "#>>" token=<S_CHAR_LITERAL> {result.addIdent(token.image,"#>>");}
-            )
+             LOOKAHEAD(2) (
+                    token="->" expression=Expression()
+                    |
+                    token="->>" expression=Expression()
+                    |
+                    token="#>" expression=Expression()
+                    |
+                    token="#>>" expression=Expression()
+                )
+                {
+                    result.addIdent( expression, token.image );
+                }
         )*
     )*
 

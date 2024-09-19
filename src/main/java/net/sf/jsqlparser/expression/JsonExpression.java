@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 public class JsonExpression extends ASTNodeAccessImpl implements Expression {
-    private final List<Map.Entry<String, String>> idents = new ArrayList<>();
+    private final List<Map.Entry<Expression, String>> idents = new ArrayList<>();
     private Expression expr;
 
     public JsonExpression() {
@@ -29,7 +29,7 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         this.expr = expr;
     }
 
-    public JsonExpression(Expression expr, List<Map.Entry<String, String>> idents) {
+    public JsonExpression(Expression expr, List<Map.Entry<Expression, String>> idents) {
         this.expr = expr;
         this.idents.addAll(idents);
     }
@@ -47,26 +47,26 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         this.expr = expr;
     }
 
-    public void addIdent(String ident, String operator) {
+    public void addIdent(Expression ident, String operator) {
         idents.add(new AbstractMap.SimpleEntry<>(ident, operator));
     }
 
-    public void addAllIdents(Collection<Map.Entry<String, String>> idents) {
+    public void addAllIdents(Collection<Map.Entry<Expression, String>> idents) {
         this.idents.addAll(idents);
     }
 
-    public List<Map.Entry<String, String>> getIdentList() {
+    public List<Map.Entry<Expression, String>> getIdentList() {
         return idents;
     }
 
-    public Map.Entry<String, String> getIdent(int index) {
+    public Map.Entry<Expression, String> getIdent(int index) {
         return idents.get(index);
     }
 
     @Deprecated
-    public List<String> getIdents() {
-        ArrayList<String> l = new ArrayList<>();
-        for (Map.Entry<String, String> ident : idents) {
+    public List<Expression> getIdents() {
+        ArrayList<Expression> l = new ArrayList<>();
+        for (Map.Entry<Expression, String> ident : idents) {
             l.add(ident.getKey());
         }
 
@@ -76,7 +76,7 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
     @Deprecated
     public List<String> getOperators() {
         ArrayList<String> l = new ArrayList<>();
-        for (Map.Entry<String, String> ident : idents) {
+        for (Map.Entry<Expression, String> ident : idents) {
             l.add(ident.getValue());
         }
         return l;
@@ -86,7 +86,7 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(expr.toString());
-        for (Map.Entry<String, String> ident : idents) {
+        for (Map.Entry<Expression, String> ident : idents) {
             b.append(ident.getValue()).append(ident.getKey());
         }
         return b.toString();
