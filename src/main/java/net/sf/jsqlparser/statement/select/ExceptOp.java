@@ -13,7 +13,47 @@ import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 public class ExceptOp extends SetOperation {
 
+    private boolean distinct;
+    private boolean all;
+
     public ExceptOp() {
         super(SetOperationType.EXCEPT);
+    }
+
+    public boolean isAll() {
+        return all;
+    }
+
+    public void setAll(boolean all) {
+        this.all = all;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    @Override
+    public String toString() {
+        String allDistinct = "";
+        if (isAll()) {
+            allDistinct = " ALL";
+        } else if (isDistinct()) {
+            allDistinct = " DISTINCT";
+        }
+        return super.toString() + allDistinct;
+    }
+
+    public ExceptOp withDistinct(boolean distinct) {
+        this.setDistinct(distinct);
+        return this;
+    }
+
+    public ExceptOp withAll(boolean all) {
+        this.setAll(all);
+        return this;
     }
 }
