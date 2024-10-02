@@ -56,6 +56,7 @@ public class ParserKeywordsUtils {
             {"CHECK", RESTRICTED_SQL2016},
             {"CONNECT", RESTRICTED_ALIAS},
             {"CONNECT_BY_ROOT", RESTRICTED_JSQLPARSER},
+            {"PRIOR", RESTRICTED_JSQLPARSER},
             {"CONSTRAINT", RESTRICTED_SQL2016},
             {"CREATE", RESTRICTED_ALIAS},
             {"CROSS", RESTRICTED_SQL2016},

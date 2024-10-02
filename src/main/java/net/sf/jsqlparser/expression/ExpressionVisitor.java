@@ -557,6 +557,12 @@ public interface ExpressionVisitor<T> {
         this.visit(connectByRootOperator, null);
     }
 
+    <S> T visit(ConnectByPriorOperator connectByPriorOperator, S context);
+
+    default void visit(ConnectByPriorOperator connectByPriorOperator) {
+        this.visit(connectByPriorOperator, null);
+    }
+
     <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context);
 
     default void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {

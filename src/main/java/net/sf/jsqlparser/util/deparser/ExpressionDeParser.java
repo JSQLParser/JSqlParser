@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
+import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -1580,6 +1581,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public <S> StringBuilder visit(ConnectByRootOperator connectByRootOperator, S context) {
         buffer.append("CONNECT_BY_ROOT ");
         connectByRootOperator.getColumn().accept(this, context);
+        return buffer;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ConnectByPriorOperator connectByPriorOperator, S context) {
+        buffer.append("PRIOR ");
+        connectByPriorOperator.getColumn().accept(this, context);
         return buffer;
     }
 
