@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
+import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -1011,6 +1012,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(ConnectByRootOperator connectByRootOperator, S context) {
         connectByRootOperator.getColumn().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ConnectByPriorOperator connectByPriorOperator, S context) {
+        connectByPriorOperator.getColumn().accept(this, context);
         return null;
     }
 

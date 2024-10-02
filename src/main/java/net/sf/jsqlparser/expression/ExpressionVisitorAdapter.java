@@ -704,6 +704,11 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(ConnectByPriorOperator connectByPriorOperator, S context) {
+        return connectByPriorOperator.getColumn().accept(this, context);
+    }
+
+    @Override
     public <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         return oracleNamedFunctionParameter.getExpression().accept(this, context);
     }

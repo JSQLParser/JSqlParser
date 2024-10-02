@@ -2749,6 +2749,8 @@ SelectItem<?> SelectItem() #SelectItem:
     (
         expression = AllColumns()
         |
+        expression = ConnectByPriorOperator()
+        |
         LOOKAHEAD(AllTableColumns()) expression = AllTableColumns()
         |
         LOOKAHEAD( 3 ) expression = XorExpression()
@@ -4898,6 +4900,17 @@ ConnectByRootOperator ConnectByRootOperator() #ConnectByRootOperator: {
       return new ConnectByRootOperator(column);
     }
 }
+
+ConnectByPriorOperator ConnectByPriorOperator() #ConnectByPriorOperator: {
+    Column column;
+}
+{
+    <K_PRIOR> column = Column()
+    {
+      return new ConnectByPriorOperator(column);
+    }
+}
+
 
 NextValExpression NextValExpression() : {
     ObjectNames data = null;
