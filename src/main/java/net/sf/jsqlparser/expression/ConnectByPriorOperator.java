@@ -39,7 +39,7 @@ public class ConnectByPriorOperator extends ASTNodeAccessImpl implements Express
 
     public ConnectByPriorOperator(Column column) {
         this.column = Objects.requireNonNull(column,
-                "The COLUMN of the ConnectByRoot Operator must not be null");
+                "The COLUMN of the ConnectByPrior Operator must not be null");
     }
 
     public Column getColumn() {
