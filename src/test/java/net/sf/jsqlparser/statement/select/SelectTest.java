@@ -3055,10 +3055,11 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    // PRIOR is a reserved keyword in Oracle
     @Test
     public void testReservedKeyword3() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "SELECT * FROM mytable1 t JOIN mytable2 AS prior ON t.id = prior.id");
+                "SELECT * FROM mytable1 t JOIN mytable2 AS \"prior\" ON t.id = \"prior\".id");
     }
 
     @Test

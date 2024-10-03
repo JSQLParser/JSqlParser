@@ -29,6 +29,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | CONNECT_BY_ROOT      | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| PRIOR                | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | CONSTRAINT           | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | CREATE               | Yes         |           | 
@@ -146,6 +148,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | PLUS                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | PREFERRING           | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| PRIOR                | Yes         |           | 
 +----------------------+-------------+-----------+
 | PROCEDURE            | Yes         |           | 
 +----------------------+-------------+-----------+

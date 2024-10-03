@@ -116,6 +116,7 @@ public class ParserKeywordsUtils {
             {"PIVOT", RESTRICTED_JSQLPARSER},
             {"PLUS", RESTRICTED_JSQLPARSER},
             {"PREFERRING", RESTRICTED_JSQLPARSER},
+            {"PRIOR", RESTRICTED_ALIAS},
             {"PROCEDURE", RESTRICTED_ALIAS},
             {"PUBLIC", RESTRICTED_ALIAS},
             {"RETURNING", RESTRICTED_JSQLPARSER},
