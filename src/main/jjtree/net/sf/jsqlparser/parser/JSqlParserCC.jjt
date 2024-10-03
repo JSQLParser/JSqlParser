@@ -2612,11 +2612,21 @@ Select SetOperationList(Select select) #SetOperationList: {
                 [ <K_ALL> { union.setAll(true); } | <K_DISTINCT> { union.setDistinct(true); } ]
             )
             |
-            <K_INTERSECT> { operations.add(new IntersectOp()); }
+            (
+                <K_INTERSECT> { IntersectOp intersect = new IntersectOp(); linkAST(intersect,jjtThis); operations.add(intersect); }
+                [ <K_ALL> { intersect.setAll(true); } | <K_DISTINCT> { intersect.setDistinct(true); } ]
+            )
             |
-            <K_MINUS> { operations.add(new MinusOp()); }
+            ( 
+                <K_MINUS> { MinusOp minus = new MinusOp(); linkAST(minus,jjtThis); operations.add(minus); }
+                [ <K_ALL> { minus.setAll(true); } | <K_DISTINCT> { minus.setDistinct(true); } ]
+            )
             |
-            <K_EXCEPT> { operations.add(new ExceptOp()); }
+            (
+                <K_EXCEPT> { ExceptOp except = new ExceptOp(); linkAST(except,jjtThis); operations.add(except); }
+                [ <K_ALL> { except.setAll(true); } | <K_DISTINCT> { except.setDistinct(true); } ]
+            )
+           
         )
 
         (
