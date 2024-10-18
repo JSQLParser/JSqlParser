@@ -20,4 +20,12 @@ class AliasTest {
         String sqlStr = "select udtf_1(words) as (a1, a2) from tab";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testLateralViewMultipleColumns() throws JSQLParserException {
+        String sqlStr = "SELECT k, v \n" +
+                "FROM table \n" +
+                "LATERAL VIEW EXPLODE(a) exploded_data AS k, v;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

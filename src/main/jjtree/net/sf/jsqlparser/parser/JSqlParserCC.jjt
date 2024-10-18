@@ -2314,9 +2314,15 @@ LateralView LateralView() #LateralView:
             tableAlias = new Alias(tableName, false);
         }
     ]
-    <K_AS> columnName = RelObjectNameWithoutStart()
+    <K_AS> columnName = RelObjectNameWithoutStart() { columnAlias = new Alias(columnName, true); }
+
+    // Spark SQL supports multiple Alias Columns: https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-lateral-view.html
+    // we simulate this by setting the alias name to null and then just adding the columns
+    [
+        LOOKAHEAD(2) ","  { columnAlias.setName(null);  columnAlias.addAliasColumns( columnName); }
+        columnName = RelObjectNameWithoutStart() { columnAlias.addAliasColumns( columnName); }
+    ]
     {
-        columnAlias = new Alias(columnName, true);
         return new LateralView(
             useOuter
             , generatorFunction

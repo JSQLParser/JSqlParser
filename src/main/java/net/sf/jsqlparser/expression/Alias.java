@@ -65,7 +65,7 @@ public class Alias implements Serializable {
 
     @Override
     public String toString() {
-        String alias = (useAs ? " AS " : " ") + name;
+        String alias = (useAs ? " AS " : " ") + (name != null ? name : "");
 
         if (aliasColumns != null && !aliasColumns.isEmpty()) {
             StringBuilder ac = new StringBuilder();
@@ -75,10 +75,10 @@ public class Alias implements Serializable {
                 }
                 ac.append(col.name);
                 if (col.colDataType != null) {
-                    ac.append(" ").append(col.colDataType.toString());
+                    ac.append(" ").append(col.colDataType);
                 }
             }
-            alias += "(" + ac + ")";
+            alias += name != null ? "(" + ac + ")" : ac;
         }
 
         return alias;
@@ -97,6 +97,16 @@ public class Alias implements Serializable {
     public Alias withAliasColumns(List<AliasColumn> aliasColumns) {
         this.setAliasColumns(aliasColumns);
         return this;
+    }
+
+
+    public Alias addAliasColumns(String... columnNames) {
+        List<AliasColumn> collection =
+                Optional.ofNullable(getAliasColumns()).orElseGet(ArrayList::new);
+        for (String columnName : columnNames) {
+            collection.add(new AliasColumn(columnName));
+        }
+        return this.withAliasColumns(collection);
     }
 
     public Alias addAliasColumns(AliasColumn... aliasColumns) {
