@@ -20,6 +20,15 @@ import java.util.Optional;
 import net.sf.jsqlparser.schema.MultiPartName;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
+/**
+ * The type Alias for Tables, Columns or Views.
+ *
+ * We support three different types:
+ * 1) Simple String: `SELECT 1 AS "ALIAS"` when NAME is set and aliasColumns has no elements
+ * 2) UDF Aliases: `SELECT udf(1,2,3) AS "Alias(a,b,c)"` " when NAME!=null and aliasColumns has elements
+ * 3) Column lists for LATERAL VIEW: `SELECT * from a LATERAL VIEW EXPLODE ... AS a, b, c`, when NAME is NULL and aliasColumns has elements
+ * @see <a href="https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-lateral-view.html">Spark LATERAL VIEW</a>
+ */
 public class Alias implements Serializable {
 
     private String name;
