@@ -1061,4 +1061,40 @@ public class AlterTest {
                 "ALTER TABLE `foo_bar` ADD COLUMN `baz` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL";
         assertSqlCanBeParsedAndDeparsed(sqlLongText);
     }
+
+    @Test
+    public void testIssue2090LockNone() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE sbtest1 MODIFY COLUMN pad_3 VARCHAR(20) DEFAULT NULL, ALGORITHM=INPLACE, LOCK=NONE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(3, alterExpressions.size());
+
+        AlterExpression lockExp = alterExpressions.get(2);
+        assertEquals(AlterOperation.LOCK, lockExp.getOperation());
+        assertEquals("NONE", lockExp.getLockOption());
+    }
+
+    @Test
+    public void testIssue2090LockExclusive() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE sbtest1 MODIFY COLUMN pad_3 VARCHAR(20) DEFAULT NULL, ALGORITHM=INPLACE, LOCK=EXCLUSIVE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(3, alterExpressions.size());
+
+        AlterExpression lockExp = alterExpressions.get(2);
+        assertEquals(AlterOperation.LOCK, lockExp.getOperation());
+        assertEquals("EXCLUSIVE", lockExp.getLockOption());
+    }
 }

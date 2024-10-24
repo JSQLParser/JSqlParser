@@ -57,6 +57,7 @@ public class AlterExpression implements Serializable {
 
     private List<ConstraintState> constraints;
     private List<String> parameters;
+    private String lockOption;
     private String commentText;
 
     private boolean hasColumn = false;
@@ -393,6 +394,14 @@ public class AlterExpression implements Serializable {
 
     public List<String> getParameters() {
         return parameters;
+    }
+
+    public String getLockOption() {
+        return lockOption;
+    }
+
+    public void setLockOption(String lockOption) {
+        this.lockOption = lockOption;
     }
 
     public boolean getUseEqual() {
