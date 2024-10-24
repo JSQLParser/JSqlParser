@@ -60,6 +60,7 @@ public class AlterExpression implements Serializable {
     private String commentText;
 
     private boolean hasColumn = false;
+    private boolean hasColumns = false;
 
 
     private boolean useBrackets = false;
@@ -80,6 +81,10 @@ public class AlterExpression implements Serializable {
         return hasColumn;
     }
 
+    public boolean hasColumns() {
+        return hasColumns;
+    }
+
     public boolean useBrackets() {
         return useBrackets;
     }
@@ -90,6 +95,10 @@ public class AlterExpression implements Serializable {
 
     public void hasColumn(boolean hasColumn) {
         this.hasColumn = hasColumn;
+    }
+
+    public void hasColumns(boolean hasColumns) {
+        this.hasColumns = hasColumns;
     }
 
     public String getFkSourceSchema() {
@@ -503,6 +512,8 @@ public class AlterExpression implements Serializable {
                 } else {
                     if (hasColumn) {
                         b.append("COLUMN ");
+                    } else if (hasColumns) {
+                        b.append("COLUMNS ");
                     }
                     if (useIfNotExists
                             && operation == AlterOperation.ADD) {

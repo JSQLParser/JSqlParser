@@ -55,6 +55,23 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddColumnsWhitespace() throws JSQLParserException {
+        Statement stmt =
+                CCJSqlParserUtil.parse(
+                        "ALTER TABLE test_catalog.test20241014.tt ADD COLUMNS (apples string, bees int)");
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        assertEquals("test_catalog.test20241014.tt", alter.getTable().getFullyQualifiedName());
+        AlterExpression alterExp = alter.getAlterExpressions().get(0);
+        assertNotNull(alterExp);
+        List<ColumnDataType> colDataTypes = alterExp.getColDataTypeList();
+        assertEquals("apples", colDataTypes.get(0).getColumnName());
+        assertEquals("string", colDataTypes.get(0).getColDataType().toString());
+        assertEquals("bees", colDataTypes.get(1).getColumnName());
+        assertEquals("int", colDataTypes.get(1).getColDataType().toString());
+    }
+
+    @Test
     public void testAlterTableAddColumn_ColumnKeyWordImplicit() throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse("ALTER TABLE mytable ADD mycolumn varchar (255)");
         assertTrue(stmt instanceof Alter);
