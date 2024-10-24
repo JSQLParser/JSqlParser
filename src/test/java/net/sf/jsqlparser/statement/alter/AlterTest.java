@@ -840,7 +840,7 @@ public class AlterTest {
     }
 
     private void assertReferentialActionOnConstraint(Alter parsed, Action onUpdate,
-                                                     Action onDelete) {
+            Action onDelete) {
         AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
         ForeignKeyIndex index = (ForeignKeyIndex) alterExpression.getIndex();
 
