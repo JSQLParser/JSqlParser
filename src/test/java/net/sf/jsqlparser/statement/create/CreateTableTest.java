@@ -1059,4 +1059,18 @@ public class CreateTableTest {
                 + " CHARACTER SET armscii8 COLLATE armscii8_bin NULL DEFAULT NULL FIRST";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testUniqueAfterForeignKeyIssue2082() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE employees (\n" +
+                        "employee_number    int         NOT NULL\n" +
+                        ", employee_name    char (50)   NOT NULL\n" +
+                        ", department_id    int\n" +
+                        ", salary           int\n" +
+                        ", PRIMARY KEY (employee_number)\n" +
+                        ", FOREIGN KEY (department_id) REFERENCES departments(id)\n" +
+                        ", UNIQUE (employee_name));";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
