@@ -7322,6 +7322,11 @@ AlterExpression AlterExpression():
         (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
       )
       |
+      (<K_CONVERT> { alterExp.setOperation(AlterOperation.CONVERT); }
+        <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
+        [<K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+        )
+      |
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }

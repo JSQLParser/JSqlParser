@@ -1097,4 +1097,41 @@ public class AlterTest {
         assertEquals(AlterOperation.LOCK, lockExp.getOperation());
         assertEquals("EXCLUSIVE", lockExp.getLockOption());
     }
+
+    @Test
+    public void testIssue2089() throws JSQLParserException {
+        String sql = "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        assertEquals("test_table", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression convertExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
+        assertEquals("utf8mb4", convertExp.getCharacterSet());
+        assertNull(convertExp.getCollation());
+    }
+
+    @Test
+    public void testIssue2089WithCollation() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        assertEquals("test_table", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression convertExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
+        assertEquals("utf8mb4", convertExp.getCharacterSet());
+        assertEquals("utf8mb4_general_ci", convertExp.getCollation());
+    }
 }
