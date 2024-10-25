@@ -57,6 +57,8 @@ public class AlterExpression implements Serializable {
 
     private List<ConstraintState> constraints;
     private List<String> parameters;
+    private String characterSet;
+    private String collation;
     private String lockOption;
     private String commentText;
 
@@ -394,6 +396,22 @@ public class AlterExpression implements Serializable {
 
     public List<String> getParameters() {
         return parameters;
+    }
+
+    public String getCharacterSet() {
+        return characterSet;
+    }
+
+    public void setCharacterSet(String characterSet) {
+        this.characterSet = characterSet;
+    }
+
+    public String getCollation() {
+        return collation;
+    }
+
+    public void setCollation(String collation) {
+        this.collation = collation;
     }
 
     public String getLockOption() {
