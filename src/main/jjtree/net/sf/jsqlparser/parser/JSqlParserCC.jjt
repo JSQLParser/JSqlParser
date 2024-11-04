@@ -4859,7 +4859,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     [
          LOOKAHEAD(2) (
             LOOKAHEAD(2) (
-                token="->" expression=Expression()
+                ( token="->" | token=":" /*Snowflake GET_PATH Operator*/ ) expression=Expression()
                 |
                 token="->>" expression=Expression()
                 |
@@ -5140,7 +5140,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
 
         (
              LOOKAHEAD(2) (
-                    token="->" expression=Expression()
+                    ( token="->" | token=":" /*Snowflake GET_PATH Operator*/ ) expression=Expression()
                     |
                     token="->>" expression=Expression()
                     |

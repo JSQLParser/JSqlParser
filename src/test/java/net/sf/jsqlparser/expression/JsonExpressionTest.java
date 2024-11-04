@@ -19,7 +19,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 class JsonExpressionTest {
 
     @Test
-    void testIssue1792() throws JSQLParserException, InterruptedException {
+    void testIssue1792() throws JSQLParserException {
         String sqlStr =
                 "SELECT ''::JSON -> 'obj'::TEXT";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
@@ -34,6 +34,12 @@ class JsonExpressionTest {
                         + "    WHEN true\n"
                         + "    THEN (SELECT ((('{\"obj\":{\"field\": \"value\"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT))))\n"
                         + " END";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testSnowflakeGetOperator() throws JSQLParserException {
+        String sqlStr = "SELECT v:'attr[0].name' FROM vartab;";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
