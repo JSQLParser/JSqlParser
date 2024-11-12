@@ -1,8 +1,9 @@
 package net.sf.jsqlparser.statement.create.table;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PartitionDefinition {
+public class PartitionDefinition implements Serializable {
     private String partitionName;
     private String partitionOperation;
     private List<String> values;
