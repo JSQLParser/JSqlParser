@@ -9,16 +9,6 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -31,12 +21,16 @@ import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.table.CheckConstraint;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
-import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
 
@@ -1133,5 +1127,83 @@ public class AlterTest {
         assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
         assertEquals("utf8mb4", convertExp.getCharacterSet());
         assertEquals("utf8mb4_general_ci", convertExp.getCollation());
+    }
+
+    @Test
+    public void testIssue2106AlterTableAddPartition1() throws JSQLParserException {
+        String sql = "ALTER TABLE t1 ADD PARTITION (PARTITION p3 VALUES LESS THAN (2002));";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD_PARTITION, partitionExp.getOperation());
+        List<PartitionDefinition> partitionDefinitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitionDefinitions);
+        assertEquals(1, partitionDefinitions.size());
+
+        PartitionDefinition partitionDef = partitionDefinitions.get(0);
+        assertEquals("p3", partitionDef.getPartitionName());
+        assertEquals("VALUES LESS THAN", partitionDef.getPartitionOperation());
+        assertEquals(Collections.singletonList("2002"), partitionDef.getValues());
+    }
+
+    @Test
+    public void testIssue2106AlterTableAddPartition2() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE mtk_seat_state_hist ADD PARTITION (PARTITION SEAT_HIST_202004 VALUES LESS THAN ('2020-05-01'), PARTITION SEAT_HIST_202005 VALUES LESS THAN ('2020-06-01'), PARTITION SEAT_HIST_202006 VALUES LESS THAN ('2020-07-01'));";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD_PARTITION, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(3, partitions.size());
+
+        assertEquals("SEAT_HIST_202004", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("'2020-05-01'"), partitions.get(0).getValues());
+
+        assertEquals("SEAT_HIST_202005", partitions.get(1).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
+        assertEquals(Collections.singletonList("'2020-06-01'"), partitions.get(1).getValues());
+
+        assertEquals("SEAT_HIST_202006", partitions.get(2).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(2).getPartitionOperation());
+        assertEquals(Collections.singletonList("'2020-07-01'"), partitions.get(2).getValues());
+    }
+
+    @Test
+    public void testIssue2106AlterTableAddPartition3() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE employees ADD PARTITION (PARTITION p5 VALUES LESS THAN (2010), PARTITION p6 VALUES LESS THAN MAXVALUE);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD_PARTITION, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(2, partitions.size());
+
+        assertEquals("p5", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("2010"), partitions.get(0).getValues());
+
+        assertEquals("p6", partitions.get(1).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
+        assertEquals(Collections.singletonList("MAXVALUE"), partitions.get(1).getValues());
     }
 }
