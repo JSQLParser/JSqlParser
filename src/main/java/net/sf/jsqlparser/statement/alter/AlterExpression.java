@@ -9,23 +9,17 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+
+import java.io.Serializable;
+import java.util.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
@@ -55,6 +49,7 @@ public class AlterExpression implements Serializable {
     private boolean uk;
     private boolean useEqual;
 
+    private List<PartitionDefinition> partitionDefinitions;
     private List<ConstraintState> constraints;
     private List<String> parameters;
     private String characterSet;
@@ -787,6 +782,14 @@ public class AlterExpression implements Serializable {
                 Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
         collection.addAll(constraints);
         return this.withConstraints(collection);
+    }
+
+    public List<PartitionDefinition> getPartitionDefinitions() {
+        return partitionDefinitions;
+    }
+
+    public void setPartitionDefinitions(List<PartitionDefinition> partitionDefinition) {
+        this.partitionDefinitions = partitionDefinition;
     }
 
     public static final class ColumnDataType extends ColumnDefinition {
