@@ -7436,7 +7436,10 @@ AlterExpression AlterExpression():
            }
           )
       |
-      LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); } truncatePartitionName = RelObjectName() { alterExp.setTruncatePartitionName(truncatePartitionName); }
+      LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); }
+       partitions=PartitionNamesList() {
+           alterExp.setPartitions(partitions);
+       }
       |
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);

@@ -1252,4 +1252,27 @@ public class AlterTest {
         assertEquals("p202009", partitionNames.get(2));
         assertEquals("p202010", partitionNames.get(3));
     }
+
+    @Test
+    public void testIssue2106AlterTableTruncatePartition() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE dkpg_payments TRUNCATE PARTITION p201701, p201707, p201801, p201807";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.TRUNCATE_PARTITION, partitionExp.getOperation());
+        List<String> partitionNames = partitionExp.getPartitions();
+        assertNotNull(partitionNames);
+        assertEquals(4, partitionNames.size());
+
+        assertEquals("p201701", partitionNames.get(0));
+        assertEquals("p201707", partitionNames.get(1));
+        assertEquals("p201801", partitionNames.get(2));
+        assertEquals("p201807", partitionNames.get(3));
+    }
 }
