@@ -7060,6 +7060,26 @@ List<PartitionDefinition> PartitionDefinitions():
     }
 }
 
+
+List<String> PartitionNamesList() :
+{
+    Token tk;
+    List<String> partitionNames = new ArrayList<String>();
+}
+{
+    tk = <S_IDENTIFIER> {
+        partitionNames.add(tk.image);
+    }
+    (
+        "," tk = <S_IDENTIFIER> {
+            partitionNames.add(tk.image);
+        }
+    )*
+    {
+        return partitionNames;
+    }
+}
+
 /**
 * This production needs refactoring to multiple smaller productions. The target class should
 * be splitted as well.
@@ -7081,6 +7101,7 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
     ReferentialAction.Action action = null;
+    List<String> partitions = null;
     List<PartitionDefinition> partitionDefinition = null;
     String truncatePartitionName = null;
 
@@ -7126,7 +7147,6 @@ AlterExpression AlterExpression():
                 |
                 (
                     <K_PARTITION> {
-                        System.out.println("test _ Partition");
                         alterExp.setOperation(AlterOperation.ADD_PARTITION);
                     }
                     partitionDefinition=PartitionDefinitions() {
@@ -7296,6 +7316,15 @@ AlterExpression AlterExpression():
       |
         <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
         (
+            (
+                <K_PARTITION> {
+                    alterExp.setOperation(AlterOperation.DROP_PARTITION);
+                }
+                partitions=PartitionNamesList() {
+                    alterExp.setPartitions(partitions);
+                }
+            )
+            |
             (
                 (
                     // we use the PK Columns Field instead of the Column Field

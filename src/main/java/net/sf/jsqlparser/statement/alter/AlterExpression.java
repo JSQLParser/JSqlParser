@@ -49,6 +49,15 @@ public class AlterExpression implements Serializable {
     private boolean uk;
     private boolean useEqual;
 
+    public List<String> getPartitions() {
+        return partitions;
+    }
+
+    public void setPartitions(List<String> partitions) {
+        this.partitions = partitions;
+    }
+
+    private List<String> partitions;
     private List<PartitionDefinition> partitionDefinitions;
     private List<ConstraintState> constraints;
     private List<String> parameters;
