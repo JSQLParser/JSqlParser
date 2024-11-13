@@ -1206,4 +1206,27 @@ public class AlterTest {
         assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
         assertEquals(Collections.singletonList("MAXVALUE"), partitions.get(1).getValues());
     }
+
+    @Test
+    public void testIssue2106AlterTableAddPartitionCodeTransaction() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE `code_transaction` ADD PARTITION (PARTITION p202108 VALUES LESS THAN ('20210901') ENGINE = InnoDB);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD_PARTITION, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(1, partitions.size());
+
+        assertEquals("p202108", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("'20210901'"), partitions.get(0).getValues());
+        assertEquals("InnoDB", partitions.get(0).getStorageEngine());
+    }
 }

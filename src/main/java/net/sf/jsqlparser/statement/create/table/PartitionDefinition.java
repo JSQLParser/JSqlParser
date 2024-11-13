@@ -7,12 +7,14 @@ public class PartitionDefinition implements Serializable {
     private String partitionName;
     private String partitionOperation;
     private List<String> values;
+    private String storageEngine;
 
     public PartitionDefinition(String partitionName, String partitionOperation,
-            List<String> values) {
+            List<String> values, String storageEngine) {
         this.partitionName = partitionName;
         this.partitionOperation = partitionOperation;
         this.values = values;
+        this.storageEngine = storageEngine;
     }
 
     public String getPartitionName() {
@@ -37,5 +39,13 @@ public class PartitionDefinition implements Serializable {
 
     public void setValues(List<String> values) {
         this.values = values;
+    }
+
+    public String getStorageEngine() {
+        return storageEngine;
+    }
+
+    public void setStorageEngine(String storageEngine) {
+        this.storageEngine = storageEngine;
     }
 }
