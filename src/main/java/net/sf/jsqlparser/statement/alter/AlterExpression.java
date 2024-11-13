@@ -49,14 +49,6 @@ public class AlterExpression implements Serializable {
     private boolean uk;
     private boolean useEqual;
 
-    public List<String> getPartitions() {
-        return partitions;
-    }
-
-    public void setPartitions(List<String> partitions) {
-        this.partitions = partitions;
-    }
-
     private List<String> partitions;
     private List<PartitionDefinition> partitionDefinitions;
     private List<ConstraintState> constraints;
@@ -776,6 +768,14 @@ public class AlterExpression implements Serializable {
                 Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
         collection.addAll(constraints);
         return this.withConstraints(collection);
+    }
+
+    public List<String> getPartitions() {
+        return partitions;
+    }
+
+    public void setPartitions(List<String> partitions) {
+        this.partitions = partitions;
     }
 
     public List<PartitionDefinition> getPartitionDefinitions() {
