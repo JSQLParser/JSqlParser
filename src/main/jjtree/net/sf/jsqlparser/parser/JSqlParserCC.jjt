@@ -6696,6 +6696,7 @@ List<String> CreateParameter():
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START>
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+            | tk=<K_ENGINE>
             | tk="="
         )
         { param.add(tk.image); }
