@@ -5,14 +5,6 @@ Unsupported Grammar of various RDBMS
 *JSQLParser* is a RDBMS agnostic parser with a certain focus on SQL:2016 Standard compliant Queries and the "Big Four" (Oracle, MS SQL Server, Postgres, MySQL/MariaDB).
 We would like to recommend writing portable, standard compliant  SQL in general.
 
-- Postgres Implicit cast is not supported.
-    
-    .. code-block:: java
-
-        SELECT date '2022-12-31';
-        SELECT double precision 1;
-
-
 - Oracle PL/SQL blocks are not support.
     
     .. code-block:: sql
@@ -39,10 +31,6 @@ We would like to recommend writing portable, standard compliant  SQL in general.
 - DDL statements
 
     While *JSQLParser* provides a lot of generic support for DDL statements, it is possible that certain RDBMS specific syntax (especially about indices, encodings, compression) won't be supported.
-
-- `JSON` or `XML` specific syntax and functions
-
-    While *JSQLParser* provides a lot of generic support for `JSON` or `XML` processing, it is possible that certain RDBMS specific syntax or functions won't be supported.
 
 - Interval Operators
 
