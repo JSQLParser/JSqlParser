@@ -157,6 +157,11 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(BooleanValue booleanValue, S context) {
+        return visitExpression(booleanValue, context);
+    }
+
+    @Override
     public <S> T visit(Addition addition, S context) {
         return visitBinaryExpression(addition, context);
     }
