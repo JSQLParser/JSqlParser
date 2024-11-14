@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
@@ -487,6 +488,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(BooleanValue booleanValue, S context) {
+        // nothing to validate
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Subtraction subtraction, S context) {
         visitBinaryExpression(subtraction, " - ");
         return null;
@@ -618,6 +625,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(StringValue stringValue) {
         visit(stringValue, null);
+    }
+
+    public void visit(BooleanValue booleanValue) {
+        visit(booleanValue, null);
     }
 
     public void visit(Subtraction subtraction) {

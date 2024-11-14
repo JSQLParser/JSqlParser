@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.update;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
@@ -36,6 +37,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static net.sf.jsqlparser.test.TestUtils.assertUpdateMysqlHintExists;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -550,4 +552,18 @@ public class UpdateTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
+    @Test
+    public void testUpdateWithBoolean() throws JSQLParserException {
+        String statement = "UPDATE mytable set col1='as', col2=true Where o >= 3";
+        Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
+        assertEquals("mytable", update.getTable().toString());
+        assertEquals(2, update.getUpdateSets().size());
+        assertEquals("col1", update.getUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("col2", update.getUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("as",
+                ((StringValue) update.getUpdateSets().get(0).getValues().get(0)).getValue());
+        assertInstanceOf(BooleanValue.class, update.getUpdateSets().get(1).getValues().get(0));
+        assertTrue(((BooleanValue) update.getUpdateSets().get(1).getValues().get(0)).getValue());
+        assertInstanceOf(GreaterThanEquals.class, update.getWhere());
+    }
 }

@@ -147,6 +147,12 @@ public interface ExpressionVisitor<T> {
         this.visit(stringValue, null);
     }
 
+    <S> T visit(BooleanValue booleanValue, S context);
+
+    default void visit(BooleanValue booleanValue) {
+        this.visit(booleanValue, null);
+    }
+
     <S> T visit(Addition addition, S context);
 
     default void visit(Addition addition) {
