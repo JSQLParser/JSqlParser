@@ -7071,7 +7071,7 @@ List<String> PartitionNamesList() :
         partitionNames.add(tk.image);
     }
     (
-        "," tk = <S_IDENTIFIER> {
+        LOOKAHEAD(2) "," tk = <S_IDENTIFIER> {
             partitionNames.add(tk.image);
         }
     )*
@@ -7145,7 +7145,7 @@ AlterExpression AlterExpression():
                   sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
                 )
                 |
-                (
+                LOOKAHEAD(3) (
                     <K_PARTITION> {
                         alterExp.setOperation(AlterOperation.ADD_PARTITION);
                     }
