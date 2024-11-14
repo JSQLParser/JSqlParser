@@ -1206,4 +1206,73 @@ public class AlterTest {
         assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
         assertEquals(Collections.singletonList("MAXVALUE"), partitions.get(1).getValues());
     }
+
+    @Test
+    public void testIssue2106AlterTableAddPartitionCodeTransaction() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE `code_transaction` ADD PARTITION (PARTITION p202108 VALUES LESS THAN ('20210901') ENGINE = InnoDB);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD_PARTITION, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(1, partitions.size());
+
+        assertEquals("p202108", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("'20210901'"), partitions.get(0).getValues());
+        assertEquals("InnoDB", partitions.get(0).getStorageEngine());
+    }
+
+    @Test
+    public void testIssue2106AlterTableDropPartition() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE dkpg_payment_details DROP PARTITION p202007, p202008, p202009, p202010";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.DROP_PARTITION, partitionExp.getOperation());
+        List<String> partitionNames = partitionExp.getPartitions();
+        assertNotNull(partitionNames);
+        assertEquals(4, partitionNames.size());
+
+        assertEquals("p202007", partitionNames.get(0));
+        assertEquals("p202008", partitionNames.get(1));
+        assertEquals("p202009", partitionNames.get(2));
+        assertEquals("p202010", partitionNames.get(3));
+    }
+
+    @Test
+    public void testIssue2106AlterTableTruncatePartition() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE dkpg_payments TRUNCATE PARTITION p201701, p201707, p201801, p201807";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.TRUNCATE_PARTITION, partitionExp.getOperation());
+        List<String> partitionNames = partitionExp.getPartitions();
+        assertNotNull(partitionNames);
+        assertEquals(4, partitionNames.size());
+
+        assertEquals("p201701", partitionNames.get(0));
+        assertEquals("p201707", partitionNames.get(1));
+        assertEquals("p201801", partitionNames.get(2));
+        assertEquals("p201807", partitionNames.get(3));
+    }
 }

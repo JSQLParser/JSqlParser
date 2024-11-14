@@ -49,6 +49,7 @@ public class AlterExpression implements Serializable {
     private boolean uk;
     private boolean useEqual;
 
+    private List<String> partitions;
     private List<PartitionDefinition> partitionDefinitions;
     private List<ConstraintState> constraints;
     private List<String> parameters;
@@ -62,8 +63,6 @@ public class AlterExpression implements Serializable {
 
 
     private boolean useBrackets = false;
-
-    private String truncatePartitionName = null;
 
     private boolean useIfNotExists = false;
 
@@ -433,19 +432,6 @@ public class AlterExpression implements Serializable {
         this.uk = uk;
     }
 
-    public String getTruncatePartitionName() {
-        return truncatePartitionName;
-    }
-
-    public void setTruncatePartitionName(String truncatePartitionName) {
-        this.truncatePartitionName = truncatePartitionName;
-    }
-
-    public AlterExpression withTruncatePartitionName(String truncatePartitionName) {
-        this.truncatePartitionName = truncatePartitionName;
-        return this;
-    }
-
     public boolean isUseIfNotExists() {
         return useIfNotExists;
     }
@@ -499,8 +485,8 @@ public class AlterExpression implements Serializable {
             // Oracle Multi Column Drop
             b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (operation == AlterOperation.TRUNCATE_PARTITION
-                && truncatePartitionName != null) {
-            b.append("TRUNCATE PARTITION ").append(truncatePartitionName);
+                && partitions != null) {
+            b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
                 b.append("COMMENT =").append(" ");
@@ -782,6 +768,14 @@ public class AlterExpression implements Serializable {
                 Optional.ofNullable(getConstraints()).orElseGet(ArrayList::new);
         collection.addAll(constraints);
         return this.withConstraints(collection);
+    }
+
+    public List<String> getPartitions() {
+        return partitions;
+    }
+
+    public void setPartitions(List<String> partitions) {
+        this.partitions = partitions;
     }
 
     public List<PartitionDefinition> getPartitionDefinitions() {
