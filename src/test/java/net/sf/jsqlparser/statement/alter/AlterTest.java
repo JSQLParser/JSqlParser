@@ -1275,4 +1275,65 @@ public class AlterTest {
         assertEquals("p201801", partitionNames.get(2));
         assertEquals("p201807", partitionNames.get(3));
     }
+
+
+    @Test
+    public void testIssue2114AlterTableEncryption() throws JSQLParserException {
+        String sql = "ALTER TABLE confidential_data ENCRYPTION = 'Y'";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression encryptionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.SET_TABLE_OPTION, encryptionExp.getOperation());
+        assertEquals(encryptionExp.getTableOption(), "ENCRYPTION = 'Y'");
+    }
+
+    @Test
+    public void testIssue2114AlterTableEncryptionWithoutEqual() throws JSQLParserException {
+        String sql = "ALTER TABLE confidential_data ENCRYPTION 'N'";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression encryptionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.SET_TABLE_OPTION, encryptionExp.getOperation());
+        assertEquals(encryptionExp.getTableOption(), "ENCRYPTION 'N'");
+    }
+
+    @Test
+    public void testIssue2114AlterTableAutoIncrement() throws JSQLParserException {
+        String sql = "ALTER TABLE tt AUTO_INCREMENT = 101";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression autoIncrementExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.SET_TABLE_OPTION, autoIncrementExp.getOperation());
+        assertEquals(autoIncrementExp.getTableOption(), "AUTO_INCREMENT = 101");
+    }
+
+    @Test
+    public void testIssue2114AlterTableEngine() throws JSQLParserException {
+        String sql = "ALTER TABLE city2 ENGINE = InnoDB";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression engineExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.SET_TABLE_OPTION, engineExp.getOperation());
+        assertEquals(engineExp.getTableOption(), "ENGINE = InnoDB");
+    }
 }

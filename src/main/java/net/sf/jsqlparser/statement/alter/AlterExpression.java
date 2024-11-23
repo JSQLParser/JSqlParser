@@ -57,6 +57,7 @@ public class AlterExpression implements Serializable {
     private String collation;
     private String lockOption;
     private String commentText;
+    private String tableOption;
 
     private boolean hasColumn = false;
     private boolean hasColumns = false;
@@ -112,6 +113,14 @@ public class AlterExpression implements Serializable {
 
     public void setCommentText(String commentText) {
         this.commentText = commentText;
+    }
+
+    public String getTableOption() {
+        return tableOption;
+    }
+
+    public void setTableOption(String tableOption) {
+        this.tableOption = tableOption;
     }
 
     public AlterOperation getOperation() {
