@@ -6690,7 +6690,7 @@ List<String> CreateParameter():
         { param.add("TABLESPACE " + retval); }
         |
         (
-            tk=<S_CHAR_LITERAL> | tk=<K_NULL> | tk=<K_NOT> | tk=<K_PRIMARY> | tk=<K_FOREIGN>
+            tk=<S_CHAR_LITERAL> | tk=<K_NULL> | tk=<K_NOT> | tk=<K_AUTO_INCREMENT> | tk=<K_PRIMARY> | tk=<K_FOREIGN>
             | tk=<K_REFERENCES> | tk=<K_KEY> | tk=<K_STORED> | tk=<K_ON> | tk=<K_COMMIT> | tk=<K_DROP>
             | tk=<K_ROWS> | tk=<K_UNIQUE> | tk=<K_CASCADE> | tk=<K_DELETE> | tk=<K_UPDATE>
             | tk=<K_CONSTRAINT> | tk=<K_WITH> | tk=<K_EXCLUDE> | tk=<K_WHERE>
