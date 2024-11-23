@@ -1971,6 +1971,7 @@ MergeOperation MergeWhenNotMatched() : {
         { return mi; }
 }
 
+// table names seem to allow ":" delimiters, e.g. for Informix see #1134
 ObjectNames RelObjectNames() : {
     String token = null;
     Token delimiter = null;
@@ -1986,8 +1987,23 @@ ObjectNames RelObjectNames() : {
     { return new ObjectNames(data, delimiters); }
 }
 
-// See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
+// column names do not allow ":" delimeters as those represent JSON `GET` operators
+ObjectNames ColumnIdentifier() : {
+    String token = null;
+    Token delimiter = null;
+    List<String> data = new ArrayList<String>();
+    List<String> delimiters = new ArrayList<String>();
+} {
+    token = RelObjectNameExt() { data.add(token); }
+    (
+        LOOKAHEAD (2) ( delimiter = "." ) { delimiters.add(delimiter.image); } (( delimiter =  "." ) { data.add(null); delimiters.add(delimiter.image); })*
+        token = RelObjectNameExt2() { data.add(token); }
+    ) *
 
+    { return new ObjectNames(data, delimiters); }
+}
+
+// See: http://technet.microsoft.com/en-us/library/ms187879%28v=sql.105%29.aspx
 Column Column() #Column :
 {
     ObjectNames data = null;
@@ -1995,7 +2011,7 @@ Column Column() #Column :
     Token tk = null;
 }
 {
-    data = RelObjectNames()
+    data = ColumnIdentifier()
     [ LOOKAHEAD(2) <K_COMMENT> tk=<S_CHAR_LITERAL> ]
     // @todo: we better should return a SEQUENCE instead of a COLUMN
     [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
@@ -4788,7 +4804,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
-        | LOOKAHEAD( 3 , {!interrupted}) retval=StructType()
+        | LOOKAHEAD(3 , {!interrupted}) retval=StructType()
 
         | LOOKAHEAD(3, {!interrupted}) <K_ARRAY_LITERAL> retval=ArrayConstructor(true)
 
@@ -4801,6 +4817,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
+
+        | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
 
@@ -6752,7 +6770,7 @@ String AList():
      "("
 
      (
-       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL>) { retval.append(tk.image); }
+       ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<K_TRUE> | tk=<K_FALSE>) { retval.append(tk.image); }
          | (name=RelObjectNameWithoutValue()) { retval.append(name); })
        [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 

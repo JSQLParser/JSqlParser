@@ -53,6 +53,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | EXISTS               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| FALSE                | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FINAL                | Yes         | Yes       | 
@@ -178,6 +180,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | TOP                  | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | TRAILING             | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| TRUE                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | UNBOUNDED            | Yes         | Yes       | 
 +----------------------+-------------+-----------+

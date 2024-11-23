@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -40,7 +42,15 @@ class JsonExpressionTest {
     @Test
     void testSnowflakeGetOperator() throws JSQLParserException {
         String sqlStr = "SELECT v:'attr[0].name' FROM vartab;";
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());
+    }
+
+    @Test
+    void testDataBricksExtractPathOperator() throws JSQLParserException {
+        String sqlStr = "SELECT C1:PRICE J FROM VALUES('{\"price\":5}')AS T(C1)";
+        PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());
     }
 
     @Test

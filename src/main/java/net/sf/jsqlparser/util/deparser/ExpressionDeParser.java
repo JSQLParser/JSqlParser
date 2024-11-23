@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
@@ -622,6 +623,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(BooleanValue booleanValue, S context) {
+        buffer.append(booleanValue.getValue());
+
+        return buffer;
+    }
+
+    @Override
     public <S> StringBuilder visit(Subtraction subtraction, S context) {
         deparse(subtraction, " - ", null);
         return buffer;
@@ -747,6 +755,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     public void visit(StringValue stringValue) {
         visit(stringValue, null);
+    }
+
+    public void visit(BooleanValue booleanValue) {
+        visit(booleanValue, null);
     }
 
     public void visit(Subtraction subtraction) {

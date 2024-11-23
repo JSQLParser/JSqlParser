@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
@@ -622,6 +623,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(StringValue stringValue, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(BooleanValue booleanValue, S context) {
 
         return null;
     }
