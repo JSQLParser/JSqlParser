@@ -463,6 +463,8 @@ public class AlterExpression implements Serializable {
 
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
+        } else if (operation == AlterOperation.SET_TABLE_OPTION) {
+            b.append(tableOption);
         } else if (getOldIndex() != null) {
             b.append("RENAME");
             switch (operation) {

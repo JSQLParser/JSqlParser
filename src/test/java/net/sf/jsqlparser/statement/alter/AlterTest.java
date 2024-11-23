@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
@@ -1290,6 +1291,8 @@ public class AlterTest {
         AlterExpression encryptionExp = alterExpressions.get(0);
         assertEquals(AlterOperation.SET_TABLE_OPTION, encryptionExp.getOperation());
         assertEquals(encryptionExp.getTableOption(), "ENCRYPTION = 'Y'");
+
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test
@@ -1305,6 +1308,7 @@ public class AlterTest {
         AlterExpression encryptionExp = alterExpressions.get(0);
         assertEquals(AlterOperation.SET_TABLE_OPTION, encryptionExp.getOperation());
         assertEquals(encryptionExp.getTableOption(), "ENCRYPTION 'N'");
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test
@@ -1320,6 +1324,7 @@ public class AlterTest {
         AlterExpression autoIncrementExp = alterExpressions.get(0);
         assertEquals(AlterOperation.SET_TABLE_OPTION, autoIncrementExp.getOperation());
         assertEquals(autoIncrementExp.getTableOption(), "AUTO_INCREMENT = 101");
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test
@@ -1335,5 +1340,6 @@ public class AlterTest {
         AlterExpression engineExp = alterExpressions.get(0);
         assertEquals(AlterOperation.SET_TABLE_OPTION, engineExp.getOperation());
         assertEquals(engineExp.getTableOption(), "ENGINE = InnoDB");
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 }
