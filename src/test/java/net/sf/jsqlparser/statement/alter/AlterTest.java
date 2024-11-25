@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
@@ -835,7 +834,7 @@ public class AlterTest {
     }
 
     private void assertReferentialActionOnConstraint(Alter parsed, Action onUpdate,
-            Action onDelete) {
+                                                     Action onDelete) {
         AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
         ForeignKeyIndex index = (ForeignKeyIndex) alterExpression.getIndex();
 
@@ -1112,7 +1111,7 @@ public class AlterTest {
     }
 
     @Test
-    public void testIssue2089WithCollation() throws JSQLParserException {
+    public void testIssue2089ConvertWithCollation() throws JSQLParserException {
         String sql =
                 "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
         Statement stmt = CCJSqlParserUtil.parse(sql);
@@ -1128,6 +1127,8 @@ public class AlterTest {
         assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
         assertEquals("utf8mb4", convertExp.getCharacterSet());
         assertEquals("utf8mb4_general_ci", convertExp.getCollation());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test

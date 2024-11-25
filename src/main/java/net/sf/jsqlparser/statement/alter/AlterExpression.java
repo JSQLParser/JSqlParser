@@ -196,7 +196,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteCascade
      * @deprecated use
-     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
@@ -216,7 +216,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteRestrict
      * @deprecated use
-     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
@@ -236,7 +236,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteSetNull
      * @deprecated use
-     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {
@@ -485,6 +485,14 @@ public class AlterExpression implements Serializable {
         } else if (operation == AlterOperation.DROP_PRIMARY_KEY) {
 
             b.append("DROP PRIMARY KEY ");
+        } else if (operation == AlterOperation.CONVERT) {
+            b.append("CONVERT TO CHARACTER SET ");
+            if (getCharacterSet() != null) {
+                b.append(getCharacterSet());
+            }
+            if (getCollation() != null) {
+                b.append(" COLLATE ").append(getCollation());
+            }
         } else if (operation == AlterOperation.DROP_UNIQUE) {
 
             b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
