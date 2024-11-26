@@ -53,6 +53,11 @@ public class AlterExpression implements Serializable {
     private List<PartitionDefinition> partitionDefinitions;
     private List<ConstraintState> constraints;
     private List<String> parameters;
+
+    private ConvertType convertType;
+    private boolean hasEqualForCharacterSet;
+    private boolean hasEqualForCollate;
+
     private String characterSet;
     private String collation;
     private String lockOption;
@@ -196,7 +201,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteCascade
      * @deprecated use
-     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteCascade(boolean onDeleteCascade) {
@@ -216,7 +221,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteRestrict
      * @deprecated use
-     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteRestrict(boolean onDeleteRestrict) {
@@ -236,7 +241,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param onDeleteSetNull
      * @deprecated use
-     * {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
+     *             {@link #setReferentialAction(ReferentialAction.Type, ReferentialAction.Action, boolean)}
      */
     @Deprecated
     public void setOnDeleteSetNull(boolean onDeleteSetNull) {
@@ -401,6 +406,14 @@ public class AlterExpression implements Serializable {
         return parameters;
     }
 
+    public ConvertType getConvertType() {
+        return convertType;
+    }
+
+    public void setConvertType(ConvertType convertType) {
+        this.convertType = convertType;
+    }
+
     public String getCharacterSet() {
         return characterSet;
     }
@@ -486,12 +499,30 @@ public class AlterExpression implements Serializable {
 
             b.append("DROP PRIMARY KEY ");
         } else if (operation == AlterOperation.CONVERT) {
-            b.append("CONVERT TO CHARACTER SET ");
+            if (convertType == ConvertType.CONVERT_TO) {
+                b.append("CONVERT TO CHARACTER SET ");
+            } else if (convertType == ConvertType.DEFAULT_CHARACTER_SET) {
+                b.append("DEFAULT CHARACTER SET ");
+                if (hasEqualForCharacterSet) {
+                    b.append("= ");
+                }
+            } else if (convertType == ConvertType.CHARACTER_SET) {
+                b.append("CHARACTER SET ");
+                if (hasEqualForCharacterSet) {
+                    b.append("= ");
+                }
+            }
+
             if (getCharacterSet() != null) {
                 b.append(getCharacterSet());
             }
+
             if (getCollation() != null) {
-                b.append(" COLLATE ").append(getCollation());
+                b.append(" COLLATE ");
+                if (hasEqualForCollate) {
+                    b.append("= ");
+                }
+                b.append(getCollation());
             }
         } else if (operation == AlterOperation.DROP_UNIQUE) {
 
@@ -805,6 +836,14 @@ public class AlterExpression implements Serializable {
         this.partitionDefinitions = partitionDefinition;
     }
 
+    public void setHasEqualForCharacterSet(boolean hasEqualForCharacterSet) {
+        this.hasEqualForCharacterSet = hasEqualForCharacterSet;
+    }
+
+    public void setHasEqualForCollate(boolean hasEqualForCollate) {
+        this.hasEqualForCollate = hasEqualForCollate;
+    }
+
     public static final class ColumnDataType extends ColumnDefinition {
 
         private final boolean withType;
@@ -897,5 +936,9 @@ public class AlterExpression implements Serializable {
         public String toString() {
             return columnName + " DROP DEFAULT";
         }
+    }
+
+    public enum ConvertType {
+        CONVERT_TO, DEFAULT_CHARACTER_SET, CHARACTER_SET
     }
 }

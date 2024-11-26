@@ -7430,11 +7430,31 @@ AlterExpression AlterExpression():
         <K_RENAME> <K_TO> {alterExp.setOperation(AlterOperation.RENAME_TABLE);}
         (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
       )
-      |
-      (<K_CONVERT> { alterExp.setOperation(AlterOperation.CONVERT); }
+      | (<K_CONVERT> {
+          alterExp.setOperation(AlterOperation.CONVERT);
+          alterExp.setConvertType(AlterExpression.ConvertType.CONVERT_TO);
+        }
         <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
         [<K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
-        )
+      )
+      | (<K_DEFAULT> {
+          alterExp.setOperation(AlterOperation.CONVERT);
+          alterExp.setConvertType(AlterExpression.ConvertType.DEFAULT_CHARACTER_SET);
+        }
+        <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
+        tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
+        [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
+            tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+      )
+      | (<K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
+        tk=<S_IDENTIFIER> {
+          alterExp.setOperation(AlterOperation.CONVERT);
+          alterExp.setConvertType(AlterExpression.ConvertType.CHARACTER_SET);
+          alterExp.setCharacterSet(tk.image);
+        }
+        [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
+            tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+      )
       |
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
