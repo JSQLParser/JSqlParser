@@ -24,13 +24,16 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
@@ -1093,41 +1096,54 @@ public class AlterTest {
         assertEquals("EXCLUSIVE", lockExp.getLockOption());
     }
 
-    @Test
-    public void testIssue2089() throws JSQLParserException {
-        String sql = "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4";
+    @ParameterizedTest
+    @MethodSource("provideMySQLConvertTestCases")
+    public void testIssue2089(String sql, String expectedCharacterSet, String expectedCollation)
+            throws JSQLParserException {
         Statement stmt = CCJSqlParserUtil.parse(sql);
-        assertTrue(stmt instanceof Alter);
+        assertTrue(stmt instanceof Alter,
+                "Expected instance of Alter but got: " + stmt.getClass().getSimpleName());
+
         Alter alter = (Alter) stmt;
         assertEquals("test_table", alter.getTable().getFullyQualifiedName());
 
         List<AlterExpression> alterExpressions = alter.getAlterExpressions();
-        assertNotNull(alterExpressions);
-        assertEquals(1, alterExpressions.size());
+        assertNotNull(alterExpressions, "Alter expressions should not be null for SQL: " + sql);
+        assertEquals(1, alterExpressions.size(), "Expected 1 alter expression for SQL: " + sql);
 
         AlterExpression convertExp = alterExpressions.get(0);
         assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
-        assertEquals("utf8mb4", convertExp.getCharacterSet());
-        assertNull(convertExp.getCollation());
+
+        assertEquals(expectedCharacterSet, convertExp.getCharacterSet(),
+                "CHARACTER SET mismatch for SQL: " + sql);
+        assertEquals(expectedCollation, convertExp.getCollation(),
+                "COLLATE mismatch for SQL: " + sql);
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
-    @Test
-    public void testIssue2089WithCollation() throws JSQLParserException {
-        String sql =
-                "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        assertTrue(stmt instanceof Alter);
-        Alter alter = (Alter) stmt;
-        assertEquals("test_table", alter.getTable().getFullyQualifiedName());
-
-        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
-        assertNotNull(alterExpressions);
-        assertEquals(1, alterExpressions.size());
-
-        AlterExpression convertExp = alterExpressions.get(0);
-        assertEquals(AlterOperation.CONVERT, convertExp.getOperation());
-        assertEquals("utf8mb4", convertExp.getCharacterSet());
-        assertEquals("utf8mb4_general_ci", convertExp.getCollation());
+    private static Stream<Arguments> provideMySQLConvertTestCases() {
+        return Stream.of(
+                Arguments.of("ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4", "utf8mb4",
+                        null),
+                Arguments.of(
+                        "ALTER TABLE test_table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                        "utf8mb4", "utf8mb4_general_ci"),
+                Arguments.of(
+                        "ALTER TABLE test_table DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                        "utf8mb4", "utf8mb4_general_ci"),
+                Arguments.of(
+                        "ALTER TABLE test_table DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci",
+                        "utf8mb4", "utf8mb4_general_ci"),
+                Arguments.of(
+                        "ALTER TABLE test_table CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                        "utf8mb4", "utf8mb4_general_ci"),
+                Arguments.of(
+                        "ALTER TABLE test_table CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci",
+                        "utf8mb4", "utf8mb4_general_ci"),
+                Arguments.of("ALTER TABLE test_table DEFAULT CHARACTER SET utf8mb4", "utf8mb4",
+                        null),
+                Arguments.of("ALTER TABLE test_table DEFAULT CHARACTER SET = utf8mb4", "utf8mb4",
+                        null));
     }
 
     @Test
