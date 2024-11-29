@@ -18,13 +18,13 @@ import java.util.Objects;
  */
 
 public class JsonKeyValuePair implements Serializable {
-    private final String key;
+    private final Object key;
     private final Object value;
     private boolean usingKeyKeyword = false;
     private boolean usingValueKeyword = false;
     private boolean usingFormatJson = false;
 
-    public JsonKeyValuePair(String key, Object value, boolean usingKeyKeyword,
+    public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
             boolean usingValueKeyword) {
         this.key = Objects.requireNonNull(key, "The KEY of the Pair must not be null");
         this.value = value;
@@ -93,7 +93,7 @@ public class JsonKeyValuePair implements Serializable {
         return Objects.equals(this.key, other.key);
     }
 
-    public String getKey() {
+    public Object getKey() {
         return key;
     }
 

@@ -23,7 +23,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     private JsonFunctionType functionType;
     private Expression expression = null;
     private boolean usingKeyKeyword = false;
-    private String key;
+    private Object key;
     private boolean usingValueKeyword = false;
     private Object value;
 
@@ -112,15 +112,15 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
         return this;
     }
 
-    public String getKey() {
+    public Object getKey() {
         return key;
     }
 
-    public void setKey(String key) {
+    public void setKey(Object key) {
         this.key = key;
     }
 
-    public JsonAggregateFunction withKey(String key) {
+    public JsonAggregateFunction withKey(Object key) {
         this.setKey(key);
         return this;
     }
@@ -188,6 +188,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
     public StringBuilder append(StringBuilder builder) {
         switch (functionType) {
             case OBJECT:
+            case MYSQL_OBJECT:
                 appendObject(builder);
                 break;
             case ARRAY:
@@ -209,6 +210,8 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                 builder.append("KEY ");
             }
             builder.append(key).append(" VALUE ").append(value);
+        } else if (functionType == JsonFunctionType.MYSQL_OBJECT) {
+            builder.append(key).append(", ").append(value);
         } else {
             builder.append(key).append(":").append(value);
         }

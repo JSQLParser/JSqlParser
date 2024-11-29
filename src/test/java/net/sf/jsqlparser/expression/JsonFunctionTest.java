@@ -132,6 +132,10 @@ public class JsonFunctionTest {
     @Test
     public void testObject() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH Items AS (SELECT 'hello' AS key, 'world' AS value)\n" +
+                        "SELECT JSON_OBJECT(key, value) AS json_data FROM Items",
+                true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( KEY 'foo' VALUE bar, KEY 'foo' VALUE bar) FROM dual ", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( 'foo' : bar, 'foo' : bar) FROM dual ",
@@ -279,5 +283,14 @@ public class JsonFunctionTest {
         jsonFunction.setUniqueKeysType(JsonAggregateUniqueKeysType.WITH);
         Assertions.assertEquals(JsonAggregateUniqueKeysType.WITH, jsonFunction
                 .withUniqueKeysType(JsonAggregateUniqueKeysType.WITH).getUniqueKeysType());
+    }
+
+    @Test
+    void testIssue1753JSonObjectAggWithColumns() throws JSQLParserException {
+        String sqlStr = "SELECT JSON_OBJECTAGG( KEY q.foo VALUE q.bar) FROM dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+
+        sqlStr = "SELECT JSON_OBJECTAGG(foo, bar) FROM dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 }
