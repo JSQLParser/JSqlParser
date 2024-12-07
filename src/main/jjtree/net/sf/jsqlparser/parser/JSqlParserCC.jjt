@@ -5903,6 +5903,7 @@ Function InternalFunction(boolean escaped):
     String onOverflowTruncate = null;
     Token overflowToken = null;
     Limit limit;
+    Token extraKeywordToken;
 }
 {
     [ LOOKAHEAD(2) prefixToken = <K_APPROXIMATE> ]
@@ -5922,7 +5923,8 @@ Function InternalFunction(boolean escaped):
             |
             LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns() { expressionList = new ExpressionList(expr); }
             |
-            LOOKAHEAD(3) expressionList=ExpressionList()
+            LOOKAHEAD(3) [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
+            expressionList=ExpressionList()
             [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
 
             // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html

@@ -39,6 +39,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private Limit limit = null;
     private KeepExpression keep = null;
     private String onOverflowTruncate = null;
+    private String extraKeyword = null;
 
     public Function() {}
 
@@ -255,6 +256,15 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         this.keep = keep;
     }
 
+    public String getExtraKeyword() {
+        return extraKeyword;
+    }
+
+    public Function setExtraKeyword(String extraKeyword) {
+        this.extraKeyword = extraKeyword;
+        return this;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -272,6 +282,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
                 if (isAllColumns()) {
                     b.append("ALL ");
                 }
+
+                if (extraKeyword != null) {
+                    b.append(extraKeyword).append(" ");
+                }
+
                 b.append(parameters);
 
                 if (havingClause != null) {

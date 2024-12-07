@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -91,5 +92,22 @@ public class BigQueryTest {
     void testAsValue() throws JSQLParserException {
         String sqlStr = "SELECT AS VALUE STRUCT(1 AS a, 2 AS b) xyz";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testTimeSeriesFunction() throws JSQLParserException {
+        String sqlStr = "with raw_data as (\n"
+                + "    select timestamp('2024-12-01') zetime\n"
+                + "    union all \n"
+                + "    select timestamp('2024-12-04')\n"
+                + "  )\n"
+                + "select zetime from GAP_FILL(\n"
+                + "  TABLE raw_data,\n"
+                + "  ts_column => 'zetime',\n"
+                + "  bucket_width => INTERVAL 4 HOUR\n"
+                + ")";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction function = select.getFromItem(TableFunction.class);
+        Assertions.assertEquals("TABLE", function.getFunction().getExtraKeyword());
     }
 }
