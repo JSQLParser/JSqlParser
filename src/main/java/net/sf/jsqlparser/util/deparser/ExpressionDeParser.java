@@ -833,6 +833,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             } else if (function.isUnique()) {
                 buffer.append("UNIQUE ");
             }
+
+            if (function.getExtraKeyword() != null) {
+                buffer.append(function.getExtraKeyword()).append(" ");
+            }
+
             if (function.getNamedParameters() != null) {
                 function.getNamedParameters().accept(this, context);
             }

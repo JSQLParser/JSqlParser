@@ -704,7 +704,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(TableFunction tableFunction, S context) {
-        buffer.append(tableFunction.toString());
+        if (tableFunction.getPrefix() != null) {
+            buffer.append(tableFunction.getPrefix()).append(" ");
+        }
+        tableFunction.getFunction().accept(this.expressionVisitor, context);
+
+        if (tableFunction.getAlias() != null) {
+            buffer.append(tableFunction.getAlias());
+        }
         return buffer;
     }
 
