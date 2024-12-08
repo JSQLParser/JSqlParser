@@ -75,6 +75,9 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
         if (fromItem instanceof Table && fromItem.getAlias() == null) {
             Table t = (Table) fromItem;
             return new Alias(t.getName(), true);
+        } else if (fromItem instanceof TableFunction && fromItem.getAlias() == null) {
+            TableFunction t = (TableFunction) fromItem;
+            return new Alias(t.getName(), true);
         } else {
             return new Alias(fromItem.getAlias().getName(), true);
         }
