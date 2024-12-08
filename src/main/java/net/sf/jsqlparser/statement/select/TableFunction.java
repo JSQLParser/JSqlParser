@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
@@ -27,6 +28,15 @@ public class TableFunction extends Function implements FromItem {
     public TableFunction(String prefix, Function function) {
         this.prefix = prefix;
         this.function = function;
+    }
+
+    public TableFunction(String prefix, String name, Expression... parameters) {
+        this.prefix = prefix;
+        this.function = new Function(name, parameters);
+    }
+
+    public TableFunction(String name, Expression... parameters) {
+        this(null, name, parameters);
     }
 
     public Function getFunction() {

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     public Function() {}
 
     public Function(String name, Expression... parameters) {
-        this.nameparts = Arrays.asList(name);
+        this.nameparts = Collections.singletonList(name);
         this.parameters = new ExpressionList<>(parameters);
     }
 
