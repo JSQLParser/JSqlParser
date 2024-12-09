@@ -1354,8 +1354,48 @@ public class AlterTest {
         assertEquals(1, alterExpressions.size());
 
         AlterExpression engineExp = alterExpressions.get(0);
-        assertEquals(AlterOperation.SET_TABLE_OPTION, engineExp.getOperation());
-        assertEquals(engineExp.getTableOption(), "ENGINE = InnoDB");
+        assertEquals(AlterOperation.ENGINE, engineExp.getOperation());
+        assertEquals(engineExp.getEngineOption(), "InnoDB");
         assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testIssue2118AlterTableForceAndEngine() throws JSQLParserException {
+        String sql1 = "ALTER TABLE my_table FORCE";
+        Statement stmt1 = CCJSqlParserUtil.parse(sql1);
+        assertTrue(stmt1 instanceof Alter);
+        Alter alter1 = (Alter) stmt1;
+        List<AlterExpression> alterExpressions1 = alter1.getAlterExpressions();
+        assertNotNull(alterExpressions1);
+        assertEquals(1, alterExpressions1.size());
+
+        AlterExpression forceExp = alterExpressions1.get(0);
+        assertEquals(AlterOperation.FORCE, forceExp.getOperation());
+        assertSqlCanBeParsedAndDeparsed(sql1);
+
+        String sql2 = "ALTER TABLE tbl_name FORCE, ENGINE=InnoDB, ALGORITHM=INPLACE, LOCK=NONE";
+        Statement stmt2 = CCJSqlParserUtil.parse(sql2);
+        assertTrue(stmt2 instanceof Alter);
+        Alter alter2 = (Alter) stmt2;
+        List<AlterExpression> alterExpressions2 = alter2.getAlterExpressions();
+        assertNotNull(alterExpressions2);
+        assertEquals(4, alterExpressions2.size());
+
+        AlterExpression forceExp2 = alterExpressions2.get(0);
+        assertEquals(AlterOperation.FORCE, forceExp2.getOperation());
+
+        AlterExpression engineExp = alterExpressions2.get(1);
+        assertEquals(AlterOperation.ENGINE, engineExp.getOperation());
+        assertEquals(engineExp.getEngineOption(), "InnoDB");
+
+        AlterExpression algorithmExp = alterExpressions2.get(2);
+        assertEquals(AlterOperation.ALGORITHM, algorithmExp.getOperation());
+        assertEquals("INPLACE", algorithmExp.getAlgorithmOption());
+
+        AlterExpression lockExp = alterExpressions2.get(3);
+        assertEquals(AlterOperation.LOCK, lockExp.getOperation());
+        assertEquals("NONE", lockExp.getLockOption());
+
+        assertSqlCanBeParsedAndDeparsed(sql2);
     }
 }

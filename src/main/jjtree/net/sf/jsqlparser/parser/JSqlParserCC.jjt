@@ -7167,7 +7167,6 @@ AlterExpression AlterExpression():
         (
             (
                 <K_ADD> { alterExp.setOperation(AlterOperation.ADD);
-                        System.out.println("test");
                 }
                 |
                 <K_ALTER> { alterExp.setOperation(AlterOperation.ALTER); }
@@ -7439,11 +7438,15 @@ AlterExpression AlterExpression():
         )
         |
         (
+        <K_FORCE>{ alterExp.setOperation(AlterOperation.FORCE); }
+        )
+        |
+        (
          <K_ALGORITHM> {
             alterExp.setOperation(AlterOperation.ALGORITHM);
          }
          ["=" { alterExp.setUseEqual(true);} ]
-         sk3 = RelObjectName() {alterExp.addParameters(sk3); }
+         sk3 = RelObjectName() {alterExp.setAlgorithmOption(sk3); }
         )
         |
         (
@@ -7452,6 +7455,11 @@ AlterExpression AlterExpression():
         }
         ["=" { alterExp.setUseEqual(true);} ]
         sk3 = RelObjectName() {alterExp.setLockOption(sk3); }
+        )
+        |
+        (<K_ENGINE> {alterExp.setOperation(AlterOperation.ENGINE);}
+        ["=" { alterExp.setUseEqual(true);} ]
+        sk3 = RelObjectName() {alterExp.setEngineOption(sk3); }
         )
       |
       LOOKAHEAD(2)  <K_RENAME> { alterExp.setOperation(AlterOperation.RENAME); } [ <K_COLUMN> {  alterExp.hasColumn(true);} ]
@@ -7515,17 +7523,6 @@ AlterExpression AlterExpression():
                   }
             }
       )
-      |
-      (<K_ENGINE> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-                    ["=" { alterExp.setUseEqual(true);} ]
-                    tk=<S_IDENTIFIER> {
-                        if (alterExp.getUseEqual()) {
-                            alterExp.setTableOption("ENGINE = " + tk.image);
-                        } else {
-                            alterExp.setTableOption("ENGINE " + tk.image);
-                        }
-                  }
-            )
       |
       LOOKAHEAD(2)
            (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}

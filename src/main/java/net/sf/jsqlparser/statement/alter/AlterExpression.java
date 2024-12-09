@@ -61,6 +61,8 @@ public class AlterExpression implements Serializable {
     private String characterSet;
     private String collation;
     private String lockOption;
+    private String algorithmOption;
+    private String engineOption;
     private String commentText;
     private String tableOption;
 
@@ -438,6 +440,22 @@ public class AlterExpression implements Serializable {
         this.lockOption = lockOption;
     }
 
+    public String getAlgorithmOption() {
+        return algorithmOption;
+    }
+
+    public void setAlgorithmOption(String algorithmOption) {
+        this.algorithmOption = algorithmOption;
+    }
+
+    public String getEngineOption() {
+        return engineOption;
+    }
+
+    public void setEngineOption(String engineOption) {
+        this.engineOption = engineOption;
+    }
+
     public boolean getUseEqual() {
         return useEqual;
     }
@@ -478,6 +496,24 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (operation == AlterOperation.SET_TABLE_OPTION) {
             b.append(tableOption);
+        } else if (operation == AlterOperation.ENGINE) {
+            b.append("ENGINE ");
+            if (useEqual) {
+                b.append("= ");
+            }
+            b.append(engineOption);
+        } else if (operation == AlterOperation.ALGORITHM) {
+            b.append("ALGORITHM ");
+            if (useEqual) {
+                b.append("= ");
+            }
+            b.append(algorithmOption);
+        } else if (operation == AlterOperation.LOCK) {
+            b.append("LOCK ");
+            if (useEqual) {
+                b.append("= ");
+            }
+            b.append(lockOption);
         } else if (getOldIndex() != null) {
             b.append("RENAME");
             switch (operation) {
