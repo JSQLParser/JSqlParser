@@ -1151,8 +1151,11 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public <S> Void visit(CreateView createView, S context) {
-        throwUnsupported(createView);
+    public <S> Void visit(CreateView create, S context) {
+        visit(create.getView(), null);
+        if (create.getSelect() != null) {
+            create.getSelect().accept((SelectVisitor<?>) this, context);
+        }
         return null;
     }
 

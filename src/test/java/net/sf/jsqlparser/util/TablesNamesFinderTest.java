@@ -152,8 +152,15 @@ public class TablesNamesFinderTest {
     }
 
     @Test
-    public void testCreateSelect() throws Exception {
+    public void testCreateTableSelect() throws Exception {
         String sqlStr = "CREATE TABLE mytable AS SELECT mycolumn FROM mytable2";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("mytable",
+                "mytable2");
+    }
+
+    @Test
+    public void testCreateViewSelect() throws Exception {
+        String sqlStr = "CREATE VIEW mytable AS SELECT mycolumn FROM mytable2";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("mytable",
                 "mytable2");
     }
