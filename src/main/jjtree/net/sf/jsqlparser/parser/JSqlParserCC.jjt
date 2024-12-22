@@ -2705,6 +2705,7 @@ List<WithItem<?>> WithList():
 WithItem<?> WithItem() #WithItem:
 {
     boolean recursive = false;
+    boolean materialized = false;
     String name;
     List<SelectItem<?>> selectItems = null;
     ParenthesedStatement statement;
@@ -2714,6 +2715,7 @@ WithItem<?> WithItem() #WithItem:
      name=RelObjectName()
      [ "(" selectItems=SelectItemsList() ")" ]
      <K_AS>
+     [ LOOKAHEAD(2) <K_MATERIALIZED>  { materialized = true; } ]
      (
          LOOKAHEAD(2) statement = ParenthesedSelect()
          |
@@ -2726,7 +2728,7 @@ WithItem<?> WithItem() #WithItem:
      {
         WithItem<?> withItem = new WithItem(statement, new Alias(name, false));
         return withItem
-            .withRecursive(recursive)
+            .withRecursive(recursive, materialized)
             .withWithItemList(selectItems);
      }
 }

@@ -3187,6 +3187,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testSelectWithMaterializedWith() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH tokens_with_supply AS MATERIALIZED (SELECT * FROM tokens) SELECT * FROM tokens_with_supply");
+    }
+
+    @Test
     public void testSelectInnerWith() throws JSQLParserException {
         String stmt =
                 "SELECT * FROM (WITH actor AS (SELECT 'a' aid FROM DUAL) SELECT aid FROM actor)";

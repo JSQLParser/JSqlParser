@@ -28,6 +28,8 @@ public class WithItem<T extends ParenthesedStatement> {
     private List<SelectItem<?>> withItemList;
     private boolean recursive = false;
 
+    private boolean materialized = false;
+
     public WithItem(T statement, Alias alias) {
         this.statement = statement;
         this.alias = alias;
@@ -79,6 +81,14 @@ public class WithItem<T extends ParenthesedStatement> {
         this.recursive = recursive;
     }
 
+    public boolean isMaterialized() {
+        return materialized;
+    }
+
+    public void setMaterialized(boolean materialized) {
+        this.materialized = materialized;
+    }
+
     /**
      * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
      *
@@ -108,6 +118,7 @@ public class WithItem<T extends ParenthesedStatement> {
             builder.append(")");
         }
         builder.append(" AS ");
+        builder.append(materialized ? "MATERIALIZED " : "");
         builder.append(statement);
         return builder.toString();
     }
@@ -121,8 +132,9 @@ public class WithItem<T extends ParenthesedStatement> {
         return this;
     }
 
-    public WithItem<?> withRecursive(boolean recursive) {
+    public WithItem<?> withRecursive(boolean recursive, boolean materialized) {
         this.setRecursive(recursive);
+        this.setMaterialized(materialized);
         return this;
     }
 
