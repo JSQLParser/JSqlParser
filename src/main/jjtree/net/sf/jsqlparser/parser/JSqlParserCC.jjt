@@ -336,6 +336,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LOW : "LOW">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
 |   <K_MATCH: "MATCH">
+|   <K_MATCH_ANY: "MATCH_ANY">
+|   <K_MATCH_ALL: "MATCH_ALL">
+|   <K_MATCH_PHRASE: "MATCH_PHRASE">
+|   <K_MATCH_PHRASE_PREFIX: "MATCH_PHRASE_PREFIX">
+|   <K_MATCH_REGEXP: "MATCH_REGEXP">
 |   <K_MATCHED: "MATCHED">
 |   <K_MATERIALIZED:"MATERIALIZED">
 |   <K_MAX: "MAX">
@@ -4220,6 +4225,11 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_REGEXP_LIKE>
         | token = <K_REGEXP>
         | token = <K_SIMILAR_TO>
+        | token = <K_MATCH_ANY>
+        | token = <K_MATCH_ALL>
+        | token = <K_MATCH_PHRASE>
+        | token = <K_MATCH_PHRASE_PREFIX>
+        | token = <K_MATCH_REGEXP>
     ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
     rightExpression=SimpleExpression()

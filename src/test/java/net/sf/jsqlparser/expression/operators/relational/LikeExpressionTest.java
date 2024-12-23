@@ -58,4 +58,34 @@ public class LikeExpressionTest {
                 + "    ORDER BY v;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    public void testMatchAny() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v MATCH_ANY 'keyword1 keyword2'", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v NOT MATCH_ANY 'keyword1 keyword2'", true);
+    }
+
+    @Test
+    public void testMatchAll() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v MATCH_ALL 'keyword1 keyword2'", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v NOT MATCH_ALL 'keyword1 keyword2'", true);
+    }
+
+    @Test
+    public void testMatchPhrase() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v MATCH_PHRASE 'keyword1 keyword2'", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v NOT MATCH_PHRASE 'keyword1 keyword2'", true);
+    }
+
+    @Test
+    public void testMatchPhrasePrefix() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v MATCH_PHRASE_PREFIX 'keyword1 keyword2'", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v NOT MATCH_PHRASE_PREFIX 'keyword1 keyword2'", true);
+    }
+
+    @Test
+    public void testMatchRegexp() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v MATCH_REGEXP 'keyword1 keyword2'", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("select * from dual where v NOT MATCH_REGEXP 'keyword1 keyword2'", true);
+    }
 }
