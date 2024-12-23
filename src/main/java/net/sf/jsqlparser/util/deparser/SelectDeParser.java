@@ -682,6 +682,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                     .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
         }
         buffer.append(" AS ");
+        if (withItem.isMaterialized()) {
+            buffer.append("MATERIALIZED ");
+        }
         StatementDeParser statementDeParser =
                 new StatementDeParser((ExpressionDeParser) expressionVisitor, this, buffer);
         statementDeParser.deParse(withItem.getParenthesedStatement());
