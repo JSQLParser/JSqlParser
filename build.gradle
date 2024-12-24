@@ -97,7 +97,7 @@ dependencies {
     // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation 'org.mockito:mockito-junit-jupiter:+'
