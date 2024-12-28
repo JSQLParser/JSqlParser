@@ -199,11 +199,15 @@
                     <showWarnings>true</showWarnings>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <showDeprecation>true</showDeprecation>
+                    <fork>true</fork>
+                    <meminitial>128m</meminitial>
+                    <maxmem>2g</maxmem>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.javacc.plugin</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
+                <version>3.0.3</version>
                 <executions>
                     <execution>
                         <id>javacc</id>
