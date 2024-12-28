@@ -312,6 +312,9 @@
                             <additionalOptions>${javadoc.opts}</additionalOptions>
                             <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
                             <doclint>none</doclint>
+                            <useStandardDocletOptions>true</useStandardDocletOptions>
+                            <maxmemory>2g</maxmemory>
+                            <minmemory>800m</minmemory>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
@@ -440,7 +443,8 @@
                 <version>3.4.1</version>
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
-                    <maxmemory>2048m</maxmemory> <!-- Increase memory to 2GB -->
+                    <maxmemory>2g</maxmemory>
+                    <minmemory>800m</minmemory>
                     <doclint>none</doclint>
                     
                     <!-- Doclint does not work on the Test Sources
