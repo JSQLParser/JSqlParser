@@ -321,4 +321,11 @@ public class ExpressionVisitorAdapterTest {
         assertInstanceOf(Column.class, exprList.get(0));
         assertInstanceOf(ParenthesedExpressionList.class, exprList.get(1));
     }
+
+    @Test
+    public void testIntervalWithNoExpression() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression("INTERVAL 1 DAY");
+        ExpressionVisitorAdapter<Void> adapter = new ExpressionVisitorAdapter<>();
+        expr.accept(adapter, null);
+    }
 }

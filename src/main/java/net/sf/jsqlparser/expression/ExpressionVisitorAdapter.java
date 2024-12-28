@@ -430,7 +430,10 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(IntervalExpression intervalExpression, S context) {
-        return intervalExpression.getExpression().accept(this, context);
+        if (intervalExpression.getExpression() != null) {
+            intervalExpression.getExpression().accept(this, context);
+        }
+        return null;
     }
 
     @Override
