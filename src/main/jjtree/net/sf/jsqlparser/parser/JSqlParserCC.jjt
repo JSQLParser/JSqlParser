@@ -2116,13 +2116,20 @@ Table Table() #TableName :
 {
     //String serverName = null, databaseName = null, schemaName = null, tableName = null;
     ObjectNames data = null;
+    Token fileNameToken = null;
 }
 {
     data = RelObjectNames()
-
     {
         Table table = new Table(data.getNames());
 		linkAST(table,jjtThis);
+        return table;
+    }
+    |
+    fileNameToken = <S_CHAR_LITERAL>
+    {
+        Table table = new Table(fileNameToken.image);
+        linkAST(table,jjtThis);
         return table;
     }
 }

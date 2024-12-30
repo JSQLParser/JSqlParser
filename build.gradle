@@ -189,7 +189,7 @@ test {
 
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
-    maxHeapSize = "1G"
+    maxHeapSize = "4G"
 
     jacoco {
         excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']
