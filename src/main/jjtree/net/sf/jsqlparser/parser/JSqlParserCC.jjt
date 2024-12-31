@@ -2117,18 +2117,22 @@ Table Table() #TableName :
     //String serverName = null, databaseName = null, schemaName = null, tableName = null;
     ObjectNames data = null;
     Token fileNameToken = null;
+    Table table;
 }
 {
-    data = RelObjectNames()
+    (
+        data = RelObjectNames()
+        {
+            table = new Table(data.getNames());
+        }
+        |
+        fileNameToken = <S_CHAR_LITERAL>
+        {
+            table = new Table(fileNameToken.image);
+        }
+    )
+
     {
-        Table table = new Table(data.getNames());
-		linkAST(table,jjtThis);
-        return table;
-    }
-    |
-    fileNameToken = <S_CHAR_LITERAL>
-    {
-        Table table = new Table(fileNameToken.image);
         linkAST(table,jjtThis);
         return table;
     }
