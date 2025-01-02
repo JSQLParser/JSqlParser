@@ -401,7 +401,7 @@ public class InsertTest {
     @Test
     public void testInsertTableWithAliasIssue526() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
-                "INSERT INTO account t (name, addr, phone) SELECT * FROM user");
+                "INSERT INTO account AS t (name, addr, phone) SELECT * FROM user");
     }
 
     @Test
@@ -835,6 +835,38 @@ public class InsertTest {
                 "INSERT INTO x (foo) SELECT bar FROM b WHERE y IN (SELECT y FROM selection) RETURNING w",
                 innerInsert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
+    }
+
+    @Test
+    void testInsertOverwrite() throws JSQLParserException {
+        String sqlStr = "INSERT OVERWRITE TABLE t SELECT * FROM a";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("t", insert.getTable().getName());
+        assertTrue(insert.isOverwrite());
+
+        sqlStr = "INSERT OVERWRITE TABLE t PARTITION (pt1, pt2) SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("t", insert.getTable().getName());
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("pt1", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(0).getValue());
+        assertTrue(insert.isOverwrite());
+
+        sqlStr = "INSERT OVERWRITE TABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("t", insert.getTable().getName());
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("pt2", insert.getPartitions().get(1).getColumn().getColumnName());
+        assertEquals("'pt2'", insert.getPartitions().get(1).getValue().toString());
+        assertTrue(insert.isOverwrite());
+
+        sqlStr = "INSERT INTO TABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("t", insert.getTable().getName());
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("pt1", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertEquals("'pt1'", insert.getPartitions().get(0).getValue().toString());
+        assertFalse(insert.isOverwrite());
     }
 
 }

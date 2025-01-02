@@ -384,6 +384,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OVER:"OVER">
 |   <K_OVERFLOW:"OVERFLOW">
 |   <K_OVERLAPS:"OVERLAPS">
+|   <K_OVERWRITE:"OVERWRITE">
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PARALLEL:"PARALLEL">
 |   <K_PARENT:"PARENT">
@@ -1602,6 +1603,33 @@ List<UpdateSet> UpdateSets():
     }
 }
 
+List<Partition> Partitions():
+{
+    List<Partition> partitions = new ArrayList<Partition>();
+    Column tableColumn;
+    Expression valueExpression = null;
+}
+{
+    (
+        (
+            tableColumn=Column() [ "=" valueExpression=Expression() ]
+            { partitions.add( new Partition (tableColumn, valueExpression)); }
+        )
+    )
+
+    (
+        LOOKAHEAD(2) (
+            ","
+            tableColumn=Column() [ "=" valueExpression=Expression() ]
+            { partitions.add( new Partition (tableColumn, valueExpression)); }
+        )
+    )*
+
+    {
+        return partitions;
+    }
+}
+
 Insert InsertWithWithItems( List<WithItem<?>> withItems ):
 {
     Insert insert;
@@ -1619,6 +1647,7 @@ Insert Insert():
     List<WithItem<?>> with = null;
     Column tableColumn = null;
     ExpressionList<Column> columns = new ExpressionList<Column>();
+    List<Partition> partitions = new ArrayList<Partition>();
     Expression exp = null;
     ReturningClause returningClause;
     Select select = null;
@@ -1626,6 +1655,8 @@ Insert Insert():
     Token tk = null;
     InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
+    boolean overwrite = false;
+    boolean tableKeyword = false;
 
     List<UpdateSet> updateSets;
     List<UpdateSet> duplicateUpdateSets;
@@ -1648,7 +1679,8 @@ Insert Insert():
         }
     ]
     [ LOOKAHEAD(2) <K_IGNORE>{ modifierIgnore = true; }]
-    [ LOOKAHEAD(2) <K_INTO>] table=Table()
+    [ LOOKAHEAD(2) (<K_INTO> | <K_OVERWRITE> { insert.setOverwrite(true); }) [<K_TABLE> { insert.setTableKeyword(true); }] ]   table=Table()
+    [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
 
     [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
 
@@ -1681,6 +1713,9 @@ Insert Insert():
     {
         if (!columns.isEmpty()) {
             insert.setColumns(columns);
+        }
+        if (!partitions.isEmpty()) {
+            insert.setPartitions(partitions);
         }
         return insert.withWithItemsList(with)
               .withSelect(select)

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.insert;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
@@ -36,11 +37,14 @@ public class Insert implements Statement {
     private Table table;
     private OracleHint oracleHint = null;
     private ExpressionList<Column> columns;
+    private List<Partition> partitions;
     private Select select;
     private boolean onlyDefaultValues = false;
     private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
+    private boolean overwrite = false;
+    private boolean tableKeyword = false;
     private ReturningClause returningClause;
     private List<UpdateSet> setUpdateSets = null;
     private List<WithItem<?>> withItemsList;
@@ -103,6 +107,14 @@ public class Insert implements Statement {
         columns = list;
     }
 
+    public List<Partition> getPartitions() {
+        return partitions;
+    }
+
+    public void setPartitions(List<Partition> list) {
+        partitions = list;
+    }
+
     @Deprecated
     public boolean isUseValues() {
         return select != null && select instanceof Values;
@@ -161,6 +173,22 @@ public class Insert implements Statement {
 
     public void setModifierIgnore(boolean modifierIgnore) {
         this.modifierIgnore = modifierIgnore;
+    }
+
+    public boolean isOverwrite() {
+        return overwrite;
+    }
+
+    public void setOverwrite(boolean overwrite) {
+        this.overwrite = overwrite;
+    }
+
+    public boolean isTableKeyword() {
+        return tableKeyword;
+    }
+
+    public void setTableKeyword(boolean tableKeyword) {
+        this.tableKeyword = tableKeyword;
     }
 
     @Deprecated
@@ -240,7 +268,14 @@ public class Insert implements Statement {
         if (modifierIgnore) {
             sql.append("IGNORE ");
         }
-        sql.append("INTO ");
+        if (overwrite) {
+            sql.append("OVERWRITE ");
+        } else {
+            sql.append("INTO ");
+        }
+        if (tableKeyword) {
+            sql.append("TABLE ");
+        }
         sql.append(table).append(" ");
 
         if (onlyDefaultValues) {
@@ -256,6 +291,12 @@ public class Insert implements Statement {
                 // only plain names, but not fully qualified names allowed
                 sql.append(columns.get(i).getColumnName());
             }
+            sql.append(") ");
+        }
+
+        if (partitions != null) {
+            sql.append(" PARTITION (");
+            Partition.appendPartitionsTo(sql, partitions);
             sql.append(") ");
         }
 
