@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -62,7 +63,14 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         if (insert.isModifierIgnore()) {
             buffer.append("IGNORE ");
         }
-        buffer.append("INTO ");
+        if (insert.isOverwrite()) {
+            buffer.append("OVERWRITE ");
+        } else {
+            buffer.append("INTO ");
+        }
+        if (insert.isTableKeyword()) {
+            buffer.append("TABLE ");
+        }
 
         buffer.append(insert.getTable().toString());
 
@@ -79,6 +87,12 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
                     buffer.append(", ");
                 }
             }
+            buffer.append(")");
+        }
+
+        if (insert.getPartitions() != null) {
+            buffer.append(" PARTITION (");
+            Partition.appendPartitionsTo(buffer, insert.getPartitions());
             buffer.append(")");
         }
 

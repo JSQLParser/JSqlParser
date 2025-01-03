@@ -114,6 +114,7 @@ public class ParserKeywordsUtils {
             {"OUTER", RESTRICTED_JSQLPARSER},
             {"OUTPUT", RESTRICTED_JSQLPARSER},
             {"OPTIMIZE ", RESTRICTED_JSQLPARSER},
+            {"OVERWRITE ", RESTRICTED_JSQLPARSER},
             {"PIVOT", RESTRICTED_JSQLPARSER},
             {"PLUS", RESTRICTED_JSQLPARSER},
             {"PREFERRING", RESTRICTED_JSQLPARSER},
