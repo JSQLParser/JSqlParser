@@ -852,7 +852,7 @@ public class InsertTest {
         assertNull(insert.getPartitions().get(0).getValue());
         assertTrue(insert.isOverwrite());
 
-        sqlStr = "INSERT OVERWRITE TABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
+        sqlStr = "INSERT OVERWRITE\nTABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
         insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("t", insert.getTable().getName());
         assertEquals(2, insert.getPartitions().size());
@@ -860,7 +860,7 @@ public class InsertTest {
         assertEquals("'pt2'", insert.getPartitions().get(1).getValue().toString());
         assertTrue(insert.isOverwrite());
 
-        sqlStr = "INSERT INTO TABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
+        sqlStr = "INSERT INTO\tTABLE t PARTITION (pt1 = 'pt1', pt2 = 'pt2') SELECT * FROM a";
         insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("t", insert.getTable().getName());
         assertEquals(2, insert.getPartitions().size());
