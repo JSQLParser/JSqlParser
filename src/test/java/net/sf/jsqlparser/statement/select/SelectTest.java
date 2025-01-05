@@ -6134,10 +6134,9 @@ public class SelectTest {
 
     @Test
     public void testSelectWithSkylineKeywords() throws JSQLParserException {
-        String statement = """
-           SELECT low, high, inverse, plus, preferring
-             FROM mytable
-        """;
+        String statement =
+        " SELECT low, high, inverse, plus, preferring " +
+        "   FROM mytable ";
         Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
         assertEquals("mytable", select.getPlainSelect().getFromItem().toString());
         assertEquals("[low, high, inverse, plus, preferring]", select.getPlainSelect().getSelectItems().toString());
