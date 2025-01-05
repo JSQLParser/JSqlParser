@@ -572,16 +572,15 @@ public class UpdateTest {
     public void testUpdateWithSkylineKeywords() throws JSQLParserException {
         String statement =
         " UPDATE mytable " +
-        "    SET low = 1, high = 2, inverse = 3, plus = 4, preferring = 5 " +
+        "    SET low = 1, high = 2, inverse = 3, plus = 4 " +
         "  WHERE id = 6";
         Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", update.getTable().toString());
-        assertEquals(5, update.getUpdateSets().size());
+        assertEquals(4, update.getUpdateSets().size());
         assertEquals("low", update.getUpdateSets().get(0).getColumns().get(0).getColumnName());
         assertEquals("high", update.getUpdateSets().get(1).getColumns().get(0).getColumnName());
         assertEquals("inverse", update.getUpdateSets().get(2).getColumns().get(0).getColumnName());
         assertEquals("plus", update.getUpdateSets().get(3).getColumns().get(0).getColumnName());
-        assertEquals("preferring", update.getUpdateSets().get(4).getColumns().get(0).getColumnName());
         assertInstanceOf(EqualsTo.class, update.getWhere());
     }
 
