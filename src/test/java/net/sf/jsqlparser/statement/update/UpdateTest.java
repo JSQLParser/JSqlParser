@@ -571,9 +571,7 @@ public class UpdateTest {
     @Test
     public void testUpdateWithSkylineKeywords() throws JSQLParserException {
         String statement =
-        " UPDATE mytable " +
-        "    SET low = 1, high = 2, inverse = 3, plus = 4 " +
-        "  WHERE id = 6";
+                "UPDATE mytable SET low = 1, high = 2, inverse = 3, plus = 4 WHERE id = 6";
         Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
         assertEquals("mytable", update.getTable().toString());
         assertEquals(4, update.getUpdateSets().size());
