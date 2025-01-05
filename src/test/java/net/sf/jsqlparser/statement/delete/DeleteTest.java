@@ -387,4 +387,15 @@ public class DeleteTest {
         assertSqlCanBeParsedAndDeparsed(sqlStr);
     }
 
+    @Test
+    public void testDeleteWithSkylineKeywords() throws JSQLParserException {
+        String statement = """
+           DELETE
+             FROM mytable
+            WHERE low = 1 AND high = 2 AND inverse = 3 AND plus = 4 AND preferring = 5
+           """;
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(statement);
+        assertEquals("mytable", delete.getTable().toString());
+    }
+
 }

@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -566,4 +567,23 @@ public class UpdateTest {
         assertTrue(((BooleanValue) update.getUpdateSets().get(1).getValues().get(0)).getValue());
         assertInstanceOf(GreaterThanEquals.class, update.getWhere());
     }
+
+    @Test
+    public void testUpdateWithSkylineKeywords() throws JSQLParserException {
+        String statement = """
+           UPDATE mytable
+              SET low = 1, high = 2, inverse = 3, plus = 4, preferring = 5
+            WHERE id = 6
+        """;
+        Update update = (Update) PARSER_MANAGER.parse(new StringReader(statement));
+        assertEquals("mytable", update.getTable().toString());
+        assertEquals(5, update.getUpdateSets().size());
+        assertEquals("low", update.getUpdateSets().get(0).getColumns().get(0).getColumnName());
+        assertEquals("high", update.getUpdateSets().get(1).getColumns().get(0).getColumnName());
+        assertEquals("inverse", update.getUpdateSets().get(2).getColumns().get(0).getColumnName());
+        assertEquals("plus", update.getUpdateSets().get(3).getColumns().get(0).getColumnName());
+        assertEquals("preferring", update.getUpdateSets().get(4).getColumns().get(0).getColumnName());
+        assertInstanceOf(EqualsTo.class, update.getWhere());
+    }
+
 }
