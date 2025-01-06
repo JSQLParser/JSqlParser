@@ -3497,10 +3497,13 @@ Expression PreferenceTermTerminal():
 }
 {
     (
-          retval=HighExpression()
-        | retval=LowExpression()
-        | retval=Inverse()
-        | retval=Condition()
+        LOOKAHEAD(2) retval=HighExpression()
+        |
+        LOOKAHEAD(2) retval=LowExpression()
+        |
+        LOOKAHEAD(2) retval=Inverse()
+        |
+        retval=Condition()
     )
 
     {
