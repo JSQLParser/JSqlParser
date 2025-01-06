@@ -27,13 +27,13 @@ public class Partition {
         this.value = value;
     }
 
-    public static StringBuilder appendPartitionsTo(StringBuilder builder, Collection<Partition> partitions) {
+    public static void appendPartitionsTo(StringBuilder builder,
+            Collection<Partition> partitions) {
         int j = 0;
         for (Partition partition : partitions) {
             partition.appendTo(builder, j);
             j++;
         }
-        return builder;
     }
 
     public Column getColumn() {
@@ -54,7 +54,7 @@ public class Partition {
 
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPath"})
-    StringBuilder appendTo(StringBuilder builder, int j) {
+    void appendTo(StringBuilder builder, int j) {
         if (j > 0) {
             builder.append(", ");
         }
@@ -62,6 +62,5 @@ public class Partition {
         if (value != null) {
             builder.append(" = ").append(value);
         }
-        return builder;
     }
 }
