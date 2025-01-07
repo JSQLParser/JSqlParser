@@ -446,7 +446,9 @@
                     <maxmemory>2g</maxmemory>
                     <minmemory>800m</minmemory>
                     <doclint>none</doclint>
-                    
+
+                    <additionalOptions>-J-Xss2m</additionalOptions>
+
                     <!-- Doclint does not work on the Test Sources
                     <doclint>all,-missing</doclint>
                     <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
