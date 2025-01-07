@@ -315,6 +315,7 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <maxmemory>2g</maxmemory>
                             <minmemory>800m</minmemory>
+                            <additionalOptions>-J-Xss2m</additionalOptions>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
@@ -356,7 +357,7 @@
                     <argLine>
                         --add-opens=java.base/java.lang=ALL-UNNAMED
                         --add-opens=java.base/java.util=ALL-UNNAMED
-                        -Xmx2G -Xms512m
+                        -Xmx2G -Xms512m -Xss2m
                     </argLine>
                 </configuration>
             </plugin>
@@ -434,7 +435,7 @@
                 <version>3.0.0-M7</version>
                 <configuration>
                     <outputDirectory>${project.reporting.outputDirectory}/testresults</outputDirectory>
-                    <argLine>-Xmx2G -Xms512m</argLine>
+                    <argLine>-Xmx2G -Xms512m -Xss2m</argLine>
                 </configuration>
             </plugin>
             <plugin>
