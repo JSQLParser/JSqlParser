@@ -58,7 +58,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
-import net.sf.jsqlparser.parser.*;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Server;
@@ -6131,4 +6132,14 @@ public class SelectTest {
                 insert.toString());
         assertEquals(" inserted", withItems.get(1).getAlias().toString());
     }
+
+    @Test
+    public void testSelectWithSkylineKeywords() throws JSQLParserException {
+        String statement = "SELECT low, high, inverse, plus FROM mytable";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
+        assertEquals("mytable", select.getPlainSelect().getFromItem().toString());
+        assertEquals("[low, high, inverse, plus]",
+                select.getPlainSelect().getSelectItems().toString());
+    }
+
 }
