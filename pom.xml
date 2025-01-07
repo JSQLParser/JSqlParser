@@ -315,7 +315,7 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <maxmemory>2g</maxmemory>
                             <minmemory>800m</minmemory>
-                            <additionalOptions>-J-Xss2m</additionalOptions>
+                            <additionalJOptions>-J-Xss2m</additionalJOptions>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
@@ -448,7 +448,7 @@
                     <minmemory>800m</minmemory>
                     <doclint>none</doclint>
 
-                    <additionalOptions>-J-Xss2m</additionalOptions>
+                    <additionalJOptions>-Xss2m</additionalJOptions>
 
                     <!-- Doclint does not work on the Test Sources
                     <doclint>all,-missing</doclint>
