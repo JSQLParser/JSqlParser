@@ -151,6 +151,12 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testIsUnknown() {
+        validateNoErrors("SELECT * FROM tab t WHERE t.col IS UNKNOWN", 1, EXPRESSIONS);
+        validateNoErrors("SELECT * FROM tab t WHERE t.col IS NOT UNKNOWN", 1, EXPRESSIONS);
+    }
+
+    @Test
     public void testLike() {
         validateNoErrors("SELECT * FROM tab t WHERE t.col LIKE '%search for%'", 1, EXPRESSIONS);
         validateNoErrors("SELECT * FROM tab t WHERE t.col NOT LIKE '%search for%'", 1, EXPRESSIONS);

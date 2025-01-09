@@ -495,6 +495,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNBOUNDED: "UNBOUNDED">
 |   <K_UNION:"UNION">
 |   <K_UNIQUE:"UNIQUE">
+|   <K_UNKNOWN:"UNKNOWN">
 |   <K_UNLOGGED: "UNLOGGED">
 |   <K_UNPIVOT:"UNPIVOT">
 |   <K_UPDATE:"UPDATE">
@@ -4153,6 +4154,8 @@ Expression SQLCondition():
                 |
                 LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
                 |
+                LOOKAHEAD(IsUnknownExpression()) result=IsUnknownExpression(left)
+                |
                 LOOKAHEAD(2) result=LikeExpression(left)
                 |
                 LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
@@ -4358,6 +4361,21 @@ Expression IsBooleanExpression(Expression leftExpression):
 {
         (
           <K_IS> [<K_NOT> { result.setNot(true); } ] (<K_TRUE> { result.setIsTrue(true); } | <K_FALSE> { result.setIsTrue(false); })
+        )
+
+    {
+        result.setLeftExpression(leftExpression);
+        return result;
+    }
+}
+
+Expression IsUnknownExpression(Expression leftExpression):
+{
+    IsUnknownExpression result = new IsUnknownExpression();
+}
+{
+        (
+          <K_IS> [<K_NOT> { result.setNot(true); } ] <K_UNKNOWN>
         )
 
     {
