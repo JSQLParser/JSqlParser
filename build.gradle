@@ -107,7 +107,7 @@ dependencies {
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
 
     // Java Doc in XML Format
-    xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:1.+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
@@ -128,10 +128,6 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
-}
-
-compileJava {
-    options.release = 11
 }
 
 javadoc {
@@ -184,12 +180,15 @@ tasks.register('xmldoc', Javadoc) {
 }
 
 test {
-    environment = [ 'EXPORT_TEST_TO_FILE': 'True' ]
+    environment = [ 'EXPORT_TEST_TO_FILE': 'False' ]
     useJUnitPlatform()
 
     // set heap size for the test JVM(s)
     minHeapSize = "128m"
     maxHeapSize = "4G"
+
+    // set JVM stack size
+    jvmArgs = ['-Xss2m']
 
     jacoco {
         excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']

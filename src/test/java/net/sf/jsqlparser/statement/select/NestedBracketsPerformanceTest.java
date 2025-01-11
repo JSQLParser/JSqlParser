@@ -535,4 +535,15 @@ public class NestedBracketsPerformanceTest {
                 .withAllowComplexParsing(true)
                 .withTimeOut(60000));
     }
+
+    @Test
+    @Disabled
+    // see https://github.com/javacc/javacc/issues/296
+    void testIssue2140() throws JSQLParserException {
+        String sqlStr = "(((IIF((CASE WHEN 1 = 2 THEN 'a' ELSE 'b') = 'b'), 2, 3)))";
+
+        CCJSqlParserUtil.parseExpression(
+                sqlStr, true, parser -> parser
+                        .withTimeOut(10000));
+    }
 }
