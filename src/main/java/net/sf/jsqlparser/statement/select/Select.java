@@ -359,7 +359,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         this.unPivot = unPivot;
     }
 
-    public abstract StringBuilder appendSelectBodyTo(StringBuilder builder);
+    public StringBuilder appendSelectBodyTo(StringBuilder builder) {
+        return builder;
+    };
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public StringBuilder appendTo(StringBuilder builder) {

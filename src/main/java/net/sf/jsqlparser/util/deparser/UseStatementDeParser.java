@@ -19,10 +19,10 @@ public class UseStatementDeParser extends AbstractDeParser<UseStatement> {
 
     @Override
     public void deParse(UseStatement set) {
-        buffer.append("USE ");
+        builder.append("USE ");
         if (set.hasSchemaKeyword()) {
-            buffer.append("SCHEMA ");
+            builder.append("SCHEMA ");
         }
-        buffer.append(set.getName());
+        builder.append(set.getName());
     }
 }

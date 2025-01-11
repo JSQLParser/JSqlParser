@@ -112,6 +112,7 @@ public class StatementValidator extends AbstractValidator<Statement>
         return visit(delete.getDelete(), context);
     }
 
+
     @Override
     public <S> Void visit(Drop drop, S context) {
         getValidator(DropValidator.class).validate(drop);

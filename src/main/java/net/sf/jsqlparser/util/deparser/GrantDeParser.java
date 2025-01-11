@@ -21,26 +21,26 @@ public class GrantDeParser extends AbstractDeParser<Grant> {
 
     @Override
     public void deParse(Grant grant) {
-        buffer.append("GRANT ");
+        builder.append("GRANT ");
         if (grant.getRole() != null) {
-            buffer.append(grant.getRole());
+            builder.append(grant.getRole());
         } else {
             for (Iterator<String> iter = grant.getPrivileges().iterator(); iter.hasNext();) {
                 String privilege = iter.next();
-                buffer.append(privilege);
+                builder.append(privilege);
                 if (iter.hasNext()) {
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
             }
-            buffer.append(" ON ");
-            buffer.append(grant.getObjectName());
+            builder.append(" ON ");
+            builder.append(grant.getObjectName());
         }
-        buffer.append(" TO ");
+        builder.append(" TO ");
         for (Iterator<String> iter = grant.getUsers().iterator(); iter.hasNext();) {
             String user = iter.next();
-            buffer.append(user);
+            builder.append(user);
             if (iter.hasNext()) {
-                buffer.append(", ");
+                builder.append(", ");
             }
         }
     }

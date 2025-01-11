@@ -38,6 +38,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.statement.grant;
     exports net.sf.jsqlparser.statement.insert;
     exports net.sf.jsqlparser.statement.merge;
+    exports net.sf.jsqlparser.statement.piped;
     exports net.sf.jsqlparser.statement.refresh;
     exports net.sf.jsqlparser.statement.select;
     exports net.sf.jsqlparser.statement.show;

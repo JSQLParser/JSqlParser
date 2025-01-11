@@ -26,7 +26,7 @@ public class CreateSequenceDeParser extends AbstractDeParser<CreateSequence> {
 
     @Override
     public void deParse(CreateSequence statement) {
-        buffer.append("CREATE SEQUENCE ");
-        buffer.append(statement.getSequence());
+        builder.append("CREATE SEQUENCE ");
+        builder.append(statement.getSequence());
     }
 }

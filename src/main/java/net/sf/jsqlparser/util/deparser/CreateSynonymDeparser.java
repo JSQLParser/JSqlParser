@@ -23,15 +23,15 @@ public class CreateSynonymDeparser extends AbstractDeParser<CreateSynonym> {
 
     @Override
     void deParse(CreateSynonym createSynonym) {
-        buffer.append("CREATE ");
+        builder.append("CREATE ");
         if (createSynonym.isOrReplace()) {
-            buffer.append("OR REPLACE ");
+            builder.append("OR REPLACE ");
         }
         if (createSynonym.isPublicSynonym()) {
-            buffer.append("PUBLIC ");
+            builder.append("PUBLIC ");
         }
-        buffer.append("SYNONYM " + createSynonym.getSynonym());
-        buffer.append(' ');
-        buffer.append("FOR " + createSynonym.getFor());
+        builder.append("SYNONYM " + createSynonym.getSynonym());
+        builder.append(' ');
+        builder.append("FOR " + createSynonym.getFor());
     }
 }

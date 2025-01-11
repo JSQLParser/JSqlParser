@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.ForMode;
@@ -406,6 +407,11 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     public void visit(TableStatement tableStatement) {
         visit(tableStatement, null);
+    }
+
+    @Override
+    public <S> Void visit(FromQuery fromQuery, S context) {
+        return null;
     }
 
     public void visit(TableFunction tableFunction) {

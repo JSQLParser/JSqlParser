@@ -56,6 +56,7 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
 import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
@@ -680,4 +681,6 @@ public interface ExpressionVisitor<T> {
     }
 
     <S> T visit(CosineSimilarity cosineSimilarity, S context);
+
+    <S> T visit(FromQuery fromQuery, S context);
 }

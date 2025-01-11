@@ -56,6 +56,7 @@ import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.expression.operators.relational.TSQLLeftJoin;
 import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -810,6 +811,11 @@ public class ExpressionVisitorAdapter<T>
     public <S> T visit(CosineSimilarity cosineSimilarity, S context) {
         cosineSimilarity.getLeftExpression().accept(this, context);
         cosineSimilarity.getRightExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FromQuery fromQuery, S context) {
         return null;
     }
 

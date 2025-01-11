@@ -25,13 +25,13 @@ public class AssortedFeatureTests {
 
         @Override
         public <K> StringBuilder visit(StringValue stringValue, K parameters) {
-            this.getBuffer().append("?");
+            this.getBuilder().append("?");
             return null;
         }
 
         @Override
         public <K> StringBuilder visit(LongValue longValue, K parameters) {
-            this.getBuffer().append("?");
+            this.getBuilder().append("?");
             return null;
         }
     }
@@ -42,14 +42,14 @@ public class AssortedFeatureTests {
 
         SelectDeParser selectDeparser = new SelectDeParser(expr, buffer);
         expr.setSelectVisitor(selectDeparser);
-        expr.setBuffer(buffer);
+        expr.setBuilder(buffer);
 
         StatementDeParser stmtDeparser = new StatementDeParser(expr, selectDeparser, buffer);
 
         Statement stmt = CCJSqlParserUtil.parse(sql);
 
         stmt.accept(stmtDeparser);
-        return stmtDeparser.getBuffer().toString();
+        return stmtDeparser.getBuilder().toString();
     }
 
     @Test

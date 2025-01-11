@@ -355,20 +355,20 @@ public class StatementDeParserTest {
         ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
             @Override
             public <K> StringBuilder visit(StringValue stringValue, K parameters) {
-                buffer.append("?");
+                builder.append("?");
                 return null;
             }
 
             @Override
             public <K> StringBuilder visit(LongValue longValue, K parameters) {
-                buffer.append("?");
+                builder.append("?");
                 return null;
             }
         };
 
         SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, builder);
         expressionDeParser.setSelectVisitor(selectDeParser);
-        expressionDeParser.setBuffer(builder);
+        expressionDeParser.setBuilder(builder);
 
         StatementDeParser statementDeParser =
                 new StatementDeParser(expressionDeParser, selectDeParser, builder);

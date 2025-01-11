@@ -20,7 +20,4 @@ public interface Expression extends ASTNodeAccess, Model {
         this.accept(expressionVisitor, null);
     }
 
-    ;
-
-
 }

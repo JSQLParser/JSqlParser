@@ -33,15 +33,15 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
     @Override
     public void deParse(AlterView alterView) {
         if (alterView.isUseReplace()) {
-            buffer.append("REPLACE ");
+            builder.append("REPLACE ");
         } else {
-            buffer.append("ALTER ");
+            builder.append("ALTER ");
         }
-        buffer.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
+        builder.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
         if (alterView.getColumnNames() != null) {
-            buffer.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
+            builder.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
         }
-        buffer.append(" AS ");
+        builder.append(" AS ");
 
         alterView.getSelect().accept(selectVisitor, null);
     }

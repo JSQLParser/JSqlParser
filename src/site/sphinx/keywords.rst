@@ -77,7 +77,7 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | QUALIFY              | Yes         |           | 
 +----------------------+-------------+-----------+
-| HAVING               | Yes         | Yes       |
+| HAVING               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IF                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -97,7 +97,7 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | INTERVAL             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
-| INTO                 | Yes         | Yes       |
+| INTO                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IS                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -109,7 +109,7 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | LIKE                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
-| LIMIT                | Yes         | Yes       |
+| LIMIT                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | MINUS                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -139,7 +139,9 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | OPTIMIZE             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
-| PIVOT                | Yes         | Yes       |
+| OVERWRITE            | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| PIVOT                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | PREFERRING           | Yes         | Yes       | 
 +----------------------+-------------+-----------+

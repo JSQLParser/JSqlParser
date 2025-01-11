@@ -15,6 +15,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -39,7 +40,7 @@ public abstract class ConnectExpressionsVisitor<T>
         implements SelectVisitor<T>, SelectItemVisitor<T> {
 
     private final List<SelectItem<? extends Expression>> itemsExpr =
-            new LinkedList<SelectItem<? extends Expression>>();
+            new LinkedList<>();
     private String alias = "expr";
 
     public ConnectExpressionsVisitor() {}
@@ -88,6 +89,11 @@ public abstract class ConnectExpressionsVisitor<T>
 
         plainSelect.getSelectItems().get(0).setAlias(new Alias(alias));
         return null;
+    }
+
+    @Override
+    public <S> T visit(FromQuery fromQuery, S context) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

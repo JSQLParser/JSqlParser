@@ -20,10 +20,10 @@ import java.util.List;
  * @param <S> the type of statement this DeParser supports
  */
 abstract class AbstractDeParser<S> {
-    protected StringBuilder buffer;
+    protected StringBuilder builder;
 
-    protected AbstractDeParser(StringBuilder buffer) {
-        this.buffer = buffer;
+    protected AbstractDeParser(StringBuilder builder) {
+        this.builder = builder;
     }
 
     public static void deparseUpdateSets(List<UpdateSet> updateSets, StringBuilder buffer,
@@ -43,12 +43,12 @@ abstract class AbstractDeParser<S> {
         }
     }
 
-    public StringBuilder getBuffer() {
-        return buffer;
+    public StringBuilder getBuilder() {
+        return builder;
     }
 
-    public void setBuffer(StringBuilder buffer) {
-        this.buffer = buffer;
+    public void setBuilder(StringBuilder builder) {
+        this.builder = builder;
     }
 
     /**

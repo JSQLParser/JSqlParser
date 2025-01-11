@@ -32,27 +32,27 @@ public class MergeDeParser extends AbstractDeParser<Merge>
     public void deParse(Merge merge) {
         List<WithItem<?>> withItemsList = merge.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
-            buffer.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
                 iter.next().accept(selectDeParser, null);
                 if (iter.hasNext()) {
-                    buffer.append(",");
+                    builder.append(",");
                 }
-                buffer.append(" ");
+                builder.append(" ");
             }
         }
 
-        buffer.append("MERGE ");
+        builder.append("MERGE ");
         if (merge.getOracleHint() != null) {
-            buffer.append(merge.getOracleHint()).append(" ");
+            builder.append(merge.getOracleHint()).append(" ");
         }
-        buffer.append("INTO ");
+        builder.append("INTO ");
         merge.getTable().accept(selectDeParser, null);
 
-        buffer.append(" USING ");
+        builder.append(" USING ");
         merge.getFromItem().accept(selectDeParser, null);
 
-        buffer.append(" ON ");
+        builder.append(" ON ");
         merge.getOnCondition().accept(expressionDeParser, null);
 
         List<MergeOperation> operations = merge.getOperations();
@@ -61,19 +61,19 @@ public class MergeDeParser extends AbstractDeParser<Merge>
         }
 
         if (merge.getOutputClause() != null) {
-            merge.getOutputClause().appendTo(buffer);
+            merge.getOutputClause().appendTo(builder);
         }
     }
 
     @Override
     public <S> StringBuilder visit(MergeDelete mergeDelete, S context) {
-        buffer.append(" WHEN MATCHED");
+        builder.append(" WHEN MATCHED");
         if (mergeDelete.getAndPredicate() != null) {
-            buffer.append(" AND ");
+            builder.append(" AND ");
             mergeDelete.getAndPredicate().accept(expressionDeParser, context);
         }
-        buffer.append(" THEN DELETE");
-        return buffer;
+        builder.append(" THEN DELETE");
+        return builder;
     }
 
     public void visit(MergeDelete mergeDelete) {
@@ -82,25 +82,25 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeUpdate mergeUpdate, S context) {
-        buffer.append(" WHEN MATCHED");
+        builder.append(" WHEN MATCHED");
         if (mergeUpdate.getAndPredicate() != null) {
-            buffer.append(" AND ");
+            builder.append(" AND ");
             mergeUpdate.getAndPredicate().accept(expressionDeParser, context);
         }
-        buffer.append(" THEN UPDATE SET ");
-        deparseUpdateSets(mergeUpdate.getUpdateSets(), buffer, expressionDeParser);
+        builder.append(" THEN UPDATE SET ");
+        deparseUpdateSets(mergeUpdate.getUpdateSets(), builder, expressionDeParser);
 
         if (mergeUpdate.getWhereCondition() != null) {
-            buffer.append(" WHERE ");
+            builder.append(" WHERE ");
             mergeUpdate.getWhereCondition().accept(expressionDeParser, context);
         }
 
         if (mergeUpdate.getDeleteWhereCondition() != null) {
-            buffer.append(" DELETE WHERE ");
+            builder.append(" DELETE WHERE ");
             mergeUpdate.getDeleteWhereCondition().accept(expressionDeParser, context);
         }
 
-        return buffer;
+        return builder;
     }
 
     public void visit(MergeUpdate mergeUpdate) {
@@ -109,24 +109,24 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeInsert mergeInsert, S context) {
-        buffer.append(" WHEN NOT MATCHED");
+        builder.append(" WHEN NOT MATCHED");
         if (mergeInsert.getAndPredicate() != null) {
-            buffer.append(" AND ");
+            builder.append(" AND ");
             mergeInsert.getAndPredicate().accept(expressionDeParser, context);
         }
-        buffer.append(" THEN INSERT ");
+        builder.append(" THEN INSERT ");
         if (mergeInsert.getColumns() != null) {
             mergeInsert.getColumns().accept(expressionDeParser, context);
         }
-        buffer.append(" VALUES ");
+        builder.append(" VALUES ");
         mergeInsert.getValues().accept(expressionDeParser, context);
 
         if (mergeInsert.getWhereCondition() != null) {
-            buffer.append(" WHERE ");
+            builder.append(" WHERE ");
             mergeInsert.getWhereCondition().accept(expressionDeParser, context);
         }
 
-        return buffer;
+        return builder;
     }
 
     public void visit(MergeInsert mergeInsert) {

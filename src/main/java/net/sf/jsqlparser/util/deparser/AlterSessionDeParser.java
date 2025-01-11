@@ -19,7 +19,7 @@ public class AlterSessionDeParser extends AbstractDeParser<AlterSession> {
 
     @Override
     public void deParse(AlterSession alterSession) {
-        buffer.append(alterSession.toString());
+        builder.append(alterSession.toString());
     }
 
 }
