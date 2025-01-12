@@ -2356,18 +2356,18 @@ PipeOperator PipeOperator() #PipeOperator:
         operator = SelectPipeOperator()
 //        |
 //        operator = ExtendPipeOperator()
-//        |
-//        operator = SetPipeOperator()
-//        |
-//        operator = DropPipeOperator()
+        |
+        operator = SetPipeOperator()
+        |
+        operator = DropPipeOperator()
 //        |
 //        operator = RenamePipeOperator()
         |
         LOOKAHEAD(2) operator = AsPipeOperator()
         |
         operator = WherePipeOperator()
-//        |
-//        operator = LimitPipeOperator()
+        |
+        operator = LimitPipeOperator()
         |
         LOOKAHEAD(2) operator = AggregatePipeOperator()
         |
@@ -2399,6 +2399,8 @@ SelectPipeOperator SelectPipeOperator():
         operatorKeyToken = <K_EXTEND>
         |
         operatorKeyToken = <K_WINDOW>
+        |
+        operatorKeyToken = <K_RENAME>
     )
     selectItem = SelectItem()
     { selectPipeOperator = new SelectPipeOperator(operatorKeyToken.image, selectItem); }
@@ -2489,6 +2491,45 @@ JoinPipeOperator JoinPipeOperator():
     }
 }
 
+SetPipeOperator SetPipeOperator():
+{
+    SetPipeOperator setPipeOperator;
+    List<UpdateSet> updateSets;
+}
+{
+    <K_SET> updateSets = UpdateSets()
+    {
+        setPipeOperator = new SetPipeOperator(updateSets);
+        return setPipeOperator;
+    }
+}
+
+DropPipeOperator DropPipeOperator():
+{
+    DropPipeOperator dropPipeOperator;
+    ExpressionList<Column> columns;
+}
+{
+    <K_DROP> columns = ColumnList()
+    {
+        dropPipeOperator = new DropPipeOperator(columns);
+        return dropPipeOperator;
+    }
+}
+
+LimitPipeOperator LimitPipeOperator():
+{
+    LimitPipeOperator limitPipeOperator;
+    Expression expression;
+}
+{
+    <K_LIMIT> expression = Expression() { limitPipeOperator = new LimitPipeOperator(expression); }
+    [ LOOKAHEAD(2) <K_OFFSET> expression = Expression() { limitPipeOperator.setOffsetExpression(expression); } ]
+
+    {
+        return limitPipeOperator;
+    }
+}
 
 TableStatement TableStatement():
 {

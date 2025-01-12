@@ -68,6 +68,7 @@ import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -901,6 +902,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(DropPipeOperator drop, S context) {
+        builder.append("|> ").append("DROP ");
+        drop.getColumns().accept(expressionVisitor, context);
+        builder.append("\n");
         return builder;
     }
 
@@ -929,6 +933,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(LimitPipeOperator limit, S context) {
+        builder.append("|> ").append("LIMIT ").append(limit.getLimitExpression());
+        if (limit.getOffsetExpression() != null) {
+            builder.append(" OFFSET ").append(limit.getOffsetExpression());
+        }
         return builder;
     }
 
@@ -963,6 +971,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(SetPipeOperator set, S context) {
+        builder.append("|> ").append("SET");
+        int i = 0;
+        for (UpdateSet updateSet : set.getUpdateSets()) {
+            builder.append(i++ > 0 ? ", " : " ").append(updateSet);
+        }
+        builder.append("\n");
         return builder;
     }
 
