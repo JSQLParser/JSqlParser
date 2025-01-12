@@ -894,7 +894,8 @@ public class InsertTest {
             "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE VALUES (1) ON CONFLICT (foo) DO NOTHING",
             "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1 ON CONFLICT (foo) DO NOTHING"
     })
-    public void testOverridingSystemValueInsertsParseWithTableNamedOverriding(String sqlStr) throws JSQLParserException {
+    public void testOverridingSystemValueInsertsParseWithTableNamedOverriding(String sqlStr)
+            throws JSQLParserException {
         Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("overriding", insert.getTable().getName());
     }
