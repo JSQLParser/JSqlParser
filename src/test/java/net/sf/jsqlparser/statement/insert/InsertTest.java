@@ -30,6 +30,8 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.StringReader;
 import java.util.List;
@@ -699,7 +701,7 @@ public class InsertTest {
     }
 
     @Test
-    public void throwsParseWhenDefaultKeyowrdUsedAsAlias() {
+    public void throwsParseWhenDefaultKeywordUsedAsAlias() {
         String statement = "INSERT INTO mytable default DEFAULT VALUES";
         assertThrows(JSQLParserException.class,
                 () -> parserManager.parse(new StringReader(statement)));
@@ -867,6 +869,37 @@ public class InsertTest {
         assertEquals("pt1", insert.getPartitions().get(0).getColumn().getColumnName());
         assertEquals("'pt1'", insert.getPartitions().get(0).getValue().toString());
         assertFalse(insert.isOverwrite());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE VALUES (1)",
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1",
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE VALUES (1) ON CONFLICT (foo) DO UPDATE SET foo = 2",
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1 ON CONFLICT (foo) DO UPDATE SET foo = 2",
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE VALUES (1) ON CONFLICT (foo) DO NOTHING",
+            "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1 ON CONFLICT (foo) DO NOTHING"
+    })
+    public void testOverridingSystemValueInsertsParse(String sqlStr) throws JSQLParserException {
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("mytable", insert.getTable().getName());
+        assertEquals(true, insert.isOverriding());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE VALUES (1)",
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1",
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE VALUES (1) ON CONFLICT (foo) DO UPDATE SET foo = 2",
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1 ON CONFLICT (foo) DO UPDATE SET foo = 2",
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE VALUES (1) ON CONFLICT (foo) DO NOTHING",
+            "INSERT INTO overriding (foo) OVERRIDING SYSTEM VALUE SELECT bar FROM b WHERE y = 1 ON CONFLICT (foo) DO NOTHING"
+    })
+    public void testOverridingSystemValueInsertsParseWithTableNamedOverriding(String sqlStr)
+            throws JSQLParserException {
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals("overriding", insert.getTable().getName());
+        assertEquals(true, insert.isOverriding());
     }
 
 }
