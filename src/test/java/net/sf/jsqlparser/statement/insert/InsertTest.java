@@ -883,6 +883,7 @@ public class InsertTest {
     public void testOverridingSystemValueInsertsParse(String sqlStr) throws JSQLParserException {
         Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("mytable", insert.getTable().getName());
+        assertEquals(true, insert.isOverriding());
     }
 
     @ParameterizedTest
@@ -898,6 +899,7 @@ public class InsertTest {
             throws JSQLParserException {
         Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("overriding", insert.getTable().getName());
+        assertEquals(true, insert.isOverriding());
     }
 
 }
