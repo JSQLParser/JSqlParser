@@ -1652,12 +1652,9 @@ Insert Insert():
     Expression exp = null;
     ReturningClause returningClause;
     Select select = null;
-    boolean useDuplicate = false;
     Token tk = null;
     InsertModifierPriority modifierPriority = null;
     boolean modifierIgnore = false;
-    boolean overwrite = false;
-    boolean tableKeyword = false;
 
     List<UpdateSet> updateSets;
     List<UpdateSet> duplicateUpdateSets;
