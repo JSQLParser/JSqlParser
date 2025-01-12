@@ -435,7 +435,7 @@ public class Join extends ASTNodeAccessImpl {
         for (Expression onExpression : onExpressions) {
             builder.append(" ON ").append(onExpression);
         }
-        if (usingColumns.size() > 0) {
+        if (!usingColumns.isEmpty()) {
             builder.append(PlainSelect.getFormattedList(usingColumns, "USING", true, true));
         }
 

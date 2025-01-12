@@ -2,7 +2,6 @@ package net.sf.jsqlparser.statement.piped;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -19,11 +18,17 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 public class FromQuery extends Select {
+    private boolean usingFromKeyword = true;
     private FromItem fromItem;
     private final ArrayList<PipeOperator> pipeOperators = new ArrayList<>();
 
     public FromQuery(FromItem fromItem) {
         this.fromItem = fromItem;
+    }
+
+    public FromQuery(FromItem fromItem, boolean usingFromKeyword) {
+        this.fromItem = fromItem;
+        this.usingFromKeyword = usingFromKeyword;
     }
 
     public FromItem getFromItem() {
@@ -36,7 +41,20 @@ public class FromQuery extends Select {
     }
 
     public FromQuery with(FromItem fromItem) {
-        return setFromItem(fromItem);
+        return this.setFromItem(fromItem);
+    }
+
+    public boolean isUsingFromKeyword() {
+        return usingFromKeyword;
+    }
+
+    public FromQuery setUsingFromKeyword(boolean usingFromKeyword) {
+        this.usingFromKeyword = usingFromKeyword;
+        return this;
+    }
+
+    public FromQuery with(boolean usingFromKeyword) {
+        return this.setUsingFromKeyword(usingFromKeyword);
     }
 
     public ArrayList<PipeOperator> getPipeOperators() {
@@ -176,11 +194,6 @@ public class FromQuery extends Select {
     }
 
     @Override
-    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
-        return statementVisitor.visit(this, context);
-    }
-
-    @Override
     public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
         return fromItemVisitor.visit(this, context);
     }
@@ -194,7 +207,10 @@ public class FromQuery extends Select {
 
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("FROM ").append(fromItem).append("\n");
+        if (usingFromKeyword) {
+            builder.append("FROM ");
+        }
+        builder.append(fromItem).append("\n");
         for (PipeOperator operator : pipeOperators) {
             operator.appendTo(builder);
         }

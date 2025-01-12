@@ -5,10 +5,25 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import java.util.ArrayList;
 
 public class SelectPipeOperator extends PipeOperator {
+    private final String operatorName;
+
     private final ArrayList<SelectItem<?>> selectItems = new ArrayList<>();
 
-    public SelectPipeOperator(SelectItem<?> selectItem) {
+    public SelectPipeOperator(String operatorName, SelectItem<?> selectItem) {
+        this.operatorName = operatorName;
         selectItems.add(selectItem);
+    }
+
+    public SelectPipeOperator(SelectItem<?> selectItem) {
+        this("SELECT", selectItem);
+    }
+
+    public String getOperatorName() {
+        return operatorName;
+    }
+
+    public ArrayList<SelectItem<?>> getSelectItems() {
+        return selectItems;
     }
 
     public SelectPipeOperator add(SelectItem<?> selectItem) {
@@ -27,7 +42,7 @@ public class SelectPipeOperator extends PipeOperator {
 
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("|> ").append("SELECT");
+        builder.append("|> ").append(operatorName);
         int i = 0;
         for (SelectItem<?> selectItem : selectItems) {
             builder.append(i++ > 0 ? ", " : " ").append(selectItem);

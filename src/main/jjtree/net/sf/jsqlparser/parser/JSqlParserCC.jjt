@@ -260,6 +260,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXISTS:"EXISTS">
 |   <K_EXPLAIN:"EXPLAIN">
 |   <K_EXPLICIT:"EXPLICIT">
+|   <K_EXTEND:"EXTEND">
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
 |   <K_FETCH:"FETCH">
@@ -2278,25 +2279,29 @@ Select Select() #Select:
     WithIsolation withIsolation = null;
 }
 {
-    [ with=WithList() ]
     (
-        LOOKAHEAD(3) select = PlainSelect()
+        (
+            [ with=WithList() ]
+            (
+                LOOKAHEAD(3) select = PlainSelect()
+                |
+                LOOKAHEAD(3) select = Values()
+                |
+                LOOKAHEAD(3) select = ParenthesedSelect()
+            )
+            [ LOOKAHEAD(2) select = FromQueryFromSelect(select) ]
+            [ LOOKAHEAD(2) select = SetOperationList(select) ]
+
+            [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
+
+            [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
+            [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
+            [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
+            [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
+        )
         |
         select = FromQuery()
-        |
-        LOOKAHEAD(3) select = Values()
-        |
-        LOOKAHEAD(3) select = ParenthesedSelect()
     )
-    [ LOOKAHEAD(2) select = SetOperationList(select) ]
-
-    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
-
-    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
-    [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
-    [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
-    [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
-
     {
         linkAST(select, jjtThis);
         return select.withWithItemsList(with);
@@ -2310,9 +2315,31 @@ FromQuery FromQuery() #FromQuery:
     PipeOperator pipeOperator;
 }
 {
-    <K_FROM> fromItem = FromItem()  { fromQuery = new FromQuery(fromItem); }
+    <K_FROM> fromItem = FromItem() { fromQuery = new FromQuery(fromItem); }
     (
         LOOKAHEAD(2) "|>" pipeOperator = PipeOperator() { fromQuery.add(pipeOperator); }
+    )*
+
+    {
+        return fromQuery;
+    }
+}
+
+FromQuery FromQueryFromSelect(Select select):
+{
+    FromQuery fromQuery;
+    FromItem fromItem;
+    PipeOperator pipeOperator;
+}
+{
+    "|>" pipeOperator = PipeOperator()
+    {
+        fromQuery = new FromQuery(select, false);
+        fromQuery.add(pipeOperator);
+    }
+    (
+        LOOKAHEAD(2) "|>" pipeOperator = PipeOperator()
+        { fromQuery.add(pipeOperator); }
     )*
 
     {
@@ -2335,14 +2362,14 @@ PipeOperator PipeOperator() #PipeOperator:
 //        operator = DropPipeOperator()
 //        |
 //        operator = RenamePipeOperator()
-//        |
-//        operator = AsPipeOprator()
+        |
+        LOOKAHEAD(2) operator = AsPipeOperator()
         |
         operator = WherePipeOperator()
 //        |
 //        operator = LimitPipeOperator()
         |
-        operator = AggregatePipeOperator()
+        LOOKAHEAD(2) operator = AggregatePipeOperator()
         |
         operator = OrderByPipeOperator()
 //        |
@@ -2351,8 +2378,8 @@ PipeOperator PipeOperator() #PipeOperator:
 //        operator = IntersectPipeOperator();
 //        |
 //        operator = ExceptPipeOperator();
-//    |
-//    operator = JoinPipeOperator()
+        |
+        operator = JoinPipeOperator()
     )
     {
         return operator;
@@ -2361,12 +2388,21 @@ PipeOperator PipeOperator() #PipeOperator:
 
 SelectPipeOperator SelectPipeOperator():
 {
+    Token operatorKeyToken;
     SelectPipeOperator selectPipeOperator;
     SelectItem<?> selectItem;
 }
 {
-    <K_SELECT>
-    selectItem = SelectItem() { selectPipeOperator = new SelectPipeOperator(selectItem); }
+    (
+        operatorKeyToken = <K_SELECT>
+        |
+        operatorKeyToken = <K_EXTEND>
+        |
+        operatorKeyToken = <K_WINDOW>
+    )
+    selectItem = SelectItem()
+    { selectPipeOperator = new SelectPipeOperator(operatorKeyToken.image, selectItem); }
+
     ( LOOKAHEAD(2) "," selectItem = SelectItem() { selectPipeOperator.add(selectItem); } )*
 
     {
@@ -2426,6 +2462,33 @@ OrderByPipeOperator OrderByPipeOperator():
         return orderByPipeOperator;
     }
 }
+
+AsPipeOperator AsPipeOperator():
+{
+    AsPipeOperator asPipeOperator;
+    Alias alias;
+}
+{
+    <K_AS> alias = Alias()
+    {
+        asPipeOperator = new AsPipeOperator( alias.withUseAs(true) );
+        return asPipeOperator;
+    }
+}
+
+JoinPipeOperator JoinPipeOperator():
+{
+    JoinPipeOperator joinPipeOperator;
+    Join join;
+}
+{
+    join = JoinerExpression()
+    {
+        joinPipeOperator = new JoinPipeOperator(join);
+        return joinPipeOperator;
+    }
+}
+
 
 TableStatement TableStatement():
 {

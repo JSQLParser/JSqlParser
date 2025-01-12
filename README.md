@@ -88,7 +88,7 @@ If you like JSqlParser then please check out its related projects:
 ## Alternatives to JSqlParser?
 [**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
-Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a hand-written Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
+Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a handwritten Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
 
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
   1. [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)

@@ -829,7 +829,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(FromQuery fromQuery, S context) {
-        builder.append("FROM ");
+        if (fromQuery.isUsingFromKeyword()) {
+            builder.append("FROM ");
+        }
         fromQuery.getFromItem().accept(this, context);
         builder.append("\n");
         for (PipeOperator operator : fromQuery.getPipeOperators()) {
@@ -887,6 +889,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(AsPipeOperator as, S context) {
+        builder.append("|> ").append(as.getAlias());
+        builder.append("\n");
         return builder;
     }
 
@@ -907,7 +911,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(ExtendPipeOperator extend, S context) {
-        return builder;
+        return visit((SelectPipeOperator) extend, context);
     }
 
     @Override
@@ -917,6 +921,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(JoinPipeOperator join, S context) {
+        builder.append("|> ");
+        deparseJoin(join.getJoin());
+        builder.append("\n");
         return builder;
     }
 
@@ -945,6 +952,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(SelectPipeOperator select, S context) {
+        builder.append("|> ").append(select.getOperatorName());
+        int i = 0;
+        for (SelectItem<?> selectItem : select.getSelectItems()) {
+            builder.append(i++ > 0 ? ", " : " ").append(selectItem);
+        }
+        builder.append("\n");
         return builder;
     }
 
@@ -979,6 +992,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(WindowPipeOperator window, S context) {
-        return null;
+        return visit((SelectPipeOperator) window, context);
     }
 }

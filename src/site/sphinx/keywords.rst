@@ -53,6 +53,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | EXISTS               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| EXTEND               | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | FALSE                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
