@@ -102,6 +102,7 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -290,6 +291,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(IsUnknownExpression isUnknownExpression, S context) {
+        isUnknownExpression.getLeftExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(JdbcParameter jdbcParameter, S context) {
         validateFeature(Feature.jdbcParameter);
         return null;
@@ -381,6 +388,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(IsBooleanExpression isBooleanExpression) {
         visit(isBooleanExpression, null); // Call the parametrized visit method with null context
+    }
+
+    public void visit(IsUnknownExpression isUnknownExpression) {
+        visit(isUnknownExpression, null); // Call the parametrized visit method with null context
     }
 
     public void visit(JdbcParameter jdbcParameter) {

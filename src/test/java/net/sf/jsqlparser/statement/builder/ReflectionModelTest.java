@@ -110,6 +110,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.expression.operators.relational.InExpression(),
             new net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression(),
             new net.sf.jsqlparser.expression.operators.relational.IsNullExpression(),
+            new net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression(),
             new net.sf.jsqlparser.expression.operators.relational.JsonOperator("@>"),
             new net.sf.jsqlparser.expression.operators.relational.LikeExpression(),
             new net.sf.jsqlparser.expression.operators.relational.Matches(),

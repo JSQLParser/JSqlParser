@@ -101,6 +101,7 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -526,6 +527,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(IsBooleanExpression isBooleanExpression, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(IsUnknownExpression isUnknownExpression, S context) {
 
         return null;
     }

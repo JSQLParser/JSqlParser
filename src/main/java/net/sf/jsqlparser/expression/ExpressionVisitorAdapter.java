@@ -42,6 +42,7 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -261,6 +262,11 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(IsBooleanExpression isBooleanExpression, S context) {
         return isBooleanExpression.getLeftExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(IsUnknownExpression isUnknownExpression, S context) {
+        return isUnknownExpression.getLeftExpression().accept(this, context);
     }
 
     @Override

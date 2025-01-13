@@ -133,6 +133,7 @@ public class ParserKeywordsUtils {
             {"UNBOUNDED", RESTRICTED_JSQLPARSER},
             {"UNION", RESTRICTED_SQL2016},
             {"UNIQUE", RESTRICTED_SQL2016},
+            {"UNKNOWN", RESTRICTED_SQL2016},
             {"UNPIVOT", RESTRICTED_JSQLPARSER},
             {"USE", RESTRICTED_JSQLPARSER},
             {"USING", RESTRICTED_SQL2016},

@@ -101,6 +101,7 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -429,6 +430,17 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(IsUnknownExpression isUnknownExpression, S context) {
+        isUnknownExpression.getLeftExpression().accept(this, context);
+        if (isUnknownExpression.isNot()) {
+            buffer.append(" IS NOT UNKNOWN");
+        } else {
+            buffer.append(" IS UNKNOWN");
+        }
+        return buffer;
+    }
+
+    @Override
     public <S> StringBuilder visit(JdbcParameter jdbcParameter, S context) {
         buffer.append(jdbcParameter.getParameterCharacter());
         if (jdbcParameter.isUseFixedIndex()) {
@@ -512,6 +524,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     public void visit(IsBooleanExpression isBooleanExpression) {
         visit(isBooleanExpression, null);
+    }
+
+    public void visit(IsUnknownExpression isUnknownExpression) {
+        visit(isUnknownExpression, null);
     }
 
     public void visit(JdbcParameter jdbcParameter) {
