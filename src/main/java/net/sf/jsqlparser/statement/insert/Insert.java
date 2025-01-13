@@ -40,6 +40,7 @@ public class Insert implements Statement {
     private List<Partition> partitions;
     private Select select;
     private boolean onlyDefaultValues = false;
+    private boolean overriding = false;
     private List<UpdateSet> duplicateUpdateSets = null;
     private InsertModifierPriority modifierPriority = null;
     private boolean modifierIgnore = false;
@@ -204,6 +205,19 @@ public class Insert implements Statement {
         this.withItemsList = withItemsList;
     }
 
+    public boolean isOverriding() {
+        return overriding;
+    }
+
+    public void setOverriding(boolean overriding) {
+        this.overriding = overriding;
+    }
+
+    public Insert withOverriding(boolean overriding) {
+        this.setOverriding(overriding);
+        return this;
+    }
+
     public boolean isOnlyDefaultValues() {
         return onlyDefaultValues;
     }
@@ -292,6 +306,10 @@ public class Insert implements Statement {
                 sql.append(columns.get(i).getColumnName());
             }
             sql.append(") ");
+        }
+
+        if (overriding) {
+            sql.append("OVERRIDING SYSTEM VALUE ");
         }
 
         if (partitions != null) {
