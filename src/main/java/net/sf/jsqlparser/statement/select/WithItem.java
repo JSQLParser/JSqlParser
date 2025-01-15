@@ -15,14 +15,14 @@ import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class WithItem<T extends ParenthesedStatement> {
-
+public class WithItem<T extends ParenthesedStatement> implements Serializable {
     private T statement;
     private Alias alias;
     private List<SelectItem<?>> withItemList;
