@@ -2272,6 +2272,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testIsUnknown() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS UNKNOWN";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testIsNotUnknown() throws JSQLParserException {
+        String statement = "SELECT col FROM tbl WHERE col IS NOT UNKNOWN";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testTSQLJoin() throws JSQLParserException {
         String stmt = "SELECT * FROM tabelle1, tabelle2 WHERE tabelle1.a *= tabelle2.b";
         assertSqlCanBeParsedAndDeparsed(stmt);
