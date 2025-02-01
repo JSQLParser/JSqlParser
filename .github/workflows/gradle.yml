@@ -27,7 +27,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@main
+      uses: gradle/actions/setup-gradle@main
       with:
         arguments: check
       env:
