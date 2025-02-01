@@ -434,11 +434,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public <S> StringBuilder visit(IsUnknownExpression isUnknownExpression, S context) {
         isUnknownExpression.getLeftExpression().accept(this, context);
         if (isUnknownExpression.isNot()) {
-            buffer.append(" IS NOT UNKNOWN");
+            builder.append(" IS NOT UNKNOWN");
         } else {
-            buffer.append(" IS UNKNOWN");
+            builder.append(" IS UNKNOWN");
         }
-        return buffer;
+        return builder;
     }
 
     @Override

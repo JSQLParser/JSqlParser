@@ -37,7 +37,7 @@ import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
 import net.sf.jsqlparser.statement.piped.SetPipeOperator;
 import net.sf.jsqlparser.statement.piped.TableSamplePipeOperator;
 import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
-import net.sf.jsqlparser.statement.piped.UnionPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetOperationPipeOperator;
 import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.select.Distinct;
@@ -948,6 +948,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         return builder;
     }
 
+
     @Override
     public <S> StringBuilder visit(PivotPipeOperator pivot, S context) {
         return builder;
@@ -986,7 +987,20 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(UnionPipeOperator union, S context) {
+    public <S> StringBuilder visit(SetOperationPipeOperator setOperationPipeOperator, S context) {
+        builder.append("|> ").append(setOperationPipeOperator.getSetOperationType());
+        if (setOperationPipeOperator.getModifier() != null) {
+            builder.append(" ").append(setOperationPipeOperator.getModifier());
+        }
+
+        int i = 0;
+        for (ParenthesedSelect select : setOperationPipeOperator.getSelects()) {
+            if (i++ > 0) {
+                builder.append(", ");
+            }
+            builder.append(select);
+        }
+        builder.append("\n");
         return builder;
     }
 

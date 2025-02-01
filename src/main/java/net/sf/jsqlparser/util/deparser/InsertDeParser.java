@@ -91,7 +91,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         }
 
         if (insert.isOverriding()) {
-            buffer.append("OVERRIDING SYSTEM VALUE ");
+            builder.append("OVERRIDING SYSTEM VALUE ");
         }
 
         if (insert.getPartitions() != null) {

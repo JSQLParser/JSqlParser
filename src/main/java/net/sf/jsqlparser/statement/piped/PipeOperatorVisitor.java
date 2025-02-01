@@ -31,7 +31,7 @@ public interface PipeOperatorVisitor<T> {
 
     <S> T visit(TableSamplePipeOperator tableSample, S context);
 
-    <S> T visit(UnionPipeOperator union, S context);
+    <S> T visit(SetOperationPipeOperator union, S context);
 
     <S> T visit(UnPivotPipeOperator unPivot, S context);
 
