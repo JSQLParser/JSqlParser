@@ -26,10 +26,10 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
-    - name: Build with Gradle
+    - name: Setup Gradle
       uses: gradle/actions/setup-gradle@main
-      with:
-        arguments: check
+    - name: Run checks
+      run: ./gradlew check
       env:
         ossrhUsername: ${{ secrets.OSSRHPASSWORD }}
         ossrhPassword: ${{ secrets.OSSRHUSERNAME }}
