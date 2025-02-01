@@ -557,6 +557,7 @@ TOKEN : /* Operators */
 |   <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |   <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |   <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
+|   <OP_NOTEQUALSHAT: "^" (<WHITESPACE>)* "=">
 |   <OP_CONCAT: "|" (<WHITESPACE>)* "|">
 | 	<OP_DOUBLEAND: "&&">
 | 	<OP_CONTAINS: "&>">
@@ -4081,6 +4082,7 @@ Expression RegularCondition() #RegularCondition:
         | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
         | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
         | token=<OP_NOTEQUALSBANG> { result = new NotEqualsTo(token.image); }
+        | token=<OP_NOTEQUALSHAT> { result = new NotEqualsTo(token.image); }
         | "*=" { result = new TSQLLeftJoin(); }
         | "=*" { result = new TSQLRightJoin(); }
         | token=<OP_DOUBLEAND> { result = new DoubleAnd(); }
