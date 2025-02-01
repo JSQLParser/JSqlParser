@@ -19,16 +19,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@main
       with:
         fetch-depth: 0
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@main
       with:
         java-version: '11'
         distribution: 'temurin'
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v3.5.0
+      uses: gradle/gradle-build-action@main
       with:
         arguments: publish
         # arguments: build check publish

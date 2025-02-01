@@ -8,27 +8,27 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@main
       - name: Install XSLT Processor
         run: sudo apt-get install xsltproc sphinx-common
       - name: Install dependencies
         run: pip install furo myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
       - name: Checkout project sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@main
         with:
           ref: master
           fetch-depth: 0
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3.5.0
+        uses: gradle/gradle-build-action@main
       - name: Run build with Gradle Wrapper
         run: FLOATING_TOC=false ./gradlew --no-build-cache clean xmldoc sphinx
       - name: Deploy
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@main
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@main
         with:
           # Upload entire repository
           path: 'build/sphinx'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@main

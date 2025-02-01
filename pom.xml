@@ -201,7 +201,7 @@
                     <showDeprecation>true</showDeprecation>
                     <fork>true</fork>
                     <meminitial>128m</meminitial>
-                    <maxmem>2g</maxmem>
+                    <maxmem>2000m</maxmem>
                 </configuration>
             </plugin>
             <plugin>
@@ -444,11 +444,10 @@
                 <version>3.4.1</version>
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
+                    <doclint>none</doclint>
                     <maxmemory>2g</maxmemory>
                     <minmemory>800m</minmemory>
-                    <doclint>none</doclint>
-
-                    <additionalJOptions>-Xss2m</additionalJOptions>
+                    <additionalJOptions>-J-Xss2m</additionalJOptions>
 
                     <!-- Doclint does not work on the Test Sources
                     <doclint>all,-missing</doclint>
