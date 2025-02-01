@@ -19,7 +19,7 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
 
     @Override
     public void deParse(Alter alter) {
-        buffer.append(alter.toString());
+        builder.append(alter.toString());
     }
 
 }

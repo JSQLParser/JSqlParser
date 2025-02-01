@@ -65,4 +65,9 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
 
         return clazz.cast(parent.jjtGetValue());
     }
+
+    @Override
+    public String toString() {
+        return appendTo(new StringBuilder()).toString();
+    }
 }

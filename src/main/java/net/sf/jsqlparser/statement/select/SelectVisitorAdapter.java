@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.statement.piped.FromQuery;
+
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
@@ -19,6 +21,11 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(PlainSelect plainSelect, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FromQuery fromQuery, S context) {
         return null;
     }
 

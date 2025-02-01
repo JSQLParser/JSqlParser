@@ -22,16 +22,16 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
 
     @Override
     public void deParse(Limit limit) {
-        buffer.append(" LIMIT ");
+        builder.append(" LIMIT ");
         if (limit.isLimitNull()) {
-            buffer.append("NULL");
+            builder.append("NULL");
         } else {
             if (limit.isLimitAll()) {
-                buffer.append("ALL");
+                builder.append("ALL");
             } else {
                 if (null != limit.getOffset()) {
                     limit.getOffset().accept(expressionVisitor, null);
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
 
                 if (null != limit.getRowCount()) {
@@ -41,7 +41,7 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
         }
 
         if (limit.getByExpressions() != null) {
-            buffer.append(" BY ");
+            builder.append(" BY ");
             limit.getByExpressions().accept(expressionVisitor, null);
         }
     }

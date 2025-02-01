@@ -41,53 +41,53 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             "PMD.NPathComplexity"})
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
-            buffer.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter
                     .hasNext();) {
                 WithItem<?> withItem = iter.next();
                 withItem.accept(this.selectVisitor, null);
                 if (iter.hasNext()) {
-                    buffer.append(",");
+                    builder.append(",");
                 }
-                buffer.append(" ");
+                builder.append(" ");
             }
         }
 
-        buffer.append("INSERT ");
+        builder.append("INSERT ");
         if (insert.getModifierPriority() != null) {
-            buffer.append(insert.getModifierPriority()).append(" ");
+            builder.append(insert.getModifierPriority()).append(" ");
         }
         if (insert.getOracleHint() != null) {
-            buffer.append(insert.getOracleHint()).append(" ");
+            builder.append(insert.getOracleHint()).append(" ");
         }
         if (insert.isModifierIgnore()) {
-            buffer.append("IGNORE ");
+            builder.append("IGNORE ");
         }
         if (insert.isOverwrite()) {
-            buffer.append("OVERWRITE ");
+            builder.append("OVERWRITE ");
         } else {
-            buffer.append("INTO ");
+            builder.append("INTO ");
         }
         if (insert.isTableKeyword()) {
-            buffer.append("TABLE ");
+            builder.append("TABLE ");
         }
 
-        buffer.append(insert.getTable().toString());
+        builder.append(insert.getTable().toString());
 
         if (insert.isOnlyDefaultValues()) {
-            buffer.append(" DEFAULT VALUES");
+            builder.append(" DEFAULT VALUES");
         }
 
         if (insert.getColumns() != null) {
-            buffer.append(" (");
+            builder.append(" (");
             for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
                 Column column = iter.next();
-                buffer.append(column.getColumnName());
+                builder.append(column.getColumnName());
                 if (iter.hasNext()) {
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
             }
-            buffer.append(")");
+            builder.append(")");
         }
 
         if (insert.isOverriding()) {
@@ -95,43 +95,43 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         }
 
         if (insert.getPartitions() != null) {
-            buffer.append(" PARTITION (");
-            Partition.appendPartitionsTo(buffer, insert.getPartitions());
-            buffer.append(")");
+            builder.append(" PARTITION (");
+            Partition.appendPartitionsTo(builder, insert.getPartitions());
+            builder.append(")");
         }
 
         if (insert.getOutputClause() != null) {
-            buffer.append(insert.getOutputClause().toString());
+            builder.append(insert.getOutputClause().toString());
         }
 
         if (insert.getSelect() != null) {
-            buffer.append(" ");
+            builder.append(" ");
             Select select = insert.getSelect();
             select.accept(selectVisitor, null);
         }
 
         if (insert.getSetUpdateSets() != null) {
-            buffer.append(" SET ");
-            deparseUpdateSets(insert.getSetUpdateSets(), buffer, expressionVisitor);
+            builder.append(" SET ");
+            deparseUpdateSets(insert.getSetUpdateSets(), builder, expressionVisitor);
         }
 
         if (insert.getDuplicateUpdateSets() != null) {
-            buffer.append(" ON DUPLICATE KEY UPDATE ");
-            deparseUpdateSets(insert.getDuplicateUpdateSets(), buffer, expressionVisitor);
+            builder.append(" ON DUPLICATE KEY UPDATE ");
+            deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
         }
 
         // @todo: Accept some Visitors for the involved Expressions
         if (insert.getConflictAction() != null) {
-            buffer.append(" ON CONFLICT");
+            builder.append(" ON CONFLICT");
 
             if (insert.getConflictTarget() != null) {
-                insert.getConflictTarget().appendTo(buffer);
+                insert.getConflictTarget().appendTo(builder);
             }
-            insert.getConflictAction().appendTo(buffer);
+            insert.getConflictAction().appendTo(builder);
         }
 
         if (insert.getReturningClause() != null) {
-            insert.getReturningClause().appendTo(buffer);
+            insert.getReturningClause().appendTo(builder);
         }
     }
 

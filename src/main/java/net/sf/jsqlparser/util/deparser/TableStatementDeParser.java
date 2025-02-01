@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.*;
 
 /**
@@ -32,10 +33,10 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     }
 
     public void deparse(Offset offset) {
-        buffer.append(" OFFSET ");
+        builder.append(" OFFSET ");
         offset.getOffset().accept(expressionVisitor, null);
         if (offset.getOffsetParam() != null) {
-            buffer.append(" ").append(offset.getOffsetParam());
+            builder.append(" ").append(offset.getOffsetParam());
         }
 
     }
@@ -43,50 +44,55 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
     @Override
     public <S> StringBuilder visit(ParenthesedSelect parenthesedSelect, S context) {
 
-        return buffer;
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(PlainSelect plainSelect, S context) {
 
-        return buffer;
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(FromQuery fromQuery, S context) {
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(SetOperationList setOperationList, S context) {
 
-        return buffer;
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(WithItem<?> withItem, S context) {
 
-        return buffer;
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(Values values, S context) {
 
-        return buffer;
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(LateralSubSelect lateralSubSelect, S context) {
 
-        return buffer;
+        return builder;
     }
 
     @Override
     public <S> StringBuilder visit(TableStatement tableStatement, S context) {
-        buffer.append("TABLE ");
-        buffer.append(tableStatement.getTable());
+        builder.append("TABLE ");
+        builder.append(tableStatement.getTable());
         if (tableStatement.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer)
+            new OrderByDeParser(expressionVisitor, builder)
                     .deParse(tableStatement.getOrderByElements());
         }
 
         if (tableStatement.getLimit() != null) {
-            new LimitDeparser(expressionVisitor, buffer).deParse(tableStatement.getLimit());
+            new LimitDeparser(expressionVisitor, builder).deParse(tableStatement.getLimit());
         }
         if (tableStatement.getOffset() != null) {
             deparse(tableStatement.getOffset());
@@ -94,9 +100,10 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
 
         // TODO UNION
 
-        tableStatement.appendTo(buffer, tableStatement.getAlias(), tableStatement.getPivot(),
+        tableStatement.appendTo(
+                builder, tableStatement.getAlias(), tableStatement.getPivot(),
                 tableStatement.getUnPivot());
 
-        return buffer;
+        return builder;
     }
 }

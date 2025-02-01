@@ -23,7 +23,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
     public CreateViewDeParser(StringBuilder buffer) {
         super(buffer);
         SelectDeParser selectDeParser = new SelectDeParser();
-        selectDeParser.setBuffer(buffer);
+        selectDeParser.setBuilder(buffer);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, buffer);
         selectDeParser.setExpressionVisitor(expressionDeParser);
         selectVisitor = selectDeParser;
@@ -37,16 +37,16 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(CreateView createView) {
-        buffer.append("CREATE ");
+        builder.append("CREATE ");
         if (createView.isOrReplace()) {
-            buffer.append("OR REPLACE ");
+            builder.append("OR REPLACE ");
         }
         switch (createView.getForce()) {
             case FORCE:
-                buffer.append("FORCE ");
+                builder.append("FORCE ");
                 break;
             case NO_FORCE:
-                buffer.append("NO FORCE ");
+                builder.append("NO FORCE ");
                 break;
             case NONE:
                 break;
@@ -54,36 +54,36 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
                 // nothing
         }
         if (createView.isSecure()) {
-            buffer.append("SECURE ");
+            builder.append("SECURE ");
         }
         if (createView.getTemporary() != TemporaryOption.NONE) {
-            buffer.append(createView.getTemporary().name()).append(" ");
+            builder.append(createView.getTemporary().name()).append(" ");
         }
         if (createView.isMaterialized()) {
-            buffer.append("MATERIALIZED ");
+            builder.append("MATERIALIZED ");
         }
-        buffer.append("VIEW ").append(createView.getView().getFullyQualifiedName());
+        builder.append("VIEW ").append(createView.getView().getFullyQualifiedName());
         if (createView.isIfNotExists()) {
-            buffer.append(" IF NOT EXISTS");
+            builder.append(" IF NOT EXISTS");
         }
         if (createView.getAutoRefresh() != AutoRefreshOption.NONE) {
-            buffer.append(" AUTO REFRESH ").append(createView.getAutoRefresh().name());
+            builder.append(" AUTO REFRESH ").append(createView.getAutoRefresh().name());
         }
         if (createView.getColumnNames() != null) {
-            buffer.append("(");
-            buffer.append(createView.getColumnNames());
-            buffer.append(")");
+            builder.append("(");
+            builder.append(createView.getColumnNames());
+            builder.append(")");
         }
         if (createView.getViewCommentOptions() != null) {
-            buffer.append(
+            builder.append(
                     PlainSelect.getStringList(createView.getViewCommentOptions(), false, false));
         }
-        buffer.append(" AS ");
+        builder.append(" AS ");
 
         Select select = createView.getSelect();
         select.accept(selectVisitor, null);
         if (createView.isWithReadOnly()) {
-            buffer.append(" WITH READ ONLY");
+            builder.append(" WITH READ ONLY");
         }
     }
 

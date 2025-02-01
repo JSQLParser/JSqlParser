@@ -1,8 +1,8 @@
 # [JSqlParser 5.1 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
-
-[![Gradle CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
+[![Maven deploy snapshot](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven_deploy.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven_deploy.yml)
+[![Gradle CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/gradle.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/gradle.yml)
+[![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master) 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser) [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -49,6 +49,22 @@ Column b = (Column) equalsTo.getRightExpression();
 Assertions.assertEquals("a", a.getColumnName());
 Assertions.assertEquals("b", b.getColumnName());
 ```
+## Support for `Piped SQL`
+
+Work is progressing for parsing `Piped SQL`, a much saner and more logical way to write queries in its semantic order.
+```sql
+FROM Produce
+|> WHERE
+    item != 'bananas'
+    AND category IN ('fruit', 'nut')
+|> AGGREGATE COUNT(*) AS num_items, SUM(sales) AS total_sales
+   GROUP BY item
+|> ORDER BY item DESC;
+```
+
+For details, please see https://storage.googleapis.com/gweb-research2023-media/pubtools/1004848.pdf,  https://cloud.google.com/bigquery/docs/reference/standard-sql/pipe-syntax and https://duckdb.org/docs/sql/query_syntax/from.html#from-first-syntax
+
+## Java Version
 
 JSQLParser-4.9 was the last JDK8 compatible version. JSQLParser-5.0 and later depend on JDK11 and introduce API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
 
@@ -75,7 +91,7 @@ If you like JSqlParser then please check out its related projects:
 ## Alternatives to JSqlParser?
 [**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
-Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a hand-written Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
+Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a handwritten Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
 
 ## [Documentation](https://jsqlparser.github.io/JSqlParser)
   1. [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)

@@ -19,6 +19,6 @@ public class ShowColumnsStatementDeParser extends AbstractDeParser<ShowColumnsSt
 
     @Override
     public void deParse(ShowColumnsStatement show) {
-        buffer.append("SHOW COLUMNS FROM ").append(show.getTableName());
+        builder.append("SHOW COLUMNS FROM ").append(show.getTableName());
     }
 }

@@ -24,10 +24,10 @@ public class ValuesStatementDeParser extends AbstractDeParser<Values> {
 
     @Override
     public void deParse(Values values) {
-        buffer.append("VALUES ");
+        builder.append("VALUES ");
         values.getExpressions().accept(expressionVisitor, null);
         if (values.getAlias() != null) {
-            buffer.append(" ").append(values.getAlias());
+            builder.append(" ").append(values.getAlias());
         }
     }
 }

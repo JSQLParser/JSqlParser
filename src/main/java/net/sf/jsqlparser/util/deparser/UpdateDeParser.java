@@ -39,53 +39,53 @@ public class UpdateDeParser extends AbstractDeParser<Update>
             "PMD.ExcessiveMethodLength"})
     public void deParse(Update update) {
         if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
-            buffer.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem<?>> iter = update.getWithItemsList().iterator(); iter
                     .hasNext();) {
                 WithItem<?> withItem = iter.next();
-                buffer.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    buffer.append(",");
+                    builder.append(",");
                 }
-                buffer.append(" ");
+                builder.append(" ");
             }
         }
-        buffer.append("UPDATE ");
+        builder.append("UPDATE ");
         if (update.getOracleHint() != null) {
-            buffer.append(update.getOracleHint()).append(" ");
+            builder.append(update.getOracleHint()).append(" ");
         }
         if (update.getModifierPriority() != null) {
-            buffer.append(update.getModifierPriority()).append(" ");
+            builder.append(update.getModifierPriority()).append(" ");
         }
         if (update.isModifierIgnore()) {
-            buffer.append("IGNORE ");
+            builder.append("IGNORE ");
         }
-        buffer.append(update.getTable());
+        builder.append(update.getTable());
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
                 if (join.isSimple()) {
-                    buffer.append(", ").append(join);
+                    builder.append(", ").append(join);
                 } else {
-                    buffer.append(" ").append(join);
+                    builder.append(" ").append(join);
                 }
             }
         }
-        buffer.append(" SET ");
+        builder.append(" SET ");
 
         deparseUpdateSetsClause(update);
 
         if (update.getOutputClause() != null) {
-            update.getOutputClause().appendTo(buffer);
+            update.getOutputClause().appendTo(builder);
         }
 
         if (update.getFromItem() != null) {
-            buffer.append(" FROM ").append(update.getFromItem());
+            builder.append(" FROM ").append(update.getFromItem());
             if (update.getJoins() != null) {
                 for (Join join : update.getJoins()) {
                     if (join.isSimple()) {
-                        buffer.append(", ").append(join);
+                        builder.append(", ").append(join);
                     } else {
-                        buffer.append(" ").append(join);
+                        builder.append(" ").append(join);
                     }
                 }
             }
@@ -94,29 +94,29 @@ public class UpdateDeParser extends AbstractDeParser<Update>
         deparseWhereClause(update);
 
         if (update.getPreferringClause() != null) {
-            buffer.append(" ").append(update.getPreferringClause());
+            builder.append(" ").append(update.getPreferringClause());
         }
         if (update.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(update.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, builder).deParse(update.getOrderByElements());
         }
         if (update.getLimit() != null) {
-            new LimitDeparser(expressionVisitor, buffer).deParse(update.getLimit());
+            new LimitDeparser(expressionVisitor, builder).deParse(update.getLimit());
         }
 
         if (update.getReturningClause() != null) {
-            update.getReturningClause().appendTo(buffer);
+            update.getReturningClause().appendTo(builder);
         }
     }
 
     protected void deparseWhereClause(Update update) {
         if (update.getWhere() != null) {
-            buffer.append(" WHERE ");
+            builder.append(" WHERE ");
             update.getWhere().accept(expressionVisitor, null);
         }
     }
 
     protected void deparseUpdateSetsClause(Update update) {
-        deparseUpdateSets(update.getUpdateSets(), buffer, expressionVisitor);
+        deparseUpdateSets(update.getUpdateSets(), builder, expressionVisitor);
     }
 
 
@@ -132,16 +132,16 @@ public class UpdateDeParser extends AbstractDeParser<Update>
     public <S> StringBuilder visit(OrderByElement orderBy, S context) {
         orderBy.getExpression().accept(expressionVisitor, context);
         if (!orderBy.isAsc()) {
-            buffer.append(" DESC");
+            builder.append(" DESC");
         } else if (orderBy.isAscDescPresent()) {
-            buffer.append(" ASC");
+            builder.append(" ASC");
         }
         if (orderBy.getNullOrdering() != null) {
-            buffer.append(' ');
-            buffer.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST
+            builder.append(' ');
+            builder.append(orderBy.getNullOrdering() == OrderByElement.NullOrdering.NULLS_FIRST
                     ? "NULLS FIRST"
                     : "NULLS LAST");
         }
-        return buffer;
+        return builder;
     }
 }

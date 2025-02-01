@@ -26,41 +26,41 @@ public class DeclareStatementDeParser extends AbstractDeParser<DeclareStatement>
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public void deParse(DeclareStatement declare) {
-        buffer.append("DECLARE ");
+        builder.append("DECLARE ");
 
         if (declare.getUserVariable() != null) {
             declare.getUserVariable().accept(expressionVisitor, null);
         }
 
         if (declare.getType() == DeclareType.AS) {
-            buffer.append(" AS ");
-            buffer.append(declare.getTypeName());
+            builder.append(" AS ");
+            builder.append(declare.getTypeName());
             return;
         }
 
         if (declare.getType() == DeclareType.TABLE) {
-            buffer.append(" TABLE (");
+            builder.append(" TABLE (");
             for (int i = 0; i < declare.getColumnDefinitions().size(); i++) {
                 if (i > 0) {
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
-                buffer.append(declare.getColumnDefinitions().get(i).toString());
+                builder.append(declare.getColumnDefinitions().get(i).toString());
             }
-            buffer.append(")");
+            builder.append(")");
         } else {
             if (declare.getTypeDefinitions() != null) {
                 for (int i = 0; i < declare.getTypeDefinitions().size(); i++) {
                     if (i > 0) {
-                        buffer.append(", ");
+                        builder.append(", ");
                     }
                     DeclareStatement.TypeDefExpr type = declare.getTypeDefinitions().get(i);
                     if (type.userVariable != null) {
                         type.userVariable.accept(expressionVisitor, null);
-                        buffer.append(" ");
+                        builder.append(" ");
                     }
-                    buffer.append(type.colDataType.toString());
+                    builder.append(type.colDataType.toString());
                     if (type.defaultExpr != null) {
-                        buffer.append(" = ");
+                        builder.append(" = ");
                         type.defaultExpr.accept(expressionVisitor, null);
                     }
                 }

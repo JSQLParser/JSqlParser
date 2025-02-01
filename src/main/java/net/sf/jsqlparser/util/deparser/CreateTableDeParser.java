@@ -34,97 +34,97 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(CreateTable createTable) {
-        buffer.append("CREATE ");
+        builder.append("CREATE ");
         if (createTable.isOrReplace()) {
-            buffer.append("OR REPLACE ");
+            builder.append("OR REPLACE ");
         }
         if (createTable.isUnlogged()) {
-            buffer.append("UNLOGGED ");
+            builder.append("UNLOGGED ");
         }
         String params =
                 PlainSelect.getStringList(createTable.getCreateOptionsStrings(), false, false);
         if (!params.isEmpty()) {
-            buffer.append(params).append(' ');
+            builder.append(params).append(' ');
         }
 
-        buffer.append("TABLE ");
+        builder.append("TABLE ");
         if (createTable.isIfNotExists()) {
-            buffer.append("IF NOT EXISTS ");
+            builder.append("IF NOT EXISTS ");
         }
-        buffer.append(createTable.getTable().getFullyQualifiedName());
+        builder.append(createTable.getTable().getFullyQualifiedName());
 
         if (createTable.getColumns() != null && !createTable.getColumns().isEmpty()) {
-            buffer.append(" (");
+            builder.append(" (");
             Iterator<String> columnIterator = createTable.getColumns().iterator();
-            buffer.append(columnIterator.next());
+            builder.append(columnIterator.next());
             while (columnIterator.hasNext()) {
-                buffer.append(", ").append(columnIterator.next());
+                builder.append(", ").append(columnIterator.next());
             }
-            buffer.append(")");
+            builder.append(")");
         }
         if (createTable.getColumnDefinitions() != null) {
-            buffer.append(" (");
+            builder.append(" (");
             for (Iterator<ColumnDefinition> iter =
                     createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
                 ColumnDefinition columnDefinition = iter.next();
-                buffer.append(columnDefinition.getColumnName());
-                buffer.append(" ");
-                buffer.append(columnDefinition.getColDataType().toString());
+                builder.append(columnDefinition.getColumnName());
+                builder.append(" ");
+                builder.append(columnDefinition.getColDataType().toString());
                 if (columnDefinition.getColumnSpecs() != null) {
                     for (String s : columnDefinition.getColumnSpecs()) {
-                        buffer.append(" ");
-                        buffer.append(s);
+                        builder.append(" ");
+                        builder.append(s);
                     }
                 }
 
                 if (iter.hasNext()) {
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
             }
 
             if (createTable.getIndexes() != null) {
                 for (Index index : createTable.getIndexes()) {
-                    buffer.append(", ");
-                    buffer.append(index.toString());
+                    builder.append(", ");
+                    builder.append(index.toString());
                 }
             }
 
-            buffer.append(")");
+            builder.append(")");
         }
 
         params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
         if (!"".equals(params)) {
-            buffer.append(' ').append(params);
+            builder.append(' ').append(params);
         }
 
         if (createTable.getRowMovement() != null) {
-            buffer.append(' ').append(createTable.getRowMovement().getMode().toString())
+            builder.append(' ').append(createTable.getRowMovement().getMode().toString())
                     .append(" ROW MOVEMENT");
         }
         if (createTable.getSelect() != null) {
-            buffer.append(" AS ");
+            builder.append(" AS ");
             if (createTable.isSelectParenthesis()) {
-                buffer.append("(");
+                builder.append("(");
             }
             Select sel = createTable.getSelect();
             sel.accept(this.statementDeParser, null);
             if (createTable.isSelectParenthesis()) {
-                buffer.append(")");
+                builder.append(")");
             }
         }
         if (createTable.getLikeTable() != null) {
-            buffer.append(" LIKE ");
+            builder.append(" LIKE ");
             if (createTable.isSelectParenthesis()) {
-                buffer.append("(");
+                builder.append("(");
             }
             Table table = createTable.getLikeTable();
-            buffer.append(table.getFullyQualifiedName());
+            builder.append(table.getFullyQualifiedName());
             if (createTable.isSelectParenthesis()) {
-                buffer.append(")");
+                builder.append(")");
             }
         }
         if (createTable.getSpannerInterleaveIn() != null) {
-            buffer.append(", ").append(createTable.getSpannerInterleaveIn());
+            builder.append(", ").append(createTable.getSpannerInterleaveIn());
         }
     }
 

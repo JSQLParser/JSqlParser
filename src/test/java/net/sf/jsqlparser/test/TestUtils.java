@@ -312,7 +312,7 @@ public class TestUtils {
         StatementDeParser deParser = new StatementDeParser(new StringBuilder());
         stmt.accept(deParser);
         assertEquals(buildSqlString(statement, laxDeparsingCheck),
-                buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
+                buildSqlString(deParser.getBuilder().toString(), laxDeparsingCheck));
     }
 
     public static String buildSqlString(final String originalSql, boolean laxDeparsingCheck) {
@@ -359,7 +359,7 @@ public class TestUtils {
     public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
         ExpressionDeParser expressionDeParser = new ExpressionDeParser();
         StringBuilder stringBuilder = new StringBuilder();
-        expressionDeParser.setBuffer(stringBuilder);
+        expressionDeParser.setBuilder(stringBuilder);
         SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuilder);
         expressionDeParser.setSelectVisitor(selectDeParser);
         parsed.accept(expressionDeParser, null);

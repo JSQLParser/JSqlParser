@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.statement.piped.FromQuery;
+
 public interface SelectVisitor<T> {
 
     <S> T visit(ParenthesedSelect parenthesedSelect, S context);
@@ -22,6 +24,8 @@ public interface SelectVisitor<T> {
     default void visit(PlainSelect plainSelect) {
         this.visit(plainSelect, null);
     }
+
+    <S> T visit(FromQuery fromQuery, S context);
 
     <S> T visit(SetOperationList setOpList, S context);
 

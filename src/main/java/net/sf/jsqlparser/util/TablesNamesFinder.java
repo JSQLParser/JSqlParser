@@ -160,6 +160,7 @@ import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -862,6 +863,11 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(TableStatement tableStatement) {
         SelectVisitor.super.visit(tableStatement);
+    }
+
+    @Override
+    public <S> Void visit(FromQuery fromQuery, S context) {
+        return null;
     }
 
     /**

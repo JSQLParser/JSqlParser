@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
@@ -65,6 +66,11 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     @Override
     public <S> T visit(TableStatement tableStatement, S context) {
 
+        return null;
+    }
+
+    @Override
+    public <S> T visit(FromQuery fromQuery, S context) {
         return null;
     }
 }

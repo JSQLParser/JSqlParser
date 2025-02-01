@@ -27,23 +27,23 @@ public class ExecuteDeParser extends AbstractDeParser<Execute> {
 
     @Override
     public void deParse(Execute execute) {
-        buffer.append(execute.getExecType().name()).append(" ").append(execute.getName());
+        builder.append(execute.getExecType().name()).append(" ").append(execute.getName());
         if (execute.isParenthesis()) {
-            buffer.append(" (");
+            builder.append(" (");
         } else if (execute.getExprList() != null) {
-            buffer.append(" ");
+            builder.append(" ");
         }
         if (execute.getExprList() != null) {
             List<Expression> expressions = execute.getExprList().getExpressions();
             for (int i = 0; i < expressions.size(); i++) {
                 if (i > 0) {
-                    buffer.append(", ");
+                    builder.append(", ");
                 }
                 expressions.get(i).accept(expressionVisitor, null);
             }
         }
         if (execute.isParenthesis()) {
-            buffer.append(")");
+            builder.append(")");
         }
     }
 

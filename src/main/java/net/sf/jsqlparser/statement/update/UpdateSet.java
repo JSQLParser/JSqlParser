@@ -118,4 +118,8 @@ public class UpdateSet implements Serializable {
         return builder;
     }
 
+    @Override
+    public String toString() {
+        return appendTo(new StringBuilder(), 0).toString();
+    }
 }

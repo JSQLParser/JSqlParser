@@ -21,30 +21,30 @@ public class GroupByDeParser extends AbstractDeParser<GroupByElement> {
             StringBuilder buffer) {
         super(buffer);
         this.expressionListDeParser = new ExpressionListDeParser<>(expressionVisitor, buffer);
-        this.buffer = buffer;
+        this.builder = buffer;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(GroupByElement groupBy) {
-        buffer.append("GROUP BY ");
+        builder.append("GROUP BY ");
         expressionListDeParser.deParse(groupBy.getGroupByExpressionList());
 
         int i = 0;
         if (!groupBy.getGroupingSets().isEmpty()) {
-            if (buffer.charAt(buffer.length() - 1) != ' ') {
-                buffer.append(' ');
+            if (builder.charAt(builder.length() - 1) != ' ') {
+                builder.append(' ');
             }
-            buffer.append("GROUPING SETS (");
+            builder.append("GROUPING SETS (");
             for (ExpressionList<?> expressionList : groupBy.getGroupingSets()) {
-                buffer.append(i++ > 0 ? ", " : "");
+                builder.append(i++ > 0 ? ", " : "");
                 expressionListDeParser.deParse(expressionList);
             }
-            buffer.append(")");
+            builder.append(")");
         }
 
         if (groupBy.isMysqlWithRollup()) {
-            buffer.append(" WITH ROLLUP");
+            builder.append(" WITH ROLLUP");
         }
     }
 }

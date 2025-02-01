@@ -33,7 +33,7 @@ public class CreateViewDeParserTest {
     public void testUseExtrnalExpressionDeparser() throws JSQLParserException {
         StringBuilder b = new StringBuilder();
         SelectDeParser selectDeParser = new SelectDeParser();
-        selectDeParser.setBuffer(b);
+        selectDeParser.setBuilder(b);
         ExpressionDeParser expressionDeParser = new ExpressionDeParser(selectDeParser, b) {
 
             @Override
@@ -48,11 +48,11 @@ public class CreateViewDeParserTest {
                     }
                 }
                 if (tableName != null && !tableName.isEmpty()) {
-                    getBuffer().append("\"").append(tableName).append("\"").append(".");
+                    getBuilder().append("\"").append(tableName).append("\"").append(".");
                 }
 
-                getBuffer().append("\"").append(tableColumn.getColumnName()).append("\"");
-                return buffer;
+                getBuilder().append("\"").append(tableColumn.getColumnName()).append("\"");
+                return builder;
             }
         };
 
@@ -65,7 +65,7 @@ public class CreateViewDeParserTest {
 
         assertEquals("CREATE VIEW test AS SELECT a, b FROM mytable", vc.toString());
         assertEquals("CREATE VIEW test AS SELECT \"a\", \"b\" FROM mytable",
-                instance.getBuffer().toString());
+                instance.getBuilder().toString());
     }
 
     @Test
