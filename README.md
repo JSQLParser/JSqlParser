@@ -1,21 +1,23 @@
-# [JSqlParser 5.0 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
+# [JSqlParser 5.1 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
-[![Maven deploy snapshot](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven_deploy.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/maven_deploy.yml)
-[![Gradle CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/gradle.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/gradle.yml)
+
+[![Gradle CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master) 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser) [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+A huge thank you to our sponsor, [Starlake.ai](https://starlake.ai/) who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
+
 ## Summary
 
-Please visit the [WebSite](https://jsqlparser.github.io/JSqlParser). **JSqlParser** is a RDBMS agnostic SQL statement parser. It translates SQL statements into a traversable hierarchy of Java classes (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)):
+Please visit our [WebSite](https://jsqlparser.github.io/JSqlParser) for detailed information. **JSqlParser** is a RDBMS agnostic SQL statement parser. It translates SQL statements into a traversable hierarchy of Java classes (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#parse-a-sql-statements)):
 
 ```sql
 SELECT 1 FROM dual WHERE a = b
-```
 
-```text
+/* produces the following AST
+
 SQL Text
  └─Statements: statement.select.PlainSelect
     ├─selectItems: statement.select.SelectItem
@@ -24,6 +26,7 @@ SQL Text
     └─where: expression.operators.relational.EqualsTo
        ├─Column: a
        └─Column: b
+*/       
 ```
 
 ```java
@@ -45,7 +48,6 @@ Column a = (Column) equalsTo.getLeftExpression();
 Column b = (Column) equalsTo.getRightExpression();
 Assertions.assertEquals("a", a.getColumnName());
 Assertions.assertEquals("b", b.getColumnName());
-}
 ```
 
 JSQLParser-4.9 was the last JDK8 compatible version. The recent JSQLParser-5.0 depends on JDK11 and introduces API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
@@ -54,10 +56,11 @@ JSQLParser-4.9 was the last JDK8 compatible version. The recent JSQLParser-5.0 d
 
 **JSqlParser** aims to support the SQL standard as well as all major RDBMS. Any missing syntax or features can be added on demand.
 
-| RDBMS                                                                                                           | Statements                                                                                                                                      |
-|-----------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| Oracle<br>MS SQL Server and Sybase<br>Postgres<br>MySQL and MariaDB<br>DB2<br>H2 and HSQLDB and Derby<br>SQLite | `SELECT`<br>`INSERT`, `UPDATE`, `UPSERT`, `MERGE`<br>`DELETE`, `TRUNCATE TABLE`<br>`CREATE ...`, `ALTER ....`, `DROP ...`<br>`WITH ...`         |
-| Salesforce SOQL                                                                                                 | `INCLUDES`, `EXCLUDES` |
+| RDBMS                                                                                                           | Statements                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| Oracle<br>MS SQL Server and Sybase<br>Postgres<br>MySQL and MariaDB<br>DB2<br>H2 and HSQLDB and Derby<br>SQLite | `SELECT`<br>`INSERT`, `UPDATE`, `UPSERT`, `MERGE`<br>`DELETE`, `TRUNCATE TABLE`<br>`CREATE ...`, `ALTER ....`, `DROP ...`<br>`WITH ...` |
+| Salesforce SOQL                                                                                                 | `INCLUDES`, `EXCLUDES`                                                                                                                  |
+| Piped SQL (also know as FROM SQL)                                                                               |                                                                                                                                         |
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
 
@@ -67,7 +70,7 @@ If you like JSqlParser then please check out its related projects:
 
 * [JSQLFormatter](https://manticore-projects.com/JSQLFormatter/index.html) for pretty printing and formatting SQL Text
 
-* [JSQLTranspiler](https://manticore-projects.com/JSQLTranspiler/index.html) for dialect specific rewriting, SQL Column resolution and Lineage
+* [JSQLTranspiler](https://manticore-projects.com/JSQLTranspiler/index.html) for dialect specific rewriting, SQL Column resolution and Lineage, provided by [Starlake.ai](https://starlake.ai/)
 
 ## Alternatives to JSqlParser?
 [**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
