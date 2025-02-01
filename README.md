@@ -2,7 +2,7 @@
 
 
 [![Gradle CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master) 
+[![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser) [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -26,7 +26,7 @@ SQL Text
     └─where: expression.operators.relational.EqualsTo
        ├─Column: a
        └─Column: b
-*/       
+*/
 ```
 
 ```java
@@ -50,7 +50,7 @@ Assertions.assertEquals("a", a.getColumnName());
 Assertions.assertEquals("b", b.getColumnName());
 ```
 
-JSQLParser-4.9 was the last JDK8 compatible version. The recent JSQLParser-5.0 depends on JDK11 and introduces API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
+JSQLParser-4.9 was the last JDK8 compatible version. JSQLParser-5.0 and later depend on JDK11 and introduce API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
 
 ## [Supported Grammar and Syntax](https://jsqlparser.github.io/JSqlParser/syntax.html)
 
@@ -60,7 +60,7 @@ JSQLParser-4.9 was the last JDK8 compatible version. The recent JSQLParser-5.0 d
 |-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | Oracle<br>MS SQL Server and Sybase<br>Postgres<br>MySQL and MariaDB<br>DB2<br>H2 and HSQLDB and Derby<br>SQLite | `SELECT`<br>`INSERT`, `UPDATE`, `UPSERT`, `MERGE`<br>`DELETE`, `TRUNCATE TABLE`<br>`CREATE ...`, `ALTER ....`, `DROP ...`<br>`WITH ...` |
 | Salesforce SOQL                                                                                                 | `INCLUDES`, `EXCLUDES`                                                                                                                  |
-| Piped SQL (also know as FROM SQL)                                                                               |                                                                                                                                         |
+| Piped SQL (also known as FROM SQL)                                                                              |                                                                                                                                         |
 
 **JSqlParser** can also be used to create SQL Statements from Java Code with a fluent API (see [Samples](https://jsqlparser.github.io/JSqlParser/usage.html#build-a-sql-statements)).
 

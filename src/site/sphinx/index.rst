@@ -34,9 +34,9 @@ Java SQL Parser Library
     :alt: Maven Badge
     :target: https://mvnrepository.com/artifact/com.github.jsqlparser/jsqlparser
 
-.. image:: https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml/badge.svg
-    :alt: Maven Build Status
-    :target: https://github.com/JSQLParser/JSqlParser/actions/workflows/maven.yml
+.. image:: https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg
+    :alt: CI Status
+    :target: https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml
 
 .. image:: https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master
     :alt: Coverage Status
@@ -50,9 +50,10 @@ Java SQL Parser Library
     :alt: Java Docs
     :target: https://javadoc.io/doc/com.github.jsqlparser/jsqlparser/latest/index.html
 
+A huge thank you to our sponsor, [Starlake.ai](https://starlake.ai/) who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
-The upcoming 5.0 release will depend on Java 11 and introduces new Visitors. Please see the :ref:`Migration to 5.0` guide.
+Since the 5.0 release JSQLParser depends on Java 11 and has introduced new Visitors. Please see the :ref:`Migration to 5.0` guide.
 
 Latest stable release: |JSQLPARSER_STABLE_VERSION_LINK|
 
@@ -89,6 +90,11 @@ SQL Dialects
     * MySQL and MariaDB
     * PostgreSQL
     * H2
+    * DuckDB
+    * Google BigQuery
+    * Amazon Redshift
+    * DataBricks
+    * Snowflake
 
 *******************************
 Features
@@ -107,6 +113,7 @@ Features
     * Arrays vs. T-SQL Squared Bracket Quotes
     * Fluent API to create SQL Statements from java Code
     * Statement De-Parser to write SQL from Java Objects
+    * Piped SQL (also known as FROM SQL)
 
 
 
