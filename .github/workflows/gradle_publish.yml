@@ -29,9 +29,8 @@ jobs:
         distribution: 'temurin'
     - name: Build with Gradle
       uses: gradle/actions/setup-gradle@main
-      with:
-        arguments: publish
-        # arguments: build check publish
+    - name: Publish
+      run: gradle publish
       env:
         ossrhUsername: ${{ secrets.OSSRHPASSWORD }}
         ossrhPassword: ${{ secrets.OSSRHUSERNAME }}
