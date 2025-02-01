@@ -21,7 +21,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@main
       - name: Run build with Gradle Wrapper
-        run: FLOATING_TOC=false ./gradlew --no-build-cache clean xmldoc sphinx
+        run: FLOATING_TOC=false ./gradlew xmldoc sphinx
       - name: Deploy
         uses: actions/configure-pages@main
       - name: Upload artifact
