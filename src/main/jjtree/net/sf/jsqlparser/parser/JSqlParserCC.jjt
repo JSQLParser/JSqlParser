@@ -2377,6 +2377,14 @@ PipeOperator PipeOperator() #PipeOperator:
         operator = SetOperationPipeOperator()
         |
         operator = JoinPipeOperator()
+        |
+        operator = CallPipeOperator()
+        |
+        operator = TableSamplePipeOperator()
+        |
+        operator = PivotPipeOperator()
+        |
+        operator = UnPivotPipeOperator()
     )
     {
         return operator;
@@ -2562,6 +2570,67 @@ SetOperationPipeOperator SetOperationPipeOperator():
     }
 }
 
+CallPipeOperator CallPipeOperator():
+{
+    TableFunction tableFunction;
+    Alias alias=null;
+}
+{
+    <K_CALL> tableFunction = TableFunction() [ LOOKAHEAD(2) alias = Alias() ]
+
+    {
+        return new CallPipeOperator(tableFunction, alias);
+    }
+}
+
+
+TableSamplePipeOperator TableSamplePipeOperator():
+{
+    Token token;
+}
+{
+    <K_TABLESAMPLE> <K_SYSTEM> "(" ( token=<S_DOUBLE> | token=<S_LONG> ) <K_PERCENT> ")"
+    {
+        return new TableSamplePipeOperator( token.image );
+    }
+}
+
+PivotPipeOperator PivotPipeOperator():
+{
+    Expression aggregateExpression;
+    Column inputColumn;
+    ExpressionList<Column> pivotColumns;
+    Alias alias = null;
+}
+{
+    <K_PIVOT> "(" aggregateExpression=Expression()
+    <K_FOR> inputColumn=Column()
+    <K_IN> "(" pivotColumns = ColumnList() ")"
+    ")"
+    [ LOOKAHEAD(2)  alias = Alias() ]
+    {
+        return new PivotPipeOperator(aggregateExpression, inputColumn, pivotColumns, alias);
+    }
+}
+
+UnPivotPipeOperator UnPivotPipeOperator():
+{
+    Column valuesColumn;
+    Column nameColumn;
+    ExpressionList<Column> pivotColumns;
+    Alias alias = null;
+}
+{
+    <K_UNPIVOT> "(" valuesColumn=Column()
+    <K_FOR> nameColumn=Column()
+    <K_IN> "(" pivotColumns = ColumnList() ")"
+    ")"
+    [ LOOKAHEAD(2) alias = Alias() ]
+    {
+        return new UnPivotPipeOperator(valuesColumn, nameColumn, pivotColumns, alias);
+    }
+}
+
 TableStatement TableStatement():
 {
     Table table = null;
@@ -2574,7 +2643,7 @@ TableStatement TableStatement():
     table = Table()
     { tableStatement.setTable(table); }
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { tableStatement.setOrderByElements(orderByElements); } ]
-    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() { tableStatement.setLimit(limit);} ]
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { tableStatement.setLimit(limit);} ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { tableStatement.setOffset(offset);} ]
     { return tableStatement; }
     /* Support operationList */

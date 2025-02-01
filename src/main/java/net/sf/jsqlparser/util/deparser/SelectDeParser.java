@@ -897,6 +897,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(CallPipeOperator call, S context) {
+        builder.append("|> CALL ");
+        call.getTableFunction().accept(this);
+        if (call.getAlias() != null) {
+            builder.append(" ").append(call.getAlias());
+        }
+
         return builder;
     }
 
@@ -951,6 +957,19 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(PivotPipeOperator pivot, S context) {
+        builder
+                .append("|> ")
+                .append("PIVOT( ")
+                .append(pivot.getAggregateExpression())
+                .append(" FOR ")
+                .append(pivot.getInputColumn())
+                .append(" IN (")
+                .append(pivot.getPivotColumns())
+                .append("))");
+        if (pivot.getAlias() != null) {
+            builder.append(" ").append(pivot.getAlias());
+        }
+        builder.append("\n");
         return builder;
     }
 
@@ -983,6 +1002,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(TableSamplePipeOperator tableSample, S context) {
+        builder.append("|> ").append("TABLESAMPLE SYSTEM (").append(tableSample.getPercent())
+                .append(" PERCENT)");
         return builder;
     }
 
@@ -1006,6 +1027,19 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(UnPivotPipeOperator unPivot, S context) {
+        builder
+                .append("|> ")
+                .append("UNPIVOT( ")
+                .append(unPivot.getValuesColumn())
+                .append(" FOR ")
+                .append(unPivot.getNameColumn())
+                .append(" IN (")
+                .append(unPivot.getPivotColumns())
+                .append("))");
+        if (unPivot.getAlias() != null) {
+            builder.append(" ").append(unPivot.getAlias());
+        }
+        builder.append("\n");
         return builder;
     }
 
