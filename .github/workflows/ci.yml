@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
+        with:
+          fetch-depth: 0
       - name: Set up JDK 11
         uses: actions/setup-java@main
         with:
@@ -22,13 +24,15 @@ jobs:
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main
       - name: Run Gradle Check
-        run: gradle check
+        run: ./gradlew check
 
   maven_verify:
     needs: gradle_check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
+        with:
+          fetch-depth: 0
       - name: Set up JDK 11
         uses: actions/setup-java@main
         with:
@@ -58,15 +62,15 @@ jobs:
           distribution: 'temurin'
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main
-      - name: Publish
-        run: gradle publish
+      - name: Publish with Gradle
+        run: ./gradlew publish
         env:
           ossrhUsername: ${{ secrets.OSSRHUSERNAME }}
           ossrhPassword: ${{ secrets.OSSRHPASSWORD }}
       - uses: actions/setup-python@main
       - name: Install XSLT Processor
         run: sudo apt-get install xsltproc sphinx-common
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install furo myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
       - name: Checkout project sources
         uses: actions/checkout@main
@@ -75,9 +79,9 @@ jobs:
           fetch-depth: 0
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@main
-      - name: Run build with Gradle Wrapper
-        run: FLOATING_TOC=false gradle xmldoc sphinx
-      - name: Deploy
+      - name: Build Sphinx documentation with Gradle
+        run: FLOATING_TOC=false ./gradlew gitChangelogTask renderRR xslt xmldoc sphinx
+      - name: Deploy Sphinx documentation
         uses: actions/configure-pages@main
       - name: Upload artifact
         uses: actions/upload-pages-artifact@main
