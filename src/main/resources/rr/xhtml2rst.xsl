@@ -50,7 +50,7 @@
     <xsl:template match="/xhtml:html/xhtml:body">
         <xsl:text disable-output-escaping="yes"><![CDATA[
 *********************************************************************
-SQL Syntax]]></xsl:text>
+SQL Syntax ]]></xsl:text>
         <xsl:choose>
             <xsl:when test="$isSnapshot='true'">
                 <xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text>
@@ -62,7 +62,7 @@ SQL Syntax]]></xsl:text>
         <xsl:text><![CDATA[
 *********************************************************************
 
-The EBNF and Railroad Diagrams for]]></xsl:text>
+The EBNF and Railroad Diagrams for ]]></xsl:text>
         <xsl:choose>
             <xsl:when test="$isSnapshot='true'">
                 <xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text>

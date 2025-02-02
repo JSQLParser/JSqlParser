@@ -310,11 +310,11 @@ spotless {
 
         // define the steps to apply to those files
         trimTrailingWhitespace()
-        indentWithSpaces(4) // or spaces. Takes an integer argument if you don't like 4
+        leadingTabsToSpaces(4)
         endWithNewline()
     }
     java {
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         eclipse().configFile('config/formatter/eclipse-java-google-style.xml')
     }
 }

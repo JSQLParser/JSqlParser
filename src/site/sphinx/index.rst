@@ -50,7 +50,7 @@ Java SQL Parser Library
     :alt: Java Docs
     :target: https://javadoc.io/doc/com.github.jsqlparser/jsqlparser/latest/index.html
 
-A huge thank you to our sponsor, [Starlake.ai](https://starlake.ai/) who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
+A huge thank you to our sponsor, `Starlake.ai <https://starlake.ai/>`_ who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
 Since the 5.0 release JSQLParser depends on Java 11 and has introduced new Visitors. Please see the :ref:`Migration to 5.0` guide.
