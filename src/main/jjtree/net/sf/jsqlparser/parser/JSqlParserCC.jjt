@@ -159,6 +159,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ADVISE:"ADVISE">
 |   <K_AGAINST:"AGAINST">
 |   <K_ALGORITHM: "ALGORITHM">
+|   <K_ALIGN:"ALIGN">
 |   <K_ALL:"ALL">
 |   <K_ALTER:"ALTER">
 |   <K_ANALYZE:"ANALYZE">
@@ -174,12 +175,14 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AUTHORIZATION:"AUTHORIZATION">
 |   <K_AUTO:"AUTO">
 |   <K_AUTO_INCREMENT:"AUTO_INCREMENT">
+|   <K_AZURE:"AZURE">
 |   <K_BASE64:"BASE64">
 |   <K_BEGIN:"BEGIN">
 |   <K_BERNOULLI: "BERNOULLI">
 |   <K_BETWEEN:"BETWEEN">
 |   <K_BINARY: "BINARY">
 |   <K_BIT:"BIT">
+|   <K_BLOBSTORAGE:"BLOBSTORAGE">
 |   <K_BLOCK: "BLOCK">
 |   <K_BOTH:"BOTH">
 |   <K_BROWSE:"BROWSE">
@@ -193,6 +196,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CASE:"CASE">
 |   <K_CASEWHEN:"CASEWHEN">  /* H2 casewhen function */
 |   <K_CAST: "CAST">
+|   <K_CERTIFICATE: "CERTIFICATE">
 |   <K_CHARACTER:"CHARACTER">
 |   <K_CHANGE:"CHANGE">
 |   <K_CHANGES:"CHANGES">
@@ -200,12 +204,14 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHECKPOINT:"CHECKPOINT">
 |   <K_CHAR:"CHAR">
 |   <K_CLOSE:"CLOSE">
+|   <K_CLOUD:"CLOUD">
 |   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COLUMNS:"COLUMNS">
 |   <K_COMMA: ",">
 |   <K_COMMIT:"COMMIT">
 |   <K_COMMENT:"COMMENT">
+|   <K_COMMENTS:"COMMENTS">
 |   <K_CONFLICT:"CONFLICT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT">
@@ -216,6 +222,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_COUNT: "COUNT">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
+|   <K_CSV:"CSV">
 |   <K_CURRENT: "CURRENT">
 |   <K_CYCLE:"CYCLE">
 |   <K_DATABASE:"DATABASE">
@@ -225,9 +232,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
 |   <K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
 |   <K_DEFAULT : "DEFAULT">
+|   <K_DEFAULTS: "DEFAULTS">
 |   <K_DEFERRABLE : "DEFERRABLE">
 |   <K_DELAYED : "DELAYED">
 |   <K_DELETE:"DELETE">
+|   <K_DELIMITER : "DELIMITER">
 |   <K_DESC:"DESC">
 |   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISABLE : "DISABLE">
@@ -238,6 +247,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DML:"DML">
 |   <K_DO:"DO">
 |   <K_DOMAIN:"DOMAIN">
+|   <K_DRIVER:"DRIVER">
 |   <K_DROP:"DROP">
 |   <K_DUMP:"DUMP">
 |   <K_DUPLICATE: "DUPLICATE">
@@ -245,14 +255,18 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ELSE:"ELSE">
 |   <K_EMIT: "EMIT">
 |   <K_ENABLE: "ENABLE">
+|   <K_ENCODING: "ENCODING">
 |   <K_ENCRYPTION: "ENCRYPTION">
 |   <K_END: "END">
 |   <K_ENGINE: "ENGINE">
 |   <K_ERROR: "ERROR">
+|   <K_ERRORS: "ERRORS">
 |   <K_ESCAPE: "ESCAPE">
+|   <K_EXA: "EXA">
 |   <K_EXCEPT: "EXCEPT">
 |   <K_EXCLUDE: "EXCLUDE">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
+|   <K_EXCLUDING: "EXCLUDING">
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
@@ -260,8 +274,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXPLICIT:"EXPLICIT">
 |   <K_EXTENDED:"EXTENDED">
 |   <K_EXTRACT:"EXTRACT">
+|   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
 |   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
+|   <K_FILE: "FILE">
 |   <K_FILTER: "FILTER">
 |   <K_FINAL: "FINAL">
 |   <K_FIRST: "FIRST">
@@ -288,17 +304,22 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |   <K_HISTORY : "HISTORY">
 |   <K_HOPPING:"HOPPING">
+|   <K_IDENTIFIED:"IDENTIFIED">
+|   <K_IDENTITY:"IDENTITY">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
 |   <K_IGNORE : "IGNORE">
 |   <K_ILIKE:"ILIKE">
+|   <K_IMPORT:"IMPORT">
 |   <K_IN:"IN">
 |   <K_INCLUDE:"INCLUDE">
 |   <K_INCLUDES:"INCLUDES"> /* Salesforce SOQL */
 |   <K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
+|   <K_INCLUDING:"INCLUDING">
 |   <K_INCREMENT:"INCREMENT">
 |   <K_INDEX: "INDEX">
 |   <K_INNER:"INNER">
+|   <K_STATEMENT:"STATEMENT">
 |   <K_STRAIGHT:"STRAIGHT_JOIN">
 |   <K_INSERT:"INSERT">
 |   <K_INTERLEAVE: "INTERLEAVE">
@@ -310,6 +331,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INVERSE:"INVERSE">
 |   <K_IS:"IS">
 |   <K_ISNULL:"ISNULL">
+|   <K_JDBC:"JDBC">
 |   <K_JOIN:"JOIN">
 |   <K_JSON:"JSON">
 |   <K_JSON_OBJECT: "JSON_OBJECT">
@@ -335,6 +357,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LOOP:"LOOP">
 |   <K_LOW : "LOW">
 |   <K_LOW_PRIORITY : "LOW_PRIORITY">
+|   <K_LTRIM : "LTRIM">
 |   <K_MATCH: "MATCH">
 |   <K_MATCH_ANY: "MATCH_ANY">
 |   <K_MATCH_ALL: "MATCH_ALL">
@@ -362,6 +385,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_NOLOCK:"NOLOCK">
 |   <K_NOMAXVALUE:"NOMAXVALUE">
 |   <K_NOMINVALUE:"NOMINVALUE">
+|   <K_NONE:"NONE">
 |   <K_NOORDER:"NOORDER">
 |   <K_NOT:"NOT">
 |   <K_NOTHING:"NOTHING">
@@ -377,6 +401,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ONLY:"ONLY">
 |   <K_OPEN:"OPEN">
 |   <K_OR:"OR">
+|   <K_ORA: "ORA">
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_ORDER:"ORDER">
 |   <K_OUTER:"OUTER">
@@ -387,6 +412,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OVERRIDING:"OVERRIDING">
 |   <K_OVERWRITE:"OVERWRITE">
 |   <K_OPTIMIZE: "OPTIMIZE" >
+|   <K_PADDING:"PADDING">
 |   <K_PARALLEL:"PARALLEL">
 |   <K_PARENT:"PARENT">
 |   <K_PARTITION:"PARTITION">
@@ -415,6 +441,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_REFERENCES:"REFERENCES">
 |   <K_REFRESH:"REFRESH">
 |   <K_REGEXP: "REGEXP">
+|   <K_REJECT: "REJECT">
 |   <K_RESPECT: "RESPECT">
 |   <K_RLIKE: "RLIKE">
 |   <K_REGEXP_LIKE: "REGEXP_LIKE">
@@ -437,10 +464,12 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ROOT:"ROOT">
 |   <K_ROW: "ROW">
 |   <K_ROWS: "ROWS">
+|   <K_RTRIM: "RTRIM">
 |   <K_SAFE_CAST: "SAFE_CAST">
 |   <K_SAMPLE: "SAMPLE">
 |   <K_SAVEPOINT: "SAVEPOINT">
 |   <K_SCHEMA: "SCHEMA">
+|   <K_SCRIPT: "SCRIPT">
 |   <K_SECURE: "SECURE">
 |   <K_SEED: "SEED">
 |   <K_SELECT: ("SELECT" | "SEL")>
@@ -497,6 +526,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_UNION:"UNION">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UNKNOWN:"UNKNOWN">
+|   <K_UNLIMITED: "UNLIMITED">
 |   <K_UNLOGGED: "UNLOGGED">
 |   <K_UNPIVOT:"UNPIVOT">
 |   <K_UPDATE:"UPDATE">
@@ -515,6 +545,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
 |   <K_VERBOSE: "VERBOSE">
+|   <K_VERIFY: "VERIFY">
 |   <K_VIEW:"VIEW">
 |   <K_VOLATILE:"VOLATILE">
 |   <K_CONCURRENTLY:"CONCURRENTLY">
@@ -1009,6 +1040,605 @@ List<String> error_skipto(int kind) {
     }
   } while (t.kind != kind && t.kind != EOF);
   return tokenImages;
+}
+
+LikeClause LikeClause(): {
+    LikeClause likeClause = new LikeClause();
+    Table table;
+    List<SelectItem<Column>> columnsList;
+} {
+    <K_LIKE>
+    table = Table() { likeClause.setTable(table); }
+    [columnsList = ColumnSelectItemsList() { likeClause.setColumnsList(columnsList); }]
+
+    [
+        (
+              <K_INCLUDING> { likeClause.setIncludingDefaults(true); }
+            | <K_EXCLUDING> { likeClause.setExcludingDefaults(true); }
+        )
+        <K_DEFAULTS>
+    ]
+
+    [
+        (
+              <K_INCLUDING> { likeClause.setIncludingIdentity(true); }
+            | <K_EXCLUDING> { likeClause.setExcludingIdentity(true); }
+        )
+        <K_IDENTITY>
+    ]
+
+    [
+        (
+              <K_INCLUDING> { likeClause.setIncludingComments(true); }
+            | <K_EXCLUDING> { likeClause.setExcludingComments(true); }
+        )
+        <K_COMMENTS>
+    ]
+    
+    {
+        return likeClause;
+    }
+}
+
+Import Import(): {
+    Import impt = new Import();
+    Table table;
+    Column tableColumn;
+    ExpressionList<Column> columns;
+    ImportColumn importColumn;
+    List<ImportColumn> importColumns;
+    ImportFromItem fromItem;
+    ColumnDefinition columnDefinition;
+    LikeClause likeClause;
+} {
+    <K_IMPORT>
+    [
+        <K_INTO>
+        (
+              table = Table() { impt.setTable(table); }
+              columns = ParenthesedColumnList() { impt.setColumns(columns); }
+            | "("
+                (
+                      columnDefinition = ColumnDefinition() { importColumn = new ImportColumn(columnDefinition); }
+                    | likeClause = LikeClause() { importColumn = new ImportColumn(likeClause); }
+                )
+                {
+                    importColumns = new ArrayList<ImportColumn>();
+                    impt.setImportColumns(importColumns);
+                    importColumns.add(importColumn);
+                }
+                (
+                    ","
+                    (
+                          columnDefinition = ColumnDefinition() { importColumn = new ImportColumn(columnDefinition); }
+                        | likeClause = LikeClause() { importColumn = new ImportColumn(likeClause); }
+                    )
+                    {
+                        importColumns.add(importColumn);
+                    }
+                )*
+              ")"
+        )
+    ]
+
+    <K_FROM>
+    fromItem = ImportFromItem() { impt.setFromItem(fromItem); }
+
+    {
+        return impt;
+    }
+}
+
+ImportFromItem ImportFromItem(): {
+    ImportFromItem importFromItem;
+    ErrorClause errorClause;
+} {
+    (
+          (
+              importFromItem = DBMSSource()
+            | importFromItem = FileSource()
+          )
+          [errorClause = ErrorClause() { importFromItem.setErrorClause(errorClause); }]
+        | importFromItem = ScriptSource()
+    )
+    {
+        return importFromItem;
+    }
+}
+
+DBMSSource DBMSSource() #DBMSSource: {
+    DBMSSource dbmsSource = new DBMSSource();
+    ConnectionDefinition connectionDefinition;
+    Table table;
+    ExpressionList<Column> columns;
+    List<StringValue> statements;
+    Token token;
+} {
+    (
+          <K_EXA> { dbmsSource.setDataSource(DataSource.EXA); }
+        | <K_ORA> { dbmsSource.setDataSource(DataSource.ORA); }
+        | (
+            <K_JDBC> { dbmsSource.setDataSource(DataSource.JDBC); }
+            [<K_DRIVER> "=" token = <S_CHAR_LITERAL> { dbmsSource.setJdbcDriverDefinition(new StringValue(token.image)); }]
+          )
+    )
+
+    connectionDefinition = ConnectionDefinition() { dbmsSource.setConnectionDefinition(connectionDefinition); }
+
+    (
+          <K_TABLE> table = Table() { dbmsSource.setTable(table); }
+          [ columns = ParenthesedColumnList() { dbmsSource.setColumns(columns); } ]
+        | <K_STATEMENT> token = <S_CHAR_LITERAL>
+          {
+            statements = new ArrayList<StringValue>();
+            dbmsSource.setStatements(statements);
+            StringValue stringValue = new StringValue(token.image);
+            linkAST(stringValue, jjtThis);
+            statements.add(stringValue);
+          }
+          (
+            <K_STATEMENT> token = <S_CHAR_LITERAL>
+            {
+              StringValue stringValue = new StringValue(token.image);
+              linkAST(stringValue, jjtThis);
+              statements.add(stringValue);
+            }
+          )*
+    )
+    {
+      return dbmsSource;
+    }
+}
+
+FileSource FileSource() #FileSource: {
+  FileSource fileSource = new FileSource();
+  ConnectionDefinition connectionDefinition;
+  List<StringValue> fileDefinitions;
+  List<CSVColumns> csvColumns;
+  List<FBVColumns> fbvColumns;
+  List<FileOptions> fileOptions;
+  CertificateVerification certificateVerification;
+
+  Token token = null;
+  Token token2 = null;
+  Token token3 = null;
+} {
+  (
+      (
+        (
+            <K_CSV> { fileSource.setDataSource(DataSource.CSV); }
+          | <K_FBV> { fileSource.setDataSource(DataSource.FBV); }
+        )
+
+        (
+          (
+              connectionDefinition = ConnectionDefinition()
+            | connectionDefinition = CloudConnectionDefinition()
+          )
+          <K_FILE> token = <S_CHAR_LITERAL>
+          {
+            fileDefinitions = new ArrayList<StringValue>();
+            StringValue stringVal = new StringValue(token.image);
+            linkAST(stringVal, jjtThis);
+            fileDefinitions.add(stringVal);
+          }
+          (
+            <K_FILE> token = <S_CHAR_LITERAL>
+            {
+              StringValue stringVal = new StringValue(token.image);
+              linkAST(stringVal, jjtThis);
+              fileDefinitions.add(stringVal);
+            }
+          )*
+        )
+        {
+          connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
+          connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, fileDefinitions));
+        }
+
+        (
+          (
+            (
+                connectionDefinition = ConnectionDefinition()
+              | connectionDefinition = CloudConnectionDefinition()
+            )
+            <K_FILE> token = <S_CHAR_LITERAL>
+            {
+              fileDefinitions = new ArrayList<StringValue>();
+              StringValue stringVal = new StringValue(token.image);
+              linkAST(stringVal, jjtThis);
+              fileDefinitions.add(stringVal);
+            }
+            (
+              <K_FILE> token = <S_CHAR_LITERAL>
+              {
+                stringVal = new StringValue(token.image);
+                linkAST(stringVal, jjtThis);
+                fileDefinitions.add(stringVal);
+              }
+            )*
+          )
+          { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, fileDefinitions)); }
+        )*
+      )
+    | (
+        <K_LOCAL> { fileSource.setLocal(true); }
+        [<K_SECURE> { fileSource.setSecure(true); }]
+
+        (
+            <K_CSV> { fileSource.setDataSource(DataSource.CSV); }
+          | <K_FBV> { fileSource.setDataSource(DataSource.FBV); }
+        )
+
+        (
+          <K_FILE> token = <S_CHAR_LITERAL>
+          {
+            fileDefinitions = new ArrayList<StringValue>();
+            StringValue stringVal = new StringValue(token.image);
+            linkAST(stringVal, jjtThis);
+            fileDefinitions.add(stringVal);
+          }
+          (
+            <K_FILE> token = <S_CHAR_LITERAL>
+            {
+              stringVal = new StringValue(token.image);
+              linkAST(stringVal, jjtThis);
+              fileDefinitions.add(stringVal);
+            }
+          )*
+        )
+        { connectionFileDefinitions.add(new ConnectionFileDefinition(fileDefinitions)); }
+      )
+  )
+  { fileSource.setConnectionFileDefinitions(connectionFileDefinitions); }
+
+  [
+    "("
+        (
+            (
+              (
+                  token=<S_LONG>
+                  ".."
+                  token2=<S_LONG>
+                  { CSVColumns csvColumns = new CSVColumns(Long.parseLong(token.image), Long.parseLong(token2.image)); }
+                | token=<S_LONG> { CSVColumns csvColumns = new CSVColumns(Long.parseLong(token.image)); }
+                  [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumns.setFormat(new StringValue(token.image)); }]
+              )
+              {
+                List<CSVColumns> csvColumnsList = new ArrayList<CSVColumns>();
+                fileSource.setCSVColumnsList(csvColumnsList);
+                csvColumnsList.add(csvColumns);
+              }
+              (
+                ","
+                (
+                    token=<S_LONG>
+                    ".."
+                    token2=<S_LONG>
+                  { csvColumns = new CSVColumns(Long.parseLong(token.image), Long.parseLong(token2.image)); }
+                  | token=<S_LONG> { csvColumns = new CSVColumns(Long.parseLong(token.image)); }
+                    [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumns.setFormat(new StringValue(token.image)); }]
+                )
+                {
+                  csvColumnsList.add(csvColumns);
+                }
+              )*
+            )
+          | (
+              (
+                  (
+                      token=<K_SIZE>
+                    | token=<K_START>
+                  ) "=" token2=<S_LONG>
+                  { FBVColumns fbvColumns = new FBVColumns(token.image, new LongValue(token2.image)); }
+                | (
+                      token=<K_FORMAT>
+                    | token=<K_PADDING>
+                  ) "=" token2=<S_CHAR_LITERAL>
+                  { FBVColumns fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                |
+                  token=<K_ALIGN> "="
+                  (
+                      token2=<K_LEFT>
+                    | token2=<K_RIGHT>
+                  )
+                  { FBVColumns fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+              )
+              {
+                List<FBVColumns> fbvColumnsList = new ArrayList<FBVColumns>();
+                fileSource.setFBVColumnsList(fbvColumnsList);
+                fbvColumnsList.add(fbvColumns);
+              }
+            )
+            (
+              { boolean precedesComma = false; }
+              ["," { precedesComma = true; }]
+              (
+                  (
+                      token=<K_SIZE>
+                    | token=<K_START>
+                  ) "=" token2=<S_LONG>
+                  { fbvColumns = new FBVColumns(token.image, new LongValue(token2.image)); }
+                | (
+                      token=<K_FORMAT>
+                    | token=<K_PADDING>
+                  ) "=" token2=<S_CHAR_LITERAL>
+                  { fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                |
+                  token=<K_ALIGN> "="
+                  (
+                      token2=<K_LEFT>
+                    | token2=<K_RIGHT>
+                  )
+                  { fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+              )
+              {
+                fbvColumns.setPrecedesComma(precedesComma);
+                fbvColumnsList.add(fbvColumns);
+              }
+            )*
+        )
+    ")"
+  ]
+
+  [
+    {
+        List<FileOption> fileOptions = new ArrayList<FileOption>();
+        fileSource.setFileOptions(fileOptions);
+    }
+    (
+        (
+            (
+                token=<K_TRIM>
+              | token=<K_LTRIM>
+              | token=<K_RTRIM>
+            )
+            { FileOption fileOption = new FileOption(token.image); }
+          | (
+                (
+                    token=<K_ENCODING>
+                  | token=<K_NULL>
+                ) "=" token2=<S_CHAR_LITERAL>
+                { FileOption fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+              | token=<K_SKIP> "=" token2=<S_LONG>
+                { FileOption fileOption = new FileOption(token.image, new LongValue(token2.image)); }
+            )
+          | (
+                token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
+              | token=<K_COLUMN>
+                (
+                    token2=<K_SEPARATOR>
+                  | token2=<K_DELIMITER>
+                ) "=" token3=<S_CHAR_LITERAL>
+            )
+            { FileOption fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+          | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
+            { FileOption fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
+        )
+        { fileOptions.add(fileOption); }
+    )+
+  ]
+
+  [ certificateVerification = CertificateVerification() { fileSource.setCertificateVerification(certificateVerification); } ]
+
+  {
+    return fileSource;
+  }
+}
+
+CertificateVerification CertificateVerification(): {
+    CertificateVerification certificateVerification = new CertificateVerification();
+    Token token;
+} {
+      (
+            <K_IGNORE> { certificateVerification.setIgnoreCertificate(true); }
+          | <K_VERIFY> { certificateVerification.setVerifyCertificate(true); }
+      )
+      <K_CERTIFICATE>
+      [
+          <K_PUBLIC> <K_KEY>
+          token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+      ]
+    | <K_PUBLIC> <K_KEY>
+      token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+
+    {
+        return certificateVerification;
+    }
+}
+
+ScriptSource ScriptSource(): {
+  ScriptSource scriptSource = new ScriptSource();
+  ConnectionDefinition connectionDefinition;
+  String property;
+  StringValue value;
+
+  Token token;
+} {
+    <K_SCRIPT>
+    script = Table() { scriptSource.setScript(script); }
+
+    [ connectionDefinition = ConnectionDefinition() { scriptSource.setConnectionDefinition(connectionDefinition); } ]
+
+    [
+        {
+            List<String> properties = new ArrayList<String>();
+            List<StringValue> values = new ArrayList<StringValue>();
+            scriptSource.setProperties(properties);
+            scriptSource.setValues(values);
+        }
+
+        <K_WITH>
+        (
+            (
+                property = RelObjectNameWithoutValue()
+                "="
+                token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
+            )
+            {
+                properties.add(property);
+                values.add(value);
+            }
+        )+
+    ]
+
+    {
+      return scriptSource;
+    }
+}
+
+UserIdentification UserIdentification(): {
+    UserIdentification userIdentification = new UserIdentification();
+    Token token;
+} {
+    <K_USER>
+    token=<S_CHAR_LITERAL> { userIdentification.setUserName(new StringValue(token.image)); }
+    <K_IDENTIFIED> <K_BY>
+    token=<S_CHAR_LITERAL> { userIdentification.setPassword(new StringValue(token.image)); }
+
+    {
+        return userIdentification;
+    }
+}
+
+ConnectionDefinition ConnectionDefinition(): {
+  ConnectionDefinition connectionDefinition = new ConnectionDefinition();
+  String connectionIdentifier;
+  CertificateVerification certificateVerification;
+
+  Token token;
+} {
+  <K_AT>
+  (
+      connectionIdentifier=RelObjectNameWithoutValue() { connectionDefinition.setConnection(new Connection(connectionIdentifier)); }
+    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnection(new StringValue(token.image)); }
+  )
+
+  [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
+
+  [ certificateVerification = CertificateVerification() { connectionDefinition.setCertificateVerification(certificateVerification); } ]
+
+  {
+      return connectionDefinition;
+  }
+}
+
+ConnectionDefinition CloudConnectionDefinition(): {
+  ConnectionDefinition connectionDefinition = new CloudConnectionDefinition();
+  String connectionIdentifier;
+  CertificateVerification certificateVerification;
+
+  Token token;
+  Token token2;
+} {
+  <K_AT> <K_CLOUD>
+  (
+      token = <K_NONE> { connectionDefinition.setStorage(token.image); }
+    | <K_AZURE> <K_BLOBSTORAGE> { connectionDefinition.setStorage(token.image + " " + token2.image); }
+  )
+
+  (
+      connectionIdentifier=RelObjectNameWithoutValue() { connectionDefinition.setConnection(new Connection(connectionIdentifier)); }
+    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnection(new StringValue(token.image)); }
+  )
+
+  [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
+
+  {
+      return connectionDefinition;
+  }
+}
+
+ErrorClause ErrorClause(): {
+  ErrorClause errorClause = new ErrorClause();
+  ErrorDestination errorDestination;
+  Expression expression;
+  RejectLimit rejectLimit;
+
+  Token token;
+} {
+    <K_ERRORS> <K_INTO>
+    errorDestination = ErrorDestination() { errorClause.setErrorDestination(errorDestination); }
+    [
+      "("
+      expression = Expression() { errorClause.setExpression(expression); }
+      ")"
+    ]
+    [
+        <K_REPLACE> { errorClause.setReplace(true); }
+      | <K_TRUNCATE> { errorClause.setTruncate(true); }
+    ]
+    [ rejectLimit = RejectLimit() { errorClause.setRejectLimit(rejectLimit); } ]
+  | rejectLimit = RejectLimit() { errorClause.setRejectLimit(rejectLimit); }
+  
+  {
+    return errorClause;
+  }
+}
+
+RejectLimit RejectLimit(): {
+    RejectLimit rejectLimit = new RejectLimit();
+} {
+    <K_REJECT> <K_LIMIT>
+    (
+          token=<S_LONG> { rejectLimit.setLimit(new LongValue(token.image)); }
+        | <K_UNLIMITED>
+    )
+
+    [ <K_ERRORS> { rejectLimit.setErrors(true); } ]
+
+    {
+        return rejectLimit;
+    }
+}
+
+ErrorDestination ErrorDestination(): {
+    ErrorDestination errorDestination;
+} {
+    (
+          errorDestination = CSVFileDestination()
+        | errorDestination = LocalCSVFileDestination()
+        | errorDestination = Table()
+    )
+
+    {
+        return errorDestination;
+    }
+}
+
+CSVFileDestination CSVFileDestination(): {
+    CSVFileDestination csvFileDestination = new CSVFileDestination();
+    ConnectionDefinition connectionDefinition;
+    Token token;
+} {
+    <K_CSV>
+    (
+        connectionDefinition = ConnectionDefinition()
+      | connectionDefinition = CloudConnectionDefinition()
+    )
+    { csvFileDestination.setConnectionDefinition(connectionDefinition); }
+
+    <K_FILE>
+    token = <S_CHAR_LITERAL> { csvFileDestination.setFile(new StringValue(token.image)); }
+
+    {
+        return csvFileDestination;
+    }
+}
+
+
+LocalCSVFileDestination LocalCSVFileDestination(): {
+    LocalCSVFileDestination localCSVFileDestination = new LocalCSVFileDestination();
+    Token token;
+} {
+    <K_LOCAL>
+    [ <K_SECURE> { localCSVFileDestination.setSecure(true); } ]
+    <K_CSV> <K_FILE>
+    token = <S_CHAR_LITERAL> { localCSVFileDestination.setFile(new StringValue(token.image)); }
+
+    {
+        return localCSVFileDestination;
+    }
 }
 
 DeclareStatement Declare(): {
