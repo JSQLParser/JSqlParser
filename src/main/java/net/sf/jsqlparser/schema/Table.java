@@ -17,6 +17,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.ErrorDestination;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntoTableVisitor;
@@ -27,7 +28,7 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
-public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
+public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromItem, MultiPartName {
 
     // private Database database;
     // private String schemaName;

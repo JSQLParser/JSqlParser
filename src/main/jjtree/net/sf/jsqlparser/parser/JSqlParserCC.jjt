@@ -866,6 +866,8 @@ Statement SingleStatement() :
             stm = Grant()
             |
             stm = PurgeStatement()
+            |
+            stm = Import()
         )
         { return stm; }
 }
@@ -1096,11 +1098,11 @@ Import Import(): {
         <K_INTO>
         (
               table = Table() { impt.setTable(table); }
-              columns = ParenthesedColumnList() { impt.setColumns(columns); }
+              [ columns = ParenthesedColumnList() { impt.setColumns(columns); } ]
             | "("
                 (
-                      columnDefinition = ColumnDefinition() { importColumn = new ImportColumn(columnDefinition); }
-                    | likeClause = LikeClause() { importColumn = new ImportColumn(likeClause); }
+                      importColumn = ColumnDefinition()
+                    | importColumn = LikeClause()
                 )
                 {
                     importColumns = new ArrayList<ImportColumn>();
@@ -1110,12 +1112,10 @@ Import Import(): {
                 (
                     ","
                     (
-                          columnDefinition = ColumnDefinition() { importColumn = new ImportColumn(columnDefinition); }
-                        | likeClause = LikeClause() { importColumn = new ImportColumn(likeClause); }
+                          importColumn = ColumnDefinition()
+                        | importColumn = LikeClause()
                     )
-                    {
-                        importColumns.add(importColumn);
-                    }
+                    { importColumns.add(importColumn); }
                 )*
               ")"
         )
@@ -1193,9 +1193,7 @@ DBMSSource DBMSSource() #DBMSSource: {
 FileSource FileSource() #FileSource: {
   FileSource fileSource = new FileSource();
   ConnectionDefinition connectionDefinition;
-  List<StringValue> fileDefinitions;
-  List<CSVColumns> csvColumns;
-  List<FBVColumns> fbvColumns;
+  List<StringValue> filePaths;
   List<FileOptions> fileOptions;
   CertificateVerification certificateVerification;
 
@@ -1217,23 +1215,23 @@ FileSource FileSource() #FileSource: {
           )
           <K_FILE> token = <S_CHAR_LITERAL>
           {
-            fileDefinitions = new ArrayList<StringValue>();
+            filePaths = new ArrayList<StringValue>();
             StringValue stringVal = new StringValue(token.image);
             linkAST(stringVal, jjtThis);
-            fileDefinitions.add(stringVal);
+            filePaths.add(stringVal);
           }
           (
             <K_FILE> token = <S_CHAR_LITERAL>
             {
               StringValue stringVal = new StringValue(token.image);
               linkAST(stringVal, jjtThis);
-              fileDefinitions.add(stringVal);
+              filePaths.add(stringVal);
             }
           )*
         )
         {
           connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
-          connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, fileDefinitions));
+          connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths));
         }
 
         (
@@ -1244,21 +1242,21 @@ FileSource FileSource() #FileSource: {
             )
             <K_FILE> token = <S_CHAR_LITERAL>
             {
-              fileDefinitions = new ArrayList<StringValue>();
+              filePaths = new ArrayList<StringValue>();
               StringValue stringVal = new StringValue(token.image);
               linkAST(stringVal, jjtThis);
-              fileDefinitions.add(stringVal);
+              filePaths.add(stringVal);
             }
             (
               <K_FILE> token = <S_CHAR_LITERAL>
               {
                 stringVal = new StringValue(token.image);
                 linkAST(stringVal, jjtThis);
-                fileDefinitions.add(stringVal);
+                filePaths.add(stringVal);
               }
             )*
           )
-          { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, fileDefinitions)); }
+          { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths)); }
         )*
       )
     | (
@@ -1273,21 +1271,21 @@ FileSource FileSource() #FileSource: {
         (
           <K_FILE> token = <S_CHAR_LITERAL>
           {
-            fileDefinitions = new ArrayList<StringValue>();
+            filePaths = new ArrayList<StringValue>();
             StringValue stringVal = new StringValue(token.image);
             linkAST(stringVal, jjtThis);
-            fileDefinitions.add(stringVal);
+            filePaths.add(stringVal);
           }
           (
             <K_FILE> token = <S_CHAR_LITERAL>
             {
               stringVal = new StringValue(token.image);
               linkAST(stringVal, jjtThis);
-              fileDefinitions.add(stringVal);
+              filePaths.add(stringVal);
             }
           )*
         )
-        { connectionFileDefinitions.add(new ConnectionFileDefinition(fileDefinitions)); }
+        { connectionFileDefinitions.add(new ConnectionFileDefinition(filePaths)); }
       )
   )
   { fileSource.setConnectionFileDefinitions(connectionFileDefinitions); }
@@ -1300,14 +1298,14 @@ FileSource FileSource() #FileSource: {
                   token=<S_LONG>
                   ".."
                   token2=<S_LONG>
-                  { CSVColumns csvColumns = new CSVColumns(Long.parseLong(token.image), Long.parseLong(token2.image)); }
-                | token=<S_LONG> { CSVColumns csvColumns = new CSVColumns(Long.parseLong(token.image)); }
-                  [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumns.setFormat(new StringValue(token.image)); }]
+                  { CSVColumn csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+                | token=<S_LONG> { CSVColumn csvColumn = new CSVColumn(Long.valueOf(token.image)); }
+                  [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
               )
               {
-                List<CSVColumns> csvColumnsList = new ArrayList<CSVColumns>();
-                fileSource.setCSVColumnsList(csvColumnsList);
-                csvColumnsList.add(csvColumns);
+                List<CSVColumn> csvColumns = new ArrayList<CSVColumn>();
+                fileSource.setCSVColumns(csvColumns);
+                csvColumns.add(csvColumn);
               }
               (
                 ","
@@ -1315,12 +1313,12 @@ FileSource FileSource() #FileSource: {
                     token=<S_LONG>
                     ".."
                     token2=<S_LONG>
-                  { csvColumns = new CSVColumns(Long.parseLong(token.image), Long.parseLong(token2.image)); }
-                  | token=<S_LONG> { csvColumns = new CSVColumns(Long.parseLong(token.image)); }
-                    [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumns.setFormat(new StringValue(token.image)); }]
+                  { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+                  | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
+                    [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
                 )
                 {
-                  csvColumnsList.add(csvColumns);
+                  csvColumns.add(csvColumn);
                 }
               )*
             )
@@ -1330,24 +1328,24 @@ FileSource FileSource() #FileSource: {
                       token=<K_SIZE>
                     | token=<K_START>
                   ) "=" token2=<S_LONG>
-                  { FBVColumns fbvColumns = new FBVColumns(token.image, new LongValue(token2.image)); }
+                  { FBVColumn fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
                 | (
                       token=<K_FORMAT>
                     | token=<K_PADDING>
                   ) "=" token2=<S_CHAR_LITERAL>
-                  { FBVColumns fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                  { FBVColumn fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
                 |
                   token=<K_ALIGN> "="
                   (
                       token2=<K_LEFT>
                     | token2=<K_RIGHT>
                   )
-                  { FBVColumns fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                  { FBVColumn fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
               )
               {
-                List<FBVColumns> fbvColumnsList = new ArrayList<FBVColumns>();
-                fileSource.setFBVColumnsList(fbvColumnsList);
-                fbvColumnsList.add(fbvColumns);
+                List<FBVColumn> fbvColumns = new ArrayList<FBVColumn>();
+                fileSource.setFBVColumns(fbvColumns);
+                fbvColumns.add(fbvColumn);
               }
             )
             (
@@ -1358,23 +1356,23 @@ FileSource FileSource() #FileSource: {
                       token=<K_SIZE>
                     | token=<K_START>
                   ) "=" token2=<S_LONG>
-                  { fbvColumns = new FBVColumns(token.image, new LongValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
                 | (
                       token=<K_FORMAT>
                     | token=<K_PADDING>
                   ) "=" token2=<S_CHAR_LITERAL>
-                  { fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
                 |
                   token=<K_ALIGN> "="
                   (
                       token2=<K_LEFT>
                     | token2=<K_RIGHT>
                   )
-                  { fbvColumns = new FBVColumns(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
               )
               {
-                fbvColumns.setPrecedesComma(precedesComma);
-                fbvColumnsList.add(fbvColumns);
+                fbvColumn.setPrecedesComma(precedesComma);
+                fbvColumns.add(fbvColumn);
               }
             )*
         )
@@ -1553,7 +1551,7 @@ ErrorClause ErrorClause(): {
   ErrorClause errorClause = new ErrorClause();
   ErrorDestination errorDestination;
   Expression expression;
-  RejectLimit rejectLimit;
+  RejectClause rejectClause;
 
   Token token;
 } {
@@ -1568,27 +1566,27 @@ ErrorClause ErrorClause(): {
         <K_REPLACE> { errorClause.setReplace(true); }
       | <K_TRUNCATE> { errorClause.setTruncate(true); }
     ]
-    [ rejectLimit = RejectLimit() { errorClause.setRejectLimit(rejectLimit); } ]
-  | rejectLimit = RejectLimit() { errorClause.setRejectLimit(rejectLimit); }
+    [ rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
+  | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
   
   {
     return errorClause;
   }
 }
 
-RejectLimit RejectLimit(): {
-    RejectLimit rejectLimit = new RejectLimit();
+RejectClause RejectClause(): {
+    RejectClause rejectClause = new RejectClause();
 } {
     <K_REJECT> <K_LIMIT>
     (
-          token=<S_LONG> { rejectLimit.setLimit(new LongValue(token.image)); }
+          token=<S_LONG> { rejectClause.setLimit(new LongValue(token.image)); }
         | <K_UNLIMITED>
     )
 
-    [ <K_ERRORS> { rejectLimit.setErrors(true); } ]
+    [ <K_ERRORS> { rejectClause.setErrors(true); } ]
 
     {
-        return rejectLimit;
+        return rejectClause;
     }
 }
 
@@ -1597,7 +1595,6 @@ ErrorDestination ErrorDestination(): {
 } {
     (
           errorDestination = CSVFileDestination()
-        | errorDestination = LocalCSVFileDestination()
         | errorDestination = Table()
     )
 
@@ -1611,33 +1608,23 @@ CSVFileDestination CSVFileDestination(): {
     ConnectionDefinition connectionDefinition;
     Token token;
 } {
-    <K_CSV>
     (
-        connectionDefinition = ConnectionDefinition()
-      | connectionDefinition = CloudConnectionDefinition()
+          <K_CSV>
+          (
+              connectionDefinition = ConnectionDefinition()
+            | connectionDefinition = CloudConnectionDefinition()
+          )
+          { csvFileDestination.setConnectionDefinition(connectionDefinition); }
+        | <K_LOCAL> { csvFileDestination.setLocal(true); }
+          [ <K_SECURE> { csvFileDestination.setSecure(true); } ]
+          <K_CSV>
     )
-    { csvFileDestination.setConnectionDefinition(connectionDefinition); }
 
     <K_FILE>
-    token = <S_CHAR_LITERAL> { csvFileDestination.setFile(new StringValue(token.image)); }
+    token = <S_CHAR_LITERAL> { csvFileDestination.setFilePath(new StringValue(token.image)); }
 
     {
         return csvFileDestination;
-    }
-}
-
-
-LocalCSVFileDestination LocalCSVFileDestination(): {
-    LocalCSVFileDestination localCSVFileDestination = new LocalCSVFileDestination();
-    Token token;
-} {
-    <K_LOCAL>
-    [ <K_SECURE> { localCSVFileDestination.setSecure(true); } ]
-    <K_CSV> <K_FILE>
-    token = <S_CHAR_LITERAL> { localCSVFileDestination.setFile(new StringValue(token.image)); }
-
-    {
-        return localCSVFileDestination;
     }
 }
 
