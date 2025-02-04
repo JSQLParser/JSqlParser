@@ -1054,6 +1054,7 @@ LikeClause LikeClause(): {
     [columnsList = ColumnSelectItemsList() { likeClause.setColumnsList(columnsList); }]
 
     [
+        LOOKAHEAD(2)
         (
               <K_INCLUDING> { likeClause.setIncludingDefaults(true); }
             | <K_EXCLUDING> { likeClause.setExcludingDefaults(true); }
@@ -1062,6 +1063,7 @@ LikeClause LikeClause(): {
     ]
 
     [
+        LOOKAHEAD(2)
         (
               <K_INCLUDING> { likeClause.setIncludingIdentity(true); }
             | <K_EXCLUDING> { likeClause.setExcludingIdentity(true); }
@@ -1070,6 +1072,7 @@ LikeClause LikeClause(): {
     ]
 
     [
+        LOOKAHEAD(2)
         (
               <K_INCLUDING> { likeClause.setIncludingComments(true); }
             | <K_EXCLUDING> { likeClause.setExcludingComments(true); }
@@ -1167,7 +1170,7 @@ DBMSSource DBMSSource() #DBMSSource: {
 
     (
           <K_TABLE> table = Table() { dbmsSource.setTable(table); }
-          [ columns = ParenthesedColumnList() { dbmsSource.setColumns(columns); } ]
+          [ LOOKAHEAD(2) columns = ParenthesedColumnList() { dbmsSource.setColumns(columns); } ]
         | <K_STATEMENT> token = <S_CHAR_LITERAL>
           {
             statements = new ArrayList<StringValue>();
@@ -1210,7 +1213,7 @@ FileSource FileSource() #FileSource: {
 
         (
           (
-              connectionDefinition = ConnectionDefinition()
+              LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
             | connectionDefinition = CloudConnectionDefinition()
           )
           <K_FILE> token = <S_CHAR_LITERAL>
@@ -1237,7 +1240,7 @@ FileSource FileSource() #FileSource: {
         (
           (
             (
-                connectionDefinition = ConnectionDefinition()
+                LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
               | connectionDefinition = CloudConnectionDefinition()
             )
             <K_FILE> token = <S_CHAR_LITERAL>
@@ -1291,10 +1294,12 @@ FileSource FileSource() #FileSource: {
   { fileSource.setConnectionFileDefinitions(connectionFileDefinitions); }
 
   [
+    LOOKAHEAD(2)
     "("
         (
             (
               (
+                  LOOKAHEAD(2)
                   token=<S_LONG>
                   ".."
                   token2=<S_LONG>
@@ -1310,6 +1315,7 @@ FileSource FileSource() #FileSource: {
               (
                 ","
                 (
+                    LOOKAHEAD(2)
                     token=<S_LONG>
                     ".."
                     token2=<S_LONG>
@@ -1401,7 +1407,8 @@ FileSource FileSource() #FileSource: {
               | token=<K_SKIP> "=" token2=<S_LONG>
                 { FileOption fileOption = new FileOption(token.image, new LongValue(token2.image)); }
             )
-          | (
+          | LOOKAHEAD(2)
+            (
                 token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
               | token=<K_COLUMN>
                 (
@@ -1458,7 +1465,8 @@ ScriptSource ScriptSource(): {
 
     [ connectionDefinition = ConnectionDefinition() { scriptSource.setConnectionDefinition(connectionDefinition); } ]
 
-    [
+    [   
+        LOOKAHEAD(2)
         {
             List<String> properties = new ArrayList<String>();
             List<StringValue> values = new ArrayList<StringValue>();
@@ -1468,6 +1476,7 @@ ScriptSource ScriptSource(): {
 
         <K_WITH>
         (
+            LOOKAHEAD(2)
             (
                 property = RelObjectNameWithoutValue()
                 "="
@@ -1558,13 +1567,17 @@ ErrorClause ErrorClause(): {
     <K_ERRORS> <K_INTO>
     errorDestination = ErrorDestination() { errorClause.setErrorDestination(errorDestination); }
     [
+      LOOKAHEAD(2)
       "("
       expression = Expression() { errorClause.setExpression(expression); }
       ")"
     ]
     [
-        <K_REPLACE> { errorClause.setReplace(true); }
-      | <K_TRUNCATE> { errorClause.setTruncate(true); }
+        LOOKAHEAD(2) 
+        (
+            <K_REPLACE> { errorClause.setReplace(true); }
+          | <K_TRUNCATE> { errorClause.setTruncate(true); }
+        )
     ]
     [ rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
   | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
@@ -1594,7 +1607,7 @@ ErrorDestination ErrorDestination(): {
     ErrorDestination errorDestination;
 } {
     (
-          errorDestination = CSVFileDestination()
+          LOOKAHEAD(2) errorDestination = CSVFileDestination()
         | errorDestination = Table()
     )
 
@@ -1611,7 +1624,7 @@ CSVFileDestination CSVFileDestination(): {
     (
           <K_CSV>
           (
-              connectionDefinition = ConnectionDefinition()
+              LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
             | connectionDefinition = CloudConnectionDefinition()
           )
           { csvFileDestination.setConnectionDefinition(connectionDefinition); }
