@@ -157,6 +157,7 @@ import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -1818,6 +1819,12 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(GeometryDistance geometryDistance, S context) {
         visitBinaryExpression(geometryDistance);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Import imprt, S context) {
+        throwUnsupported(imprt);
         return null;
     }
 

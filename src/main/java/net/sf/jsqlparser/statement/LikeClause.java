@@ -56,6 +56,14 @@ public class LikeClause implements ImportColumn, Serializable {
         this.includingDefaults = includingDefaults;
     }
 
+    public Boolean isExcludingDefaults() {
+        return includingDefaults == null ? null : !includingDefaults;
+    }
+
+    public void setExcludingDefaults(Boolean excludingDefaults) {
+        this.includingDefaults = !excludingDefaults;
+    }
+
     public Boolean isIncludingIdentity() {
         return includingIdentity;
     }
@@ -64,12 +72,28 @@ public class LikeClause implements ImportColumn, Serializable {
         this.includingIdentity = includingIdentity;
     }
 
+    public Boolean isExcludingIdentity() {
+        return includingIdentity == null ? null : !includingIdentity;
+    }
+
+    public void setExcludingIdentity(Boolean excludingIdentity) {
+        this.includingIdentity = !excludingIdentity;
+    }
+
     public Boolean isIncludingComments() {
         return includingComments;
     }
 
     public void setIncludingComments(Boolean includingComments) {
         this.includingComments = includingComments;
+    }
+
+    public Boolean isExcludingComments() {
+        return includingComments == null ? null : !includingComments;
+    }
+
+    public void setExcludingComments(Boolean excludingComments) {
+        this.includingComments = !excludingComments;
     }
 
     public StringBuilder appendTo(StringBuilder builder) {

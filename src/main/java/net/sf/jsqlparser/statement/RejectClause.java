@@ -9,15 +9,17 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.expression.LongValue;
+
 public class RejectClause {
-    private Long limit;
+    private LongValue limit;
     private boolean errors;
 
-    public Long getLimit() {
+    public LongValue getLimit() {
         return limit;
     }
 
-    public void setLimit(Long limit) {
+    public void setLimit(LongValue limit) {
         this.limit = limit;
     }
 

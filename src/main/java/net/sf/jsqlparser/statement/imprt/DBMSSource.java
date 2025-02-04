@@ -16,11 +16,10 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ConnectionDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-import javax.sql.DataSource;
 import java.io.Serializable;
 import java.util.List;
 
-public class DBMSSource implements ImportFromItem, Serializable {
+public class DBMSSource extends ImportFromItem implements Serializable {
     private DataSource dataSource;
     private StringValue jdbcDriverDefinition;
     private ConnectionDefinition connectionDefinition;
@@ -82,20 +81,24 @@ public class DBMSSource implements ImportFromItem, Serializable {
 
         sql.append(dataSource);
 
-        if(jdbcDriverDefinition != null) {
+        if (jdbcDriverDefinition != null) {
             sql.append(" DRIVER = ").append(jdbcDriverDefinition);
         }
 
         sql.append(" ");
         sql.append(connectionDefinition);
 
-        if(table != null) {
+        if (table != null) {
             sql.append(" TABLE ").append(table);
             PlainSelect.appendStringListTo(sql, columns, true, true);
         } else if (statements != null) {
-            for(StringValue statement : statements) {
+            for (StringValue statement : statements) {
                 sql.append(" STATEMENT ").append(statement);
             }
+        }
+
+        if (errorClause != null) {
+            sql.append(errorClause);
         }
 
         return sql.toString();

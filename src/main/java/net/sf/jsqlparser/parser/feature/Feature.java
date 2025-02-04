@@ -792,6 +792,11 @@ public enum Feature {
      * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`
      */
     allowUnparenthesizedSubSelects(false),
+
+    /**
+     * "IMPORT"
+     */
+    imprt,
     ;
 
     private final Object value;

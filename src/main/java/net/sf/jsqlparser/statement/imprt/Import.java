@@ -19,20 +19,52 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import java.util.List;
 
 public class Import implements Statement {
-    private Table intoTable;
-    private ExpressionList<Column> columnList;
+    private Table table;
+    private ExpressionList<Column> columns;
     private List<ImportColumn> importColumns;
     private ImportFromItem fromItem;
+
+    public Table getTable() {
+        return table;
+    }
+
+    public void setTable(Table table) {
+        this.table = table;
+    }
+
+    public ExpressionList<Column> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(ExpressionList<Column> columns) {
+        this.columns = columns;
+    }
+
+    public List<ImportColumn> getImportColumns() {
+        return importColumns;
+    }
+
+    public void setImportColumns(List<ImportColumn> importColumns) {
+        this.importColumns = importColumns;
+    }
+
+    public ImportFromItem getFromItem() {
+        return fromItem;
+    }
+
+    public void setFromItem(ImportFromItem fromItem) {
+        this.fromItem = fromItem;
+    }
 
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
         sql.append("IMPORT ");
-        if (intoTable != null || importColumns != null) {
+        if (table != null || importColumns != null) {
             sql.append("INTO ");
-            if (intoTable != null) {
-                sql.append(intoTable);
-                PlainSelect.appendStringListTo(sql, columnList, true, true);
+            if (table != null) {
+                sql.append(table);
+                PlainSelect.appendStringListTo(sql, columns, true, true);
             } else {
                 PlainSelect.appendStringListTo(sql, importColumns, true, true);
             }

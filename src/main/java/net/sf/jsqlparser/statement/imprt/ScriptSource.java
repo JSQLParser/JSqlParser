@@ -16,7 +16,7 @@ import net.sf.jsqlparser.statement.ConnectionDefinition;
 import java.io.Serializable;
 import java.util.List;
 
-public class ScriptSource implements ImportFromItem, Serializable {
+public class ScriptSource extends ImportFromItem implements Serializable {
     private Table script;
     private ConnectionDefinition connectionDefinition;
     private List<String> properties;
@@ -76,6 +76,10 @@ public class ScriptSource implements ImportFromItem, Serializable {
                 sql.append(" = ");
                 sql.append(values.get(i));
             }
+        }
+
+        if (errorClause != null) {
+            sql.append(errorClause);
         }
 
         return sql.toString();

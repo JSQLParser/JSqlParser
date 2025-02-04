@@ -66,6 +66,7 @@ import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.grant.*;
+import net.sf.jsqlparser.statement.imprt.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 
@@ -1182,7 +1183,7 @@ DBMSSource DBMSSource() #DBMSSource: {
           (
             <K_STATEMENT> token = <S_CHAR_LITERAL>
             {
-              StringValue stringValue = new StringValue(token.image);
+              stringValue = new StringValue(token.image);
               linkAST(stringValue, jjtThis);
               statements.add(stringValue);
             }
@@ -1196,8 +1197,8 @@ DBMSSource DBMSSource() #DBMSSource: {
 FileSource FileSource() #FileSource: {
   FileSource fileSource = new FileSource();
   ConnectionDefinition connectionDefinition;
+  List<ConnectionFileDefinition> connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
   List<StringValue> filePaths;
-  List<FileOptions> fileOptions;
   CertificateVerification certificateVerification;
 
   Token token = null;
@@ -1226,16 +1227,13 @@ FileSource FileSource() #FileSource: {
           (
             <K_FILE> token = <S_CHAR_LITERAL>
             {
-              StringValue stringVal = new StringValue(token.image);
+              stringVal = new StringValue(token.image);
               linkAST(stringVal, jjtThis);
               filePaths.add(stringVal);
             }
           )*
         )
-        {
-          connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
-          connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths));
-        }
+        { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths)); }
 
         (
           (
@@ -1246,7 +1244,7 @@ FileSource FileSource() #FileSource: {
             <K_FILE> token = <S_CHAR_LITERAL>
             {
               filePaths = new ArrayList<StringValue>();
-              StringValue stringVal = new StringValue(token.image);
+              stringVal = new StringValue(token.image);
               linkAST(stringVal, jjtThis);
               filePaths.add(stringVal);
             }
@@ -1298,13 +1296,14 @@ FileSource FileSource() #FileSource: {
     "("
         (
             (
+              { CSVColumn csvColumn; }
               (
                   LOOKAHEAD(2)
                   token=<S_LONG>
                   ".."
                   token2=<S_LONG>
-                  { CSVColumn csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
-                | token=<S_LONG> { CSVColumn csvColumn = new CSVColumn(Long.valueOf(token.image)); }
+                  { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+                | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
                   [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
               )
               {
@@ -1319,34 +1318,33 @@ FileSource FileSource() #FileSource: {
                     token=<S_LONG>
                     ".."
                     token2=<S_LONG>
-                  { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+                    { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
                   | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
                     [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
                 )
-                {
-                  csvColumns.add(csvColumn);
-                }
+                { csvColumns.add(csvColumn); }
               )*
             )
-          | (
+          | { FBVColumn fbvColumn; }
+            (
               (
                   (
                       token=<K_SIZE>
                     | token=<K_START>
                   ) "=" token2=<S_LONG>
-                  { FBVColumn fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
                 | (
                       token=<K_FORMAT>
                     | token=<K_PADDING>
                   ) "=" token2=<S_CHAR_LITERAL>
-                  { FBVColumn fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
                 |
                   token=<K_ALIGN> "="
                   (
                       token2=<K_LEFT>
                     | token2=<K_RIGHT>
                   )
-                  { FBVColumn fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
               )
               {
                 List<FBVColumn> fbvColumns = new ArrayList<FBVColumn>();
@@ -1389,6 +1387,7 @@ FileSource FileSource() #FileSource: {
     {
         List<FileOption> fileOptions = new ArrayList<FileOption>();
         fileSource.setFileOptions(fileOptions);
+        FileOption fileOption;
     }
     (
         (
@@ -1397,15 +1396,15 @@ FileSource FileSource() #FileSource: {
               | token=<K_LTRIM>
               | token=<K_RTRIM>
             )
-            { FileOption fileOption = new FileOption(token.image); }
+            { fileOption = new FileOption(token.image); }
           | (
                 (
                     token=<K_ENCODING>
                   | token=<K_NULL>
                 ) "=" token2=<S_CHAR_LITERAL>
-                { FileOption fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+                { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
               | token=<K_SKIP> "=" token2=<S_LONG>
-                { FileOption fileOption = new FileOption(token.image, new LongValue(token2.image)); }
+                { fileOption = new FileOption(token.image, new LongValue(token2.image)); }
             )
           | LOOKAHEAD(2)
             (
@@ -1416,9 +1415,9 @@ FileSource FileSource() #FileSource: {
                   | token2=<K_DELIMITER>
                 ) "=" token3=<S_CHAR_LITERAL>
             )
-            { FileOption fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+            { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
           | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
-            { FileOption fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
+            { fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
         )
         { fileOptions.add(fileOption); }
     )+
@@ -1435,18 +1434,19 @@ CertificateVerification CertificateVerification(): {
     CertificateVerification certificateVerification = new CertificateVerification();
     Token token;
 } {
-      (
-            <K_IGNORE> { certificateVerification.setIgnoreCertificate(true); }
-          | <K_VERIFY> { certificateVerification.setVerifyCertificate(true); }
-      )
-      <K_CERTIFICATE>
-      [
-          <K_PUBLIC> <K_KEY>
+    (
+          (
+                <K_IGNORE> { certificateVerification.setIgnoreCertificate(true); }
+              | <K_VERIFY> { certificateVerification.setVerifyCertificate(true); }
+          )
+          <K_CERTIFICATE>
+          [
+              <K_PUBLIC> <K_KEY>
+              token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+          ]
+        | <K_PUBLIC> <K_KEY>
           token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
-      ]
-    | <K_PUBLIC> <K_KEY>
-      token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
-
+    )
     {
         return certificateVerification;
     }
@@ -1455,6 +1455,7 @@ CertificateVerification CertificateVerification(): {
 ScriptSource ScriptSource(): {
   ScriptSource scriptSource = new ScriptSource();
   ConnectionDefinition connectionDefinition;
+  Table script;
   String property;
   StringValue value;
 
@@ -1499,7 +1500,7 @@ UserIdentification UserIdentification(): {
     Token token;
 } {
     <K_USER>
-    token=<S_CHAR_LITERAL> { userIdentification.setUserName(new StringValue(token.image)); }
+    token=<S_CHAR_LITERAL> { userIdentification.setUser(new StringValue(token.image)); }
     <K_IDENTIFIED> <K_BY>
     token=<S_CHAR_LITERAL> { userIdentification.setPassword(new StringValue(token.image)); }
 
@@ -1510,15 +1511,16 @@ UserIdentification UserIdentification(): {
 
 ConnectionDefinition ConnectionDefinition(): {
   ConnectionDefinition connectionDefinition = new ConnectionDefinition();
-  String connectionIdentifier;
+  String connectionObjectName;
+  UserIdentification userIdentification;
   CertificateVerification certificateVerification;
 
   Token token;
 } {
   <K_AT>
   (
-      connectionIdentifier=RelObjectNameWithoutValue() { connectionDefinition.setConnection(new Connection(connectionIdentifier)); }
-    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnection(new StringValue(token.image)); }
+      connectionObjectName = RelObjectNameWithoutValue() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
+    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
   )
 
   [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -1531,9 +1533,9 @@ ConnectionDefinition ConnectionDefinition(): {
 }
 
 ConnectionDefinition CloudConnectionDefinition(): {
-  ConnectionDefinition connectionDefinition = new CloudConnectionDefinition();
-  String connectionIdentifier;
-  CertificateVerification certificateVerification;
+  CloudConnectionDefinition connectionDefinition = new CloudConnectionDefinition();
+  String connectionObjectName;
+  UserIdentification userIdentification;
 
   Token token;
   Token token2;
@@ -1541,12 +1543,12 @@ ConnectionDefinition CloudConnectionDefinition(): {
   <K_AT> <K_CLOUD>
   (
       token = <K_NONE> { connectionDefinition.setStorage(token.image); }
-    | <K_AZURE> <K_BLOBSTORAGE> { connectionDefinition.setStorage(token.image + " " + token2.image); }
+    | token = <K_AZURE> token2 = <K_BLOBSTORAGE> { connectionDefinition.setStorage(token.image + " " + token2.image); }
   )
 
   (
-      connectionIdentifier=RelObjectNameWithoutValue() { connectionDefinition.setConnection(new Connection(connectionIdentifier)); }
-    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnection(new StringValue(token.image)); }
+      connectionObjectName = RelObjectNameWithoutValue() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
+    | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
   )
 
   [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -1564,23 +1566,25 @@ ErrorClause ErrorClause(): {
 
   Token token;
 } {
-    <K_ERRORS> <K_INTO>
-    errorDestination = ErrorDestination() { errorClause.setErrorDestination(errorDestination); }
-    [
-      LOOKAHEAD(2)
-      "("
-      expression = Expression() { errorClause.setExpression(expression); }
-      ")"
-    ]
-    [
-        LOOKAHEAD(2) 
-        (
-            <K_REPLACE> { errorClause.setReplace(true); }
-          | <K_TRUNCATE> { errorClause.setTruncate(true); }
-        )
-    ]
-    [ rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
-  | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
+    (
+        <K_ERRORS> <K_INTO>
+        errorDestination = ErrorDestination() { errorClause.setErrorDestination(errorDestination); }
+        [
+          LOOKAHEAD(2)
+          "("
+          expression = Expression() { errorClause.setExpression(expression); }
+          ")"
+        ]
+        [
+            LOOKAHEAD(2) 
+            (
+                <K_REPLACE> { errorClause.setReplace(true); }
+              | <K_TRUNCATE> { errorClause.setTruncate(true); }
+            )
+        ]
+        [ rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
+      | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
+  )
   
   {
     return errorClause;

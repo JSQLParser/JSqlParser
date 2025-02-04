@@ -9,5 +9,16 @@
  */
 package net.sf.jsqlparser.statement.imprt;
 
-public interface ImportFromItem {
+import net.sf.jsqlparser.statement.ErrorClause;
+
+public abstract class ImportFromItem {
+    protected ErrorClause errorClause;
+
+    public ErrorClause getErrorClause() {
+        return errorClause;
+    }
+
+    public void setErrorClause(ErrorClause errorClause) {
+        this.errorClause = errorClause;
+    }
 }

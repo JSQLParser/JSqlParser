@@ -10,13 +10,16 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.List;
 
 public class ConnectionFileDefinition {
     private ConnectionDefinition connectionDefinition;
     private List<StringValue> filePaths;
+
+    public ConnectionFileDefinition(List<StringValue> filePaths) {
+        this(null, filePaths);
+    }
 
     public ConnectionFileDefinition(ConnectionDefinition connectionDefinition, List<StringValue> filePaths) {
         this.connectionDefinition = connectionDefinition;
