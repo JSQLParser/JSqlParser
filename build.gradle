@@ -459,11 +459,11 @@ tasks.register('sphinx', Exec) {
 .. |JSQLPARSER_SNAPSHOT_VERSION| replace:: ${getVersion(true)}
 .. |JSQLPARSER_STABLE_VERSION_LINK| raw:: html
 
-    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(false)}.jar'>${project.name}-${getVersion(false)}.jar</a>
+    <a href='http://manticore-projects.com/download/JSQLParser-${getVersion(false)}/JSQLParser-${getVersion(false)}.jar'>JSQLParser-${getVersion(false)}.jar</a>
 
 .. |JSQLPARSER_SNAPSHOT_VERSION_LINK| raw:: html
 
-    <a href='http://manticore-projects.com/download/${project.name}-${getVersion(false)}/${project.name}-${getVersion(true)}.jar'>${project.name}-${getVersion(true)}.jar</a>
+    <a href='http://manticore-projects.com/download/JSQLParser-${getVersion(false)}/JSQLParser-${getVersion(true)}.jar'>JSQLParser-${getVersion(true)}.jar</a>
 
 """
 
