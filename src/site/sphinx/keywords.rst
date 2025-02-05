@@ -29,6 +29,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | CONNECT_BY_ROOT      | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| CSV                  | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | PRIOR                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | CONSTRAINT           | Yes         | Yes       | 
@@ -47,6 +49,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | ELSE                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| ERRORS               | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | EXCEPT               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | EXCLUDES             | Yes         | Yes       | 
@@ -55,7 +59,11 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | FALSE                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| FBV                  | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | FETCH                | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| FILE                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | FINAL                | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -86,6 +94,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | IGNORE               | Yes         |           | 
 +----------------------+-------------+-----------+
 | ILIKE                | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| IMPORT               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | IN                   | Yes         | Yes       | 
 +----------------------+-------------+-----------+
@@ -157,6 +167,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | SAMPLE               | Yes         |           | 
 +----------------------+-------------+-----------+
+| SCRIPT               | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | SEL                  | Yes         |           | 
 +----------------------+-------------+-----------+
 | SELECT               | Yes         |           | 
@@ -168,6 +180,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | SOME                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | START                | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| STATEMENT            | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | TABLES               | Yes         |           | 
 +----------------------+-------------+-----------+
@@ -206,6 +220,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 | VALUES               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | VARYING              | Yes         | Yes       | 
++----------------------+-------------+-----------+
+| VERIFY               | Yes         | Yes       | 
 +----------------------+-------------+-----------+
 | WHEN                 | Yes         | Yes       | 
 +----------------------+-------------+-----------+
