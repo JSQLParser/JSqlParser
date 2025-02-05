@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.ForMode;
@@ -360,6 +361,12 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     }
 
     @Override
+    public <S> Void visit(Import imprt, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public void validate(SelectItem<?> statement) {
         statement.accept(this, null);
     }
@@ -418,6 +425,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     public void visit(Values values) {
         visit(values, null);
+    }
+
+    public void visit(Import imprt) {
+        visit(imprt, null);
     }
 
 }

@@ -9,20 +9,23 @@
  */
 package net.sf.jsqlparser.statement.imprt;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.*;
 
 import java.util.List;
 
-public class Import implements Statement {
+public class Import extends ASTNodeAccessImpl implements FromItem, Statement {
     private Table table;
     private ExpressionList<Column> columns;
     private List<ImportColumn> importColumns;
     private ImportFromItem fromItem;
+    private Alias alias;
 
     public Table getTable() {
         return table;
@@ -80,4 +83,35 @@ public class Import implements Statement {
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
     }
+
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
+    }
+
+    @Override
+    public Alias getAlias() {
+        return alias;
+    }
+
+    @Override
+    public void setAlias(Alias alias) {
+        this.alias = alias;
+    }
+
+    @Override
+    public Pivot getPivot() {
+        return null;
+    }
+
+    @Override
+    public void setPivot(Pivot pivot) {}
+
+    @Override
+    public UnPivot getUnPivot() {
+        return null;
+    }
+
+    @Override
+    public void setUnPivot(UnPivot unpivot) {}
 }

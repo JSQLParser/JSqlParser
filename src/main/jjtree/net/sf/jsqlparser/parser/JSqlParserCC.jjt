@@ -1142,7 +1142,7 @@ ImportFromItem ImportFromItem(): {
               importFromItem = DBMSSource()
             | importFromItem = FileSource()
           )
-          [errorClause = ErrorClause() { importFromItem.setErrorClause(errorClause); }]
+          [ LOOKAHEAD(2) errorClause = ErrorClause() { importFromItem.setErrorClause(errorClause); } ]
         | importFromItem = ScriptSource()
     )
     {
@@ -1236,6 +1236,7 @@ FileSource FileSource() #FileSource: {
         { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths)); }
 
         (
+          LOOKAHEAD(2)
           (
             (
                 LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
@@ -1384,12 +1385,14 @@ FileSource FileSource() #FileSource: {
   ]
 
   [
+    LOOKAHEAD(2)
     {
         List<FileOption> fileOptions = new ArrayList<FileOption>();
         fileSource.setFileOptions(fileOptions);
         FileOption fileOption;
     }
     (
+        LOOKAHEAD(2)
         (
             (
                 token=<K_TRIM>
@@ -1423,7 +1426,7 @@ FileSource FileSource() #FileSource: {
     )+
   ]
 
-  [ certificateVerification = CertificateVerification() { fileSource.setCertificateVerification(certificateVerification); } ]
+  [ LOOKAHEAD(2) certificateVerification = CertificateVerification() { fileSource.setCertificateVerification(certificateVerification); } ]
 
   {
     return fileSource;
@@ -1441,8 +1444,9 @@ CertificateVerification CertificateVerification(): {
           )
           <K_CERTIFICATE>
           [
-              <K_PUBLIC> <K_KEY>
-              token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+            LOOKAHEAD(2)
+            <K_PUBLIC> <K_KEY>
+            token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
           ]
         | <K_PUBLIC> <K_KEY>
           token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
@@ -1464,7 +1468,7 @@ ScriptSource ScriptSource(): {
     <K_SCRIPT>
     script = Table() { scriptSource.setScript(script); }
 
-    [ connectionDefinition = ConnectionDefinition() { scriptSource.setConnectionDefinition(connectionDefinition); } ]
+    [ LOOKAHEAD(2) connectionDefinition = ConnectionDefinition() { scriptSource.setConnectionDefinition(connectionDefinition); } ]
 
     [   
         LOOKAHEAD(2)
@@ -1523,9 +1527,9 @@ ConnectionDefinition ConnectionDefinition(): {
     | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
   )
 
-  [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
+  [ LOOKAHEAD(2) userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
 
-  [ certificateVerification = CertificateVerification() { connectionDefinition.setCertificateVerification(certificateVerification); } ]
+  [ LOOKAHEAD(2) certificateVerification = CertificateVerification() { connectionDefinition.setCertificateVerification(certificateVerification); } ]
 
   {
       return connectionDefinition;
@@ -1582,7 +1586,7 @@ ErrorClause ErrorClause(): {
               | <K_TRUNCATE> { errorClause.setTruncate(true); }
             )
         ]
-        [ rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
+        [ LOOKAHEAD(2) rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
       | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
   )
   
@@ -3232,7 +3236,7 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [ LOOKAHEAD(2) intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
+    [ LOOKAHEAD(2) <K_FROM> (fromItem=FromItem() | fromItem=Import())
         [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]

@@ -1828,4 +1828,9 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+    @Override
+    public void visit(Import imprt) {
+        StatementVisitor.super.visit(imprt);
+    }
+
 }
