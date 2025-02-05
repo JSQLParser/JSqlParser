@@ -31,7 +31,7 @@ def getVersion = { boolean considerSnapshot ->
     String snapshot = ""
 
     def versionStr = providers.exec {
-        commandLine "git", "--no-pager", "-C", project(':JSQLParser').projectDir,  "describe", "--tags", "--always", "--dirty=-SNAPSHOT"
+        commandLine "git", "--no-pager", "-C", project.projectDir,  "describe", "--tags", "--always", "--dirty=-SNAPSHOT"
     }.standardOutput.asText.get().trim()
 
     def pattern = /(?<major>\d*)\.(?<minor>\d*)(\.(?<patch>\d*))?(-(?<build>\d*)-(?<commit>[a-zA-Z\d]*))?/
