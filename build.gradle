@@ -31,12 +31,10 @@ def getVersion = { boolean considerSnapshot ->
     String snapshot = ""
 
     def versionStr = providers.exec {
-        commandLine "git", "--no-pager", "describe", "--tags", "--always", "--dirty=-SNAPSHOT"
+        commandLine "git", "--no-pager", "-C", project(':JSQLParser').projectDir,  "describe", "--tags", "--always", "--dirty=-SNAPSHOT"
     }.standardOutput.asText.get().trim()
 
-    println "Version String: $versionStr"
-
-    def pattern = /jsqlparser-(?<major>\d*)\.(?<minor>\d*)(\.(?<patch>\d*))?(-(?<build>\d*)-(?<commit>[a-zA-Z\d]*))?/
+    def pattern = /(?<major>\d*)\.(?<minor>\d*)(\.(?<patch>\d*))?(-(?<build>\d*)-(?<commit>[a-zA-Z\d]*))?/
     def matcher = versionStr =~ pattern
 
     if (matcher.find()) {
@@ -145,8 +143,6 @@ jar {
 }
 
 tasks.register('xmldoc', Javadoc) {
-    println getVersion( true )
-
     def outFile =  reporting.file(
             version.endsWith("-SNAPSHOT")
                     ? "xmlDoclet/javadoc_snapshot.xml"
@@ -166,11 +162,12 @@ tasks.register('xmldoc', Javadoc) {
 //    source += fileTree(layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser").get()) {
 //        include("**/*.java")
 //    }
+
     // beware: Gradle deletes this folder automatically and there is no switch-off
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files as List
     options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
-    title = "API " + getVersion( !System.getenv("RELEASE") )
+    title = "API $version"
     options.addBooleanOption("rst", true)
     options.addBooleanOption("withFloatingToc", Boolean.parseBoolean(System.getenv().getOrDefault("FLOATING_TOC", "true")))
     options.addStringOption("basePackage", "net.sf.jsqlparser")

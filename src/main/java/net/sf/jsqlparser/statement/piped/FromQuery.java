@@ -203,6 +203,9 @@ public class FromQuery extends Select {
         return selectVisitor.visit(this, context);
     }
 
+    public <T, S> T accept(FromQueryVisitor<T, S> fromQueryVisitor, S context) {
+        return fromQueryVisitor.visit(this, context);
+    }
 
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
