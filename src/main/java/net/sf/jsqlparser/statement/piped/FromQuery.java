@@ -204,7 +204,6 @@ public class FromQuery extends Select {
     }
 
 
-
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
         if (usingFromKeyword) {

@@ -41,7 +41,7 @@ public class CallPipeOperator extends PipeOperator {
     }
 
     @Override
-    public <T, S> T accept(PipeOperatorVisitor<T> visitor, S context) {
+    public <T, S> T accept(PipeOperatorVisitor<T, S> visitor, S context) {
         return visitor.visit(this, context);
     }
 }

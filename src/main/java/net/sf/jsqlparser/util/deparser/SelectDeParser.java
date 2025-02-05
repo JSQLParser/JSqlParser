@@ -22,10 +22,8 @@ import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
 import net.sf.jsqlparser.statement.piped.AsPipeOperator;
 import net.sf.jsqlparser.statement.piped.CallPipeOperator;
 import net.sf.jsqlparser.statement.piped.DropPipeOperator;
-import net.sf.jsqlparser.statement.piped.ExceptPipeOperator;
 import net.sf.jsqlparser.statement.piped.ExtendPipeOperator;
 import net.sf.jsqlparser.statement.piped.FromQuery;
-import net.sf.jsqlparser.statement.piped.IntersectPipeOperator;
 import net.sf.jsqlparser.statement.piped.JoinPipeOperator;
 import net.sf.jsqlparser.statement.piped.LimitPipeOperator;
 import net.sf.jsqlparser.statement.piped.OrderByPipeOperator;
@@ -73,6 +71,7 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
@@ -80,7 +79,7 @@ import static java.util.stream.Collectors.joining;
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
         implements SelectVisitor<StringBuilder>, SelectItemVisitor<StringBuilder>,
         FromItemVisitor<StringBuilder>, PivotVisitor<StringBuilder>,
-        PipeOperatorVisitor<StringBuilder> {
+        PipeOperatorVisitor<StringBuilder, Void> {
 
     private ExpressionVisitor<StringBuilder> expressionVisitor;
 
@@ -836,7 +835,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         fromQuery.getFromItem().accept(this, context);
         builder.append("\n");
         for (PipeOperator operator : fromQuery.getPipeOperators()) {
-            operator.accept(this, context);
+            operator.accept(this, null);
         }
         return builder;
     }
@@ -858,11 +857,11 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     void deParse(PlainSelect statement) {
-        statement.accept((SelectVisitor<StringBuilder>) this, null);
+        statement.accept((SelectVisitor<StringBuilder>) this, Optional.ofNullable(null));
     }
 
     @Override
-    public <S> StringBuilder visit(AggregatePipeOperator aggregate, S context) {
+    public StringBuilder visit(AggregatePipeOperator aggregate, Void context) {
         builder.append("|> ").append("AGGREGATE");
         int i = 0;
         for (SelectItem<?> selectItem : aggregate.getSelectItems()) {
@@ -889,14 +888,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(AsPipeOperator as, S context) {
+    public StringBuilder visit(AsPipeOperator as, Void context) {
         builder.append("|> ").append(as.getAlias());
         builder.append("\n");
         return builder;
     }
 
     @Override
-    public <S> StringBuilder visit(CallPipeOperator call, S context) {
+    public StringBuilder visit(CallPipeOperator call, Void context) {
         builder.append("|> CALL ");
         call.getTableFunction().accept(this);
         if (call.getAlias() != null) {
@@ -907,7 +906,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(DropPipeOperator drop, S context) {
+    public StringBuilder visit(DropPipeOperator drop, Void context) {
         builder.append("|> ").append("DROP ");
         drop.getColumns().accept(expressionVisitor, context);
         builder.append("\n");
@@ -915,22 +914,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(ExceptPipeOperator except, S context) {
-        return builder;
-    }
-
-    @Override
-    public <S> StringBuilder visit(ExtendPipeOperator extend, S context) {
+    public StringBuilder visit(ExtendPipeOperator extend, Void context) {
         return visit((SelectPipeOperator) extend, context);
     }
 
     @Override
-    public <S> StringBuilder visit(IntersectPipeOperator intersect, S context) {
-        return builder;
-    }
-
-    @Override
-    public <S> StringBuilder visit(JoinPipeOperator join, S context) {
+    public StringBuilder visit(JoinPipeOperator join, Void context) {
         builder.append("|> ");
         deparseJoin(join.getJoin());
         builder.append("\n");
@@ -938,7 +927,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(LimitPipeOperator limit, S context) {
+    public StringBuilder visit(LimitPipeOperator limit, Void context) {
         builder.append("|> ").append("LIMIT ").append(limit.getLimitExpression());
         if (limit.getOffsetExpression() != null) {
             builder.append(" OFFSET ").append(limit.getOffsetExpression());
@@ -947,7 +936,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(OrderByPipeOperator orderBy, S context) {
+    public StringBuilder visit(OrderByPipeOperator orderBy, Void context) {
         builder.append("|> ");
         new OrderByDeParser(expressionVisitor, builder).deParse(orderBy.getOrderByElements());
         builder.append("\n");
@@ -956,7 +945,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
 
     @Override
-    public <S> StringBuilder visit(PivotPipeOperator pivot, S context) {
+    public StringBuilder visit(PivotPipeOperator pivot, Void context) {
         builder
                 .append("|> ")
                 .append("PIVOT( ")
@@ -974,12 +963,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(RenamePipeOperator rename, S context) {
+    public StringBuilder visit(RenamePipeOperator rename, Void context) {
         return builder;
     }
 
     @Override
-    public <S> StringBuilder visit(SelectPipeOperator select, S context) {
+    public StringBuilder visit(SelectPipeOperator select, Void context) {
         builder.append("|> ").append(select.getOperatorName());
         int i = 0;
         for (SelectItem<?> selectItem : select.getSelectItems()) {
@@ -990,7 +979,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(SetPipeOperator set, S context) {
+    public StringBuilder visit(SetPipeOperator set, Void context) {
         builder.append("|> ").append("SET");
         int i = 0;
         for (UpdateSet updateSet : set.getUpdateSets()) {
@@ -1001,14 +990,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(TableSamplePipeOperator tableSample, S context) {
+    public StringBuilder visit(TableSamplePipeOperator tableSample, Void context) {
         builder.append("|> ").append("TABLESAMPLE SYSTEM (").append(tableSample.getPercent())
                 .append(" PERCENT)");
         return builder;
     }
 
     @Override
-    public <S> StringBuilder visit(SetOperationPipeOperator setOperationPipeOperator, S context) {
+    public StringBuilder visit(SetOperationPipeOperator setOperationPipeOperator, Void context) {
         builder.append("|> ").append(setOperationPipeOperator.getSetOperationType());
         if (setOperationPipeOperator.getModifier() != null) {
             builder.append(" ").append(setOperationPipeOperator.getModifier());
@@ -1026,7 +1015,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(UnPivotPipeOperator unPivot, S context) {
+    public StringBuilder visit(UnPivotPipeOperator unPivot, Void context) {
         builder
                 .append("|> ")
                 .append("UNPIVOT( ")
@@ -1044,7 +1033,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(WherePipeOperator where, S context) {
+    public StringBuilder visit(WherePipeOperator where, Void context) {
         builder.append("|> ")
                 .append("WHERE ");
         where.getExpression().accept(expressionVisitor, context);
@@ -1053,7 +1042,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
-    public <S> StringBuilder visit(WindowPipeOperator window, S context) {
+    public StringBuilder visit(WindowPipeOperator window, Void context) {
         return visit((SelectPipeOperator) window, context);
     }
 }
