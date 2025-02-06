@@ -124,22 +124,11 @@ java {
 }
 
 javadoc {
-    dependsOn(compileJavacc, compileJava )
-    source += fileTree(layout.buildDirectory.dir("generated/javacc/net/sf/jsqlparser/parser").get()) {
-        include("**/ParseException.java")
-        include("**/Provider.java")
-        include("**/Token.java")
-    }
-    source += fileTree(layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser").get()) {
-        include("**/Node.java")
-        include("**/SimpleNode.java")
-    }
+    include("build/generated/javacc/net/sf/jsqlparser/parser/*.java" )
     if(JavaVersion.current().isJava9Compatible()) {
         options.addBooleanOption('html5', true)
     }
-    options.addStringOption('Xdoclint:none', '-quiet')
-    options.addStringOption('J-Xmx8g')
-    options.addStringOption('J-Xss2m')
+    options.addBooleanOption("Xdoclint:none", true)
 }
 
 jar {
@@ -164,16 +153,6 @@ tasks.register('xmldoc', Javadoc) {
     )
 
     source = sourceSets.main.allJava
-    source += fileTree(layout.buildDirectory.dir("generated/javacc/net/sf/jsqlparser/parser").get()) {
-        include("**/ParseException.java")
-        include("**/Provider.java")
-        include("**/Token.java")
-    }
-    source += fileTree(layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser").get()) {
-        include("**/Node.java")
-        include("**/SimpleNode.java")
-    }
-
     // beware: Gradle deletes this folder automatically and there is no switch-off
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files as List
@@ -183,10 +162,8 @@ tasks.register('xmldoc', Javadoc) {
     options.addBooleanOption("withFloatingToc", Boolean.parseBoolean(System.getenv().getOrDefault("FLOATING_TOC", "true")))
     options.addStringOption("basePackage", "net.sf.jsqlparser")
     options.addStringOption("filename", outFile.getName())
-    options.addStringOption('J-Xmx8g')
-    options.addStringOption('J-Xss2m')
 
-    dependsOn(compileJavacc, compileJava )
+    dependsOn(compileJava)
     doLast {
         copy {
             from rstFile
