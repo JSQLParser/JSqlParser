@@ -132,6 +132,8 @@ javadoc {
         options.addBooleanOption('html5', true)
     }
     options.addBooleanOption("Xdoclint:none", true)
+    options.addStringOption('J-Xmx4g')
+    options.addStringOption('J-Xss2m')
 }
 
 jar {
