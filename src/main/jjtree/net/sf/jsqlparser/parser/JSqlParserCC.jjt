@@ -2280,6 +2280,7 @@ Select Select() #Select:
     Offset offset = null;
     Fetch fetch = null;
     WithIsolation withIsolation = null;
+    Alias alias = null;
 }
 {
     (
@@ -2290,7 +2291,7 @@ Select Select() #Select:
                 |
                 LOOKAHEAD(3) select = Values()
                 |
-                LOOKAHEAD(3) select = ParenthesedSelect()
+                LOOKAHEAD(3) select = ParenthesedSelect() [ LOOKAHEAD(2) alias = Alias() {select.setAlias(alias);} ]
             )
             [ LOOKAHEAD(2) select = FromQueryFromSelect(select) ]
             [ LOOKAHEAD(2) select = SetOperationList(select) ]
