@@ -63,7 +63,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main
       - name: Publish with Gradle
-        run: ./gradlew clean publish --no-build-cache
+        run: ./gradlew publish
         env:
           ossrhUsername: ${{ secrets.OSSRHUSERNAME }}
           ossrhPassword: ${{ secrets.OSSRHPASSWORD }}
