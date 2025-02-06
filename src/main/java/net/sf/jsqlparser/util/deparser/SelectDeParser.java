@@ -819,7 +819,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         visit(fromItem, null);
     }
 
-    public void visit(Import imprt) { visit(imprt, null); }
+    public void visit(Import imprt) {
+        visit(imprt, null);
+    }
 
 
     private void deparseOptimizeFor(OptimizeFor optimizeFor) {
