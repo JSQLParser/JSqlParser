@@ -49,7 +49,7 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.OSSRHPASSWORD }}
 
   gradle_publish:
-    needs: gradle_check
+    needs: maven_verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
@@ -63,7 +63,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main
       - name: Publish with Gradle
-        run: ./gradlew publish
+        run: ./gradlew clean publish --no-build-cache
         env:
           ossrhUsername: ${{ secrets.OSSRHUSERNAME }}
           ossrhPassword: ${{ secrets.OSSRHPASSWORD }}
