@@ -137,7 +137,7 @@ javadoc {
     if(JavaVersion.current().isJava9Compatible()) {
         options.addBooleanOption('html5', true)
     }
-    options.addBooleanOption("Xdoclint:none", true)
+    options.addStringOption('Xdoclint:none', '-quiet')
     options.addStringOption('J-Xmx8g')
     options.addStringOption('J-Xss2m')
 }
