@@ -2031,7 +2031,14 @@ ObjectNames RelObjectNames() : {
 } {
     token = RelObjectNameExt() { data.add(token); }
     (
-        LOOKAHEAD (2) ( delimiter = "." | delimiter = ":" ) { delimiters.add(delimiter.image); } (( delimiter =  "." | delimiter = ":" ) { data.add(null); delimiters.add(delimiter.image); })*
+        LOOKAHEAD (2) (
+            ( delimiter = "..."  { delimiters.add("."); data.add(null); delimiters.add("."); data.add(null); delimiters.add("."); } )
+            |
+            ( delimiter = ".."  { delimiters.add("."); data.add(null); delimiters.add("."); } )
+            |
+            ( ( delimiter = "." | delimiter = ":" ) { delimiters.add(delimiter.image); } )
+        )
+
         token = RelObjectNameExt2() { data.add(token); }
     ) *
 
@@ -2047,7 +2054,14 @@ ObjectNames ColumnIdentifier() : {
 } {
     token = RelObjectNameExt() { data.add(token); }
     (
-        LOOKAHEAD (2) ( delimiter = "." ) { delimiters.add(delimiter.image); } (( delimiter =  "." ) { data.add(null); delimiters.add(delimiter.image); })*
+        LOOKAHEAD (2) (
+            ( delimiter = "..."  { delimiters.add("."); data.add(null); delimiters.add("."); data.add(null); delimiters.add("."); } )
+            |
+            ( delimiter = ".."  { delimiters.add("."); data.add(null); delimiters.add("."); } )
+            |
+            ( delimiter = "."  { delimiters.add(delimiter.image); } )
+        )
+
         token = RelObjectNameExt2() { data.add(token); }
     ) *
 
