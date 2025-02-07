@@ -92,12 +92,8 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
             builder.append(" )");
         }
         if (replaceExpressions != null && !replaceExpressions.isEmpty()) {
-            builder.append(" Replace(");
-            int i = 0;
-            for (SelectItem<?> selectItem : replaceExpressions) {
-                builder.append(i++ > 0 ? ", " : " ");
-                selectItem.appendTo(builder);
-            }
+            builder.append(" REPLACE( ");
+            builder.append(Select.getStringList(replaceExpressions));
             builder.append(" )");
         }
         return builder;
