@@ -14,6 +14,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public class FileSource extends ImportFromItem implements Serializable {
     private DataSource dataSource;
@@ -98,29 +99,37 @@ public class FileSource extends ImportFromItem implements Serializable {
                 sql.append("LOCAL ");
             }
 
-            if (secure) {
+            if (Objects.requireNonNullElse(secure, false)) {
                 sql.append("SECURE ");
             }
         }
 
         sql.append(dataSource);
-        PlainSelect.appendStringListTo(sql, connectionFileDefinitions, false, false);
+        if (connectionFileDefinitions != null) {
+            sql.append(" ");
+            PlainSelect.appendStringListTo(sql, connectionFileDefinitions, false, false);
+        }
 
         if (csvColumns != null) {
+            sql.append(" ");
             PlainSelect.appendStringListTo(sql, csvColumns, true, true);
         } else if (fbvColumns != null) {
+            sql.append(" ");
             PlainSelect.appendStringListTo(sql, fbvColumns, false, true);
         }
 
         if (fileOptions != null) {
+            sql.append(" ");
             PlainSelect.appendStringListTo(sql, fileOptions, false, false);
         }
 
         if (certificateVerification != null) {
+            sql.append(" ");
             sql.append(certificateVerification);
         }
 
         if (errorClause != null) {
+            sql.append(" ");
             sql.append(errorClause);
         }
 

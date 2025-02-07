@@ -29,6 +29,7 @@ public class CloudConnectionDefinition extends ConnectionDefinition {
 
         sql.append("AT CLOUD ");
         sql.append(storage);
+        sql.append(" ");
         appendConnectionDefinition(sql);
 
         return sql.toString();

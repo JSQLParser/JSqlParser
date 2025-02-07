@@ -46,7 +46,10 @@ public class ConnectionFileDefinition {
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append(connectionDefinition);
+        if (connectionDefinition != null) {
+            sql.append(connectionDefinition);
+        }
+
         for (StringValue filePath : filePaths) {
             sql.append(" FILE ").append(filePath);
         }

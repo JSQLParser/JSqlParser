@@ -71,9 +71,10 @@ public class Import extends ASTNodeAccessImpl implements FromItem, Statement {
             } else {
                 PlainSelect.appendStringListTo(sql, importColumns, true, true);
             }
+            sql.append(" ");
         }
 
-        sql.append(" FROM ");
+        sql.append("FROM ");
         sql.append(fromItem);
 
         return sql.toString();

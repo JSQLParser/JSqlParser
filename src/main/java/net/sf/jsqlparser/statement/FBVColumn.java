@@ -17,10 +17,18 @@ public class FBVColumn {
     private boolean precedesComma;
     private String key;
     private Expression value;
+    private String stringValue;
 
     private FBVColumn(String key, Expression value) {
         this.key = key;
         this.value = value;
+        this.stringValue = null;
+    }
+
+    public FBVColumn(String key, String value) {
+        this.key = key;
+        this.value = null;
+        this.stringValue = value;
     }
 
     public FBVColumn(String key, StringValue value) {
@@ -51,12 +59,22 @@ public class FBVColumn {
         return value;
     }
 
-    public void setValue(StringValue value) {
+    public void setValue(String value) {
+        this.stringValue = value;
+        this.value = null;
+    }
+
+    private void setValue(Expression value) {
         this.value = value;
+        this.stringValue = null;
+    }
+
+    public void setValue(StringValue value) {
+        setValue((Expression) value);
     }
 
     public void setValue(LongValue value) {
-        this.value = value;
+        setValue((Expression) value);
     }
 
     @Override
@@ -69,7 +87,11 @@ public class FBVColumn {
 
         sql.append(key);
         sql.append(" = ");
-        sql.append(value);
+        if (stringValue != null) {
+            sql.append(stringValue);
+        } else {
+            sql.append(value);
+        }
 
         return sql.toString();
     }

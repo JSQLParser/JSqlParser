@@ -1052,7 +1052,7 @@ LikeClause LikeClause(): {
 } {
     <K_LIKE>
     table = Table() { likeClause.setTable(table); }
-    [ LOOKAHEAD(2) columnsList = ColumnSelectItemsList() { likeClause.setColumnsList(columnsList); }]
+    [ "(" columnsList = ColumnSelectItemsList() ")" { likeClause.setColumnsList(columnsList); }]
 
     [
         LOOKAHEAD(2)
@@ -1196,7 +1196,6 @@ DBMSSource DBMSSource() #DBMSSource: {
 
 FileSource FileSource() #FileSource: {
   FileSource fileSource = new FileSource();
-  ConnectionDefinition connectionDefinition;
   List<ConnectionFileDefinition> connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
   List<StringValue> filePaths;
   CertificateVerification certificateVerification;
@@ -1213,10 +1212,11 @@ FileSource FileSource() #FileSource: {
         )
 
         (
-          (
-              LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
-            | connectionDefinition = CloudConnectionDefinition()
-          )
+          { ConnectionDefinition connectionDefinition = null; }
+          [
+              LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
+            | connectionDefinition = ConnectionDefinition()
+          ]
           <K_FILE> token = <S_CHAR_LITERAL>
           {
             filePaths = new ArrayList<StringValue>();
@@ -1225,6 +1225,7 @@ FileSource FileSource() #FileSource: {
             filePaths.add(stringVal);
           }
           (
+            LOOKAHEAD(2)
             <K_FILE> token = <S_CHAR_LITERAL>
             {
               stringVal = new StringValue(token.image);
@@ -1238,10 +1239,11 @@ FileSource FileSource() #FileSource: {
         (
           LOOKAHEAD(2)
           (
-            (
-                LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
-              | connectionDefinition = CloudConnectionDefinition()
-            )
+            { connectionDefinition = null; }
+            [
+                LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
+              | connectionDefinition = ConnectionDefinition()
+            ]
             <K_FILE> token = <S_CHAR_LITERAL>
             {
               filePaths = new ArrayList<StringValue>();
@@ -1250,6 +1252,7 @@ FileSource FileSource() #FileSource: {
               filePaths.add(stringVal);
             }
             (
+              LOOKAHEAD(2)
               <K_FILE> token = <S_CHAR_LITERAL>
               {
                 stringVal = new StringValue(token.image);
@@ -1345,7 +1348,7 @@ FileSource FileSource() #FileSource: {
                       token2=<K_LEFT>
                     | token2=<K_RIGHT>
                   )
-                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, token2.image); }
               )
               {
                 List<FBVColumn> fbvColumns = new ArrayList<FBVColumn>();
@@ -1373,7 +1376,7 @@ FileSource FileSource() #FileSource: {
                       token2=<K_LEFT>
                     | token2=<K_RIGHT>
                   )
-                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+                  { fbvColumn = new FBVColumn(token.image, token2.image); }
               )
               {
                 fbvColumn.setPrecedesComma(precedesComma);
@@ -1632,8 +1635,8 @@ CSVFileDestination CSVFileDestination(): {
     (
           <K_CSV>
           (
-              LOOKAHEAD(2) connectionDefinition = ConnectionDefinition()
-            | connectionDefinition = CloudConnectionDefinition()
+              LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
+            | connectionDefinition = ConnectionDefinition()
           )
           { csvFileDestination.setConnectionDefinition(connectionDefinition); }
         | <K_LOCAL> { csvFileDestination.setLocal(true); }

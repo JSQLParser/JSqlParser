@@ -99,7 +99,10 @@ public class LikeClause implements ImportColumn, Serializable {
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(" LIKE ");
         builder.append(table);
-        PlainSelect.appendStringListTo(builder, columnsList, true, false);
+        if (columnsList != null) {
+            builder.append(" ");
+            PlainSelect.appendStringListTo(builder, columnsList, true, true);
+        }
 
         if (includingDefaults != null) {
             if (includingDefaults) {
