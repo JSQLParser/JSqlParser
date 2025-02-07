@@ -3189,14 +3189,14 @@ SelectItem<?> SelectItem() #SelectItem:
 AllColumns AllColumns():
 {
     ParenthesedExpressionList<Column> exceptColumns = null;
-    List<SelectItem<Column>> replaceExpressions = null;
+    List<SelectItem<?>> replaceExpressions = null;
     String exceptKeyword=null;
     Token tk;
 }
 {
     "*"
     [ LOOKAHEAD(2) ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList() { exceptKeyword=tk.image; } ]
-    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = ColumnSelectItemsList() ")" ]
+    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
 
     {
         return new AllColumns(exceptColumns, replaceExpressions, exceptKeyword);
