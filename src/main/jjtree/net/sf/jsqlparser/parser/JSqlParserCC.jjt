@@ -1298,7 +1298,7 @@ CSVColumn CSVSourceColumn(): {
 } {
     (
           LOOKAHEAD(2)
-          token=<S_LONG> "." "." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+          token=<S_LONG> ".." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
         | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
           [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
     )
