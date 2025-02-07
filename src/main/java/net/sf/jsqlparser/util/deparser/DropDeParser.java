@@ -20,26 +20,26 @@ public class DropDeParser extends AbstractDeParser<Drop> {
 
     @Override
     public void deParse(Drop drop) {
-        buffer.append("DROP ");
+        builder.append("DROP ");
         if (drop.isUsingTemporary()) {
-            buffer.append("TEMPORARY ");
+            builder.append("TEMPORARY ");
         }
         if (drop.isMaterialized()) {
-            buffer.append("MATERIALIZED ");
+            builder.append("MATERIALIZED ");
         }
-        buffer.append(drop.getType());
+        builder.append(drop.getType());
         if (drop.isIfExists()) {
-            buffer.append(" IF EXISTS");
+            builder.append(" IF EXISTS");
         }
 
-        buffer.append(" ").append(drop.getName());
+        builder.append(" ").append(drop.getName());
 
         if (drop.getType().equals("FUNCTION")) {
-            buffer.append(Drop.formatFuncParams(drop.getParamsByType("FUNCTION")));
+            builder.append(Drop.formatFuncParams(drop.getParamsByType("FUNCTION")));
         }
 
         if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
-            buffer.append(" ")
+            builder.append(" ")
                     .append(PlainSelect.getStringList(drop.getParameters(), false, false));
         }
     }

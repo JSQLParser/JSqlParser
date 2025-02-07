@@ -25,26 +25,26 @@ public class RefreshMaterializedViewStatementDeParser
     @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
     @Override
     public void deParse(RefreshMaterializedViewStatement view) {
-        buffer.append("REFRESH MATERIALIZED VIEW ");
+        builder.append("REFRESH MATERIALIZED VIEW ");
         if (view.getRefreshMode() == null) {
             if (view.isConcurrently()) {
-                buffer.append("CONCURRENTLY ");
+                builder.append("CONCURRENTLY ");
             }
-            buffer.append(view.getView());
+            builder.append(view.getView());
             return;
         }
         switch (view.getRefreshMode()) {
             case WITH_DATA:
                 if (view.isConcurrently()) {
-                    buffer.append("CONCURRENTLY ");
+                    builder.append("CONCURRENTLY ");
                 }
-                buffer.append(view.getView());
-                buffer.append(" WITH DATA");
+                builder.append(view.getView());
+                builder.append(" WITH DATA");
                 break;
             case WITH_NO_DATA:
-                buffer.append(view.getView());
+                builder.append(view.getView());
                 if (view.isConcurrently()) {
-                    buffer.append(" WITH NO DATA");
+                    builder.append(" WITH NO DATA");
                 }
                 break;
         }

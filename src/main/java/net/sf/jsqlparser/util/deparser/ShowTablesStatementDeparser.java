@@ -19,6 +19,6 @@ public class ShowTablesStatementDeparser extends AbstractDeParser<ShowTablesStat
 
     @Override
     void deParse(ShowTablesStatement statement) {
-        buffer.append(statement);
+        builder.append(statement);
     }
 }

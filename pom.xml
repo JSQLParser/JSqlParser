@@ -201,7 +201,7 @@
                     <showDeprecation>true</showDeprecation>
                     <fork>true</fork>
                     <meminitial>128m</meminitial>
-                    <maxmem>2g</maxmem>
+                    <maxmem>2000m</maxmem>
                 </configuration>
             </plugin>
             <plugin>
@@ -315,7 +315,7 @@
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <maxmemory>2g</maxmemory>
                             <minmemory>800m</minmemory>
-                            <additionalJOptions>-J-Xss2m</additionalJOptions>
+                            <additionalJOptions>-J-Xss4m</additionalJOptions>
                         </configuration>
                         <goals>
                             <goal>jar</goal>
@@ -357,7 +357,7 @@
                     <argLine>
                         --add-opens=java.base/java.lang=ALL-UNNAMED
                         --add-opens=java.base/java.util=ALL-UNNAMED
-                        -Xmx2G -Xms512m -Xss2m
+                        -Xmx2G -Xms800m -Xss4m
                     </argLine>
                 </configuration>
             </plugin>
@@ -435,7 +435,7 @@
                 <version>3.0.0-M7</version>
                 <configuration>
                     <outputDirectory>${project.reporting.outputDirectory}/testresults</outputDirectory>
-                    <argLine>-Xmx2G -Xms512m -Xss2m</argLine>
+                    <argLine>-Xmx2G -Xms800m -Xss4m</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -444,11 +444,10 @@
                 <version>3.4.1</version>
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
+                    <doclint>none</doclint>
                     <maxmemory>2g</maxmemory>
                     <minmemory>800m</minmemory>
-                    <doclint>none</doclint>
-
-                    <additionalJOptions>-Xss2m</additionalJOptions>
+                    <additionalJOptions>-J-Xss2m</additionalJOptions>
 
                     <!-- Doclint does not work on the Test Sources
                     <doclint>all,-missing</doclint>

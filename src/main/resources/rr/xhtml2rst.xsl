@@ -28,18 +28,19 @@
     <xsl:template match="*">
         <xsl:choose>
             <xsl:when test="$withFloatingToc='true'">
-                <xsl:text disable-output-escaping="yes">
-                    .. raw:: html
+                <xsl:text disable-output-escaping="yes"><![CDATA[
+.. raw:: html
 
-                    &lt;div id="floating-toc"&gt;
-                    &lt;div class="search-container"&gt;
-                    &lt;input type="button" id="toc-hide-show-btn"&gt;&lt;/input&gt;
-                    &lt;input type="text" id="toc-search" placeholder="Search" /&gt;
-                    &lt;/div&gt;
-                    &lt;ul id="toc-list"&gt;&lt;/ul&gt;
-                    &lt;/div&gt;
+        <div id="floating-toc">
+        <div class="search-container">
+        <input type="button" id="toc-hide-show-btn"></input>
+        <input type="text" id="toc-search" placeholder="Search" />
+        </div>
+        <ul id="toc-list"></ul>
+        </div>
 
-                </xsl:text>
+
+]]></xsl:text>
             </xsl:when>
         </xsl:choose>
 
@@ -47,10 +48,9 @@
     </xsl:template>
 
     <xsl:template match="/xhtml:html/xhtml:body">
-        <xsl:text disable-output-escaping="yes">
-            *********************************************************************
-            SQL Syntax
-        </xsl:text>
+        <xsl:text disable-output-escaping="yes"><![CDATA[
+*********************************************************************
+SQL Syntax ]]></xsl:text>
         <xsl:choose>
             <xsl:when test="$isSnapshot='true'">
                 <xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text>
@@ -59,11 +59,10 @@
                 <xsl:text>|JSQLPARSER_VERSION|</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>
-            *********************************************************************
+        <xsl:text><![CDATA[
+*********************************************************************
 
-            The EBNF and Railroad Diagrams for
-        </xsl:text>
+The EBNF and Railroad Diagrams for ]]></xsl:text>
         <xsl:choose>
             <xsl:when test="$isSnapshot='true'">
                 <xsl:text>|JSQLPARSER_SNAPSHOT_VERSION|</xsl:text>
@@ -79,17 +78,16 @@
     </xsl:template>
 
     <xsl:template match="svg:svg[preceding-sibling::*[1]/xhtml:a]">
-        <xsl:text disable-output-escaping="yes">
-            ======================================================================================================================
-        </xsl:text>
-        <xsl:value-of select="translate(preceding-sibling::*[1]/xhtml:a/text(),'\:','')"/>
-        <xsl:text disable-output-escaping="yes">
-            ======================================================================================================================
+        <xsl:text disable-output-escaping="yes"><![CDATA[
+======================================================================================================================
+]]></xsl:text><xsl:value-of select="translate(preceding-sibling::*[1]/xhtml:a/text(),'\:','')"/>
+        <xsl:text disable-output-escaping="yes"><![CDATA[
+======================================================================================================================
 
-        </xsl:text>
+]]></xsl:text>
 
         <xsl:text disable-output-escaping="yes">
-            .. raw:: html
+.. raw:: html
 
         </xsl:text>
 

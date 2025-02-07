@@ -39,56 +39,56 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Delete delete) {
         if (delete.getWithItemsList() != null && !delete.getWithItemsList().isEmpty()) {
-            buffer.append("WITH ");
+            builder.append("WITH ");
             for (Iterator<WithItem<?>> iter = delete.getWithItemsList().iterator(); iter
                     .hasNext();) {
                 WithItem<?> withItem = iter.next();
-                buffer.append(withItem);
+                builder.append(withItem);
                 if (iter.hasNext()) {
-                    buffer.append(",");
+                    builder.append(",");
                 }
-                buffer.append(" ");
+                builder.append(" ");
             }
         }
-        buffer.append("DELETE");
+        builder.append("DELETE");
         if (delete.getOracleHint() != null) {
-            buffer.append(delete.getOracleHint()).append(" ");
+            builder.append(delete.getOracleHint()).append(" ");
         }
         if (delete.getModifierPriority() != null) {
-            buffer.append(" ").append(delete.getModifierPriority());
+            builder.append(" ").append(delete.getModifierPriority());
         }
         if (delete.isModifierQuick()) {
-            buffer.append(" QUICK");
+            builder.append(" QUICK");
         }
         if (delete.isModifierIgnore()) {
-            buffer.append(" IGNORE");
+            builder.append(" IGNORE");
         }
         if (delete.getTables() != null && !delete.getTables().isEmpty()) {
-            buffer.append(
+            builder.append(
                     delete.getTables().stream().map(Table::getFullyQualifiedName)
                             .collect(joining(", ", " ", "")));
         }
 
         if (delete.getOutputClause() != null) {
-            delete.getOutputClause().appendTo(buffer);
+            delete.getOutputClause().appendTo(builder);
         }
 
         if (delete.isHasFrom()) {
-            buffer.append(" FROM");
+            builder.append(" FROM");
         }
-        buffer.append(" ").append(delete.getTable().toString());
+        builder.append(" ").append(delete.getTable().toString());
 
         if (delete.getUsingList() != null && !delete.getUsingList().isEmpty()) {
-            buffer.append(" USING").append(
+            builder.append(" USING").append(
                     delete.getUsingList().stream().map(Table::toString)
                             .collect(joining(", ", " ", "")));
         }
         if (delete.getJoins() != null) {
             for (Join join : delete.getJoins()) {
                 if (join.isSimple()) {
-                    buffer.append(", ").append(join);
+                    builder.append(", ").append(join);
                 } else {
-                    buffer.append(" ").append(join);
+                    builder.append(" ").append(join);
                 }
             }
         }
@@ -96,24 +96,24 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         deparseWhereClause(delete);
 
         if (delete.getPreferringClause() != null) {
-            buffer.append(" ").append(delete.getPreferringClause());
+            builder.append(" ").append(delete.getPreferringClause());
         }
         if (delete.getOrderByElements() != null) {
-            new OrderByDeParser(expressionVisitor, buffer).deParse(delete.getOrderByElements());
+            new OrderByDeParser(expressionVisitor, builder).deParse(delete.getOrderByElements());
         }
         if (delete.getLimit() != null) {
-            new LimitDeparser(expressionVisitor, buffer).deParse(delete.getLimit());
+            new LimitDeparser(expressionVisitor, builder).deParse(delete.getLimit());
         }
 
         if (delete.getReturningClause() != null) {
-            delete.getReturningClause().appendTo(buffer);
+            delete.getReturningClause().appendTo(builder);
         }
 
     }
 
     protected void deparseWhereClause(Delete delete) {
         if (delete.getWhere() != null) {
-            buffer.append(" WHERE ");
+            builder.append(" WHERE ");
             delete.getWhere().accept(expressionVisitor, null);
         }
     }

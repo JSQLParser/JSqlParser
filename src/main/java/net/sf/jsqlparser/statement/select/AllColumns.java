@@ -20,18 +20,18 @@ import java.util.List;
 
 public class AllColumns extends ASTNodeAccessImpl implements Expression {
     protected ExpressionList<Column> exceptColumns;
-    protected List<SelectItem<Column>> replaceExpressions;
+    protected List<SelectItem<?>> replaceExpressions;
     private String exceptKeyword;
 
     public AllColumns(ExpressionList<Column> exceptColumns,
-            List<SelectItem<Column>> replaceExpressions) {
+            List<SelectItem<?>> replaceExpressions) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
         this.exceptKeyword = exceptColumns != null ? "Except" : null;
     }
 
     public AllColumns(ExpressionList<Column> exceptColumns,
-            List<SelectItem<Column>> replaceExpressions, String exceptKeyword) {
+            List<SelectItem<?>> replaceExpressions, String exceptKeyword) {
         this.exceptColumns = exceptColumns;
         this.replaceExpressions = replaceExpressions;
         this.exceptKeyword = exceptKeyword;
@@ -58,16 +58,16 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
         return exceptColumns;
     }
 
-    public List<SelectItem<Column>> getReplaceExpressions() {
+    public List<SelectItem<?>> getReplaceExpressions() {
         return replaceExpressions;
     }
 
-    public AllColumns setReplaceExpressions(List<SelectItem<Column>> replaceExpressions) {
+    public AllColumns setReplaceExpressions(List<SelectItem<?>> replaceExpressions) {
         this.replaceExpressions = replaceExpressions;
         return this;
     }
 
-    public List<SelectItem<Column>> addReplaceExpression(SelectItem<Column> selectItem) {
+    public List<SelectItem<?>> addReplaceExpression(SelectItem<?> selectItem) {
         if (replaceExpressions == null) {
             replaceExpressions = new ArrayList<>();
         }
@@ -92,12 +92,8 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
             builder.append(" )");
         }
         if (replaceExpressions != null && !replaceExpressions.isEmpty()) {
-            builder.append(" Replace(");
-            int i = 0;
-            for (SelectItem<?> selectItem : replaceExpressions) {
-                builder.append(i++ > 0 ? ", " : " ");
-                selectItem.appendTo(builder);
-            }
+            builder.append(" REPLACE( ");
+            builder.append(Select.getStringList(replaceExpressions));
             builder.append(" )");
         }
         return builder;

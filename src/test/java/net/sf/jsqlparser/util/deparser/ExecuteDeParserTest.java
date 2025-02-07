@@ -36,7 +36,7 @@ public class ExecuteDeParserTest {
     public void setUp() {
         buffer = new StringBuilder();
         expressionVisitor = new ExpressionDeParser();
-        expressionVisitor.setBuffer(buffer);
+        expressionVisitor.setBuilder(buffer);
         executeDeParser = new ExecuteDeParser(expressionVisitor, buffer);
     }
 

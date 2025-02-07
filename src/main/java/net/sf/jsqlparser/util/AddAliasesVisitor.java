@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -59,6 +60,11 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
             item.accept(this, context);
         }
         return null;
+    }
+
+    @Override
+    public <S> T visit(FromQuery fromQuery, S context) {
+        throw new UnsupportedOperationException(NOT_SUPPORTED_YET);
     }
 
     @Override

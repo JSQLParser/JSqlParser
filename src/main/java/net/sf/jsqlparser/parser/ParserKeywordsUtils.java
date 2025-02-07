@@ -70,6 +70,7 @@ public class ParserKeywordsUtils {
             {"EXCEPT", RESTRICTED_SQL2016},
             {"EXCLUDES", RESTRICTED_JSQLPARSER},
             {"EXISTS", RESTRICTED_SQL2016},
+            {"EXTEND", RESTRICTED_JSQLPARSER},
             {"FALSE", RESTRICTED_SQL2016},
             {"FBV", RESTRICTED_JSQLPARSER},
             {"FETCH", RESTRICTED_SQL2016},

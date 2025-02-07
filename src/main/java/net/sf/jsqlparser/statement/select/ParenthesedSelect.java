@@ -79,7 +79,7 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
             TableFunction t = (TableFunction) fromItem;
             return new Alias(t.getName(), true);
         } else {
-            return new Alias(fromItem.getAlias().getName(), true);
+            return fromItem.getAlias()!=null ? new Alias(fromItem.getAlias().getName(), true) : null;
         }
     }
 

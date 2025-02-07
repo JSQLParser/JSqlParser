@@ -34,36 +34,36 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
         switch (upsert.getUpsertType()) {
             case REPLACE:
             case REPLACE_SET:
-                buffer.append("REPLACE ");
+                builder.append("REPLACE ");
                 break;
             case INSERT_OR_ABORT:
-                buffer.append("INSERT OR ABORT ");
+                builder.append("INSERT OR ABORT ");
                 break;
             case INSERT_OR_FAIL:
-                buffer.append("INSERT OR FAIL ");
+                builder.append("INSERT OR FAIL ");
                 break;
             case INSERT_OR_IGNORE:
-                buffer.append("INSERT OR IGNORE ");
+                builder.append("INSERT OR IGNORE ");
                 break;
             case INSERT_OR_REPLACE:
-                buffer.append("INSERT OR REPLACE ");
+                builder.append("INSERT OR REPLACE ");
                 break;
             case INSERT_OR_ROLLBACK:
-                buffer.append("INSERT OR ROLLBACK ");
+                builder.append("INSERT OR ROLLBACK ");
                 break;
             case UPSERT:
             default:
-                buffer.append("UPSERT ");
+                builder.append("UPSERT ");
         }
 
         if (upsert.isUsingInto()) {
-            buffer.append("INTO ");
+            builder.append("INTO ");
         }
-        buffer.append(upsert.getTable().getFullyQualifiedName());
+        builder.append(upsert.getTable().getFullyQualifiedName());
 
         if (upsert.getUpdateSets() != null) {
-            buffer.append(" SET ");
-            deparseUpdateSets(upsert.getUpdateSets(), buffer, expressionVisitor);
+            builder.append(" SET ");
+            deparseUpdateSets(upsert.getUpdateSets(), builder, expressionVisitor);
         } else {
             if (upsert.getColumns() != null) {
                 upsert.getColumns().accept(expressionVisitor, null);
@@ -74,13 +74,13 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
             }
 
             if (upsert.getSelect() != null) {
-                buffer.append(" ");
+                builder.append(" ");
                 upsert.getSelect().accept((SelectVisitor<StringBuilder>) selectVisitor, null);
             }
 
             if (upsert.getDuplicateUpdateSets() != null) {
-                buffer.append(" ON DUPLICATE KEY UPDATE ");
-                deparseUpdateSets(upsert.getDuplicateUpdateSets(), buffer, expressionVisitor);
+                builder.append(" ON DUPLICATE KEY UPDATE ");
+                deparseUpdateSets(upsert.getDuplicateUpdateSets(), builder, expressionVisitor);
             }
         }
     }

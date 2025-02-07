@@ -19,6 +19,6 @@ public class ShowStatementDeParser extends AbstractDeParser<ShowStatement> {
 
     @Override
     public void deParse(ShowStatement show) {
-        buffer.append("SHOW ").append(show.getName());
+        builder.append("SHOW ").append(show.getName());
     }
 }

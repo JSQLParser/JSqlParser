@@ -10,6 +10,7 @@
 module net.sf.jsqlparser {
     requires java.sql;
     requires java.logging;
+    requires java.desktop;
 
     exports net.sf.jsqlparser;
     exports net.sf.jsqlparser.expression;
@@ -39,6 +40,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.statement.imprt;
     exports net.sf.jsqlparser.statement.insert;
     exports net.sf.jsqlparser.statement.merge;
+    exports net.sf.jsqlparser.statement.piped;
     exports net.sf.jsqlparser.statement.refresh;
     exports net.sf.jsqlparser.statement.select;
     exports net.sf.jsqlparser.statement.show;

@@ -41,26 +41,26 @@ public class ExpressionListDeParser<T extends Expression>
                 : Collections.nCopies(expressionList.size(), "");
 
         if (expressionList instanceof ParenthesedExpressionList<?>) {
-            buffer.append("(");
+            builder.append("(");
         }
         int i = 0;
         for (Expression expression : expressionList) {
             if (i > 0) {
-                buffer.append(comma);
+                builder.append(comma);
             }
 
             // @todo: remove this NameExpressionList related part
             String name = names.get(i);
             if (!name.isEmpty()) {
-                buffer.append(name);
-                buffer.append(" ");
+                builder.append(name);
+                builder.append(" ");
             }
             expression.accept(expressionVisitor, null);
             i++;
         }
 
         if (expressionList instanceof ParenthesedExpressionList<?>) {
-            buffer.append(")");
+            builder.append(")");
         }
     }
 }
