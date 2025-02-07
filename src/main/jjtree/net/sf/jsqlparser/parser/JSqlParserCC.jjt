@@ -1116,11 +1116,13 @@ Import SubImport() #SubImport: {
     List<ImportColumn> importColumns;
     ImportFromItem fromItem;
 } {
-    <K_IMPORT>
-    [ <K_INTO> importColumns = ImportColumns() { impt.setImportColumns(importColumns); } ]
+    "("
+        <K_IMPORT>
+        [ <K_INTO> importColumns = ImportColumns() { impt.setImportColumns(importColumns); } ]
 
-    <K_FROM>
-    fromItem = ImportFromItem() { impt.setFromItem(fromItem); }
+        <K_FROM>
+        fromItem = ImportFromItem() { impt.setFromItem(fromItem); }
+    ")"
 
     {
         return impt;
@@ -3234,7 +3236,7 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [ LOOKAHEAD(2) intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ LOOKAHEAD(2) <K_FROM> (fromItem=FromItem() | fromItem=SubImport())
+    [ LOOKAHEAD(2) <K_FROM> fromItem=FromItem()
         [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]
@@ -3817,6 +3819,8 @@ FromItem FromItem() #FromItem:
         )
         |
         fromItem=LateralSubSelect()
+        |
+        LOOKAHEAD(2) fromItem=SubImport() { fromItem = new ParenthesedFromItem(fromItem); }
         |
         LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
