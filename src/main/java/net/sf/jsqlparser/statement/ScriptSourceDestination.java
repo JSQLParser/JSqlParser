@@ -7,16 +7,16 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.imprt;
+package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.ConnectionDefinition;
+import net.sf.jsqlparser.statement.imprt.ImportFromItem;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class ScriptSource extends ImportFromItem implements Serializable {
+public class ScriptSourceDestination extends ImportFromItem implements Serializable {
     private Table script;
     private ConnectionDefinition connectionDefinition;
     private List<String> properties;

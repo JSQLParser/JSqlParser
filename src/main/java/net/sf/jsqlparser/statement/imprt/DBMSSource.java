@@ -14,33 +14,25 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ConnectionDefinition;
+import net.sf.jsqlparser.statement.SourceDestinationType;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class DBMSSource extends ImportFromItem implements Serializable {
-    private DataSource dataSource;
-    private StringValue jdbcDriverDefinition;
+    private SourceDestinationType sourceType;
     private ConnectionDefinition connectionDefinition;
     private Table table;
     private ExpressionList<Column> columns;
     private List<StringValue> statements;
 
-    public DataSource getDataSource() {
-        return dataSource;
+    public SourceDestinationType getSourceType() {
+        return sourceType;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public StringValue getJdbcDriverDefinition() {
-        return jdbcDriverDefinition;
-    }
-
-    public void setJdbcDriverDefinition(StringValue jdbcDriverDefinition) {
-        this.jdbcDriverDefinition = jdbcDriverDefinition;
+    public void setSourceType(SourceDestinationType sourceType) {
+        this.sourceType = sourceType;
     }
 
     public ConnectionDefinition getConnectionDefinition() {
@@ -79,11 +71,7 @@ public class DBMSSource extends ImportFromItem implements Serializable {
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append(dataSource);
-
-        if (jdbcDriverDefinition != null) {
-            sql.append(" DRIVER = ").append(jdbcDriverDefinition);
-        }
+        sql.append(sourceType);
 
         sql.append(" ");
         sql.append(connectionDefinition);

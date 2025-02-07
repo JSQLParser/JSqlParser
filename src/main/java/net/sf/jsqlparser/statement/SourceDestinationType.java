@@ -7,13 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.imprt;
+package net.sf.jsqlparser.statement;
 
-public enum DataSource {
-    EXA,
-    ORA,
-    JDBC,
-    CSV,
-    FBV,
-    SCRIPT
+public interface SourceDestinationType {
 }

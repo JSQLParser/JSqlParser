@@ -15,7 +15,7 @@ public class CSVFileDestination implements ErrorDestination {
     private ConnectionDefinition connectionDefinition;
     private boolean local;
     private boolean secure;
-    private StringValue filePath;
+    private StringValue file;
 
     public ConnectionDefinition getConnectionDefinition() {
         return connectionDefinition;
@@ -41,12 +41,12 @@ public class CSVFileDestination implements ErrorDestination {
         this.secure = secure;
     }
 
-    public StringValue getFilePath() {
-        return filePath;
+    public StringValue getFile() {
+        return file;
     }
 
-    public void setFilePath(StringValue filePath) {
-        this.filePath = filePath;
+    public void setFile(StringValue file) {
+        this.file = file;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class CSVFileDestination implements ErrorDestination {
         }
 
         sql.append(" FILE ");
-        sql.append(filePath);
+        sql.append(file);
 
         return sql.toString();
     }

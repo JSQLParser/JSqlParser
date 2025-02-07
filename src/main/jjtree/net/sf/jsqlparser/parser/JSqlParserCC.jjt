@@ -1089,13 +1089,9 @@ LikeClause LikeClause(): {
 Import Import() #Import: {
     Import impt = new Import();
     Table table;
-    Column tableColumn;
-    ExpressionList<Column> columns;
-    ImportColumn importColumn;
+    ParenthesedExpressionList<Column> columns;
     List<ImportColumn> importColumns;
     ImportFromItem fromItem;
-    ColumnDefinition columnDefinition;
-    LikeClause likeClause;
 } {
     <K_IMPORT>
     [
@@ -1103,25 +1099,7 @@ Import Import() #Import: {
         (
               table = Table() { impt.setTable(table); }
               [ columns = ParenthesedColumnList() { impt.setColumns(columns); } ]
-            | "("
-                (
-                      importColumn = ColumnDefinition()
-                    | importColumn = LikeClause()
-                )
-                {
-                    importColumns = new ArrayList<ImportColumn>();
-                    impt.setImportColumns(importColumns);
-                    importColumns.add(importColumn);
-                }
-                (
-                    ","
-                    (
-                          importColumn = ColumnDefinition()
-                        | importColumn = LikeClause()
-                    )
-                    { importColumns.add(importColumn); }
-                )*
-              ")"
+            | importColumns = ImportColumns() { impt.setImportColumns(importColumns); }
         )
     ]
 
@@ -1133,18 +1111,59 @@ Import Import() #Import: {
     }
 }
 
+Import SubImport() #SubImport: {
+    Import impt = new Import();
+    List<ImportColumn> importColumns;
+    ImportFromItem fromItem;
+} {
+    <K_IMPORT>
+    [ <K_INTO> importColumns = ImportColumns() { impt.setImportColumns(importColumns); } ]
+
+    <K_FROM>
+    fromItem = ImportFromItem() { impt.setFromItem(fromItem); }
+
+    {
+        return impt;
+    }
+}
+
+List<ImportColumn> ImportColumns(): {
+    ImportColumn importColumn;
+    List<ImportColumn> importColumns = new ArrayList<ImportColumn>();
+} {
+    "("
+        (
+              importColumn = ColumnDefinition()
+            | importColumn = LikeClause()
+        )
+        { importColumns.add(importColumn); }
+
+        (
+            ","
+            (
+                  importColumn = ColumnDefinition()
+                | importColumn = LikeClause()
+            )
+            { importColumns.add(importColumn); }
+        )*
+    ")"
+
+    {
+        return importColumns;
+    }
+}
+
 ImportFromItem ImportFromItem(): {
     ImportFromItem importFromItem;
     ErrorClause errorClause;
 } {
     (
-          (
-              importFromItem = DBMSSource()
-            | importFromItem = FileSource()
-          )
-          [ LOOKAHEAD(2) errorClause = ErrorClause() { importFromItem.setErrorClause(errorClause); } ]
-        | importFromItem = ScriptSource()
+          importFromItem = DBMSSource()
+        | importFromItem = FileSource()
+        | importFromItem = ScriptSourceDestination()
     )
+    [ LOOKAHEAD(2) errorClause = ErrorClause() { importFromItem.setErrorClause(errorClause); } ]
+
     {
         return importFromItem;
     }
@@ -1152,146 +1171,241 @@ ImportFromItem ImportFromItem(): {
 
 DBMSSource DBMSSource() #DBMSSource: {
     DBMSSource dbmsSource = new DBMSSource();
+    DBMSType dbmsType;
     ConnectionDefinition connectionDefinition;
     Table table;
     ExpressionList<Column> columns;
     List<StringValue> statements;
     Token token;
 } {
-    (
-          <K_EXA> { dbmsSource.setDataSource(DataSource.EXA); }
-        | <K_ORA> { dbmsSource.setDataSource(DataSource.ORA); }
-        | (
-            <K_JDBC> { dbmsSource.setDataSource(DataSource.JDBC); }
-            [<K_DRIVER> "=" token = <S_CHAR_LITERAL> { dbmsSource.setJdbcDriverDefinition(new StringValue(token.image)); }]
-          )
-    )
+    dbmsType = DBMSType() { dbmsSource.setSourceType(dbmsType); }
 
     connectionDefinition = ConnectionDefinition() { dbmsSource.setConnectionDefinition(connectionDefinition); }
 
     (
           <K_TABLE> table = Table() { dbmsSource.setTable(table); }
           [ LOOKAHEAD(2) columns = ParenthesedColumnList() { dbmsSource.setColumns(columns); } ]
-        | <K_STATEMENT> token = <S_CHAR_LITERAL>
-          {
-            statements = new ArrayList<StringValue>();
-            dbmsSource.setStatements(statements);
-            StringValue stringValue = new StringValue(token.image);
-            linkAST(stringValue, jjtThis);
-            statements.add(stringValue);
-          }
-          (
-            <K_STATEMENT> token = <S_CHAR_LITERAL>
-            {
-              stringValue = new StringValue(token.image);
-              linkAST(stringValue, jjtThis);
-              statements.add(stringValue);
-            }
-          )*
+        | statements = StatementsList() { dbmsSource.setStatements(statements); }
     )
     {
       return dbmsSource;
     }
 }
 
-FileSource FileSource() #FileSource: {
-  FileSource fileSource = new FileSource();
-  List<ConnectionFileDefinition> connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
-  List<StringValue> filePaths;
-  CertificateVerification certificateVerification;
+DBMSType DBMSType(): {
+    DBMSType dbmsType;
+} {
+    (
+        <K_EXA> { dbmsType = DBMSType.EXA; }
+      | <K_ORA> { dbmsType = DBMSType.ORA; }
+      | <K_JDBC> { dbmsType = DBMSType.JDBC; }
+        [<K_DRIVER> "=" token = <S_CHAR_LITERAL> { dbmsType.setJDBCDriverDefinition(new StringValue(token.image)); }]
+    )
 
-  Token token = null;
-  Token token2 = null;
-  Token token3 = null;
+    {
+        return dbmsType;
+    }
+}
+
+FileType FileType(): {
+    FileType fileType;
+} {
+    (
+        <K_CSV> { fileType = FileType.CSV; }
+      | <K_FBV> { fileType = FileType.FBV; }
+    )
+    {
+        return fileType;
+    }
+}
+
+StringValue ImportExportStatement() #ImportExportStatement: {
+    StringValue statement;
+} {
+    <K_STATEMENT> token = <S_CHAR_LITERAL>
+    {
+      statement = new StringValue(token.image);
+      linkAST(statement, jjtThis);
+      return statement;
+    }
+}
+
+List<StringValue> StatementsList(): {
+    List<StringValue> statements = new ArrayList<StringValue>();
+    StringValue statement;
+} {
+    ( statement = ImportExportStatement() { statements.add(statement); } )+
+
+    {
+        return statements;
+    }
+}
+
+StringValue File() #File: {
+    Token token;
+} {
+    <K_FILE> token = <S_CHAR_LITERAL>
+    {
+        StringValue file = new StringValue(token.image);
+        linkAST(file, jjtThis);
+        return file;
+    }
+}
+
+List<StringValue> FileList(): {
+    List<StringValue> files = new ArrayList<StringValue>();
+    StringValue file;
+} {
+    ( file = File() { files.add(file); } )+
+    {
+        return files;
+    }
+}
+
+ConnectionFileDefinition ConnectionFileDefinition(): {
+    ConnectionDefinition connectionDefinition = null;
+    List<StringValue> files;
+} {
+    connectionDefinition = ConnectionOrCloudConnectionDefinition()
+    files = FileList()
+    {
+        return new ConnectionFileDefinition(connectionDefinition, files);
+    }
+}
+
+List<ConnectionFileDefinition> ConnectionFileDefinitionList(): {
+    List<ConnectionFileDefinition> connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
+    ConnectionFileDefinition connectionFileDefinition;
+} {
+    ( LOOKAHEAD(2) connectionFileDefinition = ConnectionFileDefinition() { connectionFileDefinitions.add(connectionFileDefinition); } )+
+    {
+        return connectionFileDefinitions;
+    }
+}
+
+CSVColumn CSVSourceColumn(): {
+    CSVColumn csvColumn;
+
+    Token token;
+    Token token2;
+} {
+    (
+          LOOKAHEAD(2)
+          token=<S_LONG> "." "." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
+        | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
+          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
+    )
+    {
+        return csvColumn;
+    }
+}
+
+List<CSVColumn> CSVSourceColumnList(): {
+    List<CSVColumn> csvColumns = new ArrayList<CSVColumn>();
+    CSVColumn csvColumn;
+} {
+    csvColumn = CSVSourceColumn() { csvColumns.add(csvColumn); }
+    ( "," csvColumn = CSVSourceColumn() { csvColumns.add(csvColumn); } )*
+    {
+        return csvColumns;
+    }
+}
+
+FBVColumn FBVSourceColumn(): {
+    FBVColumn fbvColumn;
+
+    Token token;
+    Token token2;
+} {
+    (
+          ( token=<K_SIZE> | token=<K_START> ) "=" token2=<S_LONG> { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
+        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+        | token=<K_ALIGN> "=" ( token2=<K_LEFT> | token2=<K_RIGHT> ) { fbvColumn = new FBVColumn(token.image, token2.image); }
+    )
+    {
+        return fbvColumn;
+    }
+}
+
+List<FBVColumn> FBVSourceColumnList(): {
+    List<FBVColumn> fbvColumns = new ArrayList<FBVColumn>();
+    FBVColumn fbvColumn;
+    boolean precedesComma;
+} {
+    fbvColumn = FBVSourceColumn() { fbvColumns.add(fbvColumn); }
+    (
+        { precedesComma = false; }
+        ["," { precedesComma = true; }]
+        fbvColumn = FBVSourceColumn() { fbvColumn.setPrecedesComma(precedesComma); fbvColumns.add(fbvColumn); }
+    )*
+    {
+        return fbvColumns;
+    }
+}
+
+FileOption FileSourceOption(): {
+    FileOption fileOption;
+
+    Token token;
+    Token token2;
+    Token token3;
+} {
+    (
+        ( token=<K_TRIM> | token=<K_LTRIM> | token=<K_RTRIM> ) { fileOption = new FileOption(token.image); }
+      | (
+            ( token=<K_ENCODING> | token=<K_NULL> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+          | token=<K_SKIP> "=" token2=<S_LONG> { fileOption = new FileOption(token.image, new LongValue(token2.image)); }
+        )
+      | LOOKAHEAD(2)
+        (
+            token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
+          | token=<K_COLUMN> ( token2=<K_SEPARATOR> | token2=<K_DELIMITER> ) "=" token3=<S_CHAR_LITERAL>
+        )
+        { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+      | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
+        { fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
+    )
+    {
+        return fileOption;
+    }
+}
+
+List<FileOption> FileSourceOptionList(): {
+    List<FileOption> fileOptions = new ArrayList<FileOption>();
+    FileOption fileOption;
+} {
+    ( LOOKAHEAD(2) fileOption = FileSourceOption() { fileOptions.add(fileOption); } )+
+    {
+        return fileOptions;
+    }
+}
+
+FileSource FileSource() #FileSource: {
+    FileSource fileSource = new FileSource();
+    FileType fileType;
+    List<ConnectionFileDefinition> connectionFileDefinitions;
+    List<StringValue> files;
+    List<CSVColumn> csvColumns;
+    List<FBVColumn> fbvColumns;
+    List<FileOption> fileOptions;
+    CertificateVerification certificateVerification;
+
+    Token token = null;
+    Token token2 = null;
+    Token token3 = null;
 } {
   (
-      (
-        (
-            <K_CSV> { fileSource.setDataSource(DataSource.CSV); }
-          | <K_FBV> { fileSource.setDataSource(DataSource.FBV); }
-        )
+      fileType = FileType() { fileSource.setSourceType(fileType); }
+      connectionFileDefinitions = ConnectionFileDefinitionList() { fileSource.setConnectionFileDefinitions(connectionFileDefinitions); }
+    | <K_LOCAL> { fileSource.setLocal(true); }
+      [<K_SECURE> { fileSource.setSecure(true); }]
 
-        (
-          { ConnectionDefinition connectionDefinition = null; }
-          [
-              LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
-            | connectionDefinition = ConnectionDefinition()
-          ]
-          <K_FILE> token = <S_CHAR_LITERAL>
-          {
-            filePaths = new ArrayList<StringValue>();
-            StringValue stringVal = new StringValue(token.image);
-            linkAST(stringVal, jjtThis);
-            filePaths.add(stringVal);
-          }
-          (
-            LOOKAHEAD(2)
-            <K_FILE> token = <S_CHAR_LITERAL>
-            {
-              stringVal = new StringValue(token.image);
-              linkAST(stringVal, jjtThis);
-              filePaths.add(stringVal);
-            }
-          )*
-        )
-        { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths)); }
-
-        (
-          LOOKAHEAD(2)
-          (
-            { connectionDefinition = null; }
-            [
-                LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
-              | connectionDefinition = ConnectionDefinition()
-            ]
-            <K_FILE> token = <S_CHAR_LITERAL>
-            {
-              filePaths = new ArrayList<StringValue>();
-              stringVal = new StringValue(token.image);
-              linkAST(stringVal, jjtThis);
-              filePaths.add(stringVal);
-            }
-            (
-              LOOKAHEAD(2)
-              <K_FILE> token = <S_CHAR_LITERAL>
-              {
-                stringVal = new StringValue(token.image);
-                linkAST(stringVal, jjtThis);
-                filePaths.add(stringVal);
-              }
-            )*
-          )
-          { connectionFileDefinitions.add(new ConnectionFileDefinition(connectionDefinition, filePaths)); }
-        )*
-      )
-    | (
-        <K_LOCAL> { fileSource.setLocal(true); }
-        [<K_SECURE> { fileSource.setSecure(true); }]
-
-        (
-            <K_CSV> { fileSource.setDataSource(DataSource.CSV); }
-          | <K_FBV> { fileSource.setDataSource(DataSource.FBV); }
-        )
-
-        (
-          <K_FILE> token = <S_CHAR_LITERAL>
-          {
-            filePaths = new ArrayList<StringValue>();
-            StringValue stringVal = new StringValue(token.image);
-            linkAST(stringVal, jjtThis);
-            filePaths.add(stringVal);
-          }
-          (
-            <K_FILE> token = <S_CHAR_LITERAL>
-            {
-              stringVal = new StringValue(token.image);
-              linkAST(stringVal, jjtThis);
-              filePaths.add(stringVal);
-            }
-          )*
-        )
-        { connectionFileDefinitions.add(new ConnectionFileDefinition(filePaths)); }
-      )
+      fileType = FileType() { fileSource.setSourceType(fileType); }
+      files = FileList()
+      {
+            connectionFileDefinitions = new ArrayList<ConnectionFileDefinition>();
+            connectionFileDefinitions.add(new ConnectionFileDefinition(files));
+      }
   )
   { fileSource.setConnectionFileDefinitions(connectionFileDefinitions); }
 
@@ -1299,135 +1413,13 @@ FileSource FileSource() #FileSource: {
     LOOKAHEAD(2)
     "("
         (
-            (
-              { CSVColumn csvColumn; }
-              (
-                  LOOKAHEAD(2)
-                  token=<S_LONG>
-                  "." "."
-                  token2=<S_LONG>
-                  { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
-                | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-                  [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
-              )
-              {
-                List<CSVColumn> csvColumns = new ArrayList<CSVColumn>();
-                fileSource.setCSVColumns(csvColumns);
-                csvColumns.add(csvColumn);
-              }
-              (
-                ","
-                (
-                    LOOKAHEAD(2)
-                    token=<S_LONG>
-                    "." "."
-                    token2=<S_LONG>
-                    { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
-                  | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-                    [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
-                )
-                { csvColumns.add(csvColumn); }
-              )*
-            )
-          | { FBVColumn fbvColumn; }
-            (
-              (
-                  (
-                      token=<K_SIZE>
-                    | token=<K_START>
-                  ) "=" token2=<S_LONG>
-                  { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-                | (
-                      token=<K_FORMAT>
-                    | token=<K_PADDING>
-                  ) "=" token2=<S_CHAR_LITERAL>
-                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
-                |
-                  token=<K_ALIGN> "="
-                  (
-                      token2=<K_LEFT>
-                    | token2=<K_RIGHT>
-                  )
-                  { fbvColumn = new FBVColumn(token.image, token2.image); }
-              )
-              {
-                List<FBVColumn> fbvColumns = new ArrayList<FBVColumn>();
-                fileSource.setFBVColumns(fbvColumns);
-                fbvColumns.add(fbvColumn);
-              }
-            )
-            (
-              { boolean precedesComma = false; }
-              ["," { precedesComma = true; }]
-              (
-                  (
-                      token=<K_SIZE>
-                    | token=<K_START>
-                  ) "=" token2=<S_LONG>
-                  { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-                | (
-                      token=<K_FORMAT>
-                    | token=<K_PADDING>
-                  ) "=" token2=<S_CHAR_LITERAL>
-                  { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
-                |
-                  token=<K_ALIGN> "="
-                  (
-                      token2=<K_LEFT>
-                    | token2=<K_RIGHT>
-                  )
-                  { fbvColumn = new FBVColumn(token.image, token2.image); }
-              )
-              {
-                fbvColumn.setPrecedesComma(precedesComma);
-                fbvColumns.add(fbvColumn);
-              }
-            )*
+            csvColumns = CSVSourceColumnList() { fileSource.setCSVColumns(csvColumns); }
+          | fbvColumns = FBVSourceColumnList() { fileSource.setFBVColumns(fbvColumns); }
         )
     ")"
   ]
 
-  [
-    LOOKAHEAD(2)
-    {
-        List<FileOption> fileOptions = new ArrayList<FileOption>();
-        fileSource.setFileOptions(fileOptions);
-        FileOption fileOption;
-    }
-    (
-        LOOKAHEAD(2)
-        (
-            (
-                token=<K_TRIM>
-              | token=<K_LTRIM>
-              | token=<K_RTRIM>
-            )
-            { fileOption = new FileOption(token.image); }
-          | (
-                (
-                    token=<K_ENCODING>
-                  | token=<K_NULL>
-                ) "=" token2=<S_CHAR_LITERAL>
-                { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
-              | token=<K_SKIP> "=" token2=<S_LONG>
-                { fileOption = new FileOption(token.image, new LongValue(token2.image)); }
-            )
-          | LOOKAHEAD(2)
-            (
-                token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
-              | token=<K_COLUMN>
-                (
-                    token2=<K_SEPARATOR>
-                  | token2=<K_DELIMITER>
-                ) "=" token3=<S_CHAR_LITERAL>
-            )
-            { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
-          | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
-            { fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
-        )
-        { fileOptions.add(fileOption); }
-    )+
-  ]
+  [ LOOKAHEAD(2) fileOptions = FileSourceOptionList() { fileSource.setFileOptions(fileOptions); } ]
 
   [ LOOKAHEAD(2) certificateVerification = CertificateVerification() { fileSource.setCertificateVerification(certificateVerification); } ]
 
@@ -1459,8 +1451,8 @@ CertificateVerification CertificateVerification(): {
     }
 }
 
-ScriptSource ScriptSource(): {
-  ScriptSource scriptSource = new ScriptSource();
+ScriptSourceDestination ScriptSourceDestination(): {
+  ScriptSourceDestination scriptSourceDestination = new ScriptSourceDestination();
   ConnectionDefinition connectionDefinition;
   Table script;
   String property;
@@ -1469,27 +1461,23 @@ ScriptSource ScriptSource(): {
   Token token;
 } {
     <K_SCRIPT>
-    script = Table() { scriptSource.setScript(script); }
+    script = Table() { scriptSourceDestination.setScript(script); }
 
-    [ LOOKAHEAD(2) connectionDefinition = ConnectionDefinition() { scriptSource.setConnectionDefinition(connectionDefinition); } ]
+    [ LOOKAHEAD(2) connectionDefinition = ConnectionDefinition() { scriptSourceDestination.setConnectionDefinition(connectionDefinition); } ]
 
-    [   
+    [
         LOOKAHEAD(2)
         {
             List<String> properties = new ArrayList<String>();
             List<StringValue> values = new ArrayList<StringValue>();
-            scriptSource.setProperties(properties);
-            scriptSource.setValues(values);
+            scriptSourceDestination.setProperties(properties);
+            scriptSourceDestination.setValues(values);
         }
 
         <K_WITH>
         (
             LOOKAHEAD(2)
-            (
-                property = RelObjectNameWithoutValue()
-                "="
-                token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
-            )
+            property = RelObjectNameWithoutValue() "=" token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
             {
                 properties.add(property);
                 values.add(value);
@@ -1498,7 +1486,7 @@ ScriptSource ScriptSource(): {
     ]
 
     {
-      return scriptSource;
+      return scriptSourceDestination;
     }
 }
 
@@ -1563,6 +1551,18 @@ ConnectionDefinition CloudConnectionDefinition(): {
   {
       return connectionDefinition;
   }
+}
+
+ConnectionDefinition ConnectionOrCloudConnectionDefinition(): {
+    ConnectionDefinition connectionDefinition;
+} {
+    (
+        LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
+      | connectionDefinition = ConnectionDefinition()
+    )
+    {
+        return connectionDefinition;
+    }
 }
 
 ErrorClause ErrorClause(): {
@@ -1630,22 +1630,17 @@ ErrorDestination ErrorDestination(): {
 CSVFileDestination CSVFileDestination(): {
     CSVFileDestination csvFileDestination = new CSVFileDestination();
     ConnectionDefinition connectionDefinition;
-    Token token;
+    StringValue file;
 } {
     (
           <K_CSV>
-          (
-              LOOKAHEAD(2) connectionDefinition = CloudConnectionDefinition()
-            | connectionDefinition = ConnectionDefinition()
-          )
-          { csvFileDestination.setConnectionDefinition(connectionDefinition); }
+          connectionDefinition = ConnectionOrCloudConnectionDefinition() { csvFileDestination.setConnectionDefinition(connectionDefinition); }
         | <K_LOCAL> { csvFileDestination.setLocal(true); }
           [ <K_SECURE> { csvFileDestination.setSecure(true); } ]
           <K_CSV>
     )
 
-    <K_FILE>
-    token = <S_CHAR_LITERAL> { csvFileDestination.setFilePath(new StringValue(token.image)); }
+    file = File() { csvFileDestination.setFile(file); }
 
     {
         return csvFileDestination;
@@ -3239,7 +3234,7 @@ PlainSelect PlainSelect() #PlainSelect:
     selectItems=SelectItemsList()
 
     [ LOOKAHEAD(2) intoTables = IntoClause() { plainSelect.setIntoTables(intoTables); } ]
-    [ LOOKAHEAD(2) <K_FROM> (fromItem=FromItem() | fromItem=Import())
+    [ LOOKAHEAD(2) <K_FROM> (fromItem=FromItem() | fromItem=SubImport())
         [ LOOKAHEAD(2) lateralViews=LateralViews() ]
         [ LOOKAHEAD(2) joins=JoinsList() ]
     ]

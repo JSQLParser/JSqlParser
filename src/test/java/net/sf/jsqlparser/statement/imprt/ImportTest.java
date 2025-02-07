@@ -20,9 +20,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 public class ImportTest {
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT INTO schemaName.tableName FROM CSV FILE 'file.csv'",
-            "IMPORT INTO schemaName.tableName ( columnName ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO schemaName.tableName ( columnName1, columnName2 ) FROM CSV FILE 'file.csv'"
+            "IMPORT INTO schemaName.tableName FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO schemaName.tableName ( columnName ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO schemaName.tableName ( columnName1, columnName2 ) FROM LOCAL CSV FILE 'file.csv'"
     })
     public void testImportIntoTable(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -30,15 +30,15 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT INTO ( columnName integer ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( columnName1 integer, columnName2 varchar(100) ) FROM CSV FILE 'file.csv'",
+            "IMPORT INTO ( columnName integer ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( columnName1 integer, columnName2 varchar(100) ) FROM LOCAL CSV FILE 'file.csv'",
 
-            "IMPORT INTO ( LIKE schemaName.tableName ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( LIKE schemaName.tableName ( columnName ) ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( LIKE schemaName.tableName ( columnName1, columnName2 ) ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( LIKE schemaName.tableName ( columnName AS aliasName ) ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( LIKE schemaName.tableName ( columnName aliasName ) ) FROM CSV FILE 'file.csv'",
-            "IMPORT INTO ( LIKE schemaName.tableName ( columnName1 AS aliasName2, columnName2 AS aliasName2 ) ) FROM CSV FILE 'file.csv'"
+            "IMPORT INTO ( LIKE schemaName.tableName ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( LIKE schemaName.tableName ( columnName ) ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( LIKE schemaName.tableName ( columnName1, columnName2 ) ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( LIKE schemaName.tableName ( columnName AS aliasName ) ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( LIKE schemaName.tableName ( columnName aliasName ) ) FROM LOCAL CSV FILE 'file.csv'",
+            "IMPORT INTO ( LIKE schemaName.tableName ( columnName1 AS aliasName2, columnName2 AS aliasName2 ) ) FROM LOCAL CSV FILE 'file.csv'"
     })
     public void testImportIntoImportColumns(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -46,9 +46,6 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM CSV FILE 'file.csv'",
-            "IMPORT FROM CSV FILE 'file1.csv' FILE 'file2.csv'",
-
             "IMPORT FROM LOCAL CSV FILE 'file.csv'",
             "IMPORT FROM LOCAL CSV FILE 'file1.csv' FILE 'file2.csv'",
 
@@ -61,13 +58,13 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM CSV FILE 'file.csv' ( 1 )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1, 2 )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1 FORMAT = 'format' )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1 FORMAT = 'format', 2 FORMAT = 'format' )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1 .. 2 )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1, 1 .. 2 )",
-            "IMPORT FROM CSV FILE 'file.csv' ( 1, 1 .. 2, 3 )"
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1 )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1, 2 )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1 FORMAT = 'format' )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1 FORMAT = 'format', 2 FORMAT = 'format' )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1 .. 2 )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2 )",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2, 3 )"
     })
     public void testImportFromFileCSVCols(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -75,9 +72,6 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM FBV FILE 'file.csv'",
-            "IMPORT FROM FBV FILE 'file1.csv' FILE 'file2.csv'",
-
             "IMPORT FROM LOCAL FBV FILE 'file.csv'",
             "IMPORT FROM LOCAL FBV FILE 'file1.csv' FILE 'file2.csv'",
 
@@ -90,16 +84,16 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM FBV FILE 'file.fbv' ( SIZE = 1 )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( START = 1 )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( FORMAT = 'format' )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( ALIGN = LEFT )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( ALIGN = RIGHT )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( PADDING = 'padding' )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( SIZE = 1 )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( START = 1 )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( FORMAT = 'format' )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( ALIGN = LEFT )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( ALIGN = RIGHT )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( PADDING = 'padding' )",
 
-            "IMPORT FROM FBV FILE 'file.fbv' ( SIZE = 1, START = 1 )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( SIZE = 1 START = 1 )",
-            "IMPORT FROM FBV FILE 'file.fbv' ( SIZE = 1 START = 1, FORMAT = 'format' )"
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( SIZE = 1, START = 1 )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( SIZE = 1 START = 1 )",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( SIZE = 1 START = 1, FORMAT = 'format' )"
     })
     public void testImportFromFileFBVCols(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -107,19 +101,19 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM CSV FILE 'file.csv' ENCODING = 'UTF-8'",
-            "IMPORT FROM CSV FILE 'file.csv' SKIP = 1",
-            "IMPORT FROM CSV FILE 'file.csv' TRIM",
-            "IMPORT FROM CSV FILE 'file.csv' LTRIM",
-            "IMPORT FROM CSV FILE 'file.csv' RTRIM",
-            "IMPORT FROM CSV FILE 'file.csv' NULL = 'null'",
-            "IMPORT FROM CSV FILE 'file.csv' ROW SEPARATOR = 'CRLF'",
-            "IMPORT FROM CSV FILE 'file.csv' COLUMN SEPARATOR = ','",
-            "IMPORT FROM CSV FILE 'file.csv' COLUMN DELIMITER = '\"'",
-            "IMPORT FROM CSV FILE 'file.csv' ROW SIZE = 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ENCODING = 'UTF-8'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' SKIP = 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' TRIM",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' LTRIM",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' RTRIM",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' NULL = 'null'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ROW SEPARATOR = 'CRLF'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' COLUMN SEPARATOR = ','",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' COLUMN DELIMITER = '\"'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ROW SIZE = 1",
 
-            "IMPORT FROM CSV FILE 'file.csv' ENCODING = 'UTF-8' SKIP = 1",
-            "IMPORT FROM CSV FILE 'file.csv' ENCODING = 'UTF-8' SKIP = 1 TRIM"
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ENCODING = 'UTF-8' SKIP = 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ENCODING = 'UTF-8' SKIP = 1 TRIM"
     })
     public void testImportFromFileFileOpts(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -127,12 +121,12 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM CSV FILE 'file.csv' VERIFY CERTIFICATE",
-            "IMPORT FROM CSV FILE 'file.csv' IGNORE CERTIFICATE",
-            "IMPORT FROM CSV FILE 'file.csv' PUBLIC KEY 'publicKey'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' VERIFY CERTIFICATE",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' IGNORE CERTIFICATE",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' PUBLIC KEY 'publicKey'",
 
-            "IMPORT FROM CSV FILE 'file.csv' VERIFY CERTIFICATE PUBLIC KEY 'publicKey'",
-            "IMPORT FROM CSV FILE 'file.csv' IGNORE CERTIFICATE PUBLIC KEY 'publicKey'"
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' VERIFY CERTIFICATE PUBLIC KEY 'publicKey'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' IGNORE CERTIFICATE PUBLIC KEY 'publicKey'"
     })
     public void testImportFromFileCertVerification(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
@@ -231,34 +225,34 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM CSV FILE 'file.csv' REJECT LIMIT 1",
-            "IMPORT FROM CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' REJECT LIMIT 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
 
-            "IMPORT FROM CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
 
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv'",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv'",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv'",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO schemaName.tableName",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv'",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName",
 
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT 1",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT 1",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT 1",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT 1",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT 1 ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT 1 ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT 1",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT 1 ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT 1 ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT 1 ERRORS",
 
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT UNLIMITED",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
-            "IMPORT FROM CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED ERRORS"
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT UNLIMITED",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT UNLIMITED",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO CSV AT connectionName FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO LOCAL SECURE CSV FILE 'file.csv' REJECT LIMIT UNLIMITED ERRORS",
+            "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED ERRORS"
     })
     public void testImportErrorClause(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class FileSource extends ImportFromItem implements Serializable {
-    private DataSource dataSource;
+    private SourceDestinationType sourceType;
     private List<ConnectionFileDefinition> connectionFileDefinitions;
     private Boolean local;
     private Boolean secure;
@@ -26,12 +26,12 @@ public class FileSource extends ImportFromItem implements Serializable {
     private List<FileOption> fileOptions;
     private CertificateVerification certificateVerification;
 
-    public DataSource getDataSource() {
-        return dataSource;
+    public SourceDestinationType getSourceType() {
+        return sourceType;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setSourceType(SourceDestinationType sourceType) {
+        this.sourceType = sourceType;
     }
 
     public List<ConnectionFileDefinition> getConnectionFileDefinitions() {
@@ -104,7 +104,7 @@ public class FileSource extends ImportFromItem implements Serializable {
             }
         }
 
-        sql.append(dataSource);
+        sql.append(sourceType);
         if (connectionFileDefinitions != null) {
             sql.append(" ");
             PlainSelect.appendStringListTo(sql, connectionFileDefinitions, false, false);
