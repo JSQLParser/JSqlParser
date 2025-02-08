@@ -2612,15 +2612,15 @@ TableSamplePipeOperator TableSamplePipeOperator():
 
 PivotPipeOperator PivotPipeOperator():
 {
-    Expression aggregateExpression;
+    Function aggregateExpression;
     Column inputColumn;
-    ExpressionList<Column> pivotColumns;
+    List<SelectItem<?>> pivotColumns;
     Alias alias = null;
 }
 {
-    <K_PIVOT> "(" aggregateExpression=Expression()
+    <K_PIVOT> "(" aggregateExpression=Function()
     <K_FOR> inputColumn=Column()
-    <K_IN> "(" pivotColumns = ColumnList() ")"
+    <K_IN> "(" pivotColumns = SelectItemsList() ")"
     ")"
     [ LOOKAHEAD(2)  alias = Alias() ]
     {

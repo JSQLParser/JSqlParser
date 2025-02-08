@@ -55,6 +55,7 @@ import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -943,7 +944,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         return builder;
     }
 
-
     @Override
     public StringBuilder visit(PivotPipeOperator pivot, Void context) {
         builder
@@ -953,7 +953,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(" FOR ")
                 .append(pivot.getInputColumn())
                 .append(" IN (")
-                .append(pivot.getPivotColumns())
+                .append(Select.getStringList(pivot.getPivotColumns()))
                 .append("))");
         if (pivot.getAlias() != null) {
             builder.append(" ").append(pivot.getAlias());

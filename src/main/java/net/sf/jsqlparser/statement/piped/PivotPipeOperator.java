@@ -2,17 +2,21 @@ package net.sf.jsqlparser.statement.piped;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
+
+import java.util.List;
 
 public class PivotPipeOperator extends PipeOperator {
-    private Expression aggregateExpression;
+    private Function aggregateExpression;
     private Column inputColumn;
-    private ExpressionList<Column> pivotColumns;
+    private List<SelectItem<?>> pivotColumns;
     private Alias alias = null;
 
-    public PivotPipeOperator(Expression aggregateExpression, Column inputColumn,
-            ExpressionList<Column> pivotColumns, Alias alias) {
+    public PivotPipeOperator(Function aggregateExpression, Column inputColumn,
+            List<SelectItem<?>> pivotColumns, Alias alias) {
         this.aggregateExpression = aggregateExpression;
         this.inputColumn = inputColumn;
         this.pivotColumns = pivotColumns;
@@ -23,7 +27,7 @@ public class PivotPipeOperator extends PipeOperator {
         return aggregateExpression;
     }
 
-    public PivotPipeOperator setAggregateExpression(Expression aggregateExpression) {
+    public PivotPipeOperator setAggregateExpression(Function aggregateExpression) {
         this.aggregateExpression = aggregateExpression;
         return this;
     }
@@ -37,11 +41,11 @@ public class PivotPipeOperator extends PipeOperator {
         return this;
     }
 
-    public ExpressionList<Column> getPivotColumns() {
+    public List<SelectItem<?>> getPivotColumns() {
         return pivotColumns;
     }
 
-    public PivotPipeOperator setPivotColumns(ExpressionList<Column> pivotColumns) {
+    public PivotPipeOperator setPivotColumns(List<SelectItem<?>> pivotColumns) {
         this.pivotColumns = pivotColumns;
         return this;
     }
@@ -64,7 +68,7 @@ public class PivotPipeOperator extends PipeOperator {
                 .append(" FOR ")
                 .append(inputColumn)
                 .append(" IN (")
-                .append(pivotColumns)
+                .append(Select.getStringList(pivotColumns))
                 .append("))");
         if (alias != null) {
             builder.append(" ").append(alias);
