@@ -23,7 +23,7 @@ public class PivotPipeOperator extends PipeOperator {
         this.alias = alias;
     }
 
-    public Expression getAggregateExpression() {
+    public Function getAggregateExpression() {
         return aggregateExpression;
     }
 
