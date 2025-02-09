@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -39,6 +40,22 @@ class SampleClauseTest {
     })
     void standardOracleIssue1826() throws JSQLParserException {
         String sqlStr = "SELECT * from table_name SAMPLE(99)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testDuckDB() throws JSQLParserException {
+        String sqlStr = "SELECT *\n" +
+                "FROM (SELECT * FROM addresses)\n" +
+                "USING SAMPLE SYSTEM (10 PERCENT);";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testBigQuery() throws JSQLParserException {
+        String sqlStr = "SELECT *\n" +
+                "FROM (SELECT * FROM addresses)\n" +
+                "TABLESAMPLE SYSTEM (10 PERCENT);";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

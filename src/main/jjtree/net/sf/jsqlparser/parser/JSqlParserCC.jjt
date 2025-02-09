@@ -2246,6 +2246,7 @@ SampleClause SampleClause():
     String keyword;
     String method=null;
     Number percentageArgument;
+    String percentageUnit = null;
     Number repeatArgument=null;
     Number seedArgument=null;
 }
@@ -2262,16 +2263,30 @@ SampleClause SampleClause():
             token = <K_TABLESAMPLE> { keyword = token.image; }
             ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
         )
+        |
+        (
+            // Duck DB
+            <K_USING> <K_SAMPLE> { keyword = "USING SAMPLE"; }
+            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+        )
     )
 
-    "(" percentageArgument = Number() ")"
+    "(" percentageArgument = Number()
+    [
+        "%" { percentageUnit="%"; }
+        |
+        <K_PERCENT> { percentageUnit="PERCENT"; }
+        |
+        <K_ROWS> { percentageUnit="ROWS"; }
+    ]
+    ")"
 
     [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
 
     [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
 
     {
-        return new SampleClause(keyword, method, percentageArgument, repeatArgument, seedArgument);
+        return new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
     }
 }
 
@@ -3543,7 +3558,7 @@ FromItem FromItem() #FromItem:
     )
 
     [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
-    [ LOOKAHEAD(2) sampleClause = SampleClause() { ((Table) fromItem).setSampleClause(sampleClause); } ]
+    [ LOOKAHEAD(2) sampleClause = SampleClause() { fromItem.setSampleClause(sampleClause); } ]
     [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
     [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
     [

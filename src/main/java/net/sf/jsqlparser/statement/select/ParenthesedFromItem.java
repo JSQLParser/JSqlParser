@@ -23,6 +23,7 @@ public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
     private Alias alias;
     private Pivot pivot;
     private UnPivot unPivot;
+    private SampleClause sampleClause;
 
     public ParenthesedFromItem() {}
 
@@ -128,6 +129,22 @@ public class ParenthesedFromItem extends ASTNodeAccessImpl implements FromItem {
     @Override
     public void setUnPivot(UnPivot unpivot) {
         this.unPivot = unpivot;
+    }
+
+    @Override
+    public SampleClause getSampleClause() {
+        return sampleClause;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        this.sampleClause = sampleClause;
+        return this;
+    }
+
+    public ParenthesedFromItem withSampleClause(SampleClause sampleClause) {
+        this.sampleClause = sampleClause;
+        return this;
     }
 
     public ParenthesedFromItem withFromItem(FromItem fromItem) {

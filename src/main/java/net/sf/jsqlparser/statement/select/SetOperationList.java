@@ -32,6 +32,16 @@ public class SetOperationList extends Select {
         return fromItemVisitor.visit(this, context);
     }
 
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
+
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
     }

@@ -55,6 +55,7 @@ import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SampleClause;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
@@ -139,6 +140,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (alias != null) {
             builder.append(alias);
         }
+
+        SampleClause sampleClause = select.getSampleClause();
+        if (sampleClause != null) {
+            builder.append(sampleClause);
+        }
+
         Pivot pivot = select.getPivot();
         if (pivot != null) {
             pivot.accept(this, context);

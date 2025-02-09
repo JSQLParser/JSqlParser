@@ -47,14 +47,23 @@ public interface FromItem extends ASTNodeAccess {
         return this;
     }
 
+    SampleClause getSampleClause();
+
+    FromItem setSampleClause(SampleClause sampleClause);
+
     default StringBuilder appendTo(StringBuilder builder, Alias alias) {
-        return appendTo(builder, alias, null, null);
+        return appendTo(builder, alias, null, null, null);
     }
 
-    default StringBuilder appendTo(StringBuilder builder, Alias alias, Pivot pivot,
+    default StringBuilder appendTo(StringBuilder builder, Alias alias, SampleClause sampleClause,
+            Pivot pivot,
             UnPivot unPivot) {
         if (alias != null) {
             builder.append(alias);
+        }
+
+        if (sampleClause != null) {
+            builder.append(sampleClause);
         }
 
         if (pivot != null) {

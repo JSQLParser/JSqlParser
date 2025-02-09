@@ -112,6 +112,16 @@ public class TableFunction extends Function implements FromItem {
         return (TableFunction) FromItem.super.withUnPivot(unpivot);
     }
 
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         if (prefix != null) {
             builder.append(prefix).append(" ");

@@ -379,7 +379,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         appendSelectBodyTo(builder);
 
-        appendTo(builder, alias, pivot, unPivot);
+        appendTo(builder, alias, null, pivot, unPivot);
 
         if (forClause != null) {
             forClause.appendTo(builder);

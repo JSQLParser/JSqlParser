@@ -108,4 +108,14 @@ public class Values extends Select implements FromItem {
     public void setUnPivot(UnPivot unpivot) {
 
     }
+
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
 }

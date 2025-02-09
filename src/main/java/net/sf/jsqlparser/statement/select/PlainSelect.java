@@ -324,6 +324,16 @@ public class PlainSelect extends Select {
         return fromItemVisitor.visit(this, context);
     }
 
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
+
     public OptimizeFor getOptimizeFor() {
         return optimizeFor;
     }
