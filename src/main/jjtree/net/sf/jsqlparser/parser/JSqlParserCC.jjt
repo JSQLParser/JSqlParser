@@ -2632,13 +2632,13 @@ UnPivotPipeOperator UnPivotPipeOperator():
 {
     Column valuesColumn;
     Column nameColumn;
-    ExpressionList<Column> pivotColumns;
+    List<SelectItem<?>> pivotColumns;
     Alias alias = null;
 }
 {
     <K_UNPIVOT> "(" valuesColumn=Column()
     <K_FOR> nameColumn=Column()
-    <K_IN> "(" pivotColumns = ColumnList() ")"
+    <K_IN> "(" pivotColumns = SelectItemsList() ")"
     ")"
     [ LOOKAHEAD(2) alias = Alias() ]
     {

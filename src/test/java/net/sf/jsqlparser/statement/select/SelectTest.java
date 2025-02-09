@@ -2775,6 +2775,19 @@ public class SelectTest {
     }
 
     @Test
+    void testPivotWithOrderBy() throws JSQLParserException {
+        String sqlStr = "" +
+                "SELECT *\n" +
+                "FROM (\n" +
+                "       SELECT 'kale' AS product, 51 AS sales, 'Q1' AS quarter\n" +
+                "     )\n" +
+                "PIVOT(SUM(sales) FOR quarter IN ('Q1', 'Q2'))\n" +
+                "ORDER BY 1\n" +
+                ";";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     public void testPivotXml1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
         assertSqlCanBeParsedAndDeparsed(stmt);
