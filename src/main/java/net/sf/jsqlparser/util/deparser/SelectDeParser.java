@@ -310,7 +310,21 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             plainSelect.getForClause().appendTo(builder);
         }
 
+        Alias alias = plainSelect.getAlias();
+        if (alias != null) {
+            builder.append(alias);
+        }
+        Pivot pivot = plainSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this, context);
+        }
+        UnPivot unpivot = plainSelect.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this, context);
+        }
+
         deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
+
         if (plainSelect.isEmitChanges()) {
             builder.append(" EMIT CHANGES");
         }
@@ -359,18 +373,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" WITH NO LOG");
         }
 
-        Alias alias = plainSelect.getAlias();
-        if (alias != null) {
-            builder.append(alias);
-        }
-        Pivot pivot = plainSelect.getPivot();
-        if (pivot != null) {
-            pivot.accept(this, context);
-        }
-        UnPivot unpivot = plainSelect.getUnPivot();
-        if (unpivot != null) {
-            unpivot.accept(this, context);
-        }
+
 
         return builder;
     }
@@ -1023,7 +1026,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(" FOR ")
                 .append(unPivot.getNameColumn())
                 .append(" IN (")
-                .append(unPivot.getPivotColumns())
+                .append(Select.getStringList(unPivot.getPivotColumns()))
                 .append("))");
         if (unPivot.getAlias() != null) {
             builder.append(" ").append(unPivot.getAlias());
