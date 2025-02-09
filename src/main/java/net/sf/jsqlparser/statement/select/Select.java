@@ -379,6 +379,8 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         appendSelectBodyTo(builder);
 
+        appendTo(builder, alias, pivot, unPivot);
+
         if (forClause != null) {
             forClause.appendTo(builder);
         }
@@ -419,8 +421,6 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
                 builder.append(" SKIP LOCKED");
             }
         }
-
-        appendTo(builder, alias, pivot, unPivot);
 
         return builder;
     }
