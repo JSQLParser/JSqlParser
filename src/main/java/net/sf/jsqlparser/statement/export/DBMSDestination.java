@@ -7,7 +7,7 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.imprt;
+package net.sf.jsqlparser.statement.export;
 
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -21,20 +21,21 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import java.io.Serializable;
 import java.util.List;
 
-public class DBMSSource implements ImportFromItem, Serializable {
-    private SourceDestinationType sourceType;
+public class DBMSDestination implements ExportIntoItem, Serializable {
+    private SourceDestinationType destinationType;
     private ConnectionDefinition connectionDefinition;
     private Table table;
     private ExpressionList<Column> columns;
-    private List<StringValue> statements;
+    private List<DBMSTableDestinationOption> dbmsTableDestinationOptions;
+    private StringValue statement;
     private ErrorClause errorClause;
 
-    public SourceDestinationType getSourceType() {
-        return sourceType;
+    public SourceDestinationType getDestinationType() {
+        return destinationType;
     }
 
-    public void setSourceType(SourceDestinationType sourceType) {
-        this.sourceType = sourceType;
+    public void setDestinationType(SourceDestinationType destinationType) {
+        this.destinationType = destinationType;
     }
 
     public ConnectionDefinition getConnectionDefinition() {
@@ -61,12 +62,20 @@ public class DBMSSource implements ImportFromItem, Serializable {
         this.columns = columns;
     }
 
-    public List<StringValue> getStatements() {
-        return statements;
+    public List<DBMSTableDestinationOption> getDBMSTableDestinationOptions() {
+        return dbmsTableDestinationOptions;
     }
 
-    public void setStatements(List<StringValue> statements) {
-        this.statements = statements;
+    public void setDBMSTableDestinationOptions(List<DBMSTableDestinationOption> dbmsTableDestinationOptions) {
+        this.dbmsTableDestinationOptions = dbmsTableDestinationOptions;
+    }
+
+    public StringValue getStatement() {
+        return statement;
+    }
+
+    public void setStatement(StringValue statement) {
+        this.statement = statement;
     }
 
     @Override
@@ -83,7 +92,7 @@ public class DBMSSource implements ImportFromItem, Serializable {
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append(sourceType);
+        sql.append(destinationType);
 
         sql.append(" ");
         sql.append(connectionDefinition);
@@ -91,10 +100,12 @@ public class DBMSSource implements ImportFromItem, Serializable {
         if (table != null) {
             sql.append(" TABLE ").append(table);
             PlainSelect.appendStringListTo(sql, columns, true, true);
-        } else if (statements != null) {
-            for (StringValue statement : statements) {
-                sql.append(" STATEMENT ").append(statement);
+            if (dbmsTableDestinationOptions != null) {
+                sql.append(" ");
+                PlainSelect.appendStringListTo(sql, dbmsTableDestinationOptions, false, false);
             }
+        } else if (statement != null) {
+            sql.append(" STATEMENT ").append(statement);
         }
 
         if (errorClause != null) {

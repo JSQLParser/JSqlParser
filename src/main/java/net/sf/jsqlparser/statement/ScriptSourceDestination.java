@@ -11,16 +11,18 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.export.ExportIntoItem;
 import net.sf.jsqlparser.statement.imprt.ImportFromItem;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class ScriptSourceDestination extends ImportFromItem implements Serializable {
+public class ScriptSourceDestination implements ImportFromItem, ExportIntoItem, Serializable {
     private Table script;
     private ConnectionDefinition connectionDefinition;
     private List<String> properties;
     private List<StringValue> values;
+    private ErrorClause errorClause;
 
     public Table getScript() {
         return script;
@@ -52,6 +54,16 @@ public class ScriptSourceDestination extends ImportFromItem implements Serializa
 
     public void setValues(List<StringValue> values) {
         this.values = values;
+    }
+
+    @Override
+    public ErrorClause getErrorClause() {
+        return errorClause;
+    }
+
+    @Override
+    public void setErrorClause(ErrorClause errorClause) {
+        this.errorClause = errorClause;
     }
 
     @Override

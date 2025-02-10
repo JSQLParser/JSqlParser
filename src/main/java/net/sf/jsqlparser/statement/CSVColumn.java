@@ -15,6 +15,7 @@ public class CSVColumn {
     private Long startIndex;
     private Long endIndex;
     private StringValue format;
+    private String delimit;
 
     public CSVColumn(Long startIndex, Long endIndex) {
         this.startIndex = startIndex;
@@ -57,6 +58,14 @@ public class CSVColumn {
         this.format = format;
     }
 
+    public String getDelimit() {
+        return delimit;
+    }
+
+    public void setDelimit(String delimit) {
+        this.delimit = delimit;
+    }
+
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder();
@@ -65,9 +74,14 @@ public class CSVColumn {
         if (endIndex != null) {
             sql.append(" .. ");
             sql.append(endIndex);
-        } else if (format != null) {
-            sql.append(" FORMAT = ");
-            sql.append(format);
+        } else if (format != null || delimit != null) {
+            if (format != null) {
+                sql.append(" FORMAT = ");
+                sql.append(format);
+            } else {
+                sql.append(" DELIMIT = ");
+                sql.append(delimit);
+            }
         }
 
         return sql.toString();

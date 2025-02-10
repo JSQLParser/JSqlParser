@@ -7,21 +7,21 @@
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
  */
-package net.sf.jsqlparser.statement.imprt;
+package net.sf.jsqlparser.statement.export;
 
 import net.sf.jsqlparser.statement.*;
 
 import java.io.Serializable;
 
-public class FileSource extends FileSourceDestination implements ImportFromItem, Serializable {
+public class FileDestination extends FileSourceDestination implements ExportIntoItem, Serializable {
     private ErrorClause errorClause;
 
-    public SourceDestinationType getSourceType() {
+    public SourceDestinationType getDestinationType() {
         return getType();
     }
 
-    public void setSourceType(SourceDestinationType sourceType) {
-        setType(sourceType);
+    public void setDestinationType(SourceDestinationType destinationType) {
+        setType(destinationType);
     }
 
     @Override

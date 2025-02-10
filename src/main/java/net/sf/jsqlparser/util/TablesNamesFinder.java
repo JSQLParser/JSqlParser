@@ -156,6 +156,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -1839,4 +1840,14 @@ public class TablesNamesFinder<Void>
         StatementVisitor.super.visit(imprt);
     }
 
+    @Override
+    public <S> Void visit(Export export, S context) {
+        throwUnsupported(export);
+        return null;
+    }
+
+    @Override
+    public void visit(Export export) {
+        StatementVisitor.super.visit(export);
+    }
 }

@@ -68,6 +68,7 @@ import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.grant.*;
 import net.sf.jsqlparser.statement.imprt.*;
+import net.sf.jsqlparser.statement.export.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
@@ -1110,7 +1111,7 @@ Export Export() #Export: {
     <K_EXPORT>
     (
           table = Table() { export.setTable(table); }
-          [ columns = ParenthesedColumnList() { impt.setColumns(columns); } ]
+          [ columns = ParenthesedColumnList() { export.setColumns(columns); } ]
         | select = ParenthesedSelect() { export.setSelect(select); }
     )
 
@@ -1232,7 +1233,7 @@ DBMSDestination DBMSDestination() #DBMSDestination: {
     StringValue statement;
     List<DBMSTableDestinationOption> dbmsTableDestinationOptions;
 } {
-    dbmsType = DBMSType() { dbmsDestination.setSourceType(dbmsType); }
+    dbmsType = DBMSType() { dbmsDestination.setDestinationType(dbmsType); }
 
     connectionDefinition = ConnectionDefinition() { dbmsDestination.setConnectionDefinition(connectionDefinition); }
 
@@ -1240,7 +1241,7 @@ DBMSDestination DBMSDestination() #DBMSDestination: {
           LOOKAHEAD(3)
           <K_TABLE> table = Table() { dbmsDestination.setTable(table); }
           [ LOOKAHEAD(2) columns = ParenthesedColumnList() { dbmsDestination.setColumns(columns); } ]
-          [ LOOKAHEAD(2) dbmsTableDestinationOptions = DBMSTableDestinationOptionList() { dbmsDestination.setDBMSTableDestinationOptionList(dbmsTableDestinationOptions); } ]
+          [ LOOKAHEAD(2) dbmsTableDestinationOptions = DBMSTableDestinationOptionList() { dbmsDestination.setDBMSTableDestinationOptions(dbmsTableDestinationOptions); } ]
         | statement = ImportExportStatement() { dbmsDestination.setStatement(statement); }
     )
 

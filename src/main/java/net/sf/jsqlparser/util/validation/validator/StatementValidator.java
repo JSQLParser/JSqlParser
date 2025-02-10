@@ -49,6 +49,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -386,6 +387,12 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+    @Override
+    public <S> Void visit(Export export, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
     public void visit(CreateIndex createIndex) {
         visit(createIndex, null);
     }
@@ -566,4 +573,7 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(imprt, null);
     }
 
+    public void visit(Export export) {
+        visit(export, null);
+    }
 }
