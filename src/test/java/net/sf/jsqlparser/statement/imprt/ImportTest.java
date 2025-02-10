@@ -72,11 +72,11 @@ public class ImportTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "IMPORT FROM LOCAL FBV FILE 'file.csv'",
-            "IMPORT FROM LOCAL FBV FILE 'file1.csv' FILE 'file2.csv'",
+            "IMPORT FROM LOCAL FBV FILE 'file.fbv'",
+            "IMPORT FROM LOCAL FBV FILE 'file1.fbv' FILE 'file2.fbv'",
 
-            "IMPORT FROM LOCAL SECURE FBV FILE 'file.csv'",
-            "IMPORT FROM LOCAL SECURE FBV FILE 'file1.csv' FILE 'file2.csv'"
+            "IMPORT FROM LOCAL SECURE FBV FILE 'file.fbv'",
+            "IMPORT FROM LOCAL SECURE FBV FILE 'file1.fbv' FILE 'file2.fbv'"
     })
     public void testImportFromFileFBV(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
