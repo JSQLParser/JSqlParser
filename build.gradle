@@ -17,7 +17,7 @@ plugins {
     id "de.undercouch.download" version "latest.release"
     id 'org.hidetake.ssh' version "latest.release"
 
-    id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "2.0.0" //later depends on JDK 17
+    id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "3.0.5" //later depends on JDK 17
     id "me.champeau.jmh" version "latest.release"
     id "com.nwalsh.gradle.saxon.saxon-gradle" version "0.9.6"
 }
