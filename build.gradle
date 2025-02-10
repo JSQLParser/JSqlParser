@@ -100,7 +100,7 @@ dependencies {
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
 
     // Java Doc in XML Format
-    xmlDoclet 'com.manticore-projects.tools:xml-doclet:1.+'
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:2.+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
