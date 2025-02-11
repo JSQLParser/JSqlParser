@@ -50,7 +50,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 DELIMIT = ALWAYS )",
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 DELIMIT = NEVER )",
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 DELIMIT = AUTO )",
-            "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 FORMAT = 'format', 2 FORMAT = 'format', DELIMIT = ALWAYS )",
+            "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 FORMAT = 'format', 2 DELIMIT = NEVER )",
+            "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 FORMAT = 'format', 2 DELIMIT = NEVER, 3 FORMAT = 'format' DELIMIT = ALWAYS )",
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1 .. 2 )",
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2 )",
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2, 3 )"
@@ -77,11 +78,11 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( FORMAT = 'format' )",
             "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( ALIGN = LEFT )",
             "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( ALIGN = RIGHT )",
-            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( PADDING = 'padding' )",
+            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( PADDING = '0' )",
 
-            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1, START = 1 )",
-            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1 START = 1 )",
-            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1 START = 1, FORMAT = 'format' )"
+            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1, PADDING = '0' )",
+            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1 PADDING = '0' )",
+            "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1 PADDING = '0', FORMAT = 'format' )"
     })
     public void testExportIntoFileFBVCols(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);

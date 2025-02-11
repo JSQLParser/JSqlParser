@@ -56,6 +56,7 @@ public class DBMSTableDestinationOption {
 
         sql.append(key);
         if (value != null) {
+            sql.append(" ");
             sql.append(value);
         }
 

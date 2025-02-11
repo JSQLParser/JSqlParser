@@ -78,7 +78,9 @@ public class CSVColumn {
             if (format != null) {
                 sql.append(" FORMAT = ");
                 sql.append(format);
-            } else {
+            }
+
+            if (delimit != null) {
                 sql.append(" DELIMIT = ");
                 sql.append(delimit);
             }
