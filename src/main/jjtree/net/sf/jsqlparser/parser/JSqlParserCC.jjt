@@ -4661,7 +4661,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_MATCH_REGEXP>
     ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
-    rightExpression=SimpleExpression()
+    rightExpression=Expression()
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
             LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }
@@ -5269,6 +5269,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
 
         | retval=ConnectByRootOperator()
+
+        | retval=ConnectByPriorOperator()
 
         | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
