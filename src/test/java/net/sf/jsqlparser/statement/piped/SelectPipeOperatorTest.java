@@ -14,4 +14,14 @@ class SelectPipeOperatorTest {
                 + "|> SELECT *, t.y AS t_y;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testDistinct() throws JSQLParserException {
+        String sqlStr = "FROM orders\n" +
+                "|> WHERE order_date >= '2024-01-01'\n" +
+                "|> SELECT DISTINCT customer_id \n" +
+                "|> INNER JOIN customers USING(customer_id)\n" +
+                "|> SELECT *;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

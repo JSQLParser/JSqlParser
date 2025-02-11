@@ -2424,12 +2424,13 @@ PipeOperator PipeOperator() #PipeOperator:
 SelectPipeOperator SelectPipeOperator():
 {
     Token operatorKeyToken;
+    Token modifierToken = null;
     SelectPipeOperator selectPipeOperator;
     SelectItem<?> selectItem;
 }
 {
     (
-        operatorKeyToken = <K_SELECT>
+        ( operatorKeyToken = <K_SELECT> [ modifierToken=<K_DISTINCT> | modifierToken=<K_ALL> ] )
         |
         operatorKeyToken = <K_EXTEND>
         |
@@ -2438,7 +2439,7 @@ SelectPipeOperator SelectPipeOperator():
         operatorKeyToken = <K_RENAME>
     )
     selectItem = SelectItem()
-    { selectPipeOperator = new SelectPipeOperator(operatorKeyToken.image, selectItem); }
+    { selectPipeOperator = new SelectPipeOperator(operatorKeyToken.image, selectItem, modifierToken !=null ? modifierToken.image : null); }
 
     ( LOOKAHEAD(2) "," selectItem = SelectItem() { selectPipeOperator.add(selectItem); } )*
 

@@ -980,6 +980,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     public StringBuilder visit(SelectPipeOperator select, Void context) {
         builder.append("|> ").append(select.getOperatorName());
+        if (select.getModifier() != null && !select.getModifier().isEmpty()) {
+            builder.append(" ").append(select.getModifier());
+        }
+
         int i = 0;
         for (SelectItem<?> selectItem : select.getSelectItems()) {
             builder.append(i++ > 0 ? ", " : " ").append(selectItem);
