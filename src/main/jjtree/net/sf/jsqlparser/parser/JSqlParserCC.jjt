@@ -4662,7 +4662,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_MATCH_REGEXP>
     ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
-    rightExpression=Expression()
+    rightExpression=SimpleExpression()
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
             LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }
