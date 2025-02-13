@@ -2345,10 +2345,14 @@ FromQuery FromQuery() #FromQuery:
 {
     FromQuery fromQuery;
     FromItem fromItem;
+    List<LateralView> lateralViews = null;
+    List<Join> joins = null;
     PipeOperator pipeOperator;
 }
 {
     <K_FROM> fromItem = FromItem() { fromQuery = new FromQuery(fromItem); }
+    [ LOOKAHEAD(2) lateralViews=LateralViews() { fromQuery.setLateralViews(lateralViews); } ]
+    [ LOOKAHEAD(2) joins=JoinsList() { fromQuery.setJoins(joins); } ]
     (
         LOOKAHEAD(2) "|>" pipeOperator = PipeOperator() { fromQuery.add(pipeOperator); }
     )*

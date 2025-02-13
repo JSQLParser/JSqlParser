@@ -840,11 +840,36 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(FromQuery fromQuery, S context) {
+        List<WithItem<?>> withItemsList = fromQuery.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            builder.append("WITH ");
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept((SelectVisitor<?>) this, context);
+                if (iter.hasNext()) {
+                    builder.append(",");
+                }
+                builder.append(" ");
+            }
+        }
+
         if (fromQuery.isUsingFromKeyword()) {
             builder.append("FROM ");
         }
         fromQuery.getFromItem().accept(this, context);
         builder.append("\n");
+
+        if (fromQuery.getLateralViews() != null) {
+            for (LateralView lateralView : fromQuery.getLateralViews()) {
+                deparseLateralView(lateralView);
+            }
+        }
+
+        if (fromQuery.getJoins() != null) {
+            for (Join join : fromQuery.getJoins()) {
+                deparseJoin(join);
+            }
+        }
+
         for (PipeOperator operator : fromQuery.getPipeOperators()) {
             operator.accept(this, null);
         }

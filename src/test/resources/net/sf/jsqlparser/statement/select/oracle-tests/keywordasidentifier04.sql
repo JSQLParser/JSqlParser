@@ -14,3 +14,4 @@ union all
 from v$backup_piece bp)
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on 3 Jun 2022, 18:48:09
+--@FAILURE: Encountered unexpected token: "union" "UNION" recorded first on Feb 13, 2025, 10:16:06 AM

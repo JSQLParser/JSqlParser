@@ -26,7 +26,7 @@ import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression, FromItem {
     protected Table forUpdateTable = null;
-    List<WithItem<?>> withItemsList;
+    protected List<WithItem<?>> withItemsList;
     Limit limitBy;
     Limit limit;
     Offset offset;
