@@ -71,6 +71,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -901,8 +902,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         builder.append("|> ").append("AGGREGATE");
         int i = 0;
         for (SelectItem<?> selectItem : aggregate.getSelectItems()) {
-            builder.append(i++ > 0 ? ", " : " ");
+            builder.append(i > 0 ? ", " : " ");
             selectItem.accept(this, context);
+            ArrayList<String> selectItemsOrderSuffices = aggregate.getSelectItemsOrderSuffices();
+            if (i < selectItemsOrderSuffices.size() && selectItemsOrderSuffices.get(i) != null
+                    && !selectItemsOrderSuffices.get(i).isEmpty()) {
+                builder.append(" ").append(selectItemsOrderSuffices.get(i));
+            }
+            i++;
         }
         builder.append("\n");
 
@@ -914,8 +921,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" BY");
             i = 0;
             for (SelectItem<?> selectItem : aggregate.getGroupItems()) {
-                builder.append(i++ > 0 ? ", " : " ");
+                builder.append(i > 0 ? ", " : " ");
                 selectItem.accept(this, context);
+
+                ArrayList<String> groupItemsOrderSuffices = aggregate.getGroupItemsOrderSuffices();
+                if (i < groupItemsOrderSuffices.size() && groupItemsOrderSuffices.get(i) != null
+                        && !groupItemsOrderSuffices.get(i).isEmpty()) {
+                    builder.append(" ").append(groupItemsOrderSuffices.get(i));
+                }
+
+                i++;
             }
             builder.append("\n");
         }

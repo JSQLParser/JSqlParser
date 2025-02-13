@@ -1539,13 +1539,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(ArrayConstructor aThis, S context) {
-        if (aThis.isArrayKeyword()) {
+    public <S> StringBuilder visit(ArrayConstructor arrayConstructor, S context) {
+        if (arrayConstructor.isArrayKeyword()) {
             builder.append("ARRAY");
+
+            ColDataType dataType = arrayConstructor.getDataType();
+            if (dataType != null) {
+                builder.append("<").append(dataType).append(">");
+            }
         }
         builder.append("[");
         boolean first = true;
-        for (Expression expression : aThis.getExpressions()) {
+        for (Expression expression : arrayConstructor.getExpressions()) {
             if (!first) {
                 builder.append(", ");
             } else {
