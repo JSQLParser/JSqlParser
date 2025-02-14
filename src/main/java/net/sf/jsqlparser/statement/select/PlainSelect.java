@@ -207,7 +207,7 @@ public class PlainSelect extends Select {
     }
 
     public void setLateralViews(Collection<LateralView> lateralViews) {
-        if (this.lateralViews == null && lateralViews != null) {
+        if (this.lateralViews == null) {
             this.lateralViews = new ArrayList<>();
         } else {
             this.lateralViews.clear();
