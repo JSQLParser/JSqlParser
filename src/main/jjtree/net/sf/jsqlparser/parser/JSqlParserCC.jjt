@@ -3172,7 +3172,7 @@ List<WithItem<?>> WithList():
 }
 {
     <K_WITH> with=WithItem() { withItemsList.add(with); }
-    ( LOOKAHEAD(3) "," with=WithItem() { withItemsList.add(with); } )*
+    ( "," with=WithItem() { withItemsList.add(with); } )*
 
      { return withItemsList; }
 }
