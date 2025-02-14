@@ -231,4 +231,17 @@ public class FromQueryTest {
         // formatter:on
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testParseAndDeparseNestedWithIssue2168() throws JSQLParserException {
+        // formatter:off
+        String sqlStr =
+                "with b as (\n" +
+                        "    with a as (select 1)\n" +
+                        "    from a )\n" +
+                        "from b\n" +
+                        ";";
+        // formatter:on
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

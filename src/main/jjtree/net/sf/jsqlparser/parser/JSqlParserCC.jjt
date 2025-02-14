@@ -2316,6 +2316,13 @@ Select Select() #Select:
 }
 {
     (
+
+        //@todo: avoid this expensive semantic look ahead
+        LOOKAHEAD( [ WithList() ] FromQuery()) (
+            [ with=WithList() ]
+            select = FromQuery()
+        )
+        |
         (
             [ with=WithList() ]
             (
@@ -2335,8 +2342,6 @@ Select Select() #Select:
             [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { select.setFetch(fetch);} ]
             [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { select.setIsolation(withIsolation);} ]
         )
-        |
-        select = FromQuery()
     )
     {
         linkAST(select, jjtThis);
@@ -3166,7 +3171,8 @@ List<WithItem<?>> WithList():
     WithItem with = null;
 }
 {
-    <K_WITH> with=WithItem() { withItemsList.add(with); } ("," with=WithItem() { withItemsList.add(with); } )*
+    <K_WITH> with=WithItem() { withItemsList.add(with); }
+    ( LOOKAHEAD(3) "," with=WithItem() { withItemsList.add(with); } )*
 
      { return withItemsList; }
 }
