@@ -435,11 +435,11 @@ tasks.register('updateKeywords', JavaExec) {
 
 task xslt(type: SaxonXsltTask) {
     def outFile = version.endsWith("-SNAPSHOT")
-            ?   project(":JSQLParser").file("src/site/sphinx/syntax_snapshot.rst")
-            :   project(":JSQLParser").file("src/site/sphinx/syntax_stable.rst")
+            ?   file("src/site/sphinx/syntax_snapshot.rst")
+            :   file("src/site/sphinx/syntax_stable.rst")
 
     dependsOn(renderRR)
-    stylesheet project(":JSQLParser").file('src/main/resources/rr/xhtml2rst.xsl')
+    stylesheet file('src/main/resources/rr/xhtml2rst.xsl')
 
     parameters (
             "withFloatingToc": System.getenv().getOrDefault("FLOATING_TOC", "true"),
