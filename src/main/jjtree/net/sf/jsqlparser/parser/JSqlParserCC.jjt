@@ -2442,7 +2442,7 @@ SelectPipeOperator SelectPipeOperator():
 }
 {
     (
-        ( operatorKeyToken = <K_SELECT> [ modifierToken=<K_DISTINCT> | modifierToken=<K_ALL> ] )
+        ( operatorKeyToken = <K_SELECT> [ LOOKAHEAD(2) ( modifierToken=<K_DISTINCT> | modifierToken=<K_ALL> ) ] )
         |
         operatorKeyToken = <K_EXTEND>
         |
@@ -3981,7 +3981,7 @@ GroupByElement GroupByColumnReferences():
     Expression columnReference;
     GroupByElement groupBy = new GroupByElement();
     Expression expr;
-    ExpressionList list;
+    ExpressionList<Expression> list;
     Token token;
 }
 {
@@ -4012,16 +4012,16 @@ GroupByElement GroupByColumnReferences():
     }
 }
 
-ExpressionList GroupingSet():
+ExpressionList<Expression> GroupingSet():
 {
-    ExpressionList list;
+    ExpressionList<Expression> list;
     Expression expression;
 }
 {
     (
         LOOKAHEAD(2) list = ParenthesedExpressionList()
         |
-        expression = SimpleExpression() { list = new ExpressionList(expression); }
+        expression = SimpleExpression() { list = new ExpressionList<Expression>(expression); }
     )
     {
         return list;
