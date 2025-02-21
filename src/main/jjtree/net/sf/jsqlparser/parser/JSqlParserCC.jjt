@@ -5926,15 +5926,25 @@ JsonAggregateFunction JsonAggregateFunction() : {
 }
 
 IntervalExpression IntervalExpression() : {
-    IntervalExpression interval;
+    IntervalExpression interval = new IntervalExpression();
     Token token = null;
     Expression expr = null;
     boolean signed = false;
 }
 {
 
-{ interval = new IntervalExpression(); }
-    <K_INTERVAL> ["-" {signed=true;}] (token=<S_LONG> | token=<S_DOUBLE> | token=<S_CHAR_LITERAL> | LOOKAHEAD(JdbcParameter()) expr = JdbcParameter() | expr = JdbcNamedParameter() | LOOKAHEAD(Function()) expr = Function() | expr = Column())
+    <K_INTERVAL>
+    (
+
+        LOOKAHEAD(3) (
+            [ "-" {signed=true;}]
+            (token=<S_LONG> | token=<S_DOUBLE>)
+        )
+        |
+        LOOKAHEAD(2) token=<S_CHAR_LITERAL>
+        |
+        expr = Expression()
+    )
     {
         if (expr != null) {
             if (signed) expr = new SignedExpression('-', expr);
