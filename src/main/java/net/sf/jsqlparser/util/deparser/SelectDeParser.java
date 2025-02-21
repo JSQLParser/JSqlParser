@@ -212,7 +212,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(first).append(" ");
         }
 
-        deparseDistinctClause(plainSelect.getDistinct());
+        deparseDistinctClause(plainSelect, plainSelect.getDistinct());
 
         if (plainSelect.getBigQuerySelectQualifier() != null) {
             switch (plainSelect.getBigQuerySelectQualifier()) {
@@ -238,7 +238,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append("SQL_CALC_FOUND_ROWS").append(" ");
         }
 
-        deparseSelectItemsClause(plainSelect.getSelectItems());
+        deparseSelectItemsClause(plainSelect, plainSelect.getSelectItems());
 
         if (plainSelect.getIntoTables() != null) {
             builder.append(" INTO ");
@@ -393,7 +393,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
-    protected void deparseDistinctClause(Distinct distinct) {
+    protected void deparseDistinctClause(PlainSelect plainSelect,
+            Distinct distinct) {
         if (distinct != null) {
             if (distinct.isUseUnique()) {
                 builder.append("UNIQUE ");
@@ -415,7 +416,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
-    protected void deparseSelectItemsClause(List<SelectItem<?>> selectItems) {
+    protected void deparseSelectItemsClause(PlainSelect plainSelect,
+            List<SelectItem<?>> selectItems) {
         if (selectItems != null) {
             for (Iterator<SelectItem<?>> iter = selectItems.iterator(); iter.hasNext();) {
                 SelectItem<?> selectItem = iter.next();
