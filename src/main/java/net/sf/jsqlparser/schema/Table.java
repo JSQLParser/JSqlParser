@@ -58,6 +58,14 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public Table() {}
 
+    /**
+     * Instantiates a new Table.
+     *
+     * Sets the table name, splitting it into parts (catalog, schema, name) on `.` dots when quoted
+     * unless the system property `SPLIT_NAMES_ON_DELIMITER` points to `FALSE`
+     *
+     * @param name the table name, optionally quoted
+     */
     public Table(String name) {
         setName(name);
     }
@@ -170,10 +178,22 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     }
 
 
+    /**
+     * Sets the table name, splitting it into parts (catalog, schema, name) on `.` dots when quoted
+     * unless the system property `SPLIT_NAMES_ON_DELIMITER` points to `FALSE`
+     *
+     * @param name the table name, optionally quoted
+     */
     public void setName(String name) {
         // BigQuery seems to allow things like: `catalogName.schemaName.tableName` in only one pair
         // of quotes
-        if (MultiPartName.isQuoted(name) && name.contains(".")) {
+        // however, some people believe that Dots in Names are a good idea, so provide a switch-off
+        boolean splitNamesOnDelimiter = System.getProperty("SPLIT_NAMES_ON_DELIMITER") == null ||
+                !List
+                        .of("0", "N", "n", "FALSE", "false", "OFF", "off")
+                        .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
+
+        if (MultiPartName.isQuoted(name) && name.contains(".") && splitNamesOnDelimiter) {
             partItems.clear();
             for (String unquotedIdentifier : MultiPartName.unquote(name).split("\\.")) {
                 partItems.add("\"" + unquotedIdentifier + "\"");
