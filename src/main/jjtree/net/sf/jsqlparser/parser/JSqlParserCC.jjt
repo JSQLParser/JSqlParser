@@ -5385,15 +5385,23 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     // Check for JSON operands
     [
-         LOOKAHEAD(2) (
+        LOOKAHEAD(2) (
             LOOKAHEAD(2) (
-                ( token="->" | token=":" /*Snowflake GET_PATH Operator*/ ) expression=Expression()
+                token="->"
                 |
-                token="->>" expression=Expression()
+                token=":"
                 |
-                token="#>" expression=Expression()
+                token="->>"
                 |
-                token="#>>" expression=Expression()
+                token="#>"
+                |
+                token="#>>"
+            )
+
+            (
+                LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted }) expression=Expression()
+                |
+                expression=SimpleExpression()
             )
             {
                 jsonIdents.add(new AbstractMap.SimpleEntry<Expression, String>(expression, token.image ));
@@ -5641,7 +5649,7 @@ StructType StructType() #StruckType:
 JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String>> idents) : {
   JsonExpression result = new JsonExpression(expr, idents);
   Expression expression;
-  Token token;
+  Token token=null;
   ColDataType type = null;
   CastExpression castExpr = null;
 }
@@ -5666,19 +5674,27 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
             result = new JsonExpression(expr);
         }
 
-        (
-             LOOKAHEAD(2) (
-                    ( token="->" | token=":" /*Snowflake GET_PATH Operator*/ ) expression=Expression()
-                    |
-                    token="->>" expression=Expression()
-                    |
-                    token="#>" expression=Expression()
-                    |
-                    token="#>>" expression=Expression()
-                )
-                {
-                    result.addIdent( expression, token.image );
-                }
+        LOOKAHEAD(2) (
+            LOOKAHEAD(2) (
+                token="->"
+                |
+                token=":"
+                |
+                token="->>"
+                |
+                token="#>"
+                |
+                token="#>>"
+            )
+
+            (
+                LOOKAHEAD({getAsBoolean(Feature.allowComplexParsing) && !interrupted}) expression=Expression()
+                |
+                expression=SimpleExpression()
+            )
+            {
+                result.addIdent( expression, token.image );
+            }
         )*
     )*
 
