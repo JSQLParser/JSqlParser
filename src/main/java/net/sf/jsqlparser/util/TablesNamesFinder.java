@@ -522,13 +522,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(IsNullExpression isNullExpression, S context) {
-
+        isNullExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
     public <S> Void visit(IsBooleanExpression isBooleanExpression, S context) {
-
+        isBooleanExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
