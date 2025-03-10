@@ -5674,7 +5674,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
             result = new JsonExpression(expr);
         }
 
-        LOOKAHEAD(2) (
+        (
             LOOKAHEAD(2) (
                 token="->"
                 |
