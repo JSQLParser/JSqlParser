@@ -43,7 +43,7 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Build with Maven
-        run: mvn -X -B verify --file pom.xml -DdisableXmlReport=true -Djacoco.skip=true -Dpmd.skip=true
+        run: mvn -B verify --file pom.xml -DdisableXmlReport=true -Djacoco.skip=true -Dpmd.skip=true
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRHUSERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRHPASSWORD }}
