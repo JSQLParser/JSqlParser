@@ -178,7 +178,7 @@ tasks.register('xmldoc', Javadoc) {
     )
 
     source = sourceSets.main.allJava
-    include("build/generated/javacc/net/sf/jsqlparser/parser/*.java" )
+    include("**/javacc/net/sf/jsqlparser/parser/*.java" )
 
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files as List

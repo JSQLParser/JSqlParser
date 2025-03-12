@@ -661,5 +661,25 @@ public class TablesNamesFinderTest {
         tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
     }
+
+    @Test
+    void testIssue2183() throws JSQLParserException {
+        String sqlStr = "SELECT\n" +
+                "\tsubscriber_id,\n" +
+                "\tsum(1) OVER (PARTITION BY subscriber_id\n" +
+                "ORDER BY\n" +
+                "\tstat_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) AS stop_id\n" +
+                "FROM\n" +
+                "\t(\n" +
+                "\tSELECT\n" +
+                "\t\tsubscriber_id,\n" +
+                "\t\tstat_time\n" +
+                "\tFROM\n" +
+                "\t\tlocation_subscriber AS mid2 WINDOW w AS (PARTITION BY subscriber_id\n" +
+                "\tORDER BY\n" +
+                "\t\tstat_time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING ) )";
+        Set<String> tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("location_subscriber");
+    }
 }
 
