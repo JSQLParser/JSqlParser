@@ -6992,6 +6992,7 @@ ColDataType DataType():
     Token prefix = null;
     Token tk = null;
     Token tk2 = null;
+    JdbcParameter jdbc = null;
     String schema;
     String type="";
     List<String> argumentsStringList = new ArrayList<String>();
@@ -7026,12 +7027,29 @@ ColDataType DataType():
                                    | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; } )+
             ]
             [
-                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
-                [ "," tk = <S_LONG> { scale = Integer.valueOf(tk.image); } ]
+                LOOKAHEAD(2) "("
+                    (
+                        // Handle precision: S_LONG, K_MAX, or JDBC Parameter
+                        tk=<S_LONG> { precision = Integer.valueOf(tk.image); }
+                        | tk=<K_MAX> { precision = Integer.MAX_VALUE; }
+                        | jdbc = JdbcParameter() { precision = -1; argumentsStringList.add("?"); }
+                    )
+                    [
+                        ","
+                        (
+                            tk = <S_LONG> { scale = Integer.valueOf(tk.image); }
+                            | jdbc = JdbcParameter() { scale = -1; argumentsStringList.add("?"); }
+                        )
+                    ]
                 ")"
             ]
             {
-                colDataType = new ColDataType(type, precision, scale);
+                // If JDBC parameters were used, construct with string arguments
+                if (!argumentsStringList.isEmpty()) {
+                    colDataType = new ColDataType(type + "(" + String.join(", ", argumentsStringList) + ")");
+                } else {
+                    colDataType = new ColDataType(type, precision, scale);
+                }
             }
         )
     )

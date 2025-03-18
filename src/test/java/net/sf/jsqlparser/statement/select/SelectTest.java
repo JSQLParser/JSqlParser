@@ -5344,6 +5344,37 @@ public class SelectTest {
     }
 
     @Test
+    public void testJdbcParameterInColDataTypePrecision() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT price::VARCHAR(?) FROM products WHERE quantity = 50;",
+                true);
+    }
+
+    @Test
+    public void testJdbcParameterInColDataTypePrecisionAndScale() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT price::DECIMAL(?, ?) FROM products WHERE quantity = 50;",
+                true);
+    }
+
+    @Test
+    public void testPrecisionJdbcParameterWithWhitespaces() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT price  ::   numeric(?) FROM products WHERE quantity = 50;",
+                true);
+    }
+
+    @Test
+    public void testCastWithPrecisionJdbcParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT (CAST(? AS VARCHAR(?))) FROM products;");
+    }
+
+    @Test
+    public void testCastFunctionOutputWithPrecisionJdbcParameter() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT AVG(Measurement)::numeric(?);");
+    }
+
+    @Test
     public void testAnyComparisionExpressionValuesList1232() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("select * from foo where id != ALL(VALUES 1,2,3)", true);
 
