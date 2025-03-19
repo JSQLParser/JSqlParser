@@ -5487,6 +5487,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testGroupByWithAllTableColumns() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select c.post_id, p.* from posts p inner join comments c on c.post_id = p.post_id group by p.post_id, c.post_id, p.*;");
+    }
+
+    @Test
     public void testTableSpaceKeyword() throws JSQLParserException {
         // without extra brackets
         assertSqlCanBeParsedAndDeparsed(

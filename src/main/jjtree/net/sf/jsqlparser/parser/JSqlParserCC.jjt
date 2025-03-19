@@ -3252,11 +3252,7 @@ SelectItem<?> SelectItem() #SelectItem:
     // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
     // @todo: parse a proper SEQUENCE instead of a COLUMN
     (
-        expression = AllColumns()
-        |
         LOOKAHEAD( 3 ) expression = ConnectByPriorOperator()
-        |
-        LOOKAHEAD(AllTableColumns()) expression = AllTableColumns()
         |
         LOOKAHEAD( 3 ) expression = XorExpression()
         |
@@ -5301,6 +5297,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
 
+        | LOOKAHEAD(AllColumns()) retval=AllColumns()
+
+        | LOOKAHEAD(AllTableColumns()) retval=AllTableColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -6450,10 +6449,6 @@ Function InternalFunction(boolean escaped):
             )
         ]
         (
-            "*" { expr = new AllColumns(); expressionList = new ExpressionList(expr); }
-            |
-            LOOKAHEAD( AllTableColumns() ) expr=AllTableColumns() { expressionList = new ExpressionList(expr); }
-            |
             LOOKAHEAD(3) [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
             expressionList=ExpressionList()
             [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
