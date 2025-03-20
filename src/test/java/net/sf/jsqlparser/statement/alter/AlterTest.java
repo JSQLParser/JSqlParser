@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
@@ -1397,5 +1398,29 @@ public class AlterTest {
         assertEquals("NONE", lockExp.getLockOption());
 
         assertSqlCanBeParsedAndDeparsed(sql2);
+    }
+
+    @Test
+    public void testDiscardTablespace() throws JSQLParserException {
+        String sql = "ALTER TABLE employees DISCARD TABLESPACE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+        assertEquals("DISCARD_TABLESPACE",
+                alter.getAlterExpressions().get(0).getOperation().toString());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testImportTablespace() throws JSQLParserException {
+        String sql = "ALTER TABLE employees IMPORT TABLESPACE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+        assertEquals("IMPORT_TABLESPACE",
+                alter.getAlterExpressions().get(0).getOperation().toString());
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 }

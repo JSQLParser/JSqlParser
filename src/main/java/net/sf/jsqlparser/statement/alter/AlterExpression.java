@@ -496,6 +496,10 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (operation == AlterOperation.SET_TABLE_OPTION) {
             b.append(tableOption);
+        } else if (operation == AlterOperation.DISCARD_TABLESPACE) {
+            b.append("DISCARD TABLESPACE");
+        } else if (operation == AlterOperation.IMPORT_TABLESPACE) {
+            b.append("IMPORT TABLESPACE");
         } else if (operation == AlterOperation.ENGINE) {
             b.append("ENGINE ");
             if (useEqual) {
