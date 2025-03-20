@@ -8052,19 +8052,19 @@ AlterExpression AlterExpression():
             }
       )
       |
-       (
-                     ( tk=<K_DISCARD>)
-                     ( tk2=<K_TABLESPACE> ) {
-                            alterExp.setOperation(AlterOperation.DISCARD_TABLESPACE);
-                        }
-        )
-        |
-        (
-                             ( tk=<K_IMPORT> )
-                             ( tk2=<K_TABLESPACE> ) {
-                                    alterExp.setOperation(AlterOperation.IMPORT_TABLESPACE);
-                                }
-                )
+      (
+          (tk = <K_DISCARD>)
+          (tk2 = <K_TABLESPACE>) {
+              alterExp.setOperation(AlterOperation.DISCARD_TABLESPACE);
+          }
+      )
+      |
+      (
+          (tk = <K_IMPORT>)
+          (tk2 = <K_TABLESPACE>) {
+              alterExp.setOperation(AlterOperation.IMPORT_TABLESPACE);
+          }
+      )
       |
       (<K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
               ["=" { alterExp.setUseEqual(true);} ]
