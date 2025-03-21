@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -900,6 +901,20 @@ public class InsertTest {
         Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("overriding", insert.getTable().getName());
         assertEquals(true, insert.isOverriding());
+    }
+
+    @Test
+    void insertDemo() {
+        Insert insert =
+                new Insert()
+                        .withTable(new Table("test"))
+                        .withSelect(
+                                new Values()
+                                        .addExpressions(
+                                                new StringValue("A"), new StringValue("B")));
+
+        TestUtils.assertStatementCanBeDeparsedAs(
+                insert, "INSERT INTO test VALUES ('A', 'B')");
     }
 
 }
