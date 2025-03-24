@@ -622,6 +622,19 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableRenameColumn2() throws JSQLParserException {
+        // Additional test case: Renaming column from 'name' to 'full_name'
+        String sql = "ALTER TABLE test_table RENAME COLUMN name TO full_name";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.RENAME);
+        assertEquals(expression.getColOldName(), "name");
+        assertEquals(expression.getColumnName(), "full_name");
+    }
+
+    @Test
     public void testAlterTableForeignKeyIssue981() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE atconfigpro "
