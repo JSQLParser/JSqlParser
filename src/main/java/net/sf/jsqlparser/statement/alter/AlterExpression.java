@@ -60,6 +60,7 @@ public class AlterExpression implements Serializable {
 
     private String characterSet;
     private String collation;
+    private boolean defaultCollateSpecified;
     private String lockOption;
     private String algorithmOption;
     private String engineOption;
@@ -432,6 +433,14 @@ public class AlterExpression implements Serializable {
         this.collation = collation;
     }
 
+    public void setDefaultCollateSpecified(boolean value) {
+        this.defaultCollateSpecified = value;
+    }
+
+    public boolean isDefaultCollateSpecified() {
+        return defaultCollateSpecified;
+    }
+
     public String getLockOption() {
         return lockOption;
     }
@@ -562,6 +571,17 @@ public class AlterExpression implements Serializable {
                 if (hasEqualForCollate) {
                     b.append("= ");
                 }
+                b.append(getCollation());
+            }
+        } else if (operation == AlterOperation.COLLATE) {
+            if (isDefaultCollateSpecified()) {
+                b.append("DEFAULT ");
+            }
+            b.append("COLLATE ");
+            if (hasEqualForCollate) {
+                b.append("= ");
+            }
+            if (getCollation() != null) {
                 b.append(getCollation());
             }
         } else if (operation == AlterOperation.DROP_UNIQUE) {
