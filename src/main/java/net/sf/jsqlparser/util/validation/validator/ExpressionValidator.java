@@ -123,6 +123,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -1057,6 +1058,11 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(AllTableColumns allTableColumns, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FunctionAllColumns functionColumns, S context) {
         return null;
     }
 

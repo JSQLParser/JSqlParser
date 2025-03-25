@@ -6173,4 +6173,41 @@ public class SelectTest {
                 select.getPlainSelect().getSelectItems().toString());
     }
 
+    @Test
+    public void testSelectAllColumnsFromFunctionReturn() throws JSQLParserException {
+        String sql = "SELECT (pg_stat_file('postgresql.conf')).*";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertNotNull(statement);
+        assertTrue(statement instanceof Select);
+
+        // Ensure the function is recognized correctly
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertNotNull(plainSelect);
+        assertEquals(1, plainSelect.getSelectItems().size());
+        assertTrue(plainSelect.getSelectItems().get(0)
+                .getExpression() instanceof FunctionAllColumns);
+        assertEquals("(pg_stat_file('postgresql.conf')).*",
+                plainSelect.getSelectItems().get(0).toString());
+    }
+
+    @Test
+    public void testSelectAllColumnsFromFunctionReturnWithMultipleParentheses()
+            throws JSQLParserException {
+        String sql = "SELECT ( ( ( pg_stat_file('postgresql.conf') ) )) . *";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertNotNull(statement);
+        assertTrue(statement instanceof Select);
+
+        // Ensure the function is recognized correctly
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertNotNull(plainSelect);
+        assertEquals(1, plainSelect.getSelectItems().size());
+        assertTrue(plainSelect.getSelectItems().get(0)
+                .getExpression() instanceof FunctionAllColumns);
+        assertEquals("(pg_stat_file('postgresql.conf')).*",
+                plainSelect.getSelectItems().get(0).toString());
+    }
+
 }

@@ -3273,6 +3273,16 @@ List<SelectItem<?>> SelectItemsList():
     { return selectItemsList; }
 }
 
+FunctionAllColumns FunctionAllColumns() #FunctionAllColumns:
+{
+    Function function;
+}
+{
+    "(" ( "(" )* function=Function() ")" ( ")" )* "." "*"
+    {
+        return new FunctionAllColumns(function);
+    }
+}
 
 SelectItem<?> SelectItem() #SelectItem:
 {
@@ -5331,6 +5341,8 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(AllColumns()) retval=AllColumns()
 
         | LOOKAHEAD(AllTableColumns()) retval=AllTableColumns()
+
+        | LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }

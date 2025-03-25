@@ -60,6 +60,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
@@ -584,6 +585,8 @@ public interface ExpressionVisitor<T> {
     }
 
     <S> T visit(AllColumns allColumns, S context);
+
+    <S> T visit(FunctionAllColumns functionColumns, S context);
 
     default void visit(AllColumns allColumns) {
         this.visit(allColumns, null);
