@@ -1075,6 +1075,49 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableCollate() throws JSQLParserException {
+        // Case 1: Without DEFAULT and without =
+        String sql = "ALTER TABLE tbl_name COLLATE collation_name";
+
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.COLLATE);
+        assertEquals(expression.getCollation(), "collation_name");
+        assertFalse(expression.isDefaultCollateSpecified());
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        // Case 2: Without DEFAULT and with =
+        sql = "ALTER TABLE tbl_name COLLATE = collation_name";
+
+        alter = (Alter) CCJSqlParserUtil.parse(sql);
+        expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.COLLATE);
+        assertEquals(expression.getCollation(), "collation_name");
+        assertFalse(expression.isDefaultCollateSpecified());
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        // Case 3: With DEFAULT and without =
+        sql = "ALTER TABLE tbl_name DEFAULT COLLATE collation_name";
+
+        alter = (Alter) CCJSqlParserUtil.parse(sql);
+        expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.COLLATE);
+        assertEquals(expression.getCollation(), "collation_name");
+        assertTrue(expression.isDefaultCollateSpecified());
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        // Case 4: With DEFAULT and with =
+        sql = "ALTER TABLE tbl_name DEFAULT COLLATE = collation_name";
+
+        alter = (Alter) CCJSqlParserUtil.parse(sql);
+        expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.COLLATE);
+        assertEquals(expression.getCollation(), "collation_name");
+        assertTrue(expression.isDefaultCollateSpecified());
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testIssue2090LockNone() throws JSQLParserException {
         String sql =
                 "ALTER TABLE sbtest1 MODIFY COLUMN pad_3 VARCHAR(20) DEFAULT NULL, ALGORITHM=INPLACE, LOCK=NONE";

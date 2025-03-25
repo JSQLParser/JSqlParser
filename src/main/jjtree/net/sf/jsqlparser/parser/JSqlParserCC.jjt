@@ -8041,14 +8041,28 @@ AlterExpression AlterExpression():
         <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
         [<K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
       )
-      | (<K_DEFAULT> {
-          alterExp.setOperation(AlterOperation.CONVERT);
-          alterExp.setConvertType(AlterExpression.ConvertType.DEFAULT_CHARACTER_SET);
-        }
-        <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
-        tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
-        [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
-            tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+      |
+      LOOKAHEAD(3)
+      (
+          <K_DEFAULT>
+          (
+              <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
+              tk=<S_IDENTIFIER> {
+                  alterExp.setOperation(AlterOperation.CONVERT);
+                  alterExp.setConvertType(AlterExpression.ConvertType.DEFAULT_CHARACTER_SET);
+                  alterExp.setCharacterSet(tk.image);
+              }
+              [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
+                  tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+          |
+              <K_COLLATE>
+              [ "=" { alterExp.setHasEqualForCollate(true); } ]
+              tk=<S_IDENTIFIER> {
+                  alterExp.setOperation(AlterOperation.COLLATE);
+                  alterExp.setCollation(tk.image);
+                  alterExp.setDefaultCollateSpecified(true);
+              }
+          )
       )
       | (<K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
         tk=<S_IDENTIFIER> {
@@ -8058,6 +8072,12 @@ AlterExpression AlterExpression():
         }
         [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
             tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+      )
+      | (<K_COLLATE> { alterExp.setOperation(AlterOperation.COLLATE); }
+      [ "=" { alterExp.setHasEqualForCollate(true); } ]
+        tk=<S_IDENTIFIER> {
+          alterExp.setCollation(tk.image);
+        }
       )
       |
       (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
