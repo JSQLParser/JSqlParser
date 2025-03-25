@@ -509,6 +509,10 @@ public class AlterExpression implements Serializable {
             b.append("DISCARD TABLESPACE");
         } else if (operation == AlterOperation.IMPORT_TABLESPACE) {
             b.append("IMPORT TABLESPACE");
+        } else if (operation == AlterOperation.DISABLE_KEYS) {
+            b.append("DISABLE KEYS");
+        } else if (operation == AlterOperation.ENABLE_KEYS) {
+            b.append("ENABLE KEYS");
         } else if (operation == AlterOperation.ENGINE) {
             b.append("ENGINE ");
             if (useEqual) {

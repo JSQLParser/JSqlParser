@@ -8110,6 +8110,20 @@ AlterExpression AlterExpression():
           }
       )
       |
+      (
+          (tk = <K_DISABLE>)
+          (tk2 = <K_KEYS>) {
+              alterExp.setOperation(AlterOperation.DISABLE_KEYS);
+          }
+      )
+      |
+      (
+          (tk = <K_ENABLE>)
+          (tk2 = <K_KEYS>) {
+              alterExp.setOperation(AlterOperation.ENABLE_KEYS);
+          }
+      )
+      |
       (<K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
               ["=" { alterExp.setUseEqual(true);} ]
               tk=<S_LONG> {

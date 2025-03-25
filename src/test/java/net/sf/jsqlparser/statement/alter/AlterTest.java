@@ -1479,4 +1479,25 @@ public class AlterTest {
                 alter.getAlterExpressions().get(0).getOperation().toString());
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableKeys() throws JSQLParserException {
+        // Test for DISABLE KEYS
+        String sqlDisable = "ALTER TABLE tbl_name DISABLE KEYS";
+        Statement stmtDisable = CCJSqlParserUtil.parse(sqlDisable);
+        assertTrue(stmtDisable instanceof Alter);
+        Alter alterDisable = (Alter) stmtDisable;
+        assertEquals("tbl_name", alterDisable.getTable().getFullyQualifiedName());
+        AlterExpression alterExpDisable = alterDisable.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.DISABLE_KEYS, alterExpDisable.getOperation());
+
+        // Test for ENABLE KEYS
+        String sqlEnable = "ALTER TABLE tbl_name ENABLE KEYS";
+        Statement stmtEnable = CCJSqlParserUtil.parse(sqlEnable);
+        assertTrue(stmtEnable instanceof Alter);
+        Alter alterEnable = (Alter) stmtEnable;
+        assertEquals("tbl_name", alterEnable.getTable().getFullyQualifiedName());
+        AlterExpression alterExpEnable = alterEnable.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ENABLE_KEYS, alterExpEnable.getOperation());
+    }
 }
