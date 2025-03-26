@@ -123,6 +123,7 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -1649,6 +1650,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(AllTableColumns allTableColumns, S context) {
         builder.append(allTableColumns.toString());
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(FunctionAllColumns functionAllColumns, S context) {
+        builder.append(functionAllColumns.toString());
         return builder;
     }
 

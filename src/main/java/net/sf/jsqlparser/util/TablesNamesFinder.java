@@ -165,6 +165,7 @@ import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -944,6 +945,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AllTableColumns allTableColumns, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FunctionAllColumns functionAllColumns, S context) {
 
         return null;
     }
