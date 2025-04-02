@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -74,6 +75,11 @@ public class AlterExpression implements Serializable {
     private boolean useBrackets = false;
 
     private boolean useIfNotExists = false;
+
+    private String partitionType;
+    private Expression partitionExpression;
+    private List<String> partitionColumns;
+
 
     public Index getOldIndex() {
         return oldIndex;
@@ -494,6 +500,30 @@ public class AlterExpression implements Serializable {
         return this;
     }
 
+    public void setPartitionType(String partitionType) {
+        this.partitionType = partitionType;
+    }
+
+    public String getPartitionType() {
+        return partitionType;
+    }
+
+    public void setPartitionExpression(Expression partitionExpression) {
+        this.partitionExpression = partitionExpression;
+    }
+
+    public Expression getPartitionExpression() {
+        return partitionExpression;
+    }
+
+    public void setPartitionColumns(List<String> partitionColumns) {
+        this.partitionColumns = partitionColumns;
+    }
+
+    public List<String> getPartitionColumns() {
+        return partitionColumns;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -601,6 +631,28 @@ public class AlterExpression implements Serializable {
         } else if (operation == AlterOperation.TRUNCATE_PARTITION
                 && partitions != null) {
             b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.PARTITION_BY) {
+            b.append("PARTITION BY ").append(partitionType).append(" ");
+            if (partitionExpression != null) {
+                b.append("(").append(partitionExpression).append(") ");
+            } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
+                b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
+            }
+            b.append("(");
+            for (int i = 0; i < partitionDefinitions.size(); i++) {
+                PartitionDefinition partition = partitionDefinitions.get(i);
+                b.append("PARTITION ").append(partition.getPartitionName())
+                        .append(" ").append(partition.getPartitionOperation())
+                        .append(" (").append(PlainSelect.getStringList(partition.getValues()))
+                        .append(")");
+                if (partition.getStorageEngine() != null) {
+                    b.append(" ENGINE = ").append(partition.getStorageEngine());
+                }
+                if (i < partitionDefinitions.size() - 1) {
+                    b.append(", ");
+                }
+            }
+            b.append(")");
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
                 b.append("COMMENT =").append(" ");
