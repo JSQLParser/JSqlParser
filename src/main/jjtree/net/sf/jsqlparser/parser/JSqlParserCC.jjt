@@ -7638,6 +7638,7 @@ List<PartitionDefinition> PartitionDefinitions():
     String partitionName = null;
     String partitionOperation = null;
     String storageEngine = null;
+    Expression exp = null;
 }
 {
     "("
@@ -7651,10 +7652,9 @@ List<PartitionDefinition> PartitionDefinitions():
             (
                 <K_LESS> <K_THAN>
                 (
-                    "("
-                    ( tk=<S_CHAR_LITERAL> { values.add(tk.image); }
-                    | tk=<S_LONG> { values.add(tk.image); }
-                    [ "," ] )* ")"
+                    "(" exp = Expression() ")"{
+                        values.add(exp.toString());
+                    }
                     | <K_MAXVALUE> { values.add("MAXVALUE"); }
                 ) {
                     partitionOperation = "VALUES LESS THAN";
@@ -7672,7 +7672,6 @@ List<PartitionDefinition> PartitionDefinitions():
         return partitionDefinitions;
     }
 }
-
 
 List<String> PartitionNamesList() :
 {
@@ -8134,6 +8133,28 @@ AlterExpression AlterExpression():
                   }
             }
       )
+      |
+        LOOKAHEAD(2) (
+            <K_PARTITION> <K_BY> {
+                alterExp.setOperation(AlterOperation.PARTITION_BY);
+            }
+            <K_RANGE> {
+                alterExp.setPartitionType("RANGE");
+                Expression exp = null;
+            }
+            (
+                "(" exp=Expression() ")" {
+                    alterExp.setPartitionExpression(exp);
+                }
+                |
+                <K_COLUMNS> columnNames=ColumnsNamesList() {
+                    alterExp.setPartitionColumns(columnNames);
+                }
+            )
+            partitionDefinition=PartitionDefinitions() {
+                alterExp.setPartitionDefinitions(partitionDefinition);
+            }
+        )
       |
       LOOKAHEAD(2)
            (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}

@@ -1500,4 +1500,109 @@ public class AlterTest {
         AlterExpression alterExpEnable = alterEnable.getAlterExpressions().get(0);
         assertEquals(AlterOperation.ENABLE_KEYS, alterExpEnable.getOperation());
     }
+
+    @Test
+    public void testAlterTablePartitionByRangeColumns() throws JSQLParserException {
+        String sql = "ALTER TABLE `payment_lock` " +
+                "PARTITION BY RANGE COLUMNS(`created_at`) (" +
+                "PARTITION p20210217 VALUES LESS THAN ('20210218') ENGINE = InnoDB, " +
+                "PARTITION p20210218 VALUES LESS THAN ('20210219') ENGINE = InnoDB);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("`payment_lock`", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.PARTITION_BY, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(2, partitions.size());
+
+        assertEquals("p20210217", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("'20210218'"), partitions.get(0).getValues());
+
+        assertEquals("p20210218", partitions.get(1).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
+        assertEquals(Collections.singletonList("'20210219'"), partitions.get(1).getValues());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTablePartitionByRangeUnixTimestamp() throws JSQLParserException {
+        String sql = "ALTER TABLE `test`.`pipeline_service_metadata_history` " +
+                "PARTITION BY RANGE (FLOOR(UNIX_TIMESTAMP(requested_at))) (" +
+                "PARTITION p202104 VALUES LESS THAN (UNIX_TIMESTAMP('2021-05-01 00:00:00')) ENGINE = InnoDB, "
+                +
+                "PARTITION p202105 VALUES LESS THAN (UNIX_TIMESTAMP('2021-06-01 00:00:00')) ENGINE = InnoDB);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("`test`.`pipeline_service_metadata_history`",
+                alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.PARTITION_BY, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(2, partitions.size());
+
+        assertEquals("p202104", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("UNIX_TIMESTAMP('2021-05-01 00:00:00')"),
+                partitions.get(0).getValues());
+
+        assertEquals("p202105", partitions.get(1).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
+        assertEquals(Collections.singletonList("UNIX_TIMESTAMP('2021-06-01 00:00:00')"),
+                partitions.get(1).getValues());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTablePartitionByRangeUnixTimestamp2() throws JSQLParserException {
+        String sql = "ALTER TABLE MP_MNEWS.PUR_MNEWS_CONTS " +
+                "PARTITION BY RANGE (UNIX_TIMESTAMP(REG_DATE_TS)) (" +
+                "PARTITION p202007 VALUES LESS THAN (1596207600) ENGINE = InnoDB, " +
+                "PARTITION p202008 VALUES LESS THAN (1598886000) ENGINE = InnoDB, " +
+                "PARTITION p202009 VALUES LESS THAN (1601478000) ENGINE = InnoDB);";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("MP_MNEWS.PUR_MNEWS_CONTS", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression partitionExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.PARTITION_BY, partitionExp.getOperation());
+        List<PartitionDefinition> partitions = partitionExp.getPartitionDefinitions();
+        assertNotNull(partitions);
+        assertEquals(3, partitions.size());
+
+        assertEquals("p202007", partitions.get(0).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(0).getPartitionOperation());
+        assertEquals(Collections.singletonList("1596207600"), partitions.get(0).getValues());
+
+        assertEquals("p202008", partitions.get(1).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(1).getPartitionOperation());
+        assertEquals(Collections.singletonList("1598886000"), partitions.get(1).getValues());
+
+        assertEquals("p202009", partitions.get(2).getPartitionName());
+        assertEquals("VALUES LESS THAN", partitions.get(2).getPartitionOperation());
+        assertEquals(Collections.singletonList("1601478000"), partitions.get(2).getValues());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }
