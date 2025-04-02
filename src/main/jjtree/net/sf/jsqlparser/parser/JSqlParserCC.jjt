@@ -203,6 +203,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CHECKPOINT:"CHECKPOINT">
 |   <K_CHAR:"CHAR">
 |   <K_CLOSE:"CLOSE">
+|   <K_COALESCE:"COALESCE">
 |   <K_COLLATE:"COLLATE">
 |   <K_COLUMN:"COLUMN">
 |   <K_COLUMNS:"COLUMNS">
@@ -256,6 +257,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ERROR: "ERROR">
 |   <K_ESCAPE: "ESCAPE">
 |   <K_EXCEPT: "EXCEPT">
+|   <K_EXCHANGE: "EXCHANGE">
 |   <K_EXCLUDE: "EXCLUDE">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
 |   <K_EXEC: "EXEC">
@@ -398,6 +400,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PARALLEL:"PARALLEL">
 |   <K_PARENT:"PARENT">
 |   <K_PARTITION:"PARTITION">
+|   <K_PARTITIONING:"PARTITIONING">
 |   <K_PATH:"PATH">
 |   <K_PERCENT:"PERCENT">
 |   <K_PIVOT:"PIVOT">
@@ -418,6 +421,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RANGE: "RANGE">
 |   <K_RAW: "RAW">
 |   <K_READ: "READ" >
+|   <K_REBUILD: "REBUILD">
 |   <K_RECYCLEBIN: "RECYCLEBIN">
 |   <K_RECURSIVE:"RECURSIVE">
 |   <K_REFERENCES:"REFERENCES">
@@ -428,7 +432,10 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_REGEXP_LIKE: "REGEXP_LIKE">
 |   <K_REGISTER: "REGISTER">
 |   <K_REMOTE: "REMOTE">
+|   <K_REMOVE: "REMOVE">
 |   <K_RENAME:"RENAME">
+|   <K_REORGANIZE: "REORGANIZE">
+|   <K_REPAIR: "REPAIR">
 |   <K_REPEATABLE: "REPEATABLE">
 |   <K_REPLACE:"REPLACE">
 |   <K_RESET:"RESET">
@@ -521,6 +528,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
 |   <K_UNSIGNED:"UNSIGNED">
 |   <K_VALIDATE : "VALIDATE">
+|   <K_VALIDATION: "VALIDATION">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
 |   <K_VERBOSE: "VERBOSE">
@@ -2139,7 +2147,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="BASE64" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCRYPTION" | tk="END" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IMPORT" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REMOTE" | tk="RENAME" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VERBOSE" | tk="VIEW" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="BASE64" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCRYPTION" | tk="END" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IMPORT" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PARALLEL" | tk="PARENT" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="STORED" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -7691,14 +7699,20 @@ List<String> PartitionNamesList() :
     List<String> partitionNames = new ArrayList<String>();
 }
 {
-    tk = <S_IDENTIFIER> {
-        partitionNames.add(tk.image);
-    }
     (
-        LOOKAHEAD(2) "," tk = <S_IDENTIFIER> {
+        tk = <K_ALL> {
             partitionNames.add(tk.image);
         }
-    )*
+        |
+        tk = <S_IDENTIFIER> {
+            partitionNames.add(tk.image);
+        }
+        (
+            LOOKAHEAD(2) "," tk = <S_IDENTIFIER> {
+                partitionNames.add(tk.image);
+            }
+        )*
+    )
     {
         return partitionNames;
     }
@@ -8108,18 +8122,50 @@ AlterExpression AlterExpression():
       )
       |
       (
-          (tk = <K_DISCARD>)
-          (tk2 = <K_TABLESPACE>) {
-              alterExp.setOperation(AlterOperation.DISCARD_TABLESPACE);
-          }
+          <K_DISCARD>
+          (
+              <K_PARTITION>
+              {
+                  alterExp.setOperation(AlterOperation.DISCARD_PARTITION);
+              }
+              partitions = PartitionNamesList()
+              {
+                  alterExp.setPartitions(partitions);
+              }
+              <K_TABLESPACE>
+              {
+                  alterExp.setTableOption("TABLESPACE");
+              }
+              |
+              <K_TABLESPACE>
+              {
+                  alterExp.setOperation(AlterOperation.DISCARD_TABLESPACE);
+              }
+          )
       )
       |
-      (
-          (tk = <K_IMPORT>)
-          (tk2 = <K_TABLESPACE>) {
-              alterExp.setOperation(AlterOperation.IMPORT_TABLESPACE);
-          }
-      )
+            (
+                <K_IMPORT>
+                (
+                    <K_PARTITION>
+                    {
+                        alterExp.setOperation(AlterOperation.IMPORT_PARTITION);
+                    }
+                    partitions = PartitionNamesList()
+                    {
+                        alterExp.setPartitions(partitions);
+                    }
+                    <K_TABLESPACE>
+                    {
+                        alterExp.setTableOption("TABLESPACE");
+                    }
+                    |
+                    <K_TABLESPACE>
+                    {
+                        alterExp.setOperation(AlterOperation.IMPORT_TABLESPACE);
+                    }
+                )
+            )
       |
       (
           (tk = <K_DISABLE>)
@@ -8187,6 +8233,71 @@ AlterExpression AlterExpression():
        partitions=PartitionNamesList() {
            alterExp.setPartitions(partitions);
        }
+      |
+      LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> tk=<S_LONG> {
+            alterExp.setOperation(AlterOperation.COALESCE_PARTITION);
+            alterExp.setCoalescePartitionNumber(Integer.valueOf(tk.image));
+      }
+      | LOOKAHEAD(2) <K_REORGANIZE> <K_PARTITION>
+        partitions=PartitionNamesList() <K_INTO> partitionDefinition=PartitionDefinitions() {
+          alterExp.setOperation(AlterOperation.REORGANIZE_PARTITION);
+          alterExp.setPartitions(partitions);
+          alterExp.setPartitionDefinitions(partitionDefinition);
+      }
+      |
+      LOOKAHEAD(2) <K_EXCHANGE> <K_PARTITION> partitions=PartitionNamesList()
+        <K_WITH> <K_TABLE> tk=<S_IDENTIFIER>
+        [
+          LOOKAHEAD(2) <K_WITH> <K_VALIDATION>
+          {
+            alterExp.setExchangePartitionWithValidation(true);
+          }
+        |
+          LOOKAHEAD(2) <K_WITHOUT> <K_VALIDATION>
+          {
+            alterExp.setExchangePartitionWithoutValidation(false);
+          }
+        ]
+        {
+          alterExp.setOperation(AlterOperation.EXCHANGE_PARTITION);
+          alterExp.setPartitions(partitions);
+          alterExp.setExchangePartitionTableName(tk.image);
+        }
+      |
+      LOOKAHEAD(2) <K_ANALYZE> <K_PARTITION> {
+          alterExp.setOperation(AlterOperation.ANALYZE_PARTITION);
+      }
+      partitions=PartitionNamesList() {
+          alterExp.setPartitions(partitions);
+      }
+      |
+      LOOKAHEAD(2) <K_CHECK> <K_PARTITION> {
+          alterExp.setOperation(AlterOperation.CHECK_PARTITION);
+      }
+      partitions=PartitionNamesList() {
+          alterExp.setPartitions(partitions);
+      }
+      |
+      LOOKAHEAD(2) <K_OPTIMIZE> <K_PARTITION> {
+          alterExp.setOperation(AlterOperation.OPTIMIZE_PARTITION);
+      }
+      partitions=PartitionNamesList() {
+          alterExp.setPartitions(partitions);
+      }
+      |
+      LOOKAHEAD(2) <K_REBUILD> <K_PARTITION> {
+          alterExp.setOperation(AlterOperation.REBUILD_PARTITION);
+      }
+      partitions=PartitionNamesList() {
+          alterExp.setPartitions(partitions);
+      }
+      |
+      LOOKAHEAD(2) <K_REPAIR> <K_PARTITION> { alterExp.setOperation(AlterOperation.REPAIR_PARTITION); }
+      partitions=PartitionNamesList() {
+          alterExp.setPartitions(partitions);
+      }
+      |
+      LOOKAHEAD(2) <K_REMOVE> <K_PARTITIONING> { alterExp.setOperation(AlterOperation.REMOVE_PARTITIONING); }
       |
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
