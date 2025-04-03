@@ -1807,4 +1807,34 @@ public class AlterTest {
         assertEquals(AlterOperation.REMOVE_PARTITIONING, alterExpression.getOperation());
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableKeyBlockSizeAlgorithmLock() throws JSQLParserException {
+        String sql = "ALTER TABLE dw_rpt " +
+                "KEY_BLOCK_SIZE = 8, " +
+                "ALGORITHM = INPLACE, " +
+                "LOCK = NONE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+        Alter alter = (Alter) stmt;
+        assertEquals("dw_rpt", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(3, alterExpressions.size());
+
+        AlterExpression keyBlockSizeExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.KEY_BLOCK_SIZE, keyBlockSizeExp.getOperation());
+        assertEquals(8, keyBlockSizeExp.getKeyBlockSize());
+
+        AlterExpression algorithmExp = alterExpressions.get(1);
+        assertEquals(AlterOperation.ALGORITHM, algorithmExp.getOperation());
+        assertEquals("INPLACE", algorithmExp.getAlgorithmOption());
+
+        AlterExpression lockExp = alterExpressions.get(2);
+        assertEquals(AlterOperation.LOCK, lockExp.getOperation());
+        assertEquals("NONE", lockExp.getLockOption());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }

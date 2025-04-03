@@ -86,6 +86,7 @@ public class AlterExpression implements Serializable {
     private boolean exchangePartitionWithValidation;
     private boolean exchangePartitionWithoutValidation;
 
+    private int keyBlockSize;
 
     public Index getOldIndex() {
         return oldIndex;
@@ -562,6 +563,14 @@ public class AlterExpression implements Serializable {
         return exchangePartitionWithoutValidation;
     }
 
+    public void setKeyBlockSize(int keyBlockSize) {
+        this.keyBlockSize = keyBlockSize;
+    }
+
+    public int getKeyBlockSize() {
+        return keyBlockSize;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -593,6 +602,12 @@ public class AlterExpression implements Serializable {
                 b.append("= ");
             }
             b.append(algorithmOption);
+        } else if (operation == AlterOperation.KEY_BLOCK_SIZE) {
+            b.append("KEY_BLOCK_SIZE ");
+            if (useEqual) {
+                b.append("= ");
+            }
+            b.append(keyBlockSize);
         } else if (operation == AlterOperation.LOCK) {
             b.append("LOCK ");
             if (useEqual) {
