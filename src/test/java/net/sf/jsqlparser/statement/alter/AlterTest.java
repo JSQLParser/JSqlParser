@@ -1916,4 +1916,66 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddUnnamedIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ADD INDEX (name1, name2)";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertNull(index.getName());
+
+        List<String> columnNames = index.getColumnsNames();
+        assertEquals(2, columnNames.size());
+        assertEquals("name1", columnNames.get(0));
+        assertEquals("name2", columnNames.get(1));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddIndexWithOptions() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ADD INDEX idx_lastname (last_name) " +
+                "USING BTREE KEY_BLOCK_SIZE = 16 COMMENT 'Performance tuning' VISIBLE";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertEquals("INDEX", index.getIndexKeyword()); // 명시적 "INDEX" 키워드
+        assertEquals("idx_lastname", index.getName());
+        assertEquals("last_name", index.getColumnsNames().get(0));
+
+        List<String> indexSpec = index.getIndexSpec();
+        assertNotNull(indexSpec);
+        assertEquals(3, indexSpec.size());
+        assertEquals("USING BTREE", indexSpec.get(0));
+        assertEquals("KEY_BLOCK_SIZE=16", indexSpec.get(1));
+        assertEquals("COMMENT 'Performance tuning'", indexSpec.get(2));
+        assertEquals("VISIBLE", indexSpec.get(3));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }

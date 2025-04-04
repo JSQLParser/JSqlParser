@@ -7818,8 +7818,13 @@ AlterExpression AlterExpression():
                 |
                 LOOKAHEAD(2) (
                   (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
-                  sk3 = RelObjectName()
-                  columnNames = ColumnsNamesList()
+                  (
+                      LOOKAHEAD(2)
+                      sk3 = RelObjectName()
+                      columnNames = ColumnsNamesList()
+                      |
+                      columnNames = ColumnsNamesList()
+                  )
                   {
                     index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                     alterExp.setIndex(index);

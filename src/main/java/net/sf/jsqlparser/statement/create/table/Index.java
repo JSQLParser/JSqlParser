@@ -81,7 +81,9 @@ public class Index implements Serializable {
 
     public void setName(String name) {
         this.name.clear();
-        this.name.add(name);
+        if (name != null) {
+            this.name.add(name);
+        }
     }
 
     public void setName(List<String> name) {
