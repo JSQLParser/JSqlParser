@@ -1878,4 +1878,42 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddFullTextIndexWithOptions() throws JSQLParserException {
+        String sql = "ALTER TABLE my_table ADD FULLTEXT my_idx(col1, col2) " +
+                "KEY_BLOCK_SIZE = 8 WITH PARSER ngram COMMENT 'fulltext' INVISIBLE";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("my_table", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertEquals("FULLTEXT", index.getType());
+        assertEquals("my_idx", index.getName());
+
+        List<String> columnNames = index.getColumnsNames();
+        assertEquals(2, columnNames.size());
+        assertEquals("col1", columnNames.get(0));
+        assertEquals("col2", columnNames.get(1));
+
+        List<String> indexSpec = index.getIndexSpec();
+        assertNotNull(indexSpec);
+        assertEquals(4, indexSpec.size());
+        assertEquals("KEY_BLOCK_SIZE = 8", indexSpec.get(0));
+        assertEquals("WITH PARSER ngram", indexSpec.get(1));
+        assertEquals("COMMENT 'fulltext'", indexSpec.get(2));
+        assertEquals("INVISIBLE", indexSpec.get(3));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }
