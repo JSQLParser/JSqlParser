@@ -101,4 +101,8 @@ public class CheckConstraint extends NamedConstraint {
         return (CheckConstraint) super.withIndexSpec(idxSpec);
     }
 
+    @Override
+    public CheckConstraint withIndexKeyword(String indexKeyword) {
+        return (CheckConstraint) super.withIndexKeyword(indexKeyword);
+    }
 }

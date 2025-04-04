@@ -70,4 +70,8 @@ public class NamedConstraint extends Index {
         return (NamedConstraint) super.withIndexSpec(idxSpec);
     }
 
+    @Override
+    public NamedConstraint withIndexKeyword(String indexKeyword) {
+        return (NamedConstraint) super.withIndexKeyword(indexKeyword);
+    }
 }

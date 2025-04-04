@@ -1837,4 +1837,169 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddFullTextIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE yum_table_myisam ADD FULLTEXT (name)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("yum_table_myisam", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+        assertEquals("FULLTEXT", indexExp.getIndex().getType());
+        assertEquals("name", indexExp.getIndex().getColumnsNames().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddSpatialIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE places ADD SPATIAL KEY sp_idx_location(location)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("places", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+        assertEquals("SPATIAL", indexExp.getIndex().getType());
+        assertEquals("sp_idx_location", indexExp.getIndex().getName());
+        assertEquals("location", indexExp.getIndex().getColumnsNames().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddFullTextIndexWithOptions() throws JSQLParserException {
+        String sql = "ALTER TABLE my_table ADD FULLTEXT my_idx(col1, col2) " +
+                "KEY_BLOCK_SIZE = 8 WITH PARSER ngram COMMENT 'fulltext' INVISIBLE";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("my_table", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertEquals("FULLTEXT", index.getType());
+        assertEquals("my_idx", index.getName());
+
+        List<String> columnNames = index.getColumnsNames();
+        assertEquals(2, columnNames.size());
+        assertEquals("col1", columnNames.get(0));
+        assertEquals("col2", columnNames.get(1));
+
+        List<String> indexSpec = index.getIndexSpec();
+        assertNotNull(indexSpec);
+        assertEquals(4, indexSpec.size());
+        assertEquals("KEY_BLOCK_SIZE = 8", indexSpec.get(0));
+        assertEquals("WITH PARSER ngram", indexSpec.get(1));
+        assertEquals("COMMENT 'fulltext'", indexSpec.get(2));
+        assertEquals("INVISIBLE", indexSpec.get(3));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddUnnamedIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ADD INDEX (name1, name2)";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertNull(index.getName());
+
+        List<String> columnNames = index.getColumnsNames();
+        assertEquals(2, columnNames.size());
+        assertEquals("name1", columnNames.get(0));
+        assertEquals("name2", columnNames.get(1));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddIndexWithOptions() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ADD INDEX idx_lastname (last_name) " +
+                "USING BTREE KEY_BLOCK_SIZE = 16 COMMENT 'Performance tuning' VISIBLE";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+
+        Index index = indexExp.getIndex();
+        assertNotNull(index);
+        assertEquals("INDEX", index.getIndexKeyword());
+        assertEquals("idx_lastname", index.getName());
+        assertEquals("last_name", index.getColumnsNames().get(0));
+
+        List<String> indexSpec = index.getIndexSpec();
+        assertNotNull(indexSpec);
+        assertEquals(4, indexSpec.size());
+        assertEquals("USING BTREE", indexSpec.get(0));
+        assertEquals("KEY_BLOCK_SIZE = 16", indexSpec.get(1));
+        assertEquals("COMMENT 'Performance tuning'", indexSpec.get(2));
+        assertEquals("VISIBLE", indexSpec.get(3));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddIndex_UsingBeforeColumns() throws JSQLParserException {
+        String sql = "ALTER TABLE t ADD INDEX idx_name USING BTREE (col)";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("t", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression expr = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, expr.getOperation());
+
+        Index index = expr.getIndex();
+        assertEquals("idx_name", index.getName());
+        assertEquals("INDEX", index.getIndexKeyword());
+        assertEquals("BTREE", index.getUsing());
+        assertEquals(List.of("col"), index.getColumnsNames());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }

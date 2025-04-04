@@ -204,4 +204,8 @@ public class ForeignKeyIndex extends NamedConstraint {
         return (ForeignKeyIndex) super.withIndexSpec(idxSpec);
     }
 
+    @Override
+    public ForeignKeyIndex withIndexKeyword(String indexKeyword) {
+        return (ForeignKeyIndex) super.withIndexKeyword(indexKeyword);
+    }
 }

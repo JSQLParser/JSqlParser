@@ -28,6 +28,7 @@ public class Index implements Serializable {
     private List<ColumnParams> columns;
     private List<String> idxSpec;
     private String commentText;
+    private String indexKeyword;
 
     public List<String> getColumnsNames() {
         return columns.stream()
@@ -80,7 +81,9 @@ public class Index implements Serializable {
 
     public void setName(String name) {
         this.name.clear();
-        this.name.add(name);
+        if (name != null) {
+            this.name.add(name);
+        }
     }
 
     public void setName(List<String> name) {
@@ -133,18 +136,33 @@ public class Index implements Serializable {
         return this;
     }
 
+    public void setIndexKeyword(String indexKeyword) {
+        this.indexKeyword = indexKeyword;
+    }
+
+    public String getIndexKeyword() {
+        return indexKeyword;
+    }
+
+    public Index withIndexKeyword(String indexKeyword) {
+        this.setIndexKeyword(indexKeyword);
+        return this;
+    }
+
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        String head = (type != null ? type : "") + (!name.isEmpty() ? " " + getName() : "");
+        String keyword = (indexKeyword != null) ? " " + indexKeyword : "";
+        String head =
+                (type != null ? type : "") +
+                        keyword +
+                        (!name.isEmpty() ? " " + getName() : "") +
+                        (using != null ? " USING " + using : "");
+
         String tail = PlainSelect.getStringList(columns, true, true)
-                + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+                + (!idxSpecText.isEmpty() ? " " + idxSpecText : "");
 
-        if ("".equals(tail)) {
-            return head;
-        }
-
-        return head + " " + tail;
+        return tail.isEmpty() ? head : head + " " + tail;
     }
 
     public Index withType(String type) {
