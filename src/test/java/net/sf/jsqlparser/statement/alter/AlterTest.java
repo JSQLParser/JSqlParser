@@ -1837,4 +1837,45 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddFullTextIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE yum_table_myisam ADD FULLTEXT (name)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("yum_table_myisam", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+        assertEquals("FULLTEXT", indexExp.getIndex().getType());
+        assertEquals("name", indexExp.getIndex().getColumnsNames().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddSpatialIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE places ADD SPATIAL KEY sp_idx_location(location)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("places", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression indexExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, indexExp.getOperation());
+        assertEquals("SPATIAL", indexExp.getIndex().getType());
+        assertEquals("sp_idx_location", indexExp.getIndex().getName());
+        assertEquals("location", indexExp.getIndex().getColumnsNames().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }
