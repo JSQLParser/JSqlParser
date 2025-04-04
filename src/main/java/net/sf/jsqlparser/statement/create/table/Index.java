@@ -151,7 +151,8 @@ public class Index implements Serializable {
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
         String keyword = (indexKeyword != null) ? " " + indexKeyword : "";
-        String head = (type != null ? type : "") + keyword + (!name.isEmpty() ? " " + getName() : "");
+        String head =
+                (type != null ? type : "") + keyword + (!name.isEmpty() ? " " + getName() : "");
         String tail = PlainSelect.getStringList(columns, true, true)
                 + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
 
