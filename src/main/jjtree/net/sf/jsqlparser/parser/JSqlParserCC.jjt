@@ -6690,7 +6690,7 @@ CreateIndex CreateIndex():
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
     List<Index.ColumnParams> colNames;
-    Token using;
+    String indexType;
     Index index = null;
     List<String> parameter = new ArrayList<String>();
     List<String> tailParameters = new ArrayList<String>();
@@ -6705,12 +6705,12 @@ CreateIndex CreateIndex():
     (
         LOOKAHEAD(3)(
             <K_ON> table=Table()
-            [ <K_USING> using=<S_IDENTIFIER> { index.setUsing(using.image); } ]
+            [ indexType=UsingIndexType() { index.setUsing(indexType); } ]
         )
         |
         (
-            [ <K_USING> using=<S_IDENTIFIER> {
-                    index.setUsing(using.image);
+            [ indexType=UsingIndexType() {
+                    index.setUsing(indexType);
                     createIndex.setIndexTypeBeforeOn(true);
                 }
             ]
@@ -7663,10 +7663,22 @@ void IndexOptionList(List<String> list) :
     )*
 }
 
+String UsingIndexType() :
+{
+    String sk = null;
+}
+{
+    <K_USING> ( sk = RelObjectName() )
+    {
+        return sk;
+    }
+}
+
 void IndexOption(List<String> list) :
 {
     Token tk1 = null;
     Token tk2 = null;
+    String sk1 = null;
     boolean useEqual = false;
 }
 {
@@ -7694,6 +7706,10 @@ void IndexOption(List<String> list) :
       tk1=<K_INVISIBLE>
       {
         list.add("INVISIBLE");
+      }
+    |
+      sk1 = UsingIndexType(){
+        list.add("USING " + sk1);
       }
     )
 }
@@ -7819,19 +7835,26 @@ AlterExpression AlterExpression():
                 LOOKAHEAD(2) (
                   (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
                   (
-                      LOOKAHEAD(2)
+                      LOOKAHEAD(3)
                       sk3 = RelObjectName()
+                      [ sk4 = UsingIndexType() ]
                       columnNames = ColumnsNamesList()
                       |
+                      [ sk4 = UsingIndexType() ]
                       columnNames = ColumnsNamesList()
                   )
+                  IndexOptionList(indexSpec = new ArrayList<String>())
                   {
-                    index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
+                    index = new Index()
+                            .withIndexKeyword(tk.image)
+                            .withName(sk3)
+                            .withUsing(sk4)
+                            .withColumnsNames(columnNames)
+                            .withIndexSpec(indexSpec);
+
                     alterExp.setIndex(index);
                   }
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                  [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                  [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
                 (

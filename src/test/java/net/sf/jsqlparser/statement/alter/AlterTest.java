@@ -1964,17 +1964,41 @@ public class AlterTest {
 
         Index index = indexExp.getIndex();
         assertNotNull(index);
-        assertEquals("INDEX", index.getIndexKeyword()); // 명시적 "INDEX" 키워드
+        assertEquals("INDEX", index.getIndexKeyword());
         assertEquals("idx_lastname", index.getName());
         assertEquals("last_name", index.getColumnsNames().get(0));
 
         List<String> indexSpec = index.getIndexSpec();
         assertNotNull(indexSpec);
-        assertEquals(3, indexSpec.size());
+        assertEquals(4, indexSpec.size());
         assertEquals("USING BTREE", indexSpec.get(0));
-        assertEquals("KEY_BLOCK_SIZE=16", indexSpec.get(1));
+        assertEquals("KEY_BLOCK_SIZE = 16", indexSpec.get(1));
         assertEquals("COMMENT 'Performance tuning'", indexSpec.get(2));
         assertEquals("VISIBLE", indexSpec.get(3));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddIndex_UsingBeforeColumns() throws JSQLParserException {
+        String sql = "ALTER TABLE t ADD INDEX idx_name USING BTREE (col)";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Alter alter = (Alter) stmt;
+
+        assertEquals("t", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression expr = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, expr.getOperation());
+
+        Index index = expr.getIndex();
+        assertEquals("idx_name", index.getName());
+        assertEquals("INDEX", index.getIndexKeyword());
+        assertEquals("BTREE", index.getUsing());
+        assertEquals(List.of("col"), index.getColumnsNames());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }

@@ -154,15 +154,15 @@ public class Index implements Serializable {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
         String keyword = (indexKeyword != null) ? " " + indexKeyword : "";
         String head =
-                (type != null ? type : "") + keyword + (!name.isEmpty() ? " " + getName() : "");
+                (type != null ? type : "") +
+                        keyword +
+                        (!name.isEmpty() ? " " + getName() : "") +
+                        (using != null ? " USING " + using : "");
+
         String tail = PlainSelect.getStringList(columns, true, true)
-                + (!"".equals(idxSpecText) ? " " + idxSpecText : "");
+                + (!idxSpecText.isEmpty() ? " " + idxSpecText : "");
 
-        if ("".equals(tail)) {
-            return head;
-        }
-
-        return head + " " + tail;
+        return tail.isEmpty() ? head : head + " " + tail;
     }
 
     public Index withType(String type) {
