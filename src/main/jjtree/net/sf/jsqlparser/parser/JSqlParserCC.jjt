@@ -7659,7 +7659,7 @@ void IndexOptionList(List<String> list) :
 {}
 {
     (
-      IndexOption(list)
+       LOOKAHEAD(2) IndexOption(list)
     )*
 }
 
@@ -7857,11 +7857,11 @@ AlterExpression AlterExpression():
                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 )
                 |
+                LOOKAHEAD(4)
                 (
                   ( tk=<K_SPATIAL> | tk=<K_FULLTEXT> )
                   [ tk2=<K_INDEX> | tk2=<K_KEY> ]
                   (
-                      LOOKAHEAD(2)
                       sk3 = RelObjectName()
                       columnNames = ColumnsNamesList()
                       |
