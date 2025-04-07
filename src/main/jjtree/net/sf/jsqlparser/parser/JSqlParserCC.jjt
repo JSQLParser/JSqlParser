@@ -545,6 +545,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
+|   <K_WITH_OFFSET:"WITH OFFSET">
+|   <K_WITH_ORDINALITY:"WITH ORDINALITY">
 |   <K_WITH_TIES:"WITH TIES">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
@@ -6636,14 +6638,20 @@ TableFunction TableFunction():
     Token prefix = null;
     Function function;
     TableFunction functionItem;
+    Token withClause = null;
 }
 {
     [ prefix = <K_LATERAL> ]
     function=Function()
+    [ withClause = <K_WITH_OFFSET> | <K_WITH_ORDINALITY> ]
     {
         return  prefix!=null
-            ? new TableFunction(prefix.image, function)
-            : new TableFunction(function);
+            ? withClause!=null
+                ? new TableFunction(prefix.image, function, withClause.image)
+                : new TableFunction(prefix.image, function)
+            : withClause!=null
+                ? new TableFunction(function, withClause.image)
+                : new TableFunction(function);
     }
 }
 
