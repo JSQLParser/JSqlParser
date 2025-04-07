@@ -82,8 +82,8 @@ public class TableFunction extends Function implements FromItem {
         this.withClause = withClause;
     }
 
-    public TableFunction withClause(String clause) {
-        this.withClause = clause;
+    public TableFunction withWithClause(String withClause) {
+        this.withClause = withClause;
         return this;
     }
 
