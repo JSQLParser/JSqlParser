@@ -391,6 +391,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OR:"OR">
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_ORDER:"ORDER">
+|   <K_ORDINALITY:"ORDINALITY">
 |   <K_OUTER:"OUTER">
 |   <K_OUTPUT:"OUTPUT">
 |   <K_OVER:"OVER">
@@ -545,8 +546,6 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
-|   <K_WITH_OFFSET:"WITH OFFSET">
-|   <K_WITH_ORDINALITY:"WITH ORDINALITY">
 |   <K_WITH_TIES:"WITH TIES">
 |   <K_WITHIN:"WITHIN">
 |   <K_WITHOUT:"WITHOUT">
@@ -6643,7 +6642,7 @@ TableFunction TableFunction():
 {
     [ prefix = <K_LATERAL> ]
     function=Function()
-    [ withClause = <K_WITH_OFFSET> | withClause = <K_WITH_ORDINALITY> ]
+    [ <K_WITH> ( withClause = <K_OFFSET> | withClause = <K_ORDINALITY> ) ]
     {
         return  prefix!=null
             ? withClause!=null

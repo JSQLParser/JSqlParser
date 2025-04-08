@@ -109,6 +109,7 @@ public class ParserKeywordsUtils {
             {"OPTIMIZE", RESTRICTED_ALIAS},
             {"OR", RESTRICTED_SQL2016},
             {"ORDER", RESTRICTED_SQL2016},
+            {"ORDINALITY", RESTRICTED_SQL2016},
             {"OUTER", RESTRICTED_JSQLPARSER},
             {"OUTPUT", RESTRICTED_JSQLPARSER},
             {"OPTIMIZE ", RESTRICTED_JSQLPARSER},

@@ -52,11 +52,11 @@ class TableFunctionTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "WITH OFFSET",
-            "WITH ORDINALITY"
+            "OFFSET",
+            "ORDINALITY"
     })
     void testTableFunctionWithSupportedWithClauses(String withClause) throws JSQLParserException {
-        String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) " + withClause + " AS t(a, b)";
+        String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) WITH " + withClause + " AS t(a, b)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

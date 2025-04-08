@@ -748,7 +748,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         tableFunction.getFunction().accept(this.expressionVisitor, context);
 
         if (tableFunction.getWithClause() != null) {
-            builder.append(" ").append(tableFunction.getWithClause());
+            builder.append(" WITH ").append(tableFunction.getWithClause());
         }
 
         if (tableFunction.getAlias() != null) {

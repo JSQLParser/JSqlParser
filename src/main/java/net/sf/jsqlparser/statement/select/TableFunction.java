@@ -154,7 +154,7 @@ public class TableFunction extends Function implements FromItem {
         builder.append(function.toString());
 
         if (withClause != null) {
-            builder.append(" ").append(withClause);
+            builder.append(" WITH ").append(withClause);
         }
 
         if (alias != null) {
