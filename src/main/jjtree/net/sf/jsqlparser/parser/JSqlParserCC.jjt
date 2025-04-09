@@ -253,6 +253,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ENABLE: "ENABLE">
 |   <K_ENCRYPTION: "ENCRYPTION">
 |   <K_END: "END">
+|   <K_ENFORCED: "ENFORCED">
 |   <K_ENGINE: "ENGINE">
 |   <K_ERROR: "ERROR">
 |   <K_ESCAPE: "ESCAPE">
@@ -2153,7 +2154,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="BASE64" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCRYPTION" | tk="END" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IMPORT" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALTER" | tk="ANALYZE" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="BASE64" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOCK" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IMPORT" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -7614,6 +7615,34 @@ AlterExpression.ColumnDropDefault AlterExpressionColumnDropDefault():
     }
 }
 
+AlterExpression.ColumnSetDefault AlterExpressionColumnSetDefault():
+{
+    String columnName = null;
+    Expression defaultValue = null;
+}
+{
+    columnName = RelObjectName() <K_SET> <K_DEFAULT> defaultValue = Expression()
+    {
+        return new AlterExpression.ColumnSetDefault(columnName, defaultValue.toString());
+    }
+}
+
+AlterExpression.ColumnSetVisibility AlterExpressionColumnSetVisibility():
+{
+    String columnName = null;
+    boolean visible = true;
+}
+{
+    columnName = RelObjectName() <K_SET>
+    (
+        <K_VISIBLE> { visible = true; } |
+        <K_INVISIBLE> { visible = false; }
+    )
+    {
+        return new AlterExpression.ColumnSetVisibility(columnName, visible);
+    }
+}
+
 List<ConstraintState> AlterExpressionConstraintState():
 {
     List<ConstraintState> retval = new ArrayList<ConstraintState>();
@@ -7809,6 +7838,8 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
+    AlterExpression.ColumnSetDefault alterExpressionColumnSetDefault = null;
+    AlterExpression.ColumnSetVisibility alterExpressionColumnSetVisibility = null;
     ReferentialAction.Action action = null;
     List<String> partitions = null;
     List<PartitionDefinition> partitionDefinition = null;
@@ -7844,11 +7875,11 @@ AlterExpression AlterExpression():
                   (
                       LOOKAHEAD(3)
                       sk3 = RelObjectName()
-                      [ sk4 = UsingIndexType() ]
-                      columnNames = ColumnsNamesList()
+                      [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
+                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
                       |
-                      [ sk4 = UsingIndexType() ]
-                      columnNames = ColumnsNamesList()
+                      [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
+                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
                   )
                   IndexOptionList(indexSpec = new ArrayList<String>())
                   {
@@ -7915,6 +7946,15 @@ AlterExpression AlterExpression():
                     )?
                     [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
                     (
+                        LOOKAHEAD(3) alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
+                            { alterExp.addColDropDefault(alterExpressionColumnDropDefault); }
+                        |
+                        LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
+                            { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
+                        |
+                        LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
+                            { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
+                        |
                         LOOKAHEAD(4) (
                             "("
                                 { alterExp.useBrackets(true);}
@@ -7935,11 +7975,17 @@ AlterExpression AlterExpression():
                         |
                         LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull()
                             { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);}
-                        |
-                        alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
-                            { alterExp.addColDropDefault( alterExpressionColumnDropDefault); }
                     )
                 )
+                |
+                LOOKAHEAD(3) alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
+                    { alterExp.addColDropDefault(alterExpressionColumnDropDefault); }
+                |
+                LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
+                    { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
+                |
+                LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
+                    { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
                 |
                 (
                     "(" alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
@@ -7976,84 +8022,105 @@ AlterExpression AlterExpression():
                     )]
                 )
                 |
+                LOOKAHEAD(3) (
+                    <K_CHECK> sk3=RelObjectName()
+                    { boolean enforced = true; }
+                    [ tk = <K_NOT> { enforced = false; } ]
+                    <K_ENFORCED> {
+                        alterExp.setEnforced(enforced);
+                        alterExp.setConstraintType("CHECK");
+                        alterExp.setConstraintSymbol(sk3);
+                    }
+                )
+                |
                 (
                     <K_CONSTRAINT> sk3=RelObjectName()
                     (
-                     ( tk=<K_FOREIGN> tk2=<K_KEY>
-                        columnNames=ColumnsNamesList()
-                        {
-                            fkIndex = new ForeignKeyIndex()
-                            .withName(sk3)
-                            .withType(tk.image + " " + tk2.image)
-                            .withColumnsNames(columnNames);
-                                                columnNames = null;
-                        }
-                        <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
-                        {
-                            fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
-                            alterExp.setIndex(fkIndex);
-                        }
-
-                        [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                            {  fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                        )]
-                        [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                            { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                        )]
-                        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                    )
-                    |
-                    ( tk=<K_PRIMARY> tk2=<K_KEY>
-                        columnNames=ColumnsNamesList()
-                        {
-                            index = new NamedConstraint()
-                            .withName(sk3)
-                            .withType(tk.image + " " + tk2.image)
-                            .withColumnsNames(columnNames);
-                            alterExp.setIndex(index);
-                        }
-                        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                        [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                        [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
-                    )
-                    |
-                    (
-                        <K_CHECK>  {Expression exp = null;} (LOOKAHEAD(2) "(" exp = Expression() ")")* {
-                            CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
-                            alterExp.setIndex(checkCs);
-                        }
-                    )
-                    |
-                    (
-                        tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
-                          columnNames=ColumnsNamesList()
-                          {
-                              index = new NamedConstraint()
+                         ( tk=<K_FOREIGN> tk2=<K_KEY>
+                            columnNames=ColumnsNamesList()
+                            {
+                                fkIndex = new ForeignKeyIndex()
                                 .withName(sk3)
-                                .withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                                .withType(tk.image + " " + tk2.image)
                                 .withColumnsNames(columnNames);
-                              alterExp.setIndex(index);
-                          }
-                          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                          [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
-                          [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                                                    columnNames = null;
+                            }
+                            <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
+                            {
+                                fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
+                                alterExp.setIndex(fkIndex);
+                            }
+
+                            [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                {  fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+                            )]
+                            [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
+                                { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+                            )]
+                            constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                        )
+                        |
+                        ( tk=<K_PRIMARY> tk2=<K_KEY>
+                            columnNames=ColumnsNamesList()
+                            {
+                                index = new NamedConstraint()
+                                .withName(sk3)
+                                .withType(tk.image + " " + tk2.image)
+                                .withColumnsNames(columnNames);
+                                alterExp.setIndex(index);
+                            }
+                            constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                            [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                            [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                        )
+                        |
+                        LOOKAHEAD(2) (
+                            { boolean enforced = true; }
+                            [ tk = <K_NOT> { enforced = false; } ]
+                            <K_ENFORCED> {
+                                alterExp.setEnforced(enforced);
+                                alterExp.setConstraintType("CONSTRAINT");
+                                alterExp.setConstraintSymbol(sk3);
+                            }
+                        )
+                        |
+                        (
+                            <K_CHECK>  {Expression exp = null;} (LOOKAHEAD(2) "(" exp = Expression() ")")* {
+                                CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
+                                alterExp.setIndex(checkCs);
+                            }
+                        )
+                        |
+                        (
+                            tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
+                              columnNames=ColumnsNamesList()
+                              {
+                                  index = new NamedConstraint()
+                                    .withName(sk3)
+                                    .withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                                    .withColumnsNames(columnNames);
+                                  alterExp.setIndex(index);
+                              }
+                              constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                              [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                              [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+                        )
+                        |
+                        (
+                            tk=<K_KEY>
+                            columnNames=ColumnsNamesList()
+                            {
+                                index = new NamedConstraint()
+                                  .withName(sk3)
+                                  .withType(tk.image)
+                                  .withColumnsNames(columnNames);
+                                alterExp.setIndex(index);
+                            }
+                            constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+                        )
                     )
-                    |
-                    (
-                        tk=<K_KEY>
-                        columnNames=ColumnsNamesList()
-                        {
-                            index = new NamedConstraint()
-                              .withName(sk3)
-                              .withType(tk.image)
-                              .withColumnsNames(columnNames);
-                            alterExp.setIndex(index);
-                        }
-                        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                    )
-                   )
                 )
-              )
+            )
       )
       |
       (

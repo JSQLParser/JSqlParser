@@ -36,6 +36,9 @@ public class AlterExpression implements Serializable {
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
     private List<ColumnDropDefault> columnDropDefaultList;
+    private List<ColumnSetDefault> columnSetDefaultList;
+    private List<ColumnSetVisibility> columnSetVisibilityList;
+
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
@@ -87,6 +90,10 @@ public class AlterExpression implements Serializable {
     private boolean exchangePartitionWithoutValidation;
 
     private int keyBlockSize;
+
+    private String constraintSymbol;
+    private boolean enforced;
+    private String constraintType;
 
     public Index getOldIndex() {
         return oldIndex;
@@ -302,11 +309,37 @@ public class AlterExpression implements Serializable {
         columnDropNotNullList.add(columnDropNotNull);
     }
 
+    public List<ColumnDropDefault> getColumnDropDefaultList() {
+        return columnDropDefaultList;
+    }
+
     public void addColDropDefault(ColumnDropDefault columnDropDefault) {
         if (columnDropDefaultList == null) {
             columnDropDefaultList = new ArrayList<>();
         }
         columnDropDefaultList.add(columnDropDefault);
+    }
+
+    public void addColSetDefault(ColumnSetDefault columnSetDefault) {
+        if (columnSetDefaultList == null) {
+            columnSetDefaultList = new ArrayList<>();
+        }
+        columnSetDefaultList.add(columnSetDefault);
+    }
+
+    public List<ColumnSetDefault> getColumnSetDefaultList() {
+        return columnSetDefaultList;
+    }
+
+    public void addColSetVisibility(ColumnSetVisibility columnSetVisibility) {
+        if (columnSetVisibilityList == null) {
+            columnSetVisibilityList = new ArrayList<>();
+        }
+        columnSetVisibilityList.add(columnSetVisibility);
+    }
+
+    public List<ColumnSetVisibility> getColumnSetVisibilityList() {
+        return columnSetVisibilityList;
     }
 
     public List<String> getFkSourceColumns() {
@@ -571,6 +604,30 @@ public class AlterExpression implements Serializable {
         return keyBlockSize;
     }
 
+    public String getConstraintSymbol() {
+        return constraintSymbol;
+    }
+
+    public void setConstraintSymbol(String constraintSymbol) {
+        this.constraintSymbol = constraintSymbol;
+    }
+
+    public boolean isEnforced() {
+        return enforced;
+    }
+
+    public void setEnforced(boolean enforced) {
+        this.enforced = enforced;
+    }
+
+    public String getConstraintType() {
+        return constraintType;
+    }
+
+    public void setConstraintType(String constraintType) {
+        this.constraintType = constraintType;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -580,6 +637,38 @@ public class AlterExpression implements Serializable {
 
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
+        } else if (operation == AlterOperation.ALTER && constraintType != null) {
+            b.append("ALTER");
+            b.append(" ").append(constraintType);
+
+            if (constraintSymbol != null) {
+                b.append(" ").append(constraintSymbol);
+            }
+            if (!isEnforced()) {
+                b.append(" NOT ");
+            }
+            b.append(" ENFORCED");
+        } else if (operation == AlterOperation.ALTER
+                && columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnDropDefaultList));
+        } else if (operation == AlterOperation.ALTER
+                && columnSetDefaultList != null && !columnSetDefaultList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnSetDefaultList));
+        } else if (operation == AlterOperation.ALTER
+                && columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnSetVisibilityList));
         } else if (operation == AlterOperation.SET_TABLE_OPTION) {
             b.append(tableOption);
         } else if (operation == AlterOperation.DISCARD_TABLESPACE) {
@@ -1136,6 +1225,52 @@ public class AlterExpression implements Serializable {
         @Override
         public String toString() {
             return columnName + " DROP DEFAULT";
+        }
+    }
+
+    public static final class ColumnSetDefault implements Serializable {
+        private final String columnName;
+        private final String defaultValue;
+
+        public ColumnSetDefault(String columnName, String defaultValue) {
+            this.columnName = columnName;
+            this.defaultValue = defaultValue;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " SET DEFAULT " + defaultValue;
+        }
+    }
+
+    public static final class ColumnSetVisibility implements Serializable {
+        private final String columnName;
+        private final boolean visible;
+
+        public ColumnSetVisibility(String columnName, boolean visible) {
+            this.columnName = columnName;
+            this.visible = visible;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public boolean isVisible() {
+            return visible;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " SET " + (visible ? " VISIBLE" : " INVISIBLE");
         }
     }
 
