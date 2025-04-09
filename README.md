@@ -67,6 +67,8 @@ For details, please see https://storage.googleapis.com/gweb-research2023-media/p
 
 JSQLParser-4.9 was the last JDK8 compatible version. JSQLParser-5.0 and later depend on JDK11 and introduce API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
 
+Building JSQLParser-5.1 and newer with Gradle will depend on a JDK17 toolchain due to the used plugins.
+
 ## [Supported Grammar and Syntax](https://jsqlparser.github.io/JSqlParser/syntax.html)
 
 **JSqlParser** aims to support the SQL standard as well as all major RDBMS. Any missing syntax or features can be added on demand.

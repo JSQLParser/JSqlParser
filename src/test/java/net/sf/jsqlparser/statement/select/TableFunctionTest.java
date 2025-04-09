@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +47,16 @@ class TableFunctionTest {
                         " FROM\n" +
                         "     db.schema.source AS i,\n" +
                         "     lateral flatten(input => i.DATA_VALUE:Friends, outer => true) AS f1;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "OFFSET",
+            "ORDINALITY"
+    })
+    void testTableFunctionWithSupportedWithClauses(String withClause) throws JSQLParserException {
+        String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) WITH " + withClause + " AS t(a, b)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
