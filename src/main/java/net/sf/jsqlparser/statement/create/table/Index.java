@@ -37,7 +37,11 @@ public class Index implements Serializable {
     }
 
     public void setColumnsNames(List<String> list) {
-        columns = list.stream().map(ColumnParams::new).collect(toList());
+        if (list == null) {
+            this.columns = Collections.emptyList();
+        } else {
+            this.columns = list.stream().map(ColumnParams::new).collect(toList());
+        }
     }
 
     @Deprecated
@@ -159,7 +163,9 @@ public class Index implements Serializable {
                         (!name.isEmpty() ? " " + getName() : "") +
                         (using != null ? " USING " + using : "");
 
-        String tail = PlainSelect.getStringList(columns, true, true)
+        String tail = (columns != null && !columns.isEmpty()
+                ? PlainSelect.getStringList(columns, true, true)
+                : "")
                 + (!idxSpecText.isEmpty() ? " " + idxSpecText : "");
 
         return tail.isEmpty() ? head : head + " " + tail;

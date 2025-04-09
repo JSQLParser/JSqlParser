@@ -9,6 +9,13 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import static net.sf.jsqlparser.test.TestUtils.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -27,15 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class AlterTest {
 
@@ -83,7 +81,6 @@ public class AlterTest {
         assertEquals("varchar (255)", colDataTypes.get(0).getColDataType().toString());
     }
 
-
     @Test
     public void testAlterTableBackBrackets() throws JSQLParserException {
         String sql = "ALTER TABLE tablename add column (field  string comment 'aaaaa')";
@@ -96,7 +93,6 @@ public class AlterTest {
         Alter alter2 = (Alter) statement2;
         assertEquals("tablename", alter2.getTable().toString());
     }
-
 
     @Test
     public void testAlterTableIssue1815() throws JSQLParserException {
@@ -1350,7 +1346,6 @@ public class AlterTest {
         assertEquals("p201807", partitionNames.get(3));
     }
 
-
     @Test
     public void testIssue2114AlterTableEncryption() throws JSQLParserException {
         String sql = "ALTER TABLE confidential_data ENCRYPTION = 'Y'";
@@ -1999,6 +1994,147 @@ public class AlterTest {
         assertEquals("INDEX", index.getIndexKeyword());
         assertEquals("BTREE", index.getUsing());
         assertEquals(List.of("col"), index.getColumnsNames());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableSetDefaultWithAlgorithm() throws JSQLParserException {
+        String sql = "ALTER TABLE t2 ALTER COLUMN b SET DEFAULT 100, ALGORITHM = INSTANT";
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals("t2", alter.getTable().getFullyQualifiedName());
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(2, alterExpressions.size());
+
+        AlterExpression setDefaultExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, setDefaultExp.getOperation());
+        assertEquals("b", setDefaultExp.getColumnSetDefaultList().get(0).getColumnName());
+        assertEquals("100", setDefaultExp.getColumnSetDefaultList().get(0).getDefaultValue());
+
+        AlterExpression algorithmExp = alterExpressions.get(1);
+        assertEquals(AlterOperation.ALGORITHM, algorithmExp.getOperation());
+        assertEquals("INSTANT", algorithmExp.getAlgorithmOption());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableDropDefaultWithAlgorithm() throws JSQLParserException {
+        String sql = "ALTER TABLE t2 ALTER COLUMN b DROP DEFAULT, ALGORITHM = INSTANT";
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals("t2", alter.getTable().getFullyQualifiedName());
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(2, alterExpressions.size());
+
+        AlterExpression dropDefaultExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, dropDefaultExp.getOperation());
+        assertEquals("b", dropDefaultExp.getColumnDropDefaultList().get(0).getColumnName());
+
+        AlterExpression algorithmExp = alterExpressions.get(1);
+        assertEquals(AlterOperation.ALGORITHM, algorithmExp.getOperation());
+        assertEquals("INSTANT", algorithmExp.getAlgorithmOption());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+
+    @Test
+    public void testAlterTableColumnSetInvisible() throws JSQLParserException {
+        String sql = "ALTER TABLE tbl ALTER COLUMN ts SET INVISIBLE";
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals("tbl", alter.getTable().getFullyQualifiedName());
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression setInvisibleExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, setInvisibleExp.getOperation());
+        assertEquals("ts", setInvisibleExp.getColumnSetVisibilityList().get(0).getColumnName());
+        assertFalse(setInvisibleExp.getColumnSetVisibilityList().get(0).isVisible());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableSetInvisible() throws JSQLParserException {
+        String sql = "ALTER TABLE tbl ALTER ts SET INVISIBLE";
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals("tbl", alter.getTable().getFullyQualifiedName());
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression setInvisibleExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, setInvisibleExp.getOperation());
+        assertEquals("ts", setInvisibleExp.getColumnSetVisibilityList().get(0).getColumnName());
+        assertFalse(setInvisibleExp.getColumnSetVisibilityList().get(0).isVisible());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterIndexVisibility() throws JSQLParserException {
+        String sql = "ALTER TABLE tbl_name ALTER INDEX idx_name VISIBLE";
+        Alter alterVisible = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals("tbl_name", alterVisible.getTable().getFullyQualifiedName());
+        List<AlterExpression> alterExpressionsVisible = alterVisible.getAlterExpressions();
+        assertNotNull(alterExpressionsVisible);
+        assertEquals(1, alterExpressionsVisible.size());
+
+        AlterExpression visibleExp = alterExpressionsVisible.get(0);
+        assertEquals(AlterOperation.ALTER, visibleExp.getOperation());
+        assertEquals("idx_name", visibleExp.getIndex().getName());
+        assertEquals("VISIBLE", visibleExp.getIndex().getIndexSpec().get(0));
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAlterConstraintEnforced() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ALTER CONSTRAINT chk_salary ENFORCED";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterConstraintExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, alterConstraintExp.getOperation());
+        assertEquals("CONSTRAINT", alterConstraintExp.getConstraintType());
+        assertEquals("chk_salary", alterConstraintExp.getConstraintSymbol());
+        assertTrue(alterConstraintExp.isEnforced());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAlterCheckNotEnforced() throws JSQLParserException {
+        String sql = "ALTER TABLE employees ALTER CHECK chk_salary NOT ENFORCED";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("employees", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterCheckExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, alterCheckExp.getOperation());
+        assertEquals("CHECK", alterCheckExp.getConstraintType());
+        assertEquals("chk_salary", alterCheckExp.getConstraintSymbol());
+        assertFalse(alterCheckExp.isEnforced());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
