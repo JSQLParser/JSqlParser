@@ -8831,23 +8831,21 @@ Grant Grant():
 	(
 	    (
             [readGrantTypes(privileges) (<K_COMMA> readGrantTypes(privileges))*]
-            <K_ON>
-                (
-                    objName=RelObjectNames()   { grant.setObjectName(objName.getNames()); }
-                )
-            )
-            |
-            (
-                tk=<S_IDENTIFIER> { grant.setRole(tk.image); }
-            )
+            <K_ON> objName=RelObjectNames()   { grant.setObjectName(objName.getNames()); }
         )
-	<K_TO> (users = UsersList() {grant.setUsers(users);})
+        |
+        (
+            tk=<S_IDENTIFIER> { grant.setRole(tk.image); }
+        )
+    )
+	<K_TO> users = UsersList()
 	{
-            if(privileges.size() > 0) {
-                grant.setPrivileges(privileges);
-            }
-		return grant;
-	}
+        grant.setUsers(users);
+        if(privileges.size() > 0) {
+            grant.setPrivileges(privileges);
+        }
+	    return grant;
+    }
 }
 
 List<String> UsersList():
@@ -8856,7 +8854,7 @@ List<String> UsersList():
     String user = null;
 }
 {
-         user=RelObjectName() { users.add(user); }
+         user=RelObjectNameExt() { users.add(user); }
          ( "," user=ColumnsNamesListItem() { users.add(user); } )*
     {
         return users;

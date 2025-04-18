@@ -24,7 +24,7 @@ public class Grant implements Statement {
 
     private String role;
     private List<String> privileges;
-    private List<String> objectName = new ArrayList<>();
+    private final List<String> objectName = new ArrayList<>();
     private List<String> users;
 
     @Override
