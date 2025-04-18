@@ -3865,20 +3865,20 @@ OracleHierarchicalExpression OracleHierarchicalQueryClause():
 {
     (
         (
-            <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);}
-            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            <K_START> <K_WITH>  expr=XorExpression() {result.setStartExpression(expr);}
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=XorExpression()
             {
                 result.setConnectExpression(expr);
             }
         )
         |
         (
-            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=AndExpression()
+            <K_CONNECT> <K_BY> [ <K_NOCYCLE> { result.setNoCycle(true); } ] expr=XorExpression()
             {
                 result.setConnectExpression(expr);
                 result.setConnectFirst(true);
             }
-            [ LOOKAHEAD(2) <K_START> <K_WITH>  expr=AndExpression() {result.setStartExpression(expr);} ]
+            [ LOOKAHEAD(2) <K_START> <K_WITH>  expr=XorExpression() {result.setStartExpression(expr);} ]
         )
     )
     {
@@ -6643,7 +6643,7 @@ TableFunction TableFunction():
 {
     [ prefix = <K_LATERAL> ]
     function=Function()
-    [ <K_WITH> ( withClause = <K_OFFSET> | withClause = <K_ORDINALITY> ) ]
+    [ LOOKAHEAD(2) <K_WITH> ( withClause = <K_OFFSET> | withClause = <K_ORDINALITY> ) ]
     {
         return  prefix!=null
             ? withClause!=null

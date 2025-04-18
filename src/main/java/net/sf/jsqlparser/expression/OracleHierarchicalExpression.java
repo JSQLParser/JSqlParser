@@ -65,11 +65,11 @@ public class OracleHierarchicalExpression extends ASTNodeAccessImpl implements E
             }
             b.append(connectExpression.toString());
             if (startExpression != null) {
-                b.append(" START WITH ").append(startExpression.toString());
+                b.append(" START WITH ").append(startExpression);
             }
         } else {
             if (startExpression != null) {
-                b.append(" START WITH ").append(startExpression.toString());
+                b.append(" START WITH ").append(startExpression);
             }
             b.append(" CONNECT BY ");
             if (isNoCycle()) {
