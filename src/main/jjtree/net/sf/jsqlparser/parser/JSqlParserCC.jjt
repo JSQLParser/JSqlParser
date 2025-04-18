@@ -4412,12 +4412,14 @@ First First():
 
 Expression Expression() #Expression :
 {
-    Expression retval = null;
+    Expression expression = null;
 }
 {
-    retval=XorExpression()
-
-    { return retval; }
+    expression=XorExpression()
+    {
+        linkAST(expression,jjtThis);
+        return expression;
+    }
 }
 
 Expression XorExpression():
@@ -4613,7 +4615,6 @@ Expression SQLCondition():
     | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
-                (
                 LOOKAHEAD(ExcludesExpression()) result=ExcludesExpression(left)
                 |
                 LOOKAHEAD(IncludesExpression()) result=IncludesExpression(left)
@@ -4633,7 +4634,6 @@ Expression SQLCondition():
                 LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
                 |
                 result=SimilarToExpression(left)
-                )
             )
         ]
     )
