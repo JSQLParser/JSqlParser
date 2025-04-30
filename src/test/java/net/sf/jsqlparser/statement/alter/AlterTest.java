@@ -2138,4 +2138,46 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddConstraintUniqueKey() throws JSQLParserException {
+        String sql = "ALTER TABLE sbtest1 ADD CONSTRAINT UNIQUE KEY ux_c3 (c3)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals("UNIQUE KEY", alterExp.getConstraintType());
+        assertEquals("ux_c3", alterExp.getConstraintSymbol());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAlterIndexInvisible() throws JSQLParserException {
+        String sql = "ALTER TABLE sbtest1 ALTER INDEX c4 INVISIBLE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, alterExp.getOperation());
+        assertEquals("c4", alterExp.getIndex().getName());
+        assertEquals("INVISIBLE", alterExp.getIndex().getIndexSpec().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }
