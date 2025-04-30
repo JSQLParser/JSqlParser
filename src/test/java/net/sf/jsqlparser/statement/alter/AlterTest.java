@@ -2212,12 +2212,12 @@ public class AlterTest {
         assertNotNull(alterExp.getIndex());
         assertEquals("k_idx", alterExp.getIndex().getName());
         assertEquals("INDEX", alterExp.getIndex().getIndexKeyword());
-        
+
         List<String> columnNames = alterExp.getIndex().getColumnsNames();
         assertNotNull(columnNames);
         assertEquals(1, columnNames.size());
         assertEquals("k", columnNames.get(0));
-        
+
         List<String> indexSpec = alterExp.getIndex().getIndexSpec();
         assertNotNull(indexSpec);
         assertTrue(indexSpec.contains("INVISIBLE"));
