@@ -9,13 +9,22 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import static net.sf.jsqlparser.test.TestUtils.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -28,12 +37,16 @@ import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.create.table.CheckConstraint;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 
 public class AlterTest {
 
@@ -2135,6 +2148,79 @@ public class AlterTest {
         assertEquals("CHECK", alterCheckExp.getConstraintType());
         assertEquals("chk_salary", alterCheckExp.getConstraintSymbol());
         assertFalse(alterCheckExp.isEnforced());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddConstraintUniqueKey() throws JSQLParserException {
+        String sql = "ALTER TABLE sbtest1 ADD CONSTRAINT UNIQUE KEY ux_c3 (c3)";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals("UNIQUE KEY", alterExp.getConstraintType());
+        assertEquals("ux_c3", alterExp.getConstraintSymbol());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAlterIndexInvisible() throws JSQLParserException {
+        String sql = "ALTER TABLE sbtest1 ALTER INDEX c4 INVISIBLE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("sbtest1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ALTER, alterExp.getOperation());
+        assertEquals("c4", alterExp.getIndex().getName());
+        assertEquals("INVISIBLE", alterExp.getIndex().getIndexSpec().get(0));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddIndexInvisible() throws JSQLParserException {
+        String sql = "ALTER TABLE t1 ADD INDEX k_idx (k) INVISIBLE";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("t1", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertNotNull(alterExp.getIndex());
+        assertEquals("k_idx", alterExp.getIndex().getName());
+        assertEquals("INDEX", alterExp.getIndex().getIndexKeyword());
+
+        List<String> columnNames = alterExp.getIndex().getColumnsNames();
+        assertNotNull(columnNames);
+        assertEquals(1, columnNames.size());
+        assertEquals("k", columnNames.get(0));
+
+        List<String> indexSpec = alterExp.getIndex().getIndexSpec();
+        assertNotNull(indexSpec);
+        assertTrue(indexSpec.contains("INVISIBLE"));
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }

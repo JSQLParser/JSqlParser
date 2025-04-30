@@ -9,7 +9,17 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
@@ -19,9 +29,6 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import java.io.Serializable;
-import java.util.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
@@ -94,6 +101,7 @@ public class AlterExpression implements Serializable {
     private String constraintSymbol;
     private boolean enforced;
     private String constraintType;
+    private boolean invisible;
 
     public Index getOldIndex() {
         return oldIndex;
@@ -628,6 +636,14 @@ public class AlterExpression implements Serializable {
         this.constraintType = constraintType;
     }
 
+    public boolean isInvisible() {
+        return invisible;
+    }
+
+    public void setInvisible(boolean invisible) {
+        this.invisible = invisible;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -637,17 +653,27 @@ public class AlterExpression implements Serializable {
 
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
-        } else if (operation == AlterOperation.ALTER && constraintType != null) {
-            b.append("ALTER");
-            b.append(" ").append(constraintType);
+        } else if (operation == AlterOperation.ALTER && constraintType != null
+                && constraintSymbol != null) {
+            // This is for ALTER INDEX ... INVISIBLE
+            b.append("ALTER ").append(constraintType).append(" ").append(constraintSymbol);
 
-            if (constraintSymbol != null) {
-                b.append(" ").append(constraintSymbol);
+            if (invisible) {
+                b.append(" INVISIBLE");
+            } else if (!isEnforced()) {
+                b.append(" NOT ENFORCED");
+            } else if (enforced) {
+                b.append(" ENFORCED");
             }
-            if (!isEnforced()) {
-                b.append(" NOT ");
+        } else if (operation == AlterOperation.ADD && constraintType != null
+                && constraintSymbol != null) {
+            b.append("ADD CONSTRAINT ").append(constraintType).append(" ").append(constraintSymbol)
+                    .append(" ");
+
+            if (index != null && index.getColumnsNames() != null) {
+                b.append(" ")
+                        .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
             }
-            b.append(" ENFORCED");
         } else if (operation == AlterOperation.ALTER
                 && columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
             b.append("ALTER ");
