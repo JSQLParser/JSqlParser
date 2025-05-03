@@ -26,6 +26,7 @@ options {
     VISITOR = true;
     GRAMMAR_ENCODING = "UTF-8";
     KEEP_LINE_COLUMN = true;
+    // USER_CHAR_STREAM = false;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -759,9 +760,10 @@ TOKEN: {
             input_stream.backup(image.length() - matchedToken.image.length() );
       }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+//| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") >
     {
-        if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
+        if ( matchedToken.image.charAt(0) == '[' ) {
             matchedToken.image = "[";
             for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
                 if (CCJSqlParserConstants.tokenImage[i].equals("\"[\"")) {

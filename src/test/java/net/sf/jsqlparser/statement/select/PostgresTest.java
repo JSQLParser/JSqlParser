@@ -105,11 +105,11 @@ public class PostgresTest {
 
     @Test
     void testDollarQuotedText() throws JSQLParserException {
-        String sqlStr = "SELECT $tag$This\nis\na\ntest\n$tag$ from dual where a=b";
+        String sqlStr = "SELECT $tag$This\nis\na\nselect\ntest\n$tag$ from dual where a=b";
         PlainSelect st = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
 
         StringValue stringValue = st.getSelectItem(0).getExpression(StringValue.class);
 
-        Assertions.assertEquals("This\nis\na\ntest\n", stringValue.getValue());
+        Assertions.assertEquals("This\nis\na\nselect\ntest\n", stringValue.getValue());
     }
 }
