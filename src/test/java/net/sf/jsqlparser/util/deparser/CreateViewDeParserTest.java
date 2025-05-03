@@ -13,7 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -72,7 +72,7 @@ public class CreateViewDeParserTest {
     public void testCreateViewASTNode() throws JSQLParserException {
         String sql = "CREATE VIEW test AS SELECT a, b FROM mytable";
         final StringBuilder b = new StringBuilder(sql);
-        SimpleNode node = (SimpleNode) CCJSqlParserUtil.parseAST(sql);
+        Node node = (Node) CCJSqlParserUtil.parseAST(sql);
         node.dump("*");
         assertEquals(CCJSqlParserTreeConstants.JJTSTATEMENT, node.getId());
 
@@ -80,7 +80,7 @@ public class CreateViewDeParserTest {
             int idxDelta = 0;
 
             @Override
-            public Object visit(SimpleNode node, Object data) {
+            public Object visit(Node node, Object data) {
                 if (CCJSqlParserTreeConstants.JJTCOLUMN == node.getId()) {
                     b.insert(node.jjtGetFirstToken().beginColumn - 1 + idxDelta, '"');
                     idxDelta++;

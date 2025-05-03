@@ -96,7 +96,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     	return this;
     }
 
-    private void linkAST(ASTNodeAccess access, SimpleNode node) {
+    private void linkAST(ASTNodeAccess access, Node node) {
         access.setASTNode(node);
         node.jjtSetValue(access);
     }
@@ -123,6 +123,41 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return delimiters;
         }
     }
+
+    private static void appendWhitespaceFromTokenGap(StringBuilder buffer, Token prev, Token curr) {
+        if (prev == null) return;
+
+        int lineDiff = curr.beginLine - prev.endLine;
+        if (lineDiff > 0) {
+            for (int i = 0; i < lineDiff; i++) buffer.append('\n');
+            for (int i = 1; i < curr.beginColumn; i++) buffer.append(' ');
+        } else {
+            int spaceCount = curr.beginColumn - prev.endColumn - 1;
+            for (int i = 0; i < spaceCount; i++) buffer.append(' ');
+        }
+    }
+
+    private static void appendTokenImageAndTrackDelimiter(StringBuilder buffer, Deque<Character> windowQueue,
+                                                          int delimiterLength, String image, String tag) {
+        for (char ch : image.toCharArray()) {
+            buffer.append(ch);
+            windowQueue.addLast(ch);
+            if (windowQueue.size() > delimiterLength) {
+                windowQueue.removeFirst();
+            }
+        }
+    }
+
+    private static boolean endsWithDelimiter(Deque<Character> windowQueue, String delimiter) {
+        if (windowQueue.size() != delimiter.length()) return false;
+
+        int i = 0;
+        for (char ch : windowQueue) {
+            if (ch != delimiter.charAt(i++)) return false;
+        }
+        return true;
+    }
+
 }
 
 PARSER_END(CCJSqlParser)
@@ -649,13 +684,17 @@ SPECIAL_TOKEN:
 
 TOKEN:
 {
-<S_PARAMETER: ["$"] (["0"-"9"])+ >
+<S_PARAMETER: "$" (["0"-"9"])+>
 |
-<S_IDENTIFIER: <LETTER> (<PART_LETTER>)*>
-|   <#LETTER: <UnicodeIdentifierStart>
-                | <Nd> | [ "$" , "#", "_" ] // Not SQL:2016 compliant!
-                >
-|   <#PART_LETTER: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "$" , "#", "_" , "@"  ] >
+<S_IDENTIFIER: <LETTER> (<PART_LETTER> | "$")*>
+|
+<S_DOLLAR_IDENTIFIER: ( <LETTER> | "$") (<PART_LETTER>)*>
+}
+
+TOKEN: {
+<#LETTER: <UnicodeIdentifierStart> | <Nd> | [ "#", "_" ] >// Not SQL:2016 compliant!
+|
+<#PART_LETTER: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "#", "_" , "@"  ] >
 
 // Unicode characters and categories are defined here: https://www.unicode.org/Public/UNIDATA/UnicodeData.txt
 // SQL:2016 states:
@@ -732,6 +771,7 @@ TOKEN:
             input_stream.backup(image.length() - 1);
         }
     }
+| < DOLLAR_QUOTED: "$" (~["\n","\r","$"])* "$" >
 }
 
 /**
@@ -772,47 +812,44 @@ Statement Statement() #Statement:
     Expression condition;
 }
 {
-    (
-         try {
-            (
-                 <K_IF> condition=Condition()
-                 ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
-                 [ LOOKAHEAD(2)
-                     [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                     <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
-                 ]
+    try {
+       (
+            <K_IF> condition=Condition()
+            ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+            [ LOOKAHEAD(2)
+                [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+            ]
 
-                 [
-                     LOOKAHEAD(2) <ST_SEMICOLON>
-                     { if (stm2!=null)
-                           ifElseStatement.setUsingSemicolonForElseStatement(true);
-                        else if (ifElseStatement!=null)
-                           ifElseStatement.setUsingSemicolonForIfStatement(true);
-                     }
-                 ]
-            )
-            |
-            (
-                (stm = SingleStatement()
-                    | stm = Block())
+            [
+                LOOKAHEAD(2) <ST_SEMICOLON>
+                { if (stm2!=null)
+                      ifElseStatement.setUsingSemicolonForElseStatement(true);
+                   else if (ifElseStatement!=null)
+                      ifElseStatement.setUsingSemicolonForIfStatement(true);
+                }
+            ]
+       )
+       |
+       (
+           (stm = SingleStatement()
+               | stm = Block())
 
-                ( <ST_SEMICOLON> | <EOF> )
-            )
-            |
-            LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
-         } catch (ParseException ex) {
-            if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
-            } else if ( errorRecovery ) {
-                parseErrors.add(ex);
-                error_skipto(ST_SEMICOLON);
-                stm = null;
-            } else {
-                throw ex;
-            }
-         }
-
-    )
+           ( <ST_SEMICOLON> | <EOF> )
+       )
+       |
+       LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+    } catch (ParseException ex) {
+       if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+           stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
+       } else if ( errorRecovery ) {
+           parseErrors.add(ex);
+           error_skipto(ST_SEMICOLON);
+           stm = null;
+       } else {
+           throw ex;
+       }
+    }
 
 	{
 		return ifElseStatement!=null ? ifElseStatement : stm;
@@ -940,57 +977,54 @@ Statements Statements() #Statements: {
 }
 {
     (
-        (
-             ( <ST_SEMICOLON> )*
+        ( <ST_SEMICOLON> )*
 
-             // todo: allow also first statement to be an `UnsupportedStatement`
-             try {
-                (
-                     <K_IF> condition=Condition()
-                     ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
-                     [ LOOKAHEAD(2)
-                         [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
-                         <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
-                     ]
+        // todo: allow also first statement to be an `UnsupportedStatement`
+        try {
+           (
+                <K_IF> condition=Condition()
+                ( stm = SingleStatement() | stm = Block() ) {  ifElseStatement = new IfElseStatement(condition, stm); }
+                [ LOOKAHEAD(2)
+                    [ <ST_SEMICOLON> { ifElseStatement.setUsingSemicolonForIfStatement(true); } ]
+                    <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
+                ]
 
-                     { stmts.add( ifElseStatement ); }
+                { stmts.add( ifElseStatement ); }
 
-                     [
-                         LOOKAHEAD(2) <ST_SEMICOLON>
-                         { if (stm2!=null)
-                               ifElseStatement.setUsingSemicolonForElseStatement(true);
-                            else if (ifElseStatement!=null)
-                               ifElseStatement.setUsingSemicolonForIfStatement(true);
-                         }
-                     ]
-                )
-                |
-                (
-                    (stm = SingleStatement()
-                        | stm = Block())
-
-                    ( <ST_SEMICOLON> | <EOF> )
-                )
-                {
-                    stmts.add(stm); stm=null;
-                }
-
-             } catch (ParseException ex) {
-                if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "", error_skipto(ST_SEMICOLON) );
-                    if (!unsupportedStatement.isEmpty()) {
-                        stmts.add( unsupportedStatement );
+                [
+                    LOOKAHEAD(2) <ST_SEMICOLON>
+                    { if (stm2!=null)
+                          ifElseStatement.setUsingSemicolonForElseStatement(true);
+                       else if (ifElseStatement!=null)
+                          ifElseStatement.setUsingSemicolonForIfStatement(true);
                     }
-                } else if ( errorRecovery ) {
-                    parseErrors.add(ex);
-                    error_skipto(ST_SEMICOLON);
-                    stmts.add( null );
-                } else {
-                    throw ex;
-                }
-             }
+                ]
+           )
+           |
+           (
+               (stm = SingleStatement()
+                   | stm = Block())
 
-        )
+               ( <ST_SEMICOLON> | <EOF> )
+           )
+           {
+               stmts.add(stm); stm=null;
+           }
+
+        } catch (ParseException ex) {
+           if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
+               UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "", error_skipto(ST_SEMICOLON) );
+               if (!unsupportedStatement.isEmpty()) {
+                   stmts.add( unsupportedStatement );
+               }
+           } else if ( errorRecovery ) {
+               parseErrors.add(ex);
+               error_skipto(ST_SEMICOLON);
+               stmts.add( null );
+           } else {
+               throw ex;
+           }
+        }
 
         (  LOOKAHEAD(2)
             ( <ST_SEMICOLON> )*
@@ -5271,7 +5305,7 @@ Expression ArrayExpression(Expression obj): {
     Expression stopExpr = null;
 } {
     "["
-        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [LOOKAHEAD(2) idxExpr = SimpleExpression()]
         [
           (":" { startExpr=idxExpr; idxExpr=null; })
           [stopExpr = SimpleExpression()]
@@ -5382,7 +5416,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
-        | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
+        | ( token = <DOLLAR_QUOTED> { retval = new StringValue(DollarQuotedString(token.image)); } )
+
+        | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); }
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
@@ -9175,6 +9211,37 @@ List<String> captureFunctionBody() {
     tok = getNextToken();
   }
   return tokens;
+}
+
+/**
+* Reads the tokens of a Postgres dollar quoted string,
+  rebuilding the white space of the text based on each token's position and length
+    1) $$...$$
+    2) $tag$...$tag$
+*/
+
+JAVACODE
+String DollarQuotedString(String tag) {
+    StringBuilder buffer = new StringBuilder();
+    Deque<Character> windowQueue = new ArrayDeque<Character>();
+    int delimiterLength = tag.length();
+
+    Token prevToken = null;
+    Token token;
+
+    while (true) {
+        token = getNextToken();
+        if (token.kind == 0) {
+            throw new ParseException("Unterminated dollar-quoted string");
+        }
+        appendWhitespaceFromTokenGap(buffer, prevToken, token);
+        appendTokenImageAndTrackDelimiter(buffer, windowQueue, delimiterLength, token.image, tag);
+        if (endsWithDelimiter(windowQueue, tag)) {
+            buffer.setLength(buffer.length() - delimiterLength);
+            return buffer.toString();
+        }
+        prevToken = token;
+    }
 }
 
 JAVACODE

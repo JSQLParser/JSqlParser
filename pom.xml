@@ -27,10 +27,16 @@
     <dependencies>
         <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
         <dependency>
-            <groupId>net.java.dev.javacc</groupId>
-            <artifactId>javacc</artifactId>
-            <version>[7.0.13,)</version>
-            <scope>test</scope>
+            <groupId>org.javacc</groupId>
+            <artifactId>core</artifactId>
+            <version>8.0.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.javacc.generator</groupId>
+            <artifactId>java</artifactId>
+            <version>8.0.1</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -59,7 +65,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>[3.25.3,)</version>
+            <version>3.25.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -216,17 +222,20 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
-                            <grammarEncoding>UTF-8</grammarEncoding>
-                            <isStatic>false</isStatic>
-                            <jdkVersion>1.8</jdkVersion>
+                            <codeGenerator>java</codeGenerator>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>net.java.dev.javacc</groupId>
-                        <artifactId>javacc</artifactId>
-                        <version>[7.0.13,)</version>
+                        <groupId>org.javacc.generator</groupId>
+                        <artifactId>java</artifactId>
+                        <version>8.0.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.javacc</groupId>
+                        <artifactId>core</artifactId>
+                        <version>8.0.1</version>
                     </dependency>
                 </dependencies>
             </plugin>

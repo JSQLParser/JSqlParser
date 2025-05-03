@@ -114,8 +114,10 @@ dependencies {
     xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
 
     // enforce latest version of JavaCC
-    testImplementation 'net.java.dev.javacc:javacc:+'
-    javacc 'net.java.dev.javacc:javacc:+'
+    testImplementation 'org.javacc:core:8.0.1'
+    testImplementation 'org.javacc.generator:java:8.0.1'
+    javacc 'org.javacc:core:8.0.1'
+    javacc 'org.javacc.generator:java:8.0.1'
 
 
 }
