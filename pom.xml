@@ -200,6 +200,9 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <showDeprecation>true</showDeprecation>
                     <maxmem>2000m</maxmem>
+                    <compilerArgs>
+                        <arg>-J-Xss4M</arg>
+                    </compilerArgs>
                     <fork>true</fork>
                 </configuration>
             </plugin>
