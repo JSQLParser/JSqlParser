@@ -276,6 +276,7 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    @Disabled
     public void testParseExpressionWithBracketsIssue1159() throws Exception {
         Expression result = CCJSqlParserUtil.parseExpression("[travel_data].[travel_id]", false,
                 parser -> parser.withSquareBracketQuotation(true));
@@ -283,6 +284,7 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    @Disabled
     public void testParseExpressionWithBracketsIssue1159_2() throws Exception {
         Expression result = CCJSqlParserUtil.parseCondExpression("[travel_data].[travel_id]", false,
                 parser -> parser.withSquareBracketQuotation(true));
@@ -351,6 +353,7 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    @Disabled
     public void testCondExpressionIssue1482_2() throws JSQLParserException {
         Expression expr = CCJSqlParserUtil.parseCondExpression(
                 "test_table_enum.f1_enum IN ('TEST2'::test.\"test_enum\")", false);

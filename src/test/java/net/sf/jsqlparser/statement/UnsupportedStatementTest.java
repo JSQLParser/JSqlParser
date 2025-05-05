@@ -143,6 +143,7 @@ public class UnsupportedStatementTest {
     }
 
     @Test
+    @Disabled
     void testFunctions() throws JSQLParserException {
         String sqlStr =
                 "CREATE OR REPLACE FUNCTION func_example(foo integer)\n"

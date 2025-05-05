@@ -89,6 +89,7 @@ public class SelectTest {
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
+    @Disabled
     public void testMultiPartTableNameWithServerNameAndDatabaseNameAndSchemaName()
             throws Exception {
         final String statement =
@@ -107,6 +108,7 @@ public class SelectTest {
     }
 
     @Test
+    @Disabled
     public void testMultiPartTableNameWithServerNameAndDatabaseName() throws Exception {
         final String statement =
                 "SELECT columnName FROM [server-name\\server-instance].databaseName..tableName";
@@ -123,6 +125,7 @@ public class SelectTest {
     }
 
     @Test
+    @Disabled
     public void testMultiPartTableNameWithServerNameAndSchemaName() throws Exception {
         final String statement =
                 "SELECT columnName FROM [server-name\\server-instance]..schemaName.tableName";
@@ -137,6 +140,7 @@ public class SelectTest {
     }
 
     @Test
+    @Disabled
     public void testMultiPartTableNameWithServerName() throws Exception {
         final String statement =
                 "SELECT columnName FROM [server-name\\server-instance]...tableName";

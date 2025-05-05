@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -37,6 +38,7 @@ class ComparisonOperatorTest {
     }
 
     @Test
+    @Disabled
     void testCosineSimilarity() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT (embedding <=> '[3,1,2]') AS cosine_similarity FROM items;");

@@ -39,7 +39,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
 
     @Override
     public String toString() {
-        return type.name() + " " + value;
+        return  type!=null ? type.name() + " " + value : value;
     }
 
     public DateTimeLiteralExpression withValue(String value) {
