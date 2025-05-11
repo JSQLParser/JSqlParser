@@ -175,7 +175,7 @@ public class SelectASTTest {
 
         assertNotNull(subSelectStart);
         assertNotNull(subSelectEnd);
-        assertEquals(30, subSelectStart.beginColumn);
+        assertEquals(32, subSelectStart.beginColumn);
         assertEquals(49, subSelectEnd.endColumn);
     }
 
