@@ -1059,6 +1059,27 @@ public class SelectTest {
     }
 
     @Test
+    public void testDistinctRow() throws JSQLParserException {
+        String statement =
+                "SELECT DISTINCTROW col1, col2 FROM mytable WHERE mytable.col = 9";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
+
+        assertInstanceOf(PlainSelect.class, select);
+
+        PlainSelect plainSelect = (PlainSelect) select;
+        Distinct distinct = plainSelect.getDistinct();
+
+        assertNotNull(distinct);
+        assertTrue(distinct.isUseDistinctRow());
+        assertNull(distinct.getOnSelectItems());
+
+        assertEquals("col1", ((Column) (plainSelect.getSelectItems().get(0))
+                .getExpression()).getColumnName());
+        assertEquals("col2", ((Column) (plainSelect.getSelectItems().get(1))
+                .getExpression()).getColumnName());
+    }
+
+    @Test
     public void testIsDistinctFrom() throws JSQLParserException {
         String stmt = "SELECT name FROM tbl WHERE name IS DISTINCT FROM foo";
         assertSqlCanBeParsedAndDeparsed(stmt);

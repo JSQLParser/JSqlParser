@@ -43,6 +43,8 @@ The following Keywords are **restricted** in JSQLParser-|JSQLPARSER_VERSION| and
 +----------------------+-------------+-----------+
 | DISTINCT             | Yes         | Yes       | 
 +----------------------+-------------+-----------+
+| DISTINCTROW          | Yes         | Yes       | 
++----------------------+-------------+-----------+
 | DOUBLE               | Yes         |           | 
 +----------------------+-------------+-----------+
 | ELSE                 | Yes         | Yes       | 

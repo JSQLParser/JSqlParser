@@ -20,6 +20,7 @@ public class Distinct implements Serializable {
 
     private List<SelectItem<?>> onSelectItems;
     private boolean useUnique = false;
+    private boolean useDistinctRow = false;
 
     public Distinct() {}
 
@@ -43,9 +44,18 @@ public class Distinct implements Serializable {
         this.useUnique = useUnique;
     }
 
+    public boolean isUseDistinctRow() {
+        return useDistinctRow;
+    }
+
+    public void setUseDistinctRow(boolean useDistinctRow) {
+        this.useDistinctRow = useDistinctRow;
+    }
+
     @Override
     public String toString() {
-        String sql = useUnique ? "UNIQUE" : "DISTINCT";
+        String distinctIdentifier = useDistinctRow ? "DISTINCTROW" : "DISTINCT";
+        String sql = useUnique ? "UNIQUE" : distinctIdentifier;
 
         if (onSelectItems != null && !onSelectItems.isEmpty()) {
             sql += " ON (" + PlainSelect.getStringList(onSelectItems) + ")";

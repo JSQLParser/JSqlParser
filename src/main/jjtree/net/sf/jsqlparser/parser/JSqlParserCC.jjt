@@ -239,6 +239,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISCARD : "DISCARD">
 |   <K_DISCONNECT:"DISCONNECT">
 |   <K_DISTINCT:"DISTINCT">
+|   <K_DISTINCTROW:"DISTINCTROW">
 |   <K_DIV:"DIV">
 |   <K_DDL:"DDL">
 |   <K_DML:"DML">
@@ -3026,6 +3027,8 @@ PlainSelect PlainSelect() #PlainSelect:
             <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
             [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
         )
+        |
+        <K_DISTINCTROW> { Distinct distinct = new Distinct(); distinct.setUseDistinctRow(true); plainSelect.setDistinct(distinct); }
         |
         <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
