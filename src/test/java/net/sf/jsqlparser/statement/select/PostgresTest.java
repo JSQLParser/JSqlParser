@@ -10,10 +10,12 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.test.TestUtils;
@@ -101,5 +103,34 @@ public class PostgresTest {
     void testNextValueIssue1863() throws JSQLParserException {
         String sqlStr = "SELECT nextval('client_id_seq')";
         assertSqlCanBeParsedAndDeparsed(sqlStr);
+    }
+
+    @Test
+    void testDollarQuotedText() throws JSQLParserException {
+        String sqlStr = "SELECT $tag$This\nis\na\nselect\ntest\n$tag$ from dual where a=b";
+        PlainSelect st = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        StringValue stringValue = st.getSelectItem(0).getExpression(StringValue.class);
+
+        Assertions.assertEquals("This\nis\na\nselect\ntest\n", stringValue.getValue());
+    }
+
+    @Test
+    void testQuotedIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT \"This is a Test Column\" AS [Alias] from `This is a Test Table`";
+        PlainSelect st = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+
+        Column column = st.getSelectItem(0).getExpression(Column.class);
+        Assertions.assertEquals("This is a Test Column", column.getUnquotedName());
+        Assertions.assertEquals("\"This is a Test Column\"", column.getColumnName());
+
+        Alias alias = st.getSelectItem(0).getAlias();
+        Assertions.assertEquals("Alias", alias.getUnquotedName());
+        Assertions.assertEquals("[Alias]", alias.getName());
+
+        Table table = st.getFromItem(Table.class);
+        Assertions.assertEquals("This is a Test Table", table.getUnquotedName());
+        Assertions.assertEquals("`This is a Test Table`", table.getName());
+
     }
 }

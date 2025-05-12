@@ -37,7 +37,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.StringReader;
 import java.util.List;
 
-import static junit.framework.Assert.assertNull;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -45,6 +44,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;

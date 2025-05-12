@@ -97,7 +97,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     	return this;
     }
 
-    private void linkAST(ASTNodeAccess access, SimpleNode node) {
+    private void linkAST(ASTNodeAccess access, Node node) {
         access.setASTNode(node);
         node.jjtSetValue(access);
     }
@@ -1090,7 +1090,7 @@ Statements Statements() #Statements: {
 JAVACODE
 List<String> error_skipto(int kind) {
   ArrayList<String> tokenImages = new ArrayList<String>();
-  ParseException e = generateParseException();
+  ParseException e = generateParseException("test");
   Token t;
   do {
     t = getNextToken();
@@ -3037,6 +3037,7 @@ PlainSelect PlainSelect() #PlainSelect:
     String windowName = null;
     WindowDefinition winDef;
     Table intoTempTable = null;
+    Distinct distinct;
 }
 {
     <K_SELECT>
@@ -3059,11 +3060,11 @@ PlainSelect PlainSelect() #PlainSelect:
         <K_ALL>
         |
         (
-            <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
+            <K_DISTINCT> { distinct = new Distinct(); plainSelect.setDistinct(distinct); }
             [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
         )
         |
-        <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
+        <K_UNIQUE> {  distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
         <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
         |

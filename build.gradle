@@ -114,10 +114,18 @@ dependencies {
     xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
 
     // enforce latest version of JavaCC
-    testImplementation 'net.java.dev.javacc:javacc:+'
-    javacc 'net.java.dev.javacc:javacc:+'
-
-
+    testImplementation('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+    javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+}
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
+            // Check for updates every build
+            resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
+        }
+    }
 }
 
 compileJavacc {
