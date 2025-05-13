@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.simpleparsing.CCJSqlParserManagerTest;
 import net.sf.jsqlparser.test.TestException;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -30,6 +31,9 @@ public class SpeedTest {
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
+    @Disabled
+    // replaced by a proper JMH based benchmark
+    // @todo: remove this eventually
     public void testSpeed() throws Exception {
         // all the statements in testfiles/simple_parsing.txt
         BufferedReader in = new BufferedReader(
