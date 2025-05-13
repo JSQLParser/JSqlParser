@@ -117,7 +117,8 @@ dependencies {
     testImplementation 'net.java.dev.javacc:javacc:+'
     javacc 'net.java.dev.javacc:javacc:+'
 
-
+    jmh 'org.openjdk.jmh:jmh-core:1.37'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 }
 
 compileJavacc {
@@ -632,4 +633,12 @@ tasks.register('upload') {
 
 check {
     dependsOn jacocoTestCoverageVerification
+}
+
+jmh {
+    includes = ['.*JSQLParserBenchmark.*']
+    warmupIterations = 3
+    fork = 3
+    iterations = 10
+    timeOnIteration = '1s'
 }
