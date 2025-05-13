@@ -26,6 +26,7 @@ options {
     VISITOR = true;
     GRAMMAR_ENCODING = "UTF-8";
     KEEP_LINE_COLUMN = true;
+    // USER_CHAR_STREAM = false;
 }
 
 PARSER_BEGIN(CCJSqlParser)
@@ -123,6 +124,41 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return delimiters;
         }
     }
+
+    private static void appendWhitespaceFromTokenGap(StringBuilder buffer, Token prev, Token curr) {
+        if (prev == null) return;
+
+        int lineDiff = curr.beginLine - prev.endLine;
+        if (lineDiff > 0) {
+            for (int i = 0; i < lineDiff; i++) buffer.append('\n');
+            for (int i = 1; i < curr.beginColumn; i++) buffer.append(' ');
+        } else {
+            int spaceCount = curr.beginColumn - prev.endColumn - 1;
+            for (int i = 0; i < spaceCount; i++) buffer.append(' ');
+        }
+    }
+
+    private static void appendTokenImageAndTrackDelimiter(StringBuilder buffer, Deque<Character> windowQueue,
+                                                          int delimiterLength, String image, String tag) {
+        for (char ch : image.toCharArray()) {
+            buffer.append(ch);
+            windowQueue.addLast(ch);
+            if (windowQueue.size() > delimiterLength) {
+                windowQueue.removeFirst();
+            }
+        }
+    }
+
+    private static boolean endsWithDelimiter(Deque<Character> windowQueue, String delimiter) {
+        if (windowQueue.size() != delimiter.length()) return false;
+
+        int i = 0;
+        for (char ch : windowQueue) {
+            if (ch != delimiter.charAt(i++)) return false;
+        }
+        return true;
+    }
+
 }
 
 PARSER_END(CCJSqlParser)
@@ -3001,6 +3037,7 @@ PlainSelect PlainSelect() #PlainSelect:
     String windowName = null;
     WindowDefinition winDef;
     Table intoTempTable = null;
+    Distinct distinct;
 }
 {
     <K_SELECT>
@@ -3023,11 +3060,11 @@ PlainSelect PlainSelect() #PlainSelect:
         <K_ALL>
         |
         (
-            <K_DISTINCT> { Distinct distinct = new Distinct(); plainSelect.setDistinct(distinct); }
+            <K_DISTINCT> { distinct = new Distinct(); plainSelect.setDistinct(distinct); }
             [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
         )
         |
-        <K_UNIQUE> { Distinct distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
+        <K_UNIQUE> {  distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
         <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
         |
@@ -3069,8 +3106,9 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
         [LOOKAHEAD(2) <K_PARTITION> <K_BY>
             (
-                (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
-                | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
+                LOOKAHEAD(2) expressionList=ComplexExpressionList()
+                |
+                "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")"
             )
             {
                 preferringClause.setPartitionExpressionList(expressionList, partitionByBrackets);
@@ -3091,7 +3129,7 @@ PlainSelect PlainSelect() #PlainSelect:
     ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
-    [ LOOKAHEAD(LimitBy()) limit = LimitBy() { plainSelect.setLimitBy(limit);  } ]
+    [ LOOKAHEAD(7) limit = LimitBy() { plainSelect.setLimitBy(limit);  } ]
     [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -3639,11 +3677,11 @@ FromItem FromItem() #FromItem:
     (
         LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem = Values()
         |
-        LOOKAHEAD( TableFunction() ) fromItem=TableFunction()
+        LOOKAHEAD(16) fromItem=TableFunction()
         |
         LOOKAHEAD(3) fromItem=Table()
         |
-        LOOKAHEAD( ParenthesedFromItem() ) fromItem = ParenthesedFromItem()
+        LOOKAHEAD(ParenthesedFromItem()) fromItem = ParenthesedFromItem()
         |
         LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) (
             fromItem=ParenthesedSelect()
@@ -3941,17 +3979,18 @@ Expression PriorTo():
 }
 {
     (
-          LOOKAHEAD(PreferenceTermTerminal(), {!interrupted}) left=PreferenceTermTerminal()
-        | "(" left=PreferenceTerm() ")" { left = new ParenthesedExpressionList(left); }
+        LOOKAHEAD(3) left=PreferenceTermTerminal()
+        |
+        "(" left=PreferenceTerm() ")" { left = new ParenthesedExpressionList(left); }
     )
     { result = left; }
 
     (
-        LOOKAHEAD(2)
-        <K_PRIOR> <K_TO>
+        LOOKAHEAD(2) <K_PRIOR> <K_TO>
         (
-              LOOKAHEAD(PreferenceTermTerminal(), {!interrupted}) right=PreferenceTermTerminal()
-            | "(" right=PreferenceTerm() ")" { left = new ParenthesedExpressionList(right); }
+            LOOKAHEAD(3) right=PreferenceTermTerminal()
+            |
+            "(" right=PreferenceTerm() ")" { left = new ParenthesedExpressionList(right); }
         )
         {
             result = new PriorTo(left, right);
@@ -4469,8 +4508,7 @@ Expression AndExpression() :
 }
 {
     (
-        LOOKAHEAD(Condition(), {!interrupted})
-        left=Condition()
+        LOOKAHEAD(Condition(), {!interrupted}) left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
         "(" left=XorExpression() ")" {left = new ParenthesedExpressionList(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
@@ -4481,8 +4519,7 @@ Expression AndExpression() :
         { boolean useOperator = false; }
          (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
         (
-        LOOKAHEAD(Condition(), {!interrupted})
-            right=Condition()
+            LOOKAHEAD(Condition(), {!interrupted}) right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
             "(" right=XorExpression() ")" {right = new ParenthesedExpressionList(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
@@ -4508,8 +4545,9 @@ Expression Condition():
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(RegularCondition()) result=RegularCondition()
-        | result=SQLCondition()
+        LOOKAHEAD(RegularCondition(), {!interrupted}) result=RegularCondition()
+        |
+        result=SQLCondition()
     )
 
     { return not?new NotExpression(result, exclamationMarkNot):result; }
@@ -4610,28 +4648,29 @@ Expression SQLCondition():
 {
     (
     result=ExistsExpression()
-    | LOOKAHEAD(InExpression() , {!interrupted}) result=InExpression()
-    | LOOKAHEAD(OverlapsCondition(), {!interrupted}) result=OverlapsCondition()
+    | LOOKAHEAD( OverlapsCondition(), {!interrupted}) result=OverlapsCondition()
     | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
-                LOOKAHEAD(ExcludesExpression()) result=ExcludesExpression(left)
+                LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
                 |
-                LOOKAHEAD(IncludesExpression()) result=IncludesExpression(left)
+                LOOKAHEAD(3) result=ExcludesExpression(left)
+                |
+                LOOKAHEAD(3) result=IncludesExpression(left)
                 |
                 LOOKAHEAD(2) result=Between(left)
                 |
                 result = MemberOfExpression(left)
                 |
-                LOOKAHEAD(IsNullExpression()) result=IsNullExpression(left)
+                LOOKAHEAD(3) result=IsNullExpression(left)
                 |
-                LOOKAHEAD(IsBooleanExpression()) result=IsBooleanExpression(left)
+                LOOKAHEAD(3) result=IsBooleanExpression(left)
                 |
-                LOOKAHEAD(IsUnknownExpression()) result=IsUnknownExpression(left)
+                LOOKAHEAD(3) result=IsUnknownExpression(left)
                 |
                 LOOKAHEAD(2) result=LikeExpression(left)
                 |
-                LOOKAHEAD(IsDistinctExpression()) result=IsDistinctExpression(left)
+                LOOKAHEAD(3) result=IsDistinctExpression(left)
                 |
                 result=SimilarToExpression(left)
             )
@@ -4640,17 +4679,15 @@ Expression SQLCondition():
     { return result; }
 }
 
-Expression InExpression() #InExpression :
+Expression InExpression(Expression leftExpression) #InExpression :
 {
     Token token;
     int oldOracleJoin = 0;
     boolean usingNot = false;
     boolean usingGlobal = false;
-    Expression leftExpression;
     Expression rightExpression;
 }
 {
-    leftExpression=SimpleExpression()
     [ "(" "+" ")" { oldOracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
     [<K_GLOBAL> { usingGlobal=true; } ]
@@ -4658,10 +4695,8 @@ Expression InExpression() #InExpression :
     <K_IN>
     (
         LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
-        | LOOKAHEAD(3) rightExpression = Function()
-        | LOOKAHEAD(ParenthesedSelect(), {!interrupted}) rightExpression = ParenthesedSelect()
-        | LOOKAHEAD(3) rightExpression = ParenthesedExpressionList()
-        | rightExpression = SimpleExpression()
+        |
+        rightExpression = Expression()
     )
     {
         InExpression inExpression =  new InExpression(leftExpression, rightExpression)
@@ -4715,7 +4750,7 @@ Expression Between(Expression leftExpression) :
         (
             LOOKAHEAD( 3 ) betweenExpressionStart = ParenthesedSelect()
             |
-            LOOKAHEAD( RegularCondition() ) betweenExpressionStart = RegularCondition()
+            LOOKAHEAD( 11 ) betweenExpressionStart = RegularCondition()
             |
             betweenExpressionStart  = SimpleExpression()
         )
@@ -4724,7 +4759,7 @@ Expression Between(Expression leftExpression) :
         (
             LOOKAHEAD( 3 ) betweenExpressionEnd = ParenthesedSelect()
             |
-            LOOKAHEAD( RegularCondition() ) betweenExpressionEnd = RegularCondition()
+            LOOKAHEAD( 11 ) betweenExpressionEnd = RegularCondition()
             |
             betweenExpressionEnd = SimpleExpression()
         )
@@ -4946,8 +4981,7 @@ ExpressionList SimpleExpressionList():
     (
         LOOKAHEAD(2, {!interrupted} ) ","
         (
-            // @todo: Check hot to avoid this expensive look ahead
-            LOOKAHEAD( LambdaExpression() ) expr=LambdaExpression()
+            LOOKAHEAD( 6 ) expr=LambdaExpression()
             |
             expr=SimpleExpression()
         )
@@ -4994,7 +5028,8 @@ ExpressionList ComplexExpressionList():
 {
     (
         LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
-        | expr=Expression()
+        |
+        expr=Expression()
     )
     {
         expressions.add(expr);
@@ -5005,8 +5040,7 @@ ExpressionList ComplexExpressionList():
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             |
-            // @todo: Check hot to avoid this expensive look ahead
-            LOOKAHEAD( LambdaExpression() ) expr=LambdaExpression()
+            LOOKAHEAD( 6 ) expr=LambdaExpression()
             | expr=Expression()
         ) { expressions.add(expr); }
     )*
@@ -5070,11 +5104,15 @@ Expression ComparisonItem() :
 }
 {
   (
-    LOOKAHEAD( AnyComparisonExpression() ) retval=AnyComparisonExpression()
-    | LOOKAHEAD(3) retval=SimpleExpression()
-    | LOOKAHEAD(3) retval=ParenthesedExpressionList()
-    | LOOKAHEAD(3) retval=RowConstructor()
-    | retval=PrimaryExpression()
+    LOOKAHEAD( 6 ) retval=AnyComparisonExpression()
+    |
+    LOOKAHEAD( 3 ) retval=SimpleExpression()
+    |
+    LOOKAHEAD( 3 ) retval=ParenthesedExpressionList()
+    |
+    LOOKAHEAD( 3 ) retval=RowConstructor()
+    |
+    retval=PrimaryExpression()
   )
 
    {
@@ -5089,14 +5127,13 @@ Expression AnyComparisonExpression() :
 }
 {
     (
-        (
-            <K_ANY> { anyType = AnyType.ANY; }
-            | <K_SOME> { anyType = AnyType.SOME; }
-            | <K_ALL> { anyType = AnyType.ALL; }
-        )
-
-        select = ParenthesedSelect()
+        <K_ANY> { anyType = AnyType.ANY; }
+        |
+        <K_SOME> { anyType = AnyType.SOME; }
+        |
+        <K_ALL> { anyType = AnyType.ALL; }
     )
+    select = ParenthesedSelect()
     {
       return new AnyComparisonExpression(anyType, select);
     }
@@ -5109,17 +5146,8 @@ Expression SimpleExpression():
     Token operation = null;
 }
 {
-
-    (
-        [ LOOKAHEAD(UserVariable() ("=" | ":=") )
-            user = UserVariable()
-           ( operation = "=" | operation = ":=" )
-        ]
-
-        (
-            retval=ConcatExpression()
-        )
-    )
+    [ LOOKAHEAD( 5 ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
+    retval=ConcatExpression()
     {
         if (user != null) {
             VariableAssignment assignment = new VariableAssignment();
@@ -5177,7 +5205,7 @@ Expression BitwiseAndOr():
         rightExpression=AdditiveExpression()
 
         {
-             BinaryExpression binExp = (BinaryExpression) result;
+            BinaryExpression binExp = (BinaryExpression) result;
             binExp.setLeftExpression(leftExpression);
             binExp.setRightExpression(rightExpression);
             leftExpression = result;
@@ -5319,7 +5347,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
-        | LOOKAHEAD( ImplicitCast(), {!interrupted})  retval=ImplicitCast()
+        | LOOKAHEAD(5, {!interrupted}) retval=ImplicitCast()
 
         | retval = JdbcParameter()
 
@@ -5329,7 +5357,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=NumericBind()
 
-        | LOOKAHEAD( ExtractExpression() , {!interrupted}) retval=ExtractExpression()
+        | LOOKAHEAD(4 , {!interrupted}) retval=ExtractExpression()
 
         | LOOKAHEAD(3) retval=MySQLGroupConcat()
 
@@ -5341,7 +5369,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, { !interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD( Function(), { !interrupted}) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
+
+        | LOOKAHEAD(16) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -5351,13 +5381,13 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-        | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
+        | LOOKAHEAD(3) retval=AllColumns()
 
-        | LOOKAHEAD(AllColumns()) retval=AllColumns()
+        | LOOKAHEAD(16) retval=AllTableColumns()
 
-        | LOOKAHEAD(AllTableColumns()) retval=AllTableColumns()
-
-        | LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
+        // See issue  #2207
+        // there is a huge! performance deterioration from this production
+        //| LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
@@ -5390,9 +5420,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD( Select() , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
+        | LOOKAHEAD( 17 , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
 
-        | LOOKAHEAD( ParenthesedSelect() , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
+        | LOOKAHEAD( 17 , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
 
         |
         (
@@ -5979,7 +6009,7 @@ JsonAggregateFunction JsonAggregateFunction() : {
             <K_OVER> {result.setAnalyticType(AnalyticType.OVER);}
             "("
             [<K_PARTITION> <K_BY>
-                (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+                (LOOKAHEAD(3) expressionList=ComplexExpressionList()
                 | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
             ]
             [olist=OrderByElements() ]
@@ -6086,7 +6116,7 @@ void windowFun(AnalyticExpression retval):{
         [
             LOOKAHEAD(2) <K_OVER> "("
             [   <K_PARTITION> <K_BY>
-                    (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+                    (LOOKAHEAD(3) expressionList=ComplexExpressionList()
                     | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
             ]
             ")" { winDef.setPartitionExpressionList(expressionList, partitionByBrackets); retval.setType(AnalyticType.WITHIN_GROUP_OVER); }
@@ -6103,7 +6133,7 @@ WindowDefinition windowDefinition() : {
 } {
     "("
     [<K_PARTITION> <K_BY>
-        (LOOKAHEAD(ComplexExpressionList()) expressionList=ComplexExpressionList()
+        (LOOKAHEAD(3) expressionList=ComplexExpressionList()
         | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
     ]
     [olist=OrderByElements() ]
@@ -6214,7 +6244,7 @@ CastExpression ImplicitCast() #ImplicitCast:
     int scale = -1;
 }
 {
-     colDataType = DataType()
+    colDataType = DataType()
     (
         tk2 = <S_CHAR_LITERAL>
         |
@@ -6463,7 +6493,7 @@ Function SpecialStringFunctionWithNamedParameters() :
 
         "("
         (
-            LOOKAHEAD(NamedExpressionListExprFirst(), { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
+            LOOKAHEAD(6, { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
             expressionList=ExpressionList()
         )
@@ -6554,7 +6584,7 @@ Function InternalFunction(boolean escaped):
             // tricky lookahead since we do need to support the following constructs
             // schema.f1().f2() - Function with Function Column
             // schema.f1().f2.f3 - Function with Attribute Column
-            LOOKAHEAD( Function() ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+            LOOKAHEAD( 6 ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
             |
             attributeColumn=Column() { retval.setAttribute(attributeColumn); }
           )
@@ -9195,6 +9225,43 @@ List<String> captureFunctionBody() {
   return tokens;
 }
 
+/**
+* Reads the tokens of a Postgres dollar quoted string,
+  rebuilding the white space of the text based on each token's position and length
+    1) $$...$$
+    2) $tag$...$tag$
+*/
+
+JAVACODE
+String getQuotedString(String closingQuote, String escapeChar) {
+    StringBuilder buffer = new StringBuilder();
+    Deque<Character> windowQueue = new ArrayDeque<Character>();
+    int delimiterLength = closingQuote.length();
+
+    Token prevToken = null;
+    Token token;
+
+    while (true) {
+        token = getNextToken();
+        if (token.kind == 0) {
+            throw new ParseException("Unterminated quoted string");
+        }
+        appendWhitespaceFromTokenGap(buffer, prevToken, token);
+        appendTokenImageAndTrackDelimiter(buffer, windowQueue, delimiterLength, token.image, closingQuote);
+        if (endsWithDelimiter(windowQueue, closingQuote)) {
+            buffer.setLength(buffer.length() - delimiterLength);
+            return buffer.toString();
+        }
+        prevToken = token;
+    }
+}
+
+JAVACODE
+String getQuotedIdentifier(String openingQuote, String closingQuote, String escapeChar) {
+    return openingQuote + getQuotedString(closingQuote, escapeChar) + closingQuote;
+}
+
+
 JAVACODE
 List<String> captureUnsupportedStatementDeclaration() {
   List<String> tokens = new LinkedList<String>();
@@ -9263,15 +9330,13 @@ TranscodingFunction TranscodingFunction() #TranscodingFunction :
 {
     <K_CONVERT> "("
     (
-        LOOKAHEAD(ColDataType() ",") (
-            colDataType = ColDataType()
-            "," expression = Expression()
-            [ "," style = <S_LONG> { transcodingName = style.image; } ]
+        LOOKAHEAD(4) colDataType = ColDataType()
+        "," expression = Expression()
+        [ "," style = <S_LONG> { transcodingName = style.image; } ]
 
-            {
-                transcodingFunction = new TranscodingFunction(colDataType, expression, transcodingName);
-            }
-        )
+        {
+            transcodingFunction = new TranscodingFunction(colDataType, expression, transcodingName);
+        }
         |
         (
             expression = Expression()
