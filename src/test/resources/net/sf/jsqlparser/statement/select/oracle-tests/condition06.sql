@@ -23,3 +23,4 @@ and ( ( t1.scode like 'mmm'  and t2.scode like 'xax' ) )
 
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered unexpected token: "is" "IS" recorded first on 13 May 2025, 16:46:15

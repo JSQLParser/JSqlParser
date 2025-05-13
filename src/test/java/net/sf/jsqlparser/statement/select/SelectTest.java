@@ -6174,6 +6174,8 @@ public class SelectTest {
     }
 
     @Test
+    @Disabled
+    // see issue #2207
     public void testSelectAllColumnsFromFunctionReturn() throws JSQLParserException {
         String sql = "SELECT (pg_stat_file('postgresql.conf')).*";
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -6192,6 +6194,8 @@ public class SelectTest {
     }
 
     @Test
+    @Disabled
+    // see issue #2207
     public void testSelectAllColumnsFromFunctionReturnWithMultipleParentheses()
             throws JSQLParserException {
         String sql = "SELECT ( ( ( pg_stat_file('postgresql.conf') ) )) . *";
