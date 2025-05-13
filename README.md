@@ -69,7 +69,7 @@ JSQLParser-4.9 was the last JDK8 compatible version. JSQLParser-5.0 and later de
 
 Building JSQLParser-5.1 and newer with Gradle will depend on a JDK17 toolchain due to the used plugins.
 
-## Performan ce
+## Performance
 
 Unfortunately the released JSQLParser-5.2 shows a performance deterioration caused by commit [30cf5d7](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a076f49deb5cc841d39e62b3dc) related to `FunctionAllColumns()`.
 This has been resolved in JSQLParser 5.3-SNAPSHOT and JMH benchmarks have been added to avoid such regressions in the future. Further all `LOOKAHEADS` have been revised one by one, and we have gained back a very good performance of the Parser.

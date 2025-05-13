@@ -82,6 +82,22 @@
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JMH core API -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.37</version>
+        </dependency>
+
+        <!-- JMH annotation processor -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.37</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <developers>
@@ -204,6 +220,13 @@
                         <arg>-J-Xss4M</arg>
                     </compilerArgs>
                     <fork>true</fork>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.openjdk.jmh</groupId>
+                            <artifactId>jmh-generator-annprocess</artifactId>
+                            <version>1.37</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
