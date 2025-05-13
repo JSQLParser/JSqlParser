@@ -26,7 +26,7 @@ plugins {
     id 'org.hidetake.ssh' version "latest.release"
 
     id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
-    id "me.champeau.jmh" version "latest.release"
+    id "me.champeau.jmh" version "0.7.3"
     id "com.nwalsh.gradle.saxon.saxon-gradle" version "latest.release"
     id 'biz.aQute.bnd.builder' version "latest.release"
 }
@@ -118,6 +118,9 @@ dependencies {
     testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
     javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
     javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+
+    jmh 'org.openjdk.jmh:jmh-core:1.37'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 }
 configurations.configureEach {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -640,4 +643,11 @@ tasks.register('upload') {
 
 check {
     dependsOn jacocoTestCoverageVerification
+}
+
+jmh {
+    includes = ['.*JSQLParserBenchmark.*']
+    warmupIterations = 3
+    iterations = 3
+    timeOnIteration = '1s'
 }

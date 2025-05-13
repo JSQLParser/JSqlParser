@@ -3681,7 +3681,7 @@ FromItem FromItem() #FromItem:
         |
         LOOKAHEAD(3) fromItem=Table()
         |
-        LOOKAHEAD(110) fromItem = ParenthesedFromItem()
+        LOOKAHEAD(ParenthesedFromItem()) fromItem = ParenthesedFromItem()
         |
         LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) (
             fromItem=ParenthesedSelect()
@@ -4508,7 +4508,7 @@ Expression AndExpression() :
 }
 {
     (
-        LOOKAHEAD(814, {!interrupted}) left=Condition()
+        LOOKAHEAD(Condition(), {!interrupted}) left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
         "(" left=XorExpression() ")" {left = new ParenthesedExpressionList(left); if (not) { left = new NotExpression(left, exclamationMarkNot); not = false; } }
@@ -4519,7 +4519,7 @@ Expression AndExpression() :
         { boolean useOperator = false; }
          (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
         (
-            LOOKAHEAD(814, {!interrupted}) right=Condition()
+            LOOKAHEAD(Condition(), {!interrupted}) right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
             "(" right=XorExpression() ")" {right = new ParenthesedExpressionList(right); if (not) { right = new NotExpression(right, exclamationMarkNot); not = false; } }
@@ -4545,7 +4545,7 @@ Expression Condition():
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(814, {!interrupted}) result=RegularCondition()
+        LOOKAHEAD(RegularCondition(), {!interrupted}) result=RegularCondition()
         |
         result=SQLCondition()
     )
@@ -4648,7 +4648,7 @@ Expression SQLCondition():
 {
     (
     result=ExistsExpression()
-    | LOOKAHEAD( 814, {!interrupted}) result=OverlapsCondition()
+    | LOOKAHEAD( OverlapsCondition(), {!interrupted}) result=OverlapsCondition()
     | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
@@ -5387,7 +5387,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(16) retval=AllTableColumns()
 
-        | LOOKAHEAD(250) retval=FunctionAllColumns()
+        | LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
