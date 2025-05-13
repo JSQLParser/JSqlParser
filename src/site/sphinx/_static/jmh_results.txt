@@ -1,3 +1,4 @@
+-- Optimised LOOKAHEADS (replacing all syntactic lookahead by numeric lookaheads)
 Benchmark                               (version)  Mode  Cnt    Score    Error  Units
 JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  264.132 ±  9.636  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.2  avgt   15  415.744 ± 20.602  ms/op
@@ -7,6 +8,13 @@ JSQLParserBenchmark.parseSQLStatements        4.9  avgt   15   60.515 ±  1.650 
 JSQLParserBenchmark.parseSQLStatements        4.8  avgt   15   60.002 ±  1.259  ms/op
 JSQLParserBenchmark.parseSQLStatements        4.7  avgt   15   73.291 ±  3.049  ms/op
 
+-- Optimised LOOKAHEADS (replacing huge numeric lookaheads with syntactic lookaheads again)
 Benchmark                               (version)  Mode  Cnt    Score    Error  Units
 JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  249.408 ± 11.340  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.2  avgt   15  388.453 ± 13.149  ms/op
+
+-- Disable `FunctionAllColumns()`
+Benchmark                               (version)  Mode  Cnt    Score   Error  Units
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   30   80.165 ± 1.364  ms/op
+JSQLParserBenchmark.parseSQLStatements        5.2  avgt   30  388.073 ± 8.542  ms/op
+JSQLParserBenchmark.parseSQLStatements        5.1  avgt   30   81.747 ± 1.563  ms/op

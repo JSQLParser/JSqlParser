@@ -5387,7 +5387,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(16) retval=AllTableColumns()
 
-        | LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
+        //| LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }

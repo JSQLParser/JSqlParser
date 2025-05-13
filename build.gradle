@@ -648,6 +648,7 @@ check {
 jmh {
     includes = ['.*JSQLParserBenchmark.*']
     warmupIterations = 3
-    iterations = 3
+    fork = 3
+    iterations = 10
     timeOnIteration = '1s'
 }
