@@ -76,7 +76,7 @@ This has been resolved in JSQLParser 5.3-SNAPSHOT and JMH benchmarks have been a
 
 ```text
 Benchmark                               (version)  Mode  Cnt    Score   Error  Units
-JSQLParserBenchmark.parseSQLStatements     latest  avgt   30   83.504 ± 1.557  ms/op <-- `FunctionAllColumns()` disabled
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   30   78.287 ± 4.730  ms/op <-- `FunctionAllColumns()` disabled
 JSQLParserBenchmark.parseSQLStatements        5.2  avgt   30  400.876 ± 8.291  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.1  avgt   30   85.731 ± 1.288  ms/op
 ```

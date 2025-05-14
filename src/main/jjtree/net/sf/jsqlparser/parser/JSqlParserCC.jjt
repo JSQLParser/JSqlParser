@@ -2438,16 +2438,12 @@ Select Select() #Select:
     Alias alias = null;
 }
 {
-    (
 
-        //@todo: avoid this expensive semantic look ahead
-        LOOKAHEAD( [ WithList() ] FromQuery()) (
-            [ with=WithList() ]
-            select = FromQuery()
-        )
+    [ with=WithList() ]
+    (
+        LOOKAHEAD(3) select = FromQuery()
         |
         (
-            [ with=WithList() ]
             (
                 LOOKAHEAD(3) select = PlainSelect()
                 |
