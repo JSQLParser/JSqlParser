@@ -18,3 +18,16 @@ Benchmark                               (version)  Mode  Cnt    Score   Error  U
 JSQLParserBenchmark.parseSQLStatements     latest  avgt   30   83.504 ± 1.557  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.2  avgt   30  400.876 ± 8.291  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.1  avgt   30   85.731 ± 1.288  ms/op
+
+
+-- Token Manipulation
+Before Optimization                  (version)  Mode  Cnt  Score   Error  Units
+JSQLParserBenchmark.parseQuotedText     latest  avgt   30  0.421 ± 0.008  ms/op
+
+After Optimization                   (version)  Mode  Cnt  Score   Error  Units
+JSQLParserBenchmark.parseQuotedText     latest  avgt   30  0.366 ± 0.009  ms/op
+
+Benchmark                            (version)  Mode  Cnt  Score   Error  Units
+JSQLParserBenchmark.parseQuotedText     latest  avgt   30  0.414 ± 0.003  ms/op
+Benchmark                            (version)  Mode  Cnt  Score   Error  Units
+JSQLParserBenchmark.parseQuotedText     latest  avgt   30  0.418 ± 0.003  ms/op

@@ -12,6 +12,7 @@ package net.sf.jsqlparser.benchmark;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.statement.Statements;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,14 +73,27 @@ public class JSQLParserBenchmark {
     }
 
     @Benchmark
-    public void parseSQLStatements() throws Exception {
+    public void parseSQLStatements(Blackhole blackhole) throws Exception {
         final Statements statements = runner.parseStatements(
                 sqlContent,
                 executorService,
                 (Consumer<CCJSqlParser>) parser -> {
                     // No-op consumer (or you can log/validate each parser if desired)
                 });
-        assert statements.size() == 4;
+        blackhole.consume(statements);
+    }
+
+    @Benchmark
+    public void parseQuotedText(Blackhole blackhole) throws Exception {
+        String sqlStr = "SELECT ('\\'', 'a');\n"
+                + "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');\n"
+                + "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');\n";
+
+        final Statements statements = runner.parseStatements(
+                sqlStr,
+                executorService,
+                (Consumer<CCJSqlParser>) parser -> parser.withBackslashEscapeCharacter(true));
+        blackhole.consume(statements);
     }
 
     @TearDown(Level.Trial)
