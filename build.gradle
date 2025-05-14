@@ -641,3 +641,11 @@ tasks.register('upload') {
 check {
     dependsOn jacocoTestCoverageVerification
 }
+
+jmh {
+    includes = ['.*JSQLParserBenchmark.*']
+    warmupIterations = 3
+    fork = 3
+    iterations = 10
+    timeOnIteration = '1s'
+}
