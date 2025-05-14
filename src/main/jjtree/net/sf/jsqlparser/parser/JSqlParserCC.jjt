@@ -166,6 +166,24 @@ PARSER_END(CCJSqlParser)
 TOKEN_MGR_DECLS : {
     public FeatureConfiguration configuration = new FeatureConfiguration();
 
+    // Identify the index of the quoting/escaping tokens
+    public int charLiteralIndex = -1;
+    public int squaredBracketOpenIndex = -1;
+    {
+        for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+          if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
+              charLiteralIndex = i;
+              break;
+          }
+        }
+        for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
+            if (CCJSqlParserConstants.tokenImage[i].equals("\"[\"")) {
+                squaredBracketOpenIndex = i;
+                break;
+            }
+        }
+    }
+
     public void CommonTokenAction(Token t)
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
@@ -741,19 +759,13 @@ TOKEN:
         if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
             && matchedToken.image.contains("\\'") ) {
             matchedToken.image = "'" + image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
-            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
-              if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
-                  matchedToken.kind = i;
-              }
-            }
+            // `charLiteralIndex` defined in TokenManagerDeclaration above
+            matchedToken.kind = charLiteralIndex;
             input_stream.backup(image.length() + 1 - matchedToken.image.length());
         } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\''") ) {
             matchedToken.image = "'" + image.substring( 0, image.lastIndexOf("\\'") + 3);
-            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
-                if ( CCJSqlParserConstants.tokenImage[i].equals("<S_CHAR_LITERAL>") ) {
-                    matchedToken.kind = i;
-                }
-            }
+            // `charLiteralIndex` defined in TokenManagerDeclaration above
+            matchedToken.kind = charLiteralIndex;
             input_stream.backup(image.length() + 1 - matchedToken.image.length() );
       }
     }
@@ -761,11 +773,8 @@ TOKEN:
     {
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
             matchedToken.image = "[";
-            for (int i=0;i<CCJSqlParserConstants.tokenImage.length;i++) {
-                if (CCJSqlParserConstants.tokenImage[i].equals("\"[\"")) {
-                    matchedToken.kind = i;
-                }
-            }
+            // `squaredBracketOpenIndex` defined in TokenManagerDeclaration above
+            matchedToken.kind = squaredBracketOpenIndex;
             input_stream.backup(image.length() - 1);
         }
     }
