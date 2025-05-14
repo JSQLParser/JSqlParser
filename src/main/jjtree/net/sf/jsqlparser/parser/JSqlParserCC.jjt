@@ -632,6 +632,7 @@ TOKEN : /* Statement Separators */
 TOKEN : /* Operators */
 {
     <OP_GREATERTHANEQUALS: ">" (<WHITESPACE>)* "=">
+|   <OP_COSINESIMILARITY: "<=>">
 |   <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |   <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |   <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
@@ -758,11 +759,15 @@ TOKEN:
         // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
         if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
             && matchedToken.image.contains("\\'") ) {
+
             matchedToken.image = "'" + image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
             // `charLiteralIndex` defined in TokenManagerDeclaration above
             matchedToken.kind = charLiteralIndex;
             input_stream.backup(image.length() + 1 - matchedToken.image.length());
-        } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter) && matchedToken.image.contains("\\''") ) {
+
+        } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+            && matchedToken.image.contains("\\''") ) {
+
             matchedToken.image = "'" + image.substring( 0, image.lastIndexOf("\\'") + 3);
             // `charLiteralIndex` defined in TokenManagerDeclaration above
             matchedToken.kind = charLiteralIndex;
@@ -771,7 +776,9 @@ TOKEN:
     }
 | < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
-        if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation) && matchedToken.image.charAt(0) == '[' ) {
+        if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
+            && matchedToken.image.charAt(0) == '[' ) {
+
             matchedToken.image = "[";
             // `squaredBracketOpenIndex` defined in TokenManagerDeclaration above
             matchedToken.kind = squaredBracketOpenIndex;
@@ -4624,7 +4631,7 @@ Expression RegularCondition() #RegularCondition:
         | "-#" { result = new JsonOperator("-#"); }
         | "<->" { result = new GeometryDistance("<->"); }
         | "<#>" { result = new GeometryDistance("<#>"); }
-        | "<=>" { result = new CosineSimilarity(); }
+        | <OP_COSINESIMILARITY> { result = new CosineSimilarity(); }
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }

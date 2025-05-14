@@ -17,5 +17,5 @@ import java.util.function.Consumer;
 
 public interface SqlParserRunner {
     Statements parseStatements(String sql, ExecutorService executorService,
-            Consumer<CCJSqlParser> consumer) throws Exception;
+            Consumer<?> consumer) throws Exception;
 }

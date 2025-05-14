@@ -20,9 +20,10 @@ public class LatestClasspathRunner implements SqlParserRunner {
     @Override
     public Statements parseStatements(String sql,
             ExecutorService executorService,
-            Consumer<CCJSqlParser> consumer) throws Exception {
+            Consumer<?> consumer) throws Exception {
         return net.sf.jsqlparser.parser.CCJSqlParserUtil.parseStatements(sql, executorService,
-                consumer);
+                                                                         (Consumer<CCJSqlParser>) consumer
+        );
     }
 }
 
