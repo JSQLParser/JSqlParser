@@ -184,6 +184,28 @@ TOKEN_MGR_DECLS : {
         }
     }
 
+    // Finds first occurrence of "\\'"
+    public static int indexOfSequence(String s, String target) {
+        int len = s.length();
+        for (int i = 0; i < len - 1; i++) {
+            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'') {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Finds last occurrence of "\\''"
+    public static int lastIndexOfSequence(String s, String target) {
+        int len = s.length();
+        for (int i = len - 3; i >= 0; i--) {
+            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'' && s.charAt(i + 2) == '\'') {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void CommonTokenAction(Token t)
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
@@ -757,22 +779,26 @@ TOKEN:
         // which contains the <SPECIAL_ESC>, then we will need to
         // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
         // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
-        if ( !configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
-            && matchedToken.image.contains("\\'") ) {
-
-            matchedToken.image = "'" + image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
-            // `charLiteralIndex` defined in TokenManagerDeclaration above
-            matchedToken.kind = charLiteralIndex;
-            input_stream.backup(image.length() + 1 - matchedToken.image.length());
-
-        } else if ( configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
-            && matchedToken.image.contains("\\''") ) {
-
-            matchedToken.image = "'" + image.substring( 0, image.lastIndexOf("\\'") + 3);
-            // `charLiteralIndex` defined in TokenManagerDeclaration above
-            matchedToken.kind = charLiteralIndex;
-            input_stream.backup(image.length() + 1 - matchedToken.image.length() );
-      }
+        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter);
+                String img = matchedToken.image;
+                int pos;
+                if (!allowEscape) {
+                    pos = indexOfSequence(img, "\\'");
+                    if (pos > 0) {
+                        matchedToken.image = "'" + image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
+                        // `charLiteralIndex` defined in TokenManagerDeclaration above
+                        matchedToken.kind = charLiteralIndex;
+                        input_stream.backup(image.length() + 1 - matchedToken.image.length());
+                    }
+                } else {
+                    pos = lastIndexOfSequence(img, "\\''");
+                    if (pos > 0) {
+                        matchedToken.image = "'" + image.substring( 0, image.lastIndexOf("\\'") + 3);
+                        // `charLiteralIndex` defined in TokenManagerDeclaration above
+                        matchedToken.kind = charLiteralIndex;
+                        input_stream.backup(image.length() + 1 - matchedToken.image.length() );
+                    }
+                }
     }
 | < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
@@ -2414,16 +2440,12 @@ Select Select() #Select:
     Alias alias = null;
 }
 {
-    (
 
-        //@todo: avoid this expensive semantic look ahead
-        LOOKAHEAD( [ WithList() ] FromQuery()) (
-            [ with=WithList() ]
-            select = FromQuery()
-        )
+    [ with=WithList() ]
+    (
+        LOOKAHEAD(3) select = FromQuery()
         |
         (
-            [ with=WithList() ]
             (
                 LOOKAHEAD(3) select = PlainSelect()
                 |
@@ -4998,7 +5020,6 @@ ExpressionList SimpleExpressionList():
     (
         LOOKAHEAD(2, {!interrupted} ) ","
         (
-            // @todo: Check hot to avoid this expensive look ahead
             LOOKAHEAD( 6 ) expr=LambdaExpression()
             |
             expr=SimpleExpression()
@@ -5058,7 +5079,6 @@ ExpressionList ComplexExpressionList():
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             |
-            // @todo: Check hot to avoid this expensive look ahead
             LOOKAHEAD( 6 ) expr=LambdaExpression()
             | expr=Expression()
         ) { expressions.add(expr); }
@@ -5404,7 +5424,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(16) retval=AllTableColumns()
 
-        // | LOOKAHEAD(250) retval=FunctionAllColumns()
+        // See issue  #2207
+        // there is a huge! performance deterioration from this production
+        //| LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
         // support timestamp expressions
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }

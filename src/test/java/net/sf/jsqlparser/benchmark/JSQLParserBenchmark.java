@@ -74,7 +74,7 @@ public class JSQLParserBenchmark {
         return jarFile;
     }
 
-    //@Benchmark
+    @Benchmark
     public void parseSQLStatements(Blackhole blackhole) throws Exception {
         final Statements statements = runner.parseStatements(
                 sqlContent,
