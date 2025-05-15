@@ -19,3 +19,4 @@ dimension by (0 dim)
             regexp_replace (str_new[0], '(^|;)([^;]+;)(.*?;)?\2+', '\1\2\3'));
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: <K_PARTITION> / "partition", at line 13, column 4, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
