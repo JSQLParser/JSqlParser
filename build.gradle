@@ -3,7 +3,7 @@ import com.nwalsh.gradle.saxon.SaxonXsltTask
 
 buildscript {
     dependencies {
-        classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: '12.5'
+        classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: '12.7'
     }
 }
 
