@@ -5457,9 +5457,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD( 17 , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
+        | LOOKAHEAD( Select() , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
 
-        | LOOKAHEAD( 17 , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
+        | LOOKAHEAD( ParenthesedSelect() , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
 
         |
         (
