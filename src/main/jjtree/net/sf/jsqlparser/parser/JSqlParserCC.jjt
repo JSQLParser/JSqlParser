@@ -4366,13 +4366,9 @@ WithIsolation WithIsolation():
     JdbcParameter jdbc;
 }
 {
-    (
-            //with (ur | cs | rs | rr)
-             <K_WITH>
-             token=<K_ISOLATION> { withIsolation.setIsolation(token.image); }
-
-        )
-    {
+    <K_WITH>
+    token=<K_ISOLATION>
+    { withIsolation.setIsolation(token.image);
         return withIsolation;
     }
 }
@@ -4434,10 +4430,11 @@ Skip Skip():
 {
     <K_SKIP>
     (
-         token=<S_LONG>                      { skip.setRowCount(Long.parseLong(token.image)); }
-                | token=<S_IDENTIFIER>              { skip.setVariable(token.image); }
-                | jdbc = JdbcParameter() { skip.setJdbcParameter(jdbc); }
-                   /* "?" { skip.setJdbcParameter(new JdbcParameter(++jdbcParameterIndex, false)); } [ LOOKAHEAD(2) token = <S_LONG> { skip.getJdbcParameter().setUseFixedIndex(true); skip.getJdbcParameter().setIndex(Integer.valueOf(token.image)); } ] */
+        token=<S_LONG> { skip.setRowCount(Long.parseLong(token.image)); }
+        |
+        token=<S_IDENTIFIER> { skip.setVariable(token.image); }
+        |
+        jdbc = JdbcParameter() { skip.setJdbcParameter(jdbc); }
     )
     {
         return skip;
@@ -4733,7 +4730,7 @@ Expression InExpression(Expression leftExpression) #InExpression :
     (
         LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
         |
-        rightExpression = Expression()
+        rightExpression = PrimaryExpression()
     )
     {
         InExpression inExpression =  new InExpression(leftExpression, rightExpression)

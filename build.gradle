@@ -104,14 +104,14 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
 
     // Java Doc in XML Format
-    xmlDoclet 'com.manticore-projects.tools:xml-doclet:+'
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:2.+'
 
     // enforce latest version of JavaCC
     testImplementation 'net.java.dev.javacc:javacc:+'
