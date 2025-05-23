@@ -18,7 +18,7 @@ options {
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
     JAVA_TEMPLATE_TYPE = "modern";
-    JDK_VERSION = "1.8";
+//  JDK_VERSION = "1.8";
     TOKEN_EXTENDS = "BaseToken";
     COMMON_TOKEN_ACTION = true;
     NODE_DEFAULT_VOID = true;
@@ -26,7 +26,7 @@ options {
     VISITOR = true;
     GRAMMAR_ENCODING = "UTF-8";
     KEEP_LINE_COLUMN = true;
-    // USER_CHAR_STREAM = false;
+//  USER_CHAR_STREAM = false;
 }
 
 PARSER_BEGIN(CCJSqlParser)

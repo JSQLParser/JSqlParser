@@ -9,12 +9,8 @@
  */
 package net.sf.jsqlparser.parser;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.test.TestUtils;
 import org.javacc.jjtree.JJTree;
 import org.javacc.parser.Context;
-import org.javacc.parser.JavaCCErrors;
-import org.javacc.parser.JavaCCGlobals;
 import org.javacc.parser.JavaCCParser;
 import org.javacc.parser.RCharacterList;
 import org.javacc.parser.RChoice;
@@ -40,7 +36,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -154,7 +149,7 @@ class ParserKeywordsUtilsTest {
         parser.javacc_input(context);
 
         // needed for filling JavaCCGlobals
-        //JavaCCErrors.reInit();
+        // JavaCCErrors.reInit();
         Semanticize.start(context);
 
         // read all the Token and get the String image

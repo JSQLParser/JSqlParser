@@ -318,6 +318,7 @@ pmd {
     pmdMain {
         excludes = [
                 "build/generated/*"
+                , "**/net/sf/jsqlparser/parser/SimpleCharStream.java"
         ]
     }
 }
@@ -325,6 +326,12 @@ pmd {
 checkstyle {
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.named('checkstyleMain') {
+    source = source.filter {
+        !it.absolutePath.contains('net/sf/jsqlparser/parser/SimpleCharStream.java')
+    }
 }
 
 spotless {
