@@ -6175,6 +6175,7 @@ public class SelectTest {
 
     @Test
     @Disabled
+    // see issue #2207
     public void testSelectAllColumnsFromFunctionReturn() throws JSQLParserException {
         String sql = "SELECT (pg_stat_file('postgresql.conf')).*";
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -6194,6 +6195,7 @@ public class SelectTest {
 
     @Test
     @Disabled
+    // see issue #2207
     public void testSelectAllColumnsFromFunctionReturnWithMultipleParentheses()
             throws JSQLParserException {
         String sql = "SELECT ( ( ( pg_stat_file('postgresql.conf') ) )) . *";
@@ -6212,4 +6214,15 @@ public class SelectTest {
                 plainSelect.getSelectItems().get(0).toString());
     }
 
+    @Test
+    void testIssue2242SubSelectLookAhead() throws JSQLParserException {
+        String sqlStr = "INSERT INTO foo(col1, col2, col3, col4, col5, col6)\n"
+                + "      VALUES ( (SELECT blah FROM bar INNER JOIN bam ON bar.col1 = bam.col1 WHERE bar.id = ? AND et.id = ?), ?, ?, ?, ?, ?)\n"
+                + "      ON CONFLICT (id) DO UPDATE\n"
+                + "      SET col4 = ?, col5 = ?, col6 = ?";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        System.out.println(statement.toString());
+        Insert insert = (Insert) statement;
+        Assertions.assertEquals("foo", insert.getTable().toString());
+    }
 }

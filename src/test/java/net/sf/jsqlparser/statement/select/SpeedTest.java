@@ -32,6 +32,8 @@ public class SpeedTest {
 
     @Test
     @Disabled
+    // replaced by a proper JMH based benchmark
+    // @todo: remove this eventually
     public void testSpeed() throws Exception {
         // all the statements in testfiles/simple_parsing.txt
         BufferedReader in = new BufferedReader(

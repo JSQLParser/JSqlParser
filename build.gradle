@@ -104,7 +104,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
@@ -116,6 +116,7 @@ dependencies {
     // enforce latest version of JavaCC
     testImplementation('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
     testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+
     javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
     javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
 }
@@ -644,8 +645,8 @@ check {
 
 jmh {
     includes = ['.*JSQLParserBenchmark.*']
-    warmupIterations = 3
+    warmupIterations = 2
     fork = 3
-    iterations = 10
+    iterations = 5
     timeOnIteration = '1s'
 }

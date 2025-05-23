@@ -34,7 +34,7 @@ public class DynamicParserRunner implements SqlParserRunner {
     @Override
     public Statements parseStatements(String sql,
             ExecutorService executorService,
-            Consumer<?> consumer) throws Exception {
-        return (Statements) parseStatementsMethod.invoke(null, sql, executorService, consumer);
+            Consumer<CCJSqlParser> consumer) throws Exception {
+        return (Statements) parseStatementsMethod.invoke(null, sql, executorService, null);
     }
 }

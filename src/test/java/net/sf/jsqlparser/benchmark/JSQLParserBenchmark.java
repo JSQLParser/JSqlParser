@@ -10,8 +10,6 @@
 package net.sf.jsqlparser.benchmark;
 
 import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -36,7 +34,7 @@ public class JSQLParserBenchmark {
     SqlParserRunner runner;
 
     // @Param({ "latest", "5.2", "5.1", "5.0", "4.9", "4.8", "4.7", "4.6", "4.5" })
-    @Param({"latest"})
+    @Param({"latest", "5.3", "5.1"})
     public String version;
 
     @Setup(Level.Trial)
@@ -79,15 +77,17 @@ public class JSQLParserBenchmark {
         final Statements statements = runner.parseStatements(
                 sqlContent,
                 executorService,
-                null);
+                (Consumer<CCJSqlParser>) parser -> {
+                    // No-op consumer (or you can log/validate each parser if desired)
+                });
         blackhole.consume(statements);
     }
 
-    @Benchmark
+    // @Benchmark
     public void parseQuotedText(Blackhole blackhole) throws Exception {
         String sqlStr = "SELECT ('\\'', 'a');\n"
-                        + "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');\n"
-                        + "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');\n";
+                + "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');\n"
+                + "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');\n";
 
         final Statements statements = runner.parseStatements(
                 sqlStr,

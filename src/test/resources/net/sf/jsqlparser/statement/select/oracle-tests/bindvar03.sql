@@ -28,4 +28,4 @@ where scn > :2
 
 --@FAILURE: Encountered unexpected token: "group" "GROUP" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "minus" "MINUS" recorded first on Mar 25, 2023, 9:30:55 AM
---@FAILURE: Encountered: <K_GROUP> / "group", at line 25, column 2, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@FAILURE: Encountered: <K_GROUP> / "group", at line 25, column 2, in lexical state DEFAULT. recorded first on 23 May 2025, 22:04:10
