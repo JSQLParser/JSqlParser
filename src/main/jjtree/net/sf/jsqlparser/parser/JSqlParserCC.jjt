@@ -969,6 +969,8 @@ Statement SingleStatement() :
             stm = Grant()
             |
             stm = PurgeStatement()
+            |
+            stm = SessionStatement()
         )
         { return stm; }
 }
@@ -1187,7 +1189,46 @@ DeclareStatement Declare(): {
     }
 }
 
+SessionStatement SessionStatement():
+{
+    Token actionToken;
+    Token idToken = null;
+}
+{
+    <K_SESSION>
+    (
+        actionToken = <K_START>
+        |
+        actionToken = <K_APPLY>
+        |
+        actionToken = <K_DROP>
+        |
+        actionToken = <K_SHOW>
+        |
+        actionToken = <K_DESCRIBE>
+    )
 
+    [
+        (
+            idToken = <S_IDENTIFIER>
+            |
+            idToken = <S_QUOTED_IDENTIFIER>
+            |
+            idToken = <S_CHAR_LITERAL>
+            |
+            idToken = <S_LONG>
+        )
+    ]
+
+    {
+        SessionStatement sessionsStatement = idToken!=null
+            ? new SessionStatement(actionToken.image, idToken.image)
+            : new SessionStatement(actionToken.image);
+
+        //linkAST(sessionsStatement,jjtThis);
+        return sessionsStatement;
+    }
+}
 
 SetStatement Set(): {
     String namePart;
@@ -8980,91 +9021,96 @@ List<Sequence.Parameter> SequenceParameters():
   Token token = null;
 }
 {
-(
-   (<K_INCREMENT> <K_BY> token=<S_LONG>
+    (
+        LOOKAHEAD(2) (
+            (
+                <K_INCREMENT> <K_BY> token=<S_LONG>
+                {
+                    parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
+                    parameter.setValue(Long.parseLong(token.image));
+                    sequenceParameters.add(parameter);
+                }
+           )
+           |
+           (
+                <K_START> <K_WITH> token=<S_LONG>
+                {
+                    parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
+                    parameter.setValue(Long.parseLong(token.image));
+                    sequenceParameters.add(parameter);
+                }
+            )
+            |
+            (
+                <K_RESTART> [ LOOKAHEAD(2) <K_WITH> token=<S_LONG>]
+                {
+                    parameter = new Sequence.Parameter(Sequence.ParameterType.RESTART_WITH);
+                    if(token != null) {
+                        parameter.setValue(Long.parseLong(token.image));
+                    }
+                    sequenceParameters.add(parameter);
+                }
+            )
+            |
+            <K_NOMAXVALUE>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.NOMAXVALUE);
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_MAXVALUE> token=<S_LONG>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.MAXVALUE);
+              parameter.setValue(Long.parseLong(token.image));
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_NOMINVALUE>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.NOMINVALUE);
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_MINVALUE> token=<S_LONG>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.MINVALUE);
+              parameter.setValue(Long.parseLong(token.image));
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_NOCYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOCYCLE)); }
+            |
+            <K_CYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.CYCLE)); }
+            |
+            <K_NOCACHE>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.NOCACHE);
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_CACHE> token=<S_LONG>
+            {
+              parameter = new Sequence.Parameter(Sequence.ParameterType.CACHE);
+              parameter.setValue(Long.parseLong(token.image));
+              sequenceParameters.add(parameter);
+            }
+            |
+            <K_ORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.ORDER)); }
+            |
+            <K_NOORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOORDER)); }
+            |
+            <K_KEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.KEEP)); }
+            |
+            <K_NOKEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOKEEP)); }
+            |
+            <K_SESSION> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.SESSION)); }
+            |
+            <K_GLOBAL> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.GLOBAL)); }
+        )
+    )*
     {
-        parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
-        parameter.setValue(Long.parseLong(token.image));
-        sequenceParameters.add(parameter);
+        return sequenceParameters;
     }
-   )
-   |
-   (<K_START> <K_WITH> token=<S_LONG>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
-      parameter.setValue(Long.parseLong(token.image));
-      sequenceParameters.add(parameter);
-    }
-   )
-   |
-   (<K_RESTART> [ LOOKAHEAD(2) <K_WITH> token=<S_LONG>]
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.RESTART_WITH);
-      if(token != null){
-        parameter.setValue(Long.parseLong(token.image));
-      }
-      sequenceParameters.add(parameter);
-    }
-   )
-   |
-   (<K_NOMAXVALUE>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.NOMAXVALUE);
-      sequenceParameters.add(parameter);
-    }
-    |<K_MAXVALUE> token=<S_LONG>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.MAXVALUE);
-      parameter.setValue(Long.parseLong(token.image));
-      sequenceParameters.add(parameter);
-    }
-   )
-   |
-   (<K_NOMINVALUE>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.NOMINVALUE);
-      sequenceParameters.add(parameter);
-    }
-    |<K_MINVALUE> token=<S_LONG>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.MINVALUE);
-      parameter.setValue(Long.parseLong(token.image));
-      sequenceParameters.add(parameter);
-    }
-   )
-   |
-   (<K_NOCYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOCYCLE)); }
-    |<K_CYCLE> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.CYCLE)); }
-   )
-   |
-   (<K_NOCACHE>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.NOCACHE);
-      sequenceParameters.add(parameter);
-    }
-   |<K_CACHE> token=<S_LONG>
-    {
-      parameter = new Sequence.Parameter(Sequence.ParameterType.CACHE);
-      parameter.setValue(Long.parseLong(token.image));
-      sequenceParameters.add(parameter);
-    }
-   )
-   |
-   (<K_ORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.ORDER)); }
-    |<K_NOORDER> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOORDER)); }
-   )
-   |
-   (<K_KEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.KEEP)); }
-    |<K_NOKEEP> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.NOKEEP)); }
-   )
-   |
-   (<K_SESSION> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.SESSION)); }
-    |<K_GLOBAL> { sequenceParameters.add(new Sequence.Parameter(Sequence.ParameterType.GLOBAL)); }
-   )
-  )* //zero or many times those productions
-  {
-    return sequenceParameters;
-  }
 }
 
 CreateSequence CreateSequence():
