@@ -323,4 +323,10 @@ public interface StatementVisitor<T> {
     default void visit(ParenthesedDelete parenthesedDelete) {
         this.visit(parenthesedDelete, null);
     }
+
+    <S> T visit(SessionStatement sessionStatement, S context);
+
+    default void visit(SessionStatement sessionStatement) {
+        this.visit(sessionStatement, null);
+    }
 }

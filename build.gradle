@@ -3,7 +3,7 @@ import com.nwalsh.gradle.saxon.SaxonXsltTask
 
 buildscript {
     dependencies {
-        classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: '12.5'
+        classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: 'latest.release'
     }
 }
 
@@ -74,12 +74,11 @@ description = 'JSQLParser library'
 
 repositories {
     gradlePluginPortal()
-    mavenLocal()
     mavenCentral()
 
-    // Sonatype OSSRH
+    // JavaCC 8 Snapshots
     maven {
-        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+        url = uri('https://central.sonatype.com/repository/maven-snapshots/')
     }
 
     maven { url "https://dev.saxonica.com/maven" }
@@ -114,11 +113,21 @@ dependencies {
     xmlDoclet 'com.manticore-projects.tools:xml-doclet:2.+'
 
     // enforce latest version of JavaCC
-    testImplementation 'net.java.dev.javacc:javacc:+'
-    javacc 'net.java.dev.javacc:javacc:+'
+    testImplementation('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
 
     jmh 'org.openjdk.jmh:jmh-core:1.37'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+}
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
+            // Check for updates every build
+            resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
+        }
+    }
 }
 
 compileJavacc {
@@ -310,6 +319,7 @@ pmd {
     pmdMain {
         excludes = [
                 "build/generated/*"
+                , "**/net/sf/jsqlparser/parser/SimpleCharStream.java"
         ]
     }
 }
@@ -317,6 +327,12 @@ pmd {
 checkstyle {
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.named('checkstyleMain') {
+    source = source.filter {
+        !it.absolutePath.contains('net/sf/jsqlparser/parser/SimpleCharStream.java')
+    }
 }
 
 spotless {
@@ -448,15 +464,15 @@ tasks.register('updateKeywords', JavaExec) {
     dependsOn(compileJava)
 }
 
-task xslt(type: SaxonXsltTask) {
+tasks.register('xslt', SaxonXsltTask) {
     def outFile = version.endsWith("-SNAPSHOT")
-            ?   file("src/site/sphinx/syntax_snapshot.rst")
-            :   file("src/site/sphinx/syntax_stable.rst")
+            ? file("src/site/sphinx/syntax_snapshot.rst")
+            : file("src/site/sphinx/syntax_stable.rst")
 
     dependsOn(renderRR)
     stylesheet file('src/main/resources/rr/xhtml2rst.xsl')
 
-    parameters (
+    parameters(
             "withFloatingToc": System.getenv().getOrDefault("FLOATING_TOC", "true"),
             "isSnapshot": Boolean.toString(version.endsWith("-SNAPSHOT"))
     )

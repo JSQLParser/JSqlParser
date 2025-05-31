@@ -25,3 +25,4 @@ select * from emp
 
 --@FAILURE: Encountered unexpected token: "when" "WHEN" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "insert" "INSERT" recorded first on 11 Jan 2023, 21:07:10
+--@FAILURE: Encountered: <K_INSERT> / "insert", at line 11, column 1, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

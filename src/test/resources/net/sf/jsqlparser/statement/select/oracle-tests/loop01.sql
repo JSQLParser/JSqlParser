@@ -18,3 +18,4 @@ end;
 
 --@FAILURE: Encountered unexpected token: "begin" "BEGIN" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "forall" <S_IDENTIFIER> recorded first on 9 Dec 2022, 14:03:29
+--@FAILURE: Encountered: <S_IDENTIFIER> / "forall", at line 11, column 2, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

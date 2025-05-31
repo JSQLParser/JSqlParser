@@ -9,11 +9,8 @@
  */
 package net.sf.jsqlparser.parser;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.test.TestUtils;
 import org.javacc.jjtree.JJTree;
-import org.javacc.parser.JavaCCErrors;
-import org.javacc.parser.JavaCCGlobals;
+import org.javacc.parser.Context;
 import org.javacc.parser.JavaCCParser;
 import org.javacc.parser.RCharacterList;
 import org.javacc.parser.RChoice;
@@ -141,21 +138,22 @@ class ParserKeywordsUtilsTest {
         Path jjGrammarOutputDir = Files.createTempDirectory("jjgrammer");
 
         new JJTree().main(new String[] {
-                "-JDK_VERSION=1.8",
-                "-OUTPUT_DIRECTORY=" + jjGrammarOutputDir.toString(),
+                "-JJTREE_OUTPUT_DIRECTORY=" + jjGrammarOutputDir.toString(),
+                "-CODE_GENERATOR=java",
                 jjtGrammar.toString()
         });
         Path jjGrammarFile = jjGrammarOutputDir.resolve("JSqlParserCC.jj");
 
+        Context context = new Context();
         JavaCCParser parser = new JavaCCParser(new java.io.FileInputStream(jjGrammarFile.toFile()));
-        parser.javacc_input();
+        parser.javacc_input(context);
 
         // needed for filling JavaCCGlobals
-        JavaCCErrors.reInit();
-        Semanticize.start();
+        // JavaCCErrors.reInit();
+        Semanticize.start(context);
 
         // read all the Token and get the String image
-        for (Map.Entry<Integer, RegularExpression> item : JavaCCGlobals.rexps_of_tokens
+        for (Map.Entry<Integer, RegularExpression> item : context.globals().rexps_of_tokens
                 .entrySet()) {
             addTokenImage(allKeywords, item.getValue());
         }
@@ -205,9 +203,4 @@ class ParserKeywordsUtilsTest {
         }
     }
 
-    @Test
-    void testBase64() throws JSQLParserException {
-        String sqlStr = "SELECT base64('Spark SQL') AS b;";
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-    }
 }

@@ -74,6 +74,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(SessionStatement sessionStatement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(Update update, S context) {
 
         return null;

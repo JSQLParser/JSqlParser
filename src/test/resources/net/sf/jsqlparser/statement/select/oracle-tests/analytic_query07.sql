@@ -48,3 +48,4 @@
 	order by prob desc, cl_id asc, conf desc, attr asc, val asc
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: "(" / "(", at line 36, column 15, in lexical state DEFAULT. recorded first on 23 May 2025, 22:04:10

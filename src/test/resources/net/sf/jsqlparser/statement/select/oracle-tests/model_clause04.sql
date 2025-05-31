@@ -24,3 +24,4 @@ select country, year, sale, csum
  
 
 --@FAILURE: Encountered unexpected token: "dimension" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: <S_IDENTIFIER> / "dimension", at line 16, column 10, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
