@@ -24,6 +24,16 @@
         </license>
     </licenses>
 
+    <repositories>
+        <repository>
+            <id>javacc8-snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
         <dependency>
@@ -31,12 +41,14 @@
             <artifactId>core</artifactId>
             <version>8.1.0-SNAPSHOT</version>
             <type>pom</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.javacc.generator</groupId>
             <artifactId>java</artifactId>
             <version>8.1.0-SNAPSHOT</version>
             <type>pom</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -163,6 +175,7 @@
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
                         <exclude>**/generated/*.java</exclude>
+                        <exclude>**/net/sf/jsqlparser/parser/SimpleCharStream.java</exclude>
                     </excludes>
                     <excludeRoots>
                         <excludeRoot>target/generated-sources</excludeRoot>
@@ -255,12 +268,12 @@
                     <dependency>
                         <groupId>org.javacc.generator</groupId>
                         <artifactId>java</artifactId>
-                        <version>8.0.1</version>
+                        <version>8.1.0-SNAPSHOT</version>
                     </dependency>
                     <dependency>
                         <groupId>org.javacc</groupId>
                         <artifactId>core</artifactId>
-                        <version>8.0.1</version>
+                        <version>8.1.0-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -570,7 +583,7 @@
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
-                            <excludes>**/module-info.java</excludes>
+                            <excludes>**/module-info.java,**/net/sf/jsqlparser/parser/SimpleCharStream.java</excludes>
                             <checkstyleRules>
                                 <module name="Checker">
                                     <module name="SuppressWarningsFilter" />

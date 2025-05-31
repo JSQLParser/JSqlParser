@@ -74,12 +74,11 @@ description = 'JSQLParser library'
 
 repositories {
     gradlePluginPortal()
-    mavenLocal()
     mavenCentral()
 
-    // Sonatype OSSRH
+    // JavaCC 8 Snapshots
     maven {
-        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+        url = uri('https://central.sonatype.com/repository/maven-snapshots/')
     }
 
     maven { url "https://dev.saxonica.com/maven" }
