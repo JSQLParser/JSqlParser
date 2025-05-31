@@ -182,6 +182,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         builder.append(" BETWEEN ");
+
+        if (between.isUsingSymmetric()) {
+            builder.append("SYMMETRIC ");
+        } else if (between.isUsingAsymmetric()) {
+            builder.append("ASYMMETRIC ");
+        }
+
         between.getBetweenExpressionStart().accept(this, context);
         builder.append(" AND ");
         between.getBetweenExpressionEnd().accept(this, context);
