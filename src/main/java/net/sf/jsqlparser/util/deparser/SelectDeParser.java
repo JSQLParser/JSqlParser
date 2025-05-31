@@ -718,7 +718,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         builder.append(" AS ");
         if (withItem.isMaterialized()) {
-            builder.append("MATERIALIZED ");
+            builder.append(withItem.isUsingNot()
+                    ? "NOT MATERIALIZED "
+                    : "MATERIALIZED ");
         }
         StatementDeParser statementDeParser =
                 new StatementDeParser((ExpressionDeParser) expressionVisitor, this, builder);
