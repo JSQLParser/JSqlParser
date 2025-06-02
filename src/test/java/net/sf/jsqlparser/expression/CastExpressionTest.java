@@ -104,4 +104,14 @@ public class CastExpressionTest {
         sqlStr = "SELECT ((foo)::text = ANY((((ARRAY['bar'])))::text[]))";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testDateTimeCast() throws JSQLParserException {
+        String sqlStr = "SELECT\n"
+                + "  TIME(15, 30, 00) as time_hms,\n"
+                + "  TIME(DATETIME '2008-12-25 15:30:00') AS time_dt,\n"
+                + "  TIME(TIMESTAMP '2008-12-25 15:30:00+08', 'America/Los_Angeles')\n"
+                + "as time_tstz;";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

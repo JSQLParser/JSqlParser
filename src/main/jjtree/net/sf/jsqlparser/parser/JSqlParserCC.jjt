@@ -5435,7 +5435,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
-        | LOOKAHEAD(5, {!interrupted}) retval=ImplicitCast()
+        | LOOKAHEAD(6, {!interrupted}) retval=ImplicitCast()
 
         | retval = JdbcParameter()
 
