@@ -1,3 +1,12 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2025 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.piped;
 
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -6,11 +15,15 @@ import java.util.ArrayList;
 
 public class AggregatePipeOperator extends PipeOperator {
     private final ArrayList<SelectItem<?>> selectItems = new ArrayList<>();
+    private final ArrayList<String> selectItemsOrderSuffices = new ArrayList<>();
+
     private final ArrayList<SelectItem<?>> groupItems = new ArrayList<>();
+    private final ArrayList<String> groupItemsOrderSuffices = new ArrayList<>();
     private boolean usingShortHandOrdering = false;
 
-    public AggregatePipeOperator(SelectItem<?> selectItem) {
+    public AggregatePipeOperator(SelectItem<?> selectItem, String orderSuffix) {
         selectItems.add(selectItem);
+        selectItemsOrderSuffices.add(orderSuffix);
     }
 
     public ArrayList<SelectItem<?>> getSelectItems() {
@@ -21,22 +34,31 @@ public class AggregatePipeOperator extends PipeOperator {
         return groupItems;
     }
 
-    public AggregatePipeOperator add(SelectItem<?> selectItem) {
+    public ArrayList<String> getSelectItemsOrderSuffices() {
+        return selectItemsOrderSuffices;
+    }
+
+    public ArrayList<String> getGroupItemsOrderSuffices() {
+        return groupItemsOrderSuffices;
+    }
+
+    public AggregatePipeOperator add(SelectItem<?> selectItem, String orderSuffix) {
         selectItems.add(selectItem);
         return this;
     }
 
-    public AggregatePipeOperator with(SelectItem<?> selectItem) {
-        return this.add(selectItem);
+    public AggregatePipeOperator with(SelectItem<?> selectItem, String orderSuffix) {
+        return this.add(selectItem, orderSuffix);
     }
 
-    public AggregatePipeOperator addGroupItem(SelectItem<?> selectItem) {
+    public AggregatePipeOperator addGroupItem(SelectItem<?> selectItem, String orderSuffix) {
         groupItems.add(selectItem);
+        groupItemsOrderSuffices.add(orderSuffix);
         return this;
     }
 
-    public AggregatePipeOperator withGroupItem(SelectItem<?> selectItem) {
-        return this.addGroupItem(selectItem);
+    public AggregatePipeOperator withGroupItem(SelectItem<?> selectItem, String orderSuffix) {
+        return this.addGroupItem(selectItem, orderSuffix);
     }
 
     public boolean isUsingShortHandOrdering() {
@@ -58,7 +80,12 @@ public class AggregatePipeOperator extends PipeOperator {
         builder.append("|> ").append("AGGREGATE");
         int i = 0;
         for (SelectItem<?> selectItem : selectItems) {
-            builder.append(i++ > 0 ? ", " : " ").append(selectItem);
+            builder.append(i > 0 ? ", " : " ").append(selectItem);
+            if (i < selectItemsOrderSuffices.size() && selectItemsOrderSuffices.get(i) != null
+                    && !selectItemsOrderSuffices.get(i).isEmpty()) {
+                builder.append(" ").append(selectItemsOrderSuffices.get(i));
+            }
+            i++;
         }
         builder.append("\n");
 
@@ -70,7 +97,12 @@ public class AggregatePipeOperator extends PipeOperator {
             builder.append(" BY");
             i = 0;
             for (SelectItem<?> selectItem : groupItems) {
-                builder.append(i++ > 0 ? ", " : " ").append(selectItem);
+                builder.append(i > 0 ? ", " : " ").append(selectItem);
+                if (i < groupItemsOrderSuffices.size() && groupItemsOrderSuffices.get(i) != null
+                        && !groupItemsOrderSuffices.get(i).isEmpty()) {
+                    builder.append(" ").append(groupItemsOrderSuffices.get(i));
+                }
+                i++;
             }
             builder.append("\n");
         }

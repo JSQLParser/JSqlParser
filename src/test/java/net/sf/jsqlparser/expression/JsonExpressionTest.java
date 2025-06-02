@@ -149,4 +149,33 @@ class JsonExpressionTest {
     void testIssue2054(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testIssue2181() throws JSQLParserException {
+        String sqlStr =
+                "SELECT\n" +
+                        "  1\n" +
+                        "FROM\n" +
+                        "  public.tbl\n" +
+                        "WHERE\n" +
+                        "  fieldd ->> 'att1' = 1\n" +
+                        "  OR fieldd ->> 'att1' = 1\n" +
+                        "  OR fieldd ->> 'att1' = 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "  OR fieldd::jsonb -> 'att2' @> 1\n" +
+                        "ORDER BY\n" +
+                        "  att ASC\n" +
+                        "LIMIT\n" +
+                        "  1";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

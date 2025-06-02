@@ -60,4 +60,14 @@ public class TableStatement extends Select {
     public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
         return fromItemVisitor.visit(this, context);
     }
+
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
 }

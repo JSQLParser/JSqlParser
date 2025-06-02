@@ -120,6 +120,8 @@ public final class DeclareStatement implements Statement {
         return typeDefExprList;
     }
 
+
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("DECLARE ");
@@ -212,6 +214,18 @@ public final class DeclareStatement implements Statement {
             this.userVariable = userVariable;
             this.colDataType = colDataType;
             this.defaultExpr = defaultExpr;
+        }
+
+        public UserVariable getUserVariable() {
+            return userVariable;
+        }
+
+        public ColDataType getColDataType() {
+            return colDataType;
+        }
+
+        public Expression getDefaultExpr() {
+            return defaultExpr;
         }
     }
 }

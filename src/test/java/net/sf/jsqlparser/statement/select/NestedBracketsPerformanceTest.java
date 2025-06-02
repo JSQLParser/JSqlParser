@@ -137,8 +137,7 @@ public class NestedBracketsPerformanceTest {
     @Test
     @Timeout(2000)
     public void testRecursiveBracketExpressionIssue1019_2() throws JSQLParserException {
-        // Temporally set the maxDepth to be 6, was 8 before this
-        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 8);
+        doIncreaseOfParseTimeTesting("IF(1=1, $1, 2)", "1", 10);
     }
 
     @Test
@@ -531,8 +530,6 @@ public class NestedBracketsPerformanceTest {
                 "3,\n" +
                 "4";
         CCJSqlParserUtil.parse(sqlStr, parser -> parser
-                .withSquareBracketQuotation(false)
-                .withAllowComplexParsing(true)
                 .withTimeOut(60000));
     }
 

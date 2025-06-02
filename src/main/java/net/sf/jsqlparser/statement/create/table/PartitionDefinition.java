@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.io.Serializable;
 import java.util.List;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class PartitionDefinition implements Serializable {
     private String partitionName;
@@ -56,5 +57,18 @@ public class PartitionDefinition implements Serializable {
 
     public void setStorageEngine(String storageEngine) {
         this.storageEngine = storageEngine;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("PARTITION ").append(partitionName)
+                .append(" ").append(partitionOperation)
+                .append(" (").append(PlainSelect.getStringList(values))
+                .append(")");
+        if (storageEngine != null) {
+            b.append(" ENGINE = ").append(storageEngine);
+        }
+        return b.toString();
     }
 }

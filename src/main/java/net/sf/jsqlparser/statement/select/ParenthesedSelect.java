@@ -23,6 +23,7 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
     Pivot pivot;
     UnPivot unPivot;
     Select select;
+    SampleClause sampleClause = null;
 
     public ParenthesedSelect() {}
 
@@ -79,7 +80,8 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
             TableFunction t = (TableFunction) fromItem;
             return new Alias(t.getName(), true);
         } else {
-            return fromItem.getAlias()!=null ? new Alias(fromItem.getAlias().getName(), true) : null;
+            return fromItem.getAlias() != null ? new Alias(fromItem.getAlias().getName(), true)
+                    : null;
         }
     }
 
@@ -114,6 +116,22 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
 
     public void setUnPivot(UnPivot unPivot) {
         this.unPivot = unPivot;
+    }
+
+    @Override
+    public SampleClause getSampleClause() {
+        return sampleClause;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        this.sampleClause = sampleClause;
+        return this;
+    }
+
+    public ParenthesedSelect withSampleClause(SampleClause sampleClause) {
+        this.sampleClause = sampleClause;
+        return this;
     }
 
     public Select getSelect() {
@@ -163,7 +181,7 @@ public class ParenthesedSelect extends Select implements FromItem, ParenthesedSt
 
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
         builder.append("(").append(select).append(")");
-        appendTo(builder, alias, pivot, unPivot);
+        appendTo(builder, alias, sampleClause, pivot, unPivot);
         return builder;
     }
 }

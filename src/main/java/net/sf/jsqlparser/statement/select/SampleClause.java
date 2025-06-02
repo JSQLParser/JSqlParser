@@ -13,25 +13,28 @@ public class SampleClause {
     private SampleKeyword keyword;
     private SampleMethod method;
     private Number percentageArgument;
+    private String percentageUnit;
     private Number repeatArgument;
     // Oracle Specific
     private Number seedArgument;
 
     public SampleClause(String keyword, String method, Number percentageArgument,
+            String percentageUnit,
             Number repeatArgument, Number seedArgument) {
         this.keyword = SampleKeyword.from(keyword);
         this.method = method == null || method.length() == 0 ? null : SampleMethod.from(method);
         this.percentageArgument = percentageArgument;
+        this.percentageUnit = percentageUnit;
         this.repeatArgument = repeatArgument;
         this.seedArgument = seedArgument;
     }
 
     public SampleClause() {
-        this(SampleKeyword.TABLESAMPLE.toString(), null, null, null, null);
+        this(SampleKeyword.TABLESAMPLE.toString(), null, null, null, null, null);
     }
 
     public SampleClause(String keyword) {
-        this(keyword, null, null, null, null);
+        this(keyword, null, null, null, null, null);
     }
 
     public SampleKeyword getKeyword() {
@@ -54,6 +57,15 @@ public class SampleClause {
 
     public Number getRepeatArgument() {
         return repeatArgument;
+    }
+
+    public String getPercentageUnit() {
+        return percentageUnit;
+    }
+
+    public SampleClause setPercentageUnit(String percentageUnit) {
+        this.percentageUnit = percentageUnit;
+        return this;
     }
 
     public SampleClause setRepeatArgument(Number repeatArgument) {
@@ -92,7 +104,8 @@ public class SampleClause {
         }
 
         if (percentageArgument != null) {
-            builder.append(" (").append(percentageArgument).append(")");
+            builder.append(" (").append(percentageArgument)
+                    .append(percentageUnit != null ? " " + percentageUnit : "").append(")");
         }
 
         if (repeatArgument != null) {
@@ -111,10 +124,22 @@ public class SampleClause {
     }
 
     public enum SampleKeyword {
-        SAMPLE, TABLESAMPLE;
+        SAMPLE("SAMPLE"), TABLESAMPLE("TABLESAMPLE"), USING_SAMPLE("USING SAMPLE");
+
+        String keyword;
+
+        SampleKeyword(String keyword) {
+            this.keyword = keyword;
+        }
 
         public static SampleKeyword from(String sampleKeyword) {
-            return Enum.valueOf(SampleKeyword.class, sampleKeyword.toUpperCase());
+            return Enum.valueOf(SampleKeyword.class,
+                    sampleKeyword.toUpperCase().replaceAll(" ", "_"));
+        }
+
+        @Override
+        public String toString() {
+            return keyword;
         }
     }
 
@@ -122,7 +147,8 @@ public class SampleClause {
         BERNOULLI, SYSTEM, BLOCK;
 
         public static SampleMethod from(String sampleMethod) {
-            return Enum.valueOf(SampleMethod.class, sampleMethod.toUpperCase());
+            return Enum.valueOf(SampleMethod.class,
+                    sampleMethod.toUpperCase().replaceAll(" ", "_"));
         }
     }
 }

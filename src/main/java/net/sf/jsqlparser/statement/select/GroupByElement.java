@@ -22,8 +22,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
 public class GroupByElement implements Serializable {
-    private ExpressionList groupByExpressions = new ExpressionList();
-    private List<ExpressionList> groupingSets = new ArrayList<>();
+    private ExpressionList<Expression> groupByExpressions = new ExpressionList<>();
+    private List<ExpressionList<Expression>> groupingSets = new ArrayList<>();
     // postgres rollup is an ExpressionList
     private boolean mysqlWithRollup = false;
 
@@ -53,14 +53,14 @@ public class GroupByElement implements Serializable {
         if (groupByExpressions.getExpressions() == null) {
             groupByExpressions.setExpressions(new ArrayList());
         }
-        groupByExpressions.getExpressions().add(groupByExpression);
+        groupByExpressions.add(groupByExpression);
     }
 
-    public List<ExpressionList> getGroupingSets() {
+    public List<ExpressionList<Expression>> getGroupingSets() {
         return groupingSets;
     }
 
-    public void setGroupingSets(List<ExpressionList> groupingSets) {
+    public void setGroupingSets(List<ExpressionList<Expression>> groupingSets) {
         this.groupingSets = groupingSets;
     }
 
@@ -75,7 +75,7 @@ public class GroupByElement implements Serializable {
         b.append("GROUP BY ");
 
         if (groupByExpressions != null) {
-            b.append(groupByExpressions.toString());
+            b.append(groupByExpressions);
         }
 
         int i = 0;

@@ -1,4 +1,11 @@
 import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
+import com.nwalsh.gradle.saxon.SaxonXsltTask
+
+buildscript {
+    dependencies {
+        classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: 'latest.release'
+    }
+}
 
 plugins {
     id 'java'
@@ -12,14 +19,16 @@ plugins {
     id "com.diffplug.spotless" version "latest.release"
     id 'pmd'
     id 'checkstyle'
+    id 'eclipse'
 
     // download the RR tools which have no Maven Repository
     id "de.undercouch.download" version "latest.release"
     id 'org.hidetake.ssh' version "latest.release"
 
-    id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "2.0.0" //later depends on JDK 17
+    id "se.bjurr.gitchangelog.git-changelog-gradle-plugin" version "latest.release"
     id "me.champeau.jmh" version "latest.release"
-    id "com.nwalsh.gradle.saxon.saxon-gradle" version "0.9.6"
+    id "com.nwalsh.gradle.saxon.saxon-gradle" version "latest.release"
+    id 'biz.aQute.bnd.builder' version "latest.release"
 }
 
 def getVersion = { boolean considerSnapshot ->
@@ -65,13 +74,14 @@ description = 'JSQLParser library'
 
 repositories {
     gradlePluginPortal()
-    mavenLocal()
     mavenCentral()
 
-    // Sonatype OSSRH
+    // JavaCC 8 Snapshots
     maven {
-        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+        url = uri('https://central.sonatype.com/repository/maven-snapshots/')
     }
+
+    maven { url "https://dev.saxonica.com/maven" }
 }
 
 configurations {
@@ -88,23 +98,36 @@ dependencies {
     testImplementation 'com.h2database:h2:+'
 
     // for JaCoCo Reports
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:+'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:+'
 
     // Java Doc in XML Format
-    xmlDoclet 'com.manticore-projects.tools:xml-doclet:1.+'
+    xmlDoclet 'com.manticore-projects.tools:xml-doclet:2.+'
 
     // enforce latest version of JavaCC
-    testImplementation 'net.java.dev.javacc:javacc:+'
-    javacc 'net.java.dev.javacc:javacc:+'
+    testImplementation('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+
+    jmh 'org.openjdk.jmh:jmh-core:1.37'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
+    javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+}
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
+            // Check for updates every build
+            resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
+        }
+    }
 }
 
 compileJavacc {
@@ -117,9 +140,10 @@ java {
 
     sourceCompatibility = '11'
     targetCompatibility = '11'
+
     // needed for XML-Doclet to work (since Doclet changed again with Java 13)
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
@@ -134,6 +158,17 @@ javadoc {
 jar {
     manifest {
         attributes (
+            "Automatic-Module-Name": "net.sf.jsqlparser"
+        )
+    }
+
+    bundle {
+        properties.empty()
+        bnd(
+            "Created-By": System.properties.get('user.name'),
+            "Bundle-SymbolicName": "net.sf.jsqlparser",
+            "Import-Package": "*",
+            "Export-Package": "net.sf.jsqlparser.*",
             "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
@@ -153,10 +188,11 @@ tasks.register('xmldoc', Javadoc) {
     )
 
     source = sourceSets.main.allJava
-    // beware: Gradle deletes this folder automatically and there is no switch-off
+    include("**/javacc/net/sf/jsqlparser/parser/*.java" )
+
     destinationDir = reporting.file("xmlDoclet")
     options.docletpath = configurations.xmlDoclet.files as List
-    options.doclet = "com.github.markusbernhardt.xmldoclet.XmlDoclet"
+    options.doclet = "com.manticore.tools.xmldoclet.XmlDoclet"
     title = "API $version"
     options.addBooleanOption("rst", true)
     options.addBooleanOption("withFloatingToc", Boolean.parseBoolean(System.getenv().getOrDefault("FLOATING_TOC", "true")))
@@ -177,7 +213,7 @@ test {
     useJUnitPlatform()
 
     // set heap size for the test JVM(s)
-    minHeapSize = "128m"
+    minHeapSize = "1G"
     maxHeapSize = "4G"
 
     // set JVM stack size
@@ -283,6 +319,7 @@ pmd {
     pmdMain {
         excludes = [
                 "build/generated/*"
+                , "**/net/sf/jsqlparser/parser/SimpleCharStream.java"
         ]
     }
 }
@@ -290,6 +327,12 @@ pmd {
 checkstyle {
     sourceSets = [sourceSets.main, sourceSets.test]
     configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.named('checkstyleMain') {
+    source = source.filter {
+        !it.absolutePath.contains('net/sf/jsqlparser/parser/SimpleCharStream.java')
+    }
 }
 
 spotless {
@@ -370,14 +413,14 @@ tasks.register('renderRR') {
 
 
 tasks.register('gitChangelogTask', GitChangelogTask) {
-    fromRepo = file("$projectDir")
-    file = new File("${projectDir}/src/site/sphinx/changelog.rst")
-    fromRevision = "4.0"
+    fromRepo.set( file("$projectDir").toString() )
+    file.set( new File("${projectDir}/src/site/sphinx/changelog.rst") )
+    fromRevision.set( "4.0")
     //toRef = "1.1";
 
     // switch off the formatter since the indentation matters for Mark-down
     // @formatter:off
-    templateContent ="""
+    templateContent.set ("""
 ************************
 Changelog
 ************************
@@ -404,7 +447,7 @@ Version {{name}}
 
  {{/issues}}
 {{/tags}}
-"""
+""")
     // @formatter:on
 }
 
@@ -421,21 +464,21 @@ tasks.register('updateKeywords', JavaExec) {
     dependsOn(compileJava)
 }
 
-xslt  {
+tasks.register('xslt', SaxonXsltTask) {
     def outFile = version.endsWith("-SNAPSHOT")
-            ?   file("src/site/sphinx/syntax_snapshot.rst")
-            :   file("src/site/sphinx/syntax_stable.rst")
+            ? file("src/site/sphinx/syntax_snapshot.rst")
+            : file("src/site/sphinx/syntax_stable.rst")
 
     dependsOn(renderRR)
-    stylesheet 'src/main/resources/rr/xhtml2rst.xsl'
+    stylesheet file('src/main/resources/rr/xhtml2rst.xsl')
 
-    parameters (
+    parameters(
             "withFloatingToc": System.getenv().getOrDefault("FLOATING_TOC", "true"),
             "isSnapshot": Boolean.toString(version.endsWith("-SNAPSHOT"))
     )
 
     // Transform every .xml file in the "input" directory.
-    input layout.buildDirectory.file("rr/JSqlParserCC.xhtml")
+    input layout.buildDirectory.file("rr/JSqlParserCC.xhtml").get()
     output outFile
 }
 
@@ -606,4 +649,12 @@ tasks.register('upload') {
 
 check {
     dependsOn jacocoTestCoverageVerification
+}
+
+jmh {
+    includes = ['.*JSQLParserBenchmark.*']
+    warmupIterations = 2
+    fork = 3
+    iterations = 5
+    timeOnIteration = '1s'
 }

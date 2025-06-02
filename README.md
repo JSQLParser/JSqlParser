@@ -1,4 +1,4 @@
-# [JSqlParser 5.1 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
+# [JSqlParser 5.3 Website](https://jsqlparser.github.io/JSqlParser) <img src="src/site/sphinx/_images/logo-no-background.svg" alt="drawing" width="200" align="right"/>
 
 [![CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
@@ -66,6 +66,22 @@ For details, please see https://storage.googleapis.com/gweb-research2023-media/p
 ## Java Version
 
 JSQLParser-4.9 was the last JDK8 compatible version. JSQLParser-5.0 and later depend on JDK11 and introduce API breaking changes to the AST Visitors. Please see the Migration Guide for the details.
+
+Building JSQLParser-5.1 and newer with Gradle will depend on a JDK17 toolchain due to the used plugins.
+
+JSQLParser-5.4 Snapshot and later use JavaCC-8 Snapshots for generating the parser.
+
+## Performance
+
+Unfortunately the released JSQLParser-5.2 shows a performance deterioration caused by commit [30cf5d7](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a076f49deb5cc841d39e62b3dc) related to `FunctionAllColumns()`.
+This has been resolved in JSQLParser 5.3-SNAPSHOT and JMH benchmarks have been added to avoid such regressions in the future. Further all `LOOKAHEAD` have been revised one by one, and we have gained back a very good performance of the Parser.
+
+```text
+Benchmark                               (version)  Mode  Cnt   Score   Error  Units
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  82.695 ± 2.841  ms/op
+JSQLParserBenchmark.parseSQLStatements        5.3  avgt   15  84.687 ± 3.321  ms/op
+JSQLParserBenchmark.parseSQLStatements        5.1  avgt   15  86.592 ± 5.781  ms/op
+```
 
 ## [Supported Grammar and Syntax](https://jsqlparser.github.io/JSqlParser/syntax.html)
 

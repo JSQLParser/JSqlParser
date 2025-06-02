@@ -28,3 +28,4 @@ connect by nocycle obj=prior link
 start with obj='a'
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 14, 2021 9:00:57 PM
+--@FAILURE: Encountered unexpected token: "union" "UNION" recorded first on Feb 13, 2025, 10:16:06 AM

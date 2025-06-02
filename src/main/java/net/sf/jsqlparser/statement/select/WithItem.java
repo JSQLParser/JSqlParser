@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.ParenthesedStatement;
+import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -22,15 +23,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class WithItem<T extends ParenthesedStatement> implements Serializable {
-    private T statement;
+public class WithItem<K extends ParenthesedStatement> implements Serializable {
+    private K statement;
     private Alias alias;
     private List<SelectItem<?>> withItemList;
     private boolean recursive = false;
-
+    private boolean usingNot = false;
     private boolean materialized = false;
 
-    public WithItem(T statement, Alias alias) {
+    public WithItem(K statement, Alias alias) {
         this.statement = statement;
         this.alias = alias;
     }
@@ -39,15 +40,15 @@ public class WithItem<T extends ParenthesedStatement> implements Serializable {
         this(null, (Alias) null);
     }
 
-    public T getParenthesedStatement() {
+    public K getParenthesedStatement() {
         return statement;
     }
 
-    public void setParenthesedStatement(T statement) {
+    public void setParenthesedStatement(K statement) {
         this.statement = statement;
     }
 
-    public WithItem<T> withParenthesedStatement(T statement) {
+    public WithItem<K> withParenthesedStatement(K statement) {
         this.setParenthesedStatement(statement);
         return this;
     }
@@ -89,6 +90,24 @@ public class WithItem<T extends ParenthesedStatement> implements Serializable {
         this.materialized = materialized;
     }
 
+    public K getStatement() {
+        return statement;
+    }
+
+    public WithItem<K> setStatement(K statement) {
+        this.statement = statement;
+        return this;
+    }
+
+    public boolean isUsingNot() {
+        return usingNot;
+    }
+
+    public WithItem<K> setUsingNot(boolean usingNot) {
+        this.usingNot = usingNot;
+        return this;
+    }
+
     /**
      * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
      *
@@ -118,13 +137,22 @@ public class WithItem<T extends ParenthesedStatement> implements Serializable {
             builder.append(")");
         }
         builder.append(" AS ");
-        builder.append(materialized ? "MATERIALIZED " : "");
+        if (materialized) {
+            builder.append(usingNot
+                    ? "NOT MATERIALIZED "
+                    : "MATERIALIZED ");
+        }
         builder.append(statement);
         return builder.toString();
     }
 
+    @Deprecated
     public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
         return selectVisitor.visit(this, context);
+    }
+
+    public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
+        return statement.accept(statementVisitor, context);
     }
 
     public WithItem<?> withWithItemList(List<SelectItem<?>> withItemList) {
@@ -134,6 +162,13 @@ public class WithItem<T extends ParenthesedStatement> implements Serializable {
 
     public WithItem<?> withRecursive(boolean recursive, boolean materialized) {
         this.setRecursive(recursive);
+        this.setMaterialized(materialized);
+        return this;
+    }
+
+    public WithItem<?> withRecursive(boolean recursive, boolean usingNot, boolean materialized) {
+        this.setRecursive(recursive);
+        this.setUsingNot(usingNot);
         this.setMaterialized(materialized);
         return this;
     }
@@ -169,7 +204,7 @@ public class WithItem<T extends ParenthesedStatement> implements Serializable {
     }
 
     public void setSelect(ParenthesedSelect select) {
-        this.statement = (T) select;
+        this.statement = (K) select;
     }
 
 }

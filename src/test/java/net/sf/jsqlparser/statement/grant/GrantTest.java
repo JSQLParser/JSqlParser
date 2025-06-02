@@ -13,6 +13,7 @@ import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import static net.sf.jsqlparser.test.TestUtils.*;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
@@ -96,5 +97,11 @@ public class GrantTest {
     @Test
     public void testGrantSchemaParsingIssue1080() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("GRANT SELECT ON schema_name.table_name TO XYZ");
+    }
+
+    @Test
+    void testPublicKeywordIssue2230() throws JSQLParserException {
+        String sqlStr = "grant select on da380_now to public;";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

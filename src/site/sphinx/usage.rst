@@ -18,7 +18,7 @@ How to use it
 Compile from Source Code
 ==============================
 
-You will need to have ``JDK 8`` or ``JDK 11`` installed. Please note that JSQLParser-4.9 is the last ``JDK 8`` compatible release and all development after will depend on ``JDK 11``.
+You will need to have ``JDK 8`` or ``JDK 11`` installed. Please note that JSQLParser-4.9 is the last ``JDK 8`` compatible release and all development after will depend on ``JDK 11``. Building JSQLParser-5.1 and newer with Gradle will depend on a JDK17 toolchain due to the used plugins.
 
 .. tab:: Maven
 

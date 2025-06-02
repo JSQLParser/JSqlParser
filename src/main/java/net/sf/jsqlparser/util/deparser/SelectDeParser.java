@@ -56,6 +56,8 @@ import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SampleClause;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -70,6 +72,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -139,6 +142,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (alias != null) {
             builder.append(alias);
         }
+
+        SampleClause sampleClause = select.getSampleClause();
+        if (sampleClause != null) {
+            builder.append(sampleClause);
+        }
+
         Pivot pivot = select.getPivot();
         if (pivot != null) {
             pivot.accept(this, context);
@@ -310,7 +319,21 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             plainSelect.getForClause().appendTo(builder);
         }
 
+        Alias alias = plainSelect.getAlias();
+        if (alias != null) {
+            builder.append(alias);
+        }
+        Pivot pivot = plainSelect.getPivot();
+        if (pivot != null) {
+            pivot.accept(this, context);
+        }
+        UnPivot unpivot = plainSelect.getUnPivot();
+        if (unpivot != null) {
+            unpivot.accept(this, context);
+        }
+
         deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
+
         if (plainSelect.isEmitChanges()) {
             builder.append(" EMIT CHANGES");
         }
@@ -359,18 +382,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" WITH NO LOG");
         }
 
-        Alias alias = plainSelect.getAlias();
-        if (alias != null) {
-            builder.append(alias);
-        }
-        Pivot pivot = plainSelect.getPivot();
-        if (pivot != null) {
-            pivot.accept(this, context);
-        }
-        UnPivot unpivot = plainSelect.getUnPivot();
-        if (unpivot != null) {
-            unpivot.accept(this, context);
-        }
+
 
         return builder;
     }
@@ -707,7 +719,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         builder.append(" AS ");
         if (withItem.isMaterialized()) {
-            builder.append("MATERIALIZED ");
+            builder.append(withItem.isUsingNot()
+                    ? "NOT MATERIALIZED "
+                    : "MATERIALIZED ");
         }
         StatementDeParser statementDeParser =
                 new StatementDeParser((ExpressionDeParser) expressionVisitor, this, builder);
@@ -735,6 +749,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(tableFunction.getPrefix()).append(" ");
         }
         tableFunction.getFunction().accept(this.expressionVisitor, context);
+
+        if (tableFunction.getWithClause() != null) {
+            builder.append(" WITH ").append(tableFunction.getWithClause());
+        }
 
         if (tableFunction.getAlias() != null) {
             builder.append(tableFunction.getAlias());
@@ -836,11 +854,36 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(FromQuery fromQuery, S context) {
+        List<WithItem<?>> withItemsList = fromQuery.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            builder.append("WITH ");
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                iter.next().accept((SelectVisitor<?>) this, context);
+                if (iter.hasNext()) {
+                    builder.append(",");
+                }
+                builder.append(" ");
+            }
+        }
+
         if (fromQuery.isUsingFromKeyword()) {
             builder.append("FROM ");
         }
         fromQuery.getFromItem().accept(this, context);
         builder.append("\n");
+
+        if (fromQuery.getLateralViews() != null) {
+            for (LateralView lateralView : fromQuery.getLateralViews()) {
+                deparseLateralView(lateralView);
+            }
+        }
+
+        if (fromQuery.getJoins() != null) {
+            for (Join join : fromQuery.getJoins()) {
+                deparseJoin(join);
+            }
+        }
+
         for (PipeOperator operator : fromQuery.getPipeOperators()) {
             operator.accept(this, null);
         }
@@ -876,8 +919,14 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         builder.append("|> ").append("AGGREGATE");
         int i = 0;
         for (SelectItem<?> selectItem : aggregate.getSelectItems()) {
-            builder.append(i++ > 0 ? ", " : " ");
+            builder.append(i > 0 ? ", " : " ");
             selectItem.accept(this, context);
+            ArrayList<String> selectItemsOrderSuffices = aggregate.getSelectItemsOrderSuffices();
+            if (i < selectItemsOrderSuffices.size() && selectItemsOrderSuffices.get(i) != null
+                    && !selectItemsOrderSuffices.get(i).isEmpty()) {
+                builder.append(" ").append(selectItemsOrderSuffices.get(i));
+            }
+            i++;
         }
         builder.append("\n");
 
@@ -889,8 +938,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" BY");
             i = 0;
             for (SelectItem<?> selectItem : aggregate.getGroupItems()) {
-                builder.append(i++ > 0 ? ", " : " ");
+                builder.append(i > 0 ? ", " : " ");
                 selectItem.accept(this, context);
+
+                ArrayList<String> groupItemsOrderSuffices = aggregate.getGroupItemsOrderSuffices();
+                if (i < groupItemsOrderSuffices.size() && groupItemsOrderSuffices.get(i) != null
+                        && !groupItemsOrderSuffices.get(i).isEmpty()) {
+                    builder.append(" ").append(groupItemsOrderSuffices.get(i));
+                }
+
+                i++;
             }
             builder.append("\n");
         }
@@ -954,7 +1011,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         return builder;
     }
 
-
     @Override
     public StringBuilder visit(PivotPipeOperator pivot, Void context) {
         builder
@@ -964,7 +1020,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(" FOR ")
                 .append(pivot.getInputColumn())
                 .append(" IN (")
-                .append(pivot.getPivotColumns())
+                .append(Select.getStringList(pivot.getPivotColumns()))
                 .append("))");
         if (pivot.getAlias() != null) {
             builder.append(" ").append(pivot.getAlias());
@@ -981,6 +1037,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     public StringBuilder visit(SelectPipeOperator select, Void context) {
         builder.append("|> ").append(select.getOperatorName());
+        if (select.getModifier() != null && !select.getModifier().isEmpty()) {
+            builder.append(" ").append(select.getModifier());
+        }
+
         int i = 0;
         for (SelectItem<?> selectItem : select.getSelectItems()) {
             builder.append(i++ > 0 ? ", " : " ").append(selectItem);
@@ -1034,7 +1094,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 .append(" FOR ")
                 .append(unPivot.getNameColumn())
                 .append(" IN (")
-                .append(unPivot.getPivotColumns())
+                .append(Select.getStringList(unPivot.getPivotColumns()))
                 .append("))");
         if (unPivot.getAlias() != null) {
             builder.append(" ").append(unPivot.getAlias());

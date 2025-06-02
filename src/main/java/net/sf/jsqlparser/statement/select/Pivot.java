@@ -99,6 +99,12 @@ public class Pivot implements Serializable {
         return this;
     }
 
+    public Pivot addForColumn(Column... forColumns) {
+        ExpressionList<Column> forColumnsList = new ExpressionList<>(forColumns);
+        this.setForColumns(forColumnsList);
+        return this;
+    }
+
     public Pivot withSingleInItems(List<SelectItem<?>> singleInItems) {
         this.setSingleInItems(singleInItems);
         return this;

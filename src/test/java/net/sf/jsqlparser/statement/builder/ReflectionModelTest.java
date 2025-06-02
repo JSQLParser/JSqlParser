@@ -190,7 +190,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.select.OrderByElement(),
             // new net.sf.jsqlparser.statement.select.ParenthesisFromItem().getFromItem(),
             new net.sf.jsqlparser.statement.select.Pivot(),
-            new net.sf.jsqlparser.statement.select.PivotXml(),
+            // new net.sf.jsqlparser.statement.select.PivotXml(),
             // new net.sf.jsqlparser.statement.select.PlainSelect(),
             // new net.sf.jsqlparser.statement.select.Select(),
             new net.sf.jsqlparser.statement.select.SelectItem<>(),

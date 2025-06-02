@@ -20,6 +20,7 @@ public class TableFunction extends Function implements FromItem {
     private Pivot pivot = null;
     private UnPivot unPivot = null;
     private Function function;
+    private String withClause = null;
 
     public TableFunction(Function function) {
         this.function = function;
@@ -28,6 +29,17 @@ public class TableFunction extends Function implements FromItem {
     public TableFunction(String prefix, Function function) {
         this.prefix = prefix;
         this.function = function;
+    }
+
+    public TableFunction(Function function, String withClause) {
+        this.function = function;
+        this.withClause = withClause;
+    }
+
+    public TableFunction(String prefix, Function function, String withClause) {
+        this.prefix = prefix;
+        this.function = function;
+        this.withClause = withClause;
     }
 
     public TableFunction(String prefix, String name, Expression... parameters) {
@@ -59,6 +71,19 @@ public class TableFunction extends Function implements FromItem {
 
     public TableFunction setPrefix(String prefix) {
         this.prefix = prefix;
+        return this;
+    }
+
+    public String getWithClause() {
+        return withClause;
+    }
+
+    public void setWithClause(String withClause) {
+        this.withClause = withClause;
+    }
+
+    public TableFunction withWithClause(String withClause) {
+        this.withClause = withClause;
         return this;
     }
 
@@ -112,11 +137,25 @@ public class TableFunction extends Function implements FromItem {
         return (TableFunction) FromItem.super.withUnPivot(unpivot);
     }
 
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         if (prefix != null) {
             builder.append(prefix).append(" ");
         }
         builder.append(function.toString());
+
+        if (withClause != null) {
+            builder.append(" WITH ").append(withClause);
+        }
 
         if (alias != null) {
             builder.append(alias);

@@ -67,8 +67,7 @@ public class CNFTest {
                 "((NOT (NOT 1.1 >= 2.3 OR 3.3 < 4.5)) OR "
                         + "(S.A LIKE '\"%%%\"' AND S.B = '\"orz\"'))");
         Expression expected = CCJSqlParserUtil.parseCondExpression(
-                "(1.1 >= 2.3 OR S.A LIKE '\"%%%\"') AND (1.1 >= 2.3 OR S.B = '\"orz\"')"
-                        + " AND (NOT 3.3 < 4.5 OR S.A LIKE '\"%%%\"') AND (NOT 3.3 < 4.5 OR S.B = '\"orz\"')");
+                "(1.1 >= 2.3 OR S.A LIKE '\"%%%\"') AND (1.1 >= 2.3 OR S.B = '\"orz\"') AND (NOT 3.3 < 4.5 OR S.A LIKE '\"%%%\"') AND (NOT 3.3 < 4.5 OR S.B = '\"orz\"')");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }
@@ -206,8 +205,7 @@ public class CNFTest {
                 "NOT ((NOT (S.A > 3.5 AND S.B < 4)) OR "
                         + "(S.C LIKE '\"%%\"' OR S.D = {t '12:04:34'}))");
         Expression expected = CCJSqlParserUtil.parseCondExpression(
-                "S.A > 3.5 AND S.B < 4 AND NOT S.C LIKE '\"%%\"' "
-                        + "AND NOT S.D = {t '12:04:34'}");
+                "S.A > 3.5 AND S.B < 4 AND NOT S.C LIKE '\"%%\"' AND NOT S.D = {t '12:04:34'}");
         Expression result = CNFConverter.convertToCNF(expr);
         assertEquals(expected.toString(), result.toString());
     }

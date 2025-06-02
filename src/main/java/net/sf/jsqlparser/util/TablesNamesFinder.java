@@ -130,6 +130,7 @@ import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
+import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -167,6 +168,7 @@ import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -524,13 +526,13 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(IsNullExpression isNullExpression, S context) {
-
+        isNullExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
     @Override
     public <S> Void visit(IsBooleanExpression isBooleanExpression, S context) {
-
+        isBooleanExpression.getLeftExpression().accept(this, context);
         return null;
     }
 
@@ -806,11 +808,17 @@ public class TablesNamesFinder<Void>
         }
 
         if (analytic.getWindowElement() != null) {
-            analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
-                    context);
-            analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
-                    context);
-            analytic.getWindowElement().getOffset().getExpression().accept(this, context);
+            if (analytic.getWindowElement().getRange().getStart().getExpression() != null) {
+                analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
+                        context);
+            }
+            if (analytic.getWindowElement().getRange().getEnd().getExpression() != null) {
+                analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
+                        context);
+            }
+            if (analytic.getWindowElement().getOffset() != null) {
+                analytic.getWindowElement().getOffset().getExpression().accept(this, context);
+            }
         }
         return null;
     }
@@ -945,6 +953,12 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(FunctionAllColumns functionAllColumns, S context) {
+
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AllValue allValue, S context) {
 
         return null;
@@ -1018,6 +1032,11 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(ParenthesedDelete delete, S context) {
         return visit(delete.getDelete(), context);
+    }
+
+    @Override
+    public <S> Void visit(SessionStatement sessionStatement, S context) {
+        return null;
     }
 
     @Override

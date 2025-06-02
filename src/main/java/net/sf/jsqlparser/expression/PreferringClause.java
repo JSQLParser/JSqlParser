@@ -39,6 +39,24 @@ public class PreferringClause implements Serializable {
         }
     }
 
+    public Expression getPreferring() {
+        return preferring;
+    }
+
+    public PreferringClause setPreferring(Expression preferring) {
+        this.preferring = preferring;
+        return this;
+    }
+
+    public PartitionByClause getPartitionBy() {
+        return partitionBy;
+    }
+
+    public PreferringClause setPartitionBy(PartitionByClause partitionBy) {
+        this.partitionBy = partitionBy;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

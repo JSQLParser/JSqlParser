@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -36,7 +37,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.StringReader;
 import java.util.List;
 
-import static junit.framework.Assert.assertNull;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -44,6 +44,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -900,6 +901,20 @@ public class InsertTest {
         Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
         assertEquals("overriding", insert.getTable().getName());
         assertEquals(true, insert.isOverriding());
+    }
+
+    @Test
+    void insertDemo() {
+        Insert insert =
+                new Insert()
+                        .withTable(new Table("test"))
+                        .withSelect(
+                                new Values()
+                                        .addExpressions(
+                                                new StringValue("A"), new StringValue("B")));
+
+        TestUtils.assertStatementCanBeDeparsedAs(
+                insert, "INSERT INTO test VALUES ('A', 'B')");
     }
 
 }

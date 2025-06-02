@@ -11,7 +11,7 @@ package net.sf.jsqlparser.expression.operators.relational;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.parser.Node;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class ExpressionList<T extends Expression> extends ArrayList<T>
         implements Expression, Serializable {
-    private transient SimpleNode node;
+    private transient Node node;
 
     public ExpressionList(Collection<? extends T> expressions) {
         addAll(expressions);
@@ -96,12 +96,12 @@ public class ExpressionList<T extends Expression> extends ArrayList<T>
 
 
     @Override
-    public SimpleNode getASTNode() {
+    public Node getASTNode() {
         return node;
     }
 
     @Override
-    public void setASTNode(SimpleNode node) {
+    public void setASTNode(Node node) {
         this.node = node;
     }
 

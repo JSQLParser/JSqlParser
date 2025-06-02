@@ -123,6 +123,7 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -181,6 +182,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         builder.append(" BETWEEN ");
+
+        if (between.isUsingSymmetric()) {
+            builder.append("SYMMETRIC ");
+        } else if (between.isUsingAsymmetric()) {
+            builder.append("ASYMMETRIC ");
+        }
+
         between.getBetweenExpressionStart().accept(this, context);
         builder.append(" AND ");
         between.getBetweenExpressionEnd().accept(this, context);
@@ -1539,13 +1547,18 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(ArrayConstructor aThis, S context) {
-        if (aThis.isArrayKeyword()) {
+    public <S> StringBuilder visit(ArrayConstructor arrayConstructor, S context) {
+        if (arrayConstructor.isArrayKeyword()) {
             builder.append("ARRAY");
+
+            ColDataType dataType = arrayConstructor.getDataType();
+            if (dataType != null) {
+                builder.append("<").append(dataType).append(">");
+            }
         }
         builder.append("[");
         boolean first = true;
-        for (Expression expression : aThis.getExpressions()) {
+        for (Expression expression : arrayConstructor.getExpressions()) {
             if (!first) {
                 builder.append(", ");
             } else {
@@ -1644,6 +1657,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(AllTableColumns allTableColumns, S context) {
         builder.append(allTableColumns.toString());
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(FunctionAllColumns functionAllColumns, S context) {
+        builder.append(functionAllColumns.toString());
         return builder;
     }
 

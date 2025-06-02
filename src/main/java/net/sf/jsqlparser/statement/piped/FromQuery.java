@@ -1,16 +1,31 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2025 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.piped;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.LateralView;
 import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.SampleClause;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -20,6 +35,8 @@ import java.util.function.UnaryOperator;
 public class FromQuery extends Select {
     private boolean usingFromKeyword = true;
     private FromItem fromItem;
+    private List<LateralView> lateralViews = null;
+    private List<Join> joins = null;
     private final ArrayList<PipeOperator> pipeOperators = new ArrayList<>();
 
     public FromQuery(FromItem fromItem) {
@@ -46,6 +63,51 @@ public class FromQuery extends Select {
 
     public boolean isUsingFromKeyword() {
         return usingFromKeyword;
+    }
+
+
+    public List<LateralView> getLateralViews() {
+        return lateralViews;
+    }
+
+    public FromQuery setLateralViews(List<LateralView> lateralViews) {
+        this.lateralViews = lateralViews;
+        return this;
+    }
+
+    public FromQuery addLateralViews(Collection<LateralView> lateralViews) {
+        if (this.lateralViews == null) {
+            this.lateralViews = new ArrayList<>(lateralViews);
+        } else {
+            this.lateralViews.addAll(lateralViews);
+        }
+        return this;
+    }
+
+    public FromQuery addLateralViews(LateralView... lateralViews) {
+        return this.addLateralViews(Arrays.asList(lateralViews));
+    }
+
+    public List<Join> getJoins() {
+        return joins;
+    }
+
+    public FromQuery setJoins(List<Join> joins) {
+        this.joins = joins;
+        return this;
+    }
+
+    public FromQuery addJoins(Collection<Join> joins) {
+        if (this.joins == null) {
+            this.joins = new ArrayList<>(joins);
+        } else {
+            this.joins.addAll(joins);
+        }
+        return this;
+    }
+
+    public FromQuery addJoins(Join... joins) {
+        return addJoins(Arrays.asList(joins));
     }
 
     public FromQuery setUsingFromKeyword(boolean usingFromKeyword) {
@@ -189,6 +251,16 @@ public class FromQuery extends Select {
     }
 
     @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
+    }
+
+    @Override
     public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
         return expressionVisitor.visit(this, context);
     }
@@ -209,10 +281,36 @@ public class FromQuery extends Select {
 
     @Override
     public StringBuilder appendTo(StringBuilder builder) {
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            builder.append("WITH ");
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
+                WithItem withItem = iter.next();
+                builder.append(withItem);
+                if (iter.hasNext()) {
+                    builder.append(",");
+                }
+                builder.append(" ");
+            }
+        }
+
         if (usingFromKeyword) {
             builder.append("FROM ");
         }
         builder.append(fromItem).append("\n");
+        if (lateralViews != null) {
+            for (LateralView lateralView : lateralViews) {
+                builder.append(" ").append(lateralView);
+            }
+        }
+        if (joins != null) {
+            for (Join join : joins) {
+                if (join.isSimple()) {
+                    builder.append(", ").append(join);
+                } else {
+                    builder.append(" ").append(join);
+                }
+            }
+        }
         for (PipeOperator operator : pipeOperators) {
             operator.appendTo(builder);
         }

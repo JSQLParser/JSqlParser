@@ -505,6 +505,75 @@ public class TablesNamesFinderTest {
         tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("a", "b");
         assertThat(tables).doesNotContain("a1");
+
+        sqlStr = "select (a_alias.col1), b_alias.col2\n" +
+                "from b b_alias, a as a_alias, c join b on c.id = b.id\n" +
+                "where b_alias.id = a_alias.id and c.id = b_alias.id";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c");
+
+        sqlStr = "with\n" +
+                "temp1 as (( select * from b )),\n" +
+                "temp2 as ( select (((temp1_alias1.id))) from temp1 temp1_alias1 )\n" +
+                "select a_alias.col1, temp1_alias2.col2\n" +
+                "from temp1 temp1_alias2, a as a_alias, temp2 join c c_alias on c_alias.id = temp2.id\n"
+                +
+                "where c.id = temp1_alias2.id";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c");
+
+        sqlStr = "select a.id, (select max(val) from e) as maxval\n" +
+                "from a, (select * from b, (select * from c) c_alias) as bc_nested\n" +
+                "            where a.id in ( select id from bc_nested join (select * from d) d_alias on bc_nested.id = d_alias.id ) \n"
+                +
+                "            and a.max > (select max(val) from bc_nested, f) and a.desc like 'abc'";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f");
+
+        sqlStr = " select (select max(val) from e) as maxval, id\n" +
+                "            from  (select * from b, (select * from c) c_alias) as bc_nested, a\n" +
+                "            where a.max > (select max(val) from bc_nested, f) and \n" +
+                "            a.id in ( select id from (select * from d) d_alias join bc_nested on bc_nested.id = d_alias.id )";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f");
+
+        sqlStr = "select a.id, bc_nested.id\n" +
+                "            from (select * from b, (select * from c) c_alias) as bc_nested, a\n" +
+                "            where a.id in (((\n" +
+                "               select id from d join \n" +
+                "                   (select * from bc_nested join \n" +
+                "                       (select * from e) e_alias on bc_nested.id = e_alias.id\n" +
+                "                   ) bc_nested_alias \n" +
+                "                   on bc_nested_alias.id = d.id\n" +
+                "            )))";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e");
+
+        sqlStr = "select id\n" +
+                "from (select * from c, (select * from b) b_alias) as bc_nested, a\n" +
+                "where a.id in (\n" +
+                "select id from (select * from d \n" +
+                "join (select * from e) e_alias on d.id = e_alias.id) bc_nested_alias\n" +
+                "join bc_nested on bc_nested_alias.id = bc_nested.id\n" +
+                ")";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e");
+
+        sqlStr = "with\n" +
+                "    temp1 as (\n" +
+                "        select a1.id as id, b.content as content from a a1\n" +
+                "        join b on a1.id = b.id\n" +
+                "    ),\n" +
+                "    temp2 as (\n" +
+                "        select b.id as id, b.value as value from b, c cross join temp1 where\n" +
+                "        b.id = c.id and b.value = \"b.value\"\n" +
+                "    )\n" +
+                "select temp1.id, ( select tid from d where cid = 29974 ) as tid \n" +
+                "from ( select tid from e, (select * from f) where cid = 29974) e_alias, temp1 cross join temp2\n"
+                +
+                "where exist ( select * from e, e_alias where e.test = dtest.test ) and temp1.max = (select max(column_1) from g)";
+        tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("a", "b", "c", "d", "e", "f", "g");
     }
 
     @Test
@@ -591,6 +660,26 @@ public class TablesNamesFinderTest {
 
         tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("the_cool_db.the_table");
+    }
+
+    @Test
+    void testIssue2183() throws JSQLParserException {
+        String sqlStr = "SELECT\n" +
+                "\tsubscriber_id,\n" +
+                "\tsum(1) OVER (PARTITION BY subscriber_id\n" +
+                "ORDER BY\n" +
+                "\tstat_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) AS stop_id\n" +
+                "FROM\n" +
+                "\t(\n" +
+                "\tSELECT\n" +
+                "\t\tsubscriber_id,\n" +
+                "\t\tstat_time\n" +
+                "\tFROM\n" +
+                "\t\tlocation_subscriber AS mid2 WINDOW w AS (PARTITION BY subscriber_id\n" +
+                "\tORDER BY\n" +
+                "\t\tstat_time ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING ) )";
+        Set<String> tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("location_subscriber");
     }
 }
 

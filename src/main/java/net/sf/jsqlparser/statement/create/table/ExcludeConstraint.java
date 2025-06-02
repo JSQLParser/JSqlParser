@@ -90,4 +90,8 @@ public class ExcludeConstraint extends Index {
         return (ExcludeConstraint) super.withName(name);
     }
 
+    @Override
+    public ExcludeConstraint withIndexKeyword(String indexKeyword) {
+        return (ExcludeConstraint) super.withIndexKeyword(indexKeyword);
+    }
 }

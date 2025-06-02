@@ -18,3 +18,4 @@ group by grouping sets(fact_1_id, fact_2_id), grouping sets(fact_3_id, fact_4_id
 order by fact_1_id, fact_2_id, fact_3_id, fact_4_id
 
 --@FAILURE: Encountered unexpected token: "," "," recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: <K_COMMA> / ",", at line 17, column 45, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

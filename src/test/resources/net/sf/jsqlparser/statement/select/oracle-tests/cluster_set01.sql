@@ -43,3 +43,4 @@ select a.probability prob, a.cluster_id cl_id,
 order by prob desc, cl_id asc, conf desc, attr asc, val asc
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: "(" / "(", at line 31, column 36, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

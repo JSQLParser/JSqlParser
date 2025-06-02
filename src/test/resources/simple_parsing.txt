@@ -208,4 +208,6 @@ FROM EMPLOYEE THIS_EMP, DINFO, DINFOMAX
 WHERE THIS_EMP.JOB = 'SALESREP' 
 AND THIS_EMP.WORKDEPT = DINFO.DEPTNO  
 
-select * from Person where deptname='it' AND NOT (age=24) 
+select * from Person where deptname='it' AND NOT (age=24)
+
+select * from unnest(array[4,5,6]) with ordinality;

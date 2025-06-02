@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
+import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -201,6 +202,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         delete.getDelete().accept(this, context);
         builder.append(")");
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(SessionStatement sessionStatement, S context) {
+        return builder.append(sessionStatement.toString());
     }
 
 

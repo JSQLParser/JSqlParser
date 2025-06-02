@@ -16,49 +16,27 @@ jobs:
       - uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@main
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main
       - name: Run Gradle Check
         run: ./gradlew check
 
-  maven_verify:
+  gradle_publish:
     needs: gradle_check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@main
         with:
-          java-version: '11'
-          distribution: 'temurin'
-          cache: maven
-          server-id: sonatype-nexus-snapshots
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-      - name: Build with Maven
-        run: mvn -X -B verify --file pom.xml -DdisableXmlReport=true -Djacoco.skip=true -Dpmd.skip=true
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRHUSERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRHPASSWORD }}
-
-  gradle_publish:
-    needs: maven_verify
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@main
-        with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@main

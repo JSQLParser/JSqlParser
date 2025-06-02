@@ -1,17 +1,29 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2025 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
 package net.sf.jsqlparser.statement.piped;
 
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
+
+import java.util.List;
 
 public class UnPivotPipeOperator extends PipeOperator {
     private Column valuesColumn;
     private Column nameColumn;
-    private ExpressionList<Column> pivotColumns;
+    private List<SelectItem<?>> pivotColumns;
     private Alias alias = null;
 
     public UnPivotPipeOperator(Column valuesColumn, Column nameColumn,
-            ExpressionList<Column> pivotColumns, Alias alias) {
+            List<SelectItem<?>> pivotColumns, Alias alias) {
         this.valuesColumn = valuesColumn;
         this.nameColumn = nameColumn;
         this.pivotColumns = pivotColumns;
@@ -36,11 +48,11 @@ public class UnPivotPipeOperator extends PipeOperator {
         return this;
     }
 
-    public ExpressionList<Column> getPivotColumns() {
+    public List<SelectItem<?>> getPivotColumns() {
         return pivotColumns;
     }
 
-    public UnPivotPipeOperator setPivotColumns(ExpressionList<Column> pivotColumns) {
+    public UnPivotPipeOperator setPivotColumns(List<SelectItem<?>> pivotColumns) {
         this.pivotColumns = pivotColumns;
         return this;
     }
@@ -63,7 +75,7 @@ public class UnPivotPipeOperator extends PipeOperator {
                 .append(" FOR ")
                 .append(nameColumn)
                 .append(" IN (")
-                .append(pivotColumns)
+                .append(Select.getStringList(pivotColumns))
                 .append("))");
         if (alias != null) {
             builder.append(" ").append(alias);

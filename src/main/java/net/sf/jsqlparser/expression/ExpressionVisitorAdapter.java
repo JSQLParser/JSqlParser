@@ -60,6 +60,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
@@ -597,6 +598,11 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(AllTableColumns allTableColumns, S context) {
         return visitExpression(allTableColumns, context);
+    }
+
+    @Override
+    public <S> T visit(FunctionAllColumns functionAllColumns, S context) {
+        return visitExpression(functionAllColumns, context);
     }
 
     @Override

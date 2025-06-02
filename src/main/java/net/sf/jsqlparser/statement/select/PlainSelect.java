@@ -207,7 +207,7 @@ public class PlainSelect extends Select {
     }
 
     public void setLateralViews(Collection<LateralView> lateralViews) {
-        if (this.lateralViews == null && lateralViews != null) {
+        if (this.lateralViews == null) {
             this.lateralViews = new ArrayList<>();
         } else {
             this.lateralViews.clear();
@@ -322,6 +322,16 @@ public class PlainSelect extends Select {
     @Override
     public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
         return fromItemVisitor.visit(this, context);
+    }
+
+    @Override
+    public SampleClause getSampleClause() {
+        return null;
+    }
+
+    @Override
+    public FromItem setSampleClause(SampleClause sampleClause) {
+        return null;
     }
 
     public OptimizeFor getOptimizeFor() {

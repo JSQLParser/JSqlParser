@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
+import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -111,6 +112,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(ParenthesedDelete delete, S context) {
         return visit(delete.getDelete(), context);
+    }
+
+    @Override
+    public <S> Void visit(SessionStatement sessionStatement, S context) {
+        return null;
     }
 
 

@@ -9,6 +9,18 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -17,9 +29,6 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-
-import java.io.Serializable;
-import java.util.*;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
@@ -34,6 +43,9 @@ public class AlterExpression implements Serializable {
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
     private List<ColumnDropDefault> columnDropDefaultList;
+    private List<ColumnSetDefault> columnSetDefaultList;
+    private List<ColumnSetVisibility> columnSetVisibilityList;
+
     private List<String> pkColumns;
     private List<String> ukColumns;
     private String ukName;
@@ -60,6 +72,7 @@ public class AlterExpression implements Serializable {
 
     private String characterSet;
     private String collation;
+    private boolean defaultCollateSpecified;
     private String lockOption;
     private String algorithmOption;
     private String engineOption;
@@ -73,6 +86,22 @@ public class AlterExpression implements Serializable {
     private boolean useBrackets = false;
 
     private boolean useIfNotExists = false;
+
+    private String partitionType;
+    private Expression partitionExpression;
+    private List<String> partitionColumns;
+    private int coalescePartitionNumber;
+
+    private String exchangePartitionTableName;
+    private boolean exchangePartitionWithValidation;
+    private boolean exchangePartitionWithoutValidation;
+
+    private int keyBlockSize;
+
+    private String constraintSymbol;
+    private boolean enforced;
+    private String constraintType;
+    private boolean invisible;
 
     public Index getOldIndex() {
         return oldIndex;
@@ -288,11 +317,37 @@ public class AlterExpression implements Serializable {
         columnDropNotNullList.add(columnDropNotNull);
     }
 
+    public List<ColumnDropDefault> getColumnDropDefaultList() {
+        return columnDropDefaultList;
+    }
+
     public void addColDropDefault(ColumnDropDefault columnDropDefault) {
         if (columnDropDefaultList == null) {
             columnDropDefaultList = new ArrayList<>();
         }
         columnDropDefaultList.add(columnDropDefault);
+    }
+
+    public void addColSetDefault(ColumnSetDefault columnSetDefault) {
+        if (columnSetDefaultList == null) {
+            columnSetDefaultList = new ArrayList<>();
+        }
+        columnSetDefaultList.add(columnSetDefault);
+    }
+
+    public List<ColumnSetDefault> getColumnSetDefaultList() {
+        return columnSetDefaultList;
+    }
+
+    public void addColSetVisibility(ColumnSetVisibility columnSetVisibility) {
+        if (columnSetVisibilityList == null) {
+            columnSetVisibilityList = new ArrayList<>();
+        }
+        columnSetVisibilityList.add(columnSetVisibility);
+    }
+
+    public List<ColumnSetVisibility> getColumnSetVisibilityList() {
+        return columnSetVisibilityList;
     }
 
     public List<String> getFkSourceColumns() {
@@ -432,6 +487,14 @@ public class AlterExpression implements Serializable {
         this.collation = collation;
     }
 
+    public void setDefaultCollateSpecified(boolean value) {
+        this.defaultCollateSpecified = value;
+    }
+
+    public boolean isDefaultCollateSpecified() {
+        return defaultCollateSpecified;
+    }
+
     public String getLockOption() {
         return lockOption;
     }
@@ -485,6 +548,102 @@ public class AlterExpression implements Serializable {
         return this;
     }
 
+    public void setPartitionType(String partitionType) {
+        this.partitionType = partitionType;
+    }
+
+    public String getPartitionType() {
+        return partitionType;
+    }
+
+    public void setPartitionExpression(Expression partitionExpression) {
+        this.partitionExpression = partitionExpression;
+    }
+
+    public Expression getPartitionExpression() {
+        return partitionExpression;
+    }
+
+    public void setPartitionColumns(List<String> partitionColumns) {
+        this.partitionColumns = partitionColumns;
+    }
+
+    public List<String> getPartitionColumns() {
+        return partitionColumns;
+    }
+
+    public void setExchangePartitionTableName(String exchangePartitionTableName) {
+        this.exchangePartitionTableName = exchangePartitionTableName;
+    }
+
+    public String getExchangePartitionTableName() {
+        return exchangePartitionTableName;
+    }
+
+    public void setCoalescePartitionNumber(int coalescePartitionNumber) {
+        this.coalescePartitionNumber = coalescePartitionNumber;
+    }
+
+    public int getCoalescePartitionNumber() {
+        return coalescePartitionNumber;
+    }
+
+    public void setExchangePartitionWithValidation(boolean exchangePartitionWithValidation) {
+        this.exchangePartitionWithValidation = exchangePartitionWithValidation;
+    }
+
+    public boolean isExchangePartitionWithValidation() {
+        return exchangePartitionWithValidation;
+    }
+
+    public void setExchangePartitionWithoutValidation(boolean exchangePartitionWithoutValidation) {
+        this.exchangePartitionWithoutValidation = exchangePartitionWithoutValidation;
+    }
+
+    public boolean isExchangePartitionWithoutValidation() {
+        return exchangePartitionWithoutValidation;
+    }
+
+    public void setKeyBlockSize(int keyBlockSize) {
+        this.keyBlockSize = keyBlockSize;
+    }
+
+    public int getKeyBlockSize() {
+        return keyBlockSize;
+    }
+
+    public String getConstraintSymbol() {
+        return constraintSymbol;
+    }
+
+    public void setConstraintSymbol(String constraintSymbol) {
+        this.constraintSymbol = constraintSymbol;
+    }
+
+    public boolean isEnforced() {
+        return enforced;
+    }
+
+    public void setEnforced(boolean enforced) {
+        this.enforced = enforced;
+    }
+
+    public String getConstraintType() {
+        return constraintType;
+    }
+
+    public void setConstraintType(String constraintType) {
+        this.constraintType = constraintType;
+    }
+
+    public boolean isInvisible() {
+        return invisible;
+    }
+
+    public void setInvisible(boolean invisible) {
+        this.invisible = invisible;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
@@ -494,8 +653,58 @@ public class AlterExpression implements Serializable {
 
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
+        } else if (operation == AlterOperation.ALTER && constraintType != null
+                && constraintSymbol != null) {
+            // This is for ALTER INDEX ... INVISIBLE
+            b.append("ALTER ").append(constraintType).append(" ").append(constraintSymbol);
+
+            if (invisible) {
+                b.append(" INVISIBLE");
+            } else if (!isEnforced()) {
+                b.append(" NOT ENFORCED");
+            } else if (enforced) {
+                b.append(" ENFORCED");
+            }
+        } else if (operation == AlterOperation.ADD && constraintType != null
+                && constraintSymbol != null) {
+            b.append("ADD CONSTRAINT ").append(constraintType).append(" ").append(constraintSymbol)
+                    .append(" ");
+
+            if (index != null && index.getColumnsNames() != null) {
+                b.append(" ")
+                        .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
+            }
+        } else if (operation == AlterOperation.ALTER
+                && columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnDropDefaultList));
+        } else if (operation == AlterOperation.ALTER
+                && columnSetDefaultList != null && !columnSetDefaultList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnSetDefaultList));
+        } else if (operation == AlterOperation.ALTER
+                && columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty()) {
+            b.append("ALTER ");
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            b.append(PlainSelect.getStringList(columnSetVisibilityList));
         } else if (operation == AlterOperation.SET_TABLE_OPTION) {
             b.append(tableOption);
+        } else if (operation == AlterOperation.DISCARD_TABLESPACE) {
+            b.append("DISCARD TABLESPACE");
+        } else if (operation == AlterOperation.IMPORT_TABLESPACE) {
+            b.append("IMPORT TABLESPACE");
+        } else if (operation == AlterOperation.DISABLE_KEYS) {
+            b.append("DISABLE KEYS");
+        } else if (operation == AlterOperation.ENABLE_KEYS) {
+            b.append("ENABLE KEYS");
         } else if (operation == AlterOperation.ENGINE) {
             b.append("ENGINE ");
             if (useEqual) {
@@ -508,6 +717,12 @@ public class AlterExpression implements Serializable {
                 b.append("= ");
             }
             b.append(algorithmOption);
+        } else if (operation == AlterOperation.KEY_BLOCK_SIZE) {
+            b.append("KEY_BLOCK_SIZE ");
+            if (useEqual) {
+                b.append("= ");
+            }
+            b.append(keyBlockSize);
         } else if (operation == AlterOperation.LOCK) {
             b.append("LOCK ");
             if (useEqual) {
@@ -560,6 +775,17 @@ public class AlterExpression implements Serializable {
                 }
                 b.append(getCollation());
             }
+        } else if (operation == AlterOperation.COLLATE) {
+            if (isDefaultCollateSpecified()) {
+                b.append("DEFAULT ");
+            }
+            b.append("COLLATE ");
+            if (hasEqualForCollate) {
+                b.append("= ");
+            }
+            if (getCollation() != null) {
+                b.append(getCollation());
+            }
         } else if (operation == AlterOperation.DROP_UNIQUE) {
 
             b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
@@ -570,9 +796,63 @@ public class AlterExpression implements Serializable {
                 && !pkColumns.isEmpty()) {
             // Oracle Multi Column Drop
             b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+        } else if (operation == AlterOperation.DISCARD_PARTITION && partitions != null) {
+            b.append("DISCARD PARTITION ").append(PlainSelect.getStringList(partitions));
+            if (tableOption != null) {
+                b.append(" ").append(tableOption);
+            }
+        } else if (operation == AlterOperation.IMPORT_PARTITION) {
+            b.append("IMPORT PARTITION ").append(PlainSelect.getStringList(partitions));
+            if (tableOption != null) {
+                b.append(" ").append(tableOption);
+            }
         } else if (operation == AlterOperation.TRUNCATE_PARTITION
                 && partitions != null) {
             b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.COALESCE_PARTITION) {
+            b.append("COALESCE PARTITION ").append(coalescePartitionNumber);
+        } else if (operation == AlterOperation.REORGANIZE_PARTITION
+                && partitions != null
+                && partitionDefinitions != null) {
+            b.append("REORGANIZE PARTITION ")
+                    .append(PlainSelect.getStringList(partitions))
+                    .append(" INTO (")
+                    .append(partitionDefinitions.stream()
+                            .map(PartitionDefinition::toString)
+                            .collect(Collectors.joining(", ")))
+                    .append(")");
+        } else if (operation == AlterOperation.EXCHANGE_PARTITION) {
+            b.append("EXCHANGE PARTITION ");
+            b.append(partitions.get(0)).append(" WITH TABLE ").append(exchangePartitionTableName);
+            if (exchangePartitionWithValidation) {
+                b.append(" WITH VALIDATION ");
+            } else if (exchangePartitionWithoutValidation) {
+                b.append(" WITHOUT VALIDATION ");
+            }
+        } else if (operation == AlterOperation.ANALYZE_PARTITION && partitions != null) {
+            b.append("ANALYZE PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.CHECK_PARTITION && partitions != null) {
+            b.append("CHECK PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.OPTIMIZE_PARTITION && partitions != null) {
+            b.append("OPTIMIZE PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.REBUILD_PARTITION && partitions != null) {
+            b.append("REBUILD PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.REPAIR_PARTITION && partitions != null) {
+            b.append("REPAIR PARTITION ").append(PlainSelect.getStringList(partitions));
+        } else if (operation == AlterOperation.REMOVE_PARTITIONING) {
+            b.append("REMOVE PARTITIONING");
+        } else if (operation == AlterOperation.PARTITION_BY) {
+            b.append("PARTITION BY ").append(partitionType).append(" ");
+            if (partitionExpression != null) {
+                b.append("(").append(partitionExpression).append(") ");
+            } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
+                b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
+            }
+
+            b.append("(").append(partitionDefinitions.stream()
+                    .map(PartitionDefinition::toString)
+                    .collect(Collectors.joining(", ")))
+                    .append(")");
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
                 b.append("COMMENT =").append(" ");
@@ -971,6 +1251,52 @@ public class AlterExpression implements Serializable {
         @Override
         public String toString() {
             return columnName + " DROP DEFAULT";
+        }
+    }
+
+    public static final class ColumnSetDefault implements Serializable {
+        private final String columnName;
+        private final String defaultValue;
+
+        public ColumnSetDefault(String columnName, String defaultValue) {
+            this.columnName = columnName;
+            this.defaultValue = defaultValue;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " SET DEFAULT " + defaultValue;
+        }
+    }
+
+    public static final class ColumnSetVisibility implements Serializable {
+        private final String columnName;
+        private final boolean visible;
+
+        public ColumnSetVisibility(String columnName, boolean visible) {
+            this.columnName = columnName;
+            this.visible = visible;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public boolean isVisible() {
+            return visible;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " SET " + (visible ? " VISIBLE" : " INVISIBLE");
         }
     }
 

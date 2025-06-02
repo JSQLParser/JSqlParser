@@ -2775,6 +2775,19 @@ public class SelectTest {
     }
 
     @Test
+    void testPivotWithOrderBy() throws JSQLParserException {
+        String sqlStr = "" +
+                "SELECT *\n" +
+                "FROM (\n" +
+                "       SELECT 'kale' AS product, 51 AS sales, 'Q1' AS quarter\n" +
+                "     )\n" +
+                "PIVOT(SUM(sales) FOR quarter IN ('Q1', 'Q2'))\n" +
+                "ORDER BY 1\n" +
+                ";";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     public void testPivotXml1() throws JSQLParserException {
         String stmt = "SELECT * FROM mytable PIVOT XML (count(a) FOR b IN ('val1'))";
         assertSqlCanBeParsedAndDeparsed(stmt);
@@ -5474,6 +5487,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testGroupByWithAllTableColumns() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "select c.post_id, p.* from posts p inner join comments c on c.post_id = p.post_id group by p.post_id, c.post_id, p.*;");
+    }
+
+    @Test
     public void testTableSpaceKeyword() throws JSQLParserException {
         // without extra brackets
         assertSqlCanBeParsedAndDeparsed(
@@ -6152,6 +6171,59 @@ public class SelectTest {
         assertEquals("mytable", select.getPlainSelect().getFromItem().toString());
         assertEquals("[low, high, inverse, plus]",
                 select.getPlainSelect().getSelectItems().toString());
+    }
+
+    @Test
+    @Disabled
+    // see issue #2207
+    public void testSelectAllColumnsFromFunctionReturn() throws JSQLParserException {
+        String sql = "SELECT (pg_stat_file('postgresql.conf')).*";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertNotNull(statement);
+        assertTrue(statement instanceof Select);
+
+        // Ensure the function is recognized correctly
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertNotNull(plainSelect);
+        assertEquals(1, plainSelect.getSelectItems().size());
+        assertTrue(plainSelect.getSelectItems().get(0)
+                .getExpression() instanceof FunctionAllColumns);
+        assertEquals("(pg_stat_file('postgresql.conf')).*",
+                plainSelect.getSelectItems().get(0).toString());
+    }
+
+    @Test
+    @Disabled
+    // see issue #2207
+    public void testSelectAllColumnsFromFunctionReturnWithMultipleParentheses()
+            throws JSQLParserException {
+        String sql = "SELECT ( ( ( pg_stat_file('postgresql.conf') ) )) . *";
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertNotNull(statement);
+        assertTrue(statement instanceof Select);
+
+        // Ensure the function is recognized correctly
+        Select select = (Select) statement;
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        assertNotNull(plainSelect);
+        assertEquals(1, plainSelect.getSelectItems().size());
+        assertTrue(plainSelect.getSelectItems().get(0)
+                .getExpression() instanceof FunctionAllColumns);
+        assertEquals("(pg_stat_file('postgresql.conf')).*",
+                plainSelect.getSelectItems().get(0).toString());
+    }
+
+    @Test
+    void testIssue2242SubSelectLookAhead() throws JSQLParserException {
+        String sqlStr = "INSERT INTO foo(col1, col2, col3, col4, col5, col6)\n"
+                + "      VALUES ( (SELECT blah FROM bar INNER JOIN bam ON bar.col1 = bam.col1 WHERE bar.id = ? AND et.id = ?), ?, ?, ?, ?, ?)\n"
+                + "      ON CONFLICT (id) DO UPDATE\n"
+                + "      SET col4 = ?, col5 = ?, col6 = ?";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        System.out.println(statement.toString());
+        Insert insert = (Insert) statement;
+        Assertions.assertEquals("foo", insert.getTable().toString());
     }
 
     @ParameterizedTest

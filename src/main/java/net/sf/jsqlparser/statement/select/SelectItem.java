@@ -101,7 +101,7 @@ public class SelectItem<T extends Expression> extends ASTNodeAccessImpl {
         return this;
     }
 
-    public SelectItem<?> withAlias(Alias alias) {
+    public SelectItem<T> withAlias(Alias alias) {
         this.setAlias(alias);
         return this;
     }

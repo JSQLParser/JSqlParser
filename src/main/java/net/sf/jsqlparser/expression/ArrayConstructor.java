@@ -11,10 +11,12 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
     private ExpressionList<?> expressions;
     private boolean arrayKeyword;
+    private ColDataType dataType;
 
     public ArrayConstructor(ExpressionList<?> expressions, boolean arrayKeyword) {
         this.expressions = expressions;
@@ -41,6 +43,15 @@ public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
         this.arrayKeyword = arrayKeyword;
     }
 
+    public ColDataType getDataType() {
+        return dataType;
+    }
+
+    public ArrayConstructor setDataType(ColDataType dataType) {
+        this.dataType = dataType;
+        return this;
+    }
+
     @Override
     public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
         return expressionVisitor.visit(this, context);
@@ -51,6 +62,10 @@ public class ArrayConstructor extends ASTNodeAccessImpl implements Expression {
         StringBuilder sb = new StringBuilder();
         if (arrayKeyword) {
             sb.append("ARRAY");
+
+            if (dataType != null) {
+                sb.append("<").append(dataType).append(">");
+            }
         }
         sb.append("[");
         sb.append(expressions.toString());
