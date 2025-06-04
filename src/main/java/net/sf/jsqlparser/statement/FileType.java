@@ -9,7 +9,20 @@
  */
 package net.sf.jsqlparser.statement;
 
-public enum FileType implements SourceDestinationType {
-    CSV,
-    FBV
+public class FileType implements SourceDestinationType {
+    private final Kind fileType;
+
+    public FileType(String fileType) {
+        this.fileType = Kind.valueOf(fileType.toUpperCase());
+    }
+
+    private enum Kind {
+        CSV,
+        FBV
+    }
+
+    @Override
+    public String toString() {
+        return fileType.toString();
+    }
 }

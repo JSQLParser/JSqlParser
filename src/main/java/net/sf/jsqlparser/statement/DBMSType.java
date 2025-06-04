@@ -11,12 +11,26 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 
-public enum DBMSType implements SourceDestinationType {
-    EXA,
-    ORA,
-    JDBC;
-
+public class DBMSType implements SourceDestinationType {
+    private final Kind dbmsType;
     private StringValue jdbcDriverDefinition;
+
+    public DBMSType(String dbmsType) {
+        this(dbmsType, null);
+    }
+
+    public DBMSType(String dbmsType, String jdbcDriverDefinition) {
+        this.dbmsType = Kind.valueOf(dbmsType.toUpperCase());
+        if (jdbcDriverDefinition != null) {
+            this.jdbcDriverDefinition = new StringValue(jdbcDriverDefinition);
+        }
+    }
+
+    private enum Kind {
+        EXA,
+        ORA,
+        JDBC
+    }
 
     public StringValue getJDBCDriverDefinition() {
         return jdbcDriverDefinition;
@@ -30,7 +44,7 @@ public enum DBMSType implements SourceDestinationType {
     public String toString() {
         StringBuilder sql = new StringBuilder();
 
-        sql.append(super.toString());
+        sql.append(dbmsType);
         if (jdbcDriverDefinition != null) {
             sql.append(" DRIVER = ").append(jdbcDriverDefinition);
         }

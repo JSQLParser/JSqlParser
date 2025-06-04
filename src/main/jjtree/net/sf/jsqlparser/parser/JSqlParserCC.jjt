@@ -1419,7 +1419,6 @@ DBMSSource DBMSSource() #DBMSSource: {
     Table table;
     ExpressionList<Column> columns;
     List<StringValue> statements;
-    Token token;
 } {
     dbmsType = DBMSType() { dbmsSource.setSourceType(dbmsType); }
 
@@ -1437,14 +1436,15 @@ DBMSSource DBMSSource() #DBMSSource: {
 
 DBMSType DBMSType(): {
     DBMSType dbmsType;
+    Token tk1;
+    Token tk2 = null;
 } {
     (
-        <K_EXA> { dbmsType = DBMSType.EXA; }
-      | <K_ORA> { dbmsType = DBMSType.ORA; }
-      | <K_JDBC> { dbmsType = DBMSType.JDBC; }
-        [<K_DRIVER> "=" token = <S_CHAR_LITERAL> { dbmsType.setJDBCDriverDefinition(new StringValue(token.image)); }]
-    )
-
+        tk1=<K_EXA>
+      | tk1=<K_ORA>
+      | tk1=<K_JDBC>
+        [<K_DRIVER> "=" tk2=<S_CHAR_LITERAL>]
+    ) { dbmsType = new DBMSType(tk1.image, tk2 == null ? null : tk2.image); }
     {
         return dbmsType;
     }
@@ -1452,11 +1452,12 @@ DBMSType DBMSType(): {
 
 FileType FileType(): {
     FileType fileType;
+    Token tk;
 } {
     (
-        <K_CSV> { fileType = FileType.CSV; }
-      | <K_FBV> { fileType = FileType.FBV; }
-    )
+        tk=<K_CSV>
+      | tk=<K_FBV>
+    ) { fileType = new FileType(tk.image); }
     {
         return fileType;
     }
