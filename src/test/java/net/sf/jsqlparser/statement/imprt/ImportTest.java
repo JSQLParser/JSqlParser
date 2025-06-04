@@ -205,7 +205,12 @@ public class ImportTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "IMPORT FROM JDBC AT connectionName TABLE tableName",
-            "IMPORT FROM JDBC DRIVER = 'driverName' AT connectionName TABLE tableName"
+            "IMPORT FROM JDBC DRIVER = 'driverName' AT connectionName TABLE tableName",
+
+            "IMPORT FROM JDBC AT connectionName STATEMENT 'select 1'",
+            "IMPORT FROM JDBC AT connectionName STATEMENT 'select 1' STATEMENT 'select 2'",
+            "IMPORT FROM JDBC DRIVER = 'driverName' AT connectionName STATEMENT 'select 1'",
+            "IMPORT FROM JDBC DRIVER = 'driverName' AT connectionName STATEMENT 'select 1' STATEMENT 'select 2'"
     })
     public void testImportFromDBMSJDBC(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
