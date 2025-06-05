@@ -27,9 +27,7 @@ public class DBMSType implements SourceDestinationType {
     }
 
     private enum Kind {
-        EXA,
-        ORA,
-        JDBC
+        EXA, ORA, JDBC
     }
 
     public StringValue getJDBCDriverDefinition() {

@@ -37,7 +37,8 @@ public abstract class FileSourceDestination implements Serializable {
         return connectionFileDefinitions;
     }
 
-    public void setConnectionFileDefinitions(List<ConnectionFileDefinition> connectionFileDefinitions) {
+    public void setConnectionFileDefinitions(
+            List<ConnectionFileDefinition> connectionFileDefinitions) {
         this.connectionFileDefinitions = connectionFileDefinitions;
     }
 

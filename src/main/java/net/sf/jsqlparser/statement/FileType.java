@@ -17,8 +17,7 @@ public class FileType implements SourceDestinationType {
     }
 
     private enum Kind {
-        CSV,
-        FBV
+        CSV, FBV
     }
 
     @Override

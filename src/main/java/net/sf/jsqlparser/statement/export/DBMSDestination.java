@@ -66,7 +66,8 @@ public class DBMSDestination implements ExportIntoItem, Serializable {
         return dbmsTableDestinationOptions;
     }
 
-    public void setDBMSTableDestinationOptions(List<DBMSTableDestinationOption> dbmsTableDestinationOptions) {
+    public void setDBMSTableDestinationOptions(
+            List<DBMSTableDestinationOption> dbmsTableDestinationOptions) {
         this.dbmsTableDestinationOptions = dbmsTableDestinationOptions;
     }
 

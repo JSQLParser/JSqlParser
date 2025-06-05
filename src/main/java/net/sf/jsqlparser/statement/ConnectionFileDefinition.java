@@ -21,7 +21,8 @@ public class ConnectionFileDefinition {
         this(null, filePaths);
     }
 
-    public ConnectionFileDefinition(ConnectionDefinition connectionDefinition, List<StringValue> filePaths) {
+    public ConnectionFileDefinition(ConnectionDefinition connectionDefinition,
+            List<StringValue> filePaths) {
         this.connectionDefinition = connectionDefinition;
         this.filePaths = filePaths;
     }

@@ -21,7 +21,8 @@ import java.util.List;
 /**
  * Exasol Like Clause
  *
- * @see <a href="https://docs.exasol.com/db/latest/sql/create_table.htm">Like Clause in CREATE TABLE</a>
+ * @see <a href="https://docs.exasol.com/db/latest/sql/create_table.htm">Like Clause in CREATE
+ *      TABLE</a>
  * @see <a href="https://docs.exasol.com/db/latest/sql/import.htm">Like Clause in IMPORT</a>
  */
 public class LikeClause implements ImportColumn, Serializable {

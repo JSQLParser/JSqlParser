@@ -45,7 +45,7 @@ public class CertificateVerification {
 
         if (ignoreCertificate != null) {
             if (ignoreCertificate) {
-               sql.append("IGNORE ");
+                sql.append("IGNORE ");
             } else {
                 sql.append("VERIFY ");
             }
