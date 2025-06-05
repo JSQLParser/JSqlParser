@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 
-public class ConnectionDefinition {
+import java.io.Serializable;
+
+public class ConnectionDefinition implements Serializable {
     private String connectionObjectName;
     private StringValue connectionDefinition;
     private UserIdentification userIdentification;

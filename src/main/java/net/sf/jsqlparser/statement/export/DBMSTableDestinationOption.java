@@ -13,7 +13,9 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 
-public class DBMSTableDestinationOption {
+import java.io.Serializable;
+
+public class DBMSTableDestinationOption implements Serializable {
     private String key;
     private Expression value;
 

@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 
-public class UserIdentification {
+import java.io.Serializable;
+
+public class UserIdentification implements Serializable {
     private StringValue user;
     private StringValue password;
 

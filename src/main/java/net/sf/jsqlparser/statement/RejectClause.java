@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.LongValue;
 
-public class RejectClause {
+import java.io.Serializable;
+
+public class RejectClause implements Serializable {
     private LongValue limit;
     private boolean errors;
 

@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.StringValue;
 
-public class CertificateVerification {
+import java.io.Serializable;
+
+public class CertificateVerification implements Serializable {
     private Boolean ignoreCertificate;
     private StringValue publicKey;
 

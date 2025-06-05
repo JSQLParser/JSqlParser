@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.expression.Expression;
 
-public class ErrorClause {
+import java.io.Serializable;
+
+public class ErrorClause implements Serializable {
     private ErrorDestination errorDestination;
     private Expression expression;
     private RejectClause rejectClause;
