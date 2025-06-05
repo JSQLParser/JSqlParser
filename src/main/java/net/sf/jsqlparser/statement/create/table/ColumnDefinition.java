@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.statement.imprt.ImportColumn;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
@@ -21,7 +22,7 @@ import java.util.Optional;
 /**
  * Globally used definition class for columns.
  */
-public class ColumnDefinition implements Serializable {
+public class ColumnDefinition implements ImportColumn, Serializable {
 
     private String columnName;
     private ColDataType colDataType;

@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
 public interface FromItemVisitor<T> {
@@ -66,6 +67,12 @@ public interface FromItemVisitor<T> {
 
     default void visit(TableStatement tableStatement) {
         this.visit(tableStatement, null);
+    }
+
+    <S> T visit(Import imprt, S context);
+
+    default void visit(Import imprt) {
+        this.visit(imprt, null);
     }
 
     <S> T visit(FromQuery fromQuery, S context);

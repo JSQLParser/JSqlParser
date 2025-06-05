@@ -18,6 +18,7 @@ import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
 import net.sf.jsqlparser.statement.piped.AsPipeOperator;
 import net.sf.jsqlparser.statement.piped.CallPipeOperator;
@@ -797,6 +798,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     }
 
     @Override
+    public <S> StringBuilder visit(Import imprt, S context) {
+        builder.append(imprt.toString());
+        return builder;
+    }
+
+    @Override
     public void visit(Values values) {
         SelectVisitor.super.visit(values);
     }
@@ -889,6 +896,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     public void visit(ParenthesedFromItem fromItem) {
         visit(fromItem, null);
+    }
+
+    public void visit(Import imprt) {
+        visit(imprt, null);
     }
 
 

@@ -6225,4 +6225,15 @@ public class SelectTest {
         Insert insert = (Insert) statement;
         Assertions.assertEquals("foo", insert.getTable().toString());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM ( IMPORT INTO ( LIKE schemaName.tableName ( a, b as c) ) FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM schemaName.tableName JOIN ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' ) USING ( columnName )"
+    })
+    public void testSelectWithSubImport(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+    }
+
 }

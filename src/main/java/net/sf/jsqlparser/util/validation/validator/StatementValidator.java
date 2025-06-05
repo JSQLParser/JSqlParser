@@ -50,7 +50,9 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -71,7 +73,6 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
  */
 public class StatementValidator extends AbstractValidator<Statement>
         implements StatementVisitor<Void> {
-
     @Override
     public <S> Void visit(CreateIndex createIndex, S context) {
         getValidator(CreateIndexValidator.class).validate(createIndex);
@@ -386,6 +387,18 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+    @Override
+    public <S> Void visit(Import imprt, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Export export, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
     public void visit(CreateIndex createIndex) {
         visit(createIndex, null);
     }
@@ -562,4 +575,11 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(unsupportedStatement, null);
     }
 
+    public void visit(Import imprt) {
+        visit(imprt, null);
+    }
+
+    public void visit(Export export) {
+        visit(export, null);
+    }
 }
