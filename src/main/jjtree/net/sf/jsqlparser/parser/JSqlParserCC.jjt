@@ -5128,8 +5128,9 @@ ExpressionList ComplexExpressionList():
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             |
-            LOOKAHEAD( 6 ) expr=LambdaExpression()
-            | expr=Expression()
+            LOOKAHEAD(6) expr=LambdaExpression()
+            |
+            expr=Expression()
         ) { expressions.add(expr); }
     )*
 

@@ -40,7 +40,7 @@ import net.sf.jsqlparser.statement.Statements;
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
     public final static Logger LOGGER = Logger.getLogger(CCJSqlParserUtil.class.getName());
-    public final static int ALLOWED_NESTING_DEPTH = 10;
+    public final static int ALLOWED_NESTING_DEPTH = 16;
 
     static {
         LOGGER.setLevel(Level.OFF);
