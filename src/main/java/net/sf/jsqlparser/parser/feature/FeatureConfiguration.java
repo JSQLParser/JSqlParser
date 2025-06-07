@@ -19,7 +19,7 @@ public class FeatureConfiguration {
 
     private static final Logger LOG = Logger.getLogger(FeatureConfiguration.class.getName());
 
-    private Map<Feature, Object> featureEnabled = new EnumMap<>(Feature.class);
+    private final Map<Feature, Object> featureEnabled = new EnumMap<>(Feature.class);
 
     public FeatureConfiguration() {
         // set default-value for all switchable features
@@ -62,6 +62,14 @@ public class FeatureConfiguration {
 
     public Long getAsLong(Feature f) {
         return Long.valueOf(String.valueOf(getValue(f)));
+    }
+
+    public int getAsInt(Feature f) {
+        return Integer.parseInt(String.valueOf(getValue(f)));
+    }
+
+    public Integer getAsInteger(Feature f) {
+        return Integer.parseInt(String.valueOf(getValue(f)));
     }
 
     public String getAsString(Feature f) {

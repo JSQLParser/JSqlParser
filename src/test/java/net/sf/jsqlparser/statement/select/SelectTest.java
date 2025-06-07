@@ -6357,6 +6357,19 @@ public class SelectTest {
                 + "            , day DESC\n"
                 + ";";
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                sqlStr, true, parser -> parser.withAllowComplexParsing(true));
+                sqlStr, true, parser -> parser
+                        .withAllowComplexParsing(true)
+                        .withAllowedNestingDepth(-1));
+    }
+
+    @Test
+    void testQuotedStringValueIssue2258() throws JSQLParserException {
+        String sqlStr = "SELECT 'yyyy-MM-dd''T''HH:mm:ss'";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertEquals(
+                "yyyy-MM-dd'T'HH:mm:ss", select
+                        .getSelectItem(0)
+                        .getExpression(StringValue.class)
+                        .getNotExcapedValue());
     }
 }

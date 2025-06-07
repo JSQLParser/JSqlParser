@@ -792,7 +792,13 @@ public enum Feature {
      * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`
      */
     allowUnparenthesizedSubSelects(false),
-    ;
+
+    /**
+     * maximum nesting depth for trying complex parsing, can bet set to -1 to ignore
+     */
+    allowedNestingDepth(10),
+
+    dialect(null);
 
     private final Object value;
     private final boolean configurable;
