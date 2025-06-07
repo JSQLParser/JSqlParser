@@ -316,6 +316,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DISCARD : "DISCARD">
 |   <K_DISCONNECT:"DISCONNECT">
 |   <K_DISTINCT:"DISTINCT">
+|   <K_DISTINCTROW:"DISTINCTROW">
 |   <K_DIV:"DIV">
 |   <K_DDL:"DDL">
 |   <K_DML:"DML">
@@ -3147,7 +3148,9 @@ PlainSelect PlainSelect() #PlainSelect:
             [ LOOKAHEAD(2) "ON" "(" distinctOn=SelectItemsList() { plainSelect.getDistinct().setOnSelectItems(distinctOn); } ")" ]
         )
         |
-        <K_UNIQUE> {  distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
+        <K_DISTINCTROW> { distinct = new Distinct(); distinct.setUseDistinctRow(true); plainSelect.setDistinct(distinct); }
+        |
+        <K_UNIQUE> { distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
         |
         <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
         |

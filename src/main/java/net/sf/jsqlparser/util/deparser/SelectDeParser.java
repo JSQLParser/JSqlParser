@@ -397,6 +397,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (distinct != null) {
             if (distinct.isUseUnique()) {
                 builder.append("UNIQUE ");
+            } else if (distinct.isUseDistinctRow()) {
+                builder.append("DISTINCTROW ");
             } else {
                 builder.append("DISTINCT ");
             }
