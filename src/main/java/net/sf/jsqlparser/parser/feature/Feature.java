@@ -804,6 +804,11 @@ public enum Feature {
      * "IMPORT"
      */
     imprt,
+
+    /**
+     * "EXPORT"
+     */
+    export,
     ;
 
     private final Object value;
