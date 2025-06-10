@@ -27,7 +27,9 @@ import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -328,5 +330,17 @@ public interface StatementVisitor<T> {
 
     default void visit(SessionStatement sessionStatement) {
         this.visit(sessionStatement, null);
+    }
+
+    <S> T visit(Import imprt, S context);
+
+    default void visit(Import imprt) {
+        this.visit(imprt, null);
+    }
+
+    <S> T visit(Export export, S context);
+
+    default void visit(Export export) {
+        this.visit(export, null);
     }
 }

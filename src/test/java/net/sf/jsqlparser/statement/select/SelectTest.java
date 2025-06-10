@@ -58,6 +58,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -6242,6 +6243,7 @@ public class SelectTest {
                 + "      ON CONFLICT (id) DO UPDATE\n"
                 + "      SET col4 = ?, col5 = ?, col6 = ?";
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        System.out.println(statement.toString());
         Insert insert = (Insert) statement;
         Assertions.assertEquals("foo", insert.getTable().toString());
     }
@@ -6393,4 +6395,16 @@ public class SelectTest {
                         .getExpression(StringValue.class)
                         .getNotExcapedValue());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM ( IMPORT INTO ( LIKE schemaName.tableName ( a, b as c) ) FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM schemaName.tableName JOIN ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' ) USING ( columnName )"
+    })
+    public void testSelectWithSubImport(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
+    }
+
 }

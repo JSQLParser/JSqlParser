@@ -798,7 +798,18 @@ public enum Feature {
      */
     allowedNestingDepth(10),
 
-    dialect(null);
+    dialect(null),
+
+    /**
+     * "IMPORT"
+     */
+    imprt,
+
+    /**
+     * "EXPORT"
+     */
+    export,
+    ;
 
     private final Object value;
     private final boolean configurable;
