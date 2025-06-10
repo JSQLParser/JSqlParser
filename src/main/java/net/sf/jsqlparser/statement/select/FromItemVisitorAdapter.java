@@ -12,25 +12,24 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
+import java.util.ArrayList;
+
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(Table table, S context) {
-
         return null;
     }
 
     @Override
     public <S> T visit(ParenthesedSelect select, S context) {
-
-        return null;
+        return select.getPlainSelect().getFromItem().accept(this, context);
     }
 
     @Override
     public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
-
-        return null;
+        return lateralSubSelect.getPlainSelect().getFromItem().accept(this, context);
     }
 
     @Override
@@ -41,36 +40,35 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(ParenthesedFromItem fromItem, S context) {
-
-        return null;
+        return fromItem.getFromItem().accept(this, context);
     }
 
     @Override
     public <S> T visit(Values values, S context) {
-
         return null;
     }
 
     @Override
     public <S> T visit(PlainSelect plainSelect, S context) {
-
-        return null;
+        return plainSelect.getFromItem().accept(this, context);
     }
 
     @Override
     public <S> T visit(SetOperationList setOperationList, S context) {
-
-        return null;
+        ArrayList<T> results = new ArrayList<>();
+        for (Select select : setOperationList.getSelects()) {
+            results.add(select.accept(this, context));
+        }
+        return results.isEmpty() ? null : results.get(0);
     }
 
     @Override
     public <S> T visit(TableStatement tableStatement, S context) {
-
         return null;
     }
 
     @Override
     public <S> T visit(FromQuery fromQuery, S context) {
-        return null;
+        return fromQuery.getFromItem().accept(this, context);
     }
 }
