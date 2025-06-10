@@ -108,4 +108,15 @@ class FunctionTest {
     void testListAggOnOverflow(String sqlStr) throws Exception {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "select RTRIM('string')",
+            "select LTRIM('string')",
+            "select RTRIM(field) from dual",
+            "select LTRIM(field) from dual"
+    })
+    void testTrimFunctions(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
