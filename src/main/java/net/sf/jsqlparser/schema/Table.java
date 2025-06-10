@@ -57,6 +57,9 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
 
     private SQLServerHints sqlServerHints;
 
+    // holds the physical table when resolved against an actual schema information
+    private Table resolvedTable = null;
+
     public Table() {}
 
     /**
@@ -400,5 +403,25 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
 
     public List<String> getNamePartDelimiters() {
         return partDelimiters;
+    }
+
+    /**
+     * Gets the actual table when resolved against a physical schema information.
+     *
+     * @return the actual table when resolved against a physical schema information
+     */
+    public Table getResolvedTable() {
+        return resolvedTable;
+    }
+
+    /**
+     * Sets resolved table.
+     *
+     * @param resolvedTable the resolved table
+     * @return this table
+     */
+    public Table setResolvedTable(Table resolvedTable) {
+        this.resolvedTable = resolvedTable;
+        return this;
     }
 }

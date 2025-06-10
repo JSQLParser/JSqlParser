@@ -29,6 +29,9 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     private ArrayConstructor arrayConstructor;
     private String tableDelimiter = ".";
 
+    // holds the physical table when resolved against an actual schema information
+    private Table resolvedTable = null;
+
     public Column() {}
 
     public Column(Table table, String columnName) {
@@ -222,5 +225,25 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public void setCommentText(String commentText) {
         this.commentText = commentText;
+    }
+
+    /**
+     * Gets the actual table when resolved against a physical schema information.
+     *
+     * @return the actual table when resolved against a physical schema information
+     */
+    public Table getResolvedTable() {
+        return resolvedTable;
+    }
+
+    /**
+     * Sets resolved table.
+     *
+     * @param resolvedTable the resolved table
+     * @return this column
+     */
+    public Column setResolvedTable(Table resolvedTable) {
+        this.resolvedTable = resolvedTable;
+        return this;
     }
 }

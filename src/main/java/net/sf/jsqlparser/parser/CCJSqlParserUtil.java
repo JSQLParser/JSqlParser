@@ -40,7 +40,6 @@ import net.sf.jsqlparser.statement.Statements;
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class CCJSqlParserUtil {
     public final static Logger LOGGER = Logger.getLogger(CCJSqlParserUtil.class.getName());
-    public final static int ALLOWED_NESTING_DEPTH = 10;
 
     static {
         LOGGER.setLevel(Level.OFF);
@@ -50,7 +49,7 @@ public final class CCJSqlParserUtil {
 
     public static Statement parse(Reader statementReader) throws JSQLParserException {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Statement statement = null;
+        Statement statement;
         CCJSqlParser parser = new CCJSqlParser(new StreamProvider(statementReader));
         try {
             statement = parseStatement(parser, executorService);
@@ -86,7 +85,7 @@ public final class CCJSqlParserUtil {
         }
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Statement statement = null;
+        Statement statement;
         try {
             statement = parse(sql, executorService, consumer);
         } finally {
@@ -102,20 +101,22 @@ public final class CCJSqlParserUtil {
             return null;
         }
 
-        Statement statement = null;
+        Statement statement;
         // first, try to parse fast and simple
         CCJSqlParser parser = newParser(sql);
         if (consumer != null) {
             consumer.accept(parser);
         }
-        boolean allowComplex = parser.getConfiguration().getAsBoolean(Feature.allowComplexParsing);
+        boolean allowComplex = parser.getAsBoolean(Feature.allowComplexParsing);
+        int allowedNestingDepth = parser.getAsInt(Feature.allowedNestingDepth);
         LOGGER.info("Allowed Complex Parsing: " + allowComplex);
         try {
             LOGGER.info("Trying SIMPLE parsing " + (allowComplex ? "first" : "only"));
             statement = parseStatement(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
             LOGGER.info("Nesting Depth" + getNestingDepth(sql));
-            if (allowComplex && getNestingDepth(sql) <= ALLOWED_NESTING_DEPTH) {
+            if (allowComplex
+                    && (allowedNestingDepth < 0 || getNestingDepth(sql) <= allowedNestingDepth)) {
                 LOGGER.info("Trying COMPLEX parsing when SIMPLE parsing failed");
                 // beware: the parser must not be reused, but needs to be re-initiated
                 parser = newParser(sql);
@@ -222,23 +223,21 @@ public final class CCJSqlParserUtil {
         } catch (JSQLParserException ex1) {
             // when fast simple parsing fails, try complex parsing but only if it has a chance to
             // succeed
-            if (getNestingDepth(expressionStr) <= ALLOWED_NESTING_DEPTH) {
-                CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(true);
-                if (consumer != null) {
-                    consumer.accept(parser);
+            CCJSqlParser parser = newParser(expressionStr).withAllowComplexParsing(true);
+            if (consumer != null) {
+                consumer.accept(parser);
+            }
+            try {
+                expression = parser.Expression();
+                if (!allowPartialParse
+                        && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                    throw new JSQLParserException(
+                            "could only parse partial expression " + expression.toString());
                 }
-                try {
-                    expression = parser.Expression();
-                    if (!allowPartialParse
-                            && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                        throw new JSQLParserException(
-                                "could only parse partial expression " + expression.toString());
-                    }
-                } catch (JSQLParserException ex) {
-                    throw ex;
-                } catch (ParseException ex) {
-                    throw new JSQLParserException(ex);
-                }
+            } catch (JSQLParserException ex) {
+                throw ex;
+            } catch (ParseException ex) {
+                throw new JSQLParserException(ex);
             }
         }
         return expression;
@@ -301,24 +300,22 @@ public final class CCJSqlParserUtil {
                 throw new JSQLParserException(ex);
             }
         } catch (JSQLParserException ex1) {
-            if (getNestingDepth(conditionalExpressionStr) <= ALLOWED_NESTING_DEPTH) {
-                CCJSqlParser parser =
-                        newParser(conditionalExpressionStr).withAllowComplexParsing(true);
-                if (consumer != null) {
-                    consumer.accept(parser);
+            CCJSqlParser parser =
+                    newParser(conditionalExpressionStr).withAllowComplexParsing(true);
+            if (consumer != null) {
+                consumer.accept(parser);
+            }
+            try {
+                expression = parser.Expression();
+                if (!allowPartialParse
+                        && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                    throw new JSQLParserException(
+                            "could only parse partial expression " + expression.toString());
                 }
-                try {
-                    expression = parser.Expression();
-                    if (!allowPartialParse
-                            && parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
-                        throw new JSQLParserException(
-                                "could only parse partial expression " + expression.toString());
-                    }
-                } catch (JSQLParserException ex) {
-                    throw ex;
-                } catch (ParseException ex) {
-                    throw new JSQLParserException(ex);
-                }
+            } catch (JSQLParserException ex) {
+                throw ex;
+            } catch (ParseException ex) {
+                throw new JSQLParserException(ex);
             }
         }
         return expression;
@@ -334,7 +331,7 @@ public final class CCJSqlParserUtil {
 
     public static Statement parseStatement(CCJSqlParser parser, ExecutorService executorService)
             throws JSQLParserException {
-        Statement statement = null;
+        Statement statement;
         Future<Statement> future = executorService.submit(new Callable<Statement>() {
             @Override
             public Statement call() throws ParseException {
@@ -342,7 +339,7 @@ public final class CCJSqlParserUtil {
             }
         });
         try {
-            statement = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
+            statement = future.get(parser.getAsLong(Feature.timeOut),
                     TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
@@ -397,7 +394,8 @@ public final class CCJSqlParserUtil {
         if (consumer != null) {
             consumer.accept(parser);
         }
-        boolean allowComplex = parser.getConfiguration().getAsBoolean(Feature.allowComplexParsing);
+        boolean allowComplex = parser.getAsBoolean(Feature.allowComplexParsing);
+        int allowedNestingDepth = parser.getAsInt(Feature.allowedNestingDepth);
 
         // first, try to parse fast and simple
         try {
@@ -405,7 +403,8 @@ public final class CCJSqlParserUtil {
         } catch (JSQLParserException ex) {
             // when fast simple parsing fails, try complex parsing but only if it has a chance to
             // succeed
-            if (allowComplex && getNestingDepth(sqls) <= ALLOWED_NESTING_DEPTH) {
+            if (allowComplex
+                    && (allowedNestingDepth < 0 || getNestingDepth(sqls) <= allowedNestingDepth)) {
                 // beware: parser must not be re-used but needs to be re-initiated
                 parser = newParser(sqls);
                 if (consumer != null) {
@@ -434,7 +433,7 @@ public final class CCJSqlParserUtil {
             }
         });
         try {
-            statements = future.get(parser.getConfiguration().getAsLong(Feature.timeOut),
+            statements = future.get(parser.getAsLong(Feature.timeOut),
                     TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
@@ -450,17 +449,14 @@ public final class CCJSqlParserUtil {
             throws JSQLParserException {
         try {
             CCJSqlParser parser = newParser(is, encoding);
-            while (true) {
+            do {
                 Statement stmt = parser.SingleStatement();
                 listener.accept(stmt);
                 if (parser.getToken(1).kind == CCJSqlParserTokenManager.ST_SEMICOLON) {
                     parser.getNextToken();
                 }
 
-                if (parser.getToken(1).kind == CCJSqlParserTokenManager.EOF) {
-                    break;
-                }
-            }
+            } while (parser.getToken(1).kind != CCJSqlParserTokenManager.EOF);
         } catch (Exception ex) {
             throw new JSQLParserException(ex);
         }

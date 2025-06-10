@@ -77,9 +77,7 @@ public class JSQLParserBenchmark {
         final Statements statements = runner.parseStatements(
                 sqlContent,
                 executorService,
-                (Consumer<CCJSqlParser>) parser -> {
-                    // No-op consumer (or you can log/validate each parser if desired)
-                });
+                (Consumer<CCJSqlParser>) parser -> parser.withAllowComplexParsing(false));
         blackhole.consume(statements);
     }
 

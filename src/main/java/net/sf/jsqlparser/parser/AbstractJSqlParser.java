@@ -21,6 +21,10 @@ public abstract class AbstractJSqlParser<P> {
     protected boolean errorRecovery = false;
     protected List<ParseException> parseErrors = new ArrayList<>();
 
+    public enum Dialect {
+        ORACLE, EXASOL
+    }
+
     public P withSquareBracketQuotation() {
         return withFeature(Feature.allowSquareBracketQuotation, true);
     }
@@ -57,6 +61,14 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.timeOut, timeOutMillSeconds);
     }
 
+    public P withDialect(Dialect dialect) {
+        return withFeature(Feature.dialect, dialect.name());
+    }
+
+    public P withAllowedNestingDepth(int allowedNestingDepth) {
+        return withFeature(Feature.allowedNestingDepth, allowedNestingDepth);
+    }
+
     public P withBackslashEscapeCharacter() {
         return withFeature(Feature.allowBackslashEscapeCharacter, true);
     }
@@ -83,7 +95,20 @@ public abstract class AbstractJSqlParser<P> {
         return me();
     }
 
+    public P withFeature(Feature f, String value) {
+        getConfiguration().setValue(f, value);
+        return me();
+    }
+
     public abstract FeatureConfiguration getConfiguration();
+
+    public FeatureConfiguration setValue(Feature feature, Object value) {
+        return getConfiguration().setValue(feature, value);
+    }
+
+    public Object getValue(Feature feature) {
+        return getConfiguration().getValue(feature);
+    }
 
     public abstract P me();
 
@@ -93,6 +118,18 @@ public abstract class AbstractJSqlParser<P> {
 
     public Long getAsLong(Feature f) {
         return getConfiguration().getAsLong(f);
+    }
+
+    public int getAsInt(Feature f) {
+        return getConfiguration().getAsInt(f);
+    }
+
+    public Integer getAsInteger(Feature f) {
+        return getConfiguration().getAsInteger(f);
+    }
+
+    public String getAsString(Feature f) {
+        return getConfiguration().getAsString(f);
     }
 
     public void setErrorRecovery(boolean errorRecovery) {

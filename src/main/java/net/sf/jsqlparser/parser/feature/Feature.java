@@ -794,6 +794,13 @@ public enum Feature {
     allowUnparenthesizedSubSelects(false),
 
     /**
+     * maximum nesting depth for trying complex parsing, can bet set to -1 to ignore
+     */
+    allowedNestingDepth(10),
+
+    dialect(null),
+
+    /**
      * "IMPORT"
      */
     imprt,
