@@ -58,6 +58,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -6402,7 +6403,8 @@ public class SelectTest {
             "SELECT * FROM schemaName.tableName JOIN ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' ) USING ( columnName )"
     })
     public void testSelectWithSubImport(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
 }

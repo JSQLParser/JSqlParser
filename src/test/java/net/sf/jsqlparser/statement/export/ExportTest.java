@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.export;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -27,7 +28,8 @@ public class ExportTest {
             "EXPORT ( select 1 ) INTO LOCAL CSV FILE 'file.csv'",
     })
     public void testExport(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -39,7 +41,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL SECURE CSV FILE 'file1.csv' FILE 'file2.csv'"
     })
     public void testExportIntoFileCSV(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -57,7 +60,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2, 3 )"
     })
     public void testExportIntoFileCSVCols(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -69,7 +73,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL SECURE FBV FILE 'file1.fbv' FILE 'file2.fbv'"
     })
     public void testExportIntoFileFBV(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -85,7 +90,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL FBV FILE 'file.fbv' ( SIZE = 1 PADDING = '0', FORMAT = 'format' )"
     })
     public void testExportIntoFileFBVCols(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -107,7 +113,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ENCODING = 'UTF-8' REPLACE WITH COLUMN NAMES"
     })
     public void testExportIntoFileFileOpts(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -120,7 +127,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' IGNORE CERTIFICATE PUBLIC KEY 'publicKey'"
     })
     public void testExportIntoFileCertVerification(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -149,7 +157,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO CSV AT '127.0.0.1' USER 'user' IDENTIFIED BY 'password' VERIFY CERTIFICATE PUBLIC KEY 'publicKey' FILE 'file.csv'"
     })
     public void testExportIntoConnectionDef(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -164,7 +173,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO CSV AT CLOUD AZURE BLOBSTORAGE '127.0.0.1' USER 'user' IDENTIFIED BY 'password' FILE 'file.csv'"
     })
     public void testExportIntoCloudConnectionDef(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -184,7 +194,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO EXA AT connectionName STATEMENT 'insert into schemaName.tableName ( columnName ) values ( ? )'"
     })
     public void testExportIntoDBMSEXA(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -196,7 +207,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO ORA AT connectionName STATEMENT 'insert into schemaName.tableName ( columnName ) values ( ? )'"
     })
     public void testExportIntoDBMSORA(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -205,7 +217,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO JDBC DRIVER = 'driverName' AT connectionName TABLE tableName"
     })
     public void testExportIntoDBMSJDBC(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -217,7 +230,8 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO SCRIPT scriptName AT connectionName WITH propertyName = 'value' propertyName2 = 'value2'"
     })
     public void testExportIntoScript(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -252,6 +266,7 @@ public class ExportTest {
             "EXPORT schemaName.tableName INTO LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED ERRORS"
     })
     public void testImportErrorClause(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 }

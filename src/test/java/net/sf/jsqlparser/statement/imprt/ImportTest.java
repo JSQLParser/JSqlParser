@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.imprt;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -25,7 +26,8 @@ public class ImportTest {
             "IMPORT INTO schemaName.tableName ( columnName1, columnName2 ) FROM LOCAL CSV FILE 'file.csv'"
     })
     public void testImportIntoTable(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -41,7 +43,8 @@ public class ImportTest {
             "IMPORT INTO ( LIKE schemaName.tableName ( columnName1 AS aliasName2, columnName2 AS aliasName2 ) ) FROM LOCAL CSV FILE 'file.csv'"
     })
     public void testImportIntoImportColumns(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -53,7 +56,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL SECURE CSV FILE 'file1.csv' FILE 'file2.csv'"
     })
     public void testImportFromFileCSV(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -67,7 +71,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL CSV FILE 'file.csv' ( 1, 1 .. 2, 3 )"
     })
     public void testImportFromFileCSVCols(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -79,7 +84,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL SECURE FBV FILE 'file1.fbv' FILE 'file2.fbv'"
     })
     public void testImportFromFileFBV(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -96,7 +102,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL FBV FILE 'file.fbv' ( SIZE = 1 START = 1, FORMAT = 'format' )"
     })
     public void testImportFromFileFBVCols(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -116,7 +123,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL CSV FILE 'file.csv' ENCODING = 'UTF-8' SKIP = 1 TRIM"
     })
     public void testImportFromFileFileOpts(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -129,7 +137,8 @@ public class ImportTest {
             "IMPORT FROM LOCAL CSV FILE 'file.csv' IGNORE CERTIFICATE PUBLIC KEY 'publicKey'"
     })
     public void testImportFromFileCertVerification(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -158,7 +167,8 @@ public class ImportTest {
             "IMPORT FROM CSV AT '127.0.0.1' USER 'user' IDENTIFIED BY 'password' VERIFY CERTIFICATE PUBLIC KEY 'publicKey' FILE 'file.csv'"
     })
     public void testImportFromConnectionDef(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -173,7 +183,8 @@ public class ImportTest {
             "IMPORT FROM CSV AT CLOUD AZURE BLOBSTORAGE '127.0.0.1' USER 'user' IDENTIFIED BY 'password' FILE 'file.csv'"
     })
     public void testImportFromCloudConnectionDef(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -186,7 +197,8 @@ public class ImportTest {
             "IMPORT FROM EXA AT connectionName STATEMENT 'select 1' STATEMENT 'select 2'"
     })
     public void testImportFromDBMSEXA(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -199,7 +211,8 @@ public class ImportTest {
             "IMPORT FROM ORA AT connectionName STATEMENT 'select 1' STATEMENT 'select 2'"
     })
     public void testImportFromDBMSORA(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -213,7 +226,8 @@ public class ImportTest {
             "IMPORT FROM JDBC DRIVER = 'driverName' AT connectionName STATEMENT 'select 1' STATEMENT 'select 2'"
     })
     public void testImportFromDBMSJDBC(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -225,7 +239,8 @@ public class ImportTest {
             "IMPORT FROM SCRIPT scriptName AT connectionName WITH propertyName = 'value' propertyName2 = 'value2'"
     })
     public void testImportFromScript(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
     @ParameterizedTest
@@ -260,6 +275,7 @@ public class ImportTest {
             "IMPORT FROM LOCAL CSV FILE 'file.csv' ERRORS INTO schemaName.tableName REJECT LIMIT UNLIMITED ERRORS"
     })
     public void testImportErrorClause(String sqlStr) throws JSQLParserException {
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 }

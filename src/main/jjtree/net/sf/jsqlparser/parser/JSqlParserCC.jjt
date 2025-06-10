@@ -1014,9 +1014,7 @@ Statement SingleStatement() :
             |
             stm = SessionStatement()
             |
-            stm = Import()
-            |
-            stm = Export()
+            LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
         )
         { return stm; }
 }
@@ -4663,7 +4661,7 @@ FromItem FromItem() #FromItem:
         |
         fromItem=LateralSubSelect()
         |
-        LOOKAHEAD(2) fromItem=SubImport() { fromItem = new ParenthesedFromItem(fromItem); }
+        LOOKAHEAD(2, { Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) fromItem=SubImport() { fromItem = new ParenthesedFromItem(fromItem); }
         |
         LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
