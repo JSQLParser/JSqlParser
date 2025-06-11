@@ -84,12 +84,21 @@ public class ExpressionVisitorAdapter<T>
 
     private SelectVisitor<T> selectVisitor;
 
+    public ExpressionVisitorAdapter(SelectVisitor<T> selectVisitor) {
+        this.selectVisitor = selectVisitor;
+    }
+
+    public ExpressionVisitorAdapter() {
+        this.selectVisitor = null;
+    }
+
     public SelectVisitor<T> getSelectVisitor() {
         return selectVisitor;
     }
 
-    public void setSelectVisitor(SelectVisitor<T> selectVisitor) {
+    public ExpressionVisitorAdapter<T> setSelectVisitor(SelectVisitor<T> selectVisitor) {
         this.selectVisitor = selectVisitor;
+        return this;
     }
 
     @Override

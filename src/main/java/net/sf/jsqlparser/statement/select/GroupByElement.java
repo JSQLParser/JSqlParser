@@ -127,7 +127,8 @@ public class GroupByElement implements Serializable {
         return this.withGroupingSets(collection);
     }
 
-    public GroupByElement addGroupingSets(Collection<List<ExpressionList<Expression>>> groupingSets) {
+    public GroupByElement addGroupingSets(
+            Collection<List<ExpressionList<Expression>>> groupingSets) {
         List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
         collection.addAll(groupingSets);
         return this.withGroupingSets(collection);
