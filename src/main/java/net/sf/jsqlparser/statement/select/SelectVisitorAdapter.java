@@ -28,9 +28,9 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     public SelectVisitorAdapter() {
         this.expressionVisitor = new ExpressionVisitorAdapter<>(this);
-        this.pivotVisitor = new PivotVisitorAdapter<>();
+        this.pivotVisitor = new PivotVisitorAdapter<>(this.expressionVisitor);
         this.selectItemVisitor = new SelectItemVisitorAdapter<>(this.expressionVisitor);
-        this.fromItemVisitor = new FromItemVisitorAdapter<>();
+        this.fromItemVisitor = new FromItemVisitorAdapter<>(this);
     }
 
     public SelectVisitorAdapter(ExpressionVisitor<T> expressionVisitor,

@@ -17,6 +17,24 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
+    private SelectVisitor<T> selectVisitor;
+
+    public FromItemVisitorAdapter(SelectVisitor<T> selectVisitor) {
+        this.selectVisitor = selectVisitor;
+    }
+
+    public FromItemVisitorAdapter() {
+        this.selectVisitor = new SelectVisitorAdapter<>();
+    }
+
+    public SelectVisitor<T> getSelectVisitor() {
+        return selectVisitor;
+    }
+
+    public FromItemVisitorAdapter<T> setSelectVisitor(SelectVisitor<T> selectVisitor) {
+        this.selectVisitor = selectVisitor;
+        return this;
+    }
 
     @Override
     public <S> T visit(Table table, S context) {
@@ -25,12 +43,12 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(ParenthesedSelect select, S context) {
-        return select.getPlainSelect().getFromItem().accept(this, context);
+        return select.getPlainSelect().accept(selectVisitor, context);
     }
 
     @Override
     public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
-        return lateralSubSelect.getPlainSelect().getFromItem().accept(this, context);
+        return lateralSubSelect.getPlainSelect().accept(selectVisitor, context);
     }
 
     @Override
@@ -51,14 +69,14 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(PlainSelect plainSelect, S context) {
-        return plainSelect.getFromItem().accept(this, context);
+        return plainSelect.accept(selectVisitor, context);
     }
 
     @Override
     public <S> T visit(SetOperationList setOperationList, S context) {
         ArrayList<T> results = new ArrayList<>();
         for (Select select : setOperationList.getSelects()) {
-            results.add(select.accept(this, context));
+            results.add(select.accept(selectVisitor, context));
         }
         return results.isEmpty() ? null : results.get(0);
     }
@@ -75,6 +93,6 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     }
 
     public <S> T visit(FromQuery fromQuery, S context) {
-        return fromQuery.getFromItem().accept(this, context);
+        return fromQuery.accept(selectVisitor, context);
     }
 }
