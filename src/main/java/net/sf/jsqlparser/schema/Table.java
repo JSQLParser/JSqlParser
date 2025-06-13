@@ -421,7 +421,8 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
      * @return this table
      */
     public Table setResolvedTable(Table resolvedTable) {
-        this.resolvedTable = resolvedTable;
+        // clone, not reference
+        this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
         return this;
     }
 }
