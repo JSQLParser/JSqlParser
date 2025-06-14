@@ -129,7 +129,7 @@ public class ReflectionTestUtils {
             BiPredicate<Object, Method> returnTypeCheck,
             Function<Method, Object[]> argsFunction,
             Predicate<Method>... methodFilters) {
-        log(Level.INFO, "testing methods of class " + object.getClass());
+        log(Level.FINE, "testing methods of class " + object.getClass());
         for (Method m : object.getClass().getMethods()) {
             boolean testMethod = true;
             for (Predicate<Method> f : methodFilters) {
@@ -140,7 +140,7 @@ public class ReflectionTestUtils {
                 }
             }
             if (testMethod) {
-                log(Level.INFO, "testing method " + m.toGenericString());
+                log(Level.FINE, "testing method " + m.toGenericString());
                 try {
                     invoke(m, returnTypeCheck, argsFunction, object);
                 } catch (Exception e) {
