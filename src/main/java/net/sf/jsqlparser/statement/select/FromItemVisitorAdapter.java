@@ -31,6 +31,11 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
         this.expressionVisitor = expressionVisitor;
     }
 
+    public FromItemVisitorAdapter(ExpressionVisitor<T> expressionVisitor) {
+        this.selectVisitor = new SelectVisitorAdapter<>(expressionVisitor);
+        this.expressionVisitor = expressionVisitor;
+    }
+
     public FromItemVisitorAdapter() {
         this.selectVisitor = new SelectVisitorAdapter<>();
         this.expressionVisitor = new ExpressionVisitorAdapter<>(this.selectVisitor);
@@ -43,6 +48,12 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     public FromItemVisitorAdapter<T> setSelectVisitor(SelectVisitor<T> selectVisitor) {
         this.selectVisitor = selectVisitor;
+        return this;
+    }
+
+    public FromItemVisitorAdapter<T> setSelectVisitor(SelectVisitorAdapter<T> selectVisitor) {
+        this.selectVisitor = selectVisitor;
+        this.expressionVisitor = selectVisitor.getExpressionVisitor();
         return this;
     }
 
