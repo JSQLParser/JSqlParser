@@ -35,7 +35,7 @@ public class Values extends Select implements FromItem {
         this.alias = alias;
     }
 
-    public ExpressionList<?> getExpressions() {
+    public ExpressionList<Expression> getExpressions() {
         return expressions;
     }
 

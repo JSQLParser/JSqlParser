@@ -9,23 +9,33 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     private SelectVisitor<T> selectVisitor;
+    private ExpressionVisitor<T> expressionVisitor;
 
-    public FromItemVisitorAdapter(SelectVisitor<T> selectVisitor) {
+    public FromItemVisitorAdapter(SelectVisitor<T> selectVisitor,
+            ExpressionVisitor<T> expressionVisitor) {
         this.selectVisitor = selectVisitor;
+        this.expressionVisitor = expressionVisitor;
     }
 
     public FromItemVisitorAdapter() {
         this.selectVisitor = new SelectVisitorAdapter<>();
+        this.expressionVisitor = new ExpressionVisitorAdapter<>(this.selectVisitor);
     }
+
 
     public SelectVisitor<T> getSelectVisitor() {
         return selectVisitor;
@@ -34,6 +44,35 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     public FromItemVisitorAdapter<T> setSelectVisitor(SelectVisitor<T> selectVisitor) {
         this.selectVisitor = selectVisitor;
         return this;
+    }
+
+    public ExpressionVisitor<T> getExpressionVisitor() {
+        return expressionVisitor;
+    }
+
+    public FromItemVisitorAdapter<T> setExpressionVisitor(ExpressionVisitor<T> expressionVisitor) {
+        this.expressionVisitor = expressionVisitor;
+        return this;
+    }
+
+    @Override
+    public <S> T visitJoins(Collection<Join> joins, S context) {
+        if (joins != null) {
+            for (Join join : joins) {
+                join.getFromItem().accept(this, context);
+                if (join.getUsingColumns() != null) {
+                    for (Column column : join.getUsingColumns()) {
+                        column.accept(expressionVisitor, context);
+                    }
+                }
+                if (join.getOnExpressions() != null) {
+                    for (Expression expression : join.getOnExpressions()) {
+                        expression.accept(expressionVisitor, context);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -64,6 +103,9 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(Values values, S context) {
+        for (Expression expression : values.getExpressions()) {
+            expression.accept(expressionVisitor, context);
+        }
         return null;
     }
 

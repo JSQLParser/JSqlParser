@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
@@ -31,10 +35,22 @@ import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.InsertConflictAction;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
+import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotVisitorAdapter;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
@@ -42,8 +58,48 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
+import java.util.List;
+
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
+    private final ExpressionVisitor<T> expressionVisitor;
+    private final PivotVisitor<T> pivotVisitor;
+    private final SelectItemVisitor<T> selectItemVisitor;
+    private final FromItemVisitor<T> fromItemVisitor;
+    private final SelectVisitor<T> selectVisitor;
+    private final MergeOperationVisitor<T> mergeOperationVisitor;
+
+    public StatementVisitorAdapter() {
+        this.expressionVisitor = new ExpressionVisitorAdapter<>();
+        this.pivotVisitor = new PivotVisitorAdapter<>(this.expressionVisitor);
+        this.selectItemVisitor = new SelectItemVisitorAdapter<>(this.expressionVisitor);
+        this.fromItemVisitor = new FromItemVisitorAdapter<>();
+
+        this.selectVisitor = new SelectVisitorAdapter<>(this.expressionVisitor, this.pivotVisitor,
+                this.selectItemVisitor, this.fromItemVisitor);
+        this.mergeOperationVisitor = new MergeOperationVisitorAdapter<>();
+    }
+
+    public StatementVisitorAdapter(ExpressionVisitor<T> expressionVisitor,
+            PivotVisitor<T> pivotVisitor, SelectItemVisitor<T> selectItemVisitor,
+            FromItemVisitor<T> fromItemVisitor, SelectVisitor<T> selectVisitor,
+            MergeOperationVisitor<T> mergeOperationVisitor) {
+        this.expressionVisitor = expressionVisitor;
+        this.pivotVisitor = pivotVisitor;
+        this.selectItemVisitor = selectItemVisitor;
+        this.fromItemVisitor = fromItemVisitor;
+        this.selectVisitor = selectVisitor;
+        this.mergeOperationVisitor = mergeOperationVisitor;
+    }
+
+    public StatementVisitorAdapter(SelectVisitorAdapter<T> selectVisitor) {
+        this.selectVisitor = selectVisitor;
+        this.expressionVisitor = selectVisitor.getExpressionVisitor();
+        this.pivotVisitor = selectVisitor.getPivotVisitor();
+        this.selectItemVisitor = selectVisitor.getSelectItemVisitor();
+        this.fromItemVisitor = selectVisitor.getFromItemVisitor();
+        this.mergeOperationVisitor = new MergeOperationVisitorAdapter<>();
+    }
 
     @Override
     public <S> T visit(Comment comment, S context) {
@@ -59,19 +115,39 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Select select, S context) {
-
-        return null;
+        return select.accept(selectVisitor, context);
     }
 
     @Override
     public <S> T visit(Delete delete, S context) {
+        visitWithItems(delete.getWithItemsList(), context);
+        fromItemVisitor.visitTables(delete.getTables(), context);
+        selectVisitor.visitOutputClause(delete.getOutputClause(), context);
+        fromItemVisitor.visitFromItem(delete.getTable(), context);
+        fromItemVisitor.visitTables(delete.getUsingList(), context);
+        fromItemVisitor.visitJoins(delete.getJoins(), context);
+        expressionVisitor.visitExpression(delete.getWhere(), context);
+
+        expressionVisitor.visitPreferringClause(delete.getPreferringClause(), context);
+
+        expressionVisitor.visitOrderBy(delete.getOrderByElements(), context);
+
+        expressionVisitor.visitLimit(delete.getLimit(), context);
 
         return null;
     }
 
+    private <S> void visitWithItems(List<WithItem<?>> withItemsList, S context) {
+        if (withItemsList != null) {
+            for (WithItem<?> item : withItemsList) {
+                item.accept(this, context);
+            }
+        }
+    }
+
     @Override
     public <S> T visit(ParenthesedDelete delete, S context) {
-
+        delete.getDelete().accept(this, context);
         return null;
     }
 
@@ -82,38 +158,94 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Update update, S context) {
-
+        visitWithItems(update.getWithItemsList(), context);
+        fromItemVisitor.visitFromItem(update.getTable(), context);
+        fromItemVisitor.visitJoins(update.getStartJoins(), context);
+        expressionVisitor.visitUpdateSets(update.getUpdateSets(), context);
+        selectVisitor.visitOutputClause(update.getOutputClause(), context);
+        fromItemVisitor.visitFromItem(update.getFromItem(), context);
+        fromItemVisitor.visitJoins(update.getJoins(), context);
+        expressionVisitor.visitExpression(update.getWhere(), context);
+        expressionVisitor.visitPreferringClause(update.getPreferringClause(), context);
+        expressionVisitor.visitOrderBy(update.getOrderByElements(), context);
+        expressionVisitor.visitLimit(update.getLimit(), context);
+        visitReturningClause(update.getReturningClause(), context);
         return null;
     }
 
     @Override
     public <S> T visit(ParenthesedUpdate update, S context) {
-
-        return null;
+        return update.getUpdate().accept(this, context);
     }
 
     @Override
     public <S> T visit(Insert insert, S context) {
+        visitWithItems(insert.getWithItemsList(), context);
+
+        insert.getTable().accept(fromItemVisitor, context);
+        fromItemVisitor.visitFromItem(insert.getTable(), context);
+
+        if (insert.getColumns() != null) {
+            for (Column column : insert.getColumns()) {
+                column.accept(expressionVisitor, context);
+            }
+        }
+
+        if (insert.getPartitions() != null) {
+            for (Partition partition : insert.getPartitions()) {
+                partition.getColumn().accept(expressionVisitor, context);
+                if (partition.getValue() != null) {
+                    partition.getValue().accept(expressionVisitor, context);
+                }
+            }
+        }
+
+        selectVisitor.visitOutputClause(insert.getOutputClause(), context);
+
+        if (insert.getSelect() != null) {
+            insert.getSelect().accept(selectVisitor, null);
+        }
+
+        expressionVisitor.visitUpdateSets(insert.getSetUpdateSets(), context);
+
+        expressionVisitor.visitUpdateSets(insert.getDuplicateUpdateSets(), context);
+
+        final InsertConflictAction conflictAction = insert.getConflictAction();
+        if (conflictAction != null) {
+            expressionVisitor.visitExpression(conflictAction.getWhereExpression(), context);
+            expressionVisitor.visitUpdateSets(conflictAction.getUpdateSets(), context);
+        }
+
+        visitReturningClause(insert.getReturningClause(), context);
+        return null;
+    }
+
+    private <S> T visitReturningClause(ReturningClause returningClause, S context) {
+        returningClause.forEach(selectItem -> selectItem.accept(selectItemVisitor, context));
+        // @todo: verify why this is a list of strings and not columns
 
         return null;
     }
 
     @Override
     public <S> T visit(ParenthesedInsert insert, S context) {
-
+        insert.getInsert().accept(this, context);
         return null;
     }
 
     @Override
     public <S> T visit(Drop drop, S context) {
+        if (drop.getType().equalsIgnoreCase("table")) {
+            fromItemVisitor.visitFromItem(drop.getName(), context);
+        }
+        // @todo: handle schemas
 
         return null;
     }
 
     @Override
     public <S> T visit(Truncate truncate, S context) {
-
-        return null;
+        return truncate.getTable().accept(fromItemVisitor, context);
     }
 
     @Override
@@ -129,13 +261,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateTable createTable, S context) {
-
-        return null;
+        return createTable.getTable().accept(fromItemVisitor, context);
     }
 
     @Override
     public <S> T visit(CreateView createView, S context) {
-
         return null;
     }
 
@@ -173,7 +303,12 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Merge merge, S context) {
-
+        visitWithItems(merge.getWithItemsList(), context);
+        fromItemVisitor.visitFromItem(merge.getTable(), context);
+        fromItemVisitor.visitFromItem(merge.getFromItem(), context);
+        expressionVisitor.visitExpression(merge.getOnCondition(), context);
+        mergeOperationVisitor.visit(merge.getOperations(), context);
+        selectVisitor.visitOutputClause(merge.getOutputClause(), context);
         return null;
     }
 

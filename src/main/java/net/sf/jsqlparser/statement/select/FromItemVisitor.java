@@ -13,7 +13,35 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface FromItemVisitor<T> {
+
+    default <S> T visitFromItem(FromItem fromItem, S context) {
+        if (fromItem != null) {
+            fromItem.accept(this, context);
+        }
+        return null;
+    }
+
+    default <S> T visitTables(List<Table> tables, S context) {
+        if (tables != null) {
+            for (Table table : tables) {
+                table.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    default <S> T visitJoins(Collection<Join> joins, S context) {
+        if (joins != null) {
+            for (Join join : joins) {
+                join.getFromItem().accept(this, context);
+            }
+        }
+        return null;
+    }
 
     <S> T visit(Table tableName, S context);
 

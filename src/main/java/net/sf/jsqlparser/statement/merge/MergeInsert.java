@@ -67,15 +67,15 @@ public class MergeInsert implements Serializable, MergeOperation {
         StringBuilder b = new StringBuilder();
         b.append(" WHEN NOT MATCHED");
         if (andPredicate != null) {
-            b.append(" AND ").append(andPredicate.toString());
+            b.append(" AND ").append(andPredicate);
         }
         b.append(" THEN INSERT ");
         if (columns != null) {
-            b.append(columns.toString());
+            b.append(columns);
         }
         b.append(" VALUES ").append(values.toString());
         if (whereCondition != null) {
-            b.append(" WHERE ").append(whereCondition.toString());
+            b.append(" WHERE ").append(whereCondition);
         }
         return b.toString();
     }

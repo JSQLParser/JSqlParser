@@ -147,11 +147,11 @@ public class ExpressionDeParserTest {
         Expression partitionExpression1 = mock(Expression.class);
         Expression partitionExpression2 = mock(Expression.class);
 
-        analyticExpression.setName("name");
-        analyticExpression.setPartitionExpressionList(partitionExpressionList);
         partitionExpressionList.add(partitionExpression1);
         partitionExpressionList.add(partitionExpression2);
 
+        analyticExpression.setName("name");
+        analyticExpression.setPartitionExpressionList(partitionExpressionList);
         will(appendToBuffer("partition expression 1")).given(partitionExpression1)
                 .accept(expressionDeParser, null);
         will(appendToBuffer("partition expression 2")).given(partitionExpression2)

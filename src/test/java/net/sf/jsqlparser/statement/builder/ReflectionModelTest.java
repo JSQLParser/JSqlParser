@@ -16,7 +16,6 @@ import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.refresh.RefreshMode;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

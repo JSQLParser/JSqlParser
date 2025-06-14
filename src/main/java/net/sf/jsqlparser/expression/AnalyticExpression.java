@@ -60,7 +60,6 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.distinct = function.isDistinct();
         this.unique = function.isUnique();
 
-
         ExpressionList<? extends Expression> list = function.getParameters();
         if (list != null) {
             if (list.size() > 3) {
@@ -117,16 +116,16 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     }
 
     public ExpressionList<?> getPartitionExpressionList() {
-        return windowDef.partitionBy.getPartitionExpressionList();
+        return windowDef.partitionBy;
     }
 
-    public void setPartitionExpressionList(ExpressionList<?> partitionExpressionList) {
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList<?> partitionExpressionList,
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList,
             boolean brackets) {
-        windowDef.partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
+        windowDef.partitionBy.setExpressions(partitionExpressionList, brackets);
     }
 
     public boolean isPartitionByBrackets() {

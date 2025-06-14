@@ -61,10 +61,94 @@ import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FunctionAllColumns;
+import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.UpdateSet;
+
+import java.util.List;
 
 public interface ExpressionVisitor<T> {
+
+    default <S> T visitExpressions(ExpressionList<? extends Expression> expressions, S context) {
+        if (expressions != null) {
+            expressions.forEach(expression -> expression.accept(this, context));
+        }
+        return null;
+    };
+
+    default <S> T visitExpression(Expression expression, S context) {
+        if (expression != null) {
+            expression.accept(this, context);
+        }
+        return null;
+    }
+
+    default <S> T visitOrderBy(List<OrderByElement> orderByElements, S context) {
+        if (orderByElements != null) {
+            for (OrderByElement orderByElement : orderByElements) {
+                orderByElement.getExpression().accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    default <S> T visitLimit(Limit limit, S context) {
+        if (limit != null && !limit.isLimitNull() && !limit.isLimitAll()) {
+            if (limit.getOffset() != null) {
+                limit.getOffset().accept(this, context);
+            }
+            if (limit.getRowCount() != null) {
+                limit.getRowCount().accept(this, context);
+            }
+            if (limit.getByExpressions() != null) {
+                limit.getByExpressions().accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    default <S> T visitPreferringClause(PreferringClause preferringClause, S context) {
+        if (preferringClause != null) {
+            if (preferringClause.getPreferring() != null) {
+                preferringClause.getPreferring().accept(this, context);
+            }
+            if (preferringClause.getPartitionBy() != null) {
+                for (Expression expression : preferringClause.getPartitionBy()) {
+                    expression.accept(this, context);
+                }
+            }
+        }
+        return null;
+    }
+
+    default <S> T visitUpdateSets(List<UpdateSet> insert, S context) {
+        for (UpdateSet updateSet : insert) {
+            for (Column column : updateSet.getColumns()) {
+                column.accept(this, context);
+            }
+            for (Expression value : updateSet.getValues()) {
+                value.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    default <S> T visit(GroupByElement groupBy, S context) {
+        if (groupBy != null) {
+            for (Expression expression : groupBy.getGroupByExpressionList()) {
+                expression.accept(this, context);
+            }
+            if (!groupBy.getGroupingSets().isEmpty()) {
+                for (ExpressionList<?> expressionList : groupBy.getGroupingSets()) {
+                    expressionList.accept(this, context);
+                }
+            }
+        }
+        return null;
+    }
 
     <S> T visit(BitwiseRightShift bitwiseRightShift, S context);
 
