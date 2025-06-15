@@ -124,13 +124,15 @@ public interface ExpressionVisitor<T> {
         return null;
     }
 
-    default <S> T visitUpdateSets(List<UpdateSet> insert, S context) {
-        for (UpdateSet updateSet : insert) {
-            for (Column column : updateSet.getColumns()) {
-                column.accept(this, context);
-            }
-            for (Expression value : updateSet.getValues()) {
-                value.accept(this, context);
+    default <S> T visitUpdateSets(List<UpdateSet> updateSets, S context) {
+        if (updateSets != null) {
+            for (UpdateSet updateSet : updateSets) {
+                for (Column column : updateSet.getColumns()) {
+                    column.accept(this, context);
+                }
+                for (Expression value : updateSet.getValues()) {
+                    value.accept(this, context);
+                }
             }
         }
         return null;
