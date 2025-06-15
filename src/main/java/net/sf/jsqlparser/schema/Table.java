@@ -425,4 +425,44 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
         this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
         return this;
     }
+
+    /**
+     * Sets a table's catalog and schema only when not set. Useful for setting CURRENT_SCHEMA() and
+     * CURRENT_DATABASE()
+     *
+     * @param currentCatalogName the catalog name
+     * @param currentSchemaName the schema name
+     * @return the provided table
+     */
+    public Table setUnsetCatalogAndSchema(String currentCatalogName, String currentSchemaName) {
+        String databaseName = getDatabaseName();
+        if (databaseName == null || databaseName.isEmpty()) {
+            setDatabaseName(currentCatalogName);
+        }
+
+        String schemaName = getSchemaName();
+        if (schemaName == null || schemaName.isEmpty()) {
+            setSchemaName(currentSchemaName);
+        }
+        return this;
+    }
+
+    /**
+     * Sets a tables' catalog and schema only when not set. Useful for setting CURRENT_SCHEMA() and
+     * CURRENT_DATABASE()
+     *
+     * @param currentCatalogName the current catalog name
+     * @param currentSchemaName the current schema name
+     * @param tables the tables
+     * @return the tables
+     */
+    public static Table[] setUnsetCatalogAndSchema(String currentCatalogName,
+            String currentSchemaName, Table... tables) {
+        for (Table t : tables) {
+            if (t != null) {
+                t.setUnsetCatalogAndSchema(currentCatalogName, currentSchemaName);
+            }
+        }
+        return tables;
+    }
 }
