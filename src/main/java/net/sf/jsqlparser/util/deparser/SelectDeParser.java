@@ -449,25 +449,28 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
 
     @Override
-    public <S> StringBuilder visit(Table tableName, S context) {
-        builder.append(tableName.getFullyQualifiedName());
-        Alias alias = tableName.getAlias();
+    public <S> StringBuilder visit(Table table, S context) {
+        builder.append(table.getFullyQualifiedName());
+        if (table.getTimeTravel() != null) {
+            builder.append(" ").append(table.getTimeTravel());
+        }
+        Alias alias = table.getAlias();
         if (alias != null) {
             builder.append(alias);
         }
-        Pivot pivot = tableName.getPivot();
+        Pivot pivot = table.getPivot();
         if (pivot != null) {
             pivot.accept(this, context);
         }
-        UnPivot unpivot = tableName.getUnPivot();
+        UnPivot unpivot = table.getUnPivot();
         if (unpivot != null) {
             unpivot.accept(this, context);
         }
-        MySQLIndexHint indexHint = tableName.getIndexHint();
+        MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null) {
             builder.append(indexHint);
         }
-        SQLServerHints sqlServerHints = tableName.getSqlServerHints();
+        SQLServerHints sqlServerHints = table.getSqlServerHints();
         if (sqlServerHints != null) {
             builder.append(sqlServerHints);
         }

@@ -247,6 +247,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ANALYZE:"ANALYZE">
 |   <K_AND:"AND">
 |   <K_ANY:"ANY">
+|   <K_APPEND_ONLY:"APPEND_ONLY">
 |   <K_APPLY:"APPLY">
 |   <K_APPROXIMATE:"APPROXIMATE">
 |   <K_ARCHIVE: "ARCHIVE">
@@ -260,6 +261,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_AUTO_INCREMENT:"AUTO_INCREMENT">
 |   <K_AZURE:"AZURE">
 |   <K_BASE64:"BASE64">
+|   <K_BEFORE: "BEFORE">
 |   <K_BEGIN:"BEGIN">
 |   <K_BERNOULLI: "BERNOULLI">
 |   <K_BETWEEN:"BETWEEN">
@@ -412,6 +414,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_INCLUDING:"INCLUDING">
 |   <K_INCREMENT:"INCREMENT">
 |   <K_INDEX: "INDEX">
+|   <K_INFORMATION: "INFORMATION">
 |   <K_INNER:"INNER">
 |   <K_STATEMENT:"STATEMENT">
 |   <K_STRAIGHT:"STRAIGHT_JOIN">
@@ -597,6 +600,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SPATIAL:"SPATIAL">
 |   <K_START:"START">
 |   <K_STORED: "STORED">
+|   <K_STREAM: "STREAM">
 |   <K_STRICT: "STRICT">
 |   <K_STRING: "STRING">
 |   <K_STRUCT: "STRUCT">
@@ -683,6 +687,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_YES:"YES">
 |   <K_ZONE:"ZONE">
 
+|   <OPENING_BRACKET: "(">
+|   <CLOSING_BRACKET: ")">
 |   <OPENING_CURLY_BRACKET: "{">
 |   <CLOSING_CURLY_BRACKET: "}">
 |   <DOUBLE_COLON: ":">
@@ -3161,7 +3167,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPEND_ONLY" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEFORE" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INFORMATION" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STREAM" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -3234,17 +3240,20 @@ Table Table() #TableName :
     ObjectNames data = null;
     Token fileNameToken = null;
     Table table;
+    String timeTravelStr = null;
 }
 {
     (
-        data = RelObjectNames()
+        data = RelObjectNames() [ LOOKAHEAD(2) timeTravelStr = TimeTravel() ]
         {
             table = new Table(data.getNames());
+            table.setTimeTravel(timeTravelStr);
         }
         |
         fileNameToken = <S_CHAR_LITERAL>
         {
-            table = new Table(fileNameToken.image);
+            // don't split name parts
+            table = new Table(fileNameToken.image, false);
         }
     )
 
@@ -10369,5 +10378,127 @@ TrimFunction TrimFunction():
 
     {
         return new TrimFunction(trimSpecification, expression, fromExpression, usesFrom);
+    }
+}
+
+void SnowflakeTimeTravelAt(StringBuilder builder):
+{
+    Expression expression;
+    Token tk;
+}
+{
+    // AT( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> | STREAM => '<name>' } )
+
+    <K_AT> <OPENING_BRACKET> { builder.append("AT ("); }
+    (
+        //@fixme: this should be TIMESTAMP only but JavaCC-8 has issues with compound tokens!
+        <K_DATETIMELITERAL> "=>" expression = Expression()
+        { builder.append( "TIMESTAMP => ").append(expression.toString()); }
+        |
+        <K_OFFSET> "=>" expression = Expression()
+        { builder.append( "OFFSET => ").append(expression.toString()); }
+        |
+        <K_STATEMENT> "=>" ( tk=<S_CHAR_LITERAL>| tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
+        { builder.append( "STATEMENT => ").append(tk.image); }
+        |
+        <K_STREAM> "=>" tk=<S_CHAR_LITERAL>
+        { builder.append( "STREAM => ").append(tk.image); }
+    )
+    <CLOSING_BRACKET> { builder.append(")"); }
+}
+
+
+void SnowflakeTimeTravelBefore(StringBuilder builder):
+{
+    Expression expression;
+    Token tk;
+}
+{
+    // BEFORE( STATEMENT => <id> )
+
+    <K_BEFORE> <OPENING_BRACKET> { builder.append("BEFORE ("); }
+    <K_STATEMENT> "=>" ( tk=<S_CHAR_LITERAL>| tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
+    { builder.append( "STATEMENT => ").append(tk.image); }
+    <CLOSING_BRACKET> { builder.append(")"); }
+}
+
+void SnowflakeTimeTravelChange(StringBuilder builder):
+{
+    Expression expression;
+    Token tk;
+}
+{
+    /*
+    CHANGES ( INFORMATION => { DEFAULT | APPEND_ONLY } )
+       AT ( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> | STREAM => '<name>' } )
+       |
+       BEFORE ( STATEMENT => <id> )
+       [ END( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> } ) ]
+     */
+
+     <K_CHANGES> <OPENING_BRACKET> <K_INFORMATION> "=>"
+     { builder.append("CHANGES (INFORMATION => ");}
+
+     ( tk = <K_DEFAULT> | tk=<K_APPEND_ONLY>)
+     { builder.append(tk.image); }
+
+     <CLOSING_BRACKET> { builder.append(") "); }
+
+     (
+         SnowflakeTimeTravelAt(builder)
+         |
+         SnowflakeTimeTravelBefore(builder)
+     )
+
+     [
+        LOOKAHEAD(2) <K_END> <OPENING_BRACKET>
+        { builder.append(" END ("); }
+
+        (
+            //@fixme: this should be TIMESTAMP only but JavaCC-8 has issues with compound tokens!
+            <K_DATETIMELITERAL> "=>" expression = Expression()
+            { builder.append( "TIMESTAMP => ").append(expression.toString()); }
+            |
+            <K_OFFSET> "=>" expression = Expression()
+            { builder.append( "OFFSET => ").append(expression.toString()); }
+            |
+            <K_STATEMENT> "=>" ( tk=<S_CHAR_LITERAL>| tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
+            { builder.append( "STATEMENT => ").append(tk.image); }
+        )
+
+        <CLOSING_BRACKET> { builder.append(")"); }
+     ]
+}
+
+String TimeTravel():
+{
+    StringBuilder builder = new StringBuilder();
+}
+{
+
+    /* Snowflake
+
+    AT( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> | STREAM => '<name>' } )
+    |
+    BEFORE( STATEMENT => <id> )
+
+    CHANGES ( INFORMATION => { DEFAULT | APPEND_ONLY } )
+       AT ( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> | STREAM => '<name>' } )
+       |
+       BEFORE ( STATEMENT => <id> )
+       [ END( { TIMESTAMP => <timestamp> | OFFSET => <time_difference> | STATEMENT => <id> } ) ]
+
+     */
+
+    (
+        SnowflakeTimeTravelAt(builder)
+        |
+        SnowflakeTimeTravelBefore(builder)
+        |
+        SnowflakeTimeTravelChange(builder)
+    )
+
+    {
+        return builder.toString();
     }
 }

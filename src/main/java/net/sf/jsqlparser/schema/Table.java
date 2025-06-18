@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.schema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,11 +29,9 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
-public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromItem, MultiPartName {
+public class Table extends ASTNodeAccessImpl
+        implements ErrorDestination, FromItem, MultiPartName, Cloneable {
 
-    // private Database database;
-    // private String schemaName;
-    // private String name;
     private static final int NAME_IDX = 0;
 
     private static final int SCHEMA_IDX = 1;
@@ -44,6 +43,9 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
     private List<String> partItems = new ArrayList<>();
 
     private List<String> partDelimiters = new ArrayList<>();
+
+    // holds the various `time travel` syntax for BigQuery, RedShift, Snowflake or RedShift
+    private String timeTravelStr = null;
 
     private Alias alias;
 
@@ -72,6 +74,10 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
      */
     public Table(String name) {
         setName(name);
+    }
+
+    public Table(String name, boolean splitNamesOnDelimiter) {
+        setName(name, splitNamesOnDelimiter);
     }
 
     public Table(String schemaName, String name) {
@@ -197,11 +203,19 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
                         .of("0", "N", "n", "FALSE", "false", "OFF", "off")
                         .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
 
+        setName(name, splitNamesOnDelimiter);
+    }
+
+    public void setName(String name, boolean splitNamesOnDelimiter) {
         if (MultiPartName.isQuoted(name) && name.contains(".") && splitNamesOnDelimiter) {
             partItems.clear();
             for (String unquotedIdentifier : MultiPartName.unquote(name).split("\\.")) {
                 partItems.add("\"" + unquotedIdentifier + "\"");
             }
+            Collections.reverse(partItems);
+        } else if (name.contains(".") && splitNamesOnDelimiter) {
+            partItems.clear();
+            partItems.addAll(Arrays.asList(MultiPartName.unquote(name).split("\\.")));
             Collections.reverse(partItems);
         } else {
             setIndex(NAME_IDX, name);
@@ -294,6 +308,15 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
         return intoTableVisitor.visit(this, context);
     }
 
+    public String getTimeTravel() {
+        return timeTravelStr;
+    }
+
+    public Table setTimeTravel(String timeTravelStr) {
+        this.timeTravelStr = timeTravelStr;
+        return this;
+    }
+
     @Override
     public Pivot getPivot() {
         return pivot;
@@ -346,6 +369,11 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
 
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(getFullyQualifiedName());
+
+        if (timeTravelStr != null) {
+            builder.append(" ").append(timeTravelStr);
+        }
+
         if (alias != null) {
             builder.append(alias);
         }
@@ -422,7 +450,9 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
      */
     public Table setResolvedTable(Table resolvedTable) {
         // clone, not reference
-        this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
+        if (resolvedTable != null) {
+            this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
+        }
         return this;
     }
 
@@ -464,5 +494,17 @@ public class Table extends ASTNodeAccessImpl implements ErrorDestination, FromIt
             }
         }
         return tables;
+    }
+
+    @Override
+    public Table clone() {
+        try {
+            Table clone = (Table) super.clone();
+            clone.setName(this.getFullyQualifiedName());
+            clone.setResolvedTable(this.resolvedTable);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
