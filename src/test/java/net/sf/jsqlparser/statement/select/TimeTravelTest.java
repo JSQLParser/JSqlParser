@@ -53,4 +53,19 @@ public class TimeTravelTest {
     void testSnowflakeChange(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM delta.`/delta/events` @ 20240618093000000;\n",
+            "SELECT * FROM delta.`/delta/events` @V 5;\n",
+            "SELECT * FROM delta.`/delta/events` TIMESTAMP AS OF '2024-06-01T00:00:00';\n",
+            "SELECT * FROM delta.`/delta/events` VERSION AS OF 3;\n",
+            "MERGE INTO target_table AS t\n"
+                    + "USING source_table VERSION AS OF 5 AS s\n"
+                    + "ON t.id = s.id\n"
+                    + "WHEN MATCHED THEN UPDATE SET t.value = s.value;\n"
+    })
+    void testDataBricksTemporalSpec(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

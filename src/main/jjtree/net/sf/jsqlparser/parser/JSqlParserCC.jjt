@@ -231,7 +231,9 @@ SKIP:
 
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
-    <K_ABSENT: "ABSENT">
+    <K_AT_SIGN: "@">
+|   <K_AT_V: "@V">
+|   <K_ABSENT: "ABSENT">
 |   <K_ACTION: "ACTION">
 |   <K_ACTIVE: "ACTIVE">
 |   <K_ADD:"ADD">
@@ -610,6 +612,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SYMMETRIC:"SYMMETRIC">
 |   <K_SYNONYM:"SYNONYM">
 |   <K_SYSTEM:"SYSTEM">
+|   <K_SYSTEM_TIMESTAMP:"SYSTEM_TIMESTAMP">
+|   <K_SYSTEM_VERSION:"SYSTEM_VERSION">
 |   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
 |   <K_TABLESAMPLE: "TABLESAMPLE">
@@ -661,6 +665,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUES:"VALUES">
 |   <K_VERBOSE: "VERBOSE">
 |   <K_VERIFY: "VERIFY">
+|   <K_VERSION: "VERSION">
 |   <K_VIEW:"VIEW">
 |   <K_VISIBLE: "VISIBLE">
 |   <K_VOLATILE:"VOLATILE">
@@ -782,6 +787,7 @@ TOKEN:
                 | <Nd> | [ "$" , "#", "_" ] // Not SQL:2016 compliant!
                 >
 |   <#PART_LETTER: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "$" , "#", "_" , "@"  ] >
+| <S_AT_IDENTIFIER: <K_AT_SIGN> (<K_AT_SIGN>)? <S_IDENTIFIER> >
 
 // Unicode characters and categories are defined here: https://www.unicode.org/Public/UNIDATA/UnicodeData.txt
 // SQL:2016 states:
@@ -3167,7 +3173,7 @@ String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
     ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> 
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPEND_ONLY" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEFORE" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INFORMATION" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STREAM" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
+       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPEND_ONLY" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEFORE" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INFORMATION" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SECURE" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STREAM" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="SYSTEM_TIMESTAMP" | tk="SYSTEM_VERSION" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VERSION" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
 
@@ -6568,16 +6574,13 @@ OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
 }
 
 UserVariable UserVariable() : {
-    UserVariable var = new UserVariable();
+    Token tk;
     String varName;
-    String var2;
 }
 {
-    ("@" | "@@" { var.setDoubleAdd(true);} )
-    varName=IdentifierChain()
+    tk = <S_AT_IDENTIFIER> varName=IdentifierChain2(tk.image)
     {
-        var.setName(varName);
-        return var;
+        return new UserVariable(varName);
     }
 }
 
@@ -10283,6 +10286,17 @@ String IdentifierChain():
     }
 }
 
+String IdentifierChain2(String identifierChain):
+{
+    String part;
+}
+{
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
+    {
+        return identifierChain;
+    }
+}
+
 Expression CharacterPrimary():
 {
     Expression expression;
@@ -10470,6 +10484,37 @@ void SnowflakeTimeTravelChange(StringBuilder builder):
      ]
 }
 
+void DataBricksTemporalSpec(StringBuilder builder):
+{
+    Token tk;
+    Expression expression;
+}
+{
+    /*
+    temporal_spec https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-names#syntax-3
+    {
+      @ timestamp_encoding |
+      @V version |
+      [ FOR ] { SYSTEM_TIMESTAMP | TIMESTAMP } AS OF timestamp_expression |
+      [ FOR ] { SYSTEM_VERSION | VERSION } AS OF version
+    }
+     */
+    (tk=<K_AT_SIGN> | tk=<K_AT_V>)  { builder.append(tk.image).append(" "); }
+    (tk=<S_CHAR_LITERAL> | tk=<S_LONG>) { builder.append(tk.image); }
+    |
+    [ <K_FOR> { builder.append(" FOR"); } ]
+
+    ( tk=<K_SYSTEM_TIMESTAMP> | tk=<K_DATETIMELITERAL> )
+    <K_AS> <K_OF> expression=Expression()
+    { builder.append(" ").append(tk.image).append(" AS OF ").append(expression.toString()); }
+    |
+    (
+        ( tk=<K_SYSTEM_VERSION> | tk= <K_VERSION>) { builder.append(" ").append(tk.image); }
+        <K_AS> <K_OF> (tk=<S_LONG> | tk=<S_CHAR_LITERAL> ) { builder.append(" AS OF ").append(tk.image); }
+    )
+
+}
+
 String TimeTravel():
 {
     StringBuilder builder = new StringBuilder();
@@ -10496,6 +10541,8 @@ String TimeTravel():
         SnowflakeTimeTravelBefore(builder)
         |
         SnowflakeTimeTravelChange(builder)
+        |
+        DataBricksTemporalSpec(builder)
     )
 
     {

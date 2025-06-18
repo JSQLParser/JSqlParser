@@ -24,7 +24,7 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     }
 
     public UserVariable(String name) {
-        this.name = name;
+        setName(name);
     }
 
     public String getName() {
@@ -32,7 +32,15 @@ public class UserVariable extends ASTNodeAccessImpl implements Expression {
     }
 
     public void setName(String name) {
-        this.name = name;
+        if (name.startsWith("@@")) {
+            this.name = name.substring(2);
+            doubleAdd = true;
+        } else if (name.startsWith("@")) {
+            this.name = name.substring(1);
+            doubleAdd = false;
+        } else {
+            this.name = name;
+        }
     }
 
     @Override
