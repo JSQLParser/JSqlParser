@@ -68,4 +68,25 @@ public class TimeTravelTest {
     void testDataBricksTemporalSpec(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT *\n"
+                    + "FROM t\n"
+                    + "  FOR SYSTEM_TIME AS OF TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 HOUR);\n",
+            "SELECT *\n"
+                    + "FROM t\n"
+                    + "  FOR SYSTEM_TIME AS OF '2017-01-01 10:00:00-07:00';\n",
+            "SELECT *\n"
+                    + "FROM t1\n"
+                    + "WHERE t1.a IN (SELECT t2.a\n"
+                    + "               FROM t2 FOR SYSTEM_TIME AS OF t1.timestamp_column);\n",
+            "SELECT * FROM books FOR SYSTEM_TIME AS OF before_replace_timestamp;",
+            "INSERT INTO t1\n"
+                    + "SELECT * FROM t1\n"
+                    + "  FOR SYSTEM_TIME AS OF TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 DAY);\n"
+    })
+    void testBigQueryHistoricVersion(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

@@ -49,6 +49,9 @@ public class Table extends ASTNodeAccessImpl
 
     private Alias alias;
 
+    // thank you, Google!
+    private String timeTravelStrAfterAlias = null;
+
     private SampleClause sampleClause;
 
     private Pivot pivot;
@@ -248,6 +251,15 @@ public class Table extends ASTNodeAccessImpl
         this.alias = alias;
     }
 
+    public String getTimeTravelStrAfterAlias() {
+        return timeTravelStrAfterAlias;
+    }
+
+    public Table setTimeTravelStrAfterAlias(String timeTravelStrAfterAlias) {
+        this.timeTravelStrAfterAlias = timeTravelStrAfterAlias;
+        return this;
+    }
+
     private void setIndex(int idx, String value) {
         int size = partItems.size();
         for (int i = 0; i < idx - size + 1; i++) {
@@ -376,6 +388,10 @@ public class Table extends ASTNodeAccessImpl
 
         if (alias != null) {
             builder.append(alias);
+        }
+
+        if (timeTravelStrAfterAlias != null) {
+            builder.append(" ").append(timeTravelStrAfterAlias);
         }
 
         if (sampleClause != null) {

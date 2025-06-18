@@ -458,6 +458,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (alias != null) {
             builder.append(alias);
         }
+        if (table.getTimeTravelStrAfterAlias() != null) {
+            builder.append(" ").append(table.getTimeTravelStrAfterAlias());
+        }
         Pivot pivot = table.getPivot();
         if (pivot != null) {
             pivot.accept(this, context);
