@@ -67,14 +67,14 @@ public class SetStatementTest {
     @Test
     public void testObject() {
         SetStatement setStatement = new SetStatement();
-        setStatement.add("standard_conforming_strings", new ExpressionList(new StringValue("ON")),
+        setStatement.add("standard_conforming_strings", new ExpressionList<>(new StringValue("ON")),
                 false);
         setStatement.withUseEqual(0, true).remove(0);
 
         assertEquals(0, setStatement.getCount());
 
         setStatement.addKeyValuePairs(
-                new SetStatement.NameExpr("test", new ExpressionList(new StringValue("1")), false));
+                new SetStatement.NameExpr("test", new ExpressionList<>(new StringValue("1")), false));
         setStatement.getKeyValuePairs().get(0).setUseEqual(true);
 
         assertEquals("test", setStatement.getKeyValuePairs().get(0).getName());
