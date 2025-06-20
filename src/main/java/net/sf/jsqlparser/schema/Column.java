@@ -244,7 +244,8 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
      */
     public Column setResolvedTable(Table resolvedTable) {
         // clone, not reference
-        this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
+        this.resolvedTable =
+                resolvedTable != null ? new Table(resolvedTable.getFullyQualifiedName()) : null;
         return this;
     }
 }

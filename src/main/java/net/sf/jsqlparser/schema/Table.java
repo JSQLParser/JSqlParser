@@ -514,13 +514,8 @@ public class Table extends ASTNodeAccessImpl
 
     @Override
     public Table clone() {
-        try {
-            Table clone = (Table) super.clone();
-            clone.setName(this.getFullyQualifiedName());
-            clone.setResolvedTable(this.resolvedTable);
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        Table clone = new Table(this.getFullyQualifiedName());
+        clone.setResolvedTable(this.resolvedTable != null ? this.resolvedTable.clone() : null);
+        return clone;
     }
 }
