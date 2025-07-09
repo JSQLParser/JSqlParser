@@ -17,3 +17,4 @@ from
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: "(" / "(", at line 15, column 41, in lexical state DEFAULT. recorded first on 23 May 2025, 22:04:10
+--@FAILURE: Encountered: <OPENING_BRACKET> / "(", at line 15, column 41, in lexical state DEFAULT. recorded first on 9 Jul 2025, 17:09:17
