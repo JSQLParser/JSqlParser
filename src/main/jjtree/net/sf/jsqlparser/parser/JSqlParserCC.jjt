@@ -820,7 +820,7 @@ TOKEN:
 | < S_CHAR_LITERAL: (
                         (["U","E","N","R","B"]|"RB"|"_utf8")?
                         (
-                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
+                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'" | "$$" (~["$"])* "$$")
                             // Alternative Oracle Escape Modes
                             | ("q'{" (~[])* "}'")
                             | ("q'(" (~[])* ")'")
@@ -856,7 +856,7 @@ TOKEN:
                     }
                 }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | "$$" (~["$"])* "$$" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
             && matchedToken.image.charAt(0) == '[' ) {

@@ -642,7 +642,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (stringValue.getPrefix() != null) {
             builder.append(stringValue.getPrefix());
         }
-        builder.append("'").append(stringValue.getValue()).append("'");
+        builder.append(stringValue.getQuoteStr()).append(stringValue.getValue())
+                .append(stringValue.getQuoteStr());
 
         return builder;
     }

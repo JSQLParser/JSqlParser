@@ -24,6 +24,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
             Arrays.asList("N", "U", "E", "R", "B", "RB", "_utf8", "Q");
     private String value = "";
     private String prefix = null;
+    private String quoteStr = "'";
 
     public StringValue() {
         // empty constructor
@@ -34,6 +35,11 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         if (escapedValue.length() >= 2 && escapedValue.startsWith("'")
                 && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
+            return;
+        } else if (escapedValue.length() >= 4 && escapedValue.startsWith("$$")
+                && escapedValue.endsWith("$$")) {
+            value = escapedValue.substring(2, escapedValue.length() - 2);
+            quoteStr = "$$";
             return;
         }
 
@@ -68,6 +74,15 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         this.prefix = prefix;
     }
 
+    public String getQuoteStr() {
+        return quoteStr;
+    }
+
+    public StringValue setQuoteStr(String quoteStr) {
+        this.quoteStr = quoteStr;
+        return this;
+    }
+
     public String getNotExcapedValue() {
         StringBuilder buffer = new StringBuilder(value);
         int index = 0;
@@ -87,7 +102,7 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return (prefix != null ? prefix : "") + "'" + value + "'";
+        return (prefix != null ? prefix : "") + quoteStr + value + quoteStr;
     }
 
     public StringValue withPrefix(String prefix) {
