@@ -107,6 +107,7 @@
         </developer>
     </developers>
 
+<!-- 
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
@@ -117,7 +118,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
-
+-->
     <scm>
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
@@ -449,6 +450,15 @@
                     </java>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                  <publishingServerId>sonatype-nexus</publishingServerId>
+                </configuration>
+              </plugin>
         </plugins>
     </build>
     
