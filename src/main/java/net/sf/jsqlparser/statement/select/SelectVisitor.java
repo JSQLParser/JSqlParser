@@ -9,9 +9,24 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
+import java.util.List;
+
 public interface SelectVisitor<T> {
+    default <S> T visitWithItems(List<WithItem<?>> withItemsList, S context) {
+        if (withItemsList != null) {
+            for (WithItem<?> withItem : withItemsList) {
+                withItem.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    default <S> T visitOutputClause(OutputClause outputClause, S context) {
+        return null;
+    }
 
     <S> T visit(ParenthesedSelect parenthesedSelect, S context);
 

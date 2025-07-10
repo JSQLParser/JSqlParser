@@ -14,29 +14,39 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
 
-public class PartitionByClause implements Serializable {
-    ExpressionList partitionExpressionList;
+public class PartitionByClause extends ExpressionList<Expression> implements Serializable {
     boolean brackets = false;
 
-    public ExpressionList getPartitionExpressionList() {
-        return partitionExpressionList;
+    @Deprecated
+    public ExpressionList<Expression> getPartitionExpressionList() {
+        return this;
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+    @Deprecated
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+    @Deprecated
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList,
             boolean brackets) {
-        this.partitionExpressionList = partitionExpressionList;
+        setExpressions(partitionExpressionList, brackets);
+    }
+
+    public PartitionByClause setExpressions(ExpressionList<Expression> partitionExpressionList,
+            boolean brackets) {
+        clear();
+        if (partitionExpressionList != null) {
+            addAll(partitionExpressionList);
+        }
         this.brackets = brackets;
+        return this;
     }
 
     public void toStringPartitionBy(StringBuilder b) {
-        if (partitionExpressionList != null
-                && !partitionExpressionList.getExpressions().isEmpty()) {
+        if (!isEmpty()) {
             b.append("PARTITION BY ");
-            b.append(PlainSelect.getStringList(partitionExpressionList.getExpressions(), true,
+            b.append(PlainSelect.getStringList(this, true,
                     brackets));
             b.append(" ");
         }
@@ -46,7 +56,9 @@ public class PartitionByClause implements Serializable {
         return brackets;
     }
 
-    public PartitionByClause withPartitionExpressionList(ExpressionList partitionExpressionList) {
+    @Deprecated
+    public PartitionByClause withPartitionExpressionList(
+            ExpressionList<Expression> partitionExpressionList) {
         this.setPartitionExpressionList(partitionExpressionList);
         return this;
     }

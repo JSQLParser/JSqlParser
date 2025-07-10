@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.schema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.ErrorDestination;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.IntoTableVisitor;
@@ -27,11 +29,9 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 /**
  * A table. It can have an alias and the schema name it belongs to.
  */
-public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName {
+public class Table extends ASTNodeAccessImpl
+        implements ErrorDestination, FromItem, MultiPartName, Cloneable {
 
-    // private Database database;
-    // private String schemaName;
-    // private String name;
     private static final int NAME_IDX = 0;
 
     private static final int SCHEMA_IDX = 1;
@@ -44,7 +44,13 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     private List<String> partDelimiters = new ArrayList<>();
 
+    // holds the various `time travel` syntax for BigQuery, RedShift, Snowflake or RedShift
+    private String timeTravelStr = null;
+
     private Alias alias;
+
+    // thank you, Google!
+    private String timeTravelStrAfterAlias = null;
 
     private SampleClause sampleClause;
 
@@ -55,6 +61,9 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     private MySQLIndexHint mysqlHints;
 
     private SQLServerHints sqlServerHints;
+
+    // holds the physical table when resolved against an actual schema information
+    private Table resolvedTable = null;
 
     public Table() {}
 
@@ -68,6 +77,10 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
      */
     public Table(String name) {
         setName(name);
+    }
+
+    public Table(String name, boolean splitNamesOnDelimiter) {
+        setName(name, splitNamesOnDelimiter);
     }
 
     public Table(String schemaName, String name) {
@@ -193,11 +206,19 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
                         .of("0", "N", "n", "FALSE", "false", "OFF", "off")
                         .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
 
+        setName(name, splitNamesOnDelimiter);
+    }
+
+    public void setName(String name, boolean splitNamesOnDelimiter) {
         if (MultiPartName.isQuoted(name) && name.contains(".") && splitNamesOnDelimiter) {
             partItems.clear();
             for (String unquotedIdentifier : MultiPartName.unquote(name).split("\\.")) {
                 partItems.add("\"" + unquotedIdentifier + "\"");
             }
+            Collections.reverse(partItems);
+        } else if (name.contains(".") && splitNamesOnDelimiter) {
+            partItems.clear();
+            partItems.addAll(Arrays.asList(MultiPartName.unquote(name).split("\\.")));
             Collections.reverse(partItems);
         } else {
             setIndex(NAME_IDX, name);
@@ -228,6 +249,15 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
     @Override
     public void setAlias(Alias alias) {
         this.alias = alias;
+    }
+
+    public String getTimeTravelStrAfterAlias() {
+        return timeTravelStrAfterAlias;
+    }
+
+    public Table setTimeTravelStrAfterAlias(String timeTravelStrAfterAlias) {
+        this.timeTravelStrAfterAlias = timeTravelStrAfterAlias;
+        return this;
     }
 
     private void setIndex(int idx, String value) {
@@ -290,6 +320,15 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         return intoTableVisitor.visit(this, context);
     }
 
+    public String getTimeTravel() {
+        return timeTravelStr;
+    }
+
+    public Table setTimeTravel(String timeTravelStr) {
+        this.timeTravelStr = timeTravelStr;
+        return this;
+    }
+
     @Override
     public Pivot getPivot() {
         return pivot;
@@ -342,8 +381,17 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(getFullyQualifiedName());
+
+        if (timeTravelStr != null) {
+            builder.append(" ").append(timeTravelStr);
+        }
+
         if (alias != null) {
             builder.append(alias);
+        }
+
+        if (timeTravelStrAfterAlias != null) {
+            builder.append(" ").append(timeTravelStrAfterAlias);
         }
 
         if (sampleClause != null) {
@@ -399,5 +447,75 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
 
     public List<String> getNamePartDelimiters() {
         return partDelimiters;
+    }
+
+    /**
+     * Gets the actual table when resolved against a physical schema information.
+     *
+     * @return the actual table when resolved against a physical schema information
+     */
+    public Table getResolvedTable() {
+        return resolvedTable;
+    }
+
+    /**
+     * Sets resolved table.
+     *
+     * @param resolvedTable the resolved table
+     * @return this table
+     */
+    public Table setResolvedTable(Table resolvedTable) {
+        // clone, not reference
+        if (resolvedTable != null) {
+            this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
+        }
+        return this;
+    }
+
+    /**
+     * Sets a table's catalog and schema only when not set. Useful for setting CURRENT_SCHEMA() and
+     * CURRENT_DATABASE()
+     *
+     * @param currentCatalogName the catalog name
+     * @param currentSchemaName the schema name
+     * @return the provided table
+     */
+    public Table setUnsetCatalogAndSchema(String currentCatalogName, String currentSchemaName) {
+        String databaseName = getDatabaseName();
+        if (databaseName == null || databaseName.isEmpty()) {
+            setDatabaseName(currentCatalogName);
+        }
+
+        String schemaName = getSchemaName();
+        if (schemaName == null || schemaName.isEmpty()) {
+            setSchemaName(currentSchemaName);
+        }
+        return this;
+    }
+
+    /**
+     * Sets a tables' catalog and schema only when not set. Useful for setting CURRENT_SCHEMA() and
+     * CURRENT_DATABASE()
+     *
+     * @param currentCatalogName the current catalog name
+     * @param currentSchemaName the current schema name
+     * @param tables the tables
+     * @return the tables
+     */
+    public static Table[] setUnsetCatalogAndSchema(String currentCatalogName,
+            String currentSchemaName, Table... tables) {
+        for (Table t : tables) {
+            if (t != null) {
+                t.setUnsetCatalogAndSchema(currentCatalogName, currentSchemaName);
+            }
+        }
+        return tables;
+    }
+
+    @Override
+    public Table clone() {
+        Table clone = new Table(this.getFullyQualifiedName());
+        clone.setResolvedTable(this.resolvedTable != null ? this.resolvedTable.clone() : null);
+        return clone;
     }
 }

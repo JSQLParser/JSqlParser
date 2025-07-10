@@ -89,7 +89,7 @@ public class Limit extends ASTNodeAccessImpl {
         }
 
         if (byExpressions != null) {
-            retVal += " BY " + byExpressions.toString();
+            retVal += " BY " + byExpressions;
         }
 
         return retVal;

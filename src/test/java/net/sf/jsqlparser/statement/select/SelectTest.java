@@ -58,6 +58,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -1055,6 +1056,27 @@ public class SelectTest {
         assertEquals("myid", ((Column) (plainSelect.getDistinct()
                 .getOnSelectItems().get(0)).getExpression()).getColumnName());
         assertEquals("mycol", ((Column) (plainSelect.getSelectItems().get(1))
+                .getExpression()).getColumnName());
+    }
+
+    @Test
+    public void testDistinctRow() throws JSQLParserException {
+        String statement =
+                "SELECT DISTINCTROW col1, col2 FROM mytable WHERE mytable.col = 9";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(statement, true);
+
+        assertInstanceOf(PlainSelect.class, select);
+
+        PlainSelect plainSelect = (PlainSelect) select;
+        Distinct distinct = plainSelect.getDistinct();
+
+        assertNotNull(distinct);
+        assertTrue(distinct.isUseDistinctRow());
+        assertNull(distinct.getOnSelectItems());
+
+        assertEquals("col1", ((Column) (plainSelect.getSelectItems().get(0))
+                .getExpression()).getColumnName());
+        assertEquals("col2", ((Column) (plainSelect.getSelectItems().get(1))
                 .getExpression()).getColumnName());
     }
 
@@ -6212,6 +6234,177 @@ public class SelectTest {
                 .getExpression() instanceof FunctionAllColumns);
         assertEquals("(pg_stat_file('postgresql.conf')).*",
                 plainSelect.getSelectItems().get(0).toString());
+    }
+
+    @Test
+    void testIssue2242SubSelectLookAhead() throws JSQLParserException {
+        String sqlStr = "INSERT INTO foo(col1, col2, col3, col4, col5, col6)\n"
+                + "      VALUES ( (SELECT blah FROM bar INNER JOIN bam ON bar.col1 = bam.col1 WHERE bar.id = ? AND et.id = ?), ?, ?, ?, ?, ?)\n"
+                + "      ON CONFLICT (id) DO UPDATE\n"
+                + "      SET col4 = ?, col5 = ?, col6 = ?";
+        Statement statement = CCJSqlParserUtil.parse(sqlStr);
+        System.out.println(statement.toString());
+        Insert insert = (Insert) statement;
+        Assertions.assertEquals("foo", insert.getTable().toString());
+    }
+
+    @Test
+    void testIssue2255() throws JSQLParserException {
+        String sqlStr = "select\n"
+                + "       sum(if(log.\"output\" = 'SUCCESS', 1, 0))                                   success_req_num\n"
+                + "from mysql_kt_plan.daily_cvmapi_runinstance_log log";
+        CCJSqlParserUtil.parse(sqlStr);
+    }
+
+    @Test
+    void testIssue2257() throws JSQLParserException {
+        String sqlStr = "SELECT sum(iif(diff = 7, lc_lv, 0)) AS lc_7\n"
+                + "FROM (  SELECT  a.day\n"
+                + "                , a.channel_type\n"
+                + "                , a.username\n"
+                + "                , a.diff\n"
+                + "                , a.cnt\n"
+                + "                , lc\n"
+                + "                ,  Cast( lc / cnt AS DECIMAL (38, 4) ) AS lc_lv\n"
+                + "        FROM (  SELECT  a.day\n"
+                + "                        , a.channel_type\n"
+                + "                        , a.username\n"
+                + "                        , Datediff( b.day, a.day )\n"
+                + "                             + 1 AS diff\n"
+                + "                        , cnt\n"
+                + "                        , Count( DISTINCT b.user_id ) AS lc\n"
+                + "                FROM (  SELECT  a.day\n"
+                + "                                , a.user_id\n"
+                + "                                , channel_id channel_type\n"
+                + "                                , adtrace_adgroup_id AS username\n"
+                + "                        FROM (  SELECT  day\n"
+                + "                                        , a.user_id\n"
+                + "                                        , last_login_channel_id AS channel_id\n"
+                + "                                        , last_adtrace_adgroup_id AS adtrace_adgroup_id\n"
+                + "                                FROM (  SELECT  day\n"
+                + "                                                , user_id\n"
+                + "                                                , yidevice\n"
+                + "                                        FROM (  SELECT  day\n"
+                + "                                                        , user_id\n"
+                + "                                                        , yidevice\n"
+                + "                                                        , Row_Number(  )\n"
+                + "                                                                OVER (PARTITION BY day, user_id ORDER BY event_time) AS rk\n"
+                + "                                                FROM dwd_table.event_pj\n"
+                + "                                                WHERE day BETWEEN '2025-05-30'\n"
+                + "                                                                 AND '2025-06-06'\n"
+                + "                                                    AND event_id = 'device_login'\n"
+                + "                                                    AND yidevice IS NOT NULL\n"
+                + "                                                    AND yidevice != '' ) a\n"
+                + "                                        WHERE rk = 1 ) a\n"
+                + "                                    LEFT JOIN ( SELECT DISTINCT\n"
+                + "                                                    From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ) AS last_adtrace_dt\n"
+                + "                                                    , yidevice\n"
+                + "                                                    , last_login_channel_id\n"
+                + "                                                    , last_adtrace_adgroup_id\n"
+                + "                                                    , last_adtrace_creative_id\n"
+                + "                                                FROM dwd_user.yidevice_pj\n"
+                + "                                                WHERE  Cast( adtrace_reattributed_times AS INT ) > 0\n"
+                + "                                                    AND Datediff( From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ), create_date ) >= 30\n"
+                + "                                                    AND From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ) BETWEEN '2025-05-30'\n"
+                + "                                                                                                                                                                         AND '2025-06-06' ) b\n"
+                + "                                        ON a.day = b.last_adtrace_dt\n"
+                + "                                            AND a.yidevice = b.yidevice ) a  ) a\n"
+                + "                    LEFT JOIN ( SELECT  day\n"
+                + "                                        , user_id\n"
+                + "                                FROM dwd_table.event_pj\n"
+                + "                                WHERE day BETWEEN '2025-05-30'\n"
+                + "                                                 AND '2025-06-06'\n"
+                + "                                    AND event_id = 'login'\n"
+                + "                                GROUP BY    day\n"
+                + "                                            , user_id ) b\n"
+                + "                        ON a.user_id = b.user_id\n"
+                + "                    LEFT JOIN ( SELECT  a.day\n"
+                + "                                        , channel_type\n"
+                + "                                        , username\n"
+                + "                                        , Count( DISTINCT a.user_id ) AS cnt\n"
+                + "                                FROM (  SELECT  a.day\n"
+                + "                                                , a.user_id\n"
+                + "                                                , channel_id AS channel_type\n"
+                + "                                                , adtrace_adgroup_id username\n"
+                + "                                        FROM (  SELECT  day\n"
+                + "                                                        , a.user_id\n"
+                + "                                                        , last_login_channel_id AS channel_id\n"
+                + "                                                        , last_adtrace_adgroup_id AS adtrace_adgroup_id\n"
+                + "                                                FROM (  SELECT  day\n"
+                + "                                                                , user_id\n"
+                + "                                                                , yidevice\n"
+                + "                                                        FROM (  SELECT  day\n"
+                + "                                                                        , user_id\n"
+                + "                                                                        , yidevice\n"
+                + "                                                                        , Row_Number(  )\n"
+                + "                                                                                OVER (PARTITION BY day, user_id ORDER BY event_time) AS rk\n"
+                + "                                                                FROM dwd_table.event_pj\n"
+                + "                                                                WHERE day BETWEEN '2025-05-30'\n"
+                + "                                                                                 AND '2025-06-06'\n"
+                + "                                                                    AND event_id = 'device_login'\n"
+                + "                                                                    AND yidevice IS NOT NULL\n"
+                + "                                                                    AND yidevice != '' ) a\n"
+                + "                                                        WHERE rk = 1 ) a\n"
+                + "                                                    LEFT JOIN ( SELECT DISTINCT\n"
+                + "                                                                    From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ) AS last_adtrace_dt\n"
+                + "                                                                    , yidevice\n"
+                + "                                                                    , last_login_channel_id\n"
+                + "                                                                    , last_adtrace_adgroup_id\n"
+                + "                                                                    , last_adtrace_creative_id\n"
+                + "                                                                FROM dwd_user.yidevice_pj\n"
+                + "                                                                WHERE  Cast( adtrace_reattributed_times AS INT ) > 0\n"
+                + "                                                                    AND Datediff( From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ), create_date ) >= 30\n"
+                + "                                                                    AND From_Unixtime(  Cast( (  Cast( last_adtrace_time AS BIGINT ) + 28800000 ) / 1000 AS BIGINT ), 'yyyy-MM-dd' ) BETWEEN '2025-05-30'\n"
+                + "                                                                                                                                                                                         AND '2025-06-06' ) b\n"
+                + "                                                        ON a.day = b.last_adtrace_dt\n"
+                + "                                                            AND a.yidevice = b.yidevice ) a  ) a\n"
+                + "                                GROUP BY    a.day\n"
+                + "                                            , channel_type\n"
+                + "                                            , username ) c\n"
+                + "                        ON a.day = c.day\n"
+                + "                            AND a.channel_type = c.channel_type\n"
+                + "                            AND a.username = c.username\n"
+                + "                GROUP BY    a.day\n"
+                + "                            , a.channel_type\n"
+                + "                            , a.username\n"
+                + "                            , diff\n"
+                + "                            , cnt ) a\n"
+                + "        WHERE diff > 1\n"
+                + "            AND diff <= 7 ) a\n"
+                + "GROUP BY    username\n"
+                + "            , channel_type\n"
+                + "            , day\n"
+                + "            , cnt\n"
+                + "ORDER BY    username DESC\n"
+                + "            , channel_type\n"
+                + "            , day DESC\n"
+                + ";";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                sqlStr, true, parser -> parser
+                        .withAllowComplexParsing(true)
+                        .withAllowedNestingDepth(-1));
+    }
+
+    @Test
+    void testQuotedStringValueIssue2258() throws JSQLParserException {
+        String sqlStr = "SELECT 'yyyy-MM-dd''T''HH:mm:ss'";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertEquals(
+                "yyyy-MM-dd'T'HH:mm:ss", select
+                        .getSelectItem(0)
+                        .getExpression(StringValue.class)
+                        .getNotExcapedValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM ( IMPORT INTO ( LIKE schemaName.tableName ( a, b as c) ) FROM EXA AT connectionName STATEMENT 'select 1' )",
+            "SELECT * FROM schemaName.tableName JOIN ( IMPORT FROM EXA AT connectionName STATEMENT 'select 1' ) USING ( columnName )"
+    })
+    public void testSelectWithSubImport(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withDialect(Dialect.EXASOL));
     }
 
 }

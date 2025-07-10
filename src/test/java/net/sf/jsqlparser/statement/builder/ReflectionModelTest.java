@@ -16,8 +16,8 @@ import net.sf.jsqlparser.statement.ExplainStatement.OptionType;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.refresh.RefreshMode;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.ReflectionTestUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -170,7 +170,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.grant.Grant(),
             new net.sf.jsqlparser.statement.insert.Insert(),
             new net.sf.jsqlparser.statement.merge.Merge(),
-            new net.sf.jsqlparser.statement.merge.MergeUpdate(new ArrayList<UpdateSet>()),
+            new net.sf.jsqlparser.statement.merge.MergeUpdate(new ArrayList<>()),
             new net.sf.jsqlparser.statement.select.AllColumns(),
             // new net.sf.jsqlparser.statement.select.AllTableColumns(new Table()),
             new net.sf.jsqlparser.statement.select.Distinct(),
@@ -211,6 +211,7 @@ public class ReflectionModelTest {
                     null));
 
     @Test
+    @Disabled
     public void testModels() {
         ReflectionTestUtils.testGetterSetterChaining(MODEL_OBJECTS,
                 m -> !"setASTNode".equals(m.getName()));

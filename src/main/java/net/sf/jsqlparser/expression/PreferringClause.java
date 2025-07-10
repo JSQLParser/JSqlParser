@@ -21,12 +21,12 @@ public class PreferringClause implements Serializable {
         this.preferring = preferring;
     }
 
-    public void setPartitionExpressionList(ExpressionList expressionList,
+    public void setPartitionExpressionList(ExpressionList<Expression> expressionList,
             boolean brackets) {
         if (this.partitionBy == null) {
             this.partitionBy = new PartitionByClause();
         }
-        partitionBy.setPartitionExpressionList(expressionList, brackets);
+        partitionBy.setExpressions(expressionList, brackets);
     }
 
     public void toStringPreferring(StringBuilder b) {

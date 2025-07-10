@@ -24,12 +24,37 @@
         </license>
     </licenses>
 
+    <repositories>
+        <repository>
+            <id>javacc8-snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases><enabled>false</enabled></releases>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </repository>
+        <repository>
+            <id>ossrh-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
         <dependency>
-            <groupId>net.java.dev.javacc</groupId>
-            <artifactId>javacc</artifactId>
-            <version>7.0.13</version>
+            <groupId>org.javacc</groupId>
+            <artifactId>core</artifactId>
+            <version>8.1.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.javacc.generator</groupId>
+            <artifactId>java</artifactId>
+            <version>8.1.0-SNAPSHOT</version>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -111,11 +136,13 @@
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://central.sonatype.com/repository/maven-releases</url>
         </repository>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id> 
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
         </snapshotRepository>
     </distributionManagement>
 -->
@@ -158,6 +185,7 @@
                     <excludes>
                         <exclude>**/*Bean.java</exclude>
                         <exclude>**/generated/*.java</exclude>
+                        <exclude>**/net/sf/jsqlparser/parser/SimpleCharStream.java</exclude>
                     </excludes>
                     <excludeRoots>
                         <excludeRoot>target/generated-sources</excludeRoot>
@@ -242,17 +270,20 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
-                            <grammarEncoding>UTF-8</grammarEncoding>
-                            <isStatic>false</isStatic>
-                            <jdkVersion>1.8</jdkVersion>
+                            <codeGenerator>java</codeGenerator>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>net.java.dev.javacc</groupId>
-                        <artifactId>javacc</artifactId>
-                        <version>[7.0.13,8)</version>
+                        <groupId>org.javacc.generator</groupId>
+                        <artifactId>java</artifactId>
+                        <version>8.1.0-SNAPSHOT</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.javacc</groupId>
+                        <artifactId>core</artifactId>
+                        <version>8.1.0-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -571,7 +602,7 @@
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
-                            <excludes>**/module-info.java</excludes>
+                            <excludes>**/module-info.java,**/net/sf/jsqlparser/parser/SimpleCharStream.java</excludes>
                             <checkstyleRules>
                                 <module name="Checker">
                                     <module name="SuppressWarningsFilter" />

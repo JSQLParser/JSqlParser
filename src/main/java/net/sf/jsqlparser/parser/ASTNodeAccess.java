@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 public interface ASTNodeAccess extends Serializable {
 
-    SimpleNode getASTNode();
+    Node getASTNode();
 
-    void setASTNode(SimpleNode node);
+    void setASTNode(Node node);
 }

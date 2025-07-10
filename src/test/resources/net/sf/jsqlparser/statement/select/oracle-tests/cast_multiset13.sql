@@ -14,3 +14,4 @@ from customers_demo
 --@FAILURE: Encountered unexpected token: "except" "EXCEPT" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "distinct" "DISTINCT" recorded first on Mar 25, 2023, 9:18:30 AM
 --@FAILURE: Encountered unexpected token: "cust_address2_ntab" <S_IDENTIFIER> recorded first on Feb 8, 2025, 6:46:21 AM
+--@FAILURE: Encountered: <S_IDENTIFIER> / "cust_address2_ntab", at line 11, column 26, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

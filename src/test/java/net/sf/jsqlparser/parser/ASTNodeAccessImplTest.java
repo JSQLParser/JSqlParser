@@ -47,7 +47,7 @@ class ASTNodeAccessImplTest {
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
         Expression whereExpression = select.getWhere();
 
-        final SimpleNode node = whereExpression.getASTNode();
+        final Node node = whereExpression.getASTNode();
         if (node != null) {
             Token token = node.jjtGetFirstToken();
             Assertions.assertEquals(4, token.beginLine);

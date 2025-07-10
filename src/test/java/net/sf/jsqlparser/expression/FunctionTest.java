@@ -108,4 +108,22 @@ class FunctionTest {
     void testListAggOnOverflow(String sqlStr) throws Exception {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "select RTRIM('string')",
+            "select LTRIM('string')",
+            "select RTRIM(field) from dual",
+            "select LTRIM(field) from dual"
+    })
+    void testTrimFunctions(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void TestIntervalParameterIssue2272() throws JSQLParserException {
+        String sqlStr =
+                "SELECT DATE_SUB('2025-06-19', INTERVAL QUARTER(STR_TO_DATE('20250619', '%Y%m%d')) - 1 QUARTER) from dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

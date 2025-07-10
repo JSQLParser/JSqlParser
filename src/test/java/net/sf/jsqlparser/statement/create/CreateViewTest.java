@@ -180,7 +180,7 @@ public class CreateViewTest {
 
         assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
                 .hasRootCauseInstanceOf(ParseException.class).rootCause()
-                .hasMessageStartingWith("Encountered unexpected token");
+                .hasMessageStartingWith("Encountered: <K_AUTO> / \"AUTO\"");
     }
 
     @Test
@@ -191,7 +191,7 @@ public class CreateViewTest {
 
         assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
                 .hasRootCauseInstanceOf(ParseException.class).rootCause()
-                .hasMessageStartingWith("Encountered unexpected token");
+                .hasMessageStartingWith("Encountered: <K_REFRESH> / \"REFRESH\"");
     }
 
     @Test
@@ -202,7 +202,7 @@ public class CreateViewTest {
 
         assertThatThrownBy(throwingCallable).isInstanceOf(JSQLParserException.class)
                 .hasRootCauseInstanceOf(ParseException.class).rootCause()
-                .hasMessageStartingWith("Encountered unexpected token");
+                .hasMessageStartingWith("Encountered: <K_AUTO> / \"AUTO\"");
     }
 
     @Test

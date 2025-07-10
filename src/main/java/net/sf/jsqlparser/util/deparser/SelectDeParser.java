@@ -18,6 +18,7 @@ import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.expression.WindowDefinition;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
 import net.sf.jsqlparser.statement.piped.AsPipeOperator;
 import net.sf.jsqlparser.statement.piped.CallPipeOperator;
@@ -397,6 +398,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (distinct != null) {
             if (distinct.isUseUnique()) {
                 builder.append("UNIQUE ");
+            } else if (distinct.isUseDistinctRow()) {
+                builder.append("DISTINCTROW ");
             } else {
                 builder.append("DISTINCT ");
             }
@@ -446,25 +449,31 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
 
     @Override
-    public <S> StringBuilder visit(Table tableName, S context) {
-        builder.append(tableName.getFullyQualifiedName());
-        Alias alias = tableName.getAlias();
+    public <S> StringBuilder visit(Table table, S context) {
+        builder.append(table.getFullyQualifiedName());
+        if (table.getTimeTravel() != null) {
+            builder.append(" ").append(table.getTimeTravel());
+        }
+        Alias alias = table.getAlias();
         if (alias != null) {
             builder.append(alias);
         }
-        Pivot pivot = tableName.getPivot();
+        if (table.getTimeTravelStrAfterAlias() != null) {
+            builder.append(" ").append(table.getTimeTravelStrAfterAlias());
+        }
+        Pivot pivot = table.getPivot();
         if (pivot != null) {
             pivot.accept(this, context);
         }
-        UnPivot unpivot = tableName.getUnPivot();
+        UnPivot unpivot = table.getUnPivot();
         if (unpivot != null) {
             unpivot.accept(this, context);
         }
-        MySQLIndexHint indexHint = tableName.getIndexHint();
+        MySQLIndexHint indexHint = table.getIndexHint();
         if (indexHint != null) {
             builder.append(indexHint);
         }
-        SQLServerHints sqlServerHints = tableName.getSqlServerHints();
+        SQLServerHints sqlServerHints = table.getSqlServerHints();
         if (sqlServerHints != null) {
             builder.append(sqlServerHints);
         }
@@ -718,7 +727,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         builder.append(" AS ");
         if (withItem.isMaterialized()) {
-            builder.append("MATERIALIZED ");
+            builder.append(withItem.isUsingNot()
+                    ? "NOT MATERIALIZED "
+                    : "MATERIALIZED ");
         }
         StatementDeParser statementDeParser =
                 new StatementDeParser((ExpressionDeParser) expressionVisitor, this, builder);
@@ -791,6 +802,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     @Override
     public <S> StringBuilder visit(Values values, S context) {
         new ValuesStatementDeParser(expressionVisitor, builder).deParse(values);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(Import imprt, S context) {
+        builder.append(imprt.toString());
         return builder;
     }
 
@@ -887,6 +904,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     public void visit(ParenthesedFromItem fromItem) {
         visit(fromItem, null);
+    }
+
+    public void visit(Import imprt) {
+        visit(imprt, null);
     }
 
 

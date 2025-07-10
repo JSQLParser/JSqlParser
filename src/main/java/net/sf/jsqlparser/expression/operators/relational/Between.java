@@ -22,6 +22,8 @@ public class Between extends ASTNodeAccessImpl implements Expression {
     private boolean not = false;
     private Expression betweenExpressionStart;
     private Expression betweenExpressionEnd;
+    private boolean usingSymmetric = false;
+    private boolean usingAsymmetric = false;
 
     public Expression getBetweenExpressionEnd() {
         return betweenExpressionEnd;
@@ -55,6 +57,24 @@ public class Between extends ASTNodeAccessImpl implements Expression {
         not = b;
     }
 
+    public boolean isUsingSymmetric() {
+        return usingSymmetric;
+    }
+
+    public Between setUsingSymmetric(boolean usingSymmetric) {
+        this.usingSymmetric = usingSymmetric;
+        return this;
+    }
+
+    public boolean isUsingAsymmetric() {
+        return usingAsymmetric;
+    }
+
+    public Between setUsingAsymmetric(boolean usingAsymmetric) {
+        this.usingAsymmetric = usingAsymmetric;
+        return this;
+    }
+
     @Override
     public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
         return expressionVisitor.visit(this, context);
@@ -62,7 +82,9 @@ public class Between extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN " + betweenExpressionStart
+        return leftExpression + " " + (not ? "NOT " : "") + "BETWEEN "
+                + (usingSymmetric ? "SYMMETRIC " : "") + (usingAsymmetric ? "ASYMMETRIC " : "")
+                + betweenExpressionStart
                 + " AND "
                 + betweenExpressionEnd;
     }

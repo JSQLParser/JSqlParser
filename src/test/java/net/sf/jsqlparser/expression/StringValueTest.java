@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -92,5 +94,13 @@ public class StringValueTest {
     public void testParseInput_BYTEA() throws Exception {
         String sqlStr = "VALUES (X'', X'01FF', X'01 bc 2a', X'01' '02')";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testDollarQuotesIssue2267() throws JSQLParserException {
+        String sqlStr = "SELECT $$this is a string$$, test, 'text' FROM tbl;";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertInstanceOf(StringValue.class, select.getSelectItem(0).getExpression());
     }
 }

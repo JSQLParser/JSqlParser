@@ -35,23 +35,23 @@ public class GroupByElement implements Serializable {
         return groupByVisitor.visit(this, context);
     }
 
-    public ExpressionList getGroupByExpressionList() {
+    public ExpressionList<Expression> getGroupByExpressionList() {
         return groupByExpressions;
     }
 
     @Deprecated
-    public ExpressionList getGroupByExpressions() {
+    public ExpressionList<Expression> getGroupByExpressions() {
         return groupByExpressions;
     }
 
-    public void setGroupByExpressions(ExpressionList groupByExpressions) {
+    public void setGroupByExpressions(ExpressionList<Expression> groupByExpressions) {
         this.groupByExpressions = groupByExpressions;
     }
 
     @Deprecated
     public void addGroupByExpression(Expression groupByExpression) {
         if (groupByExpressions.getExpressions() == null) {
-            groupByExpressions.setExpressions(new ArrayList());
+            groupByExpressions.setExpressions(new ArrayList<>());
         }
         groupByExpressions.add(groupByExpression);
     }
@@ -64,7 +64,7 @@ public class GroupByElement implements Serializable {
         this.groupingSets = groupingSets;
     }
 
-    public void addGroupingSet(ExpressionList list) {
+    public void addGroupingSet(ExpressionList<Expression> list) {
         this.groupingSets.add(list);
     }
 
@@ -79,12 +79,12 @@ public class GroupByElement implements Serializable {
         }
 
         int i = 0;
-        if (groupingSets.size() > 0) {
+        if (!groupingSets.isEmpty()) {
             if (b.charAt(b.length() - 1) != ' ') {
                 b.append(' ');
             }
             b.append("GROUPING SETS (");
-            for (ExpressionList expressionList : groupingSets) {
+            for (ExpressionList<?> expressionList : groupingSets) {
                 b.append(i++ > 0 ? ", " : "").append(Select.getStringList(
                         expressionList,
                         true, expressionList instanceof ParenthesedExpressionList));
@@ -99,12 +99,12 @@ public class GroupByElement implements Serializable {
         return b.toString();
     }
 
-    public GroupByElement withGroupByExpressions(ExpressionList groupByExpressions) {
+    public GroupByElement withGroupByExpressions(ExpressionList<Expression> groupByExpressions) {
         this.setGroupByExpressions(groupByExpressions);
         return this;
     }
 
-    public GroupByElement withGroupingSets(List groupingSets) {
+    public GroupByElement withGroupingSets(List<ExpressionList<Expression>> groupingSets) {
         this.setGroupingSets(groupingSets);
         return this;
     }
@@ -127,7 +127,8 @@ public class GroupByElement implements Serializable {
         return this.withGroupingSets(collection);
     }
 
-    public GroupByElement addGroupingSets(Collection<? extends Object> groupingSets) {
+    public GroupByElement addGroupingSets(
+            Collection<List<ExpressionList<Expression>>> groupingSets) {
         List collection = Optional.ofNullable(getGroupingSets()).orElseGet(ArrayList::new);
         collection.addAll(groupingSets);
         return this.withGroupingSets(collection);

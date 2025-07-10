@@ -34,7 +34,7 @@ public class JSQLParserBenchmark {
     SqlParserRunner runner;
 
     // @Param({ "latest", "5.2", "5.1", "5.0", "4.9", "4.8", "4.7", "4.6", "4.5" })
-    @Param({"latest", "5.2", "5.1"})
+    @Param({"latest", "5.3", "5.1"})
     public String version;
 
     @Setup(Level.Trial)
@@ -77,13 +77,11 @@ public class JSQLParserBenchmark {
         final Statements statements = runner.parseStatements(
                 sqlContent,
                 executorService,
-                (Consumer<CCJSqlParser>) parser -> {
-                    // No-op consumer (or you can log/validate each parser if desired)
-                });
+                (Consumer<CCJSqlParser>) parser -> parser.withAllowComplexParsing(false));
         blackhole.consume(statements);
     }
 
-    @Benchmark
+    // @Benchmark
     public void parseQuotedText(Blackhole blackhole) throws Exception {
         String sqlStr = "SELECT ('\\'', 'a');\n"
                 + "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');\n"

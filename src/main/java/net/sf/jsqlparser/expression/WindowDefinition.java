@@ -51,13 +51,13 @@ public class WindowDefinition implements Serializable {
         return partitionBy.getPartitionExpressionList();
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList,
             boolean brackets) {
-        partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
+        partitionBy.setExpressions(partitionExpressionList, brackets);
     }
 
     public String getWindowName() {

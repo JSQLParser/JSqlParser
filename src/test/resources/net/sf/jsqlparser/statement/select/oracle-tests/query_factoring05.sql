@@ -36,3 +36,4 @@ select a from dual
 
 
 --@FAILURE: Encountered unexpected token: "is" "IS" recorded first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: <K_IS> / "is", at line 33, column 9, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

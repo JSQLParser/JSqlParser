@@ -51,17 +51,17 @@ public class FilterOverImpl extends ASTNodeAccessImpl {
         return this;
     }
 
-    public ExpressionList getPartitionExpressionList() {
-        return partitionBy.getPartitionExpressionList();
+    public ExpressionList<Expression> getPartitionExpressionList() {
+        return partitionBy;
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList) {
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList) {
         setPartitionExpressionList(partitionExpressionList, false);
     }
 
-    public void setPartitionExpressionList(ExpressionList partitionExpressionList,
+    public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList,
             boolean brackets) {
-        partitionBy.setPartitionExpressionList(partitionExpressionList, brackets);
+        partitionBy.setExpressions(partitionExpressionList, brackets);
     }
 
     public boolean isPartitionByBrackets() {

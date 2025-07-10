@@ -28,7 +28,7 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
     private Alias alias;
     private List<SelectItem<?>> withItemList;
     private boolean recursive = false;
-
+    private boolean usingNot = false;
     private boolean materialized = false;
 
     public WithItem(K statement, Alias alias) {
@@ -90,6 +90,24 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         this.materialized = materialized;
     }
 
+    public K getStatement() {
+        return statement;
+    }
+
+    public WithItem<K> setStatement(K statement) {
+        this.statement = statement;
+        return this;
+    }
+
+    public boolean isUsingNot() {
+        return usingNot;
+    }
+
+    public WithItem<K> setUsingNot(boolean usingNot) {
+        this.usingNot = usingNot;
+        return this;
+    }
+
     /**
      * The {@link SelectItem}s in this WITH (for example the A,B,C in "WITH mywith (A,B,C) AS ...")
      *
@@ -119,7 +137,11 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
             builder.append(")");
         }
         builder.append(" AS ");
-        builder.append(materialized ? "MATERIALIZED " : "");
+        if (materialized) {
+            builder.append(usingNot
+                    ? "NOT MATERIALIZED "
+                    : "MATERIALIZED ");
+        }
         builder.append(statement);
         return builder.toString();
     }
@@ -140,6 +162,13 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
 
     public WithItem<?> withRecursive(boolean recursive, boolean materialized) {
         this.setRecursive(recursive);
+        this.setMaterialized(materialized);
+        return this;
+    }
+
+    public WithItem<?> withRecursive(boolean recursive, boolean usingNot, boolean materialized) {
+        this.setRecursive(recursive);
+        this.setUsingNot(usingNot);
         this.setMaterialized(materialized);
         return this;
     }

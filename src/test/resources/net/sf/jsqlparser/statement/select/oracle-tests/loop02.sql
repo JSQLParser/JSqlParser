@@ -23,3 +23,4 @@ END;
 
 --@FAILURE: Encountered unexpected token: "BEGIN" "BEGIN" recorded first on Aug 3, 2021, 7:20:07 AM
 --@FAILURE: Encountered unexpected token: "<<" "<<" recorded first on 9 Dec 2022, 14:03:29
+--@FAILURE: Encountered: "<<" / "<<", at line 11, column 3, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08

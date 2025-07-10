@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -59,10 +60,8 @@ public class TableTest {
         SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer) {
 
             @Override
-            public <S> StringBuilder visit(Table tableName, S parameters) {
-                System.out.println(tableName);
-                tableName.setDatabase(database); // Exception
-                System.out.println(tableName.getDatabase());
+            public <S> StringBuilder visit(Table table, S parameters) {
+                table.setDatabase(database); // Exception
                 return null;
             }
         };
@@ -111,5 +110,14 @@ public class TableTest {
         assertNull(table.getUnquotedDatabaseName());
         assertEquals("s", table.getUnquotedSchemaName());
         assertEquals("t", table.getUnquotedName());
+    }
+
+    @Test
+    void testClone() {
+        Table t = new Table("a.b.c");
+        t.setResolvedTable(t);
+
+        Assertions.assertNotSame(t.clone(), t);
+        Assertions.assertNotEquals(t.clone(), t);
     }
 }
