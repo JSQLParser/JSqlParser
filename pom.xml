@@ -35,7 +35,7 @@
         </repository>
         <repository>
             <id>ossrh-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
             <snapshots><enabled>true</enabled></snapshots>
             <releases><enabled>false</enabled></releases>
         </repository>
@@ -132,7 +132,6 @@
         </developer>
     </developers>
 
-<!-- 
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
@@ -145,7 +144,7 @@
             <snapshots><enabled>true</enabled></snapshots>
         </snapshotRepository>
     </distributionManagement>
--->
+
     <scm>
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
