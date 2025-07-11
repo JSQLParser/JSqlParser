@@ -4,7 +4,7 @@
 needs_sphinx = '1.0'
 add_function_parentheses = True
 
-extensions = ['myst_parser', 'sphinx.ext.autodoc', 'sphinx.ext.autosectionlabel', 'sphinx.ext.extlinks', 'sphinx-prompt', 'sphinx_substitution_extensions', 'sphinx_inline_tabs', 'pygments.sphinxext', ]
+extensions = ['myst_parser', 'sphinx.ext.autodoc', 'sphinx.ext.autosectionlabel', 'sphinx.ext.extlinks', 'sphinx_substitution_extensions', 'sphinx_inline_tabs', 'pygments.sphinxext', ]
 
 issues_github_path = "JSQLParser/JSqlParser"
 
