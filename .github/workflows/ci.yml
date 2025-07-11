@@ -49,7 +49,8 @@ jobs:
       - name: Install XSLT Processor
         run: sudo apt-get install xsltproc sphinx-common
       - name: Install Python dependencies
-        run: pip install furo myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
+        #run: pip install furo myst_parser sphinx-prompt sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
+        run: pip install furo myst_parser sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
       - name: Build Sphinx documentation with Gradle
         run: FLOATING_TOC=false ./gradlew -DFLOATING_TOC=false gitChangelogTask renderRR xslt xmldoc sphinx
       - name: Deploy Sphinx documentation
