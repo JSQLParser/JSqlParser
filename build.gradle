@@ -174,17 +174,8 @@ jar {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir layout.getBuildDirectory().dir("generated/javacc").get().asFile
-            srcDir layout.getBuildDirectory().dir("generated/jjtree").get().asFile
-        }
-    }
-}
-
 tasks.register('xmldoc', Javadoc) {
-    dependsOn(compileJava)
+    dependsOn(compileJavacc)
 
     def outFile =  reporting.file(
             version.endsWith("-SNAPSHOT")
@@ -199,6 +190,14 @@ tasks.register('xmldoc', Javadoc) {
     )
 
     source = sourceSets.main.allJava
+    // add any generated Java sources
+    source += fileTree(layout.buildDirectory.dir("generated/javacc").get().asFile) {
+        include '**/*.java'
+    }
+    source += fileTree(layout.buildDirectory.dir("generated/jjtree").get().asFile) {
+        include '**/*.java'
+    }
+
     classpath = sourceSets.main.runtimeClasspath
 
     destinationDir = reporting.file("xmlDoclet")
@@ -340,10 +339,15 @@ checkstyle {
     configFile = rootProject.file('config/checkstyle/checkstyle.xml')
 }
 
-tasks.named('checkstyleMain') {
-    source = source.filter {
-        !it.absolutePath.contains('net/sf/jsqlparser/parser/SimpleCharStream.java')
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = false
+        html.required = true
     }
+    excludes = [
+            "**/module-info.java"
+            , "net/sf/jsqlparser/parser/SimpleCharStream.java"
+    ]
 }
 
 spotless {
@@ -365,13 +369,6 @@ spotless {
     }
 }
 
-tasks.withType(Checkstyle).configureEach {
-    reports {
-        xml.required = false
-        html.required = true
-    }
-    excludes = [ "**/module-info.java" ]
-}
 
 tasks.register('renderRR') {
     dependsOn(compileJavacc)
