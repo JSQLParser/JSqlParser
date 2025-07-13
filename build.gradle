@@ -206,15 +206,17 @@ tasks.register('xmldoc', Javadoc) {
     title = "API $version"
 
     options.addBooleanOption("rst", true)
-    if (Boolean.parseBoolean(System.getenv().getOrDefault("FLOATING_TOC", "false"))) {
-        options.addBooleanOption("withFloatingToc","true")
+    if (Boolean.parseBoolean(System.getProperty("FLOATING_TOC", "true"))) {
+        options.addBooleanOption("withFloatingToc", true)
     }
     options.addStringOption("basePackage", "net.sf.jsqlparser")
     options.addStringOption("filename", outFile.getName())
 
-    copy {
-        from rstFile
-        into layout.projectDirectory.dir("src/site/sphinx/").asFile
+    doLast {
+        copy {
+            from rstFile
+            into layout.projectDirectory.dir("src/site/sphinx/").asFile
+        }
     }
 }
 
@@ -481,7 +483,7 @@ tasks.register('xslt', SaxonXsltTask) {
     stylesheet file('src/main/resources/rr/xhtml2rst.xsl')
 
     parameters(
-            "withFloatingToc": System.getenv().getOrDefault("FLOATING_TOC", "true"),
+            "withFloatingToc": System.getProperty("FLOATING_TOC", "true"),
             "isSnapshot": Boolean.toString(version.endsWith("-SNAPSHOT"))
     )
 
