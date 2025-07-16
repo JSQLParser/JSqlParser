@@ -5152,9 +5152,11 @@ OrderByElement OrderByElement():
 {
     OrderByElement orderByElement = new OrderByElement();
     Expression columnReference = null;
+    Token collateToken = null;
 }
 {
     columnReference = Expression()
+    [ LOOKAHEAD(<K_COLLATE>) <K_COLLATE> (collateToken=<S_CHAR_LITERAL> | collateToken=<S_QUOTED_IDENTIFIER>) { columnReference = new CollateExpression(columnReference, collateToken.image); } ]
     [ LOOKAHEAD(2) ( <K_ASC> | (<K_DESC> { orderByElement.setAsc(false); } )) { orderByElement.setAscDescPresent(true); }  ]
     [ LOOKAHEAD(2) <K_NULLS>
         [ LOOKAHEAD(2) (
