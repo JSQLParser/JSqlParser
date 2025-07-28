@@ -6453,7 +6453,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     )
 
     [
-        LOOKAHEAD(2) <K_COLLATE> token=<S_IDENTIFIER> { retval = new CollateExpression(retval, token.image); }
+        LOOKAHEAD(2) <K_COLLATE> (token=<S_CHAR_LITERAL> | token=<S_QUOTED_IDENTIFIER> | token=<S_IDENTIFIER>) { retval = new CollateExpression(retval, token.image); }
     ]
 
     [
