@@ -40,6 +40,22 @@
             <releases><enabled>false</enabled></releases>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>javacc8-snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases><enabled>false</enabled></releases>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>ossrh-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
