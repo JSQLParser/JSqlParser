@@ -70,7 +70,6 @@
             <groupId>org.javacc.generator</groupId>
             <artifactId>java</artifactId>
             <version>8.1.0-SNAPSHOT</version>
-            <type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>
