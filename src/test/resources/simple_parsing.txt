@@ -211,3 +211,9 @@ AND THIS_EMP.WORKDEPT = DINFO.DEPTNO
 select * from Person where deptname='it' AND NOT (age=24)
 
 select * from unnest(array[4,5,6]) with ordinality;
+
+SELECT * FROM tbl WHERE
+day BETWEEN
+  CAST(CAST((NOW() + INTERVAL '-30 day') AS date) AS timestamptz)
+AND
+  CAST(CAST((NOW() + INTERVAL '-1 day') AS date) AS timestamptz);
