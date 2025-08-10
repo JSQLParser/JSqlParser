@@ -5746,18 +5746,18 @@ Expression Between(Expression leftExpression) :
             )
         ]
         (
-            LOOKAHEAD( 3 ) betweenExpressionStart = ParenthesedSelect()
+            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionStart = ParenthesedSelect()
             |
-            LOOKAHEAD( 11 ) betweenExpressionStart = RegularCondition()
+            LOOKAHEAD( RegularCondition() ) betweenExpressionStart = RegularCondition()
             |
             betweenExpressionStart  = SimpleExpression()
         )
 
         <K_AND>
         (
-            LOOKAHEAD( 3 ) betweenExpressionEnd = ParenthesedSelect()
+            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionEnd = ParenthesedSelect()
             |
-            LOOKAHEAD( 11 ) betweenExpressionEnd = RegularCondition()
+            LOOKAHEAD( RegularCondition() ) betweenExpressionEnd = RegularCondition()
             |
             betweenExpressionEnd = SimpleExpression()
         )
