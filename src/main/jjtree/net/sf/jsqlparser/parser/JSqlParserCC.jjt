@@ -8144,6 +8144,19 @@ ColDataType ColDataType():
 }
 {
     (
+        (
+            <K_STRUCT>
+            "("
+            ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
+            colDataType = ColDataType() { argumentsStringList.add( tk.image + " " + colDataType.toString()); }
+            [
+                ","
+                ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
+                colDataType = ColDataType() { argumentsStringList.add( tk.image + " " + colDataType.toString()); }
+            ]
+            ")" { colDataType = new ColDataType("STRUCT"); }
+        )
+		|
 		LOOKAHEAD(2) (
             colDataType = DataType()
         )

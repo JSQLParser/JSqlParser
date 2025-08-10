@@ -25,4 +25,15 @@ public class DuckDBTest {
 
         Assertions.assertEquals("'/tmp/test.parquet'", table.getName());
     }
+
+    @Test
+    void testCreateWithStruct() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE starbake.array_test (\n" +
+                        "  keys VARCHAR[] NOT NULL,\n" +
+                        "  values1 struct( field1 varchar(255), field2 double) NOT NULL,\n" +
+                        "  values2 struct( field1 varchar(255), field2 double) NOT NULL\n" +
+                        ");";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
