@@ -5979,7 +5979,7 @@ ExpressionList SimpleExpressionList():
     (
         LOOKAHEAD(2, {!interrupted} ) ","
         (
-            LOOKAHEAD( 6 ) expr=LambdaExpression()
+            LOOKAHEAD( 7 ) expr=LambdaExpression()
             |
             expr=SimpleExpression()
         )
@@ -6038,7 +6038,7 @@ ExpressionList ComplexExpressionList():
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
             |
-            LOOKAHEAD(6) expr=LambdaExpression()
+            LOOKAHEAD(7) expr=LambdaExpression()
             |
             expr=Expression()
         ) { expressions.add(expr); }

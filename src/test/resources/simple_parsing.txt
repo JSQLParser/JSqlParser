@@ -217,3 +217,5 @@ day BETWEEN
   CAST(CAST((NOW() + INTERVAL '-30 day') AS date) AS timestamptz)
 AND
   CAST(CAST((NOW() + INTERVAL '-1 day') AS date) AS timestamptz);
+
+SELECT DATE_TRUNC('week',("schema"."tbl"."column" + INTERVAL '1 day')) FROM "schema"."tbl";
