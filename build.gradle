@@ -103,7 +103,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.19.0'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
