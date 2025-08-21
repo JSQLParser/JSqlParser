@@ -6407,4 +6407,15 @@ public class SelectTest {
                 parser -> parser.withDialect(Dialect.EXASOL));
     }
 
+    @Test
+    void testSQL2016CorrespondingBy() throws JSQLParserException {
+        String sqlStr =
+                "SELECT id, name, dept, salary\n" +
+                        "FROM Employees_US\n" +
+                        "UNION CORRESPONDING BY (id, name, dept)\n" +
+                        "SELECT dept, id, name, country\n" +
+                        "FROM Employees_EU;";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

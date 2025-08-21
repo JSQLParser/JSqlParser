@@ -13,6 +13,23 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 public abstract class SetOperation extends ASTNodeAccessImpl {
+    String modifier = "";
+
+    public boolean isAll() {
+        return modifier.contains("ALL");
+    }
+
+    public void setAll(boolean all) {
+        this.modifier = "ALL";
+    }
+
+    public boolean isDistinct() {
+        return modifier.contains("DISTINCT");
+    }
+
+    public void setDistinct(boolean distinct) {
+        this.modifier = "DISTINCT";
+    }
 
     private SetOperationType type;
 
@@ -22,6 +39,6 @@ public abstract class SetOperation extends ASTNodeAccessImpl {
 
     @Override
     public String toString() {
-        return type.name();
+        return modifier == null || modifier.isEmpty() ? type.name() : type.name() + " " + modifier;
     }
 }

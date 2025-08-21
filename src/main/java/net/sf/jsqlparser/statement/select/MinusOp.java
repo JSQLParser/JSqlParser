@@ -12,37 +12,13 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 public class MinusOp extends SetOperation {
-    private boolean distinct;
-    private boolean all;
-    
     public MinusOp() {
+        this("");
+    }
+
+    public MinusOp(String modifier) {
         super(SetOperationType.MINUS);
-    }
-    public boolean isAll() {
-        return all;
-    }
-
-    public void setAll(boolean all) {
-        this.all = all;
-    }
-
-    public boolean isDistinct() {
-        return distinct;
-    }
-
-    public void setDistinct(boolean distinct) {
-        this.distinct = distinct;
-    }
-
-    @Override
-    public String toString() {
-        String allDistinct = "";
-        if (isAll()) {
-            allDistinct = " ALL";
-        } else if (isDistinct()) {
-            allDistinct = " DISTINCT";
-        }
-        return super.toString() + allDistinct;
+        this.modifier = modifier;
     }
 
     public MinusOp withDistinct(boolean distinct) {
@@ -52,6 +28,11 @@ public class MinusOp extends SetOperation {
 
     public MinusOp withAll(boolean all) {
         this.setAll(all);
+        return this;
+    }
+
+    public MinusOp withModifier(String modifier) {
+        this.modifier = modifier;
         return this;
     }
 }
