@@ -6545,23 +6545,30 @@ Expression PrimaryExpression() #PrimaryExpression:
     }
 }
 
+/* https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/img_text/hierarchical_query_clause.html
+
+    { CONNECT BY [ NOCYCLE ] condition [ START WITH condition ]
+    | START WITH condition CONNECT BY [ NOCYCLE ] condition
+    }
+ */
+
 ConnectByRootOperator ConnectByRootOperator() #ConnectByRootOperator: {
-    Column column;
+    Expression expression;
 }
 {
-    <K_CONNECT_BY_ROOT> column = Column()
+    <K_CONNECT_BY_ROOT> expression = Expression()
     {
-      return new ConnectByRootOperator(column);
+      return new ConnectByRootOperator(expression);
     }
 }
 
 ConnectByPriorOperator ConnectByPriorOperator() #ConnectByPriorOperator: {
-    Column column;
+    Expression expression;
 }
 {
-    <K_PRIOR> column = Column()
+    <K_PRIOR> expression = Expression()
     {
-      return new ConnectByPriorOperator(column);
+      return new ConnectByPriorOperator(expression);
     }
 }
 

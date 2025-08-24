@@ -35,15 +35,26 @@ import java.util.Objects;
  * @author are
  */
 public class ConnectByPriorOperator extends ASTNodeAccessImpl implements Expression {
-    private final Column column;
+    private final Expression expression;
 
+    @Deprecated
     public ConnectByPriorOperator(Column column) {
-        this.column = Objects.requireNonNull(column,
+        this.expression = Objects.requireNonNull(column,
                 "The COLUMN of the ConnectByPrior Operator must not be null");
     }
 
-    public Column getColumn() {
-        return column;
+    public ConnectByPriorOperator(Expression column) {
+        this.expression = Objects.requireNonNull(column,
+                "The COLUMN of the ConnectByPrior Operator must not be null");
+    }
+
+    @Deprecated
+    public Expression getColumn() {
+        return getExpression();
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     @Override
@@ -52,7 +63,7 @@ public class ConnectByPriorOperator extends ASTNodeAccessImpl implements Express
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("PRIOR ").append(column);
+        builder.append("PRIOR ").append(expression);
         return builder;
     }
 
