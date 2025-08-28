@@ -52,8 +52,12 @@ public class Insert implements Statement {
     private OutputClause outputClause;
     private InsertConflictTarget conflictTarget;
     private InsertConflictAction conflictAction;
+    private InsertDuplicateAction duplicateAction;
 
     public List<UpdateSet> getDuplicateUpdateSets() {
+        if (duplicateAction != null) {
+            return duplicateAction.getUpdateSets();
+        }
         return duplicateUpdateSets;
     }
 
@@ -62,7 +66,13 @@ public class Insert implements Statement {
     }
 
     public Insert withDuplicateUpdateSets(List<UpdateSet> duplicateUpdateSets) {
-        this.duplicateUpdateSets = duplicateUpdateSets;
+        if (duplicateAction != null) {
+            duplicateAction.setConflictActionType(ConflictActionType.DO_UPDATE);
+            duplicateAction.setUpdateSets(duplicateUpdateSets);
+        } else {
+            duplicateAction = new InsertDuplicateAction(ConflictActionType.DO_UPDATE);
+            duplicateAction.setUpdateSets(duplicateUpdateSets);
+        }
         return this;
     }
 
@@ -157,7 +167,8 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseDuplicate() {
-        return duplicateUpdateSets != null && !duplicateUpdateSets.isEmpty();
+        return duplicateAction != null && duplicateAction.getUpdateSets() != null
+                && !duplicateAction.getUpdateSets().isEmpty();
     }
 
     public InsertModifierPriority getModifierPriority() {
@@ -331,9 +342,9 @@ public class Insert implements Statement {
             sql = UpdateSet.appendUpdateSetsTo(sql, setUpdateSets);
         }
 
-        if (duplicateUpdateSets != null && !duplicateUpdateSets.isEmpty()) {
+        if (duplicateAction != null) {
             sql.append(" ON DUPLICATE KEY UPDATE ");
-            sql = UpdateSet.appendUpdateSetsTo(sql, duplicateUpdateSets);
+            duplicateAction.appendTo(sql);
         }
 
         if (conflictAction != null) {
@@ -391,5 +402,13 @@ public class Insert implements Statement {
                 Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
+    }
+
+    public InsertDuplicateAction getDuplicateAction() {
+        return duplicateAction;
+    }
+
+    public void setDuplicateAction(InsertDuplicateAction duplicateAction) {
+        this.duplicateAction = duplicateAction;
     }
 }

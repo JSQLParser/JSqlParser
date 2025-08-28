@@ -14,6 +14,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.insert.ConflictActionType;
+import net.sf.jsqlparser.statement.insert.InsertDuplicateAction;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SetOperationList;
@@ -35,6 +37,7 @@ public class Upsert implements Statement {
     private List<UpdateSet> duplicateUpdateSets;
     private UpsertType upsertType = UpsertType.UPSERT;
     private boolean isUsingInto;
+    private InsertDuplicateAction duplicateAction;
 
     public List<UpdateSet> getUpdateSets() {
         return updateSets;
@@ -46,11 +49,20 @@ public class Upsert implements Statement {
     }
 
     public List<UpdateSet> getDuplicateUpdateSets() {
+        if (duplicateAction != null) {
+            return duplicateAction.getUpdateSets();
+        }
         return duplicateUpdateSets;
     }
 
     public Upsert setDuplicateUpdateSets(List<UpdateSet> duplicateUpdateSets) {
-        this.duplicateUpdateSets = duplicateUpdateSets;
+        if (duplicateAction != null) {
+            duplicateAction.setConflictActionType(ConflictActionType.DO_UPDATE);
+            duplicateAction.setUpdateSets(duplicateUpdateSets);
+        } else {
+            duplicateAction = new InsertDuplicateAction(ConflictActionType.DO_UPDATE);
+            duplicateAction.setUpdateSets(duplicateUpdateSets);
+        }
         return this;
     }
 
@@ -181,9 +193,9 @@ public class Upsert implements Statement {
             }
         }
 
-        if (duplicateUpdateSets != null) {
+        if (duplicateAction != null) {
             sb.append(" ON DUPLICATE KEY UPDATE ");
-            UpdateSet.appendUpdateSetsTo(sb, duplicateUpdateSets);
+            duplicateAction.appendTo(sb);
         }
 
         return sb.toString();
@@ -218,5 +230,13 @@ public class Upsert implements Statement {
                 Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
+    }
+
+    public InsertDuplicateAction getDuplicateAction() {
+        return duplicateAction;
+    }
+
+    public void setDuplicateAction(InsertDuplicateAction duplicateAction) {
+        this.duplicateAction = duplicateAction;
     }
 }

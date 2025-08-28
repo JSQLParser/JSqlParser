@@ -129,7 +129,7 @@ public class StatementDeParserTest {
         then(withItem2).should().accept((SelectVisitor<?>) selectDeParser, null);
         then(select).should().accept((SelectVisitor<StringBuilder>) selectDeParser, null);
         then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
-        then(duplicateUpdateExpression1).should().accept(expressionDeParser, null);
+        then(duplicateUpdateExpression2).should().accept(expressionDeParser, null);
     }
 
     // @Test

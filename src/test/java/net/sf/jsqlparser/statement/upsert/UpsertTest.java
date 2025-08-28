@@ -109,6 +109,13 @@ public class UpsertTest {
     }
 
     @Test
+    public void testUpsertMultiRowValueDoNothing() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "UPSERT INTO mytable (col1, col2) VALUES (a, b) ON DUPLICATE KEY UPDATE nothing",
+                true);
+    }
+
+    @Test
     @Disabled
     /* not the job of the parser to validate this, it even may be valid eventually */
     public void testUpsertMultiRowValueDifferent() throws JSQLParserException {

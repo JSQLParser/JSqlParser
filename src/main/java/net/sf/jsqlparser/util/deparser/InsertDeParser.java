@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Partition;
+import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -29,8 +30,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
     }
 
     public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
-            SelectVisitor<StringBuilder> selectVisitor,
-            StringBuilder buffer) {
+            SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
@@ -115,9 +115,14 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             deparseUpdateSets(insert.getSetUpdateSets(), builder, expressionVisitor);
         }
 
-        if (insert.getDuplicateUpdateSets() != null) {
+        if (insert.getDuplicateAction() != null) {
             builder.append(" ON DUPLICATE KEY UPDATE ");
-            deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
+            if (ConflictActionType.DO_UPDATE
+                    .equals(insert.getDuplicateAction().getConflictActionType())) {
+                deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
+            } else {
+                insert.getDuplicateAction().appendTo(builder);
+            }
         }
 
         // @todo: Accept some Visitors for the involved Expressions
