@@ -20,7 +20,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
     private ExpressionDeParser expressionVisitor;
     private SelectDeParser selectVisitor;
 
-    public UpsertDeParser(ExpressionDeParser expressionVisitor, SelectDeParser selectVisitor, StringBuilder buffer) {
+    public UpsertDeParser(ExpressionDeParser expressionVisitor, SelectDeParser selectVisitor,
+            StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.expressionVisitor.setSelectVisitor(selectVisitor);
@@ -80,7 +81,8 @@ public class UpsertDeParser extends AbstractDeParser<Upsert> {
 
             if (upsert.getDuplicateAction() != null) {
                 builder.append(" ON DUPLICATE KEY UPDATE ");
-                if (ConflictActionType.DO_UPDATE.equals(upsert.getDuplicateAction().getConflictActionType())) {
+                if (ConflictActionType.DO_UPDATE
+                        .equals(upsert.getDuplicateAction().getConflictActionType())) {
                     deparseUpdateSets(upsert.getDuplicateUpdateSets(), builder, expressionVisitor);
                 } else {
                     upsert.getDuplicateAction().appendTo(builder);

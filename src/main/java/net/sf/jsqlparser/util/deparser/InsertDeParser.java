@@ -29,18 +29,21 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         super(new StringBuilder());
     }
 
-    public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor, SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer) {
+    public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
+            "PMD.NPathComplexity"})
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
             builder.append("WITH ");
-            for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter.hasNext(); ) {
+            for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter
+                    .hasNext();) {
                 WithItem<?> withItem = iter.next();
                 withItem.accept(this.selectVisitor, null);
                 if (iter.hasNext()) {
@@ -77,7 +80,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
 
         if (insert.getColumns() != null) {
             builder.append(" (");
-            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext(); ) {
+            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
                 Column column = iter.next();
                 builder.append(column.getColumnName());
                 if (iter.hasNext()) {
@@ -114,7 +117,8 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
 
         if (insert.getDuplicateAction() != null) {
             builder.append(" ON DUPLICATE KEY UPDATE ");
-            if (ConflictActionType.DO_UPDATE.equals(insert.getDuplicateAction().getConflictActionType())) {
+            if (ConflictActionType.DO_UPDATE
+                    .equals(insert.getDuplicateAction().getConflictActionType())) {
                 deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
             } else {
                 insert.getDuplicateAction().appendTo(builder);

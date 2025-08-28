@@ -22,8 +22,9 @@ import java.util.Objects;
 /**
  * on duplicate key is one of:
  *
- * ON DUPLICATE KEY UPDATE NOTHING ON DUPLICATE KEY UPDATE { column_name = { expression | DEFAULT } | ( column_name [, ...] ) = [ ROW ] ( { expression | DEFAULT
- * } [, ...] ) | ( column_name [, ...] ) = ( sub-SELECT ) } [, ...] [ WHERE condition ]
+ * ON DUPLICATE KEY UPDATE NOTHING ON DUPLICATE KEY UPDATE { column_name = { expression | DEFAULT }
+ * | ( column_name [, ...] ) = [ ROW ] ( { expression | DEFAULT } [, ...] ) | ( column_name [, ...]
+ * ) = ( sub-SELECT ) } [, ...] [ WHERE condition ]
  *
  * @author zhangconan
  */
@@ -34,7 +35,8 @@ public class InsertDuplicateAction implements Serializable {
     private List<UpdateSet> updateSets;
 
     public InsertDuplicateAction(ConflictActionType conflictActionType) {
-        this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");
+        this.conflictActionType = Objects.requireNonNull(conflictActionType,
+                "The Conflict Action Type is mandatory and must not be Null.");
     }
 
     public List<UpdateSet> getUpdateSets() {
@@ -55,7 +57,8 @@ public class InsertDuplicateAction implements Serializable {
     }
 
     public void setConflictActionType(ConflictActionType conflictActionType) {
-        this.conflictActionType = Objects.requireNonNull(conflictActionType, "The Conflict Action Type is mandatory and must not be Null.");
+        this.conflictActionType = Objects.requireNonNull(conflictActionType,
+                "The Conflict Action Type is mandatory and must not be Null.");
     }
 
     public InsertDuplicateAction withConflictActionType(ConflictActionType conflictActionType) {

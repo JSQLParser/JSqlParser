@@ -226,7 +226,8 @@ public class Upsert implements Statement {
     }
 
     public Upsert addColumns(Collection<? extends Column> columns) {
-        ExpressionList<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
+        ExpressionList<Column> collection =
+                Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
     }

@@ -916,6 +916,7 @@ public class InsertTest {
         TestUtils.assertStatementCanBeDeparsedAs(
                 insert, "INSERT INTO test VALUES ('A', 'B')");
     }
+
     @Test
     public void testSimpleDuplicateInsert() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(

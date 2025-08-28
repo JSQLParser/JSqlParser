@@ -167,7 +167,8 @@ public class Insert implements Statement {
 
     @Deprecated
     public boolean isUseDuplicate() {
-        return duplicateAction != null && duplicateAction.getUpdateSets() != null && !duplicateAction.getUpdateSets().isEmpty();
+        return duplicateAction != null && duplicateAction.getUpdateSets() != null
+                && !duplicateAction.getUpdateSets().isEmpty();
     }
 
     public InsertModifierPriority getModifierPriority() {
@@ -273,7 +274,7 @@ public class Insert implements Statement {
         StringBuilder sql = new StringBuilder();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             sql.append("WITH ");
-            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext(); ) {
+            for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
                 WithItem<?> withItem = iter.next();
                 sql.append(withItem);
                 if (iter.hasNext()) {
@@ -397,7 +398,8 @@ public class Insert implements Statement {
     }
 
     public Insert addColumns(Collection<Column> columns) {
-        ExpressionList<Column> collection = Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
+        ExpressionList<Column> collection =
+                Optional.ofNullable(getColumns()).orElseGet(ExpressionList::new);
         collection.addAll(columns);
         return this.withColumns(collection);
     }
