@@ -25,7 +25,11 @@ import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Insert implements Statement {
