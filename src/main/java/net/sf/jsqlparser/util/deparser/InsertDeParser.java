@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.deparser;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Partition;
+import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
@@ -28,22 +29,18 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         super(new StringBuilder());
     }
 
-    public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
-            SelectVisitor<StringBuilder> selectVisitor,
-            StringBuilder buffer) {
+    public InsertDeParser(ExpressionVisitor<StringBuilder> expressionVisitor, SelectVisitor<StringBuilder> selectVisitor, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
         this.selectVisitor = selectVisitor;
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
-            "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength", "PMD.NPathComplexity"})
     public void deParse(Insert insert) {
         if (insert.getWithItemsList() != null && !insert.getWithItemsList().isEmpty()) {
             builder.append("WITH ");
-            for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter
-                    .hasNext();) {
+            for (Iterator<WithItem<?>> iter = insert.getWithItemsList().iterator(); iter.hasNext(); ) {
                 WithItem<?> withItem = iter.next();
                 withItem.accept(this.selectVisitor, null);
                 if (iter.hasNext()) {
@@ -80,7 +77,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
 
         if (insert.getColumns() != null) {
             builder.append(" (");
-            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext();) {
+            for (Iterator<Column> iter = insert.getColumns().iterator(); iter.hasNext(); ) {
                 Column column = iter.next();
                 builder.append(column.getColumnName());
                 if (iter.hasNext()) {
@@ -115,9 +112,13 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             deparseUpdateSets(insert.getSetUpdateSets(), builder, expressionVisitor);
         }
 
-        if (insert.getDuplicateUpdateSets() != null) {
+        if (insert.getDuplicateAction() != null) {
             builder.append(" ON DUPLICATE KEY UPDATE ");
-            deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
+            if (ConflictActionType.DO_UPDATE.equals(insert.getDuplicateAction().getConflictActionType())) {
+                deparseUpdateSets(insert.getDuplicateUpdateSets(), builder, expressionVisitor);
+            } else {
+                insert.getDuplicateAction().appendTo(builder);
+            }
         }
 
         // @todo: Accept some Visitors for the involved Expressions

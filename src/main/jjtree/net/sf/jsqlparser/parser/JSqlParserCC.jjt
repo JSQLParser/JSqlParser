@@ -2742,6 +2742,8 @@ Insert Insert():
 
     InsertConflictTarget conflictTarget = null;
     InsertConflictAction conflictAction = null;
+
+    InsertDuplicateAction duplicateAction = null;
 }
 {
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -2780,7 +2782,7 @@ Insert Insert():
     )
 
     [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-         duplicateUpdateSets = UpdateSets() { insert.withDuplicateUpdateSets(duplicateUpdateSets); }
+                 duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
     ]
 
     [
@@ -2860,6 +2862,30 @@ InsertConflictAction InsertConflictAction():
                 .withWhereExpression(whereExpression); }
 }
 
+InsertDuplicateAction InsertDuplicateAction():
+{
+    InsertDuplicateAction duplicateAction;
+    Expression whereExpression = null;
+    List<UpdateSet> updateSets;
+}
+{
+    (
+        LOOKAHEAD(2) (
+            <K_NOTHING> { duplicateAction = new InsertDuplicateAction( ConflictActionType.NOTHING ); }
+        )
+        |
+        (
+            { duplicateAction = new InsertDuplicateAction( ConflictActionType.DO_UPDATE ); }
+            updateSets = UpdateSets() { duplicateAction.setUpdateSets(updateSets); }
+            [ whereExpression = WhereClause() ]
+        )
+    )
+
+    { return duplicateAction
+                .withWhereExpression(whereExpression); }
+}
+
+
 OutputClause OutputClause():
 {
     List<SelectItem<?>> selectItemList = null;
@@ -2895,6 +2921,7 @@ Upsert Upsert():
 
     Select select = null;
     List<UpdateSet> duplicateUpdateSets;
+    InsertDuplicateAction duplicateAction = null;
     Token tk = null;
 }
 {
@@ -2925,7 +2952,7 @@ Upsert Upsert():
 
     [
         <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-        duplicateUpdateSets = UpdateSets() { upsert.setDuplicateUpdateSets(duplicateUpdateSets); }
+        duplicateAction = InsertDuplicateAction() { upsert.setDuplicateAction(duplicateAction); }
     ]
 
     {
