@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 public class CreateSchema implements Statement {
 
     private String authorization;
+    private String catalogName = null;
     private String schemaName;
     private List<String> schemaPath;
     private List<Statement> statements = new ArrayList<>();
@@ -57,6 +58,15 @@ public class CreateSchema implements Statement {
      */
     public void setAuthorization(String authorization) {
         this.authorization = authorization;
+    }
+
+    public String getCatalogName() {
+        return catalogName;
+    }
+
+    public CreateSchema setCatalogName(String catalogName) {
+        this.catalogName = catalogName;
+        return this;
     }
 
     /**
@@ -119,7 +129,12 @@ public class CreateSchema implements Statement {
             sql += " IF NOT EXISTS";
         }
         if (schemaName != null) {
-            sql += " " + schemaName;
+            sql += " ";
+
+            if (catalogName!=null) {
+                sql += catalogName + ".";
+            }
+            sql += schemaName;
         }
         if (authorization != null) {
             sql += " AUTHORIZATION " + authorization;

@@ -98,6 +98,7 @@ public class DropTest {
     @Test
     public void testDropSchemaIssue855() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("DROP SCHEMA myschema");
+        assertSqlCanBeParsedAndDeparsed("DROP SCHEMA unnamed.myschema");
     }
 
     @Test

@@ -7866,15 +7866,21 @@ CreateSchema CreateSchema():
     CreateTable table = null;
     CreateView view = null;
     CreateSchema schema = new CreateSchema();
-    //schema.setSchemaName(System.getProperty("user.name"));
-    //schema.setAuthorization(System.getProperty("user.name"));
     List<String> schemaPath = null;
     List<Statement> statements = new ArrayList<Statement>();
 }
 {
     <K_SCHEMA>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { schema.setIfNotExists(true); } ]
-    [ ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); } ]
+    [
+        ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); }
+
+        (
+            "." { schema.setCatalogName(tk.image); }
+            ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); }
+        )?
+    ]
+
     [ <K_AUTHORIZATION>
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
     ]

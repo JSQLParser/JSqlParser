@@ -28,6 +28,12 @@ public class CreateSchemaTest {
     }
 
     @Test
+    public void testCreateSchemaWithcatalog() throws JSQLParserException {
+        String statement = "CREATE SCHEMA unnamed.myschema";
+        assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
     public void testSimpleCreateWithAuth() throws JSQLParserException {
         String statement = "CREATE SCHEMA myschema AUTHORIZATION myauth";
         assertSqlCanBeParsedAndDeparsed(statement);
