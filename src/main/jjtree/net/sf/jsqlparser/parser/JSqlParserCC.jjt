@@ -2093,6 +2093,7 @@ SessionStatement SessionStatement():
 {
     Token actionToken;
     Token idToken = null;
+    String id = null;
 }
 {
     ( <K_SESSION> | <K_BRANCH> )
@@ -2117,12 +2118,25 @@ SessionStatement SessionStatement():
             idToken = <S_CHAR_LITERAL>
             |
             idToken = <S_LONG>
-        )
+        ) { id = idToken.image; }
+
+        (
+            "."
+            (
+                idToken = <S_IDENTIFIER>
+                |
+                idToken = <S_QUOTED_IDENTIFIER>
+                |
+                idToken = <S_CHAR_LITERAL>
+                |
+                idToken = <S_LONG>
+            ) { id += "." + idToken.image; }
+        )?
     ]
 
     {
-        SessionStatement sessionsStatement = idToken!=null
-            ? new SessionStatement(actionToken.image, idToken.image)
+        SessionStatement sessionsStatement = id!=null
+            ? new SessionStatement(actionToken.image, id)
             : new SessionStatement(actionToken.image);
 
         //linkAST(sessionsStatement,jjtThis);
