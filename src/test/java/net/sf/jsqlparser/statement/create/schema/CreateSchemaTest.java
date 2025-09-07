@@ -31,6 +31,9 @@ public class CreateSchemaTest {
     public void testCreateSchemaWithcatalog() throws JSQLParserException {
         String statement = "CREATE SCHEMA unnamed.myschema";
         assertSqlCanBeParsedAndDeparsed(statement);
+
+        statement = "CREATE SCHEMA unnamed.session1";
+        assertSqlCanBeParsedAndDeparsed(statement);
     }
 
     @Test

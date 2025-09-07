@@ -170,6 +170,10 @@ public class Table extends ASTNodeAccessImpl
     }
 
     public Table setSchemaName(String schemaName) {
+        if (schemaName == null) {
+            setIndex(SCHEMA_IDX, null);
+            return this;
+        }
 
         // BigQuery seems to allow things like: `catalogName.schemaName.tableName` in only one pair
         // of quotes
@@ -179,7 +183,8 @@ public class Table extends ASTNodeAccessImpl
                         .of("0", "N", "n", "FALSE", "false", "OFF", "off")
                         .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
 
-        if (MultiPartName.isQuoted(schemaName) && schemaName.contains(".") && splitNamesOnDelimiter) {
+        if (MultiPartName.isQuoted(schemaName) && schemaName.contains(".")
+                && splitNamesOnDelimiter) {
             String[] parts = MultiPartName.unquote(schemaName).split("\\.");
             switch (parts.length) {
                 case 2:
