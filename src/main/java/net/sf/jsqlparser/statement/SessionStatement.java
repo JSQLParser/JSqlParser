@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 public class SessionStatement implements Statement {
     public enum Action {
         START, APPLY, DROP, SHOW, DESCRIBE;
@@ -20,6 +24,7 @@ public class SessionStatement implements Statement {
 
     final private Action action;
     final private String id;
+    final private LinkedHashMap<String, String> options = new LinkedHashMap<>();
 
     public SessionStatement(Action action, String id) {
         this.action = action;
@@ -43,6 +48,54 @@ public class SessionStatement implements Statement {
         return id;
     }
 
+    public int size() {
+        return options.size();
+    }
+
+    public String putOption(String key, String value) {
+        return options.put(key.replaceAll("[\"']", "").toLowerCase(), value.toLowerCase());
+    }
+
+    public boolean hasOptions() {
+        return !options.isEmpty();
+    }
+
+    public void clearOptions() {
+        options.clear();
+    }
+
+    public boolean removeOption(String key, String value) {
+        return options.remove(key, value);
+    }
+
+    public boolean containsOption(String value) {
+        return options.containsValue(value);
+    }
+
+    public String removeOption(String key) {
+        return options.remove(key);
+    }
+
+    public String getOption(String key) {
+        return options.get(key);
+    }
+
+    public Set<String> getOptionKeySet() {
+        return options.keySet();
+    }
+
+    public Set<Map.Entry<String, String>> getOptions() {
+        return options.entrySet();
+    }
+
+    public boolean hasOption(String key) {
+        return options.containsKey(key);
+    }
+
+    public String getOptionOrDefault(String key, String defaultValue) {
+        return options.getOrDefault(key, defaultValue);
+    }
+
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
@@ -55,6 +108,20 @@ public class SessionStatement implements Statement {
 
     @Override
     public String toString() {
-        return "SESSION " + action + " " + (id != null ? id : "") + ";";
+        StringBuilder builder =
+                new StringBuilder("SESSION " + action + " " + (id != null ? id : ""));
+        if (!options.isEmpty()) {
+            builder.append(" WITH ");
+            int i = 0;
+            for (Map.Entry<String, String> e : options.entrySet()) {
+                if (i++ > 0) {
+                    builder.append(", ");
+                }
+                builder.append(e.getKey()).append("=").append(e.getValue());
+            }
+        }
+        builder.append(";");
+
+        return builder.toString();
     }
 }

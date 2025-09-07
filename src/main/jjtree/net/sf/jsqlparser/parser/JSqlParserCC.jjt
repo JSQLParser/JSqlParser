@@ -2091,6 +2091,7 @@ DeclareStatement Declare(): {
 
 SessionStatement SessionStatement():
 {
+    SessionStatement sessionsStatement;
     Token actionToken;
     Token idToken = null;
     String id = null;
@@ -2133,12 +2134,30 @@ SessionStatement SessionStatement():
             ) { id += "." + idToken.image; }
         )?
     ]
-
     {
-        SessionStatement sessionsStatement = id!=null
+        sessionsStatement = id!=null
             ? new SessionStatement(actionToken.image, id)
             : new SessionStatement(actionToken.image);
+    }
 
+    // options
+    [
+        LOOKAHEAD(2) <K_WITH>
+        idToken = <S_IDENTIFIER>
+        "="
+        ( actionToken = <S_IDENTIFIER> | actionToken = <S_QUOTED_IDENTIFIER> | actionToken = <S_CHAR_LITERAL> | actionToken = <S_LONG> | actionToken = <K_TRUE> | actionToken = <K_FALSE> | actionToken = <K_ON> | actionToken = <K_OFF>  | actionToken = <K_YES> | actionToken = <K_NO> )
+        { sessionsStatement.putOption(idToken.image, actionToken.image ); }
+
+        (
+            ","
+            idToken = <S_IDENTIFIER>
+            "="
+            ( actionToken = <S_IDENTIFIER> | actionToken = <S_QUOTED_IDENTIFIER> | actionToken = <S_CHAR_LITERAL> | actionToken = <S_LONG> | actionToken = <K_TRUE> | actionToken = <K_FALSE> | actionToken = <K_ON> | actionToken = <K_OFF>  | actionToken = <K_YES> | actionToken = <K_NO> )
+            { sessionsStatement.putOption(idToken.image, actionToken.image ); }
+        )*
+    ]
+
+    {
         //linkAST(sessionsStatement,jjtThis);
         return sessionsStatement;
     }
