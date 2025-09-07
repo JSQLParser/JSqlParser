@@ -84,7 +84,11 @@ public class SessionStatement implements Statement {
         return options.keySet();
     }
 
-    public Set<Map.Entry<String, String>> getOptions() {
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public Set<Map.Entry<String, String>> getOptionEntrySet() {
         return options.entrySet();
     }
 
