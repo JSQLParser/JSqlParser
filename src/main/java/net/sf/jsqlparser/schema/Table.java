@@ -170,7 +170,44 @@ public class Table extends ASTNodeAccessImpl
     }
 
     public Table setSchemaName(String schemaName) {
-        this.setIndex(SCHEMA_IDX, schemaName);
+
+        // BigQuery seems to allow things like: `catalogName.schemaName.tableName` in only one pair
+        // of quotes
+        // however, some people believe that Dots in Names are a good idea, so provide a switch-off
+        boolean splitNamesOnDelimiter = System.getProperty("SPLIT_NAMES_ON_DELIMITER") == null ||
+                !List
+                        .of("0", "N", "n", "FALSE", "false", "OFF", "off")
+                        .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
+
+        if (MultiPartName.isQuoted(schemaName) && schemaName.contains(".") && splitNamesOnDelimiter) {
+            String[] parts = MultiPartName.unquote(schemaName).split("\\.");
+            switch (parts.length) {
+                case 2:
+                    setIndex(DATABASE_IDX, "\"" + parts[0] + "\"");
+                    setIndex(SCHEMA_IDX, "\"" + parts[1] + "\"");
+                    break;
+                case 1:
+                    setIndex(SCHEMA_IDX, "\"" + parts[0] + "\"");
+                    break;
+                default:
+                    throw new RuntimeException("Invalid schema name: " + schemaName);
+            }
+        } else if (schemaName.contains(".") && splitNamesOnDelimiter) {
+            String[] parts = MultiPartName.unquote(schemaName).split("\\.");
+            switch (parts.length) {
+                case 2:
+                    setIndex(DATABASE_IDX, parts[0]);
+                    setIndex(SCHEMA_IDX, parts[1]);
+                    break;
+                case 1:
+                    setIndex(SCHEMA_IDX, parts[0]);
+                    break;
+                default:
+                    throw new RuntimeException("Invalid schema name: " + schemaName);
+            }
+        } else {
+            this.setIndex(SCHEMA_IDX, schemaName);
+        }
         return this;
     }
 

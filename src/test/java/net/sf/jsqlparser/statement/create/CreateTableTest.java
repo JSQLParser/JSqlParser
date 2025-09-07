@@ -1073,4 +1073,15 @@ public class CreateTableTest {
                         ", UNIQUE (employee_name));";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testWithCatalog() throws JSQLParserException {
+        String sqlStr="CREATE TABLE UNNAMED.session1.a (b VARCHAR (1))";
+        CreateTable st = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Table t = st.getTable();
+        assertEquals("UNNAMED", t.getCatalogName());
+        assertEquals("session1", t.getSchemaName());
+        assertEquals("a", t.getUnquotedName());
+    }
 }

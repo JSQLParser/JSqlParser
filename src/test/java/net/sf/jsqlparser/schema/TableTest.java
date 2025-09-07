@@ -120,4 +120,13 @@ public class TableTest {
         Assertions.assertNotSame(t.clone(), t);
         Assertions.assertNotEquals(t.clone(), t);
     }
+
+    @Test
+    void testWithSchema() {
+        Table t = new Table("a");
+        t.setSchemaName("UNNAMED.session1");
+
+        Assertions.assertEquals("UNNAMED", t.getDatabaseName());
+        Assertions.assertEquals("session1", t.getSchemaName());
+    }
 }
