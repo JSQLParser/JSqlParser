@@ -22,7 +22,8 @@ class SessionStatementTest {
             "SESSION START 1234", "SESSION START", "SESSION APPLY 'test'", "SESSION APPLY",
             "SESSION DROP \"test\"", "SESSION DROP", "SESSION SHOW test", "SESSION SHOW",
             "SESSION DESCRIBE 1234", "SESSION DESCRIBE", "SESSION START unnamed.session1",
-            "SESSION START unnamed.session1 WITH persist=false,cleanup=on"
+            "SESSION START unnamed.session1 WITH persist=false,cleanup=on",
+            "SESSION APPLY unnamed.session1 WITH persist=false,keep=true"
     })
     void testStartSession(String sqlStr) throws JSQLParserException {
         SessionStatement sessionStatement =

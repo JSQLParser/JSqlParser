@@ -2143,14 +2143,14 @@ SessionStatement SessionStatement():
     // options
     [
         LOOKAHEAD(2) <K_WITH>
-        idToken = <S_IDENTIFIER>
+        ( idToken = <S_IDENTIFIER> | idToken = <K_KEEP> )
         "="
         ( actionToken = <S_IDENTIFIER> | actionToken = <S_QUOTED_IDENTIFIER> | actionToken = <S_CHAR_LITERAL> | actionToken = <S_LONG> | actionToken = <K_TRUE> | actionToken = <K_FALSE> | actionToken = <K_ON> | actionToken = <K_OFF>  | actionToken = <K_YES> | actionToken = <K_NO> )
         { sessionsStatement.putOption(idToken.image, actionToken.image ); }
 
         (
             ","
-            idToken = <S_IDENTIFIER>
+            ( idToken = <S_IDENTIFIER> | idToken = <K_KEEP> )
             "="
             ( actionToken = <S_IDENTIFIER> | actionToken = <S_QUOTED_IDENTIFIER> | actionToken = <S_CHAR_LITERAL> | actionToken = <S_LONG> | actionToken = <K_TRUE> | actionToken = <K_FALSE> | actionToken = <K_ON> | actionToken = <K_OFF>  | actionToken = <K_YES> | actionToken = <K_NO> )
             { sessionsStatement.putOption(idToken.image, actionToken.image ); }
