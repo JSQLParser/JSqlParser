@@ -124,6 +124,7 @@ public class ParserKeywordsUtils {
             {"PRIOR", RESTRICTED_ALIAS},
             {"PROCEDURE", RESTRICTED_ALIAS},
             {"PUBLIC", RESTRICTED_ALIAS},
+            {"RETURNS", RESTRICTED_JSQLPARSER},
             {"RETURNING", RESTRICTED_JSQLPARSER},
             {"RIGHT", RESTRICTED_SQL2016},
             {"SAMPLE", RESTRICTED_ALIAS},

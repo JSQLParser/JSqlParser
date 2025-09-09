@@ -219,3 +219,27 @@ AND
   CAST(CAST((NOW() + INTERVAL '-1 day') AS date) AS timestamptz);
 
 SELECT DATE_TRUNC('week',("schema"."tbl"."column" + INTERVAL '1 day')) FROM "schema"."tbl";
+
+WITH
+  FUNCTION doubleup(x integer)
+    RETURNS integer
+    RETURN x * 2
+SELECT doubleup(21);
+
+WITH
+  FUNCTION doubleup(x integer)
+    RETURNS integer
+    RETURN x * 2,
+  FUNCTION doubleupplusone(x integer)
+    RETURNS integer
+    RETURN doubleup(x) + 1
+SELECT doubleupplusone(21);
+
+WITH
+  FUNCTION hello(name varchar)
+    RETURNS varchar
+    RETURN format('Hello %s!', 'name'),
+  FUNCTION bye(name varchar)
+    RETURNS varchar
+    RETURN format('Bye %s!', 'name')
+SELECT hello('Finn') || ' and ' || bye('Joe');
