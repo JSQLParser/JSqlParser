@@ -41,7 +41,8 @@ class WithFunctionDeclarationTest {
     void defaultConstructorAndSetters() {
         withFunctionDeclaration = new WithFunctionDeclaration();
         withFunctionDeclaration.setFunctionName(FUNCTION_NAME);
-        withFunctionDeclaration.setParameters(List.of(withFunctionParameter1, withFunctionParameter2));
+        withFunctionDeclaration
+                .setParameters(List.of(withFunctionParameter1, withFunctionParameter2));
         withFunctionDeclaration.setReturnType(RETURN_TYPE);
         withFunctionDeclaration.setReturnExpression(expression);
         assertThat(withFunctionDeclaration.getFunctionName()).isEqualTo(FUNCTION_NAME);
@@ -79,14 +80,17 @@ class WithFunctionDeclarationTest {
         withFunctionDeclaration = new WithFunctionDeclaration(FUNCTION_NAME,
                 List.of(withFunctionParameter1, withFunctionParameter2), RETURN_TYPE, expression);
 
-        assertThat(withFunctionDeclaration.toString()).isEqualTo("FUNCTION func1(param1 bigint, param2 double) RETURNS integer RETURN 1 + 1");
+        assertThat(withFunctionDeclaration.toString()).isEqualTo(
+                "FUNCTION func1(param1 bigint, param2 double) RETURNS integer RETURN 1 + 1");
     }
 
     @Test
     void toStringTestWithNoParameters() {
         when(expression.toString()).thenReturn("1 + 1");
-        withFunctionDeclaration = new WithFunctionDeclaration(FUNCTION_NAME, List.of(), RETURN_TYPE, expression);
+        withFunctionDeclaration =
+                new WithFunctionDeclaration(FUNCTION_NAME, List.of(), RETURN_TYPE, expression);
 
-        assertThat(withFunctionDeclaration.toString()).isEqualTo("FUNCTION func1() RETURNS integer RETURN 1 + 1");
+        assertThat(withFunctionDeclaration.toString())
+                .isEqualTo("FUNCTION func1() RETURNS integer RETURN 1 + 1");
     }
 }

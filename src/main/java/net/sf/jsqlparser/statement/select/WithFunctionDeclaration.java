@@ -20,10 +20,10 @@ public class WithFunctionDeclaration implements Serializable {
     private String returnType;
     private Expression returnExpression;
 
-    public WithFunctionDeclaration() {
-    }
+    public WithFunctionDeclaration() {}
 
-    public WithFunctionDeclaration(String functionName, List<WithFunctionParameter> parameters, String returnType, Expression returnExpression) {
+    public WithFunctionDeclaration(String functionName, List<WithFunctionParameter> parameters,
+            String returnType, Expression returnExpression) {
         this.functionName = functionName;
         this.parameters = parameters;
         this.returnType = returnType;

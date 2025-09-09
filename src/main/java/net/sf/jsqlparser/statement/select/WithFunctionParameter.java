@@ -15,8 +15,7 @@ public class WithFunctionParameter implements Serializable {
     private String name;
     private String type; // e.g., INT
 
-    public WithFunctionParameter() {
-    }
+    public WithFunctionParameter() {}
 
     public WithFunctionParameter(String name, String type) {
         this.name = name;

@@ -130,7 +130,8 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         this.withFunctionDeclaration = withFunctionDeclaration;
     }
 
-    public WithItem<K> withWithFunctionDeclaration(WithFunctionDeclaration withFunctionDeclaration) {
+    public WithItem<K> withWithFunctionDeclaration(
+            WithFunctionDeclaration withFunctionDeclaration) {
         this.setWithFunctionDeclaration(withFunctionDeclaration);
         return this;
     }
