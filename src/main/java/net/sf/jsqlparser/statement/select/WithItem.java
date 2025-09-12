@@ -27,6 +27,7 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
     private K statement;
     private Alias alias;
     private List<SelectItem<?>> withItemList;
+    private WithFunctionDeclaration withFunctionDeclaration;
     private boolean recursive = false;
     private boolean usingNot = false;
     private boolean materialized = false;
@@ -121,28 +122,46 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         this.withItemList = withItemList;
     }
 
+    public WithFunctionDeclaration getWithFunctionDeclaration() {
+        return withFunctionDeclaration;
+    }
+
+    public void setWithFunctionDeclaration(WithFunctionDeclaration withFunctionDeclaration) {
+        this.withFunctionDeclaration = withFunctionDeclaration;
+    }
+
+    public WithItem<K> withWithFunctionDeclaration(
+            WithFunctionDeclaration withFunctionDeclaration) {
+        this.setWithFunctionDeclaration(withFunctionDeclaration);
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(recursive ? "RECURSIVE " : "");
-        if (alias != null) {
-            builder.append(alias.getName());
-        }
-        if (withItemList != null) {
-            builder.append("(");
-            int size = withItemList.size();
-            for (int i = 0; i < size; i++) {
-                builder.append(withItemList.get(i)).append(i < size - 1 ? "," : "");
+        if (withFunctionDeclaration != null) {
+            builder.append(withFunctionDeclaration);
+        } else {
+            builder.append(recursive ? "RECURSIVE " : "");
+            if (alias != null) {
+                builder.append(alias.getName());
             }
-            builder.append(")");
+            if (withItemList != null) {
+                builder.append("(");
+                int size = withItemList.size();
+                for (int i = 0; i < size; i++) {
+                    builder.append(withItemList.get(i)).append(i < size - 1 ? "," : "");
+                }
+                builder.append(")");
+            }
+            builder.append(" AS ");
+            if (materialized) {
+                builder.append(usingNot
+                        ? "NOT MATERIALIZED "
+                        : "MATERIALIZED ");
+            }
+            builder.append(statement);
         }
-        builder.append(" AS ");
-        if (materialized) {
-            builder.append(usingNot
-                    ? "NOT MATERIALIZED "
-                    : "MATERIALIZED ");
-        }
-        builder.append(statement);
         return builder.toString();
     }
 

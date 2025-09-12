@@ -570,6 +570,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_RESTRICT: "RESTRICT">
 |   <K_RESTRICTED: "RESTRICTED">
 |   <K_RETURN: "RETURN">
+|   <K_RETURNS: "RETURNS">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
 |   <K_ROLLBACK:"ROLLBACK">
@@ -4336,31 +4337,79 @@ WithItem<?> WithItem() #WithItem:
     boolean recursive = false;
     boolean materialized = false;
     boolean usingNot = false;
-    String name;
+    String name = null;
     List<SelectItem<?>> selectItems = null;
-    ParenthesedStatement statement;
+    WithFunctionDeclaration withFunctionDeclaration = null;
+    ParenthesedStatement statement = null;
+    WithItem<?> withItem;
 }
 {
-     [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
-     name=RelObjectName()
-     [ "(" selectItems=SelectItemsList() ")" ]
-     <K_AS>
-     [ LOOKAHEAD(2) [ <K_NOT> { usingNot = true; } ] <K_MATERIALIZED>  { materialized = true; } ]
-     (
-         LOOKAHEAD(2) statement = ParenthesedSelect()
+    (
+         LOOKAHEAD(2) <K_FUNCTION>
+         withFunctionDeclaration = WithFunctionDeclaration()
+         {
+             withItem = new WithItem().withWithFunctionDeclaration(withFunctionDeclaration);
+         }
          |
-         LOOKAHEAD(2) statement = ParenthesedInsert()
-         |
-         LOOKAHEAD(2) statement = ParenthesedUpdate()
-         |
-         LOOKAHEAD(2) statement = ParenthesedDelete()
+         (
+             [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
+             name=RelObjectName()
+             [ "(" selectItems=SelectItemsList() ")" ]
+             <K_AS>
+             [ LOOKAHEAD(2) [ <K_NOT> { usingNot = true; } ] <K_MATERIALIZED>  { materialized = true; } ]
+             (
+                 LOOKAHEAD(2) statement = ParenthesedSelect()
+                 |
+                 LOOKAHEAD(2) statement = ParenthesedInsert()
+                 |
+                 LOOKAHEAD(2) statement = ParenthesedUpdate()
+                 |
+                 LOOKAHEAD(2) statement = ParenthesedDelete()
+             )
+             {
+                withItem = new WithItem(statement, new Alias(name, false))
+                    .withRecursive(recursive, usingNot, materialized)
+                    .withWithItemList(selectItems);
+             }
+         )
      )
      {
-        WithItem<?> withItem = new WithItem(statement, new Alias(name, false));
-        return withItem
-            .withRecursive(recursive, usingNot, materialized)
-            .withWithItemList(selectItems);
+     return withItem;
      }
+}
+
+WithFunctionDeclaration WithFunctionDeclaration() #WithFunctionDeclaration:
+{
+     String functionName;
+     List<WithFunctionParameter> parameters = new ArrayList<WithFunctionParameter>();
+     String returnType;
+     Expression returnExpression;
+     WithFunctionParameter parameter;
+}
+{
+    functionName = RelObjectName()
+    "("
+        [ parameter=WithFunctionParameter() { parameters.add(parameter); }
+          ( "," parameter=WithFunctionParameter() { parameters.add(parameter); } )*
+        ]
+    ")"
+    <K_RETURNS> returnType = RelObjectName()
+    <K_RETURN> returnExpression = Expression()
+    {
+        return new WithFunctionDeclaration(functionName, parameters, returnType, returnExpression);
+    }
+}
+
+WithFunctionParameter WithFunctionParameter() #WithFunctionParameter:
+{
+     String name;
+     String type;
+}
+{
+    name = RelObjectName() type = RelObjectName()
+    {
+        return new WithFunctionParameter(name, type);
+    }
 }
 
 List<SelectItem<Column>> ColumnSelectItemsList():

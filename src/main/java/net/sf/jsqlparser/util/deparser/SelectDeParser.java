@@ -717,23 +717,27 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(WithItem<?> withItem, S context) {
-        if (withItem.isRecursive()) {
-            builder.append("RECURSIVE ");
+        if (withItem.getWithFunctionDeclaration() == null) {
+            if (withItem.isRecursive()) {
+                builder.append("RECURSIVE ");
+            }
+            builder.append(withItem.getAlias().getName());
+            if (withItem.getWithItemList() != null) {
+                builder.append(" ")
+                        .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
+            }
+            builder.append(" AS ");
+            if (withItem.isMaterialized()) {
+                builder.append(withItem.isUsingNot()
+                        ? "NOT MATERIALIZED "
+                        : "MATERIALIZED ");
+            }
+            StatementDeParser statementDeParser =
+                    new StatementDeParser((ExpressionDeParser) expressionVisitor, this, builder);
+            statementDeParser.deParse(withItem.getParenthesedStatement());
+        } else {
+            builder.append(withItem.getWithFunctionDeclaration().toString());
         }
-        builder.append(withItem.getAlias().getName());
-        if (withItem.getWithItemList() != null) {
-            builder.append(" ")
-                    .append(PlainSelect.getStringList(withItem.getWithItemList(), true, true));
-        }
-        builder.append(" AS ");
-        if (withItem.isMaterialized()) {
-            builder.append(withItem.isUsingNot()
-                    ? "NOT MATERIALIZED "
-                    : "MATERIALIZED ");
-        }
-        StatementDeParser statementDeParser =
-                new StatementDeParser((ExpressionDeParser) expressionVisitor, this, builder);
-        statementDeParser.deParse(withItem.getParenthesedStatement());
         return builder;
     }
 
