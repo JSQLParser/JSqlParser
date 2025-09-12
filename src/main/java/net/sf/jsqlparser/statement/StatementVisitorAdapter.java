@@ -183,7 +183,6 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         visitWithItems(insert.getWithItemsList(), context);
 
         insert.getTable().accept(fromItemVisitor, context);
-        fromItemVisitor.visitFromItem(insert.getTable(), context);
 
         if (insert.getColumns() != null) {
             for (Column column : insert.getColumns()) {
@@ -221,7 +220,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     private <S> T visitReturningClause(ReturningClause returningClause, S context) {
-        if (returningClause!=null) {
+        if (returningClause != null) {
             returningClause.forEach(selectItem -> selectItem.accept(selectItemVisitor, context));
             // @todo: verify why this is a list of strings and not columns
         }
