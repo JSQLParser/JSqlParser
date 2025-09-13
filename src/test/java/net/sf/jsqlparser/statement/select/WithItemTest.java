@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class WithItemTest {
 
@@ -26,4 +28,23 @@ class WithItemTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "WITH\n" +
+                    "  FUNCTION doubleup(x integer)\n" +
+                    "    RETURNS integer\n" +
+                    "    RETURN x * 2\n" +
+                    "SELECT doubleup(21);\n",
+            "WITH\n" +
+                    "  FUNCTION doubleup(x integer)\n" +
+                    "    RETURNS integer\n" +
+                    "    RETURN x * 2,\n" +
+                    "  FUNCTION doubleupplusone(x integer)\n" +
+                    "    RETURNS integer\n" +
+                    "    RETURN doubleup(x) + 1\n" +
+                    "SELECT doubleupplusone(21);"
+    })
+    void testWithFunction(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
