@@ -693,14 +693,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(TranscodingFunction transcodingFunction, S context) {
         if (transcodingFunction.isTranscodeStyle()) {
-            builder.append("CONVERT( ");
+            builder.append(transcodingFunction.getKeyword());
+            builder.append("( ");
             transcodingFunction.getExpression().accept(this, context);
             builder.append(" USING ")
                     .append(transcodingFunction.getTranscodingName())
                     .append(" )");
         } else {
             builder
-                    .append("CONVERT( ")
+                    .append(transcodingFunction.getKeyword())
+                    .append("( ")
                     .append(transcodingFunction.getColDataType())
                     .append(", ");
             transcodingFunction.getExpression().accept(this, context);

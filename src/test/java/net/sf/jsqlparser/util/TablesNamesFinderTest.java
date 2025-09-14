@@ -681,5 +681,21 @@ public class TablesNamesFinderTest {
         Set<String> tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("location_subscriber");
     }
+
+    @Test
+    void testIssue2305() throws JSQLParserException {
+        String sqlStr = "SELECT  tbl.fk_id\n" +
+                "        , tbl.etape\n" +
+                "FROM (  tbl\n" +
+                "            JOIN (  SELECT  tbl_1.fk_id\n" +
+                "                            , Max( tbl_1.date1 ) AS max_1\n" +
+                "                    FROM tbl tbl_1\n" +
+                "                    GROUP BY tbl_1.fk_id ) sub2\n" +
+                "                ON ( ( ( sub2.fk_id = tbl.fk_id )\n" +
+                "                            AND ( sub2.max_1 = tbl.date1 ) ) ) )\n" +
+                ";";
+        Set<String> tables = TablesNamesFinder.findTables(sqlStr);
+        assertThat(tables).containsExactlyInAnyOrder("tbl");
+    }
 }
 

@@ -12,15 +12,33 @@ package net.sf.jsqlparser.expression;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
+import java.util.Objects;
+
 public class TranscodingFunction extends ASTNodeAccessImpl implements Expression {
+    private String keyword = "CONVERT";
     private boolean isTranscodeStyle = true;
     private ColDataType colDataType;
     private Expression expression;
     private String transcodingName;
 
+    public TranscodingFunction(String keyword, Expression expression, String transcodingName) {
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        this.expression = expression;
+        this.transcodingName = transcodingName;
+    }
+
     public TranscodingFunction(Expression expression, String transcodingName) {
         this.expression = expression;
         this.transcodingName = transcodingName;
+    }
+
+    public TranscodingFunction(String keyword, ColDataType colDataType, Expression expression,
+            String transcodingName) {
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        this.colDataType = colDataType;
+        this.expression = expression;
+        this.transcodingName = transcodingName;
+        this.isTranscodeStyle = false;
     }
 
     public TranscodingFunction(ColDataType colDataType, Expression expression,
@@ -33,6 +51,15 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
 
     public TranscodingFunction() {
         this(null, null);
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public TranscodingFunction setKeyword(String keyword) {
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        return this;
     }
 
     public Expression getExpression() {
@@ -87,14 +114,16 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
     public StringBuilder appendTo(StringBuilder builder) {
         if (isTranscodeStyle) {
             return builder
-                    .append("CONVERT( ")
+                    .append(keyword)
+                    .append("( ")
                     .append(expression)
                     .append(" USING ")
                     .append(transcodingName)
                     .append(" )");
         } else {
             return builder
-                    .append("CONVERT( ")
+                    .append(keyword)
+                    .append("( ")
                     .append(colDataType)
                     .append(", ")
                     .append(expression)

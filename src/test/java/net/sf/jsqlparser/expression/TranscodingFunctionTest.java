@@ -60,4 +60,10 @@ class TranscodingFunctionTest {
         Statement st = assertSqlCanBeParsedAndDeparsed(
                 "SELECT Convert( Decimal(18,2) , 1 )", true);
     }
+
+    @Test
+    void testIssue2304() throws JSQLParserException {
+        String sqlStr = "SELECT TRY_CONVERT(NUMERIC(8,6), '1234') AS LATITUDE_NBR;";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
