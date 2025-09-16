@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -696,6 +697,19 @@ public class TablesNamesFinderTest {
                 ";";
         Set<String> tables = TablesNamesFinder.findTables(sqlStr);
         assertThat(tables).containsExactlyInAnyOrder("tbl");
+    }
+
+    @Test
+    void assertWithItemWithFunctionDeclarationDoesNotThrowException() throws JSQLParserException {
+        String sqlStr = "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
+        assertThatCode(() -> TablesNamesFinder.findTables(sqlStr))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void assertWithItemWithFunctionDeclarationReturnsTableInSelect() throws JSQLParserException {
+        String sqlStr = "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("my_table");
     }
 }
 

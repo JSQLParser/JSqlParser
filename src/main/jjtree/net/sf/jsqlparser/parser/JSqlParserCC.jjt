@@ -4405,11 +4405,20 @@ WithFunctionDeclaration WithFunctionDeclaration() #WithFunctionDeclaration:
 WithFunctionParameter WithFunctionParameter() #WithFunctionParameter:
 {
      String name;
-     String type;
+     String type = null;
+     String arrayType = null;
 }
 {
-    name = RelObjectName() type = RelObjectName()
+    name = RelObjectName()
+    (
+        LOOKAHEAD(2) <K_ARRAY_LITERAL> "<" arrayType = RelObjectName() ">"
+        |
+        type = RelObjectName()
+    )
     {
+        if (arrayType != null) {
+            type = "ARRAY<" + arrayType + ">";
+        }
         return new WithFunctionParameter(name, type);
     }
 }

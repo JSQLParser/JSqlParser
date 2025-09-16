@@ -42,7 +42,13 @@ class WithItemTest {
                     "  FUNCTION doubleupplusone(x integer)\n" +
                     "    RETURNS integer\n" +
                     "    RETURN doubleup(x) + 1\n" +
-                    "SELECT doubleupplusone(21);"
+                    "SELECT doubleupplusone(21);",
+            "WITH\n" +
+                    "  FUNCTION takesArray(x array<double>)\n" +
+                    "    RETURNS double\n" +
+                    "    RETURN x[1] + x[2] + x[3]\n" +
+                    "SELECT takesArray(ARRAY[1.0, 2.0, 3.0]);"
+
     })
     void testWithFunction(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
