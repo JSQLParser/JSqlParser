@@ -701,14 +701,16 @@ public class TablesNamesFinderTest {
 
     @Test
     void assertWithItemWithFunctionDeclarationDoesNotThrowException() throws JSQLParserException {
-        String sqlStr = "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
+        String sqlStr =
+                "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
         assertThatCode(() -> TablesNamesFinder.findTables(sqlStr))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void assertWithItemWithFunctionDeclarationReturnsTableInSelect() throws JSQLParserException {
-        String sqlStr = "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
+        String sqlStr =
+                "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("my_table");
     }
 }

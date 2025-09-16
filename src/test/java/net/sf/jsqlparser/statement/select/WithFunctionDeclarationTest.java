@@ -107,7 +107,8 @@ class WithFunctionDeclarationTest {
     }
 
     @Test
-    void expressionVisitorIsNotCalledWhenNoReturnExpressionDeclared(@Mock ExpressionVisitor<Void> expressionVisitor) {
+    void expressionVisitorIsNotCalledWhenNoReturnExpressionDeclared(
+            @Mock ExpressionVisitor<Void> expressionVisitor) {
         withFunctionDeclaration = new WithFunctionDeclaration();
 
         withFunctionDeclaration.accept(expressionVisitor, "RANDOM_CONTEXT");
@@ -116,7 +117,8 @@ class WithFunctionDeclarationTest {
     }
 
     @Test
-    void expressionVisitorCalledWhenReturnExpressionDeclared(@Mock ExpressionVisitor<Void> expressionVisitor) {
+    void expressionVisitorCalledWhenReturnExpressionDeclared(
+            @Mock ExpressionVisitor<Void> expressionVisitor) {
         String context = "RANDOM_CONTEXT";
         withFunctionDeclaration = new WithFunctionDeclaration()
                 .withReturnExpression(expression);
