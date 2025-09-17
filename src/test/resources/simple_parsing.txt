@@ -243,3 +243,9 @@ WITH
     RETURNS varchar
     RETURN format('Bye %s!', 'name')
 SELECT hello('Finn') || ' and ' || bye('Joe');
+
+WITH
+  FUNCTION takesArray(x array<double>)
+    RETURNS double
+    RETURN x[1] + x[2] + x[3]
+SELECT takesArray(array[1.0, 2.0, 3.0]);

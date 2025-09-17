@@ -171,7 +171,10 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
     }
 
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
-        return statement.accept(statementVisitor, context);
+        if (statement != null) {
+            return statement.accept(statementVisitor, context);
+        }
+        return null;
     }
 
     public WithItem<?> withWithItemList(List<SelectItem<?>> withItemList) {

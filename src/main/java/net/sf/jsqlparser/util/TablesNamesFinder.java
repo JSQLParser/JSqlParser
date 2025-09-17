@@ -318,8 +318,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(WithItem<?> withItem, S context) {
-        otherItemNames.add(withItem.getAlias().getName());
-        withItem.getSelect().accept((SelectVisitor<?>) this, context);
+        if (withItem.getAlias() != null) {
+            otherItemNames.add(withItem.getAlias().getName());
+        }
+        if (withItem.getSelect() != null) {
+            withItem.getSelect().accept((SelectVisitor<?>) this, context);
+        }
         return null;
     }
 

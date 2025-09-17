@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.ExpressionVisitor;
 
 import java.io.Serializable;
 import java.util.List;
@@ -98,6 +99,13 @@ public class WithFunctionDeclaration implements Serializable {
                 .append(returnType)
                 .append(" RETURN ")
                 .append(returnExpression);
+    }
+
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        if (returnExpression != null) {
+            return returnExpression.accept(expressionVisitor, context);
+        }
+        return null;
     }
 
     @Override
