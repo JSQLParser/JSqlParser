@@ -17,6 +17,7 @@ import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
@@ -38,7 +40,7 @@ public class Delete implements Statement {
     private Table table;
     private OracleHint oracleHint = null;
     private List<Table> tables;
-    private List<Table> usingList;
+    private List<FromItem> usingFromItemList;
     private List<Join> joins;
     private Expression where;
     private PreferringClause preferringClause;
@@ -157,12 +159,29 @@ public class Delete implements Statement {
         this.tables = tables;
     }
 
+    /**
+     * This is compatible with the old logic. When calling this method, you need to ensure that the
+     * specific table is used after using.
+     *
+     * @return Table collection used in using.
+     */
+    @Deprecated
     public List<Table> getUsingList() {
-        return usingList;
+        if (usingFromItemList == null || usingFromItemList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return usingFromItemList.stream().map(ele -> (Table) ele).collect(Collectors.toList());
     }
 
+    /**
+     * This is compatible with the old logic. When calling this method, you need to ensure that the
+     * specific table is used after using.
+     *
+     * @param usingList Table collection used in using.
+     */
+    @Deprecated
     public void setUsingList(List<Table> usingList) {
-        this.usingList = usingList;
+        this.usingFromItemList = new ArrayList<>(usingList);
     }
 
     public List<Join> getJoins() {
@@ -228,10 +247,10 @@ public class Delete implements Statement {
         }
         b.append(" ").append(table);
 
-        if (usingList != null && usingList.size() > 0) {
+        if (usingFromItemList != null && !usingFromItemList.isEmpty()) {
             b.append(" USING ");
-            b.append(usingList.stream()
-                    .map(Table::toString)
+            b.append(usingFromItemList.stream()
+                    .map(Object::toString)
                     .collect(joining(", ")));
         }
 
@@ -273,8 +292,27 @@ public class Delete implements Statement {
         return this;
     }
 
+    /**
+     * The old method has been replaced by withUsingFromItemList.
+     *
+     * @param usingList
+     * @return
+     * @see Delete#withUsingFromItemList
+     */
+    @Deprecated
     public Delete withUsingList(List<Table> usingList) {
         this.setUsingList(usingList);
+        return this;
+    }
+
+    /**
+     * New using syntax method.Supports the complete using syntax of pg, such as subqueries, etc.
+     *
+     * @param usingFromItemList
+     * @return
+     */
+    public Delete withUsingFromItemList(List<FromItem> usingFromItemList) {
+        this.setUsingFromItemList(usingFromItemList);
         return this;
     }
 
@@ -364,16 +402,58 @@ public class Delete implements Statement {
         return this.withTables(collection);
     }
 
+    /**
+     * The old method has been replaced by addUsingFromItemList.
+     *
+     * @param usingList
+     * @return
+     * @see Delete#addUsingFromItemList
+     */
+    @Deprecated
     public Delete addUsingList(Table... usingList) {
         List<Table> collection = Optional.ofNullable(getUsingList()).orElseGet(ArrayList::new);
         Collections.addAll(collection, usingList);
         return this.withUsingList(collection);
     }
 
+    /**
+     * New using syntax method.Supports the complete using syntax of pg, such as subqueries, etc.
+     *
+     * @param usingFromItemList
+     * @return
+     */
+    public Delete addUsingFromItemList(FromItem... usingFromItemList) {
+        List<FromItem> collection =
+                Optional.ofNullable(getUsingFromItemList()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, usingFromItemList);
+        return this.withUsingFromItemList(collection);
+    }
+
+    /**
+     * The old method has been replaced by addUsingFromItemList.
+     *
+     * @param usingList
+     * @return
+     * @see Delete#addUsingFromItemList
+     */
+    @Deprecated
     public Delete addUsingList(Collection<? extends Table> usingList) {
         List<Table> collection = Optional.ofNullable(getUsingList()).orElseGet(ArrayList::new);
         collection.addAll(usingList);
         return this.withUsingList(collection);
+    }
+
+    /**
+     * New using syntax method. Supports the complete using syntax of pg, such as subqueries, etc.
+     *
+     * @param usingFromItemList
+     * @return
+     */
+    public Delete addUsingFromItemList(Collection<? extends Table> usingFromItemList) {
+        List<FromItem> collection =
+                Optional.ofNullable(getUsingFromItemList()).orElseGet(ArrayList::new);
+        collection.addAll(usingFromItemList);
+        return this.withUsingFromItemList(collection);
     }
 
     public Delete addJoins(Join... joins) {
@@ -404,5 +484,24 @@ public class Delete implements Statement {
 
     public <E extends Expression> E getWhere(Class<E> type) {
         return type.cast(getWhere());
+    }
+
+    /**
+     * Return the content after using. Supports the complete using syntax of pg, such as subqueries,
+     * etc.
+     *
+     * @return
+     */
+    public List<FromItem> getUsingFromItemList() {
+        return usingFromItemList;
+    }
+
+    /**
+     * Supports the complete using syntax of pg, such as subqueries, etc.
+     *
+     * @param usingFromItemList The content after using.
+     */
+    public void setUsingFromItemList(List<FromItem> usingFromItemList) {
+        this.usingFromItemList = usingFromItemList;
     }
 }

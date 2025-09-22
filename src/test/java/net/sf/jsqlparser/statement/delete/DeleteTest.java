@@ -25,7 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -397,4 +399,19 @@ public class DeleteTest {
                 delete.getWhere().toString());
     }
 
+    @Test
+    public void testDeleteUsingFromItem() throws JSQLParserException {
+        String statement =
+                "DELETE A USING B.C D,(SELECT id FROM producers WHERE active = false) p WHERE D.Z = 1 and p.id = D.id";
+        Delete delete = (Delete) assertSqlCanBeParsedAndDeparsed(statement);
+        assertEquals("B.C",
+                ((Table) delete.getUsingFromItemList().get(0)).getFullyQualifiedName());
+        assertEquals("D",
+                ((Table) delete.getUsingFromItemList().get(0)).getAlias().getName());
+        assertEquals("producers",
+                ((Table) ((ParenthesedSelect) delete.getUsingFromItemList().get(1)).getPlainSelect()
+                        .getFromItem()).getFullyQualifiedName());
+        assertEquals("p",
+                delete.getUsingFromItemList().get(1).getAlias().getName());
+    }
 }
