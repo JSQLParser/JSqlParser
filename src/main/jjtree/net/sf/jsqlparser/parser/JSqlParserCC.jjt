@@ -3012,8 +3012,8 @@ Delete Delete():
     Table table = null;
     List<Table> tables = new ArrayList<Table>();
     List<WithItem<?>> with = null;
-    Table usingTable = null;
-    List<Table> usingList = new ArrayList<Table>();
+    FromItem usingFromItem = null;
+    List<FromItem> usingFromItemList = new ArrayList<FromItem>();
     List<Join> joins = null;
     Expression where = null;
     PreferringClause preferringClause = null;
@@ -3039,8 +3039,8 @@ Delete Delete():
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
     [ LOOKAHEAD(3) table=TableWithAlias() [ LOOKAHEAD(2)  joins=JoinsList() ] ]
-    [ <K_USING> usingTable=TableWithAlias() { usingList.add(usingTable); }
-          ("," usingTable=TableWithAlias() { usingList.add(usingTable); } )*]
+    [ <K_USING> usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); }
+          ("," usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]
     [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
@@ -3055,7 +3055,7 @@ Delete Delete():
               .withTables(tables)
               .withTable(table)
               .withHasFrom(hasFrom)
-              .withUsingList(usingList)
+              .withUsingFromItemList(usingFromItemList)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore)
               .withModifierQuick(modifierQuick);

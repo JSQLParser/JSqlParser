@@ -167,6 +167,7 @@ import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
@@ -1014,9 +1015,9 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(Delete delete, S context) {
         visit(delete.getTable(), context);
 
-        if (delete.getUsingList() != null) {
-            for (Table using : delete.getUsingList()) {
-                visit(using, context);
+        if (delete.getUsingFromItemList() != null) {
+            for (FromItem usingFromItem : delete.getUsingFromItemList()) {
+                usingFromItem.accept(this, context);
             }
         }
 

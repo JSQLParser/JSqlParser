@@ -78,9 +78,9 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         }
         builder.append(" ").append(delete.getTable().toString());
 
-        if (delete.getUsingList() != null && !delete.getUsingList().isEmpty()) {
+        if (delete.getUsingFromItemList() != null && !delete.getUsingFromItemList().isEmpty()) {
             builder.append(" USING").append(
-                    delete.getUsingList().stream().map(Table::toString)
+                    delete.getUsingFromItemList().stream().map(Object::toString)
                             .collect(joining(", ", " ", "")));
         }
         if (delete.getJoins() != null) {
