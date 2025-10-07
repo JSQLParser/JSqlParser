@@ -482,6 +482,13 @@ public class TablesNamesFinderTest {
     }
 
     @Test
+    void testLockStatement() throws JSQLParserException {
+        String sqlStr = "LOCK TABLE A IN EXCLUSIVE MODE";
+        Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);
+        assertThat(tables).containsExactly("A");
+    }
+
+    @Test
     void testSubqueryAliasesIssue1987() throws JSQLParserException {
         String sqlStr = "select * from (select * from a) as a1, b;";
         Set<String> tables = TablesNamesFinder.findTablesOrOtherSources(sqlStr);

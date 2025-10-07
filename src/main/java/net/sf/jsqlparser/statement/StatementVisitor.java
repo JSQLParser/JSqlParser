@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
@@ -343,4 +344,11 @@ public interface StatementVisitor<T> {
     default void visit(Export export) {
         this.visit(export, null);
     }
+
+    <S> T visit(LockStatement lock, S context);
+
+    default void visit(LockStatement lock) {
+        this.visit(lock, null);
+    }
+
 }
