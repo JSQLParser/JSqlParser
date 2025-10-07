@@ -17,7 +17,19 @@ public class LockStatement implements Statement {
 	private boolean noWait;
 	private Long waitSeconds;
 
+	/**
+	 * Creates a new LockStatement
+	 *
+	 * @param table The table to lock
+	 * @param lockMode The lock mode
+	 */
+	public LockStatement(Table table, LockMode lockMode) {
+		this.table = table;
+		this.lockMode = lockMode;
+	}
+
 	public LockStatement(Table table, LockMode lockMode, boolean noWait, Long waitSeconds) {
+		this(table, lockMode);
 		this.table = table;
 		this.lockMode = lockMode;
 		this.noWait = noWait;
