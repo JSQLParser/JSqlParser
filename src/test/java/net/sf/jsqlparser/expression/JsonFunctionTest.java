@@ -165,6 +165,25 @@ public class JsonFunctionTest {
     }
 
     @Test
+    void testObjectOracle() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(*) FROM employees", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(* ABSENT ON NULL) FROM employees", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(e.*) FROM employees e", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(e.*, d.* NULL ON NULL) FROM employees e, departments d", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT JSON_OBJECT(e.* WITH UNIQUE KEYS) FROM employees e", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON STRICT ) FROM dual ", true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz NULL ON NULL STRICT WITH UNIQUE KEYS) FROM dual ", true);
+    }
+
+    @Test
     public void testObjectWithExpression() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT JSON_OBJECT( KEY 'foo' VALUE cast( bar AS VARCHAR(40)), KEY 'foo' VALUE bar) FROM dual ",

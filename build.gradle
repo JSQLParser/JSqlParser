@@ -131,7 +131,13 @@ configurations.configureEach {
 }
 
 compileJavacc {
-    arguments = [grammar_encoding: 'UTF-8', static: 'false', java_template_type: 'modern']
+    arguments = [
+            grammar_encoding: 'UTF-8',
+            static: 'false',
+            java_template_type: 'modern',
+            // Comment this in to build the parser with tracing. Setting it to false does NOT disable it
+            DEBUG_PARSER: 'false'
+    ]
 }
 
 java {

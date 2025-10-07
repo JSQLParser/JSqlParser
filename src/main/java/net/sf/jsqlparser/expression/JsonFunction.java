@@ -25,6 +25,8 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     private JsonAggregateOnNullType onNullType;
     private JsonAggregateUniqueKeysType uniqueKeysType;
 
+    private boolean isStrict = false;
+
     public ArrayList<JsonKeyValuePair> getKeyValuePairs() {
         return keyValuePairs;
     }
@@ -114,6 +116,19 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public boolean isStrict() {
+        return isStrict;
+    }
+
+    public void setStrict(boolean strict) {
+        isStrict = strict;
+    }
+
+    public JsonFunction withStrict(boolean strict) {
+        this.setStrict(strict);
+        return this;
+    }
+
     @Override
     public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
         return expressionVisitor.visit(this, context);
@@ -164,19 +179,33 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             i++;
         }
 
+        appendOnNullType(builder);
+        if (isStrict) {
+            builder.append(" STRICT");
+        }
+        appendUniqueKeys(builder);
+
+        builder.append(" ) ");
+
+        return builder;
+    }
+
+    private void appendOnNullType(StringBuilder builder) {
         if (onNullType != null) {
             switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL");
                     break;
                 case ABSENT:
-                    builder.append(" ABSENT On NULL");
+                    builder.append(" ABSENT ON NULL");
                     break;
                 default:
                     // this should never happen
             }
         }
+    }
 
+    private void appendUniqueKeys(StringBuilder builder) {
         if (uniqueKeysType != null) {
             switch (uniqueKeysType) {
                 case WITH:
@@ -189,10 +218,6 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                     // this should never happen
             }
         }
-
-        builder.append(" ) ");
-
-        return builder;
     }
 
 
@@ -205,6 +230,13 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                 builder.append(", ").append(keyValuePair.getValue());
             }
         }
+
+        appendOnNullType(builder);
+        if (isStrict) {
+            builder.append(" STRICT");
+        }
+        appendUniqueKeys(builder);
+
         builder.append(" ) ");
 
         return builder;

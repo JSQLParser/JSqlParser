@@ -6967,9 +6967,13 @@ JsonFunction JsonFunction() : {
                         "KEY" { usingKeyKeyword = true; } ( keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } | key = Column() )
                     )
                     |
-                    keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
+                    LOOKAHEAD(2) ( key = AllTableColumns() )
+                    |
+                    key = AllColumns()
                     |
                     key = Column()
+                    |
+                    keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
                 )
 
                 ( LOOKAHEAD(2)
@@ -6998,9 +7002,12 @@ JsonFunction JsonFunction() : {
                             "KEY" { usingKeyKeyword = true; } ( keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } | key = Column() )
                         )
                         |
-                        keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
+                        LOOKAHEAD(2) ( key = AllTableColumns() )
                         |
                         key = Column()
+                        |
+                        keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
+
                     )
                     ( ":" | ","  { result.setType( JsonFunctionType.MYSQL_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
                     expression = Expression() { keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
@@ -7017,7 +7024,9 @@ JsonFunction JsonFunction() : {
                   <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
               )
             ]
-
+            [
+                <K_STRICT> { result.setStrict(true); }
+            ]
             [
               (
                   <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
