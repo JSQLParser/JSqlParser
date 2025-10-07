@@ -70,6 +70,7 @@ import net.sf.jsqlparser.statement.merge.*;
 import net.sf.jsqlparser.statement.grant.*;
 import net.sf.jsqlparser.statement.imprt.*;
 import net.sf.jsqlparser.statement.export.*;
+import net.sf.jsqlparser.statement.lock.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
@@ -364,6 +365,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXCLUDE: "EXCLUDE">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
 |   <K_EXCLUDING: "EXCLUDING">
+|   <K_EXCLUSIVE: "EXCLUSIVE">
 |   <K_EXEC: "EXEC">
 |   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
@@ -476,6 +478,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_MIN:"MIN">
 |   <K_MINUS:"MINUS">
 |   <K_MINVALUE:"MINVALUE">
+|   <K_MODE: "MODE">
 |   <K_MODIFY: "MODIFY">
 |   <K_MOVEMENT: "MOVEMENT">
 |   <K_NAMES:"NAMES">
@@ -1031,6 +1034,8 @@ Statement SingleStatement() :
             |
             stm = SessionStatement()
             |
+            stm = LockStatement()
+            |
             LOOKAHEAD({ Dialect.EXASOL.name().equals(getAsString(Feature.dialect)) }) ( stm = Import() | stm = Export() )
         )
         { return stm; }
@@ -1206,6 +1211,30 @@ List<String> error_skipto(int kind) {
     }
   } while (t.kind != kind && t.kind != EOF);
   return tokenImages;
+}
+
+LockStatement LockStatement(): {
+  	Table table;
+  	boolean noWait = false;
+  	LockMode lockMode;
+    Token waitSecondsToken = null;
+    Long waitSeconds = null;
+} {
+  	<K_LOCK> <K_TABLE> table = Table() <K_IN>
+  	(
+  	  LOOKAHEAD(2) ( <K_ROW> <K_SHARE> { lockMode = LockMode.RowShare; } ) |
+  	  ( <K_ROW> <K_EXCLUSIVE> { lockMode = LockMode.RowExclusive; } ) |
+	  LOOKAHEAD(2) ( <K_SHARE> <K_ROW> <K_EXCLUSIVE> { lockMode = LockMode.ShareRowExclusive; } ) |
+  	  LOOKAHEAD(2) ( <K_SHARE> <K_UPDATE> { lockMode = LockMode.ShareUpdate; }  ) |
+  	  ( <K_SHARE> { lockMode = LockMode.Share; } ) |
+  	  ( <K_EXCLUSIVE > { lockMode = LockMode.Exclusive; } )
+  	)
+  	<K_MODE>
+    [ <K_NOWAIT> { noWait = true; } | <K_WAIT> waitSecondsToken = <S_LONG> { waitSeconds = Long.valueOf(waitSecondsToken.image); } ]
+
+  {
+    return new LockStatement(table, lockMode, noWait, waitSeconds);
+  }
 }
 
 LikeClause LikeClause(): {
