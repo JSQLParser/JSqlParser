@@ -39,7 +39,7 @@ public class LockTest {
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         assertInstanceOf(LockStatement.class, statement);
 
-        LockStatement ls = (LockStatement)statement;
+        LockStatement ls = (LockStatement) statement;
         assertEquals(LockMode.Exclusive, ls.getLockMode());
         assertFalse(ls.isNoWait());
     }
@@ -50,7 +50,7 @@ public class LockTest {
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         assertInstanceOf(LockStatement.class, statement);
 
-        LockStatement ls = (LockStatement)statement;
+        LockStatement ls = (LockStatement) statement;
         assertEquals(LockMode.Share, ls.getLockMode());
         assertTrue(ls.isNoWait());
     }
@@ -61,7 +61,7 @@ public class LockTest {
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         assertInstanceOf(LockStatement.class, statement);
 
-        LockStatement ls = (LockStatement)statement;
+        LockStatement ls = (LockStatement) statement;
         assertEquals(LockMode.Share, ls.getLockMode());
         assertTrue(ls.isWait());
         assertEquals(300, ls.getWaitTimeout());
