@@ -7,7 +7,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 /**
  * Statement to Lock a specific table.<br>
  * Example:<br>
- * LOCK TABLE &lt;TABLE&gt; IN EXCLUSIVE MODE;<br>
+ * LOCK TABLE t IN EXCLUSIVE MODE<br>
  * <br>
  */
 public class LockStatement implements Statement {
@@ -59,35 +59,40 @@ public class LockStatement implements Statement {
         this.lockMode = lockMode;
     }
 
+    /**
+     * @return True if the statement has a NOWAIT clause
+     */
     public boolean isNoWait() {
         return noWait;
     }
 
     /**
-     * Sets the NOWAIT-Flag. Clears a WAIT-Timeout if one was set before.
+     * Sets the NOWAIT-Flag.
      *
-     * @param noWait The new value of the NOWAIT-Flag
+     * @param noWait True if the statement should have the NOWAIT clause
      */
     public void setNoWait(boolean noWait) {
-        this.waitSeconds = null;
         this.noWait = noWait;
         checkValidState();
     }
 
-    public boolean isWait() {
-        return waitSeconds != null;
+    /**
+     * Sets the WAIT-Timeout. If this value is set, the Statement is rendered with WAIT
+     * &lt;timeoutSeconds&gt;<br>
+     * If the value is set to NULL, the WAIT-clause is skipped
+     *
+     * @param waitSeconds The number of seconds for the WAIT timeout or NULL to skip the WAIT clause
+     */
+    public void setWaitSeconds(Long waitSeconds) {
+        this.waitSeconds = waitSeconds;
+        checkValidState();
     }
 
     /**
-     * Sets the WAIT-Timeout. If this value is set, the Statement is rendered with WAIT
-     * &lt;timeoutSeconds&gt;
-     *
-     * @param waitSeconds The number of seconds for the WAIT timeout
+     * @return The number of seconds in the WAIT clause, or NULL if the statement has no WAIT clause
      */
-    public void setWaitSeconds(long waitSeconds) {
-        this.noWait = false;
-        this.waitSeconds = waitSeconds;
-        checkValidState();
+    public Long getWaitSeconds() {
+        return waitSeconds;
     }
 
     @Override
@@ -106,7 +111,4 @@ public class LockStatement implements Statement {
         return statementVisitor.visit(this, context);
     }
 
-    public long getWaitTimeout() {
-        return waitSeconds;
-    }
 }

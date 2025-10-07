@@ -63,8 +63,8 @@ public class LockTest {
 
         LockStatement ls = (LockStatement) statement;
         assertEquals(LockMode.Share, ls.getLockMode());
-        assertTrue(ls.isWait());
-        assertEquals(300, ls.getWaitTimeout());
+        assertNotNull(ls.getWaitSeconds());
+        assertEquals(300, ls.getWaitSeconds());
     }
 
     @Test
@@ -80,14 +80,37 @@ public class LockTest {
         ls.setNoWait(true);
         assertEquals("LOCK TABLE a IN SHARE MODE NOWAIT", ls.toString());
 
-        ls.setWaitSeconds(60);
+        ls.setNoWait(false);
+        ls.setWaitSeconds(60L);
         assertEquals("LOCK TABLE a IN SHARE MODE WAIT 60", ls.toString());
 
-        ls.setNoWait(false);
+        ls.setWaitSeconds(null);
         assertEquals("LOCK TABLE a IN SHARE MODE", ls.toString());
 
         ls.setTable(new Table("b"));
         assertEquals("LOCK TABLE b IN SHARE MODE", ls.toString());
+    }
+
+    @Test
+    void testIllegalStateWaitSeconds() {
+        Table t = new Table("a");
+        LockStatement ls = new LockStatement(t, LockMode.Exclusive);
+
+        assertThrows(IllegalStateException.class, () -> {
+            ls.setNoWait(true);
+            ls.setWaitSeconds(60L);
+        });
+    }
+
+    @Test
+    void testIllegalStateNoWait() {
+        Table t = new Table("a");
+        LockStatement ls = new LockStatement(t, LockMode.Exclusive);
+
+        assertThrows(IllegalStateException.class, () -> {
+            ls.setWaitSeconds(60L);
+            ls.setNoWait(true);
+        });
     }
 
 
