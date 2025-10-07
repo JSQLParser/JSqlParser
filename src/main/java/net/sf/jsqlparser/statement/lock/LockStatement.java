@@ -1,5 +1,3 @@
-/*--- (C) 1999-2019 Techniker Krankenkasse ---*/
-
 package net.sf.jsqlparser.statement.lock;
 
 import net.sf.jsqlparser.schema.Table;
@@ -99,5 +97,3 @@ public class LockStatement implements Statement {
 		return waitSeconds;
 	}
 }
-
-/*--- Formatiert nach TK Code Konventionen vom 05.03.2002 ---*/
