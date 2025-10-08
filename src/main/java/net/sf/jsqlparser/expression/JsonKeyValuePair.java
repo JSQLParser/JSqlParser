@@ -20,16 +20,20 @@ import java.util.Objects;
 public class JsonKeyValuePair implements Serializable {
     private final Object key;
     private final Object value;
-    private boolean usingKeyKeyword = false;
-    private boolean usingValueKeyword = false;
+    private boolean usingKeyKeyword;
+    private JsonKeyValuePairSeparator separator;
     private boolean usingFormatJson = false;
 
+    public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword, boolean usingValueKeyword) {
+        this(key, value, usingKeyKeyword, usingValueKeyword ? JsonKeyValuePairSeparator.VALUE : JsonKeyValuePairSeparator.COLON);
+    }
+
     public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
-            boolean usingValueKeyword) {
+            JsonKeyValuePairSeparator separator) {
         this.key = Objects.requireNonNull(key, "The KEY of the Pair must not be null");
         this.value = value;
         this.usingKeyKeyword = usingKeyKeyword;
-        this.usingValueKeyword = usingValueKeyword;
+        this.separator = separator;
     }
 
     public boolean isUsingKeyKeyword() {
@@ -45,16 +49,41 @@ public class JsonKeyValuePair implements Serializable {
         return this;
     }
 
+    /**
+     * Use {@link #getSeparator()}
+     */
+    @Deprecated
     public boolean isUsingValueKeyword() {
-        return usingValueKeyword;
+        return separator == JsonKeyValuePairSeparator.VALUE;
     }
 
+    /**
+     * Use {@link #setSeparator(JsonKeyValuePairSeparator)}
+     */
+    @Deprecated
     public void setUsingValueKeyword(boolean usingValueKeyword) {
-        this.usingValueKeyword = usingValueKeyword;
+        separator = usingValueKeyword ? JsonKeyValuePairSeparator.VALUE : JsonKeyValuePairSeparator.COLON;
     }
 
+    /**
+     * Use {@link #withSeparator(JsonKeyValuePairSeparator)}
+     */
+    @Deprecated
     public JsonKeyValuePair withUsingValueKeyword(boolean usingValueKeyword) {
         this.setUsingValueKeyword(usingValueKeyword);
+        return this;
+    }
+
+    public JsonKeyValuePairSeparator getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(JsonKeyValuePairSeparator separator) {
+        this.separator = separator;
+    }
+
+    public JsonKeyValuePair withSeparator(JsonKeyValuePairSeparator separator) {
+        this.setSeparator(separator);
         return this;
     }
 
