@@ -302,6 +302,10 @@ public class Table extends ASTNodeAccessImpl
         return this;
     }
 
+    public void setNameParts(List<String> nameParts) {
+        this.partItems = nameParts;
+    }
+
     private void setIndex(int idx, String value) {
         int size = partItems.size();
         for (int i = 0; i < idx - size + 1; i++) {

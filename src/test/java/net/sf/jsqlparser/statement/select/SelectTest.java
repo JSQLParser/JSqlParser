@@ -1798,10 +1798,14 @@ public class SelectTest {
 
     @Test
     public void testMysqlQuote() throws JSQLParserException {
-        String statement = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` "
+        String sqlStr = "SELECT `a.OWNERLASTNAME`, `OWNERFIRSTNAME` "
                 + "FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b "
                 + "WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
-        assertSqlCanBeParsedAndDeparsed(statement);
+
+        String expected =
+                "SELECT \"a\".\"OWNERLASTNAME\", `OWNERFIRSTNAME` FROM `ANTIQUEOWNERS` AS a, ANTIQUES AS b WHERE b.BUYERID = a.OWNERID AND b.ITEM = 'Chair'";
+
+        assertStatementCanBeDeparsedAs(CCJSqlParserUtil.parse(sqlStr), expected);
     }
 
     @Test

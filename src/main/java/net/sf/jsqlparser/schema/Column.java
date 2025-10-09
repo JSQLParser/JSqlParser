@@ -53,7 +53,8 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public Column(String columnName) {
-        this(null, columnName);
+        this();
+        setColumnName(columnName);
     }
 
     public ArrayConstructor getArrayConstructor() {
@@ -131,8 +132,56 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         return MultiPartName.unquote(columnName);
     }
 
-    public void setColumnName(String string) {
-        columnName = string;
+    public void setColumnName(String name) {
+        // BigQuery seems to allow things like: `catalogName.schemaName.tableName` in only one pair
+        // of quotes
+        // however, some people believe that Dots in Names are a good idea, so provide a switch-off
+        boolean splitNamesOnDelimiter = System.getProperty("SPLIT_NAMES_ON_DELIMITER") == null ||
+                !List
+                        .of("0", "N", "n", "FALSE", "false", "OFF", "off")
+                        .contains(System.getProperty("SPLIT_NAMES_ON_DELIMITER"));
+
+        setName(name, splitNamesOnDelimiter);
+    }
+
+    public void setName(String name, boolean splitNamesOnDelimiter) {
+        if (MultiPartName.isQuoted(name) && name.contains(".") && splitNamesOnDelimiter) {
+            String[] parts = MultiPartName.unquote(name).split("\\.");
+            switch (parts.length) {
+                case 3:
+                    this.table = new Table("\"" + parts[0] + "\".\"" + parts[1] + "\"");
+                    this.columnName = "\"" + parts[2] + "\"";
+                    break;
+                case 2:
+                    this.table = new Table("\"" + parts[0] + "\"");
+                    this.columnName = "\"" + parts[1] + "\"";
+                    break;
+                case 1:
+                    this.columnName = "\"" + parts[0] + "\"";
+                    break;
+                default:
+                    throw new RuntimeException("Invalid column name: " + name);
+            }
+        } else if (name.contains(".") && splitNamesOnDelimiter) {
+            String[] parts = MultiPartName.unquote(name).split("\\.");
+            switch (parts.length) {
+                case 3:
+                    this.table = new Table(parts[0] + "." + parts[1]);
+                    this.columnName = parts[2];
+                    break;
+                case 2:
+                    this.table = new Table(parts[0]);
+                    this.columnName = parts[1];
+                    break;
+                case 1:
+                    this.columnName = parts[0];
+                    break;
+                default:
+                    throw new RuntimeException("Invalid column name: " + name);
+            }
+        } else {
+            this.columnName = name;
+        }
     }
 
     public String getTableDelimiter() {

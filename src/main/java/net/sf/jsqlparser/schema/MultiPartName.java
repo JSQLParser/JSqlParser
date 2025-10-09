@@ -29,12 +29,13 @@ public interface MultiPartName {
     }
 
     static boolean isQuoted(String identifier) {
-        return identifier!=null && LEADING_TRAILING_QUOTES_PATTERN.matcher(identifier).find();
+        return identifier != null && LEADING_TRAILING_QUOTES_PATTERN.matcher(identifier).find();
     }
 
     String getFullyQualifiedName();
 
     String getUnquotedName();
+
 
     static String replaceBackticksWithDoubleQuotes(String input) {
         if (input == null || input.isEmpty()) {
@@ -43,15 +44,17 @@ public interface MultiPartName {
 
         Matcher matcher = BACKTICK_PATTERN.matcher(input);
         StringBuilder sb = new StringBuilder();
+        int lastEnd = 0;
 
         while (matcher.find()) {
-            // Replace each backtick-quoted part with double-quoted equivalent
-            String content = matcher.group(1);
-            matcher.appendReplacement(sb, "\"" + Matcher.quoteReplacement(content) + "\"");
+            sb.append(input, lastEnd, matcher.start()); // text before match
+            sb.append('"').append(matcher.group(1)).append('"'); // replace with double quotes
+            lastEnd = matcher.end();
         }
-        matcher.appendTail(sb);
 
+        sb.append(input.substring(lastEnd)); // append remaining text
         return sb.toString();
     }
+
 
 }
