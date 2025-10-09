@@ -40,6 +40,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.statement.grant;
     exports net.sf.jsqlparser.statement.imprt;
     exports net.sf.jsqlparser.statement.insert;
+    exports net.sf.jsqlparser.statement.lock;
     exports net.sf.jsqlparser.statement.merge;
     exports net.sf.jsqlparser.statement.piped;
     exports net.sf.jsqlparser.statement.refresh;

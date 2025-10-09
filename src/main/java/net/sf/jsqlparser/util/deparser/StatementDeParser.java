@@ -57,6 +57,7 @@ import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
@@ -511,6 +512,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(Export export, S context) {
         builder.append(export.toString());
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(LockStatement lock, S context) {
+        builder.append(lock.toString());
         return builder;
     }
 }
