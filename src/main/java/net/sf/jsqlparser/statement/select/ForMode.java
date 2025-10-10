@@ -23,8 +23,7 @@ public enum ForMode {
     KEY_SHARE("KEY SHARE"),
 
     // https://www.ibm.com/docs/en/db2-for-zos/13.0.0?topic=statement-read-only-clause
-    READ_ONLY("READ ONLY"),
-    FETCH_ONLY("FETCH ONLY");
+    READ_ONLY("READ ONLY"), FETCH_ONLY("FETCH ONLY");
 
     private final String value;
 

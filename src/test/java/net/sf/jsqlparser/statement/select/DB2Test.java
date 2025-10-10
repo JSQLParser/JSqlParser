@@ -24,7 +24,7 @@ public class DB2Test {
     }
 
     @ParameterizedTest
-    @ValueSource( strings = {
+    @ValueSource(strings = {
             "SELECT * FROM table WITH UR",
             "SELECT * FROM table WITH UR FOR READ ONLY",
             "SELECT * FROM table FOR READ ONLY",
