@@ -4247,6 +4247,8 @@ PlainSelect PlainSelect() #PlainSelect:
             | <K_SHARE> { plainSelect.setForMode(ForMode.SHARE); }
             | (<K_NO> <K_KEY> <K_UPDATE> { plainSelect.setForMode(ForMode.NO_KEY_UPDATE); })
             | (<K_KEY> <K_SHARE> { plainSelect.setForMode(ForMode.KEY_SHARE); })
+            | (<K_READ> <K_ONLY> { plainSelect.setForMode(ForMode.READ_ONLY); })
+            | (<K_FETCH> <K_ONLY> { plainSelect.setForMode(ForMode.FETCH_ONLY); })
             )
         [ LOOKAHEAD(2) <K_OF> updateTable = Table() { plainSelect.setForUpdateTable(updateTable); } ]
         [ LOOKAHEAD(<K_WAIT>) wait = Wait() { plainSelect.setWait(wait); } ]
