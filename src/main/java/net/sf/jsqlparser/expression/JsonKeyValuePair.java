@@ -24,6 +24,10 @@ public class JsonKeyValuePair implements Serializable {
     private JsonKeyValuePairSeparator separator;
     private boolean usingFormatJson = false;
 
+    /**
+     * Please use the Constructor with {@link JsonKeyValuePairSeparator} parameter.
+     */
+    @Deprecated
     public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword, boolean usingValueKeyword) {
         this(key, value, usingKeyKeyword, usingValueKeyword ? JsonKeyValuePairSeparator.VALUE : JsonKeyValuePairSeparator.COLON);
     }
