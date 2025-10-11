@@ -6985,7 +6985,7 @@ JsonKeyValuePair JsonKeyValuePair(boolean isFirstEntry) : {
              |
              key = Column()
              |
-             key = Expression()
+             LOOKAHEAD({getAsBoolean(Feature.allowExpressionAsJsonObjectKey)}) key = Expression()
              |
              keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
          )

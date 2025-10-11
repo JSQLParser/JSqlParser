@@ -814,7 +814,15 @@ public enum Feature {
      * MySQL allows a ',' as a separator between key and value entries. We allow that by default,
      * but it can be disabled here
      */
-    allowCommaAsKeyValueSeparator(true);
+    allowCommaAsKeyValueSeparator(true),
+
+    /**
+     * DB2 and Oracle allow Expressions as JSON_OBJECT key values. This clashes with Informix and Snowflake
+     * Json-Extraction syntax
+     */
+    allowExpressionAsJsonObjectKey( false)
+
+    ;
 
     private final Object value;
     private final boolean configurable;

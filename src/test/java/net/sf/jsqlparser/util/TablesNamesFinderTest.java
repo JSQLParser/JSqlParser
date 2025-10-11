@@ -715,7 +715,7 @@ public class TablesNamesFinderTest {
     }
 
     @Test
-    void testNestedTablesInJSON_OBJECT() throws JSQLParserException {
+    void testNestedTablesInJsonObject() throws JSQLParserException {
         String sqlStr = "select JSON_OBJECT(\n" +
                 "  t1.*, \n" +
                 "  nested1 : (SELECT JSON_OBJECT(tn2.*) FROM table2 tn2 WHERE tn2.fk = t1.pk), \n" +

@@ -165,7 +165,7 @@ public class JsonFunctionTest {
                 "SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL WITHOUT UNIQUE KEYS) FROM dual ",
                 true);
 
-        // TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(null on null)", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(null on null)", true);
 
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(absent on null)", true);
 
@@ -223,10 +223,6 @@ public class JsonFunctionTest {
             "SELECT JSON_OBJECT(* : bar) FROM employees",
             "SELECT JSON_OBJECT(e.* VALUE bar) FROM employees e",
             "SELECT JSON_OBJECT(KEY e.* VALUE bar) FROM employees e",
-
-            // This is valid syntax on oracle but makes parsing the key as an expression very hard
-            // because "null" is a valid expression
-            "SELECT json_object(null on null) FROM employees",
     })
     void testInvalidObjectOracle(String sqlStr) {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sqlStr));
