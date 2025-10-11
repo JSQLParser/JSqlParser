@@ -18,9 +18,9 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  * Represents a JSON-Function.<br>
  * Currently supported are the types in {@link JsonFunctionType}.<br>
  * <br>
- * For JSON_OBJECT and JSON_OBJECTAGG the parameters are available from {@link #getKeyValuePairs()}<br>
+ * For JSON_OBJECT the parameters are available from {@link #getKeyValuePairs()}<br>
  * <br>
- * For JSON_ARRAY and JSON_ARRAYAGG the parameters are availble from {@link #getExpressions()}.<br>
+ * For JSON_ARRAY the parameters are availble from {@link #getExpressions()}.<br>
  *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
@@ -33,9 +33,17 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
 
     private boolean isStrict = false;
 
+    public JsonFunction() {}
+
+    public JsonFunction(JsonFunctionType functionType) {
+        this.functionType = functionType;
+    }
+
     /**
-     * Returns the Parameters of an JSON_OBJECT or JSON_OBJECTAGG<br>
+     * Returns the Parameters of an JSON_OBJECT<br>
      * The KeyValuePairs may not have both key and value set, in some cases only the Key is set.
+     *
+     * @see net.sf.jsqlparser.parser.feature.Feature#allowCommaAsKeyValueSeparator
      *
      * @return A List of KeyValuePairs, never NULL
      */
@@ -44,7 +52,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
-     * Returns the parameters of JSON_ARRAY or JSON_ARRAYAGG<br>
+     * Returns the parameters of JSON_ARRAY<br>
      *
      * @return A List of {@link JsonFunctionExpression}s, never NULL
      */
@@ -176,7 +184,8 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             if (i > 0) {
                 builder.append(", ");
             }
-            if (keyValuePair.isUsingKeyKeyword() && keyValuePair.getSeparator() == JsonKeyValuePairSeparator.VALUE) {
+            if (keyValuePair.isUsingKeyKeyword()
+                    && keyValuePair.getSeparator() == JsonKeyValuePairSeparator.VALUE) {
                 builder.append("KEY ");
             }
             builder.append(keyValuePair.getKey());

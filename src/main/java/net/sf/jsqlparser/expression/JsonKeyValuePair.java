@@ -28,8 +28,10 @@ public class JsonKeyValuePair implements Serializable {
      * Please use the Constructor with {@link JsonKeyValuePairSeparator} parameter.
      */
     @Deprecated
-    public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword, boolean usingValueKeyword) {
-        this(key, value, usingKeyKeyword, usingValueKeyword ? JsonKeyValuePairSeparator.VALUE : JsonKeyValuePairSeparator.COLON);
+    public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
+            boolean usingValueKeyword) {
+        this(key, value, usingKeyKeyword, usingValueKeyword ? JsonKeyValuePairSeparator.VALUE
+                : JsonKeyValuePairSeparator.COLON);
     }
 
     public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
@@ -66,7 +68,8 @@ public class JsonKeyValuePair implements Serializable {
      */
     @Deprecated
     public void setUsingValueKeyword(boolean usingValueKeyword) {
-        separator = usingValueKeyword ? JsonKeyValuePairSeparator.VALUE : JsonKeyValuePairSeparator.COLON;
+        separator = usingValueKeyword ? JsonKeyValuePairSeparator.VALUE
+                : JsonKeyValuePairSeparator.COLON;
     }
 
     /**

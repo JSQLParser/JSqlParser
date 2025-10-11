@@ -809,7 +809,12 @@ public enum Feature {
      * "EXPORT"
      */
     export,
-    ;
+
+    /**
+     * MySQL allows a ',' as a separator between key and value entries. We allow that by default,
+     * but it can be disabled here
+     */
+    allowCommaAsKeyValueSeparator(true);
 
     private final Object value;
     private final boolean configurable;

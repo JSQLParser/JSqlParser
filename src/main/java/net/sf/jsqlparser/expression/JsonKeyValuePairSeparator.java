@@ -4,8 +4,7 @@ package net.sf.jsqlparser.expression;
  * Describes the string used to separate the key from the value.
  */
 public enum JsonKeyValuePairSeparator {
-    VALUE(" VALUE "),
-    COLON(":"),
+    VALUE(" VALUE "), COLON(":"),
 
     // Used in MySQL dialect
     COMMA(","),

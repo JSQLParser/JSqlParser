@@ -11,6 +11,8 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.test.TestUtils;
@@ -163,11 +165,21 @@ public class JsonFunctionTest {
                 "SELECT JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL WITHOUT UNIQUE KEYS) FROM dual ",
                 true);
 
-        TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(null on null)", true);
+        // TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(null on null)", true);
 
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(absent on null)", true);
 
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object()", true);
+    }
+
+    @Test
+    public void nestedObjects() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH Items AS (SELECT 'hello' AS key, 'world' AS value), \n" +
+                        "    SubItems AS (SELECT 'nestedValue' AS 'nestedKey', 'nestedWorld' AS nestedValue)\n"
+                        +
+                        "SELECT JSON_OBJECT(key: value, nested : (SELECT JSON_OBJECT(nestedKey, nestedValue) FROM SubItems)) AS json_data FROM Items",
+                true);
     }
 
     @ParameterizedTest
@@ -181,8 +193,15 @@ public class JsonFunctionTest {
             "SELECT JSON_OBJECT(e.*, d.* NULL ON NULL) FROM employees e, departments d",
             "SELECT JSON_OBJECT(e.* WITH UNIQUE KEYS) FROM employees e",
 
+            // Single Column as entry
+            "SELECT JSON_OBJECT(first_name, last_name, address) FROM employees t1",
+            "SELECT JSON_OBJECT(t1.first_name, t1.last_name, t1.address) FROM employees t1",
+            "SELECT JSON_OBJECT(first_name, last_name FORMAT JSON, address) FROM employees t1",
+            "SELECT JSON_OBJECT(t1.first_name, t1.last_name FORMAT JSON, t1.address FORMAT JSON) FROM employees t1",
+
             // STRICT Keyword
             "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON STRICT ) FROM dual",
+            "SELECT JSON_OBJECT( 'foo':bar FORMAT JSON, 'fob':baz STRICT ) FROM dual",
             "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz NULL ON NULL STRICT WITH UNIQUE KEYS) FROM dual"
     })
     void testObjectOracle(String sqlStr) throws JSQLParserException {
@@ -194,7 +213,20 @@ public class JsonFunctionTest {
             // BigQuery EXCEPT/REPLACE are not allowed here
             "SELECT JSON_OBJECT(* EXCEPT(first_name)) FROM employees",
             "SELECT JSON_OBJECT(* EXCLUDE(first_name)) FROM employees",
-            "SELECT JSON_OBJECT(* REPLACE(\"first_name\" AS first_name)) FROM employees"
+            "SELECT JSON_OBJECT(* REPLACE(\"first_name\" AS first_name)) FROM employees",
+
+            // FORMAT JSON is not allowed on wildcards
+            "SELECT JSON_OBJECT(* FORMAT JSON) FROM employees",
+            "SELECT JSON_OBJECT(e.* FORMAT JSON) FROM employees e",
+
+            // Value is not allowed on wildcards
+            "SELECT JSON_OBJECT(* : bar) FROM employees",
+            "SELECT JSON_OBJECT(e.* VALUE bar) FROM employees e",
+            "SELECT JSON_OBJECT(KEY e.* VALUE bar) FROM employees e",
+
+            // This is valid syntax on oracle but makes parsing the key as an expression very hard
+            // because "null" is a valid expression
+            "SELECT json_object(null on null) FROM employees",
     })
     void testInvalidObjectOracle(String sqlStr) {
         assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sqlStr));
@@ -298,10 +330,62 @@ public class JsonFunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT( KEY 'foo' VALUE bar, 'fob' : baz)",
+
+            "JSON_OBJECT( t1.*, t2.* )",
+            "JSON_OBJECT( 'foo' VALUE bar, t1.*)",
+            "JSON_OBJECT( t1.*, 'foo' VALUE bar)",
+
+            // The FORMAT JSON forces the parser to correctly identify the entries as single entries
+            "JSON_OBJECT(first_name FORMAT JSON, last_name)",
+            "JSON_OBJECT(t1.first_name FORMAT JSON, t1.last_name FORMAT JSON)",
+
+            // MySQL syntax
+            "JSON_OBJECT( 'foo', bar, 'fob', baz)",
+    })
+    void testEntriesAreParsedCorrectly(String expressionStr) throws JSQLParserException {
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+        assertEquals(2, jsonFunction.getKeyValuePairs().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT( t1.*, t2.*, t3.* )",
+            "JSON_OBJECT( 'foo' VALUE bar, t1.*, t2.single_column)",
+            "JSON_OBJECT( t1.*, 'foo' VALUE bar, KEY fob : baz)",
+
+            // MySQL syntax
+            "JSON_OBJECT( 'foo', bar, 'fob', baz, 'for', buz)",
+    })
+    void testEntriesAreParsedCorrectly3Entries(String expressionStr) throws JSQLParserException {
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+        assertEquals(3, jsonFunction.getKeyValuePairs().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT(first_name, last_name, address)",
+            "JSON_OBJECT(t1.first_name, t1.last_name, t1.address)",
+            "JSON_OBJECT(first_name, last_name FORMAT JSON, address)",
+            "JSON_OBJECT(first_name FORMAT JSON, last_name FORMAT JSON, address)",
+            "JSON_OBJECT(t1.first_name, t1.last_name FORMAT JSON, t1.address FORMAT JSON)",
+    })
+    void testSingleEntriesAreParsedCorrectlyWithouCommaAsKeyValueSeparator(String expressionStr)
+            throws JSQLParserException {
+        FeatureConfiguration fc =
+                new FeatureConfiguration().setValue(Feature.allowCommaAsKeyValueSeparator, false);
+
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr,
+                true, parser -> parser.withConfiguration(fc));
+        assertEquals(3, jsonFunction.getKeyValuePairs().size());
+    }
+
     @Test
     public void testJavaMethods() throws JSQLParserException {
         String expressionStr =
-                "JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL WITHOUT UNIQUE KEYS)";
+                "JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'fob':baz, 'fod':bag ABSENT ON NULL WITHOUT UNIQUE KEYS)";
         JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
 
         assertEquals(JsonFunctionType.OBJECT, jsonFunction.getType());
@@ -330,7 +414,9 @@ public class JsonFunctionTest {
 
         jsonFunction.withStrict(false);
 
-        assertEquals("JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON ) ", jsonFunction.toString());
+        assertEquals(
+                TestUtils.buildSqlString("JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON ) ", true),
+                TestUtils.buildSqlString(jsonFunction.toString(), true));
 
     }
 

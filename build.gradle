@@ -136,7 +136,8 @@ compileJavacc {
             static: 'false',
             java_template_type: 'modern',
             // Comment this in to build the parser with tracing.
-            DEBUG_PARSER: 'false'
+            DEBUG_PARSER: 'false',
+            DEBUG_LOOKAHEAD: 'false'
     ]
 }
 
