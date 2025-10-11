@@ -39,7 +39,8 @@ public class JsonKeyValuePair implements Serializable {
         this.key = Objects.requireNonNull(key, "The KEY of the Pair must not be null");
         this.value = value;
         this.usingKeyKeyword = usingKeyKeyword;
-        this.separator = separator;
+        this.separator =
+                Objects.requireNonNull(separator, "The KeyValuePairSeparator must not be NULL");
     }
 
     public boolean isUsingKeyKeyword() {
@@ -138,13 +139,14 @@ public class JsonKeyValuePair implements Serializable {
     }
 
     public StringBuilder append(StringBuilder builder) {
-        if (isUsingValueKeyword()) {
-            if (isUsingKeyKeyword()) {
-                builder.append("KEY ");
-            }
-            builder.append(getKey()).append(" VALUE ").append(getValue());
-        } else {
-            builder.append(getKey()).append(":").append(getValue());
+        if (isUsingKeyKeyword() && getSeparator() == JsonKeyValuePairSeparator.VALUE) {
+            builder.append("KEY ");
+        }
+        builder.append(getKey());
+
+        if (getValue() != null) {
+            builder.append(getSeparator().getSeparatorString());
+            builder.append(getValue());
         }
 
         if (isUsingFormatJson()) {

@@ -184,20 +184,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             if (i > 0) {
                 builder.append(", ");
             }
-            if (keyValuePair.isUsingKeyKeyword()
-                    && keyValuePair.getSeparator() == JsonKeyValuePairSeparator.VALUE) {
-                builder.append("KEY ");
-            }
-            builder.append(keyValuePair.getKey());
-
-            if (keyValuePair.getValue() != null) {
-                builder.append(keyValuePair.getSeparator().getSeparatorString());
-                builder.append(keyValuePair.getValue());
-            }
-
-            if (keyValuePair.isUsingFormatJson()) {
-                builder.append(" FORMAT JSON");
-            }
+            keyValuePair.append(builder);
             i++;
         }
 
