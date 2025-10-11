@@ -817,10 +817,10 @@ public enum Feature {
     allowCommaAsKeyValueSeparator(true),
 
     /**
-     * DB2 and Oracle allow Expressions as JSON_OBJECT key values. This clashes with Informix and Snowflake
-     * Json-Extraction syntax
+     * DB2 and Oracle allow Expressions as JSON_OBJECT key values. This clashes with Informix and
+     * Snowflake Json-Extraction syntax
      */
-    allowExpressionAsJsonObjectKey( false)
+    allowExpressionAsJsonObjectKey(false)
 
     ;
 
