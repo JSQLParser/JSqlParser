@@ -11,9 +11,17 @@ package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -66,15 +74,15 @@ public class JsonFunctionTest {
                 .withUsingKeyKeyword(true).withUsingValueKeyword(true).withUsingFormatJson(false);
 
         // this should work because we compare based on KEY only
-        Assertions.assertEquals(keyValuePair1, keyValuePair2);
+        assertEquals(keyValuePair1, keyValuePair2);
 
         // this must fail because all the properties are considered
         Assertions.assertNotEquals(keyValuePair1.toString(), keyValuePair2.toString());
 
         JsonKeyValuePair keyValuePair3 = new JsonKeyValuePair("foo", "bar", false, false)
                 .withUsingKeyKeyword(false).withUsingValueKeyword(false).withUsingFormatJson(false);
-        Assertions.assertNotNull(keyValuePair3);
-        Assertions.assertEquals(keyValuePair3, keyValuePair3);
+        assertNotNull(keyValuePair3);
+        assertEquals(keyValuePair3, keyValuePair3);
         Assertions.assertNotEquals(keyValuePair3, f);
 
         Assertions.assertTrue(keyValuePair3.hashCode() != 0);
@@ -94,7 +102,7 @@ public class JsonFunctionTest {
                 new JsonFunctionExpression(new NullValue()).withUsingFormatJson(
                         true);
 
-        Assertions.assertEquals(expression1.toString(), expression2.toString());
+        assertEquals(expression1.toString(), expression2.toString());
 
         f.add(expression1);
         f.add(expression2);
@@ -162,6 +170,62 @@ public class JsonFunctionTest {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object(absent on null)", true);
 
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_object()", true);
+    }
+
+    @Test
+    public void nestedObjects() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH Items AS (SELECT 'hello' AS key, 'world' AS value), \n" +
+                        "    SubItems AS (SELECT 'nestedValue' AS 'nestedKey', 'nestedWorld' AS nestedValue)\n"
+                        +
+                        "SELECT JSON_OBJECT(key: value, nested : (SELECT JSON_OBJECT(nestedKey, nestedValue) FROM SubItems)) AS json_data FROM Items",
+                true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // AllColumns
+            "SELECT JSON_OBJECT(*) FROM employees",
+            "SELECT JSON_OBJECT(* ABSENT ON NULL) FROM employees",
+
+            // AllTableColumns
+            "SELECT JSON_OBJECT(e.*) FROM employees e",
+            "SELECT JSON_OBJECT(e.*, d.* NULL ON NULL) FROM employees e, departments d",
+            "SELECT JSON_OBJECT(e.* WITH UNIQUE KEYS) FROM employees e",
+
+            // Single Column as entry
+            "SELECT JSON_OBJECT(first_name, last_name, address) FROM employees t1",
+            "SELECT JSON_OBJECT(t1.first_name, t1.last_name, t1.address) FROM employees t1",
+            "SELECT JSON_OBJECT(first_name, last_name FORMAT JSON, address) FROM employees t1",
+            "SELECT JSON_OBJECT(t1.first_name, t1.last_name FORMAT JSON, t1.address FORMAT JSON) FROM employees t1",
+
+            // STRICT Keyword
+            "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON STRICT ) FROM dual",
+            "SELECT JSON_OBJECT( 'foo':bar FORMAT JSON, 'fob':baz STRICT ) FROM dual",
+            "SELECT JSON_OBJECT( 'foo':bar, 'fob':baz NULL ON NULL STRICT WITH UNIQUE KEYS) FROM dual"
+    })
+    void testObjectOracle(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // BigQuery EXCEPT/REPLACE are not allowed here
+            "SELECT JSON_OBJECT(* EXCEPT(first_name)) FROM employees",
+            "SELECT JSON_OBJECT(* EXCLUDE(first_name)) FROM employees",
+            "SELECT JSON_OBJECT(* REPLACE(\"first_name\" AS first_name)) FROM employees",
+
+            // FORMAT JSON is not allowed on wildcards
+            "SELECT JSON_OBJECT(* FORMAT JSON) FROM employees",
+            "SELECT JSON_OBJECT(e.* FORMAT JSON) FROM employees e",
+
+            // Value is not allowed on wildcards
+            "SELECT JSON_OBJECT(* : bar) FROM employees",
+            "SELECT JSON_OBJECT(e.* VALUE bar) FROM employees e",
+            "SELECT JSON_OBJECT(KEY e.* VALUE bar) FROM employees e",
+    })
+    void testInvalidObjectOracle(String sqlStr) {
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sqlStr));
     }
 
     @Test
@@ -262,27 +326,126 @@ public class JsonFunctionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT json_object('{a, b}', '{1,2 }')", true);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT( KEY 'foo' VALUE bar, 'fob' : baz)",
+
+            "JSON_OBJECT( t1.*, t2.* )",
+            "JSON_OBJECT( 'foo' VALUE bar, t1.*)",
+            "JSON_OBJECT( t1.*, 'foo' VALUE bar)",
+
+            // The FORMAT JSON forces the parser to correctly identify the entries as single entries
+            "JSON_OBJECT(first_name FORMAT JSON, last_name)",
+            "JSON_OBJECT(t1.first_name FORMAT JSON, t1.last_name FORMAT JSON)",
+
+            // MySQL syntax
+            "JSON_OBJECT( 'foo', bar, 'fob', baz)",
+    })
+    void testEntriesAreParsedCorrectly(String expressionStr) throws JSQLParserException {
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+        assertEquals(2, jsonFunction.getKeyValuePairs().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT( t1.*, t2.*, t3.* )",
+            "JSON_OBJECT( 'foo' VALUE bar, t1.*, t2.single_column)",
+            "JSON_OBJECT( t1.*, 'foo' VALUE bar, KEY fob : baz)",
+
+            // MySQL syntax
+            "JSON_OBJECT( 'foo', bar, 'fob', baz, 'for', buz)",
+    })
+    void testEntriesAreParsedCorrectly3Entries(String expressionStr) throws JSQLParserException {
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+        assertEquals(3, jsonFunction.getKeyValuePairs().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "JSON_OBJECT(first_name, last_name, address)",
+            "JSON_OBJECT(t1.first_name, t1.last_name, t1.address)",
+            "JSON_OBJECT(first_name, last_name FORMAT JSON, address)",
+            "JSON_OBJECT(first_name FORMAT JSON, last_name FORMAT JSON, address)",
+            "JSON_OBJECT(t1.first_name, t1.last_name FORMAT JSON, t1.address FORMAT JSON)",
+    })
+    void testSingleEntriesAreParsedCorrectlyWithouCommaAsKeyValueSeparator(String expressionStr)
+            throws JSQLParserException {
+        FeatureConfiguration fc =
+                new FeatureConfiguration().setValue(Feature.allowCommaAsKeyValueSeparator, false);
+
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr,
+                true, parser -> parser.withConfiguration(fc));
+        assertEquals(3, jsonFunction.getKeyValuePairs().size());
+    }
+
     @Test
     public void testJavaMethods() throws JSQLParserException {
         String expressionStr =
-                "JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'foo':bar, 'foo':bar ABSENT ON NULL WITHOUT UNIQUE KEYS)";
+                "JSON_OBJECT( KEY 'foo' VALUE bar FORMAT JSON, 'fob':baz, 'fod':bag ABSENT ON NULL WITHOUT UNIQUE KEYS)";
         JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
 
-        Assertions.assertEquals(JsonFunctionType.OBJECT, jsonFunction.getType());
+        assertEquals(JsonFunctionType.OBJECT, jsonFunction.getType());
         Assertions.assertNotEquals(jsonFunction.withType(JsonFunctionType.POSTGRES_OBJECT),
                 jsonFunction.getType());
 
-        Assertions.assertEquals(3, jsonFunction.getKeyValuePairs().size());
-        Assertions.assertEquals(new JsonKeyValuePair("'foo'", "bar", true, true),
+        assertEquals(3, jsonFunction.getKeyValuePairs().size());
+        assertEquals(new JsonKeyValuePair("'foo'", "bar", true, true),
                 jsonFunction.getKeyValuePair(0));
 
         jsonFunction.setOnNullType(JsonAggregateOnNullType.NULL);
-        Assertions.assertEquals(JsonAggregateOnNullType.ABSENT,
+        assertEquals(JsonAggregateOnNullType.ABSENT,
                 jsonFunction.withOnNullType(JsonAggregateOnNullType.ABSENT).getOnNullType());
 
         jsonFunction.setUniqueKeysType(JsonAggregateUniqueKeysType.WITH);
-        Assertions.assertEquals(JsonAggregateUniqueKeysType.WITH, jsonFunction
+        assertEquals(JsonAggregateUniqueKeysType.WITH, jsonFunction
                 .withUniqueKeysType(JsonAggregateUniqueKeysType.WITH).getUniqueKeysType());
+    }
+
+    @Test
+    void testJavaMethodsStrict() throws JSQLParserException {
+        String expressionStr = "JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON STRICT )";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertTrue(jsonFunction.isStrict());
+
+        jsonFunction.withStrict(false);
+
+        assertEquals(
+                TestUtils.buildSqlString("JSON_OBJECT( 'foo':bar, 'fob':baz FORMAT JSON ) ", true),
+                TestUtils.buildSqlString(jsonFunction.toString(), true));
+
+    }
+
+    @Test
+    void testJavaMethodsAllColumns() throws JSQLParserException {
+        String expressionStr = "JSON_OBJECT(* NULL ON NULL)";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertEquals(1, jsonFunction.getKeyValuePairs().size());
+        JsonKeyValuePair kv = jsonFunction.getKeyValuePair(0);
+        assertNotNull(kv);
+
+        assertNull(kv.getValue());
+        assertInstanceOf(AllColumns.class, kv.getKey());
+    }
+
+    @Test
+    void testJavaMethodsAllTableColumns() throws JSQLParserException {
+        String expressionStr = "JSON_OBJECT(a.*, b.* NULL ON NULL)";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertEquals(2, jsonFunction.getKeyValuePairs().size());
+
+        JsonKeyValuePair kv1 = jsonFunction.getKeyValuePair(0);
+        assertNotNull(kv1);
+        assertInstanceOf(AllTableColumns.class, kv1.getKey());
+        assertNull(kv1.getValue());
+
+        JsonKeyValuePair kv2 = jsonFunction.getKeyValuePair(1);
+        assertNotNull(kv2);
+        assertInstanceOf(AllTableColumns.class, kv2.getKey());
+        assertNull(kv2.getValue());
+
     }
 
     @Test

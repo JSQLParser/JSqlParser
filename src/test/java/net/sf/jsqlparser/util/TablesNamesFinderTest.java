@@ -720,5 +720,18 @@ public class TablesNamesFinderTest {
                 "WITH FUNCTION my_with_item(param1 INT) RETURNS INT RETURN param1 + 1 SELECT * FROM my_table;";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactly("my_table");
     }
+
+    @Test
+    void testNestedTablesInJsonObject() throws JSQLParserException {
+        String sqlStr = "select JSON_OBJECT(\n" +
+                "  t1.*, \n" +
+                "  nested1 : (SELECT JSON_OBJECT(tn2.*) FROM table2 tn2 WHERE tn2.fk = t1.pk), \n" +
+                "  nested2 : (SELECT JSON_OBJECT(tn3.*) FROM table3 tn3 WHERE tn3.fk = t1.pk)\n" +
+                "  )\n" +
+                "FROM table1 t1;";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("table1",
+                "table2", "table3");
+    }
 }
 

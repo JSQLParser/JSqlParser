@@ -41,6 +41,7 @@ class JsonExpressionTest {
 
     @Test
     void testSnowflakeGetOperator() throws JSQLParserException {
+        // https://docs.snowflake.com/en/user-guide/querying-semistructured
         String sqlStr = "SELECT v:'attr[0].name' FROM vartab;";
         PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());
@@ -48,6 +49,7 @@ class JsonExpressionTest {
 
     @Test
     void testDataBricksExtractPathOperator() throws JSQLParserException {
+        // https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-json-path-expression
         String sqlStr = "SELECT C1:PRICE J FROM VALUES('{\"price\":5}')AS T(C1)";
         PlainSelect st = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());

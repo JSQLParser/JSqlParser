@@ -20,16 +20,27 @@ import java.util.Objects;
 public class JsonKeyValuePair implements Serializable {
     private final Object key;
     private final Object value;
-    private boolean usingKeyKeyword = false;
-    private boolean usingValueKeyword = false;
+    private boolean usingKeyKeyword;
+    private JsonKeyValuePairSeparator separator;
     private boolean usingFormatJson = false;
 
+    /**
+     * Please use the Constructor with {@link JsonKeyValuePairSeparator} parameter.
+     */
+    @Deprecated
     public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
             boolean usingValueKeyword) {
+        this(key, value, usingKeyKeyword, usingValueKeyword ? JsonKeyValuePairSeparator.VALUE
+                : JsonKeyValuePairSeparator.COLON);
+    }
+
+    public JsonKeyValuePair(Object key, Object value, boolean usingKeyKeyword,
+            JsonKeyValuePairSeparator separator) {
         this.key = Objects.requireNonNull(key, "The KEY of the Pair must not be null");
         this.value = value;
         this.usingKeyKeyword = usingKeyKeyword;
-        this.usingValueKeyword = usingValueKeyword;
+        this.separator =
+                Objects.requireNonNull(separator, "The KeyValuePairSeparator must not be NULL");
     }
 
     public boolean isUsingKeyKeyword() {
@@ -45,16 +56,42 @@ public class JsonKeyValuePair implements Serializable {
         return this;
     }
 
+    /**
+     * Use {@link #getSeparator()}
+     */
+    @Deprecated
     public boolean isUsingValueKeyword() {
-        return usingValueKeyword;
+        return separator == JsonKeyValuePairSeparator.VALUE;
     }
 
+    /**
+     * Use {@link #setSeparator(JsonKeyValuePairSeparator)}
+     */
+    @Deprecated
     public void setUsingValueKeyword(boolean usingValueKeyword) {
-        this.usingValueKeyword = usingValueKeyword;
+        separator = usingValueKeyword ? JsonKeyValuePairSeparator.VALUE
+                : JsonKeyValuePairSeparator.COLON;
     }
 
+    /**
+     * Use {@link #withSeparator(JsonKeyValuePairSeparator)}
+     */
+    @Deprecated
     public JsonKeyValuePair withUsingValueKeyword(boolean usingValueKeyword) {
         this.setUsingValueKeyword(usingValueKeyword);
+        return this;
+    }
+
+    public JsonKeyValuePairSeparator getSeparator() {
+        return separator;
+    }
+
+    public void setSeparator(JsonKeyValuePairSeparator separator) {
+        this.separator = separator;
+    }
+
+    public JsonKeyValuePair withSeparator(JsonKeyValuePairSeparator separator) {
+        this.setSeparator(separator);
         return this;
     }
 
@@ -102,13 +139,14 @@ public class JsonKeyValuePair implements Serializable {
     }
 
     public StringBuilder append(StringBuilder builder) {
-        if (isUsingValueKeyword()) {
-            if (isUsingKeyKeyword()) {
-                builder.append("KEY ");
-            }
-            builder.append(getKey()).append(" VALUE ").append(getValue());
-        } else {
-            builder.append(getKey()).append(":").append(getValue());
+        if (isUsingKeyKeyword() && getSeparator() == JsonKeyValuePairSeparator.VALUE) {
+            builder.append("KEY ");
+        }
+        builder.append(getKey());
+
+        if (getValue() != null) {
+            builder.append(getSeparator().getSeparatorString());
+            builder.append(getValue());
         }
 
         if (isUsingFormatJson()) {

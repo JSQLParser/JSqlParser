@@ -15,9 +15,15 @@ import java.util.Objects;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
+ * Represents a JSON-Function.<br>
+ * Currently supported are the types in {@link JsonFunctionType}.<br>
+ * <br>
+ * For JSON_OBJECT the parameters are available from {@link #getKeyValuePairs()}<br>
+ * <br>
+ * For JSON_ARRAY the parameters are availble from {@link #getExpressions()}.<br>
+ *
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
-
 public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     private final ArrayList<JsonKeyValuePair> keyValuePairs = new ArrayList<>();
     private final ArrayList<JsonFunctionExpression> expressions = new ArrayList<>();
@@ -25,10 +31,31 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     private JsonAggregateOnNullType onNullType;
     private JsonAggregateUniqueKeysType uniqueKeysType;
 
+    private boolean isStrict = false;
+
+    public JsonFunction() {}
+
+    public JsonFunction(JsonFunctionType functionType) {
+        this.functionType = functionType;
+    }
+
+    /**
+     * Returns the Parameters of an JSON_OBJECT<br>
+     * The KeyValuePairs may not have both key and value set, in some cases only the Key is set.
+     *
+     * @see net.sf.jsqlparser.parser.feature.Feature#allowCommaAsKeyValueSeparator
+     *
+     * @return A List of KeyValuePairs, never NULL
+     */
     public ArrayList<JsonKeyValuePair> getKeyValuePairs() {
         return keyValuePairs;
     }
 
+    /**
+     * Returns the parameters of JSON_ARRAY<br>
+     *
+     * @return A List of {@link JsonFunctionExpression}s, never NULL
+     */
     public ArrayList<JsonFunctionExpression> getExpressions() {
         return expressions;
     }
@@ -114,6 +141,19 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public boolean isStrict() {
+        return isStrict;
+    }
+
+    public void setStrict(boolean strict) {
+        isStrict = strict;
+    }
+
+    public JsonFunction withStrict(boolean strict) {
+        this.setStrict(strict);
+        return this;
+    }
+
     @Override
     public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
         return expressionVisitor.visit(this, context);
@@ -123,13 +163,9 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     public StringBuilder append(StringBuilder builder) {
         switch (functionType) {
             case OBJECT:
-                appendObject(builder);
-                break;
             case POSTGRES_OBJECT:
-                appendPostgresObject(builder);
-                break;
             case MYSQL_OBJECT:
-                appendMySqlObject(builder);
+                appendObject(builder);
                 break;
             case ARRAY:
                 appendArray(builder);
@@ -148,35 +184,37 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             if (i > 0) {
                 builder.append(", ");
             }
-            if (keyValuePair.isUsingValueKeyword()) {
-                if (keyValuePair.isUsingKeyKeyword()) {
-                    builder.append("KEY ");
-                }
-                builder.append(keyValuePair.getKey()).append(" VALUE ")
-                        .append(keyValuePair.getValue());
-            } else {
-                builder.append(keyValuePair.getKey()).append(":").append(keyValuePair.getValue());
-            }
-
-            if (keyValuePair.isUsingFormatJson()) {
-                builder.append(" FORMAT JSON");
-            }
+            keyValuePair.append(builder);
             i++;
         }
 
+        appendOnNullType(builder);
+        if (isStrict) {
+            builder.append(" STRICT");
+        }
+        appendUniqueKeys(builder);
+
+        builder.append(" ) ");
+
+        return builder;
+    }
+
+    private void appendOnNullType(StringBuilder builder) {
         if (onNullType != null) {
             switch (onNullType) {
                 case NULL:
                     builder.append(" NULL ON NULL");
                     break;
                 case ABSENT:
-                    builder.append(" ABSENT On NULL");
+                    builder.append(" ABSENT ON NULL");
                     break;
                 default:
                     // this should never happen
             }
         }
+    }
 
+    private void appendUniqueKeys(StringBuilder builder) {
         if (uniqueKeysType != null) {
             switch (uniqueKeysType) {
                 case WITH:
@@ -189,41 +227,6 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                     // this should never happen
             }
         }
-
-        builder.append(" ) ");
-
-        return builder;
-    }
-
-
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    public StringBuilder appendPostgresObject(StringBuilder builder) {
-        builder.append("JSON_OBJECT( ");
-        for (JsonKeyValuePair keyValuePair : keyValuePairs) {
-            builder.append(keyValuePair.getKey());
-            if (keyValuePair.getValue() != null) {
-                builder.append(", ").append(keyValuePair.getValue());
-            }
-        }
-        builder.append(" ) ");
-
-        return builder;
-    }
-
-    public StringBuilder appendMySqlObject(StringBuilder builder) {
-        builder.append("JSON_OBJECT( ");
-        int i = 0;
-        for (JsonKeyValuePair keyValuePair : keyValuePairs) {
-            if (i > 0) {
-                builder.append(", ");
-            }
-            builder.append(keyValuePair.getKey());
-            builder.append(", ").append(keyValuePair.getValue());
-            i++;
-        }
-        builder.append(" ) ");
-
-        return builder;
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
@@ -239,18 +242,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             i++;
         }
 
-        if (onNullType != null) {
-            switch (onNullType) {
-                case NULL:
-                    builder.append(" NULL ON NULL ");
-                    break;
-                case ABSENT:
-                    builder.append(" ABSENT ON NULL ");
-                    break;
-                default:
-                    // "ON NULL" was omitted
-            }
-        }
+        appendOnNullType(builder);
         builder.append(") ");
 
         return builder;

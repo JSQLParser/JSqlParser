@@ -4525,7 +4525,12 @@ SelectItem<?> SelectItem() #SelectItem:
     }
 }
 
-AllColumns AllColumns():
+/**
+ * Parses the AllColumns-Pattern '*'.
+ *
+ * If the allowAdditions is true, it parses additional Keywords.
+ */
+AllColumns AllColumns(boolean allowAdditions):
 {
     ParenthesedExpressionList<Column> exceptColumns = null;
     List<SelectItem<?>> replaceExpressions = null;
@@ -4534,21 +4539,28 @@ AllColumns AllColumns():
 }
 {
     "*"
-    [ LOOKAHEAD(2) ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList() { exceptKeyword=tk.image; } ]
-    [ LOOKAHEAD(2) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
+    // BigData allows EXCEPT, DuckDB allows EXCLUDE
+    [ LOOKAHEAD(2, { allowAdditions }) ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList() { exceptKeyword=tk.image; } ]
+    // BigData allows REPLACE
+    [ LOOKAHEAD(2, { allowAdditions }) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
 
     {
         return new AllColumns(exceptColumns, replaceExpressions, exceptKeyword);
     }
 }
 
-AllTableColumns AllTableColumns():
+/**
+ * Parses the AllTableColumns-Pattern 'table.*'
+ *
+ * If the allowAdditions is true, it parses additional Keywords.
+ */
+AllTableColumns AllTableColumns(boolean allowAdditions):
 {
     Table table = null;
     AllColumns allColumns;
 }
 {
-     table=Table() "." allColumns=AllColumns()
+     table=Table() "." allColumns=AllColumns(allowAdditions)
     {
         return new AllTableColumns(table, allColumns);
     }
@@ -6559,9 +6571,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | token=<S_HEX>  { retval = new HexValue(token.image); }
 
-        | LOOKAHEAD(3) retval=AllColumns()
+        | LOOKAHEAD(3) retval=AllColumns(true)
 
-        | LOOKAHEAD(16) retval=AllTableColumns()
+        | LOOKAHEAD(16) retval=AllTableColumns(true)
 
         // See issue  #2207
         // there is a huge! performance deterioration from this production
@@ -6973,121 +6985,139 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
     }
 }
 
-JsonFunction JsonFunction() : {
-    JsonFunction result = new JsonFunction();
-    boolean usingKeyKeyword = false;
-    boolean usingValueKeyword = false;
-    boolean usingFormatJason = false;
+JsonKeyValuePair JsonKeyValuePair(boolean isFirstEntry) : {
     Token keyToken;
-    Token valueToken = null;
-    Column column = null;
-    JsonKeyValuePair keyValuePair;
+
+    boolean usingKeyKeyword = false;
+    boolean usingFormatJason = false;
+    boolean isWildcard = false;
 
     Object key = null;
     Expression expression = null;
     JsonFunctionExpression functionExpression;
 
+    JsonKeyValuePairSeparator kvSeparator = JsonKeyValuePairSeparator.NOT_USED;
 }
 {
     (
-      ( <K_JSON_OBJECT>
-        "(" { result.setType( JsonFunctionType.OBJECT ); }
-            (
-                // SQL2016 compliant Syntax
-                 LOOKAHEAD(2) (
-                    LOOKAHEAD(2) (
-                        "KEY" { usingKeyKeyword = true; } ( keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } | key = Column() )
-                    )
-                    |
-                    keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
-                    |
+         // Key part
+         (
+             // lookahead because key is a valid column name
+             LOOKAHEAD(2) (
+                 <K_KEY> { usingKeyKeyword = true; }
+                 (
+                    keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } |
                     key = Column()
-                )
+                 )
+             )
+             |
+             LOOKAHEAD(16) ( key = AllTableColumns(false) { isWildcard = true; } )
+             |
+             key = AllColumns(false) { isWildcard = true; }
+             |
+             key = Column()
+             |
+             LOOKAHEAD({getAsBoolean(Feature.allowExpressionAsJsonObjectKey)}) key = Expression()
+             |
+             keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
+         )
 
-                ( LOOKAHEAD(2)
-                    ( ":" |  "," { result.setType( JsonFunctionType.POSTGRES_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
-                    (
-                        expression = Expression()
-                    )
-                    [ <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
-                )?
-                {
-                      if (expression !=null) {
-                           keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, usingValueKeyword );
-                           keyValuePair.setUsingFormatJson( usingFormatJason );
-                           result.add(keyValuePair);
-                      } else {
-                           result.setType( JsonFunctionType.POSTGRES_OBJECT );
-                           keyValuePair = new JsonKeyValuePair( key, null, false, false );
-                           result.add(keyValuePair);
-                      }
-                }
-
-                // --- Next Elements
-                (   ","  { usingKeyKeyword = false; usingValueKeyword = false;  }
-                    (
-                        LOOKAHEAD(2) (
-                            "KEY" { usingKeyKeyword = true; } ( keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } | key = Column() )
-                        )
-                        |
-                        keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
-                        |
-                        key = Column()
-                    )
-                    ( ":" | ","  { result.setType( JsonFunctionType.MYSQL_OBJECT ); } | "VALUE" { usingValueKeyword = true; } )
-                    expression = Expression() { keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, usingValueKeyword ); result.add(keyValuePair); }
-                    [ <K_FORMAT> <K_JSON> { keyValuePair.setUsingFormatJson( true ); } ]
-                )*
-            )?
-
-            [
-              (
-                  <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
-              )
-              |
-              (
-                  <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
-              )
-            ]
-
-            [
-              (
-                  <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); }
-              )
-              |
-              (
-                  <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); }
-              )
-            ]
-        ")"
-      )
-      |
-      (
-        <K_JSON_ARRAY> { result.setType( JsonFunctionType.ARRAY ); }
-        "("
+         // Optional Separator + Value - Is not allowed with * or t1.*
+         [ LOOKAHEAD(1, { !isWildcard } )
             (
-                LOOKAHEAD(2) (
-                    <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
-                )
+                <K_VALUE> { kvSeparator = JsonKeyValuePairSeparator.VALUE; }
                 |
-                expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+                <DOUBLE_COLON> { kvSeparator = JsonKeyValuePairSeparator.COLON; }
+                |
+                LOOKAHEAD({getAsBoolean(Feature.allowCommaAsKeyValueSeparator)}) <K_COMMA> { kvSeparator = JsonKeyValuePairSeparator.COMMA; }
+            )
+            expression = Expression()
+         ]
 
-                [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
-                (
-                    ","
-                    expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
-                    [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
-                )*
-            )*
-
-            [
-              <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
-            ]
-
-        ")"
-      )
+         // Optional: FORMAT JSON - Is not allowed with * or t1.*
+         [ LOOKAHEAD(1, { !isWildcard } ) <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
     )
+    {
+        final JsonKeyValuePair keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, kvSeparator );
+        keyValuePair.setUsingFormatJson( usingFormatJason );
+        return keyValuePair;
+   }
+}
 
+JsonFunction JsonObjectBody() : {
+    JsonFunction result = new JsonFunction(JsonFunctionType.OBJECT);
+
+    JsonKeyValuePair keyValuePair;
+}
+{
+    ( "("
+        (
+            // First Element
+            LOOKAHEAD(2) keyValuePair = JsonKeyValuePair(true) { result.add(keyValuePair);}
+
+            // Next Elements
+            (
+                <K_COMMA>  keyValuePair = JsonKeyValuePair(false) { result.add(keyValuePair); }
+            )*
+        )?
+        [
+          ( <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); } )
+          |
+          ( <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); } )
+        ]
+        [ <K_STRICT> { result.setStrict(true); } ]
+        [
+          ( <K_WITH> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITH ); } )
+          |
+          ( <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); } )
+        ]
+    ")" )
+    {
+        return result;
+    }
+}
+
+JsonFunction JsonArrayBody() : {
+    JsonFunction result = new JsonFunction(JsonFunctionType.ARRAY);
+
+    Expression expression = null;
+    JsonFunctionExpression functionExpression;
+}
+{
+    ( "("
+        (
+            LOOKAHEAD(2) (
+                <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
+            )
+            |
+            expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+
+            [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+            (
+                ","
+                expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
+                [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+            )*
+        )*
+
+        [
+          <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
+        ]
+    ")" )
+    {
+        return result;
+    }
+}
+
+JsonFunction JsonFunction() : {
+    JsonFunction result;
+}
+{
+    (
+      ( <K_JSON_OBJECT> result = JsonObjectBody() )
+      |
+      ( <K_JSON_ARRAY> result = JsonArrayBody() )
+    )
     {
         return result;
     }
