@@ -7000,43 +7000,40 @@ JsonKeyValuePair JsonKeyValuePair(boolean isFirstEntry) : {
 }
 {
     (
-         // Key part
-         (
-             // lookahead because key is a valid column name
-             LOOKAHEAD(2) (
-                 <K_KEY> { usingKeyKeyword = true; }
-                 (
-                    keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } |
-                    key = Column()
-                 )
-             )
-             |
-             LOOKAHEAD(16) ( key = AllTableColumns(false) { isWildcard = true; } )
-             |
-             key = AllColumns(false) { isWildcard = true; }
-             |
-             key = Column()
-             |
-             LOOKAHEAD({getAsBoolean(Feature.allowExpressionAsJsonObjectKey)}) key = Expression()
-             |
-             keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
-         )
-
-         // Optional Separator + Value - Is not allowed with * or t1.*
-         [ LOOKAHEAD(1, { !isWildcard } )
+        // lookahead because key is a valid column name
+        LOOKAHEAD(2) (
+            <K_KEY> { usingKeyKeyword = true; }
             (
-                <K_VALUE> { kvSeparator = JsonKeyValuePairSeparator.VALUE; }
-                |
-                <DOUBLE_COLON> { kvSeparator = JsonKeyValuePairSeparator.COLON; }
-                |
-                LOOKAHEAD({getAsBoolean(Feature.allowCommaAsKeyValueSeparator)}) <K_COMMA> { kvSeparator = JsonKeyValuePairSeparator.COMMA; }
+               keyToken = <S_CHAR_LITERAL> { key = keyToken.image; } |
+               key = Column()
             )
-            expression = Expression()
-         ]
-
-         // Optional: FORMAT JSON - Is not allowed with * or t1.*
-         [ LOOKAHEAD(1, { !isWildcard } ) <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
+        )
+        |
+        LOOKAHEAD(16) key = AllTableColumns(false) { isWildcard = true; }
+        |
+        LOOKAHEAD(2) key = AllColumns(false) { isWildcard = true; }
+        |
+        LOOKAHEAD(2) key = Column()
+        |
+        LOOKAHEAD({getAsBoolean(Feature.allowExpressionAsJsonObjectKey)}) key = Expression()
+        |
+        keyToken = <S_CHAR_LITERAL> { key = keyToken.image; }
     )
+
+    // Optional Separator + Value - Is not allowed with * or t1.*
+    [ LOOKAHEAD(1, { !isWildcard } )
+       (
+           <K_VALUE> { kvSeparator = JsonKeyValuePairSeparator.VALUE; }
+           |
+           <DOUBLE_COLON> { kvSeparator = JsonKeyValuePairSeparator.COLON; }
+           |
+           LOOKAHEAD({getAsBoolean(Feature.allowCommaAsKeyValueSeparator)}) <K_COMMA> { kvSeparator = JsonKeyValuePairSeparator.COMMA; }
+       )
+       expression = Expression()
+    ]
+
+    // Optional: FORMAT JSON - Is not allowed with * or t1.*
+    [ LOOKAHEAD(1, { !isWildcard } ) <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
     {
         final JsonKeyValuePair keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, kvSeparator );
         keyValuePair.setUsingFormatJson( usingFormatJason );
