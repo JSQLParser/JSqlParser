@@ -7983,11 +7983,8 @@ ColumnDefinition ColumnDefinition(): {
     List<String> parameter;
 } {
     columnName=RelObjectName()
-
-    colDataType = ColDataType()
-
+    colDataType=ColDataType()
     ( LOOKAHEAD(2) parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
-
     {
         coldef = new ColumnDefinition();
         coldef.setColumnName(columnName);
@@ -8366,13 +8363,13 @@ ColDataType ColDataType():
         (
             <K_STRUCT>
             "("
-            ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
-            colDataType = ColDataType() { argumentsStringList.add( tk.image + " " + colDataType.toString()); }
-            [
+            type = RelObjectNameExt2()
+            colDataType = ColDataType() { argumentsStringList.add( type + " " + colDataType.toString()); }
+            (
                 ","
-                ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> )
-                colDataType = ColDataType() { argumentsStringList.add( tk.image + " " + colDataType.toString()); }
-            ]
+                type = RelObjectNameExt2()
+                colDataType = ColDataType() { argumentsStringList.add( type + " " + colDataType.toString()); }
+            )*
             ")" { colDataType = new ColDataType("STRUCT"); }
         )
 		|

@@ -47,4 +47,14 @@ class ColDataTypeTest {
     public void testNestedCast() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT acolumn::bit(64)::int(64) FROM mytable");
     }
+
+    @Test
+    void testStruct() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE IT.u (\n" +
+                        "    details struct( id varchar(255), name varchar(255)) NOT NULL,\n" +
+                        "    name VARCHAR(255) NOT NULL\n" +
+                        "  );\n";
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
