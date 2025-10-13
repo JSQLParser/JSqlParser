@@ -39,7 +39,6 @@ class StructTypeTest {
 
     @Test
     void testStructTypeDuckDB() throws JSQLParserException {
-        // @todo: check why the white-space after the "{" is needed?!
         String sqlStr = "SELECT { t:'abc',len:5}";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
@@ -62,6 +61,12 @@ class StructTypeTest {
         StructType struct = new StructType(StructType.Dialect.DUCKDB, selectItems);
         PlainSelect select = new PlainSelect().withSelectItems(new SelectItem<>(struct));
         TestUtils.assertStatementCanBeDeparsedAs(select, sqlStr, true);
+    }
+
+    @Test
+    void testStructTypeConstructorDuckDBWithQuotesAndTypes() throws JSQLParserException {
+        String sqlStr = "SELECT {'t':'abc'::STRING,'len':5::INT}";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
     @Test

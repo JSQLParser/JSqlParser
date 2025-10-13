@@ -6902,12 +6902,13 @@ StructType StructType() #StruckType:
         |
         (
             <OPENING_CURLY_BRACKET> { arguments= new  ArrayList<SelectItem<?>>(); dialect = StructType.Dialect.DUCKDB;}
-
-            id = RelObjectName() <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
+            ( id = RelObjectNameExt2() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
+            <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
 
             (
                 ","
-                id = RelObjectName() <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
+                ( id = RelObjectNameExt2() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
+                <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
             )*
             <CLOSING_CURLY_BRACKET>
 
