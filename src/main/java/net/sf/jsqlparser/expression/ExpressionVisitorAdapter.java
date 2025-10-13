@@ -729,6 +729,12 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(JsonTable jsonTable, S context) {
+        // TODO: Implement
+        return null;
+    }
+
+    @Override
     public <S> T visit(ConnectByRootOperator connectByRootOperator, S context) {
         return connectByRootOperator.getColumn().accept(this, context);
     }

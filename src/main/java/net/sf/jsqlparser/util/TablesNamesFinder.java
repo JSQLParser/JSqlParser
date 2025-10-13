@@ -1722,6 +1722,12 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(JsonTable jsonTable, S context) {
+        // TODO: Implement
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ConnectByRootOperator connectByRootOperator, S context) {
         connectByRootOperator.getColumn().accept(this, context);
         return null;
