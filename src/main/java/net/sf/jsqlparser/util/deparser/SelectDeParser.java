@@ -9,13 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.MySQLIndexHint;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.SQLServerHints;
-import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
@@ -899,6 +893,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         for (PipeOperator operator : fromQuery.getPipeOperators()) {
             operator.accept(this, null);
         }
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(JsonTable jsonTable, S context) {
+        jsonTable.append(builder);
         return builder;
     }
 

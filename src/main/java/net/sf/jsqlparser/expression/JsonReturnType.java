@@ -28,13 +28,21 @@ package net.sf.jsqlparser.expression;
 /**
  *
  */
-public enum JsonOnErrorType {
-    ERROR("ERROR"), NULL("NULL"), EMPTY("EMPTY"), EMPTY_ARRAY("EMPTY ARRAY"), EMPTY_OBJECT(
-            "EMPTY OBJECT"), TRUE("TRUE"), FALSE("FALSE"), DEFAULT("DEFAULT");
+public enum JsonReturnType {
+    VARCHAR2("VARCHAR2"), CLOB("CLOB"), BLOB("BLOB"), NUMBER("NUMBER"), DATE("DATE"), TIMESTAMP(
+            "TIMESTAMP"), TIMESTAMP_WITH_TIMEZONE(
+                    "TIMESTAMP WITH TIMEZONE"), BOOLEAN("BOOLEAN"), VECTOR("VECTOR"), JSON("JSON"),
+
+    // VARCHAR2( x BYTE)
+    VARCHAR2_BYTE("VARCHAR2"),
+
+    // VARCHAR2( x CHAR)
+    VARCHAR2_CHAR("VARCHAR2"),
+    ;
 
     private final String value;
 
-    JsonOnErrorType(String value) {
+    JsonReturnType(String value) {
         this.value = value;
     }
 
@@ -42,7 +50,24 @@ public enum JsonOnErrorType {
         return value;
     }
 
-    public static JsonOnErrorType from(String type) {
-        return Enum.valueOf(JsonOnErrorType.class, type.toUpperCase());
+    public static JsonReturnType from(String type) {
+        return Enum.valueOf(JsonReturnType.class, type.toUpperCase());
     }
+
+    /**
+     * @see "https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/JSON_QUERY.html#GUID-6D396EC4-D2AA-43D2-8F5D-08D646A4A2D9__CJADJIIJ"
+     */
+    public boolean isValidForJsonQueryReturnType() {
+        switch (this) {
+            case VARCHAR2:
+            case CLOB:
+            case BLOB:
+            case JSON:
+            case VECTOR:
+                return true;
+            default:
+                return false;
+        }
+    }
+
 }

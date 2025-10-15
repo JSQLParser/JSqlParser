@@ -335,6 +335,12 @@ public class TablesNamesFinder<Void>
         SelectVisitor.super.visit(plainSelect);
     }
 
+    @Override
+    public void visit(JsonTable jsonTable) {
+        FromItemVisitor.super.visit(jsonTable);
+        // TODO: Implement
+    }
+
     /**
      * Override to adapt the tableName generation (e.g. with / without schema).
      *

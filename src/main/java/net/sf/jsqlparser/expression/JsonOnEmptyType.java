@@ -29,13 +29,8 @@ package net.sf.jsqlparser.expression;
  *
  */
 public enum JsonOnEmptyType {
-    ERROR("ERROR"),
-    NULL("NULL"),
-    EMPTY("EMPTY"),
-    EMPTY_ARRAY("EMPTY ARRAY"),
-    EMPTY_OBJECT("EMPTY OBJECT"),
-    TRUE("TRUE"),
-    FALSE("FALSE");
+    ERROR("ERROR"), NULL("NULL"), EMPTY("EMPTY"), EMPTY_ARRAY("EMPTY ARRAY"), EMPTY_OBJECT(
+            "EMPTY OBJECT"), TRUE("TRUE"), FALSE("FALSE"), DEFAULT("DEFAULT");
 
     private final String value;
 

@@ -1,11 +1,14 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.select.AbstractFromitem;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonTable extends ASTNodeAccessImpl implements Expression {
+public class JsonTable extends AbstractFromitem implements FromItem {
 
     private Expression expression;
     private boolean isFormatJson = false;
@@ -18,7 +21,6 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
 
     private List<JsonTableColumn> jsonColumns = new ArrayList<>();
 
-
     public StringBuilder append(StringBuilder builder) {
         builder.append("JSON_TABLE(");
         builder.append(expression.toString());
@@ -28,8 +30,9 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
         }
 
         if (pathExpression != null) {
-            builder.append(", ");
+            builder.append(", '");
             builder.append(pathExpression);
+            builder.append("'");
         }
 
         if (onErrorType != null) {
@@ -57,12 +60,10 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
         }
 
         builder.append("))");
-        return builder;
-    }
 
-    @Override
-    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
-        return expressionVisitor.visit(this, context);
+        super.appendTo(builder, getAlias(), getSampleClause(), getPivot(), getUnPivot());
+
+        return builder;
     }
 
     public void setExpression(Expression expression) {
@@ -105,9 +106,25 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
     }
 
     public void setOnErrorType(JsonOnErrorType onErrorType) {
+        if (onErrorType != null) {
+            switch (onErrorType) {
+                case NULL:
+                case ERROR:
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "OnError type " + onErrorType + " is not allowed in JSON_TABLE");
+            }
+        }
+
         this.onErrorType = onErrorType;
     }
 
+    /**
+     * Returns the ON ERROR clause or NULL if none is set
+     *
+     * @return JsonOnErrorType or NULL
+     */
     public JsonOnErrorType getOnErrorType() {
         return onErrorType;
     }
@@ -131,9 +148,24 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
     }
 
     public void setOnEmptyType(JsonOnEmptyType onEmptyType) {
+        if (onEmptyType != null) {
+            switch (onEmptyType) {
+                case NULL:
+                case ERROR:
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "OnEmpty type " + onEmptyType + " is not allowed in JSON_TABLE");
+            }
+        }
         this.onEmptyType = onEmptyType;
     }
 
+    /**
+     * Returns the ON EMPTY clause or NULL if none is set
+     *
+     * @return JsonOnEmptyType or NULL
+     */
     public JsonOnEmptyType getOnEmptyType() {
         return onEmptyType;
     }
@@ -147,8 +179,22 @@ public class JsonTable extends ASTNodeAccessImpl implements Expression {
         this.jsonColumns.add(column);
     }
 
+    public JsonTable withColumn(JsonTableColumn column) {
+        addColumn(column);
+        return this;
+    }
+
     public List<JsonTableColumn> getColumns() {
         return jsonColumns;
     }
 
+    @Override
+    public String toString() {
+        return append(new StringBuilder()).toString();
+    }
+
+    @Override
+    public <T, S> T accept(FromItemVisitor<T> fromItemVisitor, S context) {
+        return fromItemVisitor.visit(this, context);
+    }
 }
