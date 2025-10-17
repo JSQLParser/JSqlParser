@@ -9,8 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.JsonTable;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.from.JsonTable;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 

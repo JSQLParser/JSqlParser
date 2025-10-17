@@ -1,6 +1,8 @@
-package net.sf.jsqlparser.expression;
+package net.sf.jsqlparser.statement.from;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.json.JsonOnEmptyType;
+import net.sf.jsqlparser.expression.json.JsonOnErrorType;
 import net.sf.jsqlparser.statement.select.AbstractFromitem;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;

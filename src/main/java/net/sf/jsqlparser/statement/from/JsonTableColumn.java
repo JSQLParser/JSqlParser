@@ -1,5 +1,9 @@
-package net.sf.jsqlparser.expression;
+package net.sf.jsqlparser.statement.from;
 
+import net.sf.jsqlparser.expression.json.JsonOnEmptyType;
+import net.sf.jsqlparser.expression.json.JsonOnErrorType;
+import net.sf.jsqlparser.expression.json.JsonQueryWrapperType;
+import net.sf.jsqlparser.expression.json.JsonReturnClause;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class JsonTableColumn extends ASTNodeAccessImpl {

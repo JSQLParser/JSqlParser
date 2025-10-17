@@ -1,4 +1,4 @@
-package net.sf.jsqlparser.expression;
+package net.sf.jsqlparser.expression.json;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 

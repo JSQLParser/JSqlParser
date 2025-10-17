@@ -23,26 +23,15 @@
  * 02110-1301 USA
  */
 
-package net.sf.jsqlparser.expression;
+package net.sf.jsqlparser.statement.from;
 
 /**
  *
  */
-public enum JsonOnEmptyType {
-    ERROR("ERROR"), NULL("NULL"), EMPTY("EMPTY"), EMPTY_ARRAY("EMPTY ARRAY"), EMPTY_OBJECT(
-            "EMPTY OBJECT"), TRUE("TRUE"), FALSE("FALSE"), DEFAULT("DEFAULT");
+public enum JsonTableType {
+    STRICT, LAX;
 
-    private final String value;
-
-    JsonOnEmptyType(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public static JsonOnEmptyType from(String type) {
-        return Enum.valueOf(JsonOnEmptyType.class, type.toUpperCase());
+    public static JsonTableType from(String type) {
+        return Enum.valueOf(JsonTableType.class, type.toUpperCase());
     }
 }

@@ -733,5 +733,17 @@ public class TablesNamesFinderTest {
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("table1",
                 "table2", "table3");
     }
+
+    @Test
+    void testJsonTable() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM JSON_TABLE(" +
+                "(SELECT json_column FROM table_with_json), '$.jsonPath' COLUMNS( id FOR ORDINALITY ))";
+
+        Set<String> tables = TablesNamesFinder.findTables(sqlStr);
+
+        assertThat(tables).containsExactly("table_with_json");
+
+    }
+
 }
 

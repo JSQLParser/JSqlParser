@@ -1571,12 +1571,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
-    public <S> StringBuilder visit(JsonTable expression, S context) {
-        expression.append(builder);
-        return builder;
-    }
-
-    @Override
     public <S> StringBuilder visit(ConnectByRootOperator connectByRootOperator, S context) {
         builder.append("CONNECT_BY_ROOT ");
         connectByRootOperator.getColumn().accept(this, context);
@@ -1777,4 +1771,5 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public <S> StringBuilder visit(FromQuery fromQuery, S context) {
         return null;
     }
+
 }

@@ -1,6 +1,8 @@
-package net.sf.jsqlparser.expression;
+package net.sf.jsqlparser.statement.from;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.json.JsonOnEmptyType;
+import net.sf.jsqlparser.expression.json.JsonOnErrorType;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;

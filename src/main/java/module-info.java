@@ -57,4 +57,6 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.util.validation.feature;
     exports net.sf.jsqlparser.util.validation.metadata;
     exports net.sf.jsqlparser.util.validation.validator;
+    exports net.sf.jsqlparser.expression.json;
+    exports net.sf.jsqlparser.statement.from;
 }

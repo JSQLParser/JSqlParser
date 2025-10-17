@@ -39,6 +39,7 @@ import java.lang.Integer;
 
 import net.sf.jsqlparser.parser.feature.*;
 import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.json.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
@@ -58,6 +59,7 @@ import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
+import net.sf.jsqlparser.statement.from.*;
 import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;

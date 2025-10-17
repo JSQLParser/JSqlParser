@@ -115,6 +115,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.from.JsonTable;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
@@ -333,12 +334,6 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(PlainSelect plainSelect) {
         SelectVisitor.super.visit(plainSelect);
-    }
-
-    @Override
-    public void visit(JsonTable jsonTable) {
-        FromItemVisitor.super.visit(jsonTable);
-        // TODO: Implement
     }
 
     /**
@@ -1729,8 +1724,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(JsonTable jsonTable, S context) {
-        // TODO: Implement
-        return null;
+        return jsonTable.getExpression().accept(this, context);
     }
 
     @Override
