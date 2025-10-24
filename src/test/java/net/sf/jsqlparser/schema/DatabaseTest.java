@@ -11,6 +11,9 @@ package net.sf.jsqlparser.schema;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -43,6 +46,12 @@ public class DatabaseTest {
         Database database = new Database(server, null);
         assertEquals("[SERVER\\INSTANCE].", database.getFullyQualifiedName());
         assertSame(server, database.getServer());
+    }
+
+    @Test
+    void testBigQuerycatalogs() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM \"starlake-325712\".starlake_tbl.transactions";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
 }
