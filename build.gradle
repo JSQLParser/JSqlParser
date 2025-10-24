@@ -114,6 +114,10 @@ sourceSets {
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    mustRunAfter("generateBuildInfo")
+}
+
 tasks.withType(Pmd).configureEach {
     mustRunAfter("generateBuildInfo")
 }

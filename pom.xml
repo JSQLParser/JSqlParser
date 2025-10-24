@@ -285,9 +285,13 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
-                            <codeGenerator>java</codeGenerator>
-                            <unicodeInput>true</unicodeInput>
                             <grammarEncoding>UTF-8</grammarEncoding>
+                            <isStatic>false</isStatic>
+                            <debugParser>false</debugParser>
+                            <debugLookAhead>false</debugLookAhead>
+                            <codeGenerator>java</codeGenerator>
+
+                            <!-- <unicodeInput>true</unicodeInput> -->
                             <!-- <javaUnicodeEscape>true</javaUnicodeEscape> -->
                         </configuration>
                     </execution>
