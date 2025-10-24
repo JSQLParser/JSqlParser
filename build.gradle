@@ -1,6 +1,8 @@
 import se.bjurr.gitchangelog.plugin.gradle.GitChangelogTask
 import com.nwalsh.gradle.saxon.SaxonXsltTask
 
+import java.time.Instant
+
 buildscript {
     dependencies {
         classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: 'latest.release'
@@ -71,6 +73,56 @@ def getVersion = { boolean considerSnapshot ->
 version = getVersion( !System.getenv("RELEASE") )
 group = 'com.github.jsqlparser'
 description = 'JSQLParser library'
+
+tasks.register('generateBuildInfo') {
+    outputs.dir layout.buildDirectory.file("resources/main")
+    doLast {
+        def outputDir =  new File( layout.buildDirectory.file("generated/sources/buildinfo/java/main").get().asFile, "net/sf/jsqlparser")
+        outputDir.mkdirs()
+
+        def gitVersionStr = providers.exec {
+            commandLine "git", "--no-pager", "-C", project.projectDir,  "describe", "--tags", "--always", "--dirty=-SNAPSHOT"
+        }.standardOutput.asText.get().trim()
+
+        def gitCommitStr = providers.exec {
+            commandLine "git", "--no-pager", "-C", project.projectDir,  "rev-parse", "--short", "HEAD"
+        }.standardOutput.asText.get().trim()
+
+        def buildTime = Instant.now().toString()
+
+        def content = """\
+            |package ai.starlake.jsqltranspiler;
+            |
+            |public final class BuildInfo {
+            |  public static final String NAME = "${project.name}";
+            |  public static final String VERSION = "${gitVersionStr}";
+            |  public static final String GIT_COMMIT = "${gitCommitStr ?: 'unknown'}";
+            |  public static final String BUILD_TIME = "${buildTime}";
+            |}
+            """.stripMargin()
+
+        new File(outputDir, "BuildInfo.java").text = content
+    }
+}
+
+// Make sure the file is included in the compiled sources
+sourceSets {
+    main {
+        java {
+            srcDir layout.buildDirectory.file("generated/sources/buildinfo/java/main").get().asFile
+        }
+    }
+}
+
+tasks.withType(Pmd).configureEach {
+    mustRunAfter("generateBuildInfo")
+}
+
+tasks.withType(Checkstyle).configureEach {
+    exclude '**/module-info.java', '**/package-info.java'
+
+    mustRunAfter("generateBuildInfo")
+}
 
 repositories {
     gradlePluginPortal()
@@ -179,6 +231,8 @@ jar {
             "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
+
+    dependsOn(generateBuildInfo)
 }
 
 tasks.register('xmldoc', Javadoc) {
