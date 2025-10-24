@@ -288,7 +288,7 @@
                             <codeGenerator>java</codeGenerator>
                             <unicodeInput>true</unicodeInput>
                             <grammarEncoding>UTF-8</grammarEncoding>
-                            <javaUnicodeEscape>true</javaUnicodeEscape>
+                            <!-- <javaUnicodeEscape>true</javaUnicodeEscape> -->
                         </configuration>
                     </execution>
                 </executions>
