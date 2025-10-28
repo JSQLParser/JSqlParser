@@ -115,6 +115,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.from.JsonTable;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
@@ -1719,6 +1720,11 @@ public class TablesNamesFinder<Void>
             expr.getExpression().accept(this, context);
         }
         return null;
+    }
+
+    @Override
+    public <S> Void visit(JsonTable jsonTable, S context) {
+        return jsonTable.getExpression().accept(this, context);
     }
 
     @Override
