@@ -23,6 +23,7 @@ import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import net.sf.jsqlparser.expression.DateUnitExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -1828,5 +1829,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(FromQuery fromQuery, S context) {
         return null;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DateUnitExpression dateUnitExpression, S context) {
+        return builder.append(dateUnitExpression.toString());
     }
 }

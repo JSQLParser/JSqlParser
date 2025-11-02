@@ -6422,4 +6422,16 @@ public class SelectTest {
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testIssue2332SubStrCTE() throws JSQLParserException {
+        String sqlStr =
+                "create table t as\n" +
+                        "  with\n" +
+                        "    _ as (select f(id = '') from v)\n" +
+                        "  select\n" +
+                        "    substring (f (u.id))\n" +
+                        "  from u ;";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

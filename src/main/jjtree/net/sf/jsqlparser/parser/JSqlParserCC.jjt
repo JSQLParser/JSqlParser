@@ -6559,9 +6559,11 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, { !interrupted}) retval = FullTextSearch()
 
-        | LOOKAHEAD(2, {!interrupted}) retval=CastExpression()
+        | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
 
-        | LOOKAHEAD(16) retval=Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(16) retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+
+        | LOOKAHEAD(2) retval = DateUnitExpression()
 
         | LOOKAHEAD(2, {!interrupted}) retval = IntervalExpression() { dateExpressionAllowed = false; }
 
@@ -6804,10 +6806,25 @@ NumericBind NumericBind() : {
 DateTimeLiteralExpression DateTimeLiteralExpression() : {
     DateTimeLiteralExpression expr = new DateTimeLiteralExpression();
     Token t;
-} {
-    t=<K_DATETIMELITERAL>  { expr.setType(DateTimeLiteralExpression.DateTime.from(t.image)); }
+}
+{
+    t=<K_DATETIMELITERAL>
+    {
+        expr.setType(DateTimeLiteralExpression.DateTime.from(t.image));
+    }
 
-    ( t=<S_CHAR_LITERAL> | t=<S_QUOTED_IDENTIFIER> ) { expr.setValue(t.image); return expr; }
+    ( t=<S_CHAR_LITERAL> | t=<S_QUOTED_IDENTIFIER> )
+    {
+        expr.setValue(t.image);
+        return expr;
+    }
+}
+
+DateUnitExpression DateUnitExpression() : {
+    Token t;
+}
+{
+    t=<K_DATE_LITERAL>  { return new DateUnitExpression( t.image ); }
 }
 
 RangeExpression RangeExpression(Expression startExpression):
@@ -6892,7 +6909,7 @@ StructType StructType() #StruckType:
         LOOKAHEAD(4) (
             tk1=<K_STRUCT> { keyword = tk1.image; }
             "<" parameters = StructParameters() ">"
-            "(" { System.out.println("found arguments!"); }  arguments = SelectItemsList() ")"
+            "(" arguments = SelectItemsList() ")"
         )
         |
         (
@@ -6916,10 +6933,6 @@ StructType StructType() #StruckType:
                 LOOKAHEAD(2) "::" <K_STRUCT> "(" parameters = StructParameters() ")"
             )*
         )
-
-        // don't parse this as an Struct, but rather use an Expressionlist
-        // |
-        // arguments = StructArguments()
     )
     {
         type = new StructType(dialect, keyword, parameters, arguments);
@@ -7703,7 +7716,7 @@ Function SpecialStringFunctionWithNamedParameters() :
 
         "("
         (
-            LOOKAHEAD(6, { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
+            LOOKAHEAD( NamedExpressionListExprFirst() , { getAsBoolean(Feature.allowComplexParsing) }) namedExpressionList = NamedExpressionListExprFirst()
             |
             expressionList=ExpressionList()
         )

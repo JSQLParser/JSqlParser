@@ -829,6 +829,11 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+    @Override
+    public <S> Void visit(DateUnitExpression dateUnitExpression, S context) {
+        return null;
+    }
+
     /**
      * Initializes table names collector. Important is the usage of Column instances to find table
      * names. This is only allowed for expression parsing, where a better place for tablenames could

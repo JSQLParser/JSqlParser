@@ -39,7 +39,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+#       currently Windows does not work w/ code page related issues
+#       os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest ]
     steps:
       - uses: actions/checkout@main
         with:
@@ -57,7 +59,7 @@ jobs:
   gradle_publish:
     name: Gradle Publish
     needs: [ gradle_check, maven_verify ]  # ✅ Run only after both succeed
-    if: github.ref == 'refs/heads/master' && github.repository == 'YOUR-ORG/YOUR-REPO'  # ✅ Only for master branch of main repo
+    if: github.ref == 'refs/heads/master' && github.repository == 'JSQLParser/JSqlParser'  # ✅ Only for master branch of main repo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main

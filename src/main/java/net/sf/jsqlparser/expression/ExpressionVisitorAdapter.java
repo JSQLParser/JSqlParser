@@ -840,4 +840,9 @@ public class ExpressionVisitorAdapter<T>
         return null;
     }
 
+    @Override
+    public <S> T visit(DateUnitExpression dateUnitExpression, S context) {
+        return null;
+    }
+
 }

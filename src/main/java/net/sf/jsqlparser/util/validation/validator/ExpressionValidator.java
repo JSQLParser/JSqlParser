@@ -22,6 +22,7 @@ import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import net.sf.jsqlparser.expression.DateUnitExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
@@ -1311,6 +1312,11 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(FromQuery fromQuery, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DateUnitExpression dateUnitExpression, S context) {
         return null;
     }
 
