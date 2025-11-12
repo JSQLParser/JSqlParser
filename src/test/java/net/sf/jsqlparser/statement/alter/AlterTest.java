@@ -250,6 +250,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableDropColumnIssue2339() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN Data");
+    }
+
+    @Test
     public void testAlterTableDropConstraint() throws JSQLParserException {
         final String sql = "ALTER TABLE test DROP CONSTRAINT YYY";
         Statement stmt = CCJSqlParserUtil.parse(sql);
@@ -453,6 +458,11 @@ public class AlterTest {
     @Test
     public void testAlterTableChangeColumn4() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE c1 c2 INT (10)");
+    }
+
+    @Test
+    public void testAlterTableChangeColumnIssue2339() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE data INT (10)");
     }
 
     @Test
