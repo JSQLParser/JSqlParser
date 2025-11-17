@@ -39,6 +39,7 @@ import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
@@ -588,5 +589,15 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(Export export) {
         visit(export, null);
+    }
+
+    @Override
+    public <S> Void visit(CreatePolicy createPolicy, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    public void visit(CreatePolicy createPolicy) {
+        visit(createPolicy, null);
     }
 }

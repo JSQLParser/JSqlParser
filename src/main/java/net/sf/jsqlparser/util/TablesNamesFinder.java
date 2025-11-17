@@ -90,6 +90,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
@@ -1844,5 +1845,18 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(LockStatement lock) {
         StatementVisitor.super.visit(lock);
+    }
+
+    @Override
+    public <S> Void visit(CreatePolicy createPolicy, S context) {
+        if (createPolicy.getTable() != null) {
+            visit(createPolicy.getTable(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CreatePolicy createPolicy) {
+        StatementVisitor.super.visit(createPolicy);
     }
 }
