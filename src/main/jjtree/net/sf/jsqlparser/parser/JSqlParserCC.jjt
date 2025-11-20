@@ -9657,19 +9657,19 @@ AlterExpression AlterExpression():
                 )
             )
       |
-      
+
+      LOOKAHEAD(4) (
+          <K_DISABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
+              alterExp.setOperation(AlterOperation.DISABLE_ROW_LEVEL_SECURITY);
+          }
+      )
+      |
       LOOKAHEAD(2) (
           <K_DISABLE> <K_KEYS> {
               alterExp.setOperation(AlterOperation.DISABLE_KEYS);
           }
       )
-      
-      |
-      LOOKAHEAD(2) (
-          <K_ENABLE> <K_KEYS> {
-              alterExp.setOperation(AlterOperation.ENABLE_KEYS);
-          }
-      )
+
       |
       LOOKAHEAD(4) (
           <K_ENABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
@@ -9677,9 +9677,9 @@ AlterExpression AlterExpression():
           }
       )
       |
-      LOOKAHEAD(4) (
-          <K_DISABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
-              alterExp.setOperation(AlterOperation.DISABLE_ROW_LEVEL_SECURITY);
+      LOOKAHEAD(2) (
+          <K_ENABLE> <K_KEYS> {
+              alterExp.setOperation(AlterOperation.ENABLE_KEYS);
           }
       )
       |
@@ -10467,7 +10467,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
 
     [ <K_USING> "(" usingExpr=Expression() ")" { createPolicy.setUsingExpression(usingExpr); } ]
 
-    [ <K_WITH> <K_CHECK> "(" checkExpr=Expression() ")" { createPolicy.setWithCheckExpression(checkExpr); } ]
+    [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" checkExpr=Expression() ")" { createPolicy.setWithCheckExpression(checkExpr); } ]
 
     {
         
