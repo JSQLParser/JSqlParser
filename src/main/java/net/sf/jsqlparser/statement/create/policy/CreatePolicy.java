@@ -20,12 +20,9 @@ import java.util.List;
 /**
  * PostgreSQL CREATE POLICY statement for Row Level Security (RLS).
  *
- * Syntax:
- * CREATE POLICY name ON table_name
- *   [ FOR { ALL | SELECT | INSERT | UPDATE | DELETE } ]
- *   [ TO { role_name | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ]
- *   [ USING ( using_expression ) ]
- *   [ WITH CHECK ( check_expression ) ]
+ * Syntax: CREATE POLICY name ON table_name [ FOR { ALL | SELECT | INSERT | UPDATE | DELETE } ] [ TO
+ * { role_name | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ] [ USING ( using_expression ) ] [
+ * WITH CHECK ( check_expression ) ]
  */
 public class CreatePolicy implements Statement {
 

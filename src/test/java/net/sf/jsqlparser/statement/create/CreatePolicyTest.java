@@ -27,7 +27,7 @@ public class CreatePolicyTest {
     public void testCreatePolicyBasic() throws JSQLParserException {
         String sql = "CREATE POLICY policy_name ON table_name";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Statement stmt = CCJSqlParserUtil.parse(sql);
         assertInstanceOf(CreatePolicy.class, stmt);
         CreatePolicy policy = (CreatePolicy) stmt;
@@ -37,20 +37,22 @@ public class CreatePolicyTest {
 
     @Test
     public void testCreatePolicyWithSchema() throws JSQLParserException {
-        String sql = "CREATE POLICY single_tenant_access_policy ON customer_custom_data.phone_opt_out";
+        String sql =
+                "CREATE POLICY single_tenant_access_policy ON customer_custom_data.phone_opt_out";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Statement stmt = CCJSqlParserUtil.parse(sql);
         CreatePolicy policy = (CreatePolicy) stmt;
         assertEquals("single_tenant_access_policy", policy.getPolicyName());
-        assertEquals("customer_custom_data.phone_opt_out", policy.getTable().getFullyQualifiedName());
+        assertEquals("customer_custom_data.phone_opt_out",
+                policy.getTable().getFullyQualifiedName());
     }
 
     @Test
     public void testCreatePolicyWithForClause() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 FOR SELECT";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals("SELECT", policy.getCommand());
     }
@@ -70,7 +72,7 @@ public class CreatePolicyTest {
     public void testCreatePolicyWithSingleRole() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 TO role1";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals(1, policy.getRoles().size());
         assertEquals("role1", policy.getRoles().get(0));
@@ -80,7 +82,7 @@ public class CreatePolicyTest {
     public void testCreatePolicyWithMultipleRoles() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 TO role1, role2, role3";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals(3, policy.getRoles().size());
         assertEquals("role1", policy.getRoles().get(0));
@@ -92,7 +94,7 @@ public class CreatePolicyTest {
     public void testCreatePolicyWithUsing() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 USING (user_id = current_user_id())";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertNotNull(policy.getUsingExpression());
     }
@@ -101,22 +103,24 @@ public class CreatePolicyTest {
     public void testCreatePolicyWithWithCheck() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 WITH CHECK (status = 'active')";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertNotNull(policy.getWithCheckExpression());
     }
 
     @Test
     public void testCreatePolicyComplete() throws JSQLParserException {
-        String sql = "CREATE POLICY single_tenant_access_policy ON customer_custom_data.phone_opt_out " +
-                     "FOR SELECT " +
-                     "TO gong_app_single_tenant_ro_role, gong_app_single_tenant_rw_role " +
-                     "USING (company_id = current_setting('gong.tenant.company_id')::bigint)";
+        String sql =
+                "CREATE POLICY single_tenant_access_policy ON customer_custom_data.phone_opt_out " +
+                        "FOR SELECT " +
+                        "TO gong_app_single_tenant_ro_role, gong_app_single_tenant_rw_role " +
+                        "USING (company_id = current_setting('gong.tenant.company_id')::bigint)";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals("single_tenant_access_policy", policy.getPolicyName());
-        assertEquals("customer_custom_data.phone_opt_out", policy.getTable().getFullyQualifiedName());
+        assertEquals("customer_custom_data.phone_opt_out",
+                policy.getTable().getFullyQualifiedName());
         assertEquals("SELECT", policy.getCommand());
         assertEquals(2, policy.getRoles().size());
         assertNotNull(policy.getUsingExpression());
@@ -125,10 +129,10 @@ public class CreatePolicyTest {
     @Test
     public void testCreatePolicyWithBothUsingAndWithCheck() throws JSQLParserException {
         String sql = "CREATE POLICY policy1 ON table1 " +
-                     "USING (department_id = current_user_department()) " +
-                     "WITH CHECK (status IN ('draft', 'published'))";
+                "USING (department_id = current_user_department()) " +
+                "WITH CHECK (status IN ('draft', 'published'))";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertNotNull(policy.getUsingExpression());
         assertNotNull(policy.getWithCheckExpression());
@@ -137,12 +141,12 @@ public class CreatePolicyTest {
     @Test
     public void testCreatePolicyCompleteWithAllClauses() throws JSQLParserException {
         String sql = "CREATE POLICY admin_policy ON documents " +
-                     "FOR UPDATE " +
-                     "TO admin_role, superuser " +
-                     "USING (author_id = current_user_id()) " +
-                     "WITH CHECK (updated_at >= CURRENT_TIMESTAMP)";
+                "FOR UPDATE " +
+                "TO admin_role, superuser " +
+                "USING (author_id = current_user_id()) " +
+                "WITH CHECK (updated_at >= CURRENT_TIMESTAMP)";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals("admin_policy", policy.getPolicyName());
         assertEquals("documents", policy.getTable().getName());

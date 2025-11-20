@@ -26,67 +26,68 @@ public class AlterRowLevelSecurityTest {
     public void testEnableRowLevelSecurity() throws JSQLParserException {
         String sql = "ALTER TABLE table1 ENABLE ROW LEVEL SECURITY";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Statement stmt = CCJSqlParserUtil.parse(sql);
         assertInstanceOf(Alter.class, stmt);
         Alter alter = (Alter) stmt;
         assertEquals("table1", alter.getTable().getName());
-        assertEquals(AlterOperation.ENABLE_ROW_LEVEL_SECURITY, 
-                     alter.getAlterExpressions().get(0).getOperation());
+        assertEquals(AlterOperation.ENABLE_ROW_LEVEL_SECURITY,
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
     public void testEnableRowLevelSecurityWithSchema() throws JSQLParserException {
         String sql = "ALTER TABLE customer_custom_data.phone_opt_out ENABLE ROW LEVEL SECURITY";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
-        assertEquals("customer_custom_data.phone_opt_out", alter.getTable().getFullyQualifiedName());
+        assertEquals("customer_custom_data.phone_opt_out",
+                alter.getTable().getFullyQualifiedName());
         assertEquals(AlterOperation.ENABLE_ROW_LEVEL_SECURITY,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
     public void testDisableRowLevelSecurity() throws JSQLParserException {
         String sql = "ALTER TABLE table1 DISABLE ROW LEVEL SECURITY";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         assertEquals(AlterOperation.DISABLE_ROW_LEVEL_SECURITY,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
     public void testForceRowLevelSecurity() throws JSQLParserException {
         String sql = "ALTER TABLE table1 FORCE ROW LEVEL SECURITY";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         assertEquals(AlterOperation.FORCE_ROW_LEVEL_SECURITY,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
     public void testNoForceRowLevelSecurity() throws JSQLParserException {
         String sql = "ALTER TABLE table1 NO FORCE ROW LEVEL SECURITY";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         assertEquals(AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
     public void testMultipleStatements() throws JSQLParserException {
         // Test CREATE POLICY followed by ENABLE RLS
         String sql = "CREATE POLICY policy1 ON table1 USING (id = user_id()); " +
-                     "ALTER TABLE table1 ENABLE ROW LEVEL SECURITY";
-        
+                "ALTER TABLE table1 ENABLE ROW LEVEL SECURITY";
+
         net.sf.jsqlparser.statement.Statements stmts = CCJSqlParserUtil.parseStatements(sql);
         assertEquals(2, stmts.getStatements().size());
-        
+
         assertInstanceOf(net.sf.jsqlparser.statement.create.policy.CreatePolicy.class,
-                        stmts.getStatements().get(0));
+                stmts.getStatements().get(0));
         assertInstanceOf(Alter.class, stmts.getStatements().get(1));
     }
 
@@ -95,10 +96,10 @@ public class AlterRowLevelSecurityTest {
         // Ensure our changes don't break existing ENABLE KEYS syntax
         String sql = "ALTER TABLE table1 ENABLE KEYS";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         assertEquals(AlterOperation.ENABLE_KEYS,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 
     @Test
@@ -106,9 +107,9 @@ public class AlterRowLevelSecurityTest {
         // Ensure our changes don't break existing DISABLE KEYS syntax
         String sql = "ALTER TABLE table1 DISABLE KEYS";
         assertSqlCanBeParsedAndDeparsed(sql, true);
-        
+
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
         assertEquals(AlterOperation.DISABLE_KEYS,
-                     alter.getAlterExpressions().get(0).getOperation());
+                alter.getAlterExpressions().get(0).getOperation());
     }
 }
