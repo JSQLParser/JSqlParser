@@ -856,6 +856,14 @@ public class AlterExpression implements Serializable {
         } else {
             if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
                 b.append("COMMENT =").append(" ");
+            } else if (operation == AlterOperation.ENABLE_ROW_LEVEL_SECURITY) {
+                b.append("ENABLE ROW LEVEL SECURITY").append(" ");
+            } else if (operation == AlterOperation.DISABLE_ROW_LEVEL_SECURITY) {
+                b.append("DISABLE ROW LEVEL SECURITY").append(" ");
+            } else if (operation == AlterOperation.FORCE_ROW_LEVEL_SECURITY) {
+                b.append("FORCE ROW LEVEL SECURITY").append(" ");
+            } else if (operation == AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY) {
+                b.append("NO FORCE ROW LEVEL SECURITY").append(" ");
             } else {
                 b.append(operation).append(" ");
             }
