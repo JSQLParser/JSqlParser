@@ -1852,6 +1852,17 @@ public class TablesNamesFinder<Void>
         if (createPolicy.getTable() != null) {
             visit(createPolicy.getTable(), context);
         }
+
+        // Visit USING expression to find tables in subqueries
+        if (createPolicy.getUsingExpression() != null) {
+            createPolicy.getUsingExpression().accept(this, context);
+        }
+
+        // Visit WITH CHECK expression to find tables in subqueries
+        if (createPolicy.getWithCheckExpression() != null) {
+            createPolicy.getWithCheckExpression().accept(this, context);
+        }
+
         return null;
     }
 
