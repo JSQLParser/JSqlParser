@@ -3287,6 +3287,7 @@ String RelObjectName() :
         | tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON>  | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE>
         | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> | tk=<K_CONNECT> | tk=<K_IGNORE >
         | tk=<K_QUALIFY> | tk=<K_DEFAULT>
+        | tk=<K_LEVEL> | tk=<K_POLICY> | tk=<K_SECURITY>
         )
 
     { return tk!=null ? tk.image : result; }
@@ -3296,7 +3297,8 @@ String RelObjectNameWithoutStart() :
 {    Token tk = null; String result = null; }
 {
     (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES>
-        | tk=<K_INTERVAL> )
+        | tk=<K_INTERVAL>
+        | tk=<K_LEVEL> | tk=<K_POLICY> | tk=<K_SECURITY> )
 
     { return tk!=null ? tk.image : result; }
 }
