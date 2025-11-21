@@ -158,7 +158,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * The available parameters to a sequence
      */
     public enum ParameterType {
-        INCREMENT_BY, START_WITH, RESTART_WITH, MAXVALUE, NOMAXVALUE, MINVALUE, NOMINVALUE, CYCLE, NOCYCLE, CACHE, NOCACHE, ORDER, NOORDER, KEEP, NOKEEP, SESSION, GLOBAL;
+        INCREMENT_BY, START_WITH, START, RESTART_WITH, MAXVALUE, NOMAXVALUE, MINVALUE, NOMINVALUE, CYCLE, NOCYCLE, CACHE, NOCACHE, ORDER, NOORDER, KEEP, NOKEEP, SESSION, GLOBAL;
 
         public static ParameterType from(String type) {
             return Enum.valueOf(ParameterType.class, type.toUpperCase());
@@ -191,6 +191,8 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
                     return prefix("INCREMENT BY");
                 case START_WITH:
                     return prefix("START WITH");
+                case START:
+                    return prefix("START");
                 case RESTART_WITH:
                     if (value != null) {
                         return prefix("RESTART WITH");

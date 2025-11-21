@@ -45,6 +45,11 @@ public class CreateSequenceTest {
     }
 
     @Test
+    public void testCreateSequence_withStartPostgres() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_seq START 10");
+    }
+
+    @Test
     public void testCreateSequence_withMaxValue() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_seq MAXVALUE 5");
     }

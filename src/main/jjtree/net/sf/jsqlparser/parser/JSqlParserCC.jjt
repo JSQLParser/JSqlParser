@@ -10209,6 +10209,7 @@ List<Sequence.Parameter> SequenceParameters():
   List<Sequence.Parameter> sequenceParameters = new ArrayList<Sequence.Parameter>();
   Sequence.Parameter parameter = null;
   Token token = null;
+  Token withToken = null;
 }
 {
     (
@@ -10223,9 +10224,13 @@ List<Sequence.Parameter> SequenceParameters():
            )
            |
            (
-                <K_START> <K_WITH> token=<S_LONG>
+                <K_START> [ withToken=<K_WITH> ] token=<S_LONG>
                 {
-                    parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
+                    if (withToken != null) {
+                        parameter = new Sequence.Parameter(Sequence.ParameterType.START_WITH);
+                    } else {
+                        parameter = new Sequence.Parameter(Sequence.ParameterType.START);
+                    }
                     parameter.setValue(Long.parseLong(token.image));
                     sequenceParameters.add(parameter);
                 }
