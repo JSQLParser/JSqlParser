@@ -890,7 +890,7 @@ TOKEN:
  * Supported tokens:
  *  - <S_IDENTIFIER>: Standard unquoted SQL identifier
  *  - <S_QUOTED_IDENTIFIER>: Quoted identifier (e.g., `identifier` or "identifier")
- *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>: Specific keywords treated as identifiers
+ *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>, <K_DATA>: Specific keywords treated as identifiers
  *
  * @return Token representing the identifier or keyword used as identifier
  */
@@ -907,6 +907,7 @@ Token KeywordOrIdentifier():
       | tk = <K_VALUE>
       | tk = <K_PUBLIC>
       | tk = <K_STRING>
+      | tk = <K_DATA>
     )
     { return tk; }
 }
@@ -9426,7 +9427,7 @@ AlterExpression AlterExpression():
         <K_CHANGE> { alterExp.setOperation(AlterOperation.CHANGE); }
         [ <K_COLUMN> { alterExp.hasColumn(true); alterExp.setOptionalSpecifier("COLUMN"); } ]
         (
-          (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>)
+          (tk=KeywordOrIdentifier())
           alterExpressionColumnDataType = AlterExpressionColumnDataType() {  alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType); }
         )
       )
@@ -9460,7 +9461,7 @@ AlterExpression AlterExpression():
                     ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
                     [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
                     // @todo: replace with a proper identifier
-                    (tk=<S_IDENTIFIER>  | tk=<S_QUOTED_IDENTIFIER> | tk=<K_NAME>) { alterExp.setColumnName(tk.image); }
+                    (tk=KeywordOrIdentifier() ) { alterExp.setColumnName(tk.image); }
 
                     [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
 
