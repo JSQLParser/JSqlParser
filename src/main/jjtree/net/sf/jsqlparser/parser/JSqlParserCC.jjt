@@ -10209,15 +10209,20 @@ List<Sequence.Parameter> SequenceParameters():
   List<Sequence.Parameter> sequenceParameters = new ArrayList<Sequence.Parameter>();
   Sequence.Parameter parameter = null;
   Token token = null;
+  Token byToken = null;
   Token withToken = null;
 }
 {
     (
         LOOKAHEAD(2) (
             (
-                <K_INCREMENT> <K_BY> token=<S_LONG>
+                <K_INCREMENT> [ byToken=<K_BY> ] token=<S_LONG>
                 {
-                    parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
+                    if (byToken != null) {
+                      parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT_BY);
+                    } else {
+                      parameter = new Sequence.Parameter(Sequence.ParameterType.INCREMENT);
+                    }
                     parameter.setValue(Long.parseLong(token.image));
                     sequenceParameters.add(parameter);
                 }
