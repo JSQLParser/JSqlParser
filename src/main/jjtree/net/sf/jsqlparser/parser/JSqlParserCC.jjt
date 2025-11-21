@@ -8787,8 +8787,15 @@ Drop Drop():
 
     name = Table() { drop.setName(name); }
     [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
-    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> | tk=<K_ON>) { dropArgs.add(tk.image); })*
-
+    (
+        (
+            tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT>
+        ) { dropArgs.add(tk.image); }
+        |
+        (
+            <K_ON> name = Table() { dropArgs.add("ON"); dropArgs.add(name.toString()); }
+        )
+    )*
     {
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);

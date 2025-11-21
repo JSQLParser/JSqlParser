@@ -54,6 +54,16 @@ public class DropTest {
     }
 
     @Test
+    public void testDropIndexOnQualifiedTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX idx ON qual.tbl");
+    }
+
+    @Test
+    public void testDropIndexOnDoubleQualifiedTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX idx ON dbl.qual.tbl");
+    }
+
+    @Test
     public void testDrop2() throws JSQLParserException {
         Drop drop = (Drop) parserManager.parse(new StringReader("DROP TABLE \"testtable\""));
         assertEquals("TABLE", drop.getType());
