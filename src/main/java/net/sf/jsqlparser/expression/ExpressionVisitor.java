@@ -779,4 +779,6 @@ public interface ExpressionVisitor<T> {
     <S> T visit(CosineSimilarity cosineSimilarity, S context);
 
     <S> T visit(FromQuery fromQuery, S context);
+
+    <S> T visit(DateUnitExpression dateUnitExpression, S context);
 }

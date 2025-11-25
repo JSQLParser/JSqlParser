@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
@@ -292,6 +293,12 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(LockStatement lock, S context) {
+
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreatePolicy createPolicy, S context) {
 
         return null;
     }

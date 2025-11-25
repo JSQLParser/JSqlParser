@@ -90,6 +90,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
@@ -827,6 +828,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(FromQuery fromQuery, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DateUnitExpression dateUnitExpression, S context) {
         return null;
     }
 
@@ -1845,5 +1851,29 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(LockStatement lock) {
         StatementVisitor.super.visit(lock);
+    }
+
+    @Override
+    public <S> Void visit(CreatePolicy createPolicy, S context) {
+        if (createPolicy.getTable() != null) {
+            visit(createPolicy.getTable(), context);
+        }
+
+        // Visit USING expression to find tables in subqueries
+        if (createPolicy.getUsingExpression() != null) {
+            createPolicy.getUsingExpression().accept(this, context);
+        }
+
+        // Visit WITH CHECK expression to find tables in subqueries
+        if (createPolicy.getWithCheckExpression() != null) {
+            createPolicy.getWithCheckExpression().accept(this, context);
+        }
+
+        return null;
+    }
+
+    @Override
+    public void visit(CreatePolicy createPolicy) {
+        StatementVisitor.super.visit(createPolicy);
     }
 }

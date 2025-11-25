@@ -285,7 +285,14 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
+                            <grammarEncoding>UTF-8</grammarEncoding>
+                            <isStatic>false</isStatic>
+                            <debugParser>false</debugParser>
+                            <debugLookAhead>false</debugLookAhead>
                             <codeGenerator>java</codeGenerator>
+
+                            <!-- <unicodeInput>true</unicodeInput> -->
+                            <!-- <javaUnicodeEscape>true</javaUnicodeEscape> -->
                         </configuration>
                     </execution>
                 </executions>
@@ -680,6 +687,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <pmdVersion>6.55.0</pmdVersion>
         <checkStyleVersion>10.14.0</checkStyleVersion>
     </properties>

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
@@ -349,6 +350,12 @@ public interface StatementVisitor<T> {
 
     default void visit(LockStatement lock) {
         this.visit(lock, null);
+    }
+
+    <S> T visit(CreatePolicy createPolicy, S context);
+
+    default void visit(CreatePolicy createPolicy) {
+        this.visit(createPolicy, null);
     }
 
 }

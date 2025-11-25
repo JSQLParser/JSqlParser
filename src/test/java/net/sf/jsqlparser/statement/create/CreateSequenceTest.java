@@ -40,8 +40,18 @@ public class CreateSequenceTest {
     }
 
     @Test
+    public void testCreateSequence_withIncrementPostres() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE db.schema.my_seq INCREMENT 1");
+    }
+
+    @Test
     public void testCreateSequence_withStart() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_seq START WITH 10");
+    }
+
+    @Test
+    public void testCreateSequence_withStartPostgres() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE SEQUENCE my_seq START 10");
     }
 
     @Test
