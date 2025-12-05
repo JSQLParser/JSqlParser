@@ -27,6 +27,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.statement.comment;
     exports net.sf.jsqlparser.statement.create.function;
     exports net.sf.jsqlparser.statement.create.index;
+    exports net.sf.jsqlparser.statement.create.policy;
     exports net.sf.jsqlparser.statement.create.procedure;
     exports net.sf.jsqlparser.statement.create.schema;
     exports net.sf.jsqlparser.statement.create.sequence;
