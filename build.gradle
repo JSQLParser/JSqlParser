@@ -62,16 +62,17 @@ def getVersion = { boolean considerSnapshot ->
         snapshot = "-SNAPSHOT"
     }
 
-    return patch != null
-            ? "${major}.${minor}.${patch}${snapshot}"
-            : "${major}.${minor}${snapshot}"
+    return "${major}.${minor}" +
+            (patch != null ? ".${patch}" : "") +
+            (build != null ? ".${build}" : "") +
+            snapshot
 }
 
 
 // for publishing a release, call Gradle with Environment Variable RELEASE:
 // RELEASE=true gradle JSQLParser:publish
 version = getVersion( !System.getenv("RELEASE") )
-group = 'com.github.jsqlparser'
+group = 'com.manticore-projects.jsqlformatter'
 description = 'JSQLParser library'
 
 tasks.register('generateBuildInfo') {
@@ -607,7 +608,7 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId = 'jsqlparser'
 
-            from components.java
+            from(components.java)
 
             versionMapping {
                 usage('java-api') {
