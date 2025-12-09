@@ -600,25 +600,6 @@ tasks.register('sphinx', Exec) {
 mavenPublishing {
     coordinates(group, "jsqlparser", version)
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) { publication ->
-                from components.java
-                versionMapping {
-                    usage('java-api') {
-                        fromResolutionOf('runtimeClasspath')
-                    }
-                    usage('java-runtime') {
-                        fromResolutionResult()
-                    }
-                    allVariants {
-                        fromResolutionResult()
-                    }
-                }
-            }
-        }
-    }
-
     pom {
         name.set('JSQLParser library')
         description.set('Parse SQL Statements into Abstract Syntax Trees (AST)')
@@ -660,7 +641,6 @@ mavenPublishing {
 tasks.withType(AbstractPublishToMaven).configureEach {
     dependsOn(tasks.withType(Sign))
 }
-
 
 signing {
     required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish") }
