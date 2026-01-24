@@ -277,10 +277,12 @@ public class Join extends ASTNodeAccessImpl {
     /**
      * Returns the right item of the join
      */
+    @Deprecated
     public FromItem getRightItem() {
         return fromItem;
     }
 
+    @Deprecated
     public void setRightItem(FromItem item) {
         fromItem = item;
     }
