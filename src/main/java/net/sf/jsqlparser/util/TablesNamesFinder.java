@@ -1379,7 +1379,6 @@ public class TablesNamesFinder<Void>
         }
         for (Join join : joins) {
             join.getFromItem().accept(this, context);
-            join.getRightItem().accept(this, context);
             for (Expression expression : join.getOnExpressions()) {
                 expression.accept(this, context);
             }
