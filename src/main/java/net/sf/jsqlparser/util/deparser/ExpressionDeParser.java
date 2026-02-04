@@ -52,6 +52,7 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
+import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -1834,5 +1835,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(DateUnitExpression dateUnitExpression, S context) {
         return builder.append(dateUnitExpression.toString());
+    }
+
+    @Override
+    public <S> StringBuilder visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+                                   S context) {
+        builder.append(postgresNamedFunctionParameter.getName()).append(" := ");
+
+        postgresNamedFunctionParameter.getExpression().accept(this, context);
+        return builder;
     }
 }

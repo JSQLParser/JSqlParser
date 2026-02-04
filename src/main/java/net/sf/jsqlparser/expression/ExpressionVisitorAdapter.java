@@ -744,6 +744,11 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter, S context) {
+        return postgresNamedFunctionParameter.getExpression().accept(this, context);
+    }
+
+    @Override
     public <S> T visit(GeometryDistance geometryDistance, S context) {
         return visitBinaryExpression(geometryDistance, context);
     }
