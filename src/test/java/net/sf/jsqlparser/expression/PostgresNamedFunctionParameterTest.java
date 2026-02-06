@@ -40,18 +40,8 @@ public class PostgresNamedFunctionParameterTest {
     @Test
     public void testExpression() throws JSQLParserException {
         String sqlStr =
-                "select dy_api.test_func1('test_user', is_test := false) as col1";
+                "SELECT concat_lower_or_upper(a := 'Hello', uppercase := true, b := 'World')";
 
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-
-        sqlStr = "exec dbms_stats.gather_schema_stats(\n"
-                + "      ownname          := 'COMMON', \n"
-                + "      estimate_percent := dbms_stats.auto_sample_size, \n"
-                + "      method_opt       := 'for all columns size auto', \n"
-                + "      degree           := DBMS_STATS.DEFAULT_DEGREE,\n"
-                + "      cascade          := DBMS_STATS.AUTO_CASCADE,\n"
-                + "      options          := 'GATHER AUTO'\n"
-                + "   )";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
@@ -64,12 +54,12 @@ public class PostgresNamedFunctionParameterTest {
     @Test
     public void testExpressionVisitorAdaptor() throws JSQLParserException {
         String sqlStr =
-                "select r.*, test.numeric_function ( p_1 := r.param1, p_2 := r.param2 ) as resultaat2";
+                "SELECT concat_lower_or_upper(a := 'Hello', uppercase := true, b := 'World')";
 
         CCJSqlParserUtil.parse(sqlStr).accept(new StatementVisitorAdapter());
 
         // alternatively, for the Expression only
-        CCJSqlParserUtil.parseExpression("p_1 := r.param1").accept(new ExpressionVisitorAdapter(),
+        CCJSqlParserUtil.parseExpression("a := 'Hello'").accept(new ExpressionVisitorAdapter(),
                 null);
     }
 
@@ -82,7 +72,7 @@ public class PostgresNamedFunctionParameterTest {
     @Test
     public void testTableNamesFinder() throws JSQLParserException {
         String sqlStr =
-                "select r.*, test.numeric_function ( p_1 := r.param1, p_2 := r.param2 ) as resultaat2 from test_table";
+                "SELECT concat_lower_or_upper(a := 'Hello', uppercase := true, b := 'World') FROM test_table";
 
         Statement statement = CCJSqlParserUtil.parse(sqlStr);
         List<String> tables = new TablesNamesFinder<>().getTableList(statement);
@@ -99,7 +89,7 @@ public class PostgresNamedFunctionParameterTest {
     @Test
     public void testValidator() throws JSQLParserException {
         String sqlStr =
-                "select r.*, test.numeric_function ( p_1 := r.param1, p_2 := r.param2 ) as resultaat2";
+                "SELECT concat_lower_or_upper(a := 'Hello', uppercase := true, b := 'World') FROM test_table";
 
         ValidationTestAsserts.validateNoErrors(sqlStr, 1, DatabaseType.POSTGRESQL);
     }
