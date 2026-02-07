@@ -4971,7 +4971,11 @@ Join JoinerExpression() #JoinerExpression:
     ]
 
     (
-        ( [ joinHint=JoinHint() {join.setJoinHint(joinHint); } ] <K_JOIN> )
+        (
+            [ joinHint=JoinHint() {join.setJoinHint(joinHint); } ]
+            <K_JOIN>
+            [ <K_FETCH> { join.setFetch(true); } ]
+        )
         |
         "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )?
         |

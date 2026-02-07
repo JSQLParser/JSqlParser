@@ -616,6 +616,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                     builder.append(" ").append(join.getJoinHint());
                 }
                 builder.append(" JOIN ");
+                if (join.isFetch()) {
+                    builder.append("FETCH ");
+                }
             }
 
         }

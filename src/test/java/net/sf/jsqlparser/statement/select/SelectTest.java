@@ -1211,6 +1211,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testJoinFetch() throws JSQLParserException {
+        String statement = "SELECT c FROM Customer c LEFT JOIN FETCH c.orders o";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
     public void testFunctions() throws JSQLParserException {
         String statement = "SELECT MAX(id) AS max FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
