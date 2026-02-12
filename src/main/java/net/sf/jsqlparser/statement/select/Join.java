@@ -37,6 +37,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean semi = false;
     private boolean straight = false;
     private boolean apply = false;
+    private boolean fetch = false;
     private FromItem fromItem;
     private KSQLJoinWindow joinWindow;
 
@@ -146,6 +147,24 @@ public class Join extends ASTNodeAccessImpl {
 
     public Join withApply(boolean apply) {
         this.setApply(apply);
+        return this;
+    }
+
+    /**
+     * Whether is a "FETCH" join (JPQL/HQL)
+     *
+     * @return true if is a "FETCH" join
+     */
+    public boolean isFetch() {
+        return fetch;
+    }
+
+    public void setFetch(boolean b) {
+        fetch = b;
+    }
+
+    public Join withFetch(boolean b) {
+        this.setFetch(b);
         return this;
     }
 
@@ -429,6 +448,9 @@ public class Join extends ASTNodeAccessImpl {
                     builder.append(joinHint).append(" ");
                 }
                 builder.append("JOIN ");
+                if (fetch) {
+                    builder.append("FETCH ");
+                }
             }
 
             builder.append(fromItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
