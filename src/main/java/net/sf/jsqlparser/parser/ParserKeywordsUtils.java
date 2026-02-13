@@ -121,6 +121,7 @@ public class ParserKeywordsUtils {
             {"OVERWRITE ", RESTRICTED_JSQLPARSER},
             {"PIVOT", RESTRICTED_JSQLPARSER},
             {"PREFERRING", RESTRICTED_JSQLPARSER},
+            {"PREWHERE", RESTRICTED_JSQLPARSER},
             {"PRIOR", RESTRICTED_ALIAS},
             {"PROCEDURE", RESTRICTED_ALIAS},
             {"PUBLIC", RESTRICTED_ALIAS},

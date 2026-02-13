@@ -151,6 +151,7 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         // //@todo: implement
         // }
 
+        expressionVisitor.visitExpression(plainSelect.getPreWhere(), context);
         expressionVisitor.visitExpression(plainSelect.getWhere(), context);
 
         // if (plainSelect.getOracleHierarchical() != null) {
