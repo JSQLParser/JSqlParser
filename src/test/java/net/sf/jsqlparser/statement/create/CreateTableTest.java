@@ -220,6 +220,17 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableClickHouseMaterializedColumn() throws JSQLParserException {
+        String statement = "CREATE TABLE t (\n"
+                + "    url String,\n"
+                + "    domain String MATERIALIZED regexpExtract(url, '^(?:https?://)?([^/]+)', 1)\n"
+                + ")\n"
+                + "ENGINE = MergeTree()\n"
+                + "ORDER BY tuple()";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
     public void testCreateTableIfNotExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS animals (id INT NOT NULL)");
     }
@@ -1076,7 +1087,7 @@ public class CreateTableTest {
 
     @Test
     void testWithCatalog() throws JSQLParserException {
-        String sqlStr="CREATE TABLE UNNAMED.session1.a (b VARCHAR (1))";
+        String sqlStr = "CREATE TABLE UNNAMED.session1.a (b VARCHAR (1))";
         CreateTable st = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Table t = st.getTable();
