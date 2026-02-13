@@ -1839,7 +1839,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
-                                   S context) {
+            S context) {
         builder.append(postgresNamedFunctionParameter.getName()).append(" := ");
 
         postgresNamedFunctionParameter.getExpression().accept(this, context);

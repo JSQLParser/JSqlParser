@@ -1759,7 +1759,8 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
-    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter, S context) {
+    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+            S context) {
         postgresNamedFunctionParameter.getExpression().accept(this, context);
         return null;
     }
