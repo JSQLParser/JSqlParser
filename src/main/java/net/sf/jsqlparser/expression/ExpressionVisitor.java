@@ -176,6 +176,12 @@ public interface ExpressionVisitor<T> {
         this.visit(function, null);
     }
 
+    <S> T visit(FunctionParameterClauseExpression functionParameterClauseExpression, S context);
+
+    default void visit(FunctionParameterClauseExpression functionParameterClauseExpression) {
+        this.visit(functionParameterClauseExpression, null);
+    }
+
     <S> T visit(SignedExpression signedExpression, S context);
 
     default void visit(SignedExpression signedExpression) {

@@ -30,6 +30,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.FunctionParameterClauseExpression;
 import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
@@ -936,6 +937,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (function.isEscaped()) {
             builder.append("}");
         }
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(
+            FunctionParameterClauseExpression functionParameterClauseExpression, S context) {
+        builder.append(functionParameterClauseExpression);
         return builder;
     }
 

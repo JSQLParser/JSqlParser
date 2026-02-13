@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -125,5 +127,79 @@ class FunctionTest {
         String sqlStr =
                 "SELECT DATE_SUB('2025-06-19', INTERVAL QUARTER(STR_TO_DATE('20250619', '%Y%m%d')) - 1 QUARTER) from dual";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "select json_query('{\"a\":1}', 'strict $.keyvalue()' WITH WRAPPER) from tbl",
+            "select json_query('{\"a\":1}', 'strict $.keyvalue()' WITH ARRAY WRAPPER) from tbl",
+            "select json_query('{\"a\":1}', 'strict $.keyvalue()' WITHOUT WRAPPER) from tbl",
+            "select json_query('{\"a\":1}', 'strict $.keyvalue()' WITHOUT ARRAY WRAPPER) from tbl",
+            "select json_query('{\"a\":1}', 'strict $.keyvalue()' WITH CONDITIONAL ARRAY WRAPPER) from tbl",
+            "select json_query('{\"a\":1}', '$' ERROR ON ERROR) from tbl",
+            "select json_query('{\"a\":1}', '$' RETURNING VARCHAR(100) NULL ON EMPTY) from tbl"
+    })
+    void testJsonQueryWithWrapperClauseInsideFunctionParameters(String sqlStr)
+            throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withAllowComplexParsing(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "select json_query('{\"customer\" : 100, \"region\" : \"AFRICA\"}', 'strict $.keyvalue()' WITH ARRAY WRAPPER, '$.region') from tbl",
+            "select json_query('{\"customer\" : 100, \"region\" : \"AFRICA\"}', '$' RETURNING VARCHAR(100), '$.region') from tbl",
+            "select json_query('{\"customer\" : 100, \"region\" : \"AFRICA\"}', '$' ERROR ON ERROR, '$.region') from tbl"
+    })
+    void testJsonQueryTrailingClauseBeforeLastParameterKeepsAdditionalParameters(String sqlStr)
+            throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withAllowComplexParsing(false));
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+
+        Assertions.assertThat(function.getParameters()).hasSize(3);
+        if (sqlStr.contains("WITH ARRAY WRAPPER")) {
+            Assertions.assertThat(function.getParameters().get(1).toString())
+                    .isEqualTo("'strict $.keyvalue()' WITH ARRAY WRAPPER");
+        } else if (sqlStr.contains("RETURNING")) {
+            Assertions.assertThat(function.getParameters().get(1).toString())
+                    .isEqualTo("'$' RETURNING VARCHAR ( 100 )");
+        } else {
+            Assertions.assertThat(function.getParameters().get(1).toString())
+                    .isEqualTo("'$' ERROR ON ERROR");
+        }
+        Assertions.assertThat(function.getParameters().get(2)).isInstanceOf(StringValue.class);
+        Assertions.assertThat(function.getParameters().get(2).toString()).isEqualTo("'$.region'");
+        Assertions.assertThat(function.getParameterTrailingClauses()).hasSize(3);
+    }
+
+    @Test
+    void testFunctionSupportsMultipleParameterLevelTrailingClauses() throws JSQLParserException {
+        String sqlStr =
+                "select json_query('{\"a\":1}', '$' ERROR ON ERROR, '$.x' RETURNING VARCHAR(10), '$.z' WITH ARRAY WRAPPER) from tbl";
+
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withAllowComplexParsing(false));
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+
+        Assertions.assertThat(function.getParameters()).hasSize(4);
+        Assertions.assertThat(function.getParameters().get(1).toString())
+                .isEqualTo("'$' ERROR ON ERROR");
+        Assertions.assertThat(function.getParameters().get(2).toString())
+                .isEqualTo("'$.x' RETURNING VARCHAR ( 10 )");
+        Assertions.assertThat(function.getParameters().get(3).toString())
+                .isEqualTo("'$.z' WITH ARRAY WRAPPER");
+
+        Assertions.assertThat(function.getParameterExpression(1).toString()).isEqualTo("'$'");
+        Assertions.assertThat(function.getParameterExpression(2).toString()).isEqualTo("'$.x'");
+        Assertions.assertThat(function.getParameterExpression(3).toString()).isEqualTo("'$.z'");
+        Assertions.assertThat(function.getParameterTrailingClause(1)).isEqualTo("ERROR ON ERROR");
+        Assertions.assertThat(function.getParameterTrailingClause(2))
+                .isEqualTo("RETURNING VARCHAR ( 10 )");
+        Assertions.assertThat(function.getParameterTrailingClause(3))
+                .isEqualTo("WITH ARRAY WRAPPER");
+        Assertions.assertThat(function.getParameterTrailingClauses())
+                .containsExactly(null, "ERROR ON ERROR", "RETURNING VARCHAR ( 10 )",
+                        "WITH ARRAY WRAPPER");
     }
 }

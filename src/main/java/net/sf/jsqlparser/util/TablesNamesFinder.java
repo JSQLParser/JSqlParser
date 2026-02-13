@@ -430,6 +430,15 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(FunctionParameterClauseExpression functionParameterClauseExpression,
+            S context) {
+        if (functionParameterClauseExpression.getExpression() != null) {
+            functionParameterClauseExpression.getExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(GreaterThan greaterThan, S context) {
         visitBinaryExpression(greaterThan);
         return null;

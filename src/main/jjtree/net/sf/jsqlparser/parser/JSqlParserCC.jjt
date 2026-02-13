@@ -164,6 +164,95 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return true;
     }
 
+    private boolean isFunctionStartNoThrow() {
+        int index = 1;
+        Token token = getToken(index);
+
+        if (token.kind == OPENING_CURLY_BRACKET) {
+            return true;
+        }
+
+        if (token.kind == K_APPROXIMATE) {
+            index++;
+            token = getToken(index);
+        }
+
+        if (token.kind == K_STRUCT) {
+            // BigQuery STRUCT(...) is parsed by StructType(), not generic function parsing.
+            return false;
+        }
+
+        if (!isPotentialFunctionNameToken(token)) {
+            return false;
+        }
+        index++;
+
+        while (true) {
+            token = getToken(index);
+            if (token.kind == OPENING_BRACKET) {
+                Token firstInnerToken = getToken(index + 1);
+                Token secondInnerToken = getToken(index + 2);
+                if ("+".equals(firstInnerToken.image) && secondInnerToken.kind == CLOSING_BRACKET) {
+                    // Oracle outer join marker "(+)" belongs to a column reference, not a function.
+                    return false;
+                }
+                return true;
+            }
+
+            if (".".equals(token.image) || ":".equals(token.image)) {
+                index++;
+                token = getToken(index);
+                if (!isPotentialFunctionNameToken(token)) {
+                    return false;
+                }
+                index++;
+                continue;
+            }
+
+            return false;
+        }
+    }
+
+    private boolean isPotentialFunctionNameToken(Token token) {
+        if (token == null || token.kind == EOF) {
+            return false;
+        }
+
+        String image = token.image;
+        return !",".equals(image)
+                && !"(".equals(image)
+                && !")".equals(image)
+                && !"*".equals(image);
+    }
+
+    private boolean isFunctionParameterClauseStartToken(Token token) {
+        if (token == null || token.kind == EOF || token.image == null) {
+            return false;
+        }
+
+        if ("(".equals(token.image)) {
+            return "+".equals(getToken(2).image) && ")".equals(getToken(3).image);
+        }
+
+        String image = token.image.toUpperCase(Locale.ROOT);
+        return "USING".equals(image)
+                || "WITH".equals(image)
+                || "WITHOUT".equals(image)
+                || "RETURNING".equals(image)
+                || "ERROR".equals(image)
+                || "DEFAULT".equals(image)
+                || "NULL".equals(image)
+                || "EMPTY".equals(image)
+                || "WRAPPER".equals(image)
+                || "STRICT".equals(image)
+                || "LAX".equals(image)
+                || "FORMAT".equals(image)
+                || "JSON".equals(image)
+                || "KEEP".equals(image)
+                || "OMIT".equals(image)
+                || "ABSENT".equals(image);
+    }
+
 }
 
 PARSER_END(CCJSqlParser)
@@ -6571,7 +6660,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
 
-        | LOOKAHEAD(16) retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD(2, { !interrupted && isFunctionStartNoThrow() }) retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2) retval = DateUnitExpression()
 
@@ -7810,6 +7899,51 @@ Function InternalFunction(boolean escaped):
         limit = PlainLimit() { retval.setLimit(limit); }
     ]
 
+    (
+        LOOKAHEAD({ expressionList != null
+                && !expressionList.isEmpty()
+                && isFunctionParameterClauseStartToken(getToken(1))
+                && hasTopLevelCommaBeforeClosingParenthesis() })
+        {
+            if (!",".equals(getToken(1).image) && !")".equals(getToken(1).image)) {
+                List<String> parameterClauseTokens =
+                        captureFunctionParameterClauseUntilCommaOrClosingParenthesis();
+                String currentParameterClause = parameterClauseTokens.isEmpty()
+                        ? null
+                        : String.join(" ", parameterClauseTokens);
+                if (currentParameterClause != null) {
+                    Expression previousExpression =
+                            (Expression) expressionList.get(expressionList.size() - 1);
+                    expressionList.set(expressionList.size() - 1,
+                            new FunctionParameterClauseExpression(previousExpression,
+                                    currentParameterClause));
+                }
+            }
+        }
+        ","
+        expr = FunctionParameterExpression() { expressionList.add(expr); }
+    )*
+
+    {
+        if (!")".equals(getToken(1).image)
+                && isFunctionParameterClauseStartToken(getToken(1))
+                && expressionList != null
+                && !expressionList.isEmpty()) {
+            List<String> trailingParameterClauseTokens =
+                    captureFunctionParameterClauseUntilCommaOrClosingParenthesis();
+            String trailingParameterClause = trailingParameterClauseTokens.isEmpty()
+                    ? null
+                    : String.join(" ", trailingParameterClauseTokens);
+            if (trailingParameterClause != null) {
+                Expression previousExpression =
+                        (Expression) expressionList.get(expressionList.size() - 1);
+                expressionList.set(expressionList.size() - 1,
+                        new FunctionParameterClauseExpression(previousExpression,
+                                trailingParameterClause));
+            }
+        }
+    }
+
     ")"
 
 
@@ -7850,6 +7984,25 @@ Function InternalFunction(boolean escaped):
         retval.setName(funcName.getNames());
         retval.setKeep(keep);
         return retval;
+    }
+}
+
+Expression FunctionParameterExpression():
+{
+    Expression expression;
+}
+{
+    (
+        LOOKAHEAD(2) expression = OracleNamedFunctionParameter()
+        |
+        LOOKAHEAD(7) expression = LambdaExpression()
+        |
+        LOOKAHEAD({ getAsBoolean(Feature.allowComplexParsing) && !interrupted }) expression = Expression()
+        |
+        expression = SimpleExpression()
+    )
+    {
+        return expression;
     }
 }
 
@@ -10525,6 +10678,61 @@ List<String> captureRest() {
     }
     tok = getNextToken();
   }
+  return tokens;
+}
+
+JAVACODE
+boolean hasTopLevelCommaBeforeClosingParenthesis() {
+  Token tok;
+  int parenthesisDepth = 0;
+  int index = 1;
+
+  while (true) {
+    tok = getToken(index++);
+    if (tok.kind == EOF) {
+      return false;
+    }
+    if ("(".equals(tok.image)) {
+      parenthesisDepth++;
+    } else if (")".equals(tok.image)) {
+      if (parenthesisDepth == 0) {
+        return false;
+      }
+      parenthesisDepth--;
+    } else if (",".equals(tok.image) && parenthesisDepth == 0) {
+      return true;
+    }
+  }
+}
+
+JAVACODE
+List<String> captureFunctionParameterClauseUntilCommaOrClosingParenthesis() {
+  List<String> tokens = new LinkedList<String>();
+  Token tok;
+  int parenthesisDepth = 0;
+
+  while (true) {
+    tok = getToken(1);
+    int l = tokens.size();
+
+    if (tok.kind == EOF
+            || (parenthesisDepth == 0 && (")".equals(tok.image) || ",".equals(tok.image)))) {
+      break;
+    } else if (l > 0 && (tok.image.equals(".") || tokens.get(l - 1).endsWith("."))) {
+      tokens.set(l - 1, tokens.get(l - 1) + tok.image);
+    } else {
+      tokens.add(tok.image);
+    }
+
+    if ("(".equals(tok.image)) {
+      parenthesisDepth++;
+    } else if (")".equals(tok.image) && parenthesisDepth > 0) {
+      parenthesisDepth--;
+    }
+
+    tok = getNextToken();
+  }
+
   return tokens;
 }
 

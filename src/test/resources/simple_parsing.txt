@@ -249,3 +249,28 @@ WITH
     RETURNS double
     RETURN x[1] + x[2] + x[3]
 SELECT takesArray(array[1.0, 2.0, 3.0]);
+
+select
+ json_query('{"customer" : 100, "region" : "AFRICA"},{"region" : "ASIA"},{"customer" : 300, "region" : "AFRICA", "comment" : null}', 'strict $.keyvalue()' WITH ARRAY WRAPPER)
+from
+	tbl;
+
+select
+ json_query('{"customer" : 100, "region" : "AFRICA"}', 'strict $.keyvalue()' WITH ARRAY WRAPPER, '$.region')
+from
+	tbl;
+
+select
+ json_query('{"customer" : 100, "region" : "AFRICA"}', '$' RETURNING VARCHAR(100), '$.region')
+from
+	tbl;
+
+select
+ json_query('{"customer" : 100, "region" : "AFRICA"}', '$' ERROR ON ERROR, '$.region')
+from
+	tbl;
+
+select
+ json_query('{"a":1}', '$' ERROR ON ERROR, '$.x' RETURNING VARCHAR(10), '$.z' WITH ARRAY WRAPPER)
+from
+	tbl;

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.FunctionParameterClauseExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
@@ -55,7 +56,11 @@ public class ExpressionListDeParser<T extends Expression>
                 builder.append(name);
                 builder.append(" ");
             }
-            expression.accept(expressionVisitor, null);
+            if (expression instanceof FunctionParameterClauseExpression) {
+                builder.append(expression);
+            } else {
+                expression.accept(expressionVisitor, null);
+            }
             i++;
         }
 

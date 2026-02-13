@@ -45,3 +45,6 @@ order by prob desc, cl_id asc, conf desc, attr asc, val asc
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: "(" / "(", at line 31, column 36, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
 --@FAILURE: Encountered: <OPENING_BRACKET> / "(", at line 31, column 36, in lexical state DEFAULT. recorded first on 9 Jul 2025, 17:09:17
+--@FAILURE: Encountered: <OPENING_BRACKET> / "(", at line 18, column 13, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:31:35
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 13 Feb 2026, 12:40:35
+--@FAILURE: Encountered: <K_USING> / "using", at line 31, column 66, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:47:04

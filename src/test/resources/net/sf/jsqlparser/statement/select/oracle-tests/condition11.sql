@@ -18,3 +18,6 @@ and 0 = Lib.SKU(X.sid, nvl(Z.cid, '^'))
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: "(" / "(", at line 14, column 26, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
 --@FAILURE: Encountered: <OPENING_BRACKET> / "(", at line 14, column 26, in lexical state DEFAULT. recorded first on 9 Jul 2025, 17:09:17
+--@FAILURE: Encountered: <K_COMMA> / ",", at line 14, column 41, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:31:35
+--@FAILURE: Encountered: "+" / "+", at line 13, column 18, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:40:36
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 13 Feb 2026, 12:43:01

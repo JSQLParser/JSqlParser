@@ -29,6 +29,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.FunctionParameterClauseExpression;
 import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
@@ -544,6 +545,13 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
         validateOptionalExpression(function.getKeep(), this);
         validateOptionalOrderByElements(function.getOrderByElements());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(FunctionParameterClauseExpression functionParameterClauseExpression,
+            S context) {
+        validateOptionalExpression(functionParameterClauseExpression.getExpression(), this);
         return null;
     }
 
