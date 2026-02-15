@@ -598,6 +598,9 @@ tasks.register('sphinx', Exec) {
 }
 
 mavenPublishing {
+    publishToMavenCentral(true)
+    signAllPublications()
+
     coordinates(group, "jsqlparser", version)
 
     pom {
