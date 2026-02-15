@@ -16,6 +16,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -190,6 +191,58 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public void setParameters(ExpressionList<?> list) {
         parameters = list;
+    }
+
+    /**
+     * Returns the parameter expression at the given index without any attached clause wrapper.
+     * Returns {@code null} if there are no parameters.
+     */
+    public Expression getParameterExpression(int parameterIndex) {
+        if (parameters == null) {
+            return null;
+        }
+
+        Expression parameter = parameters.get(parameterIndex);
+        if (parameter instanceof FunctionParameterClauseExpression) {
+            return ((FunctionParameterClauseExpression) parameter).getExpression();
+        }
+        return parameter;
+    }
+
+    /**
+     * Returns the trailing clause attached to a parameter, e.g. {@code ERROR ON ERROR}, or
+     * {@code null} when no clause is attached.
+     */
+    public String getParameterTrailingClause(int parameterIndex) {
+        if (parameters == null) {
+            return null;
+        }
+
+        Object parameter = parameters.get(parameterIndex);
+        if (parameter instanceof FunctionParameterClauseExpression) {
+            return ((FunctionParameterClauseExpression) parameter).getClause();
+        }
+        return null;
+    }
+
+    /**
+     * Returns one entry per parameter with the attached trailing clause at that index, or
+     * {@code null} when no clause is attached to that parameter.
+     */
+    public List<String> getParameterTrailingClauses() {
+        if (parameters == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> clauses = new ArrayList<>(parameters.size());
+        for (Object parameter : parameters) {
+            if (parameter instanceof FunctionParameterClauseExpression) {
+                clauses.add(((FunctionParameterClauseExpression) parameter).getClause());
+            } else {
+                clauses.add(null);
+            }
+        }
+        return clauses;
     }
 
     /**

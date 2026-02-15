@@ -18,3 +18,4 @@ group by batch_id
 order by 1
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: "+" / "+", at line 14, column 19, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:40:36

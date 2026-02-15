@@ -33,3 +33,4 @@ where ind.index_name = ie.index_name(+)
 and ind.index_owner = ie.index_owner(+)
 
 --@SUCCESSFULLY_PARSED_AND_DEPARSED first on Aug 3, 2021, 7:20:08 AM
+--@FAILURE: Encountered: "+" / "+", at line 32, column 38, in lexical state DEFAULT. recorded first on 13 Feb 2026, 12:40:36

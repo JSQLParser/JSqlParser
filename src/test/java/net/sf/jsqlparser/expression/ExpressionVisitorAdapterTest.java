@@ -328,4 +328,37 @@ public class ExpressionVisitorAdapterTest {
         ExpressionVisitorAdapter<Void> adapter = new ExpressionVisitorAdapter<>();
         expr.accept(adapter, null);
     }
+
+    @Test
+    public void testFunctionParameterClauseExpressionVisitor() throws JSQLParserException {
+        Expression expr = CCJSqlParserUtil.parseExpression(
+                "json_query('{\"a\":1}', '$' ERROR ON ERROR, '$.x' RETURNING VARCHAR(10), '$.z' WITH ARRAY WRAPPER)");
+
+        final List<String> parameterClauses = new ArrayList<>();
+        final List<String> stringValues = new ArrayList<>();
+
+        expr.accept(new ExpressionVisitorAdapter<Void>() {
+            @Override
+            public <S> Void visit(FunctionParameterClauseExpression functionParameterClauseExpression,
+                    S context) {
+                parameterClauses.add(functionParameterClauseExpression.getClause());
+                return super.visit(functionParameterClauseExpression, context);
+            }
+
+            @Override
+            public <S> Void visit(StringValue stringValue, S context) {
+                stringValues.add(stringValue.toString());
+                return super.visit(stringValue, context);
+            }
+        }, null);
+
+        assertEquals(3, parameterClauses.size());
+        assertEquals("ERROR ON ERROR", parameterClauses.get(0));
+        assertEquals("RETURNING VARCHAR ( 10 )", parameterClauses.get(1));
+        assertEquals("WITH ARRAY WRAPPER", parameterClauses.get(2));
+        assertEquals(4, stringValues.size());
+        assertEquals("'$'", stringValues.get(1));
+        assertEquals("'$.x'", stringValues.get(2));
+        assertEquals("'$.z'", stringValues.get(3));
+    }
 }

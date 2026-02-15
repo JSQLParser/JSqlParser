@@ -124,6 +124,13 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(FunctionParameterClauseExpression functionParameterClauseExpression,
+            S context) {
+        return visitExpressions(functionParameterClauseExpression, context,
+                functionParameterClauseExpression.getExpression());
+    }
+
+    @Override
     public <S> T visit(SignedExpression signedExpression, S context) {
         return signedExpression.getExpression().accept(this, context);
     }
