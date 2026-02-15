@@ -1,0 +1,55 @@
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2021 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
+package net.sf.jsqlparser.expression;
+
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+
+import java.util.Objects;
+
+/**
+ * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
+ */
+public class PostgresNamedFunctionParameter extends ASTNodeAccessImpl implements Expression {
+    private final String name;
+    private final Expression expression;
+
+    public PostgresNamedFunctionParameter(String name, Expression expression) {
+        this.name = Objects.requireNonNull(name,
+                "The NAME of the PostgresNamedFunctionParameter must not be null.");
+        this.expression = Objects.requireNonNull(expression,
+                "The EXPRESSION of the PostgresNamedFunctionParameter must not be null.");
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    @Override
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(this, context);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append(name)
+                .append(" := ")
+                .append(expression);
+
+        return builder;
+    }
+
+    @Override
+    public String toString() {
+        return appendTo(new StringBuilder()).toString();
+    }
+}

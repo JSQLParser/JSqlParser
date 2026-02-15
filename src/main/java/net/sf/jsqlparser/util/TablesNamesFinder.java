@@ -1762,6 +1762,13 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+            S context) {
+        postgresNamedFunctionParameter.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(RenameTableStatement renameTableStatement, S context) {
         for (Map.Entry<Table, Table> e : renameTableStatement.getTableNames()) {
             e.getKey().accept(this, context);

@@ -515,6 +515,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OR:"OR">
 |   <K_ORA: "ORA">
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
+|   <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT: ":=">
 |   <K_ORDER:"ORDER">
 |   <K_ORDINALITY:"ORDINALITY">
 |   <K_OUTER:"OUTER">
@@ -6240,6 +6241,8 @@ ExpressionList ComplexExpressionList():
     (
         LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
         |
+        LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
+        |
         expr=Expression()
     )
     {
@@ -6250,6 +6253,8 @@ ExpressionList ComplexExpressionList():
         LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            |
+            LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
             |
             LOOKAHEAD(7) expr=LambdaExpression()
             |
@@ -6799,6 +6804,20 @@ OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
     expression=Expression()
     {
         return new OracleNamedFunctionParameter(name != null ? name : token.image, expression);
+    }
+}
+
+PostgresNamedFunctionParameter PostgresNamedFunctionParameter() : {
+    Token token = null;
+    String name = null;
+    Expression expression;
+}
+{
+    ( name=RelObjectNameExt2() | token=<K_OUTER> )
+    <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT>
+    expression=Expression()
+    {
+        return new PostgresNamedFunctionParameter(name != null ? name : token.image, expression);
     }
 }
 
