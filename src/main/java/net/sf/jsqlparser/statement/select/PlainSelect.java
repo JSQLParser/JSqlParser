@@ -37,6 +37,7 @@ public class PlainSelect extends Select {
     private FromItem fromItem;
     private List<LateralView> lateralViews;
     private List<Join> joins;
+    private Expression preWhere;
     private Expression where;
     private GroupByElement groupBy;
     private Expression having;
@@ -158,6 +159,14 @@ public class PlainSelect extends Select {
 
     public void setWhere(Expression where) {
         this.where = where;
+    }
+
+    public Expression getPreWhere() {
+        return preWhere;
+    }
+
+    public void setPreWhere(Expression preWhere) {
+        this.preWhere = preWhere;
     }
 
     public PlainSelect withFromItem(FromItem item) {
@@ -569,6 +578,9 @@ public class PlainSelect extends Select {
             if (ksqlWindow != null) {
                 builder.append(" WINDOW ").append(ksqlWindow);
             }
+            if (preWhere != null) {
+                builder.append(" PREWHERE ").append(preWhere);
+            }
             if (where != null) {
                 builder.append(" WHERE ").append(where);
             }
@@ -597,6 +609,9 @@ public class PlainSelect extends Select {
             }
         } else {
             // without from
+            if (preWhere != null) {
+                builder.append(" PREWHERE ").append(preWhere);
+            }
             if (where != null) {
                 builder.append(" WHERE ").append(where);
             }
@@ -666,6 +681,11 @@ public class PlainSelect extends Select {
 
     public PlainSelect withWhere(Expression where) {
         this.setWhere(where);
+        return this;
+    }
+
+    public PlainSelect withPreWhere(Expression preWhere) {
+        this.setPreWhere(preWhere);
         return this;
     }
 
@@ -765,6 +785,10 @@ public class PlainSelect extends Select {
 
     public <E extends Expression> E getWhere(Class<E> type) {
         return type.cast(getWhere());
+    }
+
+    public <E extends Expression> E getPreWhere(Class<E> type) {
+        return type.cast(getPreWhere());
     }
 
     public <E extends Expression> E getHaving(Class<E> type) {

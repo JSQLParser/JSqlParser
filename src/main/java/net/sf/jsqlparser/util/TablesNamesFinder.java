@@ -317,6 +317,9 @@ public class TablesNamesFinder<Void>
         }
 
         visitJoins(plainSelect.getJoins(), context);
+        if (plainSelect.getPreWhere() != null) {
+            plainSelect.getPreWhere().accept(this, context);
+        }
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this, context);
         }
@@ -1379,7 +1382,6 @@ public class TablesNamesFinder<Void>
         }
         for (Join join : joins) {
             join.getFromItem().accept(this, context);
-            join.getRightItem().accept(this, context);
             for (Expression expression : join.getOnExpressions()) {
                 expression.accept(this, context);
             }
@@ -1756,6 +1758,13 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         oracleNamedFunctionParameter.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+            S context) {
+        postgresNamedFunctionParameter.getExpression().accept(this, context);
         return null;
     }
 

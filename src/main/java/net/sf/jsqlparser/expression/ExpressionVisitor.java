@@ -781,4 +781,10 @@ public interface ExpressionVisitor<T> {
     <S> T visit(FromQuery fromQuery, S context);
 
     <S> T visit(DateUnitExpression dateUnitExpression, S context);
+
+    <S> T visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter, S context);
+
+    default void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter) {
+        this.visit(postgresNamedFunctionParameter, null);
+    }
 }

@@ -515,6 +515,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_OR:"OR">
 |   <K_ORA: "ORA">
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
+|   <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT: ":=">
 |   <K_ORDER:"ORDER">
 |   <K_ORDINALITY:"ORDINALITY">
 |   <K_OUTER:"OUTER">
@@ -539,6 +540,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PLUS:"PLUS">
 |   <K_PREFERRING: "PREFERRING">
 |   <K_PRECEDING: "PRECEDING">
+|   <K_PREWHERE: "PREWHERE">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
@@ -4118,6 +4120,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<LateralView> lateralViews = null;
     List<Join> joins = null;
     List<SelectItem<?>> distinctOn = null;
+    Expression preWhere = null;
     Expression where = null;
     ForClause forClause = null;
     List<OrderByElement> orderByElements;
@@ -4213,6 +4216,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) <K_FINAL> { plainSelect.setUsingFinal(true); } ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
+    [ LOOKAHEAD(2) preWhere=PreWhereClause() { plainSelect.setPreWhere(preWhere); }]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
@@ -4971,7 +4975,11 @@ Join JoinerExpression() #JoinerExpression:
     ]
 
     (
-        ( [ joinHint=JoinHint() {join.setJoinHint(joinHint); } ] <K_JOIN> )
+        (
+            [ joinHint=JoinHint() {join.setJoinHint(joinHint); } ]
+            <K_JOIN>
+            [ <K_FETCH> { join.setFetch(true); } ]
+        )
         |
         "," { join.setSimple(true); } (<K_OUTER> { join.setOuter(true); } )?
         |
@@ -5081,6 +5089,15 @@ Expression WhereClause():
 }
 {
     <K_WHERE> retval=Expression()
+    { return retval; }
+}
+
+Expression PreWhereClause():
+{
+    Expression retval = null;
+}
+{
+    <K_PREWHERE> retval=Expression()
     { return retval; }
 }
 
@@ -6224,6 +6241,8 @@ ExpressionList ComplexExpressionList():
     (
         LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
         |
+        LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
+        |
         expr=Expression()
     )
     {
@@ -6234,6 +6253,8 @@ ExpressionList ComplexExpressionList():
         LOOKAHEAD(2, {!interrupted}) ","
         (
             LOOKAHEAD(2) expr=OracleNamedFunctionParameter()
+            |
+            LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
             |
             LOOKAHEAD(7) expr=LambdaExpression()
             |
@@ -6783,6 +6804,20 @@ OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
     expression=Expression()
     {
         return new OracleNamedFunctionParameter(name != null ? name : token.image, expression);
+    }
+}
+
+PostgresNamedFunctionParameter PostgresNamedFunctionParameter() : {
+    Token token = null;
+    String name = null;
+    Expression expression;
+}
+{
+    ( name=RelObjectNameExt2() | token=<K_OUTER> )
+    <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT>
+    expression=Expression()
+    {
+        return new PostgresNamedFunctionParameter(name != null ? name : token.image, expression);
     }
 }
 
@@ -8615,9 +8650,9 @@ List<String> CreateParameter():
             | tk=<K_CONSTRAINT> | tk=<K_WITH> | tk=<K_EXCLUDE> | tk=<K_WHERE>
             | tk=<K_TEMP> | tk=<K_TEMPORARY> | tk=<K_PARTITION> | tk=<K_BY> | tk=<K_IN>
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
-            | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START>
+            | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START> | tk=<K_ORDER>
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
-            | tk=<K_ENGINE> | tk=<K_IDENTITY>
+            | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED>
             | tk="="
         )
         { param.add(tk.image); }

@@ -287,6 +287,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(plainSelect.getKsqlWindow().toString());
         }
 
+        deparsePreWhereClause(plainSelect);
         deparseWhereClause(plainSelect);
 
         if (plainSelect.getOracleHierarchical() != null) {
@@ -391,6 +392,13 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.getWhere() != null) {
             builder.append(" WHERE ");
             plainSelect.getWhere().accept(expressionVisitor, null);
+        }
+    }
+
+    protected void deparsePreWhereClause(PlainSelect plainSelect) {
+        if (plainSelect.getPreWhere() != null) {
+            builder.append(" PREWHERE ");
+            plainSelect.getPreWhere().accept(expressionVisitor, null);
         }
     }
 
@@ -616,6 +624,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                     builder.append(" ").append(join.getJoinHint());
                 }
                 builder.append(" JOIN ");
+                if (join.isFetch()) {
+                    builder.append("FETCH ");
+                }
             }
 
         }
