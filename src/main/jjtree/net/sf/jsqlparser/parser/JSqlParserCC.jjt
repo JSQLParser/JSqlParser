@@ -539,6 +539,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_PLUS:"PLUS">
 |   <K_PREFERRING: "PREFERRING">
 |   <K_PRECEDING: "PRECEDING">
+|   <K_PREWHERE: "PREWHERE">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
@@ -4118,6 +4119,7 @@ PlainSelect PlainSelect() #PlainSelect:
     List<LateralView> lateralViews = null;
     List<Join> joins = null;
     List<SelectItem<?>> distinctOn = null;
+    Expression preWhere = null;
     Expression where = null;
     ForClause forClause = null;
     List<OrderByElement> orderByElements;
@@ -4213,6 +4215,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) <K_FINAL> { plainSelect.setUsingFinal(true); } ]
 
     [ LOOKAHEAD(2) ksqlWindow=KSQLWindowClause() { plainSelect.setKsqlWindow(ksqlWindow); } ]
+    [ LOOKAHEAD(2) preWhere=PreWhereClause() { plainSelect.setPreWhere(preWhere); }]
     [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); }]
     [ LOOKAHEAD(2) oracleHierarchicalQueryClause=OracleHierarchicalQueryClause() { plainSelect.setOracleHierarchical(oracleHierarchicalQueryClause); } ]
     [ LOOKAHEAD(2) preferringClause=PreferringClause() { plainSelect.setPreferringClause(preferringClause); }
@@ -5085,6 +5088,15 @@ Expression WhereClause():
 }
 {
     <K_WHERE> retval=Expression()
+    { return retval; }
+}
+
+Expression PreWhereClause():
+{
+    Expression retval = null;
+}
+{
+    <K_PREWHERE> retval=Expression()
     { return retval; }
 }
 

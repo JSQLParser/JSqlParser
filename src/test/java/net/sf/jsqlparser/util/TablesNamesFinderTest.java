@@ -56,6 +56,14 @@ public class TablesNamesFinderTest {
     }
 
     @Test
+    public void testGetTablesWithPreWhere() throws Exception {
+        String sqlStr =
+                "SELECT * FROM MY_TABLE1 PREWHERE ID IN (SELECT ID FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
     public void testGetTablesWithStmt() throws Exception {
         String sqlStr =
                 "WITH TESTSTMT as (SELECT * FROM MY_TABLE1 as ALIAS_TABLE1) SELECT * FROM TESTSTMT";
@@ -734,4 +742,3 @@ public class TablesNamesFinderTest {
                 "table2", "table3");
     }
 }
-

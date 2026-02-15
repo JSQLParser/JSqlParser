@@ -317,6 +317,9 @@ public class TablesNamesFinder<Void>
         }
 
         visitJoins(plainSelect.getJoins(), context);
+        if (plainSelect.getPreWhere() != null) {
+            plainSelect.getPreWhere().accept(this, context);
+        }
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this, context);
         }

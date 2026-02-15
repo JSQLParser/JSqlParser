@@ -59,4 +59,21 @@ public class ClickHouseTest {
                     }
                 }, "Fail when restricted keyword GLOBAL is used as an Alias.");
     }
+
+    @Test
+    public void testPreWhereClause() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM table1 PREWHERE column_name = 'value'";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertNotNull(select.getPreWhere());
+        Assertions.assertNull(select.getWhere());
+    }
+
+    @Test
+    public void testPreWhereWithWhereClause() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * FROM table1 PREWHERE column_name = 'value' WHERE id > 10";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Assertions.assertNotNull(select.getPreWhere());
+        Assertions.assertNotNull(select.getWhere());
+    }
 }

@@ -119,6 +119,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         // validateOptionalList(plainSelect.getSelectItems(), () -> this, SelectItem::accept,
         // context);
 
+        validateOptionalExpression(plainSelect.getPreWhere());
         validateOptionalExpression(plainSelect.getWhere());
         validateOptionalExpression(plainSelect.getOracleHierarchical());
 
