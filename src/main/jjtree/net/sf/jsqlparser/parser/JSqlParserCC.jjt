@@ -15,7 +15,6 @@ options {
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
-    SINGLE_TREE_FILE = false;
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
     JAVA_TEMPLATE_TYPE = "modern";
