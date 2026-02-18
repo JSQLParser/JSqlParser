@@ -1732,6 +1732,38 @@ public class TablesNamesFinder<Void>
         for (JsonFunctionExpression expr : expression.getExpressions()) {
             expr.getExpression().accept(this, context);
         }
+
+        if (expression.getInputExpression() != null) {
+            expression.getInputExpression().getExpression().accept(this, context);
+        }
+
+        if (expression.getJsonPathExpression() != null) {
+            expression.getJsonPathExpression().accept(this, context);
+        }
+
+        for (Expression passingExpression : expression.getPassingExpressions()) {
+            passingExpression.accept(this, context);
+        }
+
+        if (expression.getOnEmptyBehavior() != null
+                && expression.getOnEmptyBehavior().getExpression() != null) {
+            expression.getOnEmptyBehavior().getExpression().accept(this, context);
+        }
+
+        if (expression.getOnErrorBehavior() != null
+                && expression.getOnErrorBehavior().getExpression() != null) {
+            expression.getOnErrorBehavior().getExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(JsonTableFunction expression, S context) {
+        for (Expression jsonExpression : expression.getAllExpressions()) {
+            if (jsonExpression != null) {
+                jsonExpression.accept(this, context);
+            }
+        }
         return null;
     }
 

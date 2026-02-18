@@ -658,6 +658,14 @@ public interface ExpressionVisitor<T> {
         this.visit(jsonFunction, null);
     }
 
+    default <S> T visit(JsonTableFunction jsonTableFunction, S context) {
+        return visit((Function) jsonTableFunction, context);
+    }
+
+    default void visit(JsonTableFunction jsonTableFunction) {
+        this.visit(jsonTableFunction, null);
+    }
+
     <S> T visit(ConnectByRootOperator connectByRootOperator, S context);
 
     default void visit(ConnectByRootOperator connectByRootOperator) {

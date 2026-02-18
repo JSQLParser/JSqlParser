@@ -729,10 +729,38 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(JsonFunction jsonFunction, S context) {
         ArrayList<Expression> subExpressions = new ArrayList<>();
+        for (JsonKeyValuePair keyValuePair : jsonFunction.getKeyValuePairs()) {
+            if (keyValuePair.getKey() instanceof Expression) {
+                subExpressions.add((Expression) keyValuePair.getKey());
+            }
+            if (keyValuePair.getValue() instanceof Expression) {
+                subExpressions.add((Expression) keyValuePair.getValue());
+            }
+        }
         for (JsonFunctionExpression expr : jsonFunction.getExpressions()) {
             subExpressions.add(expr.getExpression());
         }
+        if (jsonFunction.getInputExpression() != null) {
+            subExpressions.add(jsonFunction.getInputExpression().getExpression());
+        }
+        if (jsonFunction.getJsonPathExpression() != null) {
+            subExpressions.add(jsonFunction.getJsonPathExpression());
+        }
+        subExpressions.addAll(jsonFunction.getPassingExpressions());
+        if (jsonFunction.getOnEmptyBehavior() != null
+                && jsonFunction.getOnEmptyBehavior().getExpression() != null) {
+            subExpressions.add(jsonFunction.getOnEmptyBehavior().getExpression());
+        }
+        if (jsonFunction.getOnErrorBehavior() != null
+                && jsonFunction.getOnErrorBehavior().getExpression() != null) {
+            subExpressions.add(jsonFunction.getOnErrorBehavior().getExpression());
+        }
         return visitExpressions(jsonFunction, context, subExpressions);
+    }
+
+    @Override
+    public <S> T visit(JsonTableFunction jsonTableFunction, S context) {
+        return visitExpressions(jsonTableFunction, context, jsonTableFunction.getAllExpressions());
     }
 
     @Override
