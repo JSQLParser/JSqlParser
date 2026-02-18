@@ -21,6 +21,7 @@ public class JsonFunctionExpression implements Serializable {
     private final Expression expression;
 
     private boolean usingFormatJson = false;
+    private String encoding;
 
     public JsonFunctionExpression(Expression expression) {
         this.expression = Objects.requireNonNull(expression, "The EXPRESSION must not be null");
@@ -43,8 +44,28 @@ public class JsonFunctionExpression implements Serializable {
         return this;
     }
 
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public JsonFunctionExpression withEncoding(String encoding) {
+        this.setEncoding(encoding);
+        return this;
+    }
+
     public StringBuilder append(StringBuilder builder) {
-        return builder.append(getExpression()).append(isUsingFormatJson() ? " FORMAT JSON" : "");
+        builder.append(getExpression());
+        if (isUsingFormatJson()) {
+            builder.append(" FORMAT JSON");
+            if (encoding != null) {
+                builder.append(" ENCODING ").append(encoding);
+            }
+        }
+        return builder;
     }
 
     @Override

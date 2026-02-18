@@ -4864,6 +4864,19 @@ FromItem FromItem() #FromItem:
     (
         LOOKAHEAD(3, { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem = Values()
         |
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("JSON_TABLE")
+                && getToken(2).kind == OPENING_BRACKET
+        }) fromItem=TableFunction()
+        |
+        LOOKAHEAD({
+            getToken(1).kind == K_LATERAL
+                && getToken(2).kind == S_IDENTIFIER
+                && getToken(2).image.equalsIgnoreCase("JSON_TABLE")
+                && getToken(3).kind == OPENING_BRACKET
+        }) fromItem=TableFunction()
+        |
         LOOKAHEAD(16) fromItem=TableFunction()
         |
         LOOKAHEAD(3) fromItem=Table()
@@ -7045,6 +7058,7 @@ JsonKeyValuePair JsonKeyValuePair(boolean isFirstEntry) : {
 
     boolean usingKeyKeyword = false;
     boolean usingFormatJason = false;
+    String encoding = null;
     boolean isWildcard = false;
 
     Object key = null;
@@ -7087,11 +7101,15 @@ JsonKeyValuePair JsonKeyValuePair(boolean isFirstEntry) : {
        expression = Expression()
     ]
 
-    // Optional: FORMAT JSON - Is not allowed with * or t1.*
-    [ LOOKAHEAD(1, { !isWildcard } ) <K_FORMAT> <K_JSON> { usingFormatJason = true; } ]
+    // Optional: FORMAT JSON [ ENCODING ... ] - Is not allowed with * or t1.*
+    [
+        LOOKAHEAD(1, { !isWildcard } ) <K_FORMAT> <K_JSON> { usingFormatJason = true; }
+        [ <K_ENCODING> encoding = JsonEncoding() ]
+    ]
     {
         final JsonKeyValuePair keyValuePair = new JsonKeyValuePair( key, expression, usingKeyKeyword, kvSeparator );
         keyValuePair.setUsingFormatJson( usingFormatJason );
+        keyValuePair.setEncoding(encoding);
         return keyValuePair;
    }
 }
@@ -7100,6 +7118,8 @@ JsonFunction JsonObjectBody() : {
     JsonFunction result = new JsonFunction(JsonFunctionType.OBJECT);
 
     JsonKeyValuePair keyValuePair;
+    ColDataType dataType;
+    String encoding;
 }
 {
     ( "("
@@ -7123,6 +7143,13 @@ JsonFunction JsonObjectBody() : {
           |
           ( <K_WITHOUT> <K_UNIQUE> <K_KEYS> { result.setUniqueKeysType( JsonAggregateUniqueKeysType.WITHOUT ); } )
         ]
+        [
+            <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); }
+            [
+                <K_FORMAT> <K_JSON> { result.setReturningFormatJson(true); }
+                [ <K_ENCODING> encoding = JsonEncoding() { result.setReturningEncoding(encoding); } ]
+            ]
+        ]
     ")" )
     {
         return result;
@@ -7134,6 +7161,8 @@ JsonFunction JsonArrayBody() : {
 
     Expression expression = null;
     JsonFunctionExpression functionExpression;
+    ColDataType dataType;
+    String encoding;
 }
 {
     ( "("
@@ -7144,18 +7173,478 @@ JsonFunction JsonArrayBody() : {
             |
             expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
 
-            [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+            [
+                LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); }
+                [ <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
+            ]
             (
                 ","
                 expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
-                [ LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); } ]
+                [
+                    LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); }
+                    [ <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
+                ]
             )*
         )*
 
         [
           <K_ABSENT> <K_ON> <K_NULL> { result.setOnNullType(  JsonAggregateOnNullType.ABSENT ); }
         ]
+        [
+            <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); }
+            [
+                <K_FORMAT> <K_JSON> { result.setReturningFormatJson(true); }
+                [ <K_ENCODING> encoding = JsonEncoding() { result.setReturningEncoding(encoding); } ]
+            ]
+        ]
     ")" )
+    {
+        return result;
+    }
+}
+
+void JsonKeyword(String expectedKeyword) : {
+    Token token;
+}
+{
+    token = <S_IDENTIFIER>
+    {
+        if (!token.image.equalsIgnoreCase(expectedKeyword)) {
+            throw new ParseException(
+                    "Expected keyword " + expectedKeyword + " but found " + token.image);
+        }
+    }
+}
+
+String JsonEncoding() : {
+    Token token;
+}
+{
+    token = <S_IDENTIFIER>
+    {
+        if (token.image.equalsIgnoreCase("UTF8")) {
+            return "UTF8";
+        } else if (token.image.equalsIgnoreCase("UTF16")) {
+            return "UTF16";
+        } else if (token.image.equalsIgnoreCase("UTF32")) {
+            return "UTF32";
+        }
+        throw new ParseException(
+                "Expected ENCODING value UTF8, UTF16 or UTF32 but found " + token.image);
+    }
+}
+
+JsonFunctionExpression JsonValueOrQueryInputExpression() : {
+    Expression expression;
+    JsonFunctionExpression functionExpression;
+    String encoding;
+}
+{
+    expression = Expression() { functionExpression = new JsonFunctionExpression(expression); }
+    [
+        <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson(true); }
+        [ <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
+    ]
+    {
+        return functionExpression;
+    }
+}
+
+JsonFunction.JsonOnResponseBehavior JsonValueOnResponseBehavior() : {
+    JsonFunction.JsonOnResponseBehavior behavior;
+    Expression expression;
+}
+{
+    (
+        <K_ERROR>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.ERROR);
+        }
+        |
+        <K_NULL>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.NULL);
+        }
+        |
+        <K_DEFAULT> expression = Expression()
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.DEFAULT, expression);
+        }
+    )
+    {
+        return behavior;
+    }
+}
+
+JsonFunction.JsonOnResponseBehavior JsonQueryOnResponseBehavior() : {
+    JsonFunction.JsonOnResponseBehavior behavior = null;
+    Token token;
+}
+{
+    (
+        <K_ERROR>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.ERROR);
+        }
+        |
+        <K_NULL>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.NULL);
+        }
+        |
+        token = <S_IDENTIFIER>
+        {
+            if (!token.image.equalsIgnoreCase("EMPTY")) {
+                throw new ParseException(
+                        "Expected EMPTY, ERROR or NULL but found " + token.image);
+            }
+        }
+        (
+            <K_ARRAY_LITERAL>
+            {
+                behavior = new JsonFunction.JsonOnResponseBehavior(
+                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
+            }
+            |
+            JsonKeyword("OBJECT")
+            {
+                behavior = new JsonFunction.JsonOnResponseBehavior(
+                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
+            }
+        )
+    )
+    {
+        if (behavior != null) {
+            return behavior;
+        }
+    }
+}
+
+JsonFunction.JsonOnResponseBehavior JsonExistsOnResponseBehavior() : {
+    JsonFunction.JsonOnResponseBehavior behavior = null;
+}
+{
+    (
+        <K_TRUE>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.TRUE);
+        }
+        |
+        <K_FALSE>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.FALSE);
+        }
+        |
+        <K_UNKNOWN>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.UNKNOWN);
+        }
+        |
+        <K_ERROR>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.ERROR);
+        }
+    )
+    {
+        return behavior;
+    }
+}
+
+JsonFunction JsonExistsBody() : {
+    JsonFunction result = new JsonFunction(JsonFunctionType.EXISTS);
+    JsonFunctionExpression inputExpression;
+    Expression expression;
+    JsonFunction.JsonOnResponseBehavior behavior;
+}
+{
+    "("
+    inputExpression = JsonValueOrQueryInputExpression() { result.setInputExpression(inputExpression); }
+    ","
+    expression = Expression() { result.setJsonPathExpression(expression); }
+
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        JsonKeyword("PASSING")
+        expression = Expression() { result.addPassingExpression(expression); }
+        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+    ]
+
+    [
+        LOOKAHEAD( JsonExistsOnResponseBehavior() <K_ON> <K_ERROR> )
+        behavior = JsonExistsOnResponseBehavior()
+        <K_ON> <K_ERROR>
+        { result.setOnErrorBehavior(behavior); }
+    ]
+    ")"
+    {
+        return result;
+    }
+}
+
+JsonFunction JsonValueBody() : {
+    JsonFunction result = new JsonFunction(JsonFunctionType.VALUE);
+    JsonFunctionExpression inputExpression;
+    Expression expression;
+    ColDataType dataType;
+    JsonFunction.JsonOnResponseBehavior behavior;
+}
+{
+    "("
+    inputExpression = JsonValueOrQueryInputExpression() { result.setInputExpression(inputExpression); }
+    ","
+    expression = Expression() { result.setJsonPathExpression(expression); }
+
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        JsonKeyword("PASSING")
+        expression = Expression() { result.addPassingExpression(expression); }
+        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+    ]
+
+    [ <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); } ]
+
+    [
+        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        behavior = JsonValueOnResponseBehavior()
+        <K_ON> JsonKeyword("EMPTY")
+        { result.setOnEmptyBehavior(behavior); }
+    ]
+
+    [
+        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_ERROR> )
+        behavior = JsonValueOnResponseBehavior()
+        <K_ON> <K_ERROR>
+        { result.setOnErrorBehavior(behavior); }
+    ]
+    ")"
+    {
+        return result;
+    }
+}
+
+JsonFunction JsonQueryBody() : {
+    JsonFunction result = new JsonFunction(JsonFunctionType.QUERY);
+    JsonFunctionExpression inputExpression;
+    Expression expression;
+    ColDataType dataType;
+    JsonFunction.JsonOnResponseBehavior behavior;
+    Token token;
+    String encoding;
+    ColDataType additionalReturningType;
+    boolean additionalReturningFormatJson;
+    String additionalReturningEncoding;
+    JsonFunction.JsonWrapperType additionalWrapperType;
+    JsonFunction.JsonWrapperMode additionalWrapperMode;
+    boolean additionalWrapperArray;
+    JsonFunction.JsonQuotesType additionalQuotesType;
+    boolean additionalQuotesOnScalarString;
+    JsonFunction.JsonOnResponseBehavior additionalOnEmptyBehavior;
+    JsonFunction.JsonOnResponseBehavior additionalOnErrorBehavior;
+    StringBuilder additionalBuilder;
+}
+{
+    "("
+    inputExpression = JsonValueOrQueryInputExpression() { result.setInputExpression(inputExpression); }
+    ","
+    expression = Expression() { result.setJsonPathExpression(expression); }
+
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        JsonKeyword("PASSING")
+        expression = Expression() { result.addPassingExpression(expression); }
+        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+    ]
+
+    [
+        <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); }
+        [
+            <K_FORMAT> <K_JSON> { result.setReturningFormatJson(true); }
+            [ <K_ENCODING> encoding = JsonEncoding() { result.setReturningEncoding(encoding); } ]
+        ]
+    ]
+
+    [
+        (
+            <K_WITHOUT> { result.setWrapperType(JsonFunction.JsonWrapperType.WITHOUT); }
+            [ <K_ARRAY_LITERAL> { result.setWrapperArray(true); } ]
+            JsonKeyword("WRAPPER")
+            |
+            <K_WITH> { result.setWrapperType(JsonFunction.JsonWrapperType.WITH); }
+            [
+                LOOKAHEAD({
+                    getToken(1).kind == S_IDENTIFIER
+                        && (getToken(1).image.equalsIgnoreCase("CONDITIONAL")
+                            || getToken(1).image.equalsIgnoreCase("UNCONDITIONAL"))
+                })
+                token = <S_IDENTIFIER>
+                {
+                    if (token.image.equalsIgnoreCase("CONDITIONAL")) {
+                        result.setWrapperMode(JsonFunction.JsonWrapperMode.CONDITIONAL);
+                    } else {
+                        result.setWrapperMode(JsonFunction.JsonWrapperMode.UNCONDITIONAL);
+                    }
+                }
+            ]
+            [ <K_ARRAY_LITERAL> { result.setWrapperArray(true); } ]
+            JsonKeyword("WRAPPER")
+        )
+    ]
+
+    [
+        LOOKAHEAD({
+            getToken(1).kind == K_KEEP
+                || (getToken(1).kind == S_IDENTIFIER
+                    && getToken(1).image.equalsIgnoreCase("OMIT"))
+        })
+        (
+            <K_KEEP> { result.setQuotesType(JsonFunction.JsonQuotesType.KEEP); }
+            |
+            JsonKeyword("OMIT") { result.setQuotesType(JsonFunction.JsonQuotesType.OMIT); }
+        )
+        JsonKeyword("QUOTES")
+        [
+            <K_ON> JsonKeyword("SCALAR") <K_STRING>
+            { result.setQuotesOnScalarString(true); }
+        ]
+    ]
+
+    [
+        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        behavior = JsonQueryOnResponseBehavior()
+        <K_ON> JsonKeyword("EMPTY")
+        { result.setOnEmptyBehavior(behavior); }
+    ]
+
+    [
+        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
+        behavior = JsonQueryOnResponseBehavior()
+        <K_ON> <K_ERROR>
+        { result.setOnErrorBehavior(behavior); }
+    ]
+
+    (
+        ","
+        {
+            additionalReturningType = null;
+            additionalReturningFormatJson = false;
+            additionalReturningEncoding = null;
+            additionalWrapperType = null;
+            additionalWrapperMode = null;
+            additionalWrapperArray = false;
+            additionalQuotesType = null;
+            additionalQuotesOnScalarString = false;
+            additionalOnEmptyBehavior = null;
+            additionalOnErrorBehavior = null;
+        }
+        expression = Expression()
+        [
+            <K_RETURNING> additionalReturningType = ColDataType()
+            [
+                <K_FORMAT> <K_JSON> { additionalReturningFormatJson = true; }
+                [ <K_ENCODING> additionalReturningEncoding = JsonEncoding() ]
+            ]
+        ]
+        [
+            (
+                <K_WITHOUT>
+                { additionalWrapperType = JsonFunction.JsonWrapperType.WITHOUT; }
+                [ <K_ARRAY_LITERAL> { additionalWrapperArray = true; } ]
+                JsonKeyword("WRAPPER")
+                |
+                <K_WITH>
+                { additionalWrapperType = JsonFunction.JsonWrapperType.WITH; }
+                [
+                    LOOKAHEAD({
+                        getToken(1).kind == S_IDENTIFIER
+                            && (getToken(1).image.equalsIgnoreCase("CONDITIONAL")
+                                || getToken(1).image.equalsIgnoreCase("UNCONDITIONAL"))
+                    })
+                    token = <S_IDENTIFIER>
+                    {
+                        if (token.image.equalsIgnoreCase("CONDITIONAL")) {
+                            additionalWrapperMode = JsonFunction.JsonWrapperMode.CONDITIONAL;
+                        } else {
+                            additionalWrapperMode = JsonFunction.JsonWrapperMode.UNCONDITIONAL;
+                        }
+                    }
+                ]
+                [ <K_ARRAY_LITERAL> { additionalWrapperArray = true; } ]
+                JsonKeyword("WRAPPER")
+            )
+        ]
+        [
+            LOOKAHEAD({
+                getToken(1).kind == K_KEEP
+                    || (getToken(1).kind == S_IDENTIFIER
+                        && getToken(1).image.equalsIgnoreCase("OMIT"))
+            })
+            (
+                <K_KEEP> { additionalQuotesType = JsonFunction.JsonQuotesType.KEEP; }
+                |
+                JsonKeyword("OMIT") { additionalQuotesType = JsonFunction.JsonQuotesType.OMIT; }
+            )
+            JsonKeyword("QUOTES")
+            [
+                <K_ON> JsonKeyword("SCALAR") <K_STRING> { additionalQuotesOnScalarString = true; }
+            ]
+        ]
+        [
+            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+            additionalOnEmptyBehavior = JsonQueryOnResponseBehavior()
+            <K_ON> JsonKeyword("EMPTY")
+        ]
+        [
+            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
+            additionalOnErrorBehavior = JsonQueryOnResponseBehavior()
+            <K_ON> <K_ERROR>
+        ]
+        {
+            additionalBuilder = new StringBuilder();
+            additionalBuilder.append(expression);
+            if (additionalReturningType != null) {
+                additionalBuilder.append(" RETURNING ").append(additionalReturningType);
+                if (additionalReturningFormatJson) {
+                    additionalBuilder.append(" FORMAT JSON");
+                    if (additionalReturningEncoding != null) {
+                        additionalBuilder.append(" ENCODING ").append(additionalReturningEncoding);
+                    }
+                }
+            }
+            if (additionalWrapperType != null) {
+                additionalBuilder.append(" ").append(additionalWrapperType);
+                if (additionalWrapperMode != null) {
+                    additionalBuilder.append(" ").append(additionalWrapperMode);
+                }
+                if (additionalWrapperArray) {
+                    additionalBuilder.append(" ARRAY");
+                }
+                additionalBuilder.append(" WRAPPER");
+            }
+            if (additionalQuotesType != null) {
+                additionalBuilder.append(" ").append(additionalQuotesType).append(" QUOTES");
+                if (additionalQuotesOnScalarString) {
+                    additionalBuilder.append(" ON SCALAR STRING");
+                }
+            }
+            if (additionalOnEmptyBehavior != null) {
+                additionalBuilder.append(" ").append(additionalOnEmptyBehavior).append(" ON EMPTY");
+            }
+            if (additionalOnErrorBehavior != null) {
+                additionalBuilder.append(" ").append(additionalOnErrorBehavior).append(" ON ERROR");
+            }
+            result.addAdditionalQueryPathArgument(additionalBuilder.toString());
+        }
+    )*
+    ")"
     {
         return result;
     }
@@ -7169,6 +7658,33 @@ JsonFunction JsonFunction() : {
       ( <K_JSON_OBJECT> result = JsonObjectBody() )
       |
       ( <K_JSON_ARRAY> result = JsonArrayBody() )
+      |
+      (
+          LOOKAHEAD({
+              getToken(1).kind == S_IDENTIFIER
+                  && getToken(1).image.equalsIgnoreCase("JSON_VALUE")
+          })
+          JsonKeyword("JSON_VALUE")
+          result = JsonValueBody()
+      )
+      |
+      (
+          LOOKAHEAD({
+              getToken(1).kind == S_IDENTIFIER
+                  && getToken(1).image.equalsIgnoreCase("JSON_QUERY")
+          })
+          JsonKeyword("JSON_QUERY")
+          result = JsonQueryBody()
+      )
+      |
+      (
+          LOOKAHEAD({
+              getToken(1).kind == S_IDENTIFIER
+                  && getToken(1).image.equalsIgnoreCase("JSON_EXISTS")
+          })
+          JsonKeyword("JSON_EXISTS")
+          result = JsonExistsBody()
+      )
     )
     {
         return result;
@@ -7927,16 +8443,386 @@ MySQLGroupConcat MySQLGroupConcat():{
     }
 }
 
+JsonTableFunction.JsonTablePassingClause JsonTablePassingClause() : {
+    Expression valueExpression;
+    String parameterName;
+}
+{
+    valueExpression = Expression()
+    <K_AS>
+    parameterName = RelObjectName()
+    {
+        return new JsonTableFunction.JsonTablePassingClause(valueExpression, parameterName);
+    }
+}
+
+JsonFunction.JsonOnResponseBehavior JsonTableOnEmptyBehavior() : {
+    JsonFunction.JsonOnResponseBehavior behavior = null;
+    Expression expression;
+    Token token;
+}
+{
+    (
+        <K_ERROR>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.ERROR);
+        }
+        |
+        <K_NULL>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.NULL);
+        }
+        |
+        <K_DEFAULT> expression = Expression()
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.DEFAULT, expression);
+        }
+        |
+        token = <S_IDENTIFIER>
+        {
+            if (!token.image.equalsIgnoreCase("EMPTY")) {
+                throw new ParseException(
+                        "Expected EMPTY, ERROR, NULL or DEFAULT but found " + token.image);
+            }
+        }
+        (
+            LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("OBJECT") })
+            JsonKeyword("OBJECT")
+            {
+                behavior = new JsonFunction.JsonOnResponseBehavior(
+                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
+            }
+            |
+            [ <K_ARRAY_LITERAL> ]
+            {
+                behavior = new JsonFunction.JsonOnResponseBehavior(
+                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
+            }
+        )
+    )
+    {
+        if (behavior != null) {
+            return behavior;
+        }
+    }
+}
+
+JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause() : {
+    JsonTableFunction.JsonTableWrapperClause wrapperClause =
+            new JsonTableFunction.JsonTableWrapperClause();
+    Token token;
+}
+{
+    (
+        <K_WITHOUT> {
+            wrapperClause.setWrapperType(JsonFunction.JsonWrapperType.WITHOUT);
+        }
+        |
+        <K_WITH> {
+            wrapperClause.setWrapperType(JsonFunction.JsonWrapperType.WITH);
+        }
+        [
+            LOOKAHEAD({
+                getToken(1).kind == S_IDENTIFIER
+                    && (getToken(1).image.equalsIgnoreCase("CONDITIONAL")
+                        || getToken(1).image.equalsIgnoreCase("UNCONDITIONAL"))
+            })
+            token = <S_IDENTIFIER>
+            {
+                if (token.image.equalsIgnoreCase("CONDITIONAL")) {
+                    wrapperClause.setWrapperMode(JsonFunction.JsonWrapperMode.CONDITIONAL);
+                } else {
+                    wrapperClause.setWrapperMode(JsonFunction.JsonWrapperMode.UNCONDITIONAL);
+                }
+            }
+        ]
+    )
+    [ <K_ARRAY_LITERAL> { wrapperClause.setArray(true); } ]
+    JsonKeyword("WRAPPER")
+    {
+        return wrapperClause;
+    }
+}
+
+JsonTableFunction.JsonTableQuotesClause JsonTableQuotesClause() : {
+    JsonTableFunction.JsonTableQuotesClause quotesClause =
+            new JsonTableFunction.JsonTableQuotesClause();
+}
+{
+    (
+        <K_KEEP> { quotesClause.setQuotesType(JsonFunction.JsonQuotesType.KEEP); }
+        |
+        JsonKeyword("OMIT") { quotesClause.setQuotesType(JsonFunction.JsonQuotesType.OMIT); }
+    )
+    JsonKeyword("QUOTES")
+    [
+        <K_ON> JsonKeyword("SCALAR") <K_STRING> { quotesClause.setOnScalarString(true); }
+    ]
+    {
+        return quotesClause;
+    }
+}
+
+JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
+    JsonTableFunction.JsonTableColumnDefinition columnDefinition = null;
+    JsonTableFunction.JsonTableNestedColumnDefinition nestedColumnDefinition;
+    JsonTableFunction.JsonTableValueColumnDefinition valueColumnDefinition;
+    String columnName;
+    ColDataType dataType;
+    Expression expression;
+    String pathName = null;
+    JsonTableFunction.JsonTableColumnsClause columnsClause;
+    JsonFunction.JsonOnResponseBehavior behavior;
+    JsonTableFunction.JsonTableWrapperClause wrapperClause;
+    JsonTableFunction.JsonTableQuotesClause quotesClause;
+    String encoding;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("NESTED") })
+        JsonKeyword("NESTED")
+        { nestedColumnDefinition = new JsonTableFunction.JsonTableNestedColumnDefinition(); }
+        [ <K_PATH> { nestedColumnDefinition.setPathKeyword(true); } ]
+        expression = Expression() { nestedColumnDefinition.setPathExpression(expression); }
+        [ <K_AS> pathName = RelObjectName() { nestedColumnDefinition.setPathName(pathName); } ]
+        columnsClause = JsonTableColumnsClause() {
+            nestedColumnDefinition.setColumnsClause(columnsClause);
+            columnDefinition = nestedColumnDefinition;
+        }
+        |
+        columnName = RelObjectName() {
+            valueColumnDefinition = new JsonTableFunction.JsonTableValueColumnDefinition();
+            valueColumnDefinition.setColumnName(columnName);
+            columnDefinition = valueColumnDefinition;
+        }
+        (
+            <K_FOR> JsonKeyword("ORDINALITY")
+            { valueColumnDefinition.setForOrdinality(true); }
+            |
+            dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
+            [
+                <K_FORMAT> <K_JSON> { valueColumnDefinition.setFormatJson(true); }
+                [ <K_ENCODING> encoding = JsonEncoding() { valueColumnDefinition.setEncoding(encoding); } ]
+            ]
+            [ <K_PATH> expression = Expression() { valueColumnDefinition.setPathExpression(expression); } ]
+            [ wrapperClause = JsonTableWrapperClause() { valueColumnDefinition.setWrapperClause(wrapperClause); } ]
+            [
+                LOOKAHEAD({
+                    getToken(1).kind == K_KEEP
+                        || (getToken(1).kind == S_IDENTIFIER
+                            && getToken(1).image.equalsIgnoreCase("OMIT"))
+                })
+                quotesClause = JsonTableQuotesClause() { valueColumnDefinition.setQuotesClause(quotesClause); }
+            ]
+            [
+                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <S_IDENTIFIER> )
+                behavior = JsonTableOnEmptyBehavior()
+                <K_ON> JsonKeyword("EMPTY")
+                { valueColumnDefinition.setOnEmptyBehavior(behavior); }
+            ]
+            [
+                LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_ERROR> )
+                behavior = JsonValueOnResponseBehavior()
+                <K_ON> <K_ERROR>
+                { valueColumnDefinition.setOnErrorBehavior(behavior); }
+            ]
+        )
+    )
+    {
+        return columnDefinition;
+    }
+}
+
+JsonTableFunction.JsonTableColumnsClause JsonTableColumnsClause() : {
+    JsonTableFunction.JsonTableColumnsClause columnsClause =
+            new JsonTableFunction.JsonTableColumnsClause();
+    JsonTableFunction.JsonTableColumnDefinition columnDefinition;
+}
+{
+    <K_COLUMNS> "("
+    [
+        columnDefinition = JsonTableColumnDefinition() {
+            columnsClause.addColumnDefinition(columnDefinition);
+        }
+        (
+            ","
+            columnDefinition = JsonTableColumnDefinition() {
+                columnsClause.addColumnDefinition(columnDefinition);
+            }
+        )*
+    ]
+    ")"
+    {
+        return columnsClause;
+    }
+}
+
+JsonTableFunction.JsonTablePlanTerm JsonTablePlanTerm() : {
+    JsonTableFunction.JsonTablePlanTerm term = null;
+    String value;
+    Expression expression;
+    JsonTableFunction.JsonTablePlanExpression nestedPlanExpression;
+}
+{
+    (
+        LOOKAHEAD(2)
+        "(" nestedPlanExpression = JsonTablePlanExpression() ")" {
+            term = new JsonTableFunction.JsonTablePlanTerm();
+            term.setNestedPlanExpression(nestedPlanExpression);
+        }
+        |
+        value = RelObjectName() {
+            term = new JsonTableFunction.JsonTablePlanTerm();
+            term.setName(value);
+        }
+        |
+        expression = Expression() {
+            term = new JsonTableFunction.JsonTablePlanTerm();
+            term.setExpression(expression);
+        }
+    )
+    {
+        return term;
+    }
+}
+
+JsonTableFunction.JsonTablePlanExpression JsonTablePlanExpression() : {
+    JsonTableFunction.JsonTablePlanExpression planExpression =
+            new JsonTableFunction.JsonTablePlanExpression();
+    JsonTableFunction.JsonTablePlanTerm term;
+    Token operator = null;
+}
+{
+    term = JsonTablePlanTerm() { planExpression.addTerm(term); }
+    (
+        (
+            operator = <K_COMMA> {
+                planExpression.addOperator(JsonTableFunction.JsonTablePlanOperator.COMMA);
+            }
+            |
+            operator = <K_INNER> {
+                planExpression.addOperator(JsonTableFunction.JsonTablePlanOperator.INNER);
+            }
+            |
+            operator = <K_OUTER> {
+                planExpression.addOperator(JsonTableFunction.JsonTablePlanOperator.OUTER);
+            }
+            |
+            operator = <K_CROSS> {
+                planExpression.addOperator(JsonTableFunction.JsonTablePlanOperator.CROSS);
+            }
+            |
+            operator = <K_UNION> {
+                planExpression.addOperator(JsonTableFunction.JsonTablePlanOperator.UNION);
+            }
+        )
+        term = JsonTablePlanTerm() { planExpression.addTerm(term); }
+    )*
+    {
+        return planExpression;
+    }
+}
+
+JsonTableFunction.JsonTablePlanClause JsonTablePlanClause() : {
+    JsonTableFunction.JsonTablePlanClause planClause =
+            new JsonTableFunction.JsonTablePlanClause();
+    JsonTableFunction.JsonTablePlanExpression planExpression;
+}
+{
+    <K_PLAN>
+    [ <K_DEFAULT> { planClause.setDefaultPlan(true); } ]
+    "(" planExpression = JsonTablePlanExpression() ")" { planClause.setPlanExpression(planExpression); }
+    {
+        return planClause;
+    }
+}
+
+JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause() : {
+    JsonTableFunction.JsonTableOnErrorClause onErrorClause =
+            new JsonTableFunction.JsonTableOnErrorClause();
+    Token token;
+}
+{
+    (
+        <K_ERROR> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.ERROR); }
+        |
+        token = <S_IDENTIFIER>
+        {
+            if (!token.image.equalsIgnoreCase("EMPTY")) {
+                throw new ParseException(
+                        "Expected EMPTY or ERROR but found " + token.image);
+            }
+            onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.EMPTY);
+        }
+    )
+    <K_ON> <K_ERROR>
+    {
+        if (onErrorClause.getType() != null) {
+            return onErrorClause;
+        }
+    }
+}
+
+JsonTableFunction JsonTableBody() : {
+    JsonTableFunction function = new JsonTableFunction();
+    Expression jsonInput;
+    Expression jsonPath;
+    JsonTableFunction.JsonTablePassingClause passingClause;
+    String pathName = null;
+    JsonTableFunction.JsonTableColumnsClause columnsClause;
+    JsonTableFunction.JsonTablePlanClause planClause = null;
+    JsonTableFunction.JsonTableOnErrorClause onErrorClause = null;
+}
+{
+    "("
+    jsonInput = Expression() {
+        function.setJsonInputExpression(jsonInput);
+    }
+    ","
+    jsonPath = Expression() {
+        function.setJsonPathExpression(jsonPath);
+        function.setParameters(new ExpressionList(jsonInput, jsonPath));
+    }
+    [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        JsonKeyword("PASSING")
+        passingClause = JsonTablePassingClause() { function.addPassingClause(passingClause); }
+        (
+            ","
+            passingClause = JsonTablePassingClause() { function.addPassingClause(passingClause); }
+        )*
+    ]
+    columnsClause = JsonTableColumnsClause() { function.setColumnsClause(columnsClause); }
+    [ planClause = JsonTablePlanClause() { function.setPlanClause(planClause); } ]
+    [ onErrorClause = JsonTableOnErrorClause() { function.setOnErrorClause(onErrorClause); } ]
+    ")"
+    {
+        return function;
+    }
+}
+
 TableFunction TableFunction():
 {
     Token prefix = null;
     Function function;
-    TableFunction functionItem;
     Token withClause = null;
 }
 {
     [ prefix = <K_LATERAL> ]
-    function=Function()
+    (
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("JSON_TABLE")
+        })
+        JsonKeyword("JSON_TABLE")
+        function = JsonTableBody()
+        |
+        function=Function()
+    )
     [ LOOKAHEAD(2) <K_WITH> ( withClause = <K_OFFSET> | withClause = <K_ORDINALITY> ) ]
     {
         return  prefix!=null
