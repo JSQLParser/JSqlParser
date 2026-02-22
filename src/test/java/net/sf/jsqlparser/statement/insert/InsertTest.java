@@ -396,9 +396,21 @@ public class InsertTest {
     }
 
     @Test
+    public void testInsertValuesAliasWithDuplicateEliminationIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new"
+                + "  ON DUPLICATE KEY UPDATE c = new.a+new.b;");
+
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new(m,n,p) "
+                + "  ON DUPLICATE KEY UPDATE c = m+n;");
+    }
+
+    @Test
     public void testInsertSetWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 122 "
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
+
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 SET a=1,b=2,c=3 AS new"
+                + "  ON DUPLICATE KEY UPDATE c = new.a+new.b;");
     }
 
     @Test

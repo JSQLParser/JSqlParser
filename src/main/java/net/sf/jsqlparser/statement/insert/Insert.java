@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
@@ -53,6 +54,7 @@ public class Insert implements Statement {
     private InsertConflictTarget conflictTarget;
     private InsertConflictAction conflictAction;
     private InsertDuplicateAction duplicateAction;
+    private Alias rowAlias;
 
     public List<UpdateSet> getDuplicateUpdateSets() {
         if (duplicateAction != null) {
@@ -340,6 +342,9 @@ public class Insert implements Statement {
         if (setUpdateSets != null && !setUpdateSets.isEmpty()) {
             sql.append("SET ");
             sql = UpdateSet.appendUpdateSetsTo(sql, setUpdateSets);
+            if (rowAlias != null) {
+                sql.append(" ").append(rowAlias);
+            }
         }
 
         if (duplicateAction != null) {
@@ -410,5 +415,13 @@ public class Insert implements Statement {
 
     public void setDuplicateAction(InsertDuplicateAction duplicateAction) {
         this.duplicateAction = duplicateAction;
+    }
+
+    public Alias getRowAlias() {
+        return rowAlias;
+    }
+
+    public void setRowAlias(Alias rowAlias) {
+        this.rowAlias = rowAlias;
     }
 }

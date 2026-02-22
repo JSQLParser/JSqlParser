@@ -2809,6 +2809,8 @@ Insert Insert():
 
     String name = null;
     boolean useAs = false;
+    boolean useSet = false;
+    Alias rowAlias = null;
     OutputClause outputClause = null;
 
     InsertConflictTarget conflictTarget = null;
@@ -2846,11 +2848,19 @@ Insert Insert():
         <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
         |
         (
-            <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); }
+            <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); useSet = true; }
         )
         |
         select = Select()
     )
+
+    [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
+        if (select instanceof Values) {
+            select.setAlias(rowAlias);
+        } else {
+            insert.setRowAlias(rowAlias);
+        }
+    } ]
 
     [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
                  duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
