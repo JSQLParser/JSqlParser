@@ -9,6 +9,20 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.StringReader;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -33,21 +47,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.StringReader;
-import java.util.List;
-
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InsertTest {
 
@@ -400,8 +399,9 @@ public class InsertTest {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new"
                 + "  ON DUPLICATE KEY UPDATE c = new.a+new.b;");
 
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new(m,n,p) "
-                + "  ON DUPLICATE KEY UPDATE c = m+n;");
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new(m,n,p) "
+                        + "  ON DUPLICATE KEY UPDATE c = m+n;");
     }
 
     @Test
