@@ -9195,7 +9195,11 @@ AlterExpression AlterExpression():
                 LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
 
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                [
+                    <K_USING> { alterExp.addParameters("USING"); }
+                    [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                    sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                ]
                 |
                 LOOKAHEAD(2) (
                   (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
@@ -9324,7 +9328,11 @@ AlterExpression AlterExpression():
                 |
                 ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
-                    [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                    [
+                        <K_USING> { alterExp.addParameters("USING"); }
+                        [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                        sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                    ]
                     [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
@@ -9414,7 +9422,11 @@ AlterExpression AlterExpression():
                                     alterExp.setIndex(index);
                                 }
                                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                                [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                                [
+                                    <K_USING> { alterExp.addParameters("USING"); }
+                                    [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                                    sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                                ]
                                 [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                             )
                             |
@@ -9446,7 +9458,11 @@ AlterExpression AlterExpression():
                                       alterExp.setIndex(index);
                                   }
                                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                                  [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                                  [
+                                      <K_USING> { alterExp.addParameters("USING"); }
+                                      [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                                      sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                                  ]
                                   [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                             )
                             |

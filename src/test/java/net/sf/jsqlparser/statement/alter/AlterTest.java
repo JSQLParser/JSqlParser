@@ -9,22 +9,21 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
@@ -43,10 +42,10 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class AlterTest {
 
@@ -2231,6 +2230,28 @@ public class AlterTest {
         List<String> indexSpec = alterExp.getIndex().getIndexSpec();
         assertNotNull(indexSpec);
         assertTrue(indexSpec.contains("INVISIBLE"));
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddConstraintPrimaryKeyUsingIndexName() throws JSQLParserException {
+        String sql =
+                "ALTER TABLE TNWAV ADD CONSTRAINT PK_TNWAV PRIMARY KEY (NWNAME, ZEILE, BESTGRU) USING INDEX PK_TNWAV";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("TNWAV", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertNotNull(alterExp.getIndex());
+        assertEquals(Arrays.asList("USING", "INDEX", "PK_TNWAV"), alterExp.getParameters());
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
