@@ -4964,17 +4964,18 @@ Join JoinerExpression() #JoinerExpression:
 }
 {
     [ <K_GLOBAL> { join.setGlobal(true); } ]
+    [ <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
     [ <K_NATURAL> { join.setNatural(true); } ]
 
     [
         (
-            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } ]
+            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             (
                 <K_RIGHT> { join.setRight(true); }
                 |
                 <K_FULL> { join.setFull(true); }
-            ) [ <K_OUTER> { join.setOuter(true); } ]
+            ) [ <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             <K_INNER> { join.setInner(true); }
         )
