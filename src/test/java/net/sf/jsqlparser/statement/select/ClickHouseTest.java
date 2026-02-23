@@ -27,6 +27,46 @@ public class ClickHouseTest {
     }
 
     @Test
+    public void testGlobalAnyLeftJoin() throws JSQLParserException {
+        String sql = "SELECT * FROM events e GLOBAL ANY LEFT JOIN users u ON e.user_id = u.id";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        Join join = select.getJoins().get(0);
+        Assertions.assertTrue(join.isGlobal());
+        Assertions.assertTrue(join.isAny());
+        Assertions.assertTrue(join.isLeft());
+    }
+
+    @Test
+    public void testGlobalAllRightJoin() throws JSQLParserException {
+        String sql = "SELECT * FROM events e GLOBAL ALL RIGHT JOIN users u ON e.user_id = u.id";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        Join join = select.getJoins().get(0);
+        Assertions.assertTrue(join.isGlobal());
+        Assertions.assertTrue(join.isAll());
+        Assertions.assertTrue(join.isRight());
+    }
+
+    @Test
+    public void testLeftAnyJoinOrderVariant() throws JSQLParserException {
+        String sql = "SELECT * FROM events e LEFT ANY JOIN users u ON e.user_id = u.id";
+        Select statement = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect select = (PlainSelect) statement.getSelectBody();
+        Join join = select.getJoins().get(0);
+        Assertions.assertTrue(join.isAny());
+        Assertions.assertTrue(join.isLeft());
+    }
+
+    @Test
+    public void testRightAllJoinOrderVariant() throws JSQLParserException {
+        String sql = "SELECT * FROM events e RIGHT ALL JOIN users u ON e.user_id = u.id";
+        Select statement = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect select = (PlainSelect) statement.getSelectBody();
+        Join join = select.getJoins().get(0);
+        Assertions.assertTrue(join.isAll());
+        Assertions.assertTrue(join.isRight());
+    }
+
+    @Test
     public void testFunctionWithAttributesIssue1742() throws JSQLParserException {
         String sql = "SELECT f1(arguments).f2.f3 from dual";
         assertSqlCanBeParsedAndDeparsed(sql, true);
