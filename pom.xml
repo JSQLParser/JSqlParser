@@ -285,21 +285,14 @@
                             <goal>jjtree-javacc</goal>
                         </goals>
                         <configuration>
-                            <grammarEncoding>UTF-8</grammarEncoding>
-                            <isStatic>false</isStatic>
-                            <debugParser>false</debugParser>
-                            <debugLookAhead>false</debugLookAhead>
-                            <codeGenerator>java</codeGenerator>
-
-                            <!-- <unicodeInput>true</unicodeInput> -->
-                            <!-- <javaUnicodeEscape>true</javaUnicodeEscape> -->
                             <javaccCmdLineArgs>
+                                <gen>-CODE_GENERATOR="Java"</gen>
                                 <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
-<!--                                <jjod>-OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/javacc"</jjod>-->
                             </javaccCmdLineArgs>
-<!--                            <jjtreeCmdLineArgs>-->
-<!--                                <jjtod>-JJTREE_OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/jjtree"</jjtod>-->
-<!--                            </jjtreeCmdLineArgs>-->
+                            <jjtreeCmdLineArgs>
+                                <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
+                                <gen>-CODE_GENERATOR="Java"</gen>
+                            </jjtreeCmdLineArgs>
                         </configuration>
                     </execution>
                 </executions>
