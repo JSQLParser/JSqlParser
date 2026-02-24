@@ -276,7 +276,7 @@
             <plugin>
                 <groupId>org.javacc.plugin</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
-                <version>3.0.3</version>
+                <version>3.8.0</version>
                 <executions>
                     <execution>
                         <id>javacc</id>
@@ -293,6 +293,13 @@
 
                             <!-- <unicodeInput>true</unicodeInput> -->
                             <!-- <javaUnicodeEscape>true</javaUnicodeEscape> -->
+                            <javaccCmdLineArgs>
+                                <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
+<!--                                <jjod>-OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/javacc"</jjod>-->
+                            </javaccCmdLineArgs>
+<!--                            <jjtreeCmdLineArgs>-->
+<!--                                <jjtod>-JJTREE_OUTPUT_DIRECTORY="${project.build.directory}/generated-sources/jjtree"</jjtod>-->
+<!--                            </jjtreeCmdLineArgs>-->
                         </configuration>
                     </execution>
                 </executions>
