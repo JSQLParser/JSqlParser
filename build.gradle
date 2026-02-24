@@ -150,18 +150,16 @@ dependencies {
     testImplementation 'commons-io:commons-io:2.+'
     testImplementation 'org.apache.commons:commons-text:+'
     testImplementation 'org.mockito:mockito-core:+'
-    testImplementation 'org.assertj:assertj-core:+'
+    testImplementation 'org.assertj:assertj-core:3.+'
     testImplementation 'org.hamcrest:hamcrest-core:+'
     testImplementation 'org.apache.commons:commons-lang3:+'
     testImplementation 'com.h2database:h2:+'
-
-    // for JaCoCo Reports
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-
-    // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
     testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
@@ -180,11 +178,9 @@ dependencies {
     javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
 }
 configurations.configureEach {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
-            // Check for updates every build
-            resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
-        }
+    // Cache SNAPSHOT/changing modules for javacc for 30 seconds so updates are picked up quickly
+    resolutionStrategy {
+        cacheChangingModulesFor 30, 'seconds'
     }
 }
 
@@ -220,18 +216,18 @@ javadoc {
 jar {
     manifest {
         attributes (
-            "Automatic-Module-Name": "net.sf.jsqlparser"
+                "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
 
     bundle {
         properties.empty()
         bnd(
-            "Created-By": System.properties.get('user.name'),
-            "Bundle-SymbolicName": "net.sf.jsqlparser",
-            "Import-Package": "*",
-            "Export-Package": "net.sf.jsqlparser.*",
-            "Automatic-Module-Name": "net.sf.jsqlparser"
+                "Created-By": System.properties.get('user.name'),
+                "Bundle-SymbolicName": "net.sf.jsqlparser",
+                "Import-Package": "*",
+                "Export-Package": "net.sf.jsqlparser.*",
+                "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
 
@@ -342,7 +338,7 @@ jacocoTestCoverageVerification {
 
                 //@todo: temporarily increased to 7000, we need to bring that down to 5500 after accepting the Keywords PR
                 maximum = 20000
-                }
+            }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
                     'net.sf.jsqlparser.**.*Adapter',
