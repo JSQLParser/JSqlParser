@@ -9621,11 +9621,13 @@ String AList():
 String ColumnsNamesListItem():
 {
 	Token tk = null;
+    Token sortDirection = null;
     String item = null;
 }
 {
 	( item = RelObjectName() )
 	[ LOOKAHEAD(2)  "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
+    [ (sortDirection = <K_ASC> | sortDirection = <K_DESC>) { item = item + " " + sortDirection.image; } ]
 	{
 		return item;
 	}

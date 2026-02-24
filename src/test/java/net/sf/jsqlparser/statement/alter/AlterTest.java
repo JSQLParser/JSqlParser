@@ -573,6 +573,17 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableDropAndAddUniqueIndexWithAscendingColumns() throws Exception {
+        Statement result =
+                CCJSqlParserUtil.parse("ALTER TABLE `wxp_dm`.`xqgl_req_report` "
+                        + "DROP INDEX `index_name`, "
+                        + "ADD UNIQUE INDEX `index_name`(`report_name` ASC) USING BTREE");
+        assertEquals("ALTER TABLE `wxp_dm`.`xqgl_req_report` DROP INDEX `index_name`, "
+                + "ADD UNIQUE INDEX `index_name` (`report_name` ASC) USING BTREE",
+                result.toString());
+    }
+
+    @Test
     public void testIssue259() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
