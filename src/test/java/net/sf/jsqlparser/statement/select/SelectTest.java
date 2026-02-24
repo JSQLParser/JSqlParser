@@ -2380,6 +2380,19 @@ public class SelectTest {
     }
 
     @Test
+    public void testOracleJoinWithinNvlArgument() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM dual d, dual d2 WHERE d.dummy = nvl(d2.dummy (+), 'y')", true);
+    }
+
+    @Test
+    public void testOracleJoinWithinCoalesceArgument() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM dual d, dual d2 WHERE d.dummy = coalesce(d2.dummy (+), 'y')",
+                true);
+    }
+
+    @Test
     public void testProblemSqlIntersect() throws Exception {
         String stmt = "(SELECT * FROM a) INTERSECT (SELECT * FROM b)";
         assertSqlCanBeParsedAndDeparsed(stmt);

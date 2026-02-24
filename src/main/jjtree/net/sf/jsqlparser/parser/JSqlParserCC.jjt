@@ -6639,6 +6639,10 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
+            [
+                LOOKAHEAD( "(" "+" ")" ("," | ")") )
+                "(" "+" ")" { ((Column) retval).setOldOracleJoinSyntax(EqualsTo.ORACLE_JOIN_RIGHT); }
+            ]
 
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
