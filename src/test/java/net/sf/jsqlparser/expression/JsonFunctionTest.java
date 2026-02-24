@@ -15,6 +15,9 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -284,6 +287,183 @@ public class JsonFunctionTest {
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array(null, null null on null)",
                 true);
         TestUtils.assertExpressionCanBeParsedAndDeparsed("json_array()", true);
+    }
+
+    @Test
+    public void testJsonValue() throws JSQLParserException {
+        String expressionStr =
+                "JSON_VALUE(payload FORMAT JSON ENCODING UTF8, '$.customer.id' PASSING customer_id RETURNING VARCHAR(32) DEFAULT 'missing' ON EMPTY NULL ON ERROR)";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertEquals(JsonFunctionType.VALUE, jsonFunction.getType());
+        assertNotNull(jsonFunction.getInputExpression());
+        assertEquals("UTF8", jsonFunction.getInputExpression().getEncoding());
+        assertEquals(1, jsonFunction.getPassingExpressions().size());
+        assertNotNull(jsonFunction.getOnEmptyBehavior());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.DEFAULT,
+                jsonFunction.getOnEmptyBehavior().getType());
+        assertNotNull(jsonFunction.getOnErrorBehavior());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.NULL,
+                jsonFunction.getOnErrorBehavior().getType());
+
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(expressionStr, true);
+    }
+
+    @Test
+    public void testJsonQuery() throws JSQLParserException {
+        String expressionStr =
+                "JSON_QUERY(payload FORMAT JSON ENCODING UTF16, '$.items[*]' PASSING item_filter RETURNING VARCHAR(200) FORMAT JSON ENCODING UTF32 WITH CONDITIONAL ARRAY WRAPPER OMIT QUOTES ON SCALAR STRING EMPTY ARRAY ON EMPTY ERROR ON ERROR)";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertEquals(JsonFunctionType.QUERY, jsonFunction.getType());
+        assertNotNull(jsonFunction.getInputExpression());
+        assertEquals("UTF16", jsonFunction.getInputExpression().getEncoding());
+        assertEquals("UTF32", jsonFunction.getReturningEncoding());
+        assertEquals(JsonFunction.JsonWrapperType.WITH, jsonFunction.getWrapperType());
+        assertEquals(JsonFunction.JsonWrapperMode.CONDITIONAL, jsonFunction.getWrapperMode());
+        assertTrue(jsonFunction.isWrapperArray());
+        assertEquals(JsonFunction.JsonQuotesType.OMIT, jsonFunction.getQuotesType());
+        assertTrue(jsonFunction.isQuotesOnScalarString());
+        assertNotNull(jsonFunction.getOnEmptyBehavior());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY,
+                jsonFunction.getOnEmptyBehavior().getType());
+        assertNotNull(jsonFunction.getOnErrorBehavior());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.ERROR,
+                jsonFunction.getOnErrorBehavior().getType());
+
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(expressionStr, true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "JSON_QUERY(payload, '$' WITHOUT WRAPPER KEEP QUOTES EMPTY OBJECT ON ERROR)", true);
+    }
+
+    @Test
+    public void testJsonQueryLegacyAdditionalPathArguments() throws JSQLParserException {
+        String sql =
+                "select json_query('{\"customer\" : 100, \"region\" : \"AFRICA\"}', 'strict $.keyvalue()' WITH ARRAY WRAPPER, '$.region') from tbl";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "select json_query('{\"a\":1}', '$' ERROR ON ERROR, '$.x' RETURNING VARCHAR(10), '$.z' WITH ARRAY WRAPPER) from tbl",
+                true);
+    }
+
+    @Test
+    public void testJsonExists() throws JSQLParserException {
+        String expressionStr =
+                "JSON_EXISTS(payload FORMAT JSON ENCODING UTF8, '$.children[2]' PASSING child_idx UNKNOWN ON ERROR)";
+        JsonFunction jsonFunction = (JsonFunction) CCJSqlParserUtil.parseExpression(expressionStr);
+
+        assertEquals(JsonFunctionType.EXISTS, jsonFunction.getType());
+        assertNotNull(jsonFunction.getInputExpression());
+        assertEquals("UTF8", jsonFunction.getInputExpression().getEncoding());
+        assertNotNull(jsonFunction.getOnErrorBehavior());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.UNKNOWN,
+                jsonFunction.getOnErrorBehavior().getType());
+
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(expressionStr, true);
+    }
+
+    @Test
+    public void testJsonArrayAndObjectReturning() throws JSQLParserException {
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "JSON_ARRAY(true, 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF16)", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "JSON_OBJECT('x' : 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF32)", true);
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(
+                "JSON_OBJECT('x' : X'5B0035005D00' FORMAT JSON ENCODING UTF16)", true);
+    }
+
+    @Test
+    public void testJsonTableAstParity() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * FROM JSON_TABLE(payload, 'lax $' AS \"root_path\" "
+                        + "PASSING filter_expr AS filter "
+                        + "COLUMNS ("
+                        + "a VARCHAR(10) FORMAT JSON ENCODING UTF8 PATH 'lax $.a' "
+                        + "WITH CONDITIONAL ARRAY WRAPPER KEEP QUOTES ON SCALAR STRING "
+                        + "DEFAULT 'missing' ON EMPTY NULL ON ERROR, "
+                        + "NESTED PATH 'lax $[*]' AS \"nested_path\" "
+                        + "COLUMNS (b INTEGER PATH 'lax $.b')"
+                        + ") "
+                        + "PLAN DEFAULT (\"root_path\" OUTER \"nested_path\") EMPTY ON ERROR)";
+
+        Select select = (Select) CCJSqlParserUtil.parse(sqlStr,
+                parser -> parser.withAllowComplexParsing(false));
+        PlainSelect plainSelect = select.getPlainSelect();
+        assertNotNull(plainSelect);
+        assertInstanceOf(TableFunction.class, plainSelect.getFromItem());
+
+        TableFunction tableFunction = (TableFunction) plainSelect.getFromItem();
+        assertInstanceOf(JsonTableFunction.class, tableFunction.getFunction());
+        JsonTableFunction jsonTableFunction = (JsonTableFunction) tableFunction.getFunction();
+
+        assertEquals("payload", jsonTableFunction.getJsonInputExpression().toString());
+        assertEquals("'lax $'", jsonTableFunction.getJsonPathExpression().toString());
+        assertEquals("\"root_path\"", jsonTableFunction.getPathName());
+        assertEquals(1, jsonTableFunction.getPassingClauses().size());
+        assertEquals("filter_expr",
+                jsonTableFunction.getPassingClauses().get(0).getValueExpression().toString());
+        assertEquals("filter", jsonTableFunction.getPassingClauses().get(0).getParameterName());
+
+        JsonTableFunction.JsonTableColumnsClause columnsClause =
+                jsonTableFunction.getColumnsClause();
+        assertNotNull(columnsClause);
+        assertEquals(2, columnsClause.getColumnDefinitions().size());
+        assertInstanceOf(JsonTableFunction.JsonTableValueColumnDefinition.class,
+                columnsClause.getColumnDefinitions().get(0));
+        assertInstanceOf(JsonTableFunction.JsonTableNestedColumnDefinition.class,
+                columnsClause.getColumnDefinitions().get(1));
+
+        JsonTableFunction.JsonTableValueColumnDefinition firstColumn =
+                (JsonTableFunction.JsonTableValueColumnDefinition) columnsClause
+                        .getColumnDefinitions().get(0);
+        assertEquals("a", firstColumn.getColumnName());
+        assertEquals("UTF8", firstColumn.getEncoding());
+        assertTrue(firstColumn.isFormatJson());
+        assertEquals("'lax $.a'", firstColumn.getPathExpression().toString());
+        assertEquals(JsonFunction.JsonWrapperType.WITH,
+                firstColumn.getWrapperClause().getWrapperType());
+        assertEquals(JsonFunction.JsonWrapperMode.CONDITIONAL,
+                firstColumn.getWrapperClause().getWrapperMode());
+        assertTrue(firstColumn.getWrapperClause().isArray());
+        assertEquals(JsonFunction.JsonQuotesType.KEEP,
+                firstColumn.getQuotesClause().getQuotesType());
+        assertTrue(firstColumn.getQuotesClause().isOnScalarString());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.DEFAULT,
+                firstColumn.getOnEmptyBehavior().getType());
+        assertEquals("'missing'", firstColumn.getOnEmptyBehavior().getExpression().toString());
+        assertEquals(JsonFunction.JsonOnResponseBehaviorType.NULL,
+                firstColumn.getOnErrorBehavior().getType());
+
+        JsonTableFunction.JsonTableNestedColumnDefinition nestedColumn =
+                (JsonTableFunction.JsonTableNestedColumnDefinition) columnsClause
+                        .getColumnDefinitions().get(1);
+        assertTrue(nestedColumn.isPathKeyword());
+        assertEquals("'lax $[*]'", nestedColumn.getPathExpression().toString());
+        assertEquals("\"nested_path\"", nestedColumn.getPathName());
+        assertNotNull(nestedColumn.getColumnsClause());
+        assertEquals(1, nestedColumn.getColumnsClause().getColumnDefinitions().size());
+
+        JsonTableFunction.JsonTableValueColumnDefinition nestedValueColumn =
+                (JsonTableFunction.JsonTableValueColumnDefinition) nestedColumn.getColumnsClause()
+                        .getColumnDefinitions().get(0);
+        assertEquals("b", nestedValueColumn.getColumnName());
+        assertEquals("'lax $.b'", nestedValueColumn.getPathExpression().toString());
+
+        assertNotNull(jsonTableFunction.getPlanClause());
+        assertTrue(jsonTableFunction.getPlanClause().isDefaultPlan());
+        assertEquals(2, jsonTableFunction.getPlanClause().getPlanExpression().getTerms().size());
+        assertEquals(1,
+                jsonTableFunction.getPlanClause().getPlanExpression().getOperators().size());
+        assertEquals(JsonTableFunction.JsonTablePlanOperator.OUTER,
+                jsonTableFunction.getPlanClause().getPlanExpression().getOperators().get(0));
+
+        assertNotNull(jsonTableFunction.getOnErrorClause());
+        assertEquals(JsonTableFunction.JsonTableOnErrorType.EMPTY,
+                jsonTableFunction.getOnErrorClause().getType());
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true,
+                parser -> parser.withAllowComplexParsing(false));
     }
 
     @Test

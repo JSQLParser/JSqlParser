@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 /**
  * Represents a JSON-Function.<br>
@@ -25,13 +26,110 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class JsonFunction extends ASTNodeAccessImpl implements Expression {
+    public enum JsonOnResponseBehaviorType {
+        ERROR, NULL, DEFAULT, EMPTY_ARRAY, EMPTY_OBJECT, TRUE, FALSE, UNKNOWN
+    }
+
+    public enum JsonWrapperType {
+        WITHOUT, WITH
+    }
+
+    public enum JsonWrapperMode {
+        CONDITIONAL, UNCONDITIONAL
+    }
+
+    public enum JsonQuotesType {
+        KEEP, OMIT
+    }
+
+    public static class JsonOnResponseBehavior {
+        private JsonOnResponseBehaviorType type;
+        private Expression expression;
+
+        public JsonOnResponseBehavior(JsonOnResponseBehaviorType type) {
+            this(type, null);
+        }
+
+        public JsonOnResponseBehavior(JsonOnResponseBehaviorType type, Expression expression) {
+            this.type = type;
+            this.expression = expression;
+        }
+
+        public JsonOnResponseBehaviorType getType() {
+            return type;
+        }
+
+        public void setType(JsonOnResponseBehaviorType type) {
+            this.type = type;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public void setExpression(Expression expression) {
+            this.expression = expression;
+        }
+
+        public StringBuilder append(StringBuilder builder) {
+            switch (type) {
+                case ERROR:
+                    builder.append("ERROR");
+                    break;
+                case NULL:
+                    builder.append("NULL");
+                    break;
+                case DEFAULT:
+                    builder.append("DEFAULT ").append(expression);
+                    break;
+                case EMPTY_ARRAY:
+                    builder.append("EMPTY ARRAY");
+                    break;
+                case EMPTY_OBJECT:
+                    builder.append("EMPTY OBJECT");
+                    break;
+                case TRUE:
+                    builder.append("TRUE");
+                    break;
+                case FALSE:
+                    builder.append("FALSE");
+                    break;
+                case UNKNOWN:
+                    builder.append("UNKNOWN");
+                    break;
+                default:
+                    // this should never happen
+            }
+            return builder;
+        }
+
+        @Override
+        public String toString() {
+            return append(new StringBuilder()).toString();
+        }
+    }
+
     private final ArrayList<JsonKeyValuePair> keyValuePairs = new ArrayList<>();
     private final ArrayList<JsonFunctionExpression> expressions = new ArrayList<>();
+    private final ArrayList<Expression> passingExpressions = new ArrayList<>();
+    private final ArrayList<String> additionalQueryPathArguments = new ArrayList<>();
     private JsonFunctionType functionType;
     private JsonAggregateOnNullType onNullType;
     private JsonAggregateUniqueKeysType uniqueKeysType;
 
     private boolean isStrict = false;
+    private JsonFunctionExpression inputExpression;
+    private Expression jsonPathExpression;
+    private ColDataType returningType;
+    private boolean returningFormatJson;
+    private String returningEncoding;
+    private JsonOnResponseBehavior onEmptyBehavior;
+    private JsonOnResponseBehavior onErrorBehavior;
+    private JsonWrapperType wrapperType;
+    private JsonWrapperMode wrapperMode;
+    private boolean wrapperArray;
+    private JsonQuotesType quotesType;
+    private boolean quotesOnScalarString;
 
     public JsonFunction() {}
 
@@ -82,6 +180,118 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
 
     public void add(int i, JsonFunctionExpression expression) {
         expressions.add(i, expression);
+    }
+
+    public ArrayList<Expression> getPassingExpressions() {
+        return passingExpressions;
+    }
+
+    public boolean addPassingExpression(Expression expression) {
+        return passingExpressions.add(expression);
+    }
+
+    public ArrayList<String> getAdditionalQueryPathArguments() {
+        return additionalQueryPathArguments;
+    }
+
+    public boolean addAdditionalQueryPathArgument(String argument) {
+        return additionalQueryPathArguments.add(argument);
+    }
+
+    public JsonFunctionExpression getInputExpression() {
+        return inputExpression;
+    }
+
+    public void setInputExpression(JsonFunctionExpression inputExpression) {
+        this.inputExpression = inputExpression;
+    }
+
+    public Expression getJsonPathExpression() {
+        return jsonPathExpression;
+    }
+
+    public void setJsonPathExpression(Expression jsonPathExpression) {
+        this.jsonPathExpression = jsonPathExpression;
+    }
+
+    public ColDataType getReturningType() {
+        return returningType;
+    }
+
+    public void setReturningType(ColDataType returningType) {
+        this.returningType = returningType;
+    }
+
+    public boolean isReturningFormatJson() {
+        return returningFormatJson;
+    }
+
+    public void setReturningFormatJson(boolean returningFormatJson) {
+        this.returningFormatJson = returningFormatJson;
+    }
+
+    public String getReturningEncoding() {
+        return returningEncoding;
+    }
+
+    public void setReturningEncoding(String returningEncoding) {
+        this.returningEncoding = returningEncoding;
+    }
+
+    public JsonOnResponseBehavior getOnEmptyBehavior() {
+        return onEmptyBehavior;
+    }
+
+    public void setOnEmptyBehavior(JsonOnResponseBehavior onEmptyBehavior) {
+        this.onEmptyBehavior = onEmptyBehavior;
+    }
+
+    public JsonOnResponseBehavior getOnErrorBehavior() {
+        return onErrorBehavior;
+    }
+
+    public void setOnErrorBehavior(JsonOnResponseBehavior onErrorBehavior) {
+        this.onErrorBehavior = onErrorBehavior;
+    }
+
+    public JsonWrapperType getWrapperType() {
+        return wrapperType;
+    }
+
+    public void setWrapperType(JsonWrapperType wrapperType) {
+        this.wrapperType = wrapperType;
+    }
+
+    public JsonWrapperMode getWrapperMode() {
+        return wrapperMode;
+    }
+
+    public void setWrapperMode(JsonWrapperMode wrapperMode) {
+        this.wrapperMode = wrapperMode;
+    }
+
+    public boolean isWrapperArray() {
+        return wrapperArray;
+    }
+
+    public void setWrapperArray(boolean wrapperArray) {
+        this.wrapperArray = wrapperArray;
+    }
+
+    public JsonQuotesType getQuotesType() {
+        return quotesType;
+    }
+
+    public void setQuotesType(JsonQuotesType quotesType) {
+        this.quotesType = quotesType;
+    }
+
+    public boolean isQuotesOnScalarString() {
+        return quotesOnScalarString;
+    }
+
+    public void setQuotesOnScalarString(boolean quotesOnScalarString) {
+        this.quotesOnScalarString = quotesOnScalarString;
     }
 
     public boolean isEmpty() {
@@ -170,6 +380,15 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             case ARRAY:
                 appendArray(builder);
                 break;
+            case VALUE:
+                appendValue(builder);
+                break;
+            case QUERY:
+                appendQuery(builder);
+                break;
+            case EXISTS:
+                appendExists(builder);
+                break;
             default:
                 // this should never happen really
         }
@@ -193,6 +412,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             builder.append(" STRICT");
         }
         appendUniqueKeys(builder);
+        appendReturningClause(builder, true);
 
         builder.append(" ) ");
 
@@ -243,9 +463,124 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         }
 
         appendOnNullType(builder);
+        appendReturningClause(builder, true);
         builder.append(") ");
 
         return builder;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendValue(StringBuilder builder) {
+        builder.append("JSON_VALUE(");
+        appendValueOrQueryPrefix(builder);
+
+        if (returningType != null) {
+            builder.append(" RETURNING ").append(returningType);
+        }
+
+        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY");
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+
+        builder.append(")");
+        return builder;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendQuery(StringBuilder builder) {
+        builder.append("JSON_QUERY(");
+        appendValueOrQueryPrefix(builder);
+
+        appendReturningClause(builder, true);
+
+        appendWrapperClause(builder);
+        appendQuotesClause(builder);
+        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY");
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+
+        for (String additionalQueryPathArgument : additionalQueryPathArguments) {
+            builder.append(", ").append(additionalQueryPathArgument);
+        }
+
+        builder.append(")");
+        return builder;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendExists(StringBuilder builder) {
+        builder.append("JSON_EXISTS(");
+        appendValueOrQueryPrefix(builder);
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+        builder.append(")");
+        return builder;
+    }
+
+    private void appendValueOrQueryPrefix(StringBuilder builder) {
+        if (inputExpression != null) {
+            inputExpression.append(builder);
+        }
+
+        if (jsonPathExpression != null) {
+            if (inputExpression != null) {
+                builder.append(", ");
+            }
+            builder.append(jsonPathExpression);
+        }
+
+        if (!passingExpressions.isEmpty()) {
+            builder.append(" PASSING ");
+            boolean comma = false;
+            for (Expression passingExpression : passingExpressions) {
+                if (comma) {
+                    builder.append(", ");
+                } else {
+                    comma = true;
+                }
+                builder.append(passingExpression);
+            }
+        }
+    }
+
+    private void appendOnResponseClause(StringBuilder builder, JsonOnResponseBehavior behavior,
+            String clause) {
+        if (behavior != null) {
+            builder.append(" ");
+            behavior.append(builder);
+            builder.append(" ON ").append(clause);
+        }
+    }
+
+    private void appendReturningClause(StringBuilder builder, boolean formatJsonAllowed) {
+        if (returningType != null) {
+            builder.append(" RETURNING ").append(returningType);
+            if (formatJsonAllowed && returningFormatJson) {
+                builder.append(" FORMAT JSON");
+                if (returningEncoding != null) {
+                    builder.append(" ENCODING ").append(returningEncoding);
+                }
+            }
+        }
+    }
+
+    private void appendWrapperClause(StringBuilder builder) {
+        if (wrapperType != null) {
+            builder.append(" ").append(wrapperType);
+            if (wrapperMode != null) {
+                builder.append(" ").append(wrapperMode);
+            }
+            if (wrapperArray) {
+                builder.append(" ARRAY");
+            }
+            builder.append(" WRAPPER");
+        }
+    }
+
+    private void appendQuotesClause(StringBuilder builder) {
+        if (quotesType != null) {
+            builder.append(" ").append(quotesType).append(" QUOTES");
+            if (quotesOnScalarString) {
+                builder.append(" ON SCALAR STRING");
+            }
+        }
     }
 
     @Override

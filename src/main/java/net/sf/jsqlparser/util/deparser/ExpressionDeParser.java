@@ -39,6 +39,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -832,6 +833,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         builder.append(tableColumn.getColumnName());
+        if (tableColumn.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            builder.append("(+)");
+        }
 
         if (tableColumn.getArrayConstructor() != null) {
             tableColumn.getArrayConstructor().accept(this, context);
@@ -1627,6 +1631,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(JsonFunction expression, S context) {
         expression.append(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(JsonTableFunction expression, S context) {
+        builder.append(expression);
         return builder;
     }
 

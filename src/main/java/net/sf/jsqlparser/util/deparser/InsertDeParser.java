@@ -113,6 +113,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         if (insert.getSetUpdateSets() != null) {
             builder.append(" SET ");
             deparseUpdateSets(insert.getSetUpdateSets(), builder, expressionVisitor);
+            if (insert.getRowAlias() != null) {
+                builder.append(" ").append(insert.getRowAlias());
+            }
         }
 
         if (insert.getDuplicateAction() != null) {

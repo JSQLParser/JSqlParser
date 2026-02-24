@@ -38,6 +38,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
@@ -527,6 +528,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(Column tableColumn, S context) {
+        if (tableColumn
+                .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            validateFeature(Feature.oracleOldJoinSyntax);
+        }
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
         return null;
     }
@@ -1032,6 +1037,14 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(JsonFunction expression, S context) {
         // no idea what this is good for
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(JsonTableFunction expression, S context) {
+        for (Expression jsonExpression : expression.getAllExpressions()) {
+            validateOptionalExpression(jsonExpression, this);
+        }
         return null;
     }
 
