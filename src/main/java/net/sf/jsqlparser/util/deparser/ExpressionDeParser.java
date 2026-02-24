@@ -832,6 +832,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         builder.append(tableColumn.getColumnName());
+        if (tableColumn.getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            builder.append("(+)");
+        }
 
         if (tableColumn.getArrayConstructor() != null) {
             tableColumn.getArrayConstructor().accept(this, context);

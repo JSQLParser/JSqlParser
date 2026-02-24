@@ -16,6 +16,7 @@ import java.util.List;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
@@ -28,6 +29,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     private String commentText;
     private ArrayConstructor arrayConstructor;
     private String tableDelimiter = ".";
+    private int oldOracleJoinSyntax = SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN;
 
     // holds the physical table when resolved against an actual schema information
     private Table resolvedTable = null;
@@ -192,6 +194,14 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         this.tableDelimiter = tableDelimiter;
     }
 
+    public int getOldOracleJoinSyntax() {
+        return oldOracleJoinSyntax;
+    }
+
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+    }
+
     @Override
     public String getFullyQualifiedName() {
         return getFullyQualifiedName(false);
@@ -245,6 +255,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     @Override
     public String toString() {
         return getFullyQualifiedName(true)
+                + (oldOracleJoinSyntax != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN ? "(+)" : "")
                 + (commentText != null ? " /* " + commentText + "*/ " : "");
     }
 
@@ -265,6 +276,11 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public Column withTableDelimiter(String delimiter) {
         this.setTableDelimiter(delimiter);
+        return this;
+    }
+
+    public Column withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
         return this;
     }
 

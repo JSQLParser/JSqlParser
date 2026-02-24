@@ -527,6 +527,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(Column tableColumn, S context) {
+        if (tableColumn
+                .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            validateFeature(Feature.oracleOldJoinSyntax);
+        }
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
         return null;
     }
