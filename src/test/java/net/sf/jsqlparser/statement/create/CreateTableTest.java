@@ -353,6 +353,31 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testMySqlCreateTableWithSpatialIndex() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE places (id INT NOT NULL, location GEOMETRY NOT NULL, SPATIAL KEY sp_idx_location (location))");
+    }
+
+    @Test
+    public void testMySqlCreateTableIssue2367()
+            throws JSQLParserException {
+        String sql = "CREATE TABLE test (\n"
+                + "id int(11) NOT NULL COMMENT 'data id',\n"
+                + "code varchar(100) NOT NULL COMMENT 'code',\n"
+                + "name varchar(300) DEFAULT NULL COMMENT 'name',\n"
+                + "geo geometry NOT NULL,\n"
+                + "PRIMARY KEY (id),\n"
+                + "UNIQUE KEY index_code (code) USING HASH COMMENT 'unique index on code',\n"
+                + "UNIQUE KEY inx_code_name (code,name) USING BTREE COMMENT 'unique index on code and name',\n"
+                + "UNIQUE KEY inx_id_code_name (id,code,name) USING BTREE COMMENT 'index 1',\n"
+                + "SPATIAL KEY SPATIAL_geo (geo),\n"
+                + "KEY NORMAL_name (name) COMMENT 'normal index',\n"
+                + "FULLTEXT KEY fulltext_name (name)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='test table'";
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testCreateTableWithCheck() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE table2 (id INT (10) NOT NULL, name TEXT, url TEXT, CONSTRAINT name_not_empty CHECK (name <> ''))");
