@@ -9116,10 +9116,11 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                         LOOKAHEAD(3) (
                             {
                                 tk=null;
+                                tk3=null;
                                 idxSpec.clear();
                             }
                             [ tk=<K_UNIQUE> ]
-                            [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
+                            [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
                             sk3=RelObjectName()
                             colNames = ColumnNamesWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
