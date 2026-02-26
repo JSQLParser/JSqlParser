@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.from.JsonTable;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
@@ -147,5 +148,10 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     public <S> T visit(FromQuery fromQuery, S context) {
         return fromQuery.accept(selectVisitor, context);
+    }
+
+    @Override
+    public <S> T visit(JsonTable jsonTable, S context) {
+        return jsonTable.getExpression().accept(expressionVisitor, context);
     }
 }
