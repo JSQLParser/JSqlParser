@@ -10230,7 +10230,20 @@ AlterExpression AlterExpression():
                     ")"
                 )
                 |
-                ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
+                (
+                    <K_UNIQUE>
+                    (
+                        (
+                            <K_KEY> { alterExp.setUk(true); }
+                            | <K_INDEX> { alterExp.setUk(false); }
+                        )
+                        [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
+                        |
+                        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                            alterExp.setUkTypeSpecified(false);
+                            alterExp.setUkName(tk.image);
+                        }
+                    )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
                     [
                         <K_USING> { alterExp.addParameters("USING"); }
