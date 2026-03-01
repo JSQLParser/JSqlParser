@@ -162,6 +162,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableUniqueNamedWithoutKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE `goods` ADD UNIQUE `aaa` (`cate_id`)");
+    }
+
+    @Test
     public void testAlterTableForgeignKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
