@@ -14,6 +14,9 @@ public class SampleClause {
     private SampleMethod method;
     private Number percentageArgument;
     private String percentageUnit;
+    private boolean argumentInBrackets = true;
+    // ClickHouse specific
+    private Number offsetArgument;
     private Number repeatArgument;
     // Oracle Specific
     private Number seedArgument;
@@ -21,10 +24,21 @@ public class SampleClause {
     public SampleClause(String keyword, String method, Number percentageArgument,
             String percentageUnit,
             Number repeatArgument, Number seedArgument) {
+        this(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument,
+                true,
+                null);
+    }
+
+    public SampleClause(String keyword, String method, Number percentageArgument,
+            String percentageUnit,
+            Number repeatArgument, Number seedArgument, boolean argumentInBrackets,
+            Number offsetArgument) {
         this.keyword = SampleKeyword.from(keyword);
         this.method = method == null || method.length() == 0 ? null : SampleMethod.from(method);
         this.percentageArgument = percentageArgument;
         this.percentageUnit = percentageUnit;
+        this.argumentInBrackets = argumentInBrackets;
+        this.offsetArgument = offsetArgument;
         this.repeatArgument = repeatArgument;
         this.seedArgument = seedArgument;
     }
@@ -68,6 +82,24 @@ public class SampleClause {
         return this;
     }
 
+    public boolean isArgumentInBrackets() {
+        return argumentInBrackets;
+    }
+
+    public SampleClause setArgumentInBrackets(boolean argumentInBrackets) {
+        this.argumentInBrackets = argumentInBrackets;
+        return this;
+    }
+
+    public Number getOffsetArgument() {
+        return offsetArgument;
+    }
+
+    public SampleClause setOffsetArgument(Number offsetArgument) {
+        this.offsetArgument = offsetArgument;
+        return this;
+    }
+
     public SampleClause setRepeatArgument(Number repeatArgument) {
         this.repeatArgument = repeatArgument;
         return this;
@@ -104,8 +136,19 @@ public class SampleClause {
         }
 
         if (percentageArgument != null) {
-            builder.append(" (").append(percentageArgument)
-                    .append(percentageUnit != null ? " " + percentageUnit : "").append(")");
+            if (argumentInBrackets) {
+                builder.append(" (").append(percentageArgument)
+                        .append(percentageUnit != null ? " " + percentageUnit : "").append(")");
+            } else {
+                builder.append(" ").append(percentageArgument);
+                if (percentageUnit != null) {
+                    builder.append(" ").append(percentageUnit);
+                }
+            }
+        }
+
+        if (offsetArgument != null) {
+            builder.append(" OFFSET ").append(offsetArgument);
         }
 
         if (repeatArgument != null) {

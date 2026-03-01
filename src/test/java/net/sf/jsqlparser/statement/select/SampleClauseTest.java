@@ -38,8 +38,17 @@ class SampleClauseTest {
             "SELECT * from table_name SAMPLE BLOCK (99) SEED (10) ",
             "SELECT * from table_name SAMPLE BLOCK (99.1) SEED (10.1)"
     })
-    void standardOracleIssue1826() throws JSQLParserException {
-        String sqlStr = "SELECT * from table_name SAMPLE(99)";
+    void standardOracleIssue1826(String sqlStr) throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM events SAMPLE 0.1",
+            "SELECT * FROM events SAMPLE 10000",
+            "SELECT * FROM events SAMPLE 0.1 OFFSET 1000"
+    })
+    void clickHouseSampleClause(String sqlStr) throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
