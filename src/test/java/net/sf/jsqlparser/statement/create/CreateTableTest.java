@@ -231,6 +231,19 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableClickHouseSampleBy() throws JSQLParserException {
+        String statement = "CREATE TABLE tmp.events (\n"
+                + "    id UInt64,\n"
+                + "    user_id UInt32,\n"
+                + "    timestamp DateTime\n"
+                + ")\n"
+                + "ENGINE = MergeTree()\n"
+                + "ORDER BY id\n"
+                + "SAMPLE BY id";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
     public void testCreateTableIfNotExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS animals (id INT NOT NULL)");
     }

@@ -3431,6 +3431,8 @@ SampleClause SampleClause():
     String method=null;
     Number percentageArgument;
     String percentageUnit = null;
+    boolean argumentInBrackets = true;
+    Number offsetArgument = null;
     Number repeatArgument=null;
     Number seedArgument=null;
 }
@@ -3455,22 +3457,30 @@ SampleClause SampleClause():
         )
     )
 
-    "(" percentageArgument = Number()
-    [
-        "%" { percentageUnit="%"; }
-        |
-        <K_PERCENT> { percentageUnit="PERCENT"; }
-        |
-        <K_ROWS> { percentageUnit="ROWS"; }
-    ]
-    ")"
+    (
+        "(" percentageArgument = Number()
+        [
+            "%" { percentageUnit="%"; }
+            |
+            <K_PERCENT> { percentageUnit="PERCENT"; }
+            |
+            <K_ROWS> { percentageUnit="ROWS"; }
+        ]
+        ")"
 
-    [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
+        [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
 
-    [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
+        [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
+        |
+        percentageArgument = Number() { argumentInBrackets = false; }
+        [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
+    )
 
     {
-        return new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
+        sampleClause = new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
+        sampleClause.setArgumentInBrackets(argumentInBrackets);
+        sampleClause.setOffsetArgument(offsetArgument);
+        return sampleClause;
     }
 }
 
@@ -9554,7 +9564,7 @@ List<String> CreateParameter():
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START> | tk=<K_ORDER>
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
-            | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED>
+            | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED> | tk=<K_SAMPLE>
             | tk="="
         )
         { param.add(tk.image); }
