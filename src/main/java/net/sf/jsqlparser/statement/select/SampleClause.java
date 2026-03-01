@@ -24,7 +24,8 @@ public class SampleClause {
     public SampleClause(String keyword, String method, Number percentageArgument,
             String percentageUnit,
             Number repeatArgument, Number seedArgument) {
-        this(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument, true,
+        this(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument,
+                true,
                 null);
     }
 
