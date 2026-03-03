@@ -55,6 +55,9 @@ public class Insert implements Statement {
     private InsertConflictAction conflictAction;
     private InsertDuplicateAction duplicateAction;
     private Alias rowAlias;
+    private boolean oracleMultiInsert = false;
+    private boolean oracleMultiInsertFirst = false;
+    private List<OracleMultiInsertBranch> oracleMultiInsertBranches;
 
     public List<UpdateSet> getDuplicateUpdateSets() {
         if (duplicateAction != null) {
@@ -97,6 +100,11 @@ public class Insert implements Statement {
     }
 
     public Table getTable() {
+        if (table == null && oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()
+                && oracleMultiInsertBranches.get(0).getClauses() != null
+                && !oracleMultiInsertBranches.get(0).getClauses().isEmpty()) {
+            return oracleMultiInsertBranches.get(0).getClauses().get(0).getTable();
+        }
         return table;
     }
 
@@ -270,6 +278,30 @@ public class Insert implements Statement {
         return this;
     }
 
+    public boolean isOracleMultiInsert() {
+        return oracleMultiInsert;
+    }
+
+    public void setOracleMultiInsert(boolean oracleMultiInsert) {
+        this.oracleMultiInsert = oracleMultiInsert;
+    }
+
+    public boolean isOracleMultiInsertFirst() {
+        return oracleMultiInsertFirst;
+    }
+
+    public void setOracleMultiInsertFirst(boolean oracleMultiInsertFirst) {
+        this.oracleMultiInsertFirst = oracleMultiInsertFirst;
+    }
+
+    public List<OracleMultiInsertBranch> getOracleMultiInsertBranches() {
+        return oracleMultiInsertBranches;
+    }
+
+    public void setOracleMultiInsertBranches(List<OracleMultiInsertBranch> oracleMultiInsertBranches) {
+        this.oracleMultiInsertBranches = oracleMultiInsertBranches;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -294,6 +326,18 @@ public class Insert implements Statement {
         }
         if (modifierIgnore) {
             sql.append("IGNORE ");
+        }
+        if (oracleMultiInsert) {
+            sql.append(oracleMultiInsertFirst ? "FIRST" : "ALL");
+            if (oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()) {
+                for (OracleMultiInsertBranch branch : oracleMultiInsertBranches) {
+                    appendOracleMultiInsertBranch(sql, branch);
+                }
+            }
+            if (select != null) {
+                sql.append(" ").append(select);
+            }
+            return sql.toString();
         }
         if (overwrite) {
             sql.append("OVERWRITE ");
@@ -423,5 +467,38 @@ public class Insert implements Statement {
 
     public void setRowAlias(Alias rowAlias) {
         this.rowAlias = rowAlias;
+    }
+
+    public Insert withOracleMultiInsert(boolean oracleMultiInsert) {
+        this.setOracleMultiInsert(oracleMultiInsert);
+        return this;
+    }
+
+    public Insert withOracleMultiInsertFirst(boolean oracleMultiInsertFirst) {
+        this.setOracleMultiInsertFirst(oracleMultiInsertFirst);
+        return this;
+    }
+
+    public Insert withOracleMultiInsertBranches(
+            List<OracleMultiInsertBranch> oracleMultiInsertBranches) {
+        this.setOracleMultiInsertBranches(oracleMultiInsertBranches);
+        return this;
+    }
+
+    private void appendOracleMultiInsertBranch(StringBuilder sql,
+            OracleMultiInsertBranch branch) {
+        if (branch == null || branch.getClauses() == null || branch.getClauses().isEmpty()) {
+            return;
+        }
+
+        if (branch.getWhenExpression() != null) {
+            sql.append(" WHEN ").append(branch.getWhenExpression()).append(" THEN");
+        } else if (branch.isElseClause()) {
+            sql.append(" ELSE");
+        }
+
+        for (OracleMultiInsertClause clause : branch.getClauses()) {
+            sql.append(" ").append(clause);
+        }
     }
 }

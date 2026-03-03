@@ -105,6 +105,8 @@ import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -1051,7 +1053,24 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Insert insert, S context) {
-        visit(insert.getTable(), context);
+        if (insert.isOracleMultiInsert() && insert.getOracleMultiInsertBranches() != null) {
+            for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
+                if (branch.getWhenExpression() != null) {
+                    branch.getWhenExpression().accept(this, context);
+                }
+                if (branch.getClauses() == null) {
+                    continue;
+                }
+                for (OracleMultiInsertClause clause : branch.getClauses()) {
+                    visit(clause.getTable(), context);
+                    if (clause.getSelect() != null) {
+                        visit(clause.getSelect(), context);
+                    }
+                }
+            }
+        } else if (insert.getTable() != null) {
+            visit(insert.getTable(), context);
+        }
         if (insert.getWithItemsList() != null) {
             for (WithItem<?> withItem : insert.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);

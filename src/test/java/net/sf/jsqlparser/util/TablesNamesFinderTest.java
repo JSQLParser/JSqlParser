@@ -117,6 +117,25 @@ public class TablesNamesFinderTest {
     }
 
     @Test
+    public void testGetTablesFromOracleInsertAll() throws Exception {
+        String sqlStr =
+                "INSERT ALL INTO MY_TABLE1 (a) VALUES (1) INTO MY_TABLE2 (a) VALUES (2) SELECT * FROM dual";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "dual");
+    }
+
+    @Test
+    public void testGetTablesFromOracleInsertAllWhenElse() throws Exception {
+        String sqlStr =
+                "INSERT ALL WHEN EXISTS (SELECT 1 FROM CHECK_TABLE c WHERE c.id = s.id) "
+                        + "THEN INTO MY_TABLE1 (a) VALUES (a) "
+                        + "ELSE INTO MY_TABLE2 (a) VALUES (a) "
+                        + "SELECT a, id FROM SOURCE_TABLE s";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "CHECK_TABLE", "SOURCE_TABLE");
+    }
+
+    @Test
     public void testGetTablesFromReplace() throws Exception {
         String sqlStr = "REPLACE INTO MY_TABLE1 (a) VALUES ((SELECT a from MY_TABLE2 WHERE a = 1))";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
