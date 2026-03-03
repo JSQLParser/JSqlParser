@@ -9,11 +9,10 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
-import net.sf.jsqlparser.expression.Expression;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.expression.Expression;
 
 public class OracleMultiInsertBranch implements Serializable {
 

@@ -251,11 +251,14 @@ public class InsertTest {
         assertEquals(1, insert.getOracleMultiInsertBranches().size());
         assertEquals(3, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
         assertEquals("suppliers",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
         assertEquals("supplier_id, supplier_name",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getColumns().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getColumns()
+                        .toString());
         assertEquals("VALUES (1000, 'IBM')",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect()
+                        .toString());
         assertEquals("SELECT * FROM dual", insert.getSelect().toString());
     }
 
@@ -270,9 +273,11 @@ public class InsertTest {
         assertFalse(insert.getOracleMultiInsertBranches().get(0).isElseClause());
         assertEquals(1, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
         assertEquals("spm_message",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
         assertEquals("VALUES (?, ?)",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect()
+                        .toString());
     }
 
     @Test
@@ -314,11 +319,14 @@ public class InsertTest {
                 insert.getOracleMultiInsertBranches().get(0).getWhenExpression().toString());
         assertTrue(insert.getOracleMultiInsertBranches().get(1).isElseClause());
         assertEquals("apac_orders",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
         assertEquals("apac_audit",
-                insert.getOracleMultiInsertBranches().get(0).getClauses().get(1).getTable().toString());
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(1).getTable()
+                        .toString());
         assertEquals("other_orders",
-                insert.getOracleMultiInsertBranches().get(1).getClauses().get(0).getTable().toString());
+                insert.getOracleMultiInsertBranches().get(1).getClauses().get(0).getTable()
+                        .toString());
     }
 
     @Test

@@ -9,13 +9,12 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import java.io.Serializable;
+import java.util.Iterator;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.Select;
-
-import java.io.Serializable;
-import java.util.Iterator;
 
 public class OracleMultiInsertClause implements Serializable {
 

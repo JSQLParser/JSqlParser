@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Partition;
@@ -19,8 +20,6 @@ import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.Iterator;
 
 public class InsertDeParser extends AbstractDeParser<Insert> {
 

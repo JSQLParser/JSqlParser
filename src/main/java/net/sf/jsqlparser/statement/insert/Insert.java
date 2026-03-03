@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -25,12 +30,6 @@ import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class Insert implements Statement {
@@ -100,7 +99,8 @@ public class Insert implements Statement {
     }
 
     public Table getTable() {
-        if (table == null && oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()
+        if (table == null && oracleMultiInsertBranches != null
+                && !oracleMultiInsertBranches.isEmpty()
                 && oracleMultiInsertBranches.get(0).getClauses() != null
                 && !oracleMultiInsertBranches.get(0).getClauses().isEmpty()) {
             return oracleMultiInsertBranches.get(0).getClauses().get(0).getTable();
@@ -298,7 +298,8 @@ public class Insert implements Statement {
         return oracleMultiInsertBranches;
     }
 
-    public void setOracleMultiInsertBranches(List<OracleMultiInsertBranch> oracleMultiInsertBranches) {
+    public void setOracleMultiInsertBranches(
+            List<OracleMultiInsertBranch> oracleMultiInsertBranches) {
         this.oracleMultiInsertBranches = oracleMultiInsertBranches;
     }
 
