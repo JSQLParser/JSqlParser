@@ -2819,6 +2819,10 @@ Insert Insert():
     InsertConflictAction conflictAction = null;
 
     InsertDuplicateAction duplicateAction = null;
+    Token multiInsertToken = null;
+    List<OracleMultiInsertBranch> oracleMultiInsertBranches = new ArrayList<OracleMultiInsertBranch>();
+    OracleMultiInsertClause oracleMultiInsertClause = null;
+    OracleMultiInsertBranch oracleMultiInsertBranch = null;
 }
 {
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -2831,50 +2835,101 @@ Insert Insert():
         }
     ]
     [ LOOKAHEAD(2) <K_IGNORE>{ modifierIgnore = true; }]
-    [ LOOKAHEAD(2) (
-        <K_OVERWRITE> <K_TABLE> { insert.setOverwrite(true); insert.setTableKeyword(true); }
-        | <K_INTO> [ LOOKAHEAD(2) <K_TABLE> { insert.setTableKeyword(true); }]
-        )
-    ]   table=Table()
-    [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
-
-    [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
-
-    [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
-
-    [ LOOKAHEAD(2) <K_OVERRIDING> <K_SYSTEM> <K_VALUE> { insert.setOverriding(true); } ]
-
-    [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
-
     (
-        <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
+        LOOKAHEAD(2, (<K_ALL> | <K_FIRST>) (<K_INTO> | <K_WHEN>))
+        (
+            (multiInsertToken = <K_ALL> | multiInsertToken = <K_FIRST>) {
+                insert.setOracleMultiInsert(true);
+                insert.setOracleMultiInsertFirst(multiInsertToken.kind == K_FIRST);
+            }
+            (
+                {
+                    oracleMultiInsertBranch = new OracleMultiInsertBranch();
+                }
+                oracleMultiInsertClause = OracleMultiInsertClause() {
+                    oracleMultiInsertBranch.addClause(oracleMultiInsertClause);
+                    table = oracleMultiInsertClause.getTable();
+                }
+                (
+                    oracleMultiInsertClause = OracleMultiInsertClause() {
+                        oracleMultiInsertBranch.addClause(oracleMultiInsertClause);
+                    }
+                )*
+                {
+                    oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                }
+                |
+                (
+                    (
+                        oracleMultiInsertBranch = OracleMultiInsertWhenBranch() {
+                            if (table == null && !oracleMultiInsertBranch.getClauses().isEmpty()) {
+                                table = oracleMultiInsertBranch.getClauses().get(0).getTable();
+                            }
+                            oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                        }
+                    )+
+                    [
+                        oracleMultiInsertBranch = OracleMultiInsertElseBranch() {
+                            if (table == null && !oracleMultiInsertBranch.getClauses().isEmpty()) {
+                                table = oracleMultiInsertBranch.getClauses().get(0).getTable();
+                            }
+                            oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                        }
+                    ]
+                )
+            )
+            select = Select() {
+                insert.setOracleMultiInsertBranches(oracleMultiInsertBranches);
+            }
+        )
         |
         (
-            <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); useSet = true; }
+            [ LOOKAHEAD(2) (
+                <K_OVERWRITE> <K_TABLE> { insert.setOverwrite(true); insert.setTableKeyword(true); }
+                | <K_INTO> [ LOOKAHEAD(2) <K_TABLE> { insert.setTableKeyword(true); }]
+                )
+            ]   table=Table()
+            [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
+
+            [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
+
+            [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
+
+            [ LOOKAHEAD(2) <K_OVERRIDING> <K_SYSTEM> <K_VALUE> { insert.setOverriding(true); } ]
+
+            [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
+
+            (
+                <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
+                |
+                (
+                    <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); useSet = true; }
+                )
+                |
+                select = Select()
+            )
+
+            [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
+                if (select instanceof Values) {
+                    select.setAlias(rowAlias);
+                } else {
+                    insert.setRowAlias(rowAlias);
+                }
+            } ]
+
+            [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+                         duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
+            ]
+
+            [
+                <K_ON> <K_CONFLICT>
+                [ conflictTarget = InsertConflictTarget() ]
+                conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
+            ]
+
+            [ returningClause = ReturningClause() { insert.setReturningClause(returningClause); } ]
         )
-        |
-        select = Select()
     )
-
-    [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
-        if (select instanceof Values) {
-            select.setAlias(rowAlias);
-        } else {
-            insert.setRowAlias(rowAlias);
-        }
-    } ]
-
-    [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-                 duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
-    ]
-
-    [
-        <K_ON> <K_CONFLICT>
-        [ conflictTarget = InsertConflictTarget() ]
-        conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
-    ]
-
-    [ returningClause = ReturningClause() { insert.setReturningClause(returningClause); } ]
 
     {
         if (!columns.isEmpty()) {
@@ -2888,6 +2943,73 @@ Insert Insert():
               .withTable(table)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
+    }
+}
+
+OracleMultiInsertClause OracleMultiInsertClause():
+{
+    OracleMultiInsertClause clause = new OracleMultiInsertClause();
+    Table clauseTable = null;
+    ExpressionList<Column> clauseColumns = new ExpressionList<Column>();
+    Select clauseSelect = null;
+}
+{
+    <K_INTO> clauseTable=Table()
+    [ LOOKAHEAD(2) "(" clauseColumns=ColumnList() ")" ]
+    clauseSelect = Select()
+    {
+        if (!clauseColumns.isEmpty()) {
+            clause.setColumns(clauseColumns);
+        }
+        return clause.withTable(clauseTable).withSelect(clauseSelect);
+    }
+}
+
+OracleMultiInsertBranch OracleMultiInsertWhenBranch():
+{
+    Expression whenExpression = null;
+    List<OracleMultiInsertClause> clauses = null;
+}
+{
+    <K_WHEN> whenExpression = Expression() <K_THEN>
+    clauses = OracleMultiInsertClauseList()
+    {
+        return new OracleMultiInsertBranch()
+                .withWhenExpression(whenExpression)
+                .withClauses(clauses);
+    }
+}
+
+OracleMultiInsertBranch OracleMultiInsertElseBranch():
+{
+    List<OracleMultiInsertClause> clauses = null;
+}
+{
+    <K_ELSE>
+    clauses = OracleMultiInsertClauseList()
+    {
+        return new OracleMultiInsertBranch()
+                .withElseClause(true)
+                .withClauses(clauses);
+    }
+}
+
+List<OracleMultiInsertClause> OracleMultiInsertClauseList():
+{
+    List<OracleMultiInsertClause> clauses = new ArrayList<OracleMultiInsertClause>();
+    OracleMultiInsertClause clause = null;
+}
+{
+    clause = OracleMultiInsertClause() {
+        clauses.add(clause);
+    }
+    (
+        clause = OracleMultiInsertClause() {
+            clauses.add(clause);
+        }
+    )*
+    {
+        return clauses;
     }
 }
 
