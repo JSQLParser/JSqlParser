@@ -26,6 +26,7 @@ import java.util.List;
 public class Function extends ASTNodeAccessImpl implements Expression {
     private List<String> nameparts;
     private ExpressionList<?> parameters;
+    private ExpressionList<?> chainedParameters;
     private NamedExpressionList<?> namedParameters;
     private boolean allColumns = false;
     private boolean distinct = false;
@@ -193,6 +194,20 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     }
 
     /**
+     * Additional function-call parameters for dialects that support chained function calls, e.g.
+     * quantile(0.95)(cost) in ClickHouse.
+     *
+     * @return the chained parameters of the function (if any, else null)
+     */
+    public ExpressionList<?> getChainedParameters() {
+        return chainedParameters;
+    }
+
+    public void setChainedParameters(ExpressionList<?> chainedParameters) {
+        this.chainedParameters = chainedParameters;
+    }
+
+    /**
      * the parameters might be named parameters, e.g. substring('foobar' from 2 for 3)
      *
      * @return the list of named parameters of the function (if any, else null)
@@ -335,6 +350,10 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
         String ans = getName() + params;
 
+        if (chainedParameters != null) {
+            ans += "(" + chainedParameters + ")";
+        }
+
         if (nullHandling != null && isIgnoreNullsOutside()) {
             switch (nullHandling) {
                 case IGNORE_NULLS:
@@ -391,6 +410,11 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public Function withParameters(Expression... parameters) {
         return withParameters(new ExpressionList<>(parameters));
+    }
+
+    public Function withChainedParameters(ExpressionList<?> chainedParameters) {
+        this.setChainedParameters(chainedParameters);
+        return this;
     }
 
     public Function withNamedParameters(NamedExpressionList<?> namedParameters) {

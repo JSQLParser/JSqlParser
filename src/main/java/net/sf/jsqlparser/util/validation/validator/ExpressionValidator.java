@@ -542,6 +542,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
         validateOptionalExpressionList(function.getNamedParameters());
         validateOptionalExpressionList(function.getParameters());
+        validateOptionalExpressionList(function.getChainedParameters());
 
         Object attribute = function.getAttribute();
         if (attribute instanceof Expression) {

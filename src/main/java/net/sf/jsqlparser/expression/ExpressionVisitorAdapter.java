@@ -112,6 +112,9 @@ public class ExpressionVisitorAdapter<T>
         if (function.getParameters() != null) {
             subExpressions.addAll(function.getParameters());
         }
+        if (function.getChainedParameters() != null) {
+            subExpressions.addAll(function.getChainedParameters());
+        }
         if (function.getKeep() != null) {
             subExpressions.add(function.getKeep());
         }

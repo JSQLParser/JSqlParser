@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -115,5 +116,20 @@ public class ClickHouseTest {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         Assertions.assertNotNull(select.getPreWhere());
         Assertions.assertNotNull(select.getWhere());
+    }
+
+    @Test
+    public void testParameterizedAggregateFunctionIssue2125() throws JSQLParserException {
+        String sql =
+                "SELECT toStartOfDay(timestamp) AS date, count(1) AS count, quantile(0.95)(cost) AS cost95 FROM apm_log_event";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        Function function = ((PlainSelect) select.getSelectBody())
+                .getSelectItem(2)
+                .getExpression(Function.class);
+        Assertions.assertNotNull(function.getParameters());
+        Assertions.assertNotNull(function.getChainedParameters());
+        Assertions.assertEquals(1, function.getParameters().size());
+        Assertions.assertEquals(1, function.getChainedParameters().size());
     }
 }

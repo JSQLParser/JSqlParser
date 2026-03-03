@@ -429,6 +429,10 @@ public class TablesNamesFinder<Void>
         if (exprList != null) {
             visit(exprList, context);
         }
+        exprList = function.getChainedParameters();
+        if (exprList != null) {
+            visit(exprList, context);
+        }
         return null;
     }
 

@@ -8308,6 +8308,7 @@ Function InternalFunction(boolean escaped):
     Function retval = new Function();
     ObjectNames funcName;
     ExpressionList expressionList = null;
+    ExpressionList chainedExpressionList = null;
     KeepExpression keep = null;
     Expression expr = null;
     Expression attributeExpression = null;
@@ -8374,6 +8375,10 @@ Function InternalFunction(boolean escaped):
 
     ")"
 
+    [
+        LOOKAHEAD(2) "(" chainedExpressionList = ExpressionList() ")"
+    ]
+
 
     [ LOOKAHEAD(2) "." (
             // tricky lookahead since we do need to support the following constructs
@@ -8409,6 +8414,7 @@ Function InternalFunction(boolean escaped):
     {
         retval.setEscaped(escaped);
         retval.setParameters(expressionList);
+        retval.setChainedParameters(chainedExpressionList);
         retval.setName(funcName.getNames());
         retval.setKeep(keep);
         return retval;
