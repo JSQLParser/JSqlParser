@@ -307,6 +307,17 @@ public class Insert implements Statement {
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
         StringBuilder sql = new StringBuilder();
+        appendWithItems(sql);
+        appendInsertPrefix(sql);
+        if (appendOracleMultiInsert(sql)) {
+            return sql.toString();
+        }
+        appendInsertTargetAndValues(sql);
+        appendInsertActions(sql);
+        return sql.toString();
+    }
+
+    private void appendWithItems(StringBuilder sql) {
         if (withItemsList != null && !withItemsList.isEmpty()) {
             sql.append("WITH ");
             for (Iterator<WithItem<?>> iter = withItemsList.iterator(); iter.hasNext();) {
@@ -318,6 +329,9 @@ public class Insert implements Statement {
                 sql.append(" ");
             }
         }
+    }
+
+    private void appendInsertPrefix(StringBuilder sql) {
         sql.append("INSERT ");
         if (oracleHint != null) {
             sql.append(oracleHint).append(" ");
@@ -328,18 +342,26 @@ public class Insert implements Statement {
         if (modifierIgnore) {
             sql.append("IGNORE ");
         }
-        if (oracleMultiInsert) {
-            sql.append(oracleMultiInsertFirst ? "FIRST" : "ALL");
-            if (oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()) {
-                for (OracleMultiInsertBranch branch : oracleMultiInsertBranches) {
-                    appendOracleMultiInsertBranch(sql, branch);
-                }
-            }
-            if (select != null) {
-                sql.append(" ").append(select);
-            }
-            return sql.toString();
+    }
+
+    private boolean appendOracleMultiInsert(StringBuilder sql) {
+        if (!oracleMultiInsert) {
+            return false;
         }
+
+        sql.append(oracleMultiInsertFirst ? "FIRST" : "ALL");
+        if (oracleMultiInsertBranches != null && !oracleMultiInsertBranches.isEmpty()) {
+            for (OracleMultiInsertBranch branch : oracleMultiInsertBranches) {
+                appendOracleMultiInsertBranch(sql, branch);
+            }
+        }
+        if (select != null) {
+            sql.append(" ").append(select);
+        }
+        return true;
+    }
+
+    private void appendInsertTargetAndValues(StringBuilder sql) {
         if (overwrite) {
             sql.append("OVERWRITE ");
         } else {
@@ -383,10 +405,12 @@ public class Insert implements Statement {
         if (select != null) {
             sql.append(select);
         }
+    }
 
+    private void appendInsertActions(StringBuilder sql) {
         if (setUpdateSets != null && !setUpdateSets.isEmpty()) {
             sql.append("SET ");
-            sql = UpdateSet.appendUpdateSetsTo(sql, setUpdateSets);
+            UpdateSet.appendUpdateSetsTo(sql, setUpdateSets);
             if (rowAlias != null) {
                 sql.append(" ").append(rowAlias);
             }
@@ -409,8 +433,6 @@ public class Insert implements Statement {
         if (returningClause != null) {
             returningClause.appendTo(sql);
         }
-
-        return sql.toString();
     }
 
     public Insert withWithItemsList(List<WithItem<?>> withList) {
