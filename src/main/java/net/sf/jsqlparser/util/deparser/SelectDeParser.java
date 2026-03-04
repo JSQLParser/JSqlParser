@@ -369,6 +369,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 builder.append(" SKIP LOCKED");
             }
         }
+        if (plainSelect.getSettings() != null && !plainSelect.getSettings().isEmpty()) {
+            builder.append(" SETTINGS ");
+            deparseUpdateSets(plainSelect.getSettings(), builder, expressionVisitor);
+        }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());
         }
