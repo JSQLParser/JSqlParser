@@ -2359,7 +2359,8 @@ DescribeStatement Describe(): {
 ExplainStatement Explain():
 {
     Token tk;
-    Select select;
+    Statement statement;
+    List<WithItem<?>> with = null;
     Table table;
     List<ExplainStatement.Option> options;
     ExplainStatement es;
@@ -2369,9 +2370,18 @@ ExplainStatement Explain():
     (
         LOOKAHEAD(3)(
             options= ExplainStatementOptions()
-            select = Select( )
+            (
+                [ LOOKAHEAD(2) with=WithList() ]
+                (
+                    statement = SelectWithWithItems( with )
+                    | statement = InsertWithWithItems( with )
+                    | statement = UpdateWithWithItems( with )
+                    | statement = DeleteWithWithItems( with )
+                    | statement = Merge( with )
+                )
+            )
             {
-                es = new ExplainStatement(tk.image, select, options);
+                es = new ExplainStatement(tk.image, statement, options);
             }
         )
         |

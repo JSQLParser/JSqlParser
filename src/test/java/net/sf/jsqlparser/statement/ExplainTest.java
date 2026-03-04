@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.delete.Delete;
 import org.junit.jupiter.api.Test;
 
 public class ExplainTest {
@@ -71,5 +73,35 @@ public class ExplainTest {
 
         explain = (ExplainStatement) CCJSqlParserUtil.parse("EXPLAIN SELECT * FROM mytable");
         assertThat(explain.getOption(ExplainStatement.OptionType.ANALYZE)).isNull();
+    }
+
+    @Test
+    public void testDelete() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN DELETE FROM mytable");
+    }
+
+    @Test
+    public void testUpdate() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN UPDATE mytable SET col = 1");
+    }
+
+    @Test
+    public void testInsert() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("EXPLAIN INSERT INTO mytable (col) VALUES (1)");
+    }
+
+    @Test
+    public void explainDelete_usesGenericStatementSlot() throws JSQLParserException {
+        ExplainStatement explain =
+                (ExplainStatement) CCJSqlParserUtil.parse("EXPLAIN DELETE FROM mytable");
+        assertThat(explain.getStatement()).isInstanceOf(Delete.class);
+    }
+
+    @Test
+    public void testDeleteInStatementsList() throws JSQLParserException {
+        Statements statements = CCJSqlParserUtil.parseStatements("EXPLAIN DELETE FROM mytable;");
+        assertThat(statements).isNotNull();
+        assertThat(statements).hasSize(1);
+        assertThat(statements.get(0)).isInstanceOf(ExplainStatement.class);
     }
 }
