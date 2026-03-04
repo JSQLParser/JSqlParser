@@ -9,13 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.PreferringClause;
-import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.schema.Table;
+import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +18,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.PreferringClause;
+import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -65,6 +65,7 @@ public class PlainSelect extends Select {
     private boolean isUsingOnly = false;
     private boolean useWithNoLog = false;
     private Table intoTempTable = null;
+    private List<UpdateSet> settings = null;
 
     public PlainSelect() {}
 
@@ -320,6 +321,19 @@ public class PlainSelect extends Select {
 
     public PlainSelect withIntoTempTable(Table intoTempTable) {
         this.setIntoTempTable(intoTempTable);
+        return this;
+    }
+
+    public List<UpdateSet> getSettings() {
+        return settings;
+    }
+
+    public void setSettings(List<UpdateSet> settings) {
+        this.settings = settings;
+    }
+
+    public PlainSelect withSettings(List<UpdateSet> settings) {
+        this.setSettings(settings);
         return this;
     }
 
@@ -632,6 +646,11 @@ public class PlainSelect extends Select {
         StringBuilder builder = new StringBuilder();
         super.appendTo(builder);
 
+        if (settings != null && !settings.isEmpty()) {
+            builder.append(" SETTINGS ");
+            UpdateSet.appendUpdateSetsTo(builder, settings);
+        }
+
         if (optimizeFor != null) {
             builder.append(optimizeFor);
         }
@@ -777,6 +796,18 @@ public class PlainSelect extends Select {
         List<Join> collection = Optional.ofNullable(getJoins()).orElseGet(ArrayList::new);
         collection.addAll(joins);
         return this.withJoins(collection);
+    }
+
+    public PlainSelect addSettings(UpdateSet... settings) {
+        List<UpdateSet> collection = Optional.ofNullable(getSettings()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, settings);
+        return this.withSettings(collection);
+    }
+
+    public PlainSelect addSettings(Collection<? extends UpdateSet> settings) {
+        List<UpdateSet> collection = Optional.ofNullable(getSettings()).orElseGet(ArrayList::new);
+        collection.addAll(settings);
+        return this.withSettings(collection);
     }
 
     public <E extends FromItem> E getFromItem(Class<E> type) {

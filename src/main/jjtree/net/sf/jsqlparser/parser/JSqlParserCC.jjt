@@ -603,6 +603,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
+|   <K_SETTINGS:"SETTINGS">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SHUTDOWN : "SHUTDOWN">
@@ -4292,6 +4293,7 @@ PlainSelect PlainSelect() #PlainSelect:
     String windowName = null;
     WindowDefinition winDef;
     Table intoTempTable = null;
+    List<UpdateSet> settings = null;
     Distinct distinct;
 }
 {
@@ -4408,6 +4410,7 @@ PlainSelect PlainSelect() #PlainSelect:
         [ LOOKAHEAD(2) (<K_NOWAIT> { plainSelect.setNoWait(true); }
                | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
     ]
+    [ LOOKAHEAD(2) <K_SETTINGS> settings = UpdateSets() { plainSelect.setSettings(settings); } ]
     [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
     [ LOOKAHEAD(3) <K_INTO> <K_TEMP> intoTempTable = Table() { plainSelect.setIntoTempTable(intoTempTable);} ]
     [ LOOKAHEAD(3)<K_WITH> <K_NO> <K_LOG> { plainSelect.setUseWithNoLog(true); } ]

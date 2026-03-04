@@ -9,14 +9,14 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 public class ClickHouseTest {
 
@@ -131,5 +131,22 @@ public class ClickHouseTest {
         Assertions.assertNotNull(function.getChainedParameters());
         Assertions.assertEquals(1, function.getParameters().size());
         Assertions.assertEquals(1, function.getChainedParameters().size());
+    }
+
+    @Test
+    public void testSettingsClauseIssue2362() throws JSQLParserException {
+        String sql = "SELECT *\nFROM events\nSETTINGS max_threads = 1";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        Assertions.assertNotNull(select.getSettings());
+        Assertions.assertEquals(1, select.getSettings().size());
+        Assertions.assertEquals("max_threads = 1", select.getSettings().get(0).toString());
+    }
+
+    @Test
+    public void testMultipleSettingsClauseIssue2362() throws JSQLParserException {
+        String sql = "SELECT * FROM events SETTINGS max_threads = 1, max_rows_to_read = 1000";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        Assertions.assertNotNull(select.getSettings());
+        Assertions.assertEquals(2, select.getSettings().size());
     }
 }
