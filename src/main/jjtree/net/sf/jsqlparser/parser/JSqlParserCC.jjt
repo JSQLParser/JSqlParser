@@ -2633,7 +2633,7 @@ ReturningClause ReturningClause():
 }
 {
     ( keyword=<K_RETURNING> | keyword=<K_RETURN> )
-    [ outputAliases = ReturningOutputAliasList() ]
+    [ LOOKAHEAD(2) outputAliases = ReturningOutputAliasList() ]
     selectItems = SelectItemsList()
 
     [
@@ -7387,14 +7387,14 @@ JsonFunction JsonArrayBody() : {
 
             [
                 LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); }
-                [ <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
+                [ LOOKAHEAD(2) <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
             ]
             (
                 ","
                 expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
                 [
                     LOOKAHEAD(2) <K_FORMAT> <K_JSON> { functionExpression.setUsingFormatJson( true ); }
-                    [ <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
+                    [ LOOKAHEAD(2) <K_ENCODING> encoding = JsonEncoding() { functionExpression.setEncoding(encoding); } ]
                 ]
             )*
         )*
@@ -7587,7 +7587,7 @@ JsonFunction JsonExistsBody() : {
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
         JsonKeyword("PASSING")
         expression = Expression() { result.addPassingExpression(expression); }
-        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+        ( LOOKAHEAD(2) "," expression = Expression() { result.addPassingExpression(expression); } )*
     ]
 
     [
@@ -7619,7 +7619,7 @@ JsonFunction JsonValueBody() : {
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
         JsonKeyword("PASSING")
         expression = Expression() { result.addPassingExpression(expression); }
-        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+        ( LOOKAHEAD(2) "," expression = Expression() { result.addPassingExpression(expression); } )*
     ]
 
     [ <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); } ]
@@ -7662,6 +7662,7 @@ JsonFunction JsonQueryBody() : {
     JsonFunction.JsonOnResponseBehavior additionalOnEmptyBehavior;
     JsonFunction.JsonOnResponseBehavior additionalOnErrorBehavior;
     StringBuilder additionalBuilder;
+    boolean hasPassingClause = false;
 }
 {
     "("
@@ -7671,9 +7672,9 @@ JsonFunction JsonQueryBody() : {
 
     [
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
-        JsonKeyword("PASSING")
+        JsonKeyword("PASSING") { hasPassingClause = true; }
         expression = Expression() { result.addPassingExpression(expression); }
-        ( "," expression = Expression() { result.addPassingExpression(expression); } )*
+        ( LOOKAHEAD(2) "," expression = Expression() { result.addPassingExpression(expression); } )*
     ]
 
     [
@@ -7744,6 +7745,7 @@ JsonFunction JsonQueryBody() : {
     ]
 
     (
+        LOOKAHEAD(2, { !hasPassingClause })
         ","
         {
             additionalReturningType = null;
@@ -8803,7 +8805,7 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("NESTED") })
         JsonKeyword("NESTED")
         { nestedColumnDefinition = new JsonTableFunction.JsonTableNestedColumnDefinition(); }
-        [ <K_PATH> { nestedColumnDefinition.setPathKeyword(true); } ]
+        [ LOOKAHEAD(2) <K_PATH> { nestedColumnDefinition.setPathKeyword(true); } ]
         expression = Expression() { nestedColumnDefinition.setPathExpression(expression); }
         [ <K_AS> pathName = RelObjectName() { nestedColumnDefinition.setPathName(pathName); } ]
         columnsClause = JsonTableColumnsClause() {
@@ -8892,6 +8894,7 @@ JsonTableFunction.JsonTablePlanTerm JsonTablePlanTerm() : {
             term.setNestedPlanExpression(nestedPlanExpression);
         }
         |
+        LOOKAHEAD(2)
         value = RelObjectName() {
             term = new JsonTableFunction.JsonTablePlanTerm();
             term.setName(value);
@@ -9831,7 +9834,7 @@ String ColumnsNamesListItem():
 {
 	( item = RelObjectName() )
 	[ LOOKAHEAD(2)  "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
-    [ (sortDirection = <K_ASC> | sortDirection = <K_DESC>) { item = item + " " + sortDirection.image; } ]
+    [ LOOKAHEAD( ( <K_ASC> | <K_DESC> ) ( "," | ")" ) ) (sortDirection = <K_ASC> | sortDirection = <K_DESC>) { item = item + " " + sortDirection.image; } ]
 	{
 		return item;
 	}
@@ -10294,7 +10297,7 @@ AlterExpression AlterExpression():
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 [
                     <K_USING> { alterExp.addParameters("USING"); }
-                    [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                    [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
                     sk4=RelObjectName() { alterExp.addParameters(sk4); }
                 ]
                 |
@@ -10440,7 +10443,7 @@ AlterExpression AlterExpression():
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
                     [
                         <K_USING> { alterExp.addParameters("USING"); }
-                        [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                        [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
                         sk4=RelObjectName() { alterExp.addParameters(sk4); }
                     ]
                     [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
@@ -10534,7 +10537,7 @@ AlterExpression AlterExpression():
                                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                                 [
                                     <K_USING> { alterExp.addParameters("USING"); }
-                                    [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                                    [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
                                     sk4=RelObjectName() { alterExp.addParameters(sk4); }
                                 ]
                                 [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
@@ -10570,7 +10573,7 @@ AlterExpression AlterExpression():
                                   constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                                   [
                                       <K_USING> { alterExp.addParameters("USING"); }
-                                      [ <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+                                      [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
                                       sk4=RelObjectName() { alterExp.addParameters(sk4); }
                                   ]
                                   [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
