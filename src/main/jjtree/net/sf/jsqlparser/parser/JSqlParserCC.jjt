@@ -2626,12 +2626,14 @@ Values Values(): {
 ReturningClause ReturningClause():
 {
     Token keyword;
+    List<ReturningOutputAlias> outputAliases = null;
     List<SelectItem<?>> selectItems;
     Object dataItem;
     List<Object> dataItems = null;
 }
 {
     ( keyword=<K_RETURNING> | keyword=<K_RETURN> )
+    [ outputAliases = ReturningOutputAliasList() ]
     selectItems = SelectItemsList()
 
     [
@@ -2646,7 +2648,57 @@ ReturningClause ReturningClause():
     ]
 
     {
-        return new ReturningClause(keyword.image, selectItems, dataItems);
+        return new ReturningClause(keyword.image, selectItems, outputAliases, dataItems);
+    }
+}
+
+ReturningReferenceType ReturningReferenceKind():
+{
+    String refName;
+    ReturningReferenceType refType;
+}
+{
+    refName = RelObjectNameWithoutValue()
+    {
+        refType = ReturningReferenceType.from(refName);
+        if (refType == ReturningReferenceType.OLD) {
+            return ReturningReferenceType.OLD;
+        } else if (refType == ReturningReferenceType.NEW) {
+            return ReturningReferenceType.NEW;
+        }
+        throw new ParseException("Expected OLD or NEW but found: " + refName);
+    }
+}
+
+ReturningOutputAlias ReturningOutputAliasDefinition():
+{
+    ReturningReferenceType refType;
+    String aliasName;
+}
+{
+    refType = ReturningReferenceKind()
+    <K_AS>
+    aliasName = RelObjectNameWithoutStart()
+    {
+        return new ReturningOutputAlias(refType, aliasName);
+    }
+}
+
+List<ReturningOutputAlias> ReturningOutputAliasList():
+{
+    List<ReturningOutputAlias> outputAliases = new ArrayList<ReturningOutputAlias>();
+    ReturningOutputAlias outputAlias;
+}
+{
+    <K_WITH> "("
+    outputAlias = ReturningOutputAliasDefinition() { outputAliases.add(outputAlias); }
+    (
+        ","
+        outputAlias = ReturningOutputAliasDefinition() { outputAliases.add(outputAlias); }
+    )*
+    ")"
+    {
+        return outputAliases;
     }
 }
 
