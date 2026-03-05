@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
@@ -59,6 +58,7 @@ public class AlterExpression implements Serializable {
     private String fkSourceTable;
     private List<String> fkSourceColumns;
     private boolean uk;
+    private boolean ukTypeSpecified;
     private boolean useEqual;
 
     private List<String> partitions;
@@ -533,6 +533,15 @@ public class AlterExpression implements Serializable {
 
     public void setUk(boolean uk) {
         this.uk = uk;
+        this.ukTypeSpecified = true;
+    }
+
+    public boolean isUkTypeSpecified() {
+        return ukTypeSpecified;
+    }
+
+    public void setUkTypeSpecified(boolean ukTypeSpecified) {
+        this.ukTypeSpecified = ukTypeSpecified;
     }
 
     public boolean isUseIfNotExists() {
@@ -929,10 +938,14 @@ public class AlterExpression implements Serializable {
             } else if (ukColumns != null) {
                 b.append("UNIQUE");
                 if (ukName != null) {
-                    if (getUk()) {
-                        b.append(" KEY ");
+                    if (isUkTypeSpecified()) {
+                        if (getUk()) {
+                            b.append(" KEY ");
+                        } else {
+                            b.append(" INDEX ");
+                        }
                     } else {
-                        b.append(" INDEX ");
+                        b.append(" ");
                     }
                     b.append(ukName);
                 }

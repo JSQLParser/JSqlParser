@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -105,6 +110,8 @@ import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -137,12 +144,6 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -426,6 +427,10 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(Function function, S context) {
         ExpressionList<?> exprList = function.getParameters();
+        if (exprList != null) {
+            visit(exprList, context);
+        }
+        exprList = function.getChainedParameters();
         if (exprList != null) {
             visit(exprList, context);
         }
@@ -1051,7 +1056,24 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Insert insert, S context) {
-        visit(insert.getTable(), context);
+        if (insert.isOracleMultiInsert() && insert.getOracleMultiInsertBranches() != null) {
+            for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
+                if (branch.getWhenExpression() != null) {
+                    branch.getWhenExpression().accept(this, context);
+                }
+                if (branch.getClauses() == null) {
+                    continue;
+                }
+                for (OracleMultiInsertClause clause : branch.getClauses()) {
+                    visit(clause.getTable(), context);
+                    if (clause.getSelect() != null) {
+                        visit(clause.getSelect(), context);
+                    }
+                }
+            }
+        } else if (insert.getTable() != null) {
+            visit(insert.getTable(), context);
+        }
         if (insert.getWithItemsList() != null) {
             for (WithItem<?> withItem : insert.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);

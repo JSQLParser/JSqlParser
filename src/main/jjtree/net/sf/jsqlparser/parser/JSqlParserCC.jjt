@@ -602,6 +602,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SEPARATOR:"SEPARATOR">
 |   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
+|   <K_SETTINGS:"SETTINGS">
 |   <K_SETS:"SETS">
 |   <K_SHOW : "SHOW">
 |   <K_SHUTDOWN : "SHUTDOWN">
@@ -2358,7 +2359,8 @@ DescribeStatement Describe(): {
 ExplainStatement Explain():
 {
     Token tk;
-    Select select;
+    Statement statement;
+    List<WithItem<?>> with = null;
     Table table;
     List<ExplainStatement.Option> options;
     ExplainStatement es;
@@ -2368,9 +2370,18 @@ ExplainStatement Explain():
     (
         LOOKAHEAD(3)(
             options= ExplainStatementOptions()
-            select = Select( )
+            (
+                [ LOOKAHEAD(2) with=WithList() ]
+                (
+                    statement = SelectWithWithItems( with )
+                    | statement = InsertWithWithItems( with )
+                    | statement = UpdateWithWithItems( with )
+                    | statement = DeleteWithWithItems( with )
+                    | statement = Merge( with )
+                )
+            )
             {
-                es = new ExplainStatement(tk.image, select, options);
+                es = new ExplainStatement(tk.image, statement, options);
             }
         )
         |
@@ -2614,12 +2625,14 @@ Values Values(): {
 ReturningClause ReturningClause():
 {
     Token keyword;
+    List<ReturningOutputAlias> outputAliases = null;
     List<SelectItem<?>> selectItems;
     Object dataItem;
     List<Object> dataItems = null;
 }
 {
     ( keyword=<K_RETURNING> | keyword=<K_RETURN> )
+    [ outputAliases = ReturningOutputAliasList() ]
     selectItems = SelectItemsList()
 
     [
@@ -2634,7 +2647,57 @@ ReturningClause ReturningClause():
     ]
 
     {
-        return new ReturningClause(keyword.image, selectItems, dataItems);
+        return new ReturningClause(keyword.image, selectItems, outputAliases, dataItems);
+    }
+}
+
+ReturningReferenceType ReturningReferenceKind():
+{
+    String refName;
+    ReturningReferenceType refType;
+}
+{
+    refName = RelObjectNameWithoutValue()
+    {
+        refType = ReturningReferenceType.from(refName);
+        if (refType == ReturningReferenceType.OLD) {
+            return ReturningReferenceType.OLD;
+        } else if (refType == ReturningReferenceType.NEW) {
+            return ReturningReferenceType.NEW;
+        }
+        throw new ParseException("Expected OLD or NEW but found: " + refName);
+    }
+}
+
+ReturningOutputAlias ReturningOutputAliasDefinition():
+{
+    ReturningReferenceType refType;
+    String aliasName;
+}
+{
+    refType = ReturningReferenceKind()
+    <K_AS>
+    aliasName = RelObjectNameWithoutStart()
+    {
+        return new ReturningOutputAlias(refType, aliasName);
+    }
+}
+
+List<ReturningOutputAlias> ReturningOutputAliasList():
+{
+    List<ReturningOutputAlias> outputAliases = new ArrayList<ReturningOutputAlias>();
+    ReturningOutputAlias outputAlias;
+}
+{
+    <K_WITH> "("
+    outputAlias = ReturningOutputAliasDefinition() { outputAliases.add(outputAlias); }
+    (
+        ","
+        outputAlias = ReturningOutputAliasDefinition() { outputAliases.add(outputAlias); }
+    )*
+    ")"
+    {
+        return outputAliases;
     }
 }
 
@@ -2818,6 +2881,10 @@ Insert Insert():
     InsertConflictAction conflictAction = null;
 
     InsertDuplicateAction duplicateAction = null;
+    Token multiInsertToken = null;
+    List<OracleMultiInsertBranch> oracleMultiInsertBranches = new ArrayList<OracleMultiInsertBranch>();
+    OracleMultiInsertClause oracleMultiInsertClause = null;
+    OracleMultiInsertBranch oracleMultiInsertBranch = null;
 }
 {
     <K_INSERT> { insert.setOracleHint(getOracleHint()); }
@@ -2830,50 +2897,101 @@ Insert Insert():
         }
     ]
     [ LOOKAHEAD(2) <K_IGNORE>{ modifierIgnore = true; }]
-    [ LOOKAHEAD(2) (
-        <K_OVERWRITE> <K_TABLE> { insert.setOverwrite(true); insert.setTableKeyword(true); }
-        | <K_INTO> [ LOOKAHEAD(2) <K_TABLE> { insert.setTableKeyword(true); }]
-        )
-    ]   table=Table()
-    [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
-
-    [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
-
-    [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
-
-    [ LOOKAHEAD(2) <K_OVERRIDING> <K_SYSTEM> <K_VALUE> { insert.setOverriding(true); } ]
-
-    [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
-
     (
-        <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
+        LOOKAHEAD(2, (<K_ALL> | <K_FIRST>) (<K_INTO> | <K_WHEN>))
+        (
+            (multiInsertToken = <K_ALL> | multiInsertToken = <K_FIRST>) {
+                insert.setOracleMultiInsert(true);
+                insert.setOracleMultiInsertFirst(multiInsertToken.kind == K_FIRST);
+            }
+            (
+                {
+                    oracleMultiInsertBranch = new OracleMultiInsertBranch();
+                }
+                oracleMultiInsertClause = OracleMultiInsertClause() {
+                    oracleMultiInsertBranch.addClause(oracleMultiInsertClause);
+                    table = oracleMultiInsertClause.getTable();
+                }
+                (
+                    oracleMultiInsertClause = OracleMultiInsertClause() {
+                        oracleMultiInsertBranch.addClause(oracleMultiInsertClause);
+                    }
+                )*
+                {
+                    oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                }
+                |
+                (
+                    (
+                        oracleMultiInsertBranch = OracleMultiInsertWhenBranch() {
+                            if (table == null && !oracleMultiInsertBranch.getClauses().isEmpty()) {
+                                table = oracleMultiInsertBranch.getClauses().get(0).getTable();
+                            }
+                            oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                        }
+                    )+
+                    [
+                        oracleMultiInsertBranch = OracleMultiInsertElseBranch() {
+                            if (table == null && !oracleMultiInsertBranch.getClauses().isEmpty()) {
+                                table = oracleMultiInsertBranch.getClauses().get(0).getTable();
+                            }
+                            oracleMultiInsertBranches.add(oracleMultiInsertBranch);
+                        }
+                    ]
+                )
+            )
+            select = Select() {
+                insert.setOracleMultiInsertBranches(oracleMultiInsertBranches);
+            }
+        )
         |
         (
-            <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); useSet = true; }
+            [ LOOKAHEAD(2) (
+                <K_OVERWRITE> <K_TABLE> { insert.setOverwrite(true); insert.setTableKeyword(true); }
+                | <K_INTO> [ LOOKAHEAD(2) <K_TABLE> { insert.setTableKeyword(true); }]
+                )
+            ]   table=Table()
+            [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
+
+            [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
+
+            [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
+
+            [ LOOKAHEAD(2) <K_OVERRIDING> <K_SYSTEM> <K_VALUE> { insert.setOverriding(true); } ]
+
+            [ outputClause = OutputClause() { insert.setOutputClause(outputClause); } ]
+
+            (
+                <K_DEFAULT> <K_VALUES> { insert.setOnlyDefaultValues(true); }
+                |
+                (
+                    <K_SET> updateSets = UpdateSets() { insert.withSetUpdateSets(updateSets); useSet = true; }
+                )
+                |
+                select = Select()
+            )
+
+            [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
+                if (select instanceof Values) {
+                    select.setAlias(rowAlias);
+                } else {
+                    insert.setRowAlias(rowAlias);
+                }
+            } ]
+
+            [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
+                         duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
+            ]
+
+            [
+                <K_ON> <K_CONFLICT>
+                [ conflictTarget = InsertConflictTarget() ]
+                conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
+            ]
+
+            [ returningClause = ReturningClause() { insert.setReturningClause(returningClause); } ]
         )
-        |
-        select = Select()
     )
-
-    [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
-        if (select instanceof Values) {
-            select.setAlias(rowAlias);
-        } else {
-            insert.setRowAlias(rowAlias);
-        }
-    } ]
-
-    [ LOOKAHEAD(2) <K_ON> <K_DUPLICATE> <K_KEY> <K_UPDATE>
-                 duplicateAction = InsertDuplicateAction() { insert.setDuplicateAction(duplicateAction); }
-    ]
-
-    [
-        <K_ON> <K_CONFLICT>
-        [ conflictTarget = InsertConflictTarget() ]
-        conflictAction = InsertConflictAction() { insert.withConflictTarget(conflictTarget).setConflictAction(conflictAction); }
-    ]
-
-    [ returningClause = ReturningClause() { insert.setReturningClause(returningClause); } ]
 
     {
         if (!columns.isEmpty()) {
@@ -2887,6 +3005,73 @@ Insert Insert():
               .withTable(table)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
+    }
+}
+
+OracleMultiInsertClause OracleMultiInsertClause():
+{
+    OracleMultiInsertClause clause = new OracleMultiInsertClause();
+    Table clauseTable = null;
+    ExpressionList<Column> clauseColumns = new ExpressionList<Column>();
+    Select clauseSelect = null;
+}
+{
+    <K_INTO> clauseTable=Table()
+    [ LOOKAHEAD(2) "(" clauseColumns=ColumnList() ")" ]
+    clauseSelect = Select()
+    {
+        if (!clauseColumns.isEmpty()) {
+            clause.setColumns(clauseColumns);
+        }
+        return clause.withTable(clauseTable).withSelect(clauseSelect);
+    }
+}
+
+OracleMultiInsertBranch OracleMultiInsertWhenBranch():
+{
+    Expression whenExpression = null;
+    List<OracleMultiInsertClause> clauses = null;
+}
+{
+    <K_WHEN> whenExpression = Expression() <K_THEN>
+    clauses = OracleMultiInsertClauseList()
+    {
+        return new OracleMultiInsertBranch()
+                .withWhenExpression(whenExpression)
+                .withClauses(clauses);
+    }
+}
+
+OracleMultiInsertBranch OracleMultiInsertElseBranch():
+{
+    List<OracleMultiInsertClause> clauses = null;
+}
+{
+    <K_ELSE>
+    clauses = OracleMultiInsertClauseList()
+    {
+        return new OracleMultiInsertBranch()
+                .withElseClause(true)
+                .withClauses(clauses);
+    }
+}
+
+List<OracleMultiInsertClause> OracleMultiInsertClauseList():
+{
+    List<OracleMultiInsertClause> clauses = new ArrayList<OracleMultiInsertClause>();
+    OracleMultiInsertClause clause = null;
+}
+{
+    clause = OracleMultiInsertClause() {
+        clauses.add(clause);
+    }
+    (
+        clause = OracleMultiInsertClause() {
+            clauses.add(clause);
+        }
+    )*
+    {
+        return clauses;
     }
 }
 
@@ -3430,6 +3615,8 @@ SampleClause SampleClause():
     String method=null;
     Number percentageArgument;
     String percentageUnit = null;
+    boolean argumentInBrackets = true;
+    Number offsetArgument = null;
     Number repeatArgument=null;
     Number seedArgument=null;
 }
@@ -3454,22 +3641,30 @@ SampleClause SampleClause():
         )
     )
 
-    "(" percentageArgument = Number()
-    [
-        "%" { percentageUnit="%"; }
-        |
-        <K_PERCENT> { percentageUnit="PERCENT"; }
-        |
-        <K_ROWS> { percentageUnit="ROWS"; }
-    ]
-    ")"
+    (
+        "(" percentageArgument = Number()
+        [
+            "%" { percentageUnit="%"; }
+            |
+            <K_PERCENT> { percentageUnit="PERCENT"; }
+            |
+            <K_ROWS> { percentageUnit="ROWS"; }
+        ]
+        ")"
 
-    [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
+        [ LOOKAHEAD(2) <K_REPEATABLE> "(" repeatArgument = Number() ")" ]
 
-    [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
+        [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
+        |
+        percentageArgument = Number() { argumentInBrackets = false; }
+        [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
+    )
 
     {
-        return new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
+        sampleClause = new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
+        sampleClause.setArgumentInBrackets(argumentInBrackets);
+        sampleClause.setOffsetArgument(offsetArgument);
+        return sampleClause;
     }
 }
 
@@ -4159,6 +4354,7 @@ PlainSelect PlainSelect() #PlainSelect:
     String windowName = null;
     WindowDefinition winDef;
     Table intoTempTable = null;
+    List<UpdateSet> settings = null;
     Distinct distinct;
 }
 {
@@ -4245,7 +4441,6 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); }]
     [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); }]
     [ LOOKAHEAD(2) qualify=Qualify() {plainSelect.setQualify(qualify); }]
-    [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(<K_ORDER> <K_SIBLINGS> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOracleSiblings(true); plainSelect.setOrderByElements(orderByElements);    }   ]
     [ LOOKAHEAD(2) <K_WINDOW>
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
@@ -4253,6 +4448,7 @@ PlainSelect PlainSelect() #PlainSelect:
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
+    [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     [ LOOKAHEAD(7) limit = LimitBy() { plainSelect.setLimitBy(limit);  } ]
     [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
@@ -4275,6 +4471,7 @@ PlainSelect PlainSelect() #PlainSelect:
         [ LOOKAHEAD(2) (<K_NOWAIT> { plainSelect.setNoWait(true); }
                | <K_SKIP> <K_LOCKED> { plainSelect.setSkipLocked(true); }) ]
     ]
+    [ LOOKAHEAD(2) <K_SETTINGS> settings = UpdateSets() { plainSelect.setSettings(settings); } ]
     [ LOOKAHEAD(<K_OPTIMIZE>) optimize = OptimizeFor() { plainSelect.setOptimizeFor(optimize); } ]
     [ LOOKAHEAD(3) <K_INTO> <K_TEMP> intoTempTable = Table() { plainSelect.setIntoTempTable(intoTempTable);} ]
     [ LOOKAHEAD(3)<K_WITH> <K_NO> <K_LOG> { plainSelect.setUseWithNoLog(true); } ]
@@ -8307,6 +8504,7 @@ Function InternalFunction(boolean escaped):
     Function retval = new Function();
     ObjectNames funcName;
     ExpressionList expressionList = null;
+    ExpressionList chainedExpressionList = null;
     KeepExpression keep = null;
     Expression expr = null;
     Expression attributeExpression = null;
@@ -8373,6 +8571,10 @@ Function InternalFunction(boolean escaped):
 
     ")"
 
+    [
+        LOOKAHEAD(2) "(" chainedExpressionList = ExpressionList() ")"
+    ]
+
 
     [ LOOKAHEAD(2) "." (
             // tricky lookahead since we do need to support the following constructs
@@ -8408,6 +8610,7 @@ Function InternalFunction(boolean escaped):
     {
         retval.setEscaped(escaped);
         retval.setParameters(expressionList);
+        retval.setChainedParameters(chainedExpressionList);
         retval.setName(funcName.getNames());
         retval.setKeep(keep);
         return retval;
@@ -9115,10 +9318,11 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                         LOOKAHEAD(3) (
                             {
                                 tk=null;
+                                tk3=null;
                                 idxSpec.clear();
                             }
                             [ tk=<K_UNIQUE> ]
-                            [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
+                            [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
                             sk3=RelObjectName()
                             colNames = ColumnNamesWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
@@ -9552,7 +9756,7 @@ List<String> CreateParameter():
             | tk=<K_TYPE> | tk=<K_COMMENT> | tk=<K_USING> | tk=<K_COLLATE> | tk=<K_ASC>
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START> | tk=<K_ORDER>
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
-            | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED>
+            | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED> | tk=<K_SAMPLE>
             | tk="="
         )
         { param.add(tk.image); }
@@ -9620,11 +9824,13 @@ String AList():
 String ColumnsNamesListItem():
 {
 	Token tk = null;
+    Token sortDirection = null;
     String item = null;
 }
 {
 	( item = RelObjectName() )
 	[ LOOKAHEAD(2)  "(" tk = <S_LONG>  ")" { item = item + "(" + tk.image + ")"; } ]
+    [ (sortDirection = <K_ASC> | sortDirection = <K_DESC>) { item = item + " " + sortDirection.image; } ]
 	{
 		return item;
 	}
@@ -10216,7 +10422,20 @@ AlterExpression AlterExpression():
                     ")"
                 )
                 |
-                ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
+                (
+                    <K_UNIQUE>
+                    (
+                        (
+                            <K_KEY> { alterExp.setUk(true); }
+                            | <K_INDEX> { alterExp.setUk(false); }
+                        )
+                        [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
+                        |
+                        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                            alterExp.setUkTypeSpecified(false);
+                            alterExp.setUkName(tk.image);
+                        }
+                    )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
                     [
                         <K_USING> { alterExp.addParameters("USING"); }

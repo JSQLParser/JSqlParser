@@ -9,6 +9,13 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static java.util.stream.Collectors.joining;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -33,10 +40,10 @@ import net.sf.jsqlparser.statement.piped.PipeOperatorVisitor;
 import net.sf.jsqlparser.statement.piped.PivotPipeOperator;
 import net.sf.jsqlparser.statement.piped.RenamePipeOperator;
 import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetOperationPipeOperator;
 import net.sf.jsqlparser.statement.piped.SetPipeOperator;
 import net.sf.jsqlparser.statement.piped.TableSamplePipeOperator;
 import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
-import net.sf.jsqlparser.statement.piped.SetOperationPipeOperator;
 import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.select.Distinct;
@@ -70,14 +77,6 @@ import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 public class SelectDeParser extends AbstractDeParser<PlainSelect>
@@ -316,10 +315,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(plainSelect.getWindowDefinitions().stream()
                     .map(WindowDefinition::toString).collect(joining(", ")));
         }
-        if (plainSelect.getForClause() != null) {
-            plainSelect.getForClause().appendTo(builder);
-        }
-
         Alias alias = plainSelect.getAlias();
         if (alias != null) {
             builder.append(alias);
@@ -334,6 +329,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
 
         deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
+
+        if (plainSelect.getForClause() != null) {
+            plainSelect.getForClause().appendTo(builder);
+        }
 
         if (plainSelect.isEmitChanges()) {
             builder.append(" EMIT CHANGES");
@@ -369,6 +368,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             } else if (plainSelect.isSkipLocked()) {
                 builder.append(" SKIP LOCKED");
             }
+        }
+        if (plainSelect.getSettings() != null && !plainSelect.getSettings().isEmpty()) {
+            builder.append(" SETTINGS ");
+            deparseUpdateSets(plainSelect.getSettings(), builder, expressionVisitor);
         }
         if (plainSelect.getOptimizeFor() != null) {
             deparseOptimizeFor(plainSelect.getOptimizeFor());

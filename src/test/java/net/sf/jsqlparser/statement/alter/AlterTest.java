@@ -162,6 +162,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableUniqueNamedWithoutKeyword() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE `goods` ADD UNIQUE `aaa` (`cate_id`)");
+    }
+
+    @Test
     public void testAlterTableForgeignKey() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE test ADD FOREIGN KEY (user_id) REFERENCES ra_user (id) ON DELETE CASCADE");
@@ -570,6 +575,17 @@ public class AlterTest {
         assertEquals("ALTER TABLE biz_add_fee DROP INDEX operation_time, "
                 + "ADD UNIQUE INDEX operation_time (`operation_time`, `warehouse_code`, `customerid`, `fees_type`, `external_no`) "
                 + "USING BTREE, ALGORITHM = INPLACE", result.toString());
+    }
+
+    @Test
+    public void testAlterTableDropAndAddUniqueIndexWithAscendingColumns() throws Exception {
+        Statement result =
+                CCJSqlParserUtil.parse("ALTER TABLE `wxp_dm`.`xqgl_req_report` "
+                        + "DROP INDEX `index_name`, "
+                        + "ADD UNIQUE INDEX `index_name`(`report_name` ASC) USING BTREE");
+        assertEquals("ALTER TABLE `wxp_dm`.`xqgl_req_report` DROP INDEX `index_name`, "
+                + "ADD UNIQUE INDEX `index_name` (`report_name` ASC) USING BTREE",
+                result.toString());
     }
 
     @Test

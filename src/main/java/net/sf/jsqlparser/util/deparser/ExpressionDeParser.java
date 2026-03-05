@@ -920,6 +920,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             builder.append(")");
         }
 
+        if (function.getChainedParameters() != null) {
+            builder.append("(");
+            function.getChainedParameters().accept(this, context);
+            builder.append(")");
+        }
+
         if (function.getNullHandling() != null && function.isIgnoreNullsOutside()) {
             switch (function.getNullHandling()) {
                 case IGNORE_NULLS:

@@ -9,6 +9,21 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
@@ -25,22 +40,6 @@ import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.test.TestException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateTableTest {
 
@@ -231,6 +230,19 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableClickHouseSampleBy() throws JSQLParserException {
+        String statement = "CREATE TABLE tmp.events (\n"
+                + "    id UInt64,\n"
+                + "    user_id UInt32,\n"
+                + "    timestamp DateTime\n"
+                + ")\n"
+                + "ENGINE = MergeTree()\n"
+                + "ORDER BY id\n"
+                + "SAMPLE BY id";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
     public void testCreateTableIfNotExists() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE IF NOT EXISTS animals (id INT NOT NULL)");
     }
@@ -350,6 +362,31 @@ public class CreateTableTest {
     public void testMySqlCreateTableWithTextIndexes() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE table2 (id INT (10) UNSIGNED NOT NULL AUTO_INCREMENT, name TEXT, url TEXT, created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (id), FULLTEXT KEY idx_table2_name (name)) ENGINE = InnoDB AUTO_INCREMENT = 7334 DEFAULT CHARSET = utf8");
+    }
+
+    @Test
+    public void testMySqlCreateTableWithSpatialIndex() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE places (id INT NOT NULL, location GEOMETRY NOT NULL, SPATIAL KEY sp_idx_location (location))");
+    }
+
+    @Test
+    public void testMySqlCreateTableIssue2367()
+            throws JSQLParserException {
+        String sql = "CREATE TABLE test (\n"
+                + "id int(11) NOT NULL COMMENT 'data id',\n"
+                + "code varchar(100) NOT NULL COMMENT 'code',\n"
+                + "name varchar(300) DEFAULT NULL COMMENT 'name',\n"
+                + "geo geometry NOT NULL,\n"
+                + "PRIMARY KEY (id),\n"
+                + "UNIQUE KEY index_code (code) USING HASH COMMENT 'unique index on code',\n"
+                + "UNIQUE KEY inx_code_name (code,name) USING BTREE COMMENT 'unique index on code and name',\n"
+                + "UNIQUE KEY inx_id_code_name (id,code,name) USING BTREE COMMENT 'index 1',\n"
+                + "SPATIAL KEY SPATIAL_geo (geo),\n"
+                + "KEY NORMAL_name (name) COMMENT 'normal index',\n"
+                + "FULLTEXT KEY fulltext_name (name)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='test table'";
+        assertSqlCanBeParsedAndDeparsed(sql);
     }
 
     @Test

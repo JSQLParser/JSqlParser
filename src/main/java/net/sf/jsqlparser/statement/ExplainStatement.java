@@ -13,16 +13,14 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.Select;
 
 /**
  * An {@code EXPLAIN} statement
  */
 public class ExplainStatement implements Statement {
     private String keyword;
-    private Select select;
+    private Statement statement;
     private LinkedHashMap<OptionType, Option> options;
     private Table table;
 
@@ -37,24 +35,17 @@ public class ExplainStatement implements Statement {
     public ExplainStatement(String keyword, Table table) {
         this.keyword = keyword;
         this.table = table;
-        this.select = null;
     }
 
-    public ExplainStatement(String keyword, Select select, List<Option> optionList) {
+    public ExplainStatement(String keyword, Statement statement, List<Option> optionList) {
         this.keyword = keyword;
-        this.select = select;
-        this.table = null;
+        setStatement(statement);
 
-        if (optionList != null && !optionList.isEmpty()) {
-            options = new LinkedHashMap<>();
-            for (Option o : optionList) {
-                options.put(o.getType(), o);
-            }
-        }
+        initializeOptions(optionList);
     }
 
-    public ExplainStatement(Select select) {
-        this("EXPLAIN", select, null);
+    public ExplainStatement(Statement statement) {
+        this("EXPLAIN", statement, null);
     }
 
     public Table getTable() {
@@ -63,15 +54,20 @@ public class ExplainStatement implements Statement {
 
     public ExplainStatement setTable(Table table) {
         this.table = table;
+        if (table != null) {
+            this.statement = null;
+        }
         return this;
     }
 
-    public Select getStatement() {
-        return select;
+    public Statement getStatement() {
+        return statement;
     }
 
-    public void setStatement(Select select) {
-        this.select = select;
+    public ExplainStatement setStatement(Statement statement) {
+        this.table = null;
+        this.statement = statement;
+        return this;
     }
 
     public LinkedHashMap<OptionType, Option> getOptions() {
@@ -122,8 +118,8 @@ public class ExplainStatement implements Statement {
             }
 
             builder.append(" ");
-            if (select != null) {
-                select.appendTo(builder);
+            if (statement != null) {
+                builder.append(statement);
             }
         }
 
@@ -133,6 +129,15 @@ public class ExplainStatement implements Statement {
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
+    }
+
+    private void initializeOptions(List<Option> optionList) {
+        if (optionList != null && !optionList.isEmpty()) {
+            options = new LinkedHashMap<>();
+            for (Option o : optionList) {
+                options.put(o.getType(), o);
+            }
+        }
     }
 
     public enum OptionType {

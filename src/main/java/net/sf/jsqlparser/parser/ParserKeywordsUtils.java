@@ -134,6 +134,7 @@ public class ParserKeywordsUtils {
             {"SELECT", RESTRICTED_ALIAS},
             {"SEMI", RESTRICTED_JSQLPARSER},
             {"SET", RESTRICTED_JSQLPARSER},
+            {"SETTINGS", RESTRICTED_JSQLPARSER},
             {"SOME", RESTRICTED_JSQLPARSER},
             {"START", RESTRICTED_JSQLPARSER},
             {"STATEMENT", RESTRICTED_JSQLPARSER},
