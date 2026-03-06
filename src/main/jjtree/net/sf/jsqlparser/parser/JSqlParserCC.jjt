@@ -11500,9 +11500,11 @@ CreateSequence CreateSequence():
   CreateSequence createSequence = new CreateSequence();
   Sequence sequence;
   List<Sequence.Parameter> sequenceParameters;
+  Token dataType = null;
 }
 {
   <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
+  [ <K_AS> ( dataType=<S_IDENTIFIER> | dataType=<DATA_TYPE> ) { sequence.setDataType(dataType.image); } ]
   sequenceParameters = SequenceParameters()
     {
         sequence.setParameters(sequenceParameters);
