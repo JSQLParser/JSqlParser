@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import static net.sf.jsqlparser.test.TestUtils.*;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Sequence;
 import net.sf.jsqlparser.schema.Sequence.Parameter;
 import net.sf.jsqlparser.schema.Sequence.ParameterType;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
-import static net.sf.jsqlparser.test.TestUtils.*;
 import org.junit.jupiter.api.Test;
 
 public class CreateSequenceTest {
@@ -145,7 +146,8 @@ public class CreateSequenceTest {
 
     @Test
     public void testCreateSequence_withAsDataType() throws JSQLParserException {
-        String statement = "CREATE SEQUENCE public.activites_activite_id_seq AS integer START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE CACHE 1";
+        String statement =
+                "CREATE SEQUENCE public.activites_activite_id_seq AS integer START WITH 1 INCREMENT BY 1 NOMINVALUE NOMAXVALUE CACHE 1";
         assertSqlCanBeParsedAndDeparsed(statement);
     }
 
