@@ -105,7 +105,6 @@ If you like JSqlParser then please check out its related projects:
 * [JSQLTranspiler](https://manticore-projects.com/JSQLTranspiler/index.html) for dialect specific rewriting, SQL Column resolution and Lineage, provided by [Starlake.ai](https://starlake.ai/)
 
 ## Alternatives to JSqlParser?
-[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a handwritten Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
 
