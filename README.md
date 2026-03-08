@@ -80,7 +80,7 @@ As per March-2026, the productions `Condition()`, `RegularCondition()` and `AndE
 
 ```text
 Benchmark                               (version)  Mode  Cnt   Score   Error  Units
-JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  33.995 ± 0.764  ms/op <-- March/26
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  15.908 ± 0.446  ms/op <-- March/26
 JSQLParserBenchmark.parseSQLStatements        5.3  avgt   15  84.687 ± 3.321  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.1  avgt   15  86.592 ± 5.781  ms/op
 ```

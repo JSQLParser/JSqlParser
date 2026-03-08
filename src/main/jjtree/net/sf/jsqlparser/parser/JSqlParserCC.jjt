@@ -195,7 +195,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         switch (token.image.charAt(0)) {
             case '>': // >, >=
-            case '=': // =, =*
+            case '=': // =, =* but not => Oracle/PostgreSQL named parameter syntax
+                return !token.image.equals("=>");
             case '~': // ~, ~*
                 return true;
             case '<': // <, <=, <>, <@, <->, <#>, <=>, <&
@@ -221,6 +222,163 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             || nextKind == K_WITH
             || nextKind == K_VALUES
             || nextKind == K_FROM;
+    }
+
+    /**
+     * Tokens that have dedicated branches in PrimaryExpression AFTER the Function branch.
+     * If isFunctionAhead() returns true for these, Function() would consume them and fail.
+     */
+    private boolean isNonFunctionKeyword(Token t) {
+        switch (t.kind) {
+            case K_CONNECT_BY_ROOT:   // CONNECT_BY_ROOT (expr)
+            case K_PRIOR:             // PRIOR expr
+            case K_STRUCT:            // STRUCT(...)
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Scans ahead through a dotted identifier chain and checks if '(' follows.
+     * Distinguishes function calls like func(), schema.func(), a.b.c.func()
+     * from column references like col, schema.col, a.b.c.col.
+     *
+     * Replaces LOOKAHEAD(16) on Function() with a targeted O(chain-length) check.
+     */
+    protected boolean isFunctionAhead() {
+        int i = 1;
+        Token t = getToken(i);
+
+        // JDBC escape function: {fn ...} — must check for FN keyword
+        if (t.image.equals("{")) {
+            return getToken(2).kind == K_FN;
+        }
+
+        // Optional APPROXIMATE keyword
+        if (t.kind == K_APPROXIMATE) {
+            i++;
+            t = getToken(i);
+        }
+
+        // Exclude tokens that have their own dedicated branches
+        // after Function() in PrimaryExpression
+        if (isNonFunctionKeyword(t)) {
+            return false;
+        }
+
+        // First token must not be a literal, bracket, or EOF
+        if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
+                || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
+                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+            return false;
+        }
+        i++;
+
+        // Walk through dotted name chain
+        while (true) {
+            t = getToken(i);
+            if (t.image.equals(".") || t.image.equals("..")
+                    || t.image.equals("...") || t.image.equals(":")) {
+                i++;  // skip delimiter
+                i++;  // skip next name part
+            } else {
+                break;
+            }
+        }
+
+        // Must be followed by (
+        if (getToken(i).kind != OPENING_BRACKET) {
+            return false;
+        }
+
+        // Exclude Oracle join syntax: column(+)
+        if (getToken(i + 1).image.equals("+")
+                && getToken(i + 2).kind == CLOSING_BRACKET) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Scans ahead through a dotted identifier chain and checks if '*' follows.
+     * Identifies table.* patterns for AllTableColumns.
+     */
+    protected boolean isAllTableColumnsAhead() {
+        int i = 1;
+        Token t = getToken(i);
+
+        // Must start with a name-like token
+        if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
+                || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
+                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+            return false;
+        }
+        i++;
+
+        // Walk through dotted name chain
+        while (true) {
+            t = getToken(i);
+            if (t.image.equals(".") || t.image.equals("..")
+                    || t.image.equals("...")) {
+                i++;  // skip delimiter
+                i++;  // skip next part (could be "*")
+            } else {
+                break;
+            }
+        }
+
+        // It's AllTableColumns if the chain ended on "*"
+        // i.e., the last name part we skipped over was "*"
+        // Back up: the last token consumed was at (i-1)
+        return getToken(i - 1).image.equals("*");
+    }
+
+    /**
+     * Checks if the next token can start a condition suffix
+     * (comparison, IN, BETWEEN, LIKE, IS NULL, etc.)
+     *
+     * Used as the entry guard for the entire optional condition-suffix block
+     * in Condition(), eliminating choice conflicts.
+     */
+    protected boolean isConditionSuffixAhead() {
+        if (isComparisonOperatorAhead()) {
+            return true;
+        }
+        Token t = getToken(1);
+        switch (t.kind) {
+            // Each suffix's start token:
+            case K_OVERLAPS:          // OVERLAPS
+            case K_IN:                // IN
+            case K_GLOBAL:            // GLOBAL ... IN
+            case K_EXCLUDES:          // EXCLUDES (...)
+            case K_INCLUDES:          // INCLUDES (...)
+            case K_BETWEEN:           // BETWEEN
+            case K_MEMBER:            // MEMBER OF
+            case K_IS:                // IS [NOT] NULL / TRUE / FALSE / UNKNOWN / DISTINCT
+            case K_ISNULL:            // ISNULL
+            case K_NOTNULL:           // NOTNULL
+            case K_LIKE:              // LIKE
+            case K_ILIKE:             // ILIKE
+            case K_RLIKE:             // RLIKE
+            case K_REGEXP_LIKE:       // REGEXP_LIKE
+            case K_REGEXP:            // REGEXP
+            case K_SIMILAR_TO:        // SIMILAR TO (in LikeExpression)
+            case K_SIMILAR:           // SIMILAR TO (in SimilarToExpression)
+            case K_MATCH_ANY:         // MATCH_ANY
+            case K_MATCH_ALL:         // MATCH_ALL
+            case K_MATCH_PHRASE:      // MATCH_PHRASE
+            case K_MATCH_PHRASE_PREFIX: // MATCH_PHRASE_PREFIX
+            case K_MATCH_REGEXP:      // MATCH_REGEXP
+            case K_NOT:               // NOT IN / NOT BETWEEN / NOT LIKE / NOT ISNULL / NOT SIMILAR
+                return true;
+            // Oracle (+) before IN: col(+) IN (...)
+            case OPENING_BRACKET:
+                return getToken(2).image.equals("+");
+            default:
+                return false;
+        }
     }
 }
 
@@ -6105,23 +6263,26 @@ Expression Condition():
               }
           ]
 
-          [
-              LOOKAHEAD({ isComparisonOperatorAhead() }) result = RegularConditionRHS(left, oracleJoin)
-              |
-              LOOKAHEAD(2, <K_OVERLAPS>) result = OverlapsCondition(left)
-              |
-              LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
-              | LOOKAHEAD(3) result=ExcludesExpression(left)
-              | LOOKAHEAD(3) result=IncludesExpression(left)
-              | LOOKAHEAD(2) result=Between(left)
-              | result = MemberOfExpression(left)
-              | LOOKAHEAD(3) result=IsNullExpression(left)
-              | LOOKAHEAD(3) result=IsBooleanExpression(left)
-              | LOOKAHEAD(3) result=IsUnknownExpression(left)
-              | LOOKAHEAD(2) result=LikeExpression(left)
-              | LOOKAHEAD(3) result=IsDistinctExpression(left)
-              | result=SimilarToExpression(left)
-          ]
+          // Single guard: only enter if next token can start a condition suffix
+            [
+                LOOKAHEAD({ isConditionSuffixAhead() })
+                (
+                    LOOKAHEAD({ isComparisonOperatorAhead() })
+                        result = RegularConditionRHS(left, oracleJoin)
+                    | LOOKAHEAD(2) result = OverlapsCondition(left)
+                    | LOOKAHEAD(3) result=InExpression(left)
+                    | LOOKAHEAD(3) result=ExcludesExpression(left)
+                    | LOOKAHEAD(3) result=IncludesExpression(left)
+                    | LOOKAHEAD(2) result=Between(left)
+                    | LOOKAHEAD(2) result = MemberOfExpression(left)
+                    | LOOKAHEAD(3) result=IsNullExpression(left)
+                    | LOOKAHEAD(3) result=IsBooleanExpression(left)
+                    | LOOKAHEAD(3) result=IsUnknownExpression(left)
+                    | LOOKAHEAD(2) result=LikeExpression(left)
+                    | LOOKAHEAD(3) result=IsDistinctExpression(left)
+                    | result=SimilarToExpression(left)
+                )
+            ]
     )
     {
         if (oraclePrior == EqualsTo.ORACLE_PRIOR_START
@@ -6966,7 +7127,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
 
-        | LOOKAHEAD(16) retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD({ !interrupted && isFunctionAhead() })
+                  retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2) retval = DateUnitExpression()
 
@@ -6980,7 +7142,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3) retval=AllColumns(true)
 
-        | LOOKAHEAD(16) retval=AllTableColumns(true)
+        | LOOKAHEAD({ !interrupted && isAllTableColumnsAhead() })
+                  retval=AllTableColumns(true)
 
         // See issue  #2207
         // there is a huge! performance deterioration from this production
