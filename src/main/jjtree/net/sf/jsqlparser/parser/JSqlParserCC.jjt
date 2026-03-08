@@ -211,6 +211,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             default:  return false;
         }
     }
+
+    protected boolean isParenthesedSelectAhead() {
+        if (getToken(1).kind != OPENING_BRACKET) {
+            return false;
+        }
+        int nextKind = getToken(2).kind;
+        return nextKind == K_SELECT
+            || nextKind == K_WITH
+            || nextKind == K_VALUES
+            || nextKind == K_FROM;
+    }
 }
 
 PARSER_END(CCJSqlParser)
@@ -5700,23 +5711,32 @@ JdbcParameter JdbcParameter() : {
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
-    Expression rowCountExpression;
-    Expression offsetExpression;
+    Expression firstExpression;
+    Expression secondExpression;
 }
 {
+    <K_LIMIT>
     (
-        LOOKAHEAD(<K_LIMIT> Expression() "," Expression()) (
-            // mysql-> LIMIT offset,row_count
-            <K_LIMIT>
-            offsetExpression=Expression() { limit.setOffset( offsetExpression ); }
-            ","
-            rowCountExpression=Expression() { limit.setRowCount( rowCountExpression ); }
-        )
+        LOOKAHEAD(3) firstExpression = ParenthesedSelect()
         |
-        limit = PlainLimit()
+        firstExpression = Expression()
+    )
+    (
+        // MySQL: LIMIT offset, row_count
+        ","
+        secondExpression = Expression()
+        {
+            limit.setOffset(firstExpression);
+            limit.setRowCount(secondExpression);
+        }
+        |
+        // PostgreSQL: LIMIT row_count
+        {
+            limit.setRowCount(firstExpression);
+        }
     )
     {
-        linkAST(limit,jjtThis);
+        linkAST(limit, jjtThis);
         return limit;
     }
 }
@@ -6007,10 +6027,23 @@ Expression AndExpression() :
 {
     Expression left, right, result;
     boolean not = false;
-	boolean exclamationMarkNot=false;
+    boolean exclamationMarkNot=false;
 }
 {
     (
+        // Fast path: when NOT starting with ( or NOT/!, Condition() always succeeds
+        // (PrimaryExpression can always match an identifier, literal, CASE, etc.)
+        // No speculative parsing needed — go directly.
+        LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                    && getToken(1).kind != K_NOT
+                    && !getToken(1).image.equals("!") })
+        left=Condition()
+        |
+        // Slow path: ( or NOT might introduce a parenthesized boolean expression
+        // that Condition() can't handle (because ParenthesedExpressionList uses
+        // SimpleExpression which doesn't support LIKE/IN/BETWEEN/IS).
+        // Try Condition() first (handles "( a + b ) > 5"), fall back to
+        // "(" XorExpression() ")" (handles "( value LIKE '%x%' )").
         LOOKAHEAD(Condition(), {!interrupted}) left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -6022,6 +6055,11 @@ Expression AndExpression() :
         { boolean useOperator = false; }
          (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
         (
+            LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                        && getToken(1).kind != K_NOT
+                        && !getToken(1).image.equals("!") })
+            right=Condition()
+            |
             LOOKAHEAD(Condition(), {!interrupted}) right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -6296,7 +6334,7 @@ Expression Between(Expression leftExpression) :
             )
         ]
         (
-            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionStart = ParenthesedSelect()
+            LOOKAHEAD({ isParenthesedSelectAhead() }) betweenExpressionStart = ParenthesedSelect()
             |
             betweenExpressionStart = SimpleExpression()
             [
@@ -6307,7 +6345,7 @@ Expression Between(Expression leftExpression) :
 
         <K_AND>
         (
-            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionEnd = ParenthesedSelect()
+            LOOKAHEAD({ isParenthesedSelectAhead() }) betweenExpressionEnd = ParenthesedSelect()
             |
             betweenExpressionEnd = SimpleExpression()
             [
