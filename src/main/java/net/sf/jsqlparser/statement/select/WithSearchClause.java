@@ -10,11 +10,9 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 
 public class WithSearchClause implements Serializable {
@@ -23,12 +21,12 @@ public class WithSearchClause implements Serializable {
     }
 
     private SearchOrder searchOrder;
-    private List<Column> searchColumns;
+    private ExpressionList<Column> searchColumns;
     private String sequenceColumnName;
 
     public WithSearchClause() {}
 
-    public WithSearchClause(SearchOrder searchOrder, List<Column> searchColumns,
+    public WithSearchClause(SearchOrder searchOrder, ExpressionList<Column> searchColumns,
             String sequenceColumnName) {
         this.searchOrder = searchOrder;
         this.searchColumns = searchColumns;
@@ -48,27 +46,29 @@ public class WithSearchClause implements Serializable {
         return this;
     }
 
-    public List<Column> getSearchColumns() {
+    public ExpressionList<Column> getSearchColumns() {
         return searchColumns;
     }
 
-    public void setSearchColumns(List<Column> searchColumns) {
+    public void setSearchColumns(ExpressionList<Column> searchColumns) {
         this.searchColumns = searchColumns;
     }
 
-    public WithSearchClause withSearchColumns(List<Column> searchColumns) {
+    public WithSearchClause withSearchColumns(ExpressionList<Column> searchColumns) {
         this.setSearchColumns(searchColumns);
         return this;
     }
 
     public WithSearchClause addSearchColumns(Column... searchColumns) {
-        List<Column> collection = Optional.ofNullable(getSearchColumns()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, searchColumns);
+        ExpressionList<Column> collection =
+                getSearchColumns() != null ? getSearchColumns() : new ExpressionList<>();
+        collection.addExpressions(searchColumns);
         return this.withSearchColumns(collection);
     }
 
     public WithSearchClause addSearchColumns(Collection<? extends Column> searchColumns) {
-        List<Column> collection = Optional.ofNullable(getSearchColumns()).orElseGet(ArrayList::new);
+        ExpressionList<Column> collection =
+                getSearchColumns() != null ? getSearchColumns() : new ExpressionList<>();
         collection.addAll(searchColumns);
         return this.withSearchColumns(collection);
     }

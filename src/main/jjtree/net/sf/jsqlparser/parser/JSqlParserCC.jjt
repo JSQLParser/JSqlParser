@@ -4637,7 +4637,7 @@ WithItem<?> WithItem() #WithItem:
 WithSearchClause WithSearchClause() #WithSearchClause:
 {
     Token orderingToken;
-    List<Column> searchColumns = new ArrayList<Column>();
+    ExpressionList<Column> searchColumns = new ExpressionList<Column>();
     Column searchColumn = null;
     String sequenceColumnName;
 }
