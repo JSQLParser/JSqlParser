@@ -18,3 +18,4 @@ from airplanes
 --@FAILURE: Encountered unexpected token: "ap_cust" <S_IDENTIFIER> recorded first on 24 Oct 2021, 16:56:39
 --@FAILURE: Encountered unexpected token: "insert" "INSERT" recorded first on Mar 26, 2023, 6:59:20 PM
 --@FAILURE: Encountered: <K_INSERT> / "insert", at line 11, column 1, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 8 Mar 2026, 18:41:51
