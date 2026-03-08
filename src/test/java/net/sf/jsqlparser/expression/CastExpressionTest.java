@@ -9,13 +9,14 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 /**
  *
@@ -113,5 +114,30 @@ public class CastExpressionTest {
                 + "  TIME(TIMESTAMP '2008-12-25 15:30:00+08', 'America/Los_Angeles')\n"
                 + "as time_tstz;";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testNestedCompositeTypeCastIssue2341() throws JSQLParserException {
+        String sqlStr = "SELECT\n"
+                + "  (product_data::product_info_similarity).info.category AS category,\n"
+                + "  COUNT(*) AS num_products\n"
+                + "FROM products\n"
+                + "GROUP BY (product_data::product_info_similarity).info.category;";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        RowGetExpression categoryAccess =
+                Assertions.assertInstanceOf(RowGetExpression.class,
+                        select.getSelectItem(0).getExpression());
+        Assertions.assertEquals("category", categoryAccess.getColumnName());
+
+        RowGetExpression infoAccess = Assertions.assertInstanceOf(RowGetExpression.class,
+                categoryAccess.getExpression());
+        Assertions.assertEquals("info", infoAccess.getColumnName());
+
+        ParenthesedExpressionList<?> parenthesedCast =
+                Assertions.assertInstanceOf(ParenthesedExpressionList.class,
+                        infoAccess.getExpression());
+        Assertions.assertEquals(1, parenthesedCast.size());
+        Assertions.assertInstanceOf(CastExpression.class, parenthesedCast.get(0));
     }
 }

@@ -6890,8 +6890,8 @@ Expression PrimaryExpression() #PrimaryExpression:
             }
 
 
-            // RowGet Expression
-            [ LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+            // RowGet Expressions
+            ( LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); } )*
         )
     )
 
