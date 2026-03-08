@@ -22,7 +22,8 @@ public class CreateIndexValidatorTest extends ValidationTestAsserts {
     @Test
     public void testValidateCreateIndex() throws JSQLParserException {
         for (String sql : Arrays.asList(
-                "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)")) {
+                "CREATE INDEX idx_american_football_action_plays_1 ON american_football_action_plays USING btree (play_type)",
+                "CREATE INDEX idx_func ON american_football_action_plays ((play_type + 1))")) {
             validateNoErrors(sql, 1, DatabaseType.DATABASES);
         }
     }

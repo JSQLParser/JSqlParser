@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index implements Serializable {
@@ -32,7 +32,7 @@ public class Index implements Serializable {
 
     public List<String> getColumnsNames() {
         return columns.stream()
-                .map(col -> col.columnName)
+                .map(ColumnParams::getColumnName)
                 .collect(toList());
     }
 
@@ -202,28 +202,52 @@ public class Index implements Serializable {
     public static class ColumnParams implements Serializable {
         public final String columnName;
         public final List<String> params;
+        private final Expression expression;
 
         public ColumnParams(String columnName) {
             this.columnName = columnName;
             this.params = null;
+            this.expression = null;
         }
 
         public ColumnParams(String columnName, List<String> params) {
             this.columnName = columnName;
             this.params = params;
+            this.expression = null;
+        }
+
+        public ColumnParams(Expression expression) {
+            this.columnName = null;
+            this.params = null;
+            this.expression = expression;
+        }
+
+        public ColumnParams(Expression expression, List<String> params) {
+            this.columnName = null;
+            this.params = params;
+            this.expression = expression;
         }
 
         public String getColumnName() {
-            return columnName;
+            return expression != null ? expression.toString() : columnName;
         }
 
         public List<String> getParams() {
             return params;
         }
 
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public boolean isExpression() {
+            return expression != null;
+        }
+
         @Override
         public String toString() {
-            return columnName + (params != null ? " " + String.join(" ", params) : "");
+            String head = expression != null ? "(" + expression + ")" : columnName;
+            return head + (params != null ? " " + String.join(" ", params) : "");
         }
     }
 }

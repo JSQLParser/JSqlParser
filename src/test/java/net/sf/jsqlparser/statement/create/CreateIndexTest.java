@@ -11,7 +11,9 @@ package net.sf.jsqlparser.statement.create;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.util.List;
@@ -147,5 +149,23 @@ public class CreateIndexTest {
         String sqlStr =
                 "CREATE INDEX idx_operationlog_operatetime_regioncode USING BTREE ON operation_log (operate_time,region_biz_code)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testCreateIndexWithFunctionalKeyParts() throws JSQLParserException {
+        String statement =
+                "CREATE INDEX fAdd ON PPK_OLPN ((b + c), (COALESCE(PK, b)) DESC)";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+
+        assertEquals(2, createIndex.getIndex().getColumns().size());
+        assertTrue(createIndex.getIndex().getColumns().get(0).isExpression());
+        assertEquals("b + c", createIndex.getIndex().getColumns().get(0).getColumnName());
+        assertTrue(createIndex.getIndex().getColumns().get(1).isExpression());
+        assertEquals("COALESCE(PK, b)", createIndex.getIndex().getColumns().get(1).getColumnName());
+        assertNotNull(createIndex.getIndex().getColumns().get(1).getParams());
+        assertEquals("DESC", createIndex.getIndex().getColumns().get(1).getParams().get(0));
+        assertEquals(statement, createIndex.toString());
+
+        assertSqlCanBeParsedAndDeparsed(statement);
     }
 }

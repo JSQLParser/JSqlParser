@@ -54,9 +54,7 @@ public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
         if (index.getColumnsNames() != null) {
             builder.append(" (");
             builder.append(index.getColumnWithParams().stream()
-                    .map(cp -> cp.columnName
-                            + (cp.getParams() != null ? " " + String.join(" ", cp.getParams())
-                                    : ""))
+                    .map(Index.ColumnParams::toString)
                     .collect(joining(", ")));
             builder.append(")");
         }

@@ -29,6 +29,12 @@ public class AlterValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testAlterTableAddFunctionalIndex() throws JSQLParserException {
+        String sql = "ALTER TABLE PPK_OLPN ADD INDEX fAdd ((b + c))";
+        validateNoErrors(sql, 1, DatabaseType.DATABASES);
+    }
+
+    @Test
     public void testAlterTablePrimaryKey() throws JSQLParserException {
         validateNoErrors("ALTER TABLE animals ADD PRIMARY KEY (id)", 1, DatabaseType.DATABASES);
     }
