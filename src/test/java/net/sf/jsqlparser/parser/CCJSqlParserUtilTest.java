@@ -493,7 +493,7 @@ public class CCJSqlParserUtilTest {
             public void execute() throws Throwable {
                 try {
                     CCJSqlParserUtil.parse(INVALID_SQL, executorService, parser -> {
-                        parser.withTimeOut(100);
+                        parser.withTimeOut(1);
                         parser.withAllowComplexParsing(true);
                     });
                 } catch (JSQLParserException ex) {
