@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import java.util.List;
 
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.from.JsonTable;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
 import net.sf.jsqlparser.expression.SQLServerHints;
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -422,6 +423,11 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         return null;
     }
 
+    @Override
+    public <S> Void visit(JsonTable jsonTable, S context) {
+        return null;
+    }
+
     public void visit(TableFunction tableFunction) {
         visit(tableFunction, null);
     }
@@ -437,5 +443,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     public void visit(Import imprt) {
         visit(imprt, null);
     }
+
+
 
 }
