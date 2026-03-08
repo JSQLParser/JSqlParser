@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.ParenthesedStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -16,18 +22,12 @@ import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 public class WithItem<K extends ParenthesedStatement> implements Serializable {
     private K statement;
     private Alias alias;
     private List<SelectItem<?>> withItemList;
     private WithFunctionDeclaration withFunctionDeclaration;
+    private WithSearchClause searchClause;
     private boolean recursive = false;
     private boolean usingNot = false;
     private boolean materialized = false;
@@ -136,6 +136,19 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         return this;
     }
 
+    public WithSearchClause getSearchClause() {
+        return searchClause;
+    }
+
+    public void setSearchClause(WithSearchClause searchClause) {
+        this.searchClause = searchClause;
+    }
+
+    public WithItem<K> withSearchClause(WithSearchClause searchClause) {
+        this.setSearchClause(searchClause);
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -161,6 +174,9 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
                         : "MATERIALIZED ");
             }
             builder.append(statement);
+            if (searchClause != null) {
+                builder.append(" ").append(searchClause);
+            }
         }
         return builder.toString();
     }
