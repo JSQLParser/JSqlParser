@@ -164,6 +164,53 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return true;
     }
 
+
+    /**
+     * Checks whether the given token can start the operator in a RegularCondition
+     * (comparison operators, JSON operators, regex operators, geometry distance, etc.)
+     *
+     * Used to avoid expensive syntactic lookaheads like LOOKAHEAD(RegularCondition()).
+     * By the time this is called, lower-precedence operators like "-" (subtraction)
+     * and "||" (concatenation) have already been consumed by SimpleExpression,
+     * so seeing them here means they are comparison-level operators.
+     */
+
+    protected boolean isComparisonOperatorAhead() {
+        try {
+            Token token = getToken(1);
+            if (token.image.equals("(") && getToken(2).image.equals("+")) {
+                // Oracle (+) — only route to RegularConditionRHS if a real
+                // comparison operator follows after "(" "+" ")"
+                return isComparisonOperator(getToken(4));
+            }
+            return isComparisonOperator(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    protected static boolean isComparisonOperator(Token token) {
+        if (token.image == null || token.image.isEmpty()) {
+            return false;
+        }
+        switch (token.image.charAt(0)) {
+            case '>': // >, >=
+            case '=': // =, =*
+            case '~': // ~, ~*
+                return true;
+            case '<': // <, <=, <>, <@, <->, <#>, <=>, <&
+                return true;
+            case '*': return token.image.equals("*=");
+            case '!': return token.image.startsWith("!~") || token.image.startsWith("!=");
+            case '@': return token.image.equals("@@") || token.image.equals("@>");
+            case '?': return true;  // ?, ?|, ?&
+            case '-': return true;  // -, -#
+            case '|': return token.image.equals("||");
+            case '^': return token.image.startsWith("^=");
+            case '&': return token.image.equals("&&") || token.image.equals("&>");
+            default:  return false;
+        }
+    }
 }
 
 PARSER_END(CCJSqlParser)
@@ -5994,52 +6041,72 @@ Expression AndExpression() :
 Expression Condition():
 {
     Expression result;
-    Token token;
+    Expression left;
     boolean not = false;
-	boolean exclamationMarkNot = false;
+    boolean exclamationMarkNot = false;
+    int oraclePrior = EqualsTo.NO_ORACLE_PRIOR;
+    int oracleJoin = EqualsTo.NO_ORACLE_JOIN;
 }
 {
     [ LOOKAHEAD(2) (<K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; })]
     (
-        LOOKAHEAD(RegularCondition(), {!interrupted}) result=RegularCondition()
+        result=ExistsExpression()
         |
-        result=SQLCondition()
+          [ LOOKAHEAD(2) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
+          left=SimpleExpression() { result = left; }
+
+          // Consume Oracle (+) once, before dispatching
+          [
+              LOOKAHEAD("(" "+" ")")
+              "(" "+" ")"
+              {
+                  oracleJoin = EqualsTo.ORACLE_JOIN_RIGHT;
+                  if (left instanceof Column) {
+                      ((Column) left).setOldOracleJoinSyntax(oracleJoin);
+                  }
+              }
+          ]
+
+          [
+              LOOKAHEAD({ isComparisonOperatorAhead() }) result = RegularConditionRHS(left, oracleJoin)
+              |
+              LOOKAHEAD(2, <K_OVERLAPS>) result = OverlapsCondition(left)
+              |
+              LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
+              | LOOKAHEAD(3) result=ExcludesExpression(left)
+              | LOOKAHEAD(3) result=IncludesExpression(left)
+              | LOOKAHEAD(2) result=Between(left)
+              | result = MemberOfExpression(left)
+              | LOOKAHEAD(3) result=IsNullExpression(left)
+              | LOOKAHEAD(3) result=IsBooleanExpression(left)
+              | LOOKAHEAD(3) result=IsUnknownExpression(left)
+              | LOOKAHEAD(2) result=LikeExpression(left)
+              | LOOKAHEAD(3) result=IsDistinctExpression(left)
+              | result=SimilarToExpression(left)
+          ]
     )
-
-    { return not?new NotExpression(result, exclamationMarkNot):result; }
+    {
+        if (oraclePrior == EqualsTo.ORACLE_PRIOR_START
+                && result instanceof SupportsOldOracleJoinSyntax) {
+            ((SupportsOldOracleJoinSyntax) result).setOraclePriorPosition(oraclePrior);
+        }
+        return not ? new NotExpression(result, exclamationMarkNot) : result;
+    }
 }
 
-Expression OverlapsCondition():{
-    ExpressionList left = new ExpressionList();
-    ExpressionList right = new ExpressionList();
-}
-{
-    //As per the sql2003 standard, we need at least two items in the list if there is not explicit ROW prefix
-    //More than two expression are allowed per the sql2003 grammar.
-    left = ParenthesedExpressionList()
-    <K_OVERLAPS>
-    right = ParenthesedExpressionList()
-
-    {return new OverlapsCondition(left, right);}
-}
-
-Expression RegularCondition() #RegularCondition:
+Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #RegularCondition:
 {
     Expression result = null;
-    Expression leftExpression;
     Expression rightExpression;
-    int oracleJoin=EqualsTo.NO_ORACLE_JOIN;
-    int oraclePrior=EqualsTo.NO_ORACLE_PRIOR;
-    boolean binary = false;
-    boolean not = false;
+    int oracleJoin = EqualsTo.NO_ORACLE_JOIN;
+    int oraclePrior = EqualsTo.NO_ORACLE_PRIOR;
+    Token token;
 }
 {
-    [ LOOKAHEAD(2) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; }]
-    leftExpression=ComparisonItem() { result = leftExpression; }
+    // Only consume (+) here if it wasn't already consumed by Condition
+    [ LOOKAHEAD("(" "+" ")") "(" "+" ")" { oracleJoin = EqualsTo.ORACLE_JOIN_RIGHT; } ]
 
-    [ "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_RIGHT; } ]
-
-	(
+    (
         LOOKAHEAD(2)
         ">" { result = new GreaterThan(); }
         | "<" { result = new MinorThan(); }
@@ -6059,7 +6126,6 @@ Expression RegularCondition() #RegularCondition:
         | "~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.MATCH_CASEINSENSITIVE); }
         | "!~" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASESENSITIVE); }
         | "!~*" { result = new RegExpMatchOperator(RegExpMatchOperatorType.NOT_MATCH_CASEINSENSITIVE); }
-
         | "@>" { result = new JsonOperator("@>"); }
         | "<@" { result = new JsonOperator("<@"); }
         | "?" { result = new JsonOperator("?"); }
@@ -6074,25 +6140,43 @@ Expression RegularCondition() #RegularCondition:
     )
 
     ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
-    | rightExpression=ComparisonItem() )
+        | rightExpression=ComparisonItem() )
 
-    [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin=EqualsTo.ORACLE_JOIN_LEFT; } ]
+    [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin = EqualsTo.ORACLE_JOIN_LEFT; } ]
 
     {
         BinaryExpression regCond = (BinaryExpression) result;
         regCond.setLeftExpression(leftExpression);
         regCond.setRightExpression(rightExpression);
 
-        if (oracleJoin>0)
-            ((SupportsOldOracleJoinSyntax)result).setOldOracleJoinSyntax(oracleJoin);
+        if (oracleJoin > 0)
+            ((SupportsOldOracleJoinSyntax) result).setOldOracleJoinSyntax(oracleJoin);
 
-        if (oraclePrior!=EqualsTo.NO_ORACLE_PRIOR)
-            ((SupportsOldOracleJoinSyntax)result).setOraclePriorPosition(oraclePrior);
+        if (oraclePrior != EqualsTo.NO_ORACLE_PRIOR)
+            ((SupportsOldOracleJoinSyntax) result).setOraclePriorPosition(oraclePrior);
     }
 
     {
-        linkAST(result,jjtThis);
+        linkAST(result, jjtThis);
         return result;
+    }
+}
+
+Expression OverlapsCondition(Expression leftExpression):
+{
+    ExpressionList right;
+}
+{
+    <K_OVERLAPS>
+    right = ParenthesedExpressionList()
+    {
+        ExpressionList left;
+        if (leftExpression instanceof ExpressionList) {
+            left = (ExpressionList) leftExpression;
+        } else {
+            left = new ExpressionList(leftExpression);
+        }
+        return new OverlapsCondition(left, right);
     }
 }
 
@@ -6104,10 +6188,11 @@ Expression SQLCondition():
 {
     (
     result=ExistsExpression()
-    | LOOKAHEAD( OverlapsCondition(), {!interrupted}) result=OverlapsCondition()
     | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
+                LOOKAHEAD(2, <K_OVERLAPS>) result=OverlapsCondition(left)
+                |
                 LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
                 |
                 LOOKAHEAD(3) result=ExcludesExpression(left)
@@ -6213,18 +6298,22 @@ Expression Between(Expression leftExpression) :
         (
             LOOKAHEAD( ParenthesedSelect() ) betweenExpressionStart = ParenthesedSelect()
             |
-            LOOKAHEAD( RegularCondition() ) betweenExpressionStart = RegularCondition()
-            |
-            betweenExpressionStart  = SimpleExpression()
+            betweenExpressionStart = SimpleExpression()
+            [
+                LOOKAHEAD({ isComparisonOperatorAhead() })
+                betweenExpressionStart = RegularConditionRHS(betweenExpressionStart, EqualsTo.NO_ORACLE_JOIN)
+            ]
         )
 
         <K_AND>
         (
             LOOKAHEAD( ParenthesedSelect() ) betweenExpressionEnd = ParenthesedSelect()
             |
-            LOOKAHEAD( RegularCondition() ) betweenExpressionEnd = RegularCondition()
-            |
             betweenExpressionEnd = SimpleExpression()
+            [
+                LOOKAHEAD({ isComparisonOperatorAhead() })
+                betweenExpressionEnd = RegularConditionRHS(betweenExpressionEnd, EqualsTo.NO_ORACLE_JOIN)
+            ]
         )
 
     {

@@ -25,3 +25,4 @@ order by order1
 --@FAILURE: Encountered unexpected token: "search" <S_IDENTIFIER> recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered unexpected token: "union" "UNION" recorded first on Feb 13, 2025, 10:16:06 AM
 --@FAILURE: Encountered: <S_IDENTIFIER> / "search", at line 19, column 1, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:09
+--@FAILURE: Encountered: <K_CYCLE> / "cycle", at line 20, column 1, in lexical state DEFAULT. recorded first on 8 Mar 2026, 18:41:51
