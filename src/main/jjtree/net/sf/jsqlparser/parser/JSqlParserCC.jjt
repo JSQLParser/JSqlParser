@@ -9206,6 +9206,57 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
     { return colNames; }
 }
 
+Index.ColumnParams IndexColumnWithParams(): {
+    String columnName = null;
+    List<String> parameter = null;
+    Expression expression = null;
+    Index.ColumnParams column = null;
+}
+{
+    (
+        columnName=RelObjectName()
+        { parameter = null; }
+        [ parameter = CreateParameter() ]
+        {
+            column = new Index.ColumnParams(columnName, parameter);
+        }
+        |
+        "(" expression=Expression() ")"
+        { parameter = null; }
+        [ LOOKAHEAD(2) parameter = CreateParameter() ]
+        {
+            column = new Index.ColumnParams(expression, parameter);
+        }
+    )
+    {
+        return column;
+    }
+}
+
+List<Index.ColumnParams> IndexColumnsWithParamsList() : {
+    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
+    Index.ColumnParams column = null;
+}
+{
+     "("
+    column=IndexColumnWithParams()
+    {
+        colNames.add(column);
+    }
+
+    (
+        ","
+        column=IndexColumnWithParams()
+        {
+            colNames.add(column);
+        }
+    )*
+
+    ")"
+
+    { return colNames; }
+}
+
 Index Index(): {
     ObjectNames name;
 }
@@ -9245,7 +9296,7 @@ CreateIndex CreateIndex():
             <K_ON> table=Table()
         )
     )
-    colNames = ColumnNamesWithParamsList()
+    colNames = IndexColumnsWithParamsList()
     ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);
@@ -9404,7 +9455,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                             }
                             tk=<K_INDEX>
                             sk3=RelObjectName()
-                            colNames = ColumnNamesWithParamsList()
+                            colNames = IndexColumnsWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
@@ -9447,7 +9498,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                             [ tk=<K_UNIQUE> ]
                             [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
                             sk3=RelObjectName()
-                            colNames = ColumnNamesWithParamsList()
+                            colNames = IndexColumnsWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index = new Index()
@@ -10377,6 +10428,7 @@ AlterExpression AlterExpression():
     String sk4 = null;
     ColDataType dataType;
     List<String> columnNames = null;
+    List<Index.ColumnParams> indexColumnNames = null;
     List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
     Index index = null;
@@ -10426,10 +10478,10 @@ AlterExpression AlterExpression():
                       LOOKAHEAD(3)
                       sk3 = RelObjectName()
                       [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
+                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
                       |
                       [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
+                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
                   )
                   IndexOptionList(indexSpec = new ArrayList<String>())
                   {
@@ -10437,7 +10489,7 @@ AlterExpression AlterExpression():
                             .withIndexKeyword(tk.image)
                             .withName(sk3)
                             .withUsing(sk4)
-                            .withColumnsNames(columnNames)
+                            .withColumns(indexColumnNames)
                             .withIndexSpec(indexSpec);
 
                     alterExp.setIndex(index);

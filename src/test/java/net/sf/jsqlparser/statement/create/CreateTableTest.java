@@ -808,6 +808,24 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableWithFunctionalIndex() throws JSQLParserException {
+        String sql =
+                "CREATE TABLE t (PK INT, b INT, c INT, INDEX fAdd ((b + c), (COALESCE(PK, b)) DESC))";
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(sql);
+
+        assertNotNull(createTable.getIndexes());
+        assertEquals(1, createTable.getIndexes().size());
+        assertEquals("fAdd", createTable.getIndexes().get(0).getName());
+        assertTrue(createTable.getIndexes().get(0).getColumns().get(0).isExpression());
+        assertEquals("b + c", createTable.getIndexes().get(0).getColumns().get(0).getColumnName());
+        assertTrue(createTable.getIndexes().get(0).getColumns().get(1).isExpression());
+        assertEquals("COALESCE(PK, b)",
+                createTable.getIndexes().get(0).getColumns().get(1).getColumnName());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testCreateTableIssue921() throws JSQLParserException {
         String statement = "CREATE TABLE binary_test (c1 binary (10))";
         assertSqlCanBeParsedAndDeparsed(statement);
