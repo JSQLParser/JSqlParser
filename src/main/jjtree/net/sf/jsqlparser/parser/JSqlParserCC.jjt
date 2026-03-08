@@ -194,7 +194,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         switch (token.image.charAt(0)) {
             case '>': // >, >=
-            case '=': // =, =*
+            case '=': // =, =* but not => Oracle/PostgreSQL named parameter syntax
+                return !token.image.equals("=>");
             case '~': // ~, ~*
                 return true;
             case '<': // <, <=, <>, <@, <->, <#>, <=>, <&
@@ -208,6 +209,174 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case '^': return token.image.startsWith("^=");
             case '&': return token.image.equals("&&") || token.image.equals("&>");
             default:  return false;
+        }
+    }
+
+    protected boolean isParenthesedSelectAhead() {
+        if (getToken(1).kind != OPENING_BRACKET) {
+            return false;
+        }
+        int nextKind = getToken(2).kind;
+        return nextKind == K_SELECT
+            || nextKind == K_WITH
+            || nextKind == K_VALUES
+            || nextKind == K_FROM;
+    }
+
+    /**
+     * Tokens that have dedicated branches in PrimaryExpression AFTER the Function branch.
+     * If isFunctionAhead() returns true for these, Function() would consume them and fail.
+     */
+    private boolean isNonFunctionKeyword(Token t) {
+        switch (t.kind) {
+            case K_CONNECT_BY_ROOT:   // CONNECT_BY_ROOT (expr)
+            case K_PRIOR:             // PRIOR expr
+            case K_STRUCT:            // STRUCT(...)
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Scans ahead through a dotted identifier chain and checks if '(' follows.
+     * Distinguishes function calls like func(), schema.func(), a.b.c.func()
+     * from column references like col, schema.col, a.b.c.col.
+     *
+     * Replaces LOOKAHEAD(16) on Function() with a targeted O(chain-length) check.
+     */
+    protected boolean isFunctionAhead() {
+        int i = 1;
+        Token t = getToken(i);
+
+        // JDBC escape function: {fn ...} — must check for FN keyword
+        if (t.image.equals("{")) {
+            return getToken(2).kind == K_FN;
+        }
+
+        // Optional APPROXIMATE keyword
+        if (t.kind == K_APPROXIMATE) {
+            i++;
+            t = getToken(i);
+        }
+
+        // Exclude tokens that have their own dedicated branches
+        // after Function() in PrimaryExpression
+        if (isNonFunctionKeyword(t)) {
+            return false;
+        }
+
+        // First token must not be a literal, bracket, or EOF
+        if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
+                || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
+                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+            return false;
+        }
+        i++;
+
+        // Walk through dotted name chain
+        while (true) {
+            t = getToken(i);
+            if (t.image.equals(".") || t.image.equals("..")
+                    || t.image.equals("...") || t.image.equals(":")) {
+                i++;  // skip delimiter
+                i++;  // skip next name part
+            } else {
+                break;
+            }
+        }
+
+        // Must be followed by (
+        if (getToken(i).kind != OPENING_BRACKET) {
+            return false;
+        }
+
+        // Exclude Oracle join syntax: column(+)
+        if (getToken(i + 1).image.equals("+")
+                && getToken(i + 2).kind == CLOSING_BRACKET) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Scans ahead through a dotted identifier chain and checks if '*' follows.
+     * Identifies table.* patterns for AllTableColumns.
+     */
+    protected boolean isAllTableColumnsAhead() {
+        int i = 1;
+        Token t = getToken(i);
+
+        // Must start with a name-like token
+        if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
+                || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
+                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+            return false;
+        }
+        i++;
+
+        // Walk through dotted name chain
+        while (true) {
+            t = getToken(i);
+            if (t.image.equals(".") || t.image.equals("..")
+                    || t.image.equals("...")) {
+                i++;  // skip delimiter
+                i++;  // skip next part (could be "*")
+            } else {
+                break;
+            }
+        }
+
+        // It's AllTableColumns if the chain ended on "*"
+        // i.e., the last name part we skipped over was "*"
+        // Back up: the last token consumed was at (i-1)
+        return getToken(i - 1).image.equals("*");
+    }
+
+    /**
+     * Checks if the next token can start a condition suffix
+     * (comparison, IN, BETWEEN, LIKE, IS NULL, etc.)
+     *
+     * Used as the entry guard for the entire optional condition-suffix block
+     * in Condition(), eliminating choice conflicts.
+     */
+    protected boolean isConditionSuffixAhead() {
+        if (isComparisonOperatorAhead()) {
+            return true;
+        }
+        Token t = getToken(1);
+        switch (t.kind) {
+            // Each suffix's start token:
+            case K_OVERLAPS:          // OVERLAPS
+            case K_IN:                // IN
+            case K_GLOBAL:            // GLOBAL ... IN
+            case K_EXCLUDES:          // EXCLUDES (...)
+            case K_INCLUDES:          // INCLUDES (...)
+            case K_BETWEEN:           // BETWEEN
+            case K_MEMBER:            // MEMBER OF
+            case K_IS:                // IS [NOT] NULL / TRUE / FALSE / UNKNOWN / DISTINCT
+            case K_ISNULL:            // ISNULL
+            case K_NOTNULL:           // NOTNULL
+            case K_LIKE:              // LIKE
+            case K_ILIKE:             // ILIKE
+            case K_RLIKE:             // RLIKE
+            case K_REGEXP_LIKE:       // REGEXP_LIKE
+            case K_REGEXP:            // REGEXP
+            case K_SIMILAR_TO:        // SIMILAR TO (in LikeExpression)
+            case K_SIMILAR:           // SIMILAR TO (in SimilarToExpression)
+            case K_MATCH_ANY:         // MATCH_ANY
+            case K_MATCH_ALL:         // MATCH_ALL
+            case K_MATCH_PHRASE:      // MATCH_PHRASE
+            case K_MATCH_PHRASE_PREFIX: // MATCH_PHRASE_PREFIX
+            case K_MATCH_REGEXP:      // MATCH_REGEXP
+            case K_NOT:               // NOT IN / NOT BETWEEN / NOT LIKE / NOT ISNULL / NOT SIMILAR
+                return true;
+            // Oracle (+) before IN: col(+) IN (...)
+            case OPENING_BRACKET:
+                return getToken(2).image.equals("+");
+            default:
+                return false;
         }
     }
 }
@@ -5699,23 +5868,32 @@ JdbcParameter JdbcParameter() : {
 Limit LimitWithOffset() #LimitWithOffset:
 {
     Limit limit = new Limit();
-    Expression rowCountExpression;
-    Expression offsetExpression;
+    Expression firstExpression;
+    Expression secondExpression;
 }
 {
+    <K_LIMIT>
     (
-        LOOKAHEAD(<K_LIMIT> Expression() "," Expression()) (
-            // mysql-> LIMIT offset,row_count
-            <K_LIMIT>
-            offsetExpression=Expression() { limit.setOffset( offsetExpression ); }
-            ","
-            rowCountExpression=Expression() { limit.setRowCount( rowCountExpression ); }
-        )
+        LOOKAHEAD(3) firstExpression = ParenthesedSelect()
         |
-        limit = PlainLimit()
+        firstExpression = Expression()
+    )
+    (
+        // MySQL: LIMIT offset, row_count
+        ","
+        secondExpression = Expression()
+        {
+            limit.setOffset(firstExpression);
+            limit.setRowCount(secondExpression);
+        }
+        |
+        // PostgreSQL: LIMIT row_count
+        {
+            limit.setRowCount(firstExpression);
+        }
     )
     {
-        linkAST(limit,jjtThis);
+        linkAST(limit, jjtThis);
         return limit;
     }
 }
@@ -6006,10 +6184,23 @@ Expression AndExpression() :
 {
     Expression left, right, result;
     boolean not = false;
-	boolean exclamationMarkNot=false;
+    boolean exclamationMarkNot=false;
 }
 {
     (
+        // Fast path: when NOT starting with ( or NOT/!, Condition() always succeeds
+        // (PrimaryExpression can always match an identifier, literal, CASE, etc.)
+        // No speculative parsing needed — go directly.
+        LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                    && getToken(1).kind != K_NOT
+                    && !getToken(1).image.equals("!") })
+        left=Condition()
+        |
+        // Slow path: ( or NOT might introduce a parenthesized boolean expression
+        // that Condition() can't handle (because ParenthesedExpressionList uses
+        // SimpleExpression which doesn't support LIKE/IN/BETWEEN/IS).
+        // Try Condition() first (handles "( a + b ) > 5"), fall back to
+        // "(" XorExpression() ")" (handles "( value LIKE '%x%' )").
         LOOKAHEAD(Condition(), {!interrupted}) left=Condition()
         |
         [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -6021,6 +6212,11 @@ Expression AndExpression() :
         { boolean useOperator = false; }
          (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
         (
+            LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                        && getToken(1).kind != K_NOT
+                        && !getToken(1).image.equals("!") })
+            right=Condition()
+            |
             LOOKAHEAD(Condition(), {!interrupted}) right=Condition()
             |
             [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
@@ -6066,23 +6262,26 @@ Expression Condition():
               }
           ]
 
-          [
-              LOOKAHEAD({ isComparisonOperatorAhead() }) result = RegularConditionRHS(left, oracleJoin)
-              |
-              LOOKAHEAD(2, <K_OVERLAPS>) result = OverlapsCondition(left)
-              |
-              LOOKAHEAD(3, {!interrupted}) result=InExpression(left)
-              | LOOKAHEAD(3) result=ExcludesExpression(left)
-              | LOOKAHEAD(3) result=IncludesExpression(left)
-              | LOOKAHEAD(2) result=Between(left)
-              | result = MemberOfExpression(left)
-              | LOOKAHEAD(3) result=IsNullExpression(left)
-              | LOOKAHEAD(3) result=IsBooleanExpression(left)
-              | LOOKAHEAD(3) result=IsUnknownExpression(left)
-              | LOOKAHEAD(2) result=LikeExpression(left)
-              | LOOKAHEAD(3) result=IsDistinctExpression(left)
-              | result=SimilarToExpression(left)
-          ]
+          // Single guard: only enter if next token can start a condition suffix
+            [
+                LOOKAHEAD({ isConditionSuffixAhead() })
+                (
+                    LOOKAHEAD({ isComparisonOperatorAhead() })
+                        result = RegularConditionRHS(left, oracleJoin)
+                    | LOOKAHEAD(2) result = OverlapsCondition(left)
+                    | LOOKAHEAD(3) result=InExpression(left)
+                    | LOOKAHEAD(3) result=ExcludesExpression(left)
+                    | LOOKAHEAD(3) result=IncludesExpression(left)
+                    | LOOKAHEAD(2) result=Between(left)
+                    | LOOKAHEAD(2) result = MemberOfExpression(left)
+                    | LOOKAHEAD(3) result=IsNullExpression(left)
+                    | LOOKAHEAD(3) result=IsBooleanExpression(left)
+                    | LOOKAHEAD(3) result=IsUnknownExpression(left)
+                    | LOOKAHEAD(2) result=LikeExpression(left)
+                    | LOOKAHEAD(3) result=IsDistinctExpression(left)
+                    | result=SimilarToExpression(left)
+                )
+            ]
     )
     {
         if (oraclePrior == EqualsTo.ORACLE_PRIOR_START
@@ -6295,7 +6494,7 @@ Expression Between(Expression leftExpression) :
             )
         ]
         (
-            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionStart = ParenthesedSelect()
+            LOOKAHEAD({ isParenthesedSelectAhead() }) betweenExpressionStart = ParenthesedSelect()
             |
             betweenExpressionStart = SimpleExpression()
             [
@@ -6306,7 +6505,7 @@ Expression Between(Expression leftExpression) :
 
         <K_AND>
         (
-            LOOKAHEAD( ParenthesedSelect() ) betweenExpressionEnd = ParenthesedSelect()
+            LOOKAHEAD({ isParenthesedSelectAhead() }) betweenExpressionEnd = ParenthesedSelect()
             |
             betweenExpressionEnd = SimpleExpression()
             [
@@ -6927,7 +7126,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
 
-        | LOOKAHEAD(16) retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
+        | LOOKAHEAD({ !interrupted && isFunctionAhead() })
+                  retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
         | LOOKAHEAD(2) retval = DateUnitExpression()
 
@@ -6941,7 +7141,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3) retval=AllColumns(true)
 
-        | LOOKAHEAD(16) retval=AllTableColumns(true)
+        | LOOKAHEAD({ !interrupted && isAllTableColumnsAhead() })
+                  retval=AllTableColumns(true)
 
         // See issue  #2207
         // there is a huge! performance deterioration from this production
@@ -7008,8 +7209,8 @@ Expression PrimaryExpression() #PrimaryExpression:
             }
 
 
-            // RowGet Expression
-            [ LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); }]
+            // RowGet Expressions
+            ( LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); } )*
         )
     )
 
@@ -9205,6 +9406,57 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
     { return colNames; }
 }
 
+Index.ColumnParams IndexColumnWithParams(): {
+    String columnName = null;
+    List<String> parameter = null;
+    Expression expression = null;
+    Index.ColumnParams column = null;
+}
+{
+    (
+        columnName=RelObjectName()
+        { parameter = null; }
+        [ parameter = CreateParameter() ]
+        {
+            column = new Index.ColumnParams(columnName, parameter);
+        }
+        |
+        "(" expression=Expression() ")"
+        { parameter = null; }
+        [ LOOKAHEAD(2) parameter = CreateParameter() ]
+        {
+            column = new Index.ColumnParams(expression, parameter);
+        }
+    )
+    {
+        return column;
+    }
+}
+
+List<Index.ColumnParams> IndexColumnsWithParamsList() : {
+    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
+    Index.ColumnParams column = null;
+}
+{
+     "("
+    column=IndexColumnWithParams()
+    {
+        colNames.add(column);
+    }
+
+    (
+        ","
+        column=IndexColumnWithParams()
+        {
+            colNames.add(column);
+        }
+    )*
+
+    ")"
+
+    { return colNames; }
+}
+
 Index Index(): {
     ObjectNames name;
 }
@@ -9244,7 +9496,7 @@ CreateIndex CreateIndex():
             <K_ON> table=Table()
         )
     )
-    colNames = ColumnNamesWithParamsList()
+    colNames = IndexColumnsWithParamsList()
     ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);
@@ -9403,7 +9655,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                             }
                             tk=<K_INDEX>
                             sk3=RelObjectName()
-                            colNames = ColumnNamesWithParamsList()
+                            colNames = IndexColumnsWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
@@ -9446,7 +9698,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                             [ tk=<K_UNIQUE> ]
                             [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
                             sk3=RelObjectName()
-                            colNames = ColumnNamesWithParamsList()
+                            colNames = IndexColumnsWithParamsList()
                             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                             {
                                 index = new Index()
@@ -10376,6 +10628,7 @@ AlterExpression AlterExpression():
     String sk4 = null;
     ColDataType dataType;
     List<String> columnNames = null;
+    List<Index.ColumnParams> indexColumnNames = null;
     List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
     Index index = null;
@@ -10425,10 +10678,10 @@ AlterExpression AlterExpression():
                       LOOKAHEAD(3)
                       sk3 = RelObjectName()
                       [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
+                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
                       |
                       [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) columnNames = ColumnsNamesList() ]
+                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
                   )
                   IndexOptionList(indexSpec = new ArrayList<String>())
                   {
@@ -10436,7 +10689,7 @@ AlterExpression AlterExpression():
                             .withIndexKeyword(tk.image)
                             .withName(sk3)
                             .withUsing(sk4)
-                            .withColumnsNames(columnNames)
+                            .withColumns(indexColumnNames)
                             .withIndexSpec(indexSpec);
 
                     alterExp.setIndex(index);

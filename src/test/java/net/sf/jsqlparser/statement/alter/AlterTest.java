@@ -2037,6 +2037,33 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddFunctionalIndexes() throws JSQLParserException {
+        String sql = "ALTER TABLE PPK_OLPN ADD INDEX fAdd ((b + c)), "
+                + "ADD INDEX fCoalesce ((COALESCE(PK, b)) DESC)";
+
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        assertEquals("PPK_OLPN", alter.getTable().getFullyQualifiedName());
+        assertEquals(2, alter.getAlterExpressions().size());
+
+        AlterExpression addExpression = alter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.ADD, addExpression.getOperation());
+        assertEquals("fAdd", addExpression.getIndex().getName());
+        assertTrue(addExpression.getIndex().getColumns().get(0).isExpression());
+        assertEquals("b + c", addExpression.getIndex().getColumns().get(0).getColumnName());
+
+        AlterExpression coalesceExpression = alter.getAlterExpressions().get(1);
+        assertEquals(AlterOperation.ADD, coalesceExpression.getOperation());
+        assertEquals("fCoalesce", coalesceExpression.getIndex().getName());
+        assertTrue(coalesceExpression.getIndex().getColumns().get(0).isExpression());
+        assertEquals("COALESCE(PK, b)",
+                coalesceExpression.getIndex().getColumns().get(0).getColumnName());
+        assertEquals(List.of("DESC"),
+                coalesceExpression.getIndex().getColumns().get(0).getParams());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
     public void testAlterTableSetDefaultWithAlgorithm() throws JSQLParserException {
         String sql = "ALTER TABLE t2 ALTER COLUMN b SET DEFAULT 100, ALGORITHM = INSTANT";
         Alter alter = (Alter) CCJSqlParserUtil.parse(sql);

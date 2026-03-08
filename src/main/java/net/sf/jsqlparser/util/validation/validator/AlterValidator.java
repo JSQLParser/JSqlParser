@@ -9,8 +9,9 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
-import java.util.EnumSet;
+import static java.util.stream.Collectors.toList;
 
+import java.util.EnumSet;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
@@ -74,7 +75,11 @@ public class AlterValidator extends AbstractValidator<Alter> {
             if (e.getIndex() != null) {
                 validateName(c, NamedObject.index, e.getIndex().getName());
                 if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(c, e.getIndex().getColumnsNames(),
+                    validateOptionalColumnNames(c,
+                            e.getIndex().getColumns().stream()
+                                    .filter(cp -> !cp.isExpression())
+                                    .map(cp -> cp.getColumnName())
+                                    .collect(toList()),
                             NamedObject.index);
                 }
             }
