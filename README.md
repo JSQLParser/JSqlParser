@@ -76,9 +76,11 @@ JSQLParser-5.4 Snapshot and later use JavaCC-8 Snapshots for generating the pars
 Unfortunately the released JSQLParser-5.2 shows a performance deterioration caused by commit [30cf5d7](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a076f49deb5cc841d39e62b3dc) related to `FunctionAllColumns()`.
 This has been resolved in JSQLParser 5.3-SNAPSHOT and JMH benchmarks have been added to avoid such regressions in the future. Further all `LOOKAHEAD` have been revised one by one, and we have gained back a very good performance of the Parser.
 
+As per March-2026, the productions `Condition()`, `RegularCondition()` and `AndExpression()` have been refactored successfully. This resulted in a massive performance boost and seem to have solved most of the performance issues.
+
 ```text
 Benchmark                               (version)  Mode  Cnt   Score   Error  Units
-JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  82.695 ± 2.841  ms/op
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  33.995 ± 0.764  ms/op <-- March/26
 JSQLParserBenchmark.parseSQLStatements        5.3  avgt   15  84.687 ± 3.321  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.1  avgt   15  86.592 ± 5.781  ms/op
 ```
