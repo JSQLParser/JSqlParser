@@ -54,29 +54,25 @@ public class AlterExpression implements Serializable {
     private boolean usingIfExists;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     private List<String> fkColumns;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     private String fkSourceSchema;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     private String fkSourceTable;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     private List<String> fkSourceColumns;
@@ -159,8 +155,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getIndex()} with {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public String getFkSourceSchema() {
@@ -168,8 +163,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public void setFkSourceSchema(String fkSourceSchema) {
@@ -211,9 +205,7 @@ public class AlterExpression implements Serializable {
     /**
      * @param type
      * @param action
-     * @deprecated Standalone FK fields are deprecated. Use a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} via
-     *             {@link #setIndex(Index)} instead.
+     * @deprecated Standalone FK fields are deprecated. Use a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} via {@link #setIndex(Index)} instead.
      */
     @Deprecated
     public void setReferentialAction(Type type, Action action) {
@@ -246,9 +238,9 @@ public class AlterExpression implements Serializable {
     @Deprecated
     public ReferentialAction getReferentialAction(Type type) {
         return referentialActions.stream()
-                .filter(ra -> type.equals(ra.getType()))
-                .findFirst()
-                .orElse(null);
+                                 .filter(ra -> type.equals(ra.getType()))
+                                 .findFirst()
+                                 .orElse(null);
     }
 
     private void setReferentialAction(Type type, Action action, boolean set) {
@@ -325,8 +317,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getIndex()} with {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public List<String> getFkColumns() {
@@ -334,8 +325,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public void setFkColumns(List<String> fkColumns) {
@@ -343,8 +333,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getIndex()} with {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public String getFkSourceTable() {
@@ -352,8 +341,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public void setFkSourceTable(String fkSourceTable) {
@@ -416,8 +404,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getIndex()} with {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public List<String> getFkSourceColumns() {
@@ -425,8 +412,7 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setIndex(Index)} with a {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
      */
     @Deprecated
     public void setFkSourceColumns(List<String> fkSourceColumns) {
@@ -729,21 +715,29 @@ public class AlterExpression implements Serializable {
     }
 
     @Override
+    public final String toString() {
+        StringBuilder b = new StringBuilder();
+        appendBody(b);
+        appendCommonTail(b);
+        return b.toString();
+    }
+
+    /**
+     * Appends the main body of this ALTER expression to the builder.
+     * Subclasses override this for type-specific rendering.
+     */
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
-    public String toString() {
-
-        StringBuilder b = new StringBuilder();
-
+    protected void appendBody(StringBuilder b) {
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
         } else if (constraintType != null && constraintSymbol != null
-                && (operation == AlterOperation.ALTER || operation == AlterOperation.ADD)) {
+                   && (operation == AlterOperation.ALTER || operation == AlterOperation.ADD)) {
             toStringConstraintAlter(b);
         } else if (operation == AlterOperation.ALTER
-                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
-                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
-                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty())) {
+                   && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
+                       || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
+                       || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty())) {
             toStringAlterColumn(b);
         } else if (isSimpleKeywordOperation()) {
             toStringSimpleKeyword(b);
@@ -758,19 +752,21 @@ public class AlterExpression implements Serializable {
         } else {
             toStringGeneral(b);
         }
+    }
 
+    /**
+     * Appends the common tail (parameters, index comment) shared by all ALTER expressions.
+     */
+    protected void appendCommonTail(StringBuilder b) {
         if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
-
         if (index != null && index.getCommentText() != null) {
             b.append(" COMMENT ").append(index.getCommentText());
         }
-
-        return b.toString();
     }
 
-    private boolean isSimpleKeywordOperation() {
+    protected boolean isSimpleKeywordOperation() {
         switch (operation) {
             case SET_TABLE_OPTION:
             case DISCARD_TABLESPACE:
@@ -787,11 +783,11 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private boolean isRenameOperation() {
+    protected boolean isRenameOperation() {
         return getOldIndex() != null || operation == AlterOperation.RENAME_TABLE;
     }
 
-    private boolean isDropSpecialOperation() {
+    protected boolean isDropSpecialOperation() {
         switch (operation) {
             case DROP_PRIMARY_KEY:
             case DROP_UNIQUE:
@@ -804,7 +800,7 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private boolean isPartitionOperation() {
+    protected boolean isPartitionOperation() {
         switch (operation) {
             case DISCARD_PARTITION:
             case IMPORT_PARTITION:
@@ -825,7 +821,7 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private void toStringConstraintAlter(StringBuilder b) {
+    protected void toStringConstraintAlter(StringBuilder b) {
         if (operation == AlterOperation.ALTER) {
             b.append("ALTER ").append(constraintType).append(" ").append(constraintSymbol);
             if (invisible) {
@@ -837,15 +833,15 @@ public class AlterExpression implements Serializable {
             }
         } else {
             b.append("ADD CONSTRAINT ").append(constraintType).append(" ").append(constraintSymbol)
-                    .append(" ");
+             .append(" ");
             if (index != null && index.getColumnsNames() != null) {
                 b.append(" ")
-                        .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
+                 .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
             }
         }
     }
 
-    private void toStringAlterColumn(StringBuilder b) {
+    protected void toStringAlterColumn(StringBuilder b) {
         b.append("ALTER ");
         if (hasColumn) {
             b.append("COLUMN ");
@@ -859,7 +855,7 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private void toStringSimpleKeyword(StringBuilder b) {
+    protected void toStringSimpleKeyword(StringBuilder b) {
         switch (operation) {
             case SET_TABLE_OPTION:
                 b.append(tableOption);
@@ -878,36 +874,28 @@ public class AlterExpression implements Serializable {
                 break;
             case ENGINE:
                 b.append("ENGINE ");
-                if (useEqual) {
-                    b.append("= ");
-                }
+                if (useEqual) { b.append("= "); }
                 b.append(engineOption);
                 break;
             case ALGORITHM:
                 b.append("ALGORITHM ");
-                if (useEqual) {
-                    b.append("= ");
-                }
+                if (useEqual) { b.append("= "); }
                 b.append(algorithmOption);
                 break;
             case KEY_BLOCK_SIZE:
                 b.append("KEY_BLOCK_SIZE ");
-                if (useEqual) {
-                    b.append("= ");
-                }
+                if (useEqual) { b.append("= "); }
                 b.append(keyBlockSize);
                 break;
             case LOCK:
                 b.append("LOCK ");
-                if (useEqual) {
-                    b.append("= ");
-                }
+                if (useEqual) { b.append("= "); }
                 b.append(lockOption);
                 break;
         }
     }
 
-    private void toStringRename(StringBuilder b) {
+    protected void toStringRename(StringBuilder b) {
         if (getOldIndex() != null) {
             b.append("RENAME");
             switch (operation) {
@@ -927,7 +915,7 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private void toStringDropSpecial(StringBuilder b) {
+    protected void toStringDropSpecial(StringBuilder b) {
         switch (operation) {
             case DROP_PRIMARY_KEY:
                 b.append("DROP PRIMARY KEY ");
@@ -937,7 +925,7 @@ public class AlterExpression implements Serializable {
                 break;
             case DROP_FOREIGN_KEY:
                 b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns))
-                        .append(')');
+                 .append(')');
                 break;
             default:
                 // Oracle Multi Column Drop
@@ -946,29 +934,23 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    private void toStringConvert(StringBuilder b) {
+    protected void toStringConvert(StringBuilder b) {
         if (operation == AlterOperation.CONVERT) {
             if (convertType == ConvertType.CONVERT_TO) {
                 b.append("CONVERT TO CHARACTER SET ");
             } else if (convertType == ConvertType.DEFAULT_CHARACTER_SET) {
                 b.append("DEFAULT CHARACTER SET ");
-                if (hasEqualForCharacterSet) {
-                    b.append("= ");
-                }
+                if (hasEqualForCharacterSet) { b.append("= "); }
             } else if (convertType == ConvertType.CHARACTER_SET) {
                 b.append("CHARACTER SET ");
-                if (hasEqualForCharacterSet) {
-                    b.append("= ");
-                }
+                if (hasEqualForCharacterSet) { b.append("= "); }
             }
             if (getCharacterSet() != null) {
                 b.append(getCharacterSet());
             }
             if (getCollation() != null) {
                 b.append(" COLLATE ");
-                if (hasEqualForCollate) {
-                    b.append("= ");
-                }
+                if (hasEqualForCollate) { b.append("= "); }
                 b.append(getCollation());
             }
         } else {
@@ -976,9 +958,7 @@ public class AlterExpression implements Serializable {
                 b.append("DEFAULT ");
             }
             b.append("COLLATE ");
-            if (hasEqualForCollate) {
-                b.append("= ");
-            }
+            if (hasEqualForCollate) { b.append("= "); }
             if (getCollation() != null) {
                 b.append(getCollation());
             }
@@ -986,19 +966,15 @@ public class AlterExpression implements Serializable {
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    private void toStringPartition(StringBuilder b) {
+    protected void toStringPartition(StringBuilder b) {
         switch (operation) {
             case DISCARD_PARTITION:
                 b.append("DISCARD PARTITION ").append(PlainSelect.getStringList(partitions));
-                if (tableOption != null) {
-                    b.append(" ").append(tableOption);
-                }
+                if (tableOption != null) { b.append(" ").append(tableOption); }
                 break;
             case IMPORT_PARTITION:
                 b.append("IMPORT PARTITION ").append(PlainSelect.getStringList(partitions));
-                if (tableOption != null) {
-                    b.append(" ").append(tableOption);
-                }
+                if (tableOption != null) { b.append(" ").append(tableOption); }
                 break;
             case TRUNCATE_PARTITION:
                 b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
@@ -1008,17 +984,17 @@ public class AlterExpression implements Serializable {
                 break;
             case REORGANIZE_PARTITION:
                 b.append("REORGANIZE PARTITION ")
-                        .append(PlainSelect.getStringList(partitions))
-                        .append(" INTO (")
-                        .append(partitionDefinitions.stream()
-                                .map(PartitionDefinition::toString)
-                                .collect(Collectors.joining(", ")))
-                        .append(")");
+                 .append(PlainSelect.getStringList(partitions))
+                 .append(" INTO (")
+                 .append(partitionDefinitions.stream()
+                                             .map(PartitionDefinition::toString)
+                                             .collect(Collectors.joining(", ")))
+                 .append(")");
                 break;
             case EXCHANGE_PARTITION:
                 b.append("EXCHANGE PARTITION ");
                 b.append(partitions.get(0)).append(" WITH TABLE ")
-                        .append(exchangePartitionTableName);
+                 .append(exchangePartitionTableName);
                 if (exchangePartitionWithValidation) {
                     b.append(" WITH VALIDATION ");
                 } else if (exchangePartitionWithoutValidation) {
@@ -1051,19 +1027,19 @@ public class AlterExpression implements Serializable {
                     b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
                 }
                 b.append("(").append(partitionDefinitions.stream()
-                        .map(PartitionDefinition::toString)
-                        .collect(Collectors.joining(", ")))
-                        .append(")");
+                                                         .map(PartitionDefinition::toString)
+                                                         .collect(Collectors.joining(", ")))
+                 .append(")");
                 break;
         }
     }
 
     /**
-     * Handles the general case for ADD, MODIFY, CHANGE, DROP (column), COMMENT, row-level security,
-     * and all field-based dispatch (columns, constraints, FK, UK, PK, index).
+     * Handles the general case for ADD, MODIFY, CHANGE, DROP (column), COMMENT,
+     * row-level security, and all field-based dispatch (columns, constraints, FK, UK, PK, index).
      */
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-    private void toStringGeneral(StringBuilder b) {
+    protected void toStringGeneral(StringBuilder b) {
         if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
             b.append("COMMENT =").append(" ");
         } else if (operation == AlterOperation.ENABLE_ROW_LEVEL_SECURITY) {
@@ -1108,7 +1084,7 @@ public class AlterExpression implements Serializable {
                     b.append("COLUMNS ");
                 }
                 if (useIfNotExists
-                        && operation == AlterOperation.ADD) {
+                    && operation == AlterOperation.ADD) {
                     b.append("IF NOT EXISTS ");
                 }
             }
@@ -1152,19 +1128,19 @@ public class AlterExpression implements Serializable {
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
         } else if (fkColumns != null
-                && !(index instanceof net.sf.jsqlparser.statement.create.table.ForeignKeyIndex)) {
+                   && !(index instanceof net.sf.jsqlparser.statement.create.table.ForeignKeyIndex)) {
             // @deprecated path - kept for backward compatibility when ForeignKeyIndex is not set
             b.append("FOREIGN KEY (")
-                    .append(PlainSelect.getStringList(fkColumns))
-                    .append(") REFERENCES ")
-                    .append(
-                            fkSourceSchema != null && fkSourceSchema.trim().length() > 0
-                                    ? fkSourceSchema + "."
-                                    : "")
-                    .append(fkSourceTable)
-                    .append(" (")
-                    .append(PlainSelect.getStringList(fkSourceColumns))
-                    .append(")");
+             .append(PlainSelect.getStringList(fkColumns))
+             .append(") REFERENCES ")
+             .append(
+                     fkSourceSchema != null && fkSourceSchema.trim().length() > 0
+                     ? fkSourceSchema + "."
+                     : "")
+             .append(fkSourceTable)
+             .append(" (")
+             .append(PlainSelect.getStringList(fkSourceColumns))
+             .append(")");
             referentialActions.forEach(b::append);
         } else if (index != null) {
             b.append(index);
@@ -1398,7 +1374,7 @@ public class AlterExpression implements Serializable {
         @Override
         public String toString() {
             return getColumnName() + (withType ? " TYPE " : getColDataType() == null ? "" : " ")
-                    + toStringDataTypeAndSpec();
+                   + toStringDataTypeAndSpec();
         }
 
         @Override

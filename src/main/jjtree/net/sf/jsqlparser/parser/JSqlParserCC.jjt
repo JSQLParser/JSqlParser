@@ -10732,9 +10732,9 @@ List<String> PartitionNamesList() :
  * Parses DISCARD/IMPORT (PARTITION names TABLESPACE | TABLESPACE).
  * Both keywords share the same structure, differing only in operation enum.
  */
-void AlterExpressionDiscardOrImport(AlterExpression alterExp):
+AlterExpression AlterExpressionDiscardOrImport():
 {
-    Token tk;
+    AlterExpression alterExp;
     List<String> partitions = null;
     AlterOperation partOp;
     AlterOperation tableOp;
@@ -10747,15 +10747,16 @@ void AlterExpressionDiscardOrImport(AlterExpression alterExp):
     )
     (
         <K_PARTITION>
-        { alterExp.setOperation(partOp); }
+        { alterExp = new AlterExpressionPartition(); alterExp.setOperation(partOp); }
         partitions = PartitionNamesList()
         { alterExp.setPartitions(partitions); }
         <K_TABLESPACE>
         { alterExp.setTableOption("TABLESPACE"); }
         |
         <K_TABLESPACE>
-        { alterExp.setOperation(tableOp); }
+        { alterExp = new AlterExpressionTableOption(); alterExp.setOperation(tableOp); }
     )
+    { return alterExp; }
 }
 
 
@@ -10874,8 +10875,9 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
  * Parses the DROP operations within AlterExpression.
  * Handles: DROP (PARTITION|columns|COLUMN|INDEX|KEY|UNIQUE|PRIMARY KEY|FOREIGN KEY|CONSTRAINT)
  */
-void AlterExpressionDrop(AlterExpression alterExp):
+AlterExpression AlterExpressionDrop():
 {
+    AlterExpression alterExp = new AlterExpressionDrop();
     Token tk;
     Token tk2;
     List<String> columnNames = null;
@@ -10946,6 +10948,7 @@ void AlterExpressionDrop(AlterExpression alterExp):
             [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
         )
     )
+    { return alterExp; }
 }
 
 /**
@@ -10953,8 +10956,9 @@ void AlterExpressionDrop(AlterExpression alterExp):
  * Handles: TRUNCATE/ANALYZE/CHECK/OPTIMIZE/REBUILD/REPAIR PARTITION,
  *          COALESCE/REORGANIZE/EXCHANGE/PARTITION BY, REMOVE PARTITIONING
  */
-void AlterExpressionPartitionOp(AlterExpression alterExp):
+AlterExpression AlterExpressionPartitionOp():
 {
+    AlterExpression alterExp = new AlterExpressionPartition();
     Token tk;
     List<String> partitions = null;
     List<PartitionDefinition> partitionDefinition = null;
@@ -11019,6 +11023,7 @@ void AlterExpressionPartitionOp(AlterExpression alterExp):
         )
         partitionDefinition=PartitionDefinitions() { alterExp.setPartitionDefinitions(partitionDefinition); }
     )
+    { return alterExp; }
 }
 
 /**
@@ -11031,7 +11036,7 @@ void AlterExpressionPartitionOp(AlterExpression alterExp):
 */
 AlterExpression AlterExpression():
 {
-    AlterExpression alterExp = new AlterExpression();
+    AlterExpression alterExp = null;
     Token tk;
     Token tk2 = null;
     String sk3 = null;
@@ -11052,6 +11057,7 @@ AlterExpression AlterExpression():
 
     (
         (
+            { alterExp = new AlterExpression(); }
             (
                 <K_ADD> { alterExp.setOperation(AlterOperation.ADD);
                 }
@@ -11216,6 +11222,7 @@ AlterExpression AlterExpression():
       )
       |
       (
+        { alterExp = new AlterExpression(); }
         <K_CHANGE> { alterExp.setOperation(AlterOperation.CHANGE); }
         [ <K_COLUMN> { alterExp.hasColumn(true); alterExp.setOptionalSpecifier("COLUMN"); } ]
         (
@@ -11224,25 +11231,29 @@ AlterExpression AlterExpression():
         )
       )
       |
-        AlterExpressionDrop(alterExp)
+        alterExp = AlterExpressionDrop()
         |
         LOOKAHEAD(5) (
+            { alterExp = new AlterExpression(); }
             <K_FORCE> <K_ROW> <K_LEVEL> <K_SECURITY> {
                 alterExp.setOperation(AlterOperation.FORCE_ROW_LEVEL_SECURITY);
             }
         )
         |
         LOOKAHEAD(5) (
+            { alterExp = new AlterExpression(); }
             <K_NO> <K_FORCE> <K_ROW> <K_LEVEL> <K_SECURITY> {
                 alterExp.setOperation(AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY);
             }
         )
         |
         LOOKAHEAD(1) (
+        { alterExp = new AlterExpression(); }
         <K_FORCE>{ alterExp.setOperation(AlterOperation.FORCE); }
         )
         |
         (
+         { alterExp = new AlterExpressionTableOption(); }
          <K_ALGORITHM> {
             alterExp.setOperation(AlterOperation.ALGORITHM);
          }
@@ -11251,6 +11262,7 @@ AlterExpression AlterExpression():
         )
         |
         (
+        { alterExp = new AlterExpressionTableOption(); }
         <K_KEY_BLOCK_SIZE>{
             alterExp.setOperation(AlterOperation.KEY_BLOCK_SIZE);
         }
@@ -11259,6 +11271,7 @@ AlterExpression AlterExpression():
         )
         |
         (
+        { alterExp = new AlterExpressionTableOption(); }
         <K_LOCK> {
             alterExp.setOperation(AlterOperation.LOCK);
         }
@@ -11266,21 +11279,25 @@ AlterExpression AlterExpression():
         sk3 = RelObjectName() {alterExp.setLockOption(sk3); }
         )
         |
-        (<K_ENGINE> {alterExp.setOperation(AlterOperation.ENGINE);}
+        ({ alterExp = new AlterExpressionTableOption(); }
+        <K_ENGINE> {alterExp.setOperation(AlterOperation.ENGINE);}
         ["=" { alterExp.setUseEqual(true);} ]
         sk3 = RelObjectName() {alterExp.setEngineOption(sk3); }
         )
       |
-      LOOKAHEAD(2)  <K_RENAME> { alterExp.setOperation(AlterOperation.RENAME); } [ <K_COLUMN> {  alterExp.hasColumn(true);} ]
+      LOOKAHEAD(2) { alterExp = new AlterExpressionRename(); }
+                    <K_RENAME> { alterExp.setOperation(AlterOperation.RENAME); } [ <K_COLUMN> {  alterExp.hasColumn(true);} ]
                     ( tk=KeywordOrIdentifier() ) { alterExp.setColOldName(tk.image); }
                     <K_TO>
                     ( tk2=KeywordOrIdentifier() ) { alterExp.setColumnName(tk2.image); }
       |
       LOOKAHEAD(2)(
+        { alterExp = new AlterExpressionRename(); }
         <K_RENAME> <K_TO> {alterExp.setOperation(AlterOperation.RENAME_TABLE);}
         (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
       )
-      | (<K_CONVERT> {
+      | ({ alterExp = new AlterExpressionCharset(); }
+        <K_CONVERT> {
           alterExp.setOperation(AlterOperation.CONVERT);
           alterExp.setConvertType(AlterExpression.ConvertType.CONVERT_TO);
         }
@@ -11290,6 +11307,7 @@ AlterExpression AlterExpression():
       |
       LOOKAHEAD(3)
       (
+          { alterExp = new AlterExpressionCharset(); }
           <K_DEFAULT>
           (
               <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
@@ -11310,7 +11328,8 @@ AlterExpression AlterExpression():
               }
           )
       )
-      | (<K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
+      | ({ alterExp = new AlterExpressionCharset(); }
+        <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
         tk=<S_IDENTIFIER> {
           alterExp.setOperation(AlterOperation.CONVERT);
           alterExp.setConvertType(AlterExpression.ConvertType.CHARACTER_SET);
@@ -11319,19 +11338,22 @@ AlterExpression AlterExpression():
         [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
             tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
       )
-      | (<K_COLLATE> { alterExp.setOperation(AlterOperation.COLLATE); }
+      | ({ alterExp = new AlterExpressionCharset(); }
+        <K_COLLATE> { alterExp.setOperation(AlterOperation.COLLATE); }
       [ "=" { alterExp.setHasEqualForCollate(true); } ]
         tk=<S_IDENTIFIER> {
           alterExp.setCollation(tk.image);
         }
       )
       |
-      (<K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
+      ({ alterExp = new AlterExpressionTableOption(); }
+      <K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
           ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
           tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
       )
       |
-      (<K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
+      ({ alterExp = new AlterExpressionTableOption(); }
+      <K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
             ["=" { alterExp.setUseEqual(true);} ]
             tk=<S_CHAR_LITERAL> {
                 if (alterExp.getUseEqual()) {
@@ -11342,16 +11364,18 @@ AlterExpression AlterExpression():
             }
       )
       |
-      AlterExpressionDiscardOrImport(alterExp)
+      alterExp = AlterExpressionDiscardOrImport()
       |
 
       LOOKAHEAD(4) (
+          { alterExp = new AlterExpression(); }
           <K_DISABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
               alterExp.setOperation(AlterOperation.DISABLE_ROW_LEVEL_SECURITY);
           }
       )
       |
       LOOKAHEAD(2) (
+          { alterExp = new AlterExpressionTableOption(); }
           <K_DISABLE> <K_KEYS> {
               alterExp.setOperation(AlterOperation.DISABLE_KEYS);
           }
@@ -11359,18 +11383,21 @@ AlterExpression AlterExpression():
 
       |
       LOOKAHEAD(4) (
+          { alterExp = new AlterExpression(); }
           <K_ENABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
               alterExp.setOperation(AlterOperation.ENABLE_ROW_LEVEL_SECURITY);
           }
       )
       |
       LOOKAHEAD(2) (
+          { alterExp = new AlterExpressionTableOption(); }
           <K_ENABLE> <K_KEYS> {
               alterExp.setOperation(AlterOperation.ENABLE_KEYS);
           }
       )
       |
-      (<K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
+      ({ alterExp = new AlterExpressionTableOption(); }
+      <K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
               ["=" { alterExp.setUseEqual(true);} ]
               tk=<S_LONG> {
                   if (alterExp.getUseEqual()) {
@@ -11382,7 +11409,8 @@ AlterExpression AlterExpression():
       )
       |
       LOOKAHEAD(2)
-           (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}
+           ({ alterExp = new AlterExpressionRename(); }
+           <K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}
                     | <K_KEY> {alterExp.setOperation(AlterOperation.RENAME_KEY);})
                     | <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
            )
@@ -11396,8 +11424,9 @@ AlterExpression AlterExpression():
            }
           )
       |
-      AlterExpressionPartitionOp(alterExp)
+      alterExp = AlterExpressionPartitionOp()
       |
+      { alterExp = new AlterExpression(); }
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
                     StringBuilder optionalSpecifier = new StringBuilder();
