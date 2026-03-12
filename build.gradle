@@ -385,6 +385,8 @@ spotbugs {
 }
 
 pmd {
+    rulesMinimumPriority = 5
+
     consoleOutput = true
     sourceSets = [sourceSets.main]
 
