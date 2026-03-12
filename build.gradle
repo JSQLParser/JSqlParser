@@ -467,27 +467,32 @@ tasks.register('renderRR') {
 
         // Convert JJ file to EBNF
         def ebnfFile = new File(rrDir, "JSqlParserCC.ebnf")
-        project.javaexec {
-            standardOutput = new FileOutputStream(ebnfFile)
-            mainClass.set("-jar")
-            args = [
-                    new File(rrDir, "convert.war").absolutePath,
-                    layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj").get().asFile.absolutePath
-            ]
+        def jjFile = layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj").get().asFile.absolutePath
+
+        def convertProc = new ProcessBuilder('java', '-jar',
+                new File(rrDir, "convert.war").absolutePath,
+                jjFile)
+                .redirectOutput(ebnfFile)
+                .redirectErrorStream(true)
+                .start()
+        if (convertProc.waitFor() != 0) {
+            throw new GradleException("Failed to convert JJ to EBNF")
         }
 
         // Generate RR diagrams
-        project.javaexec {
-            mainClass.set("-jar")
-            args = [
-                    new File(rrDir, "rr.war").absolutePath,
-                    "-noepsilon",
-                    "-color:#4D88FF",
-                    "-offset:0",
-                    "-width:800",
-                    "-out:${new File(rrDir, "JSqlParserCC.xhtml")}",
-                    new File(rrDir, "JSqlParserCC.ebnf").absolutePath
-            ]
+        def rrProc = new ProcessBuilder('java', '-jar',
+                new File(rrDir, "rr.war").absolutePath,
+                "-noepsilon",
+                "-color:#4D88FF",
+                "-offset:0",
+                "-width:800",
+                "-out:${new File(rrDir, "JSqlParserCC.xhtml")}",
+                new File(rrDir, "JSqlParserCC.ebnf").absolutePath)
+                .redirectErrorStream(true)
+                .start()
+        rrProc.inputStream.eachLine { logger.info(it) }
+        if (rrProc.waitFor() != 0) {
+            throw new GradleException("Failed to generate RR diagrams")
         }
     }
 }
