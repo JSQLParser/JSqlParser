@@ -15,7 +15,6 @@ options {
     DEBUG_LOOKAHEAD = false;
     DEBUG_TOKEN_MANAGER = false;
     CACHE_TOKENS = false;
-    SINGLE_TREE_FILE = false;
 //  FORCE_LA_CHECK = true;
     UNICODE_INPUT = true;
     JAVA_TEMPLATE_TYPE = "modern";
@@ -1500,7 +1499,7 @@ LikeClause LikeClause(): {
         )
         <K_COMMENTS>
     ]
-    
+
     {
         return likeClause;
     }
@@ -2243,7 +2242,7 @@ ErrorClause ErrorClause(): {
           ")"
         ]
         [
-            LOOKAHEAD(2) 
+            LOOKAHEAD(2)
             (
                 <K_REPLACE> { errorClause.setReplace(true); }
               | <K_TRUNCATE> { errorClause.setTruncate(true); }
@@ -2252,7 +2251,7 @@ ErrorClause ErrorClause(): {
         [ LOOKAHEAD(2) rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); } ]
       | rejectClause = RejectClause() { errorClause.setRejectClause(rejectClause); }
   )
-  
+
   {
     return errorClause;
   }
@@ -3688,7 +3687,7 @@ The following tokens are allowed as Names for Schema, Table, Column and Aliases
 String RelObjectNameWithoutValue() :
 {    Token tk = null; }
 {
-    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> 
+    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL>
        | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPEND_ONLY" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEFORE" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BREADTH" | tk="BRANCH" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DEPTH" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXCLUSIVE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INFORMATION" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LEVEL" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="POLICY" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAFE_CONVERT" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEARCH" | tk="SECURE" | tk="SECURITY" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STREAM" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="SYSTEM_TIME" | tk="SYSTEM_TIMESTAMP" | tk="SYSTEM_VERSION" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TRY_CONVERT" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VERSION" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
     { return tk.image; }
 }
@@ -4736,14 +4735,14 @@ Select SetOperationList(Select select) #SetOperationList: {
                 <K_INTERSECT> [ modifier=SetOperationModifier() ] { IntersectOp intersect = new IntersectOp(modifier); linkAST(intersect,jjtThis); operations.add(intersect); }
             )
             |
-            ( 
+            (
                 <K_MINUS> [ modifier=SetOperationModifier() ] { MinusOp minus = new MinusOp(); linkAST(minus,jjtThis); operations.add(minus); }
             )
             |
             (
                 <K_EXCEPT> [ modifier=SetOperationModifier() ] { ExceptOp except = new ExceptOp(); linkAST(except,jjtThis); operations.add(except); }
             )
-           
+
         )
 
         (
@@ -9590,37 +9589,125 @@ List<String> PathSpecification():
     }
 }
 
+/**
+ * Parses a single table-level constraint inside CREATE TABLE (...).
+ * Handles INDEX, PRIMARY KEY, UNIQUE, KEY, FOREIGN KEY, CHECK, EXCLUDE.
+ * Returns an Index (which may be NamedConstraint, ForeignKeyIndex, CheckConstraint, ExcludeConstraint).
+ */
+Index CreateTableConstraint():
+{
+    Token tk = null;
+    Token tk2 = null;
+    Token tk3 = null;
+    String sk3 = null;
+    List<Index.ColumnParams> colNames = null;
+    List<String> parameter = new ArrayList<String>();
+    List<String> idxSpec = new ArrayList<String>();
+    Index index = null;
+    ForeignKeyIndex fkIndex = null;
+    CheckConstraint checkCs = null;
+    ExcludeConstraint excludeC = null;
+    Expression exp = null;
+}
+{
+    (
+        LOOKAHEAD(3) (
+            { idxSpec.clear(); }
+            tk=<K_INDEX>
+            sk3=RelObjectName()
+            colNames = IndexColumnsWithParamsList()
+            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
+            {
+                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
+            }
+        )
+        |
+        LOOKAHEAD(3) (
+            {
+                index = new NamedConstraint();
+                tk2=null;
+                idxSpec.clear();
+            }
+            [ <K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
+            (
+                tk=<K_PRIMARY> tk2=<K_KEY>
+                |
+                tk=<K_UNIQUE> [ tk2=<K_KEY> ]
+            )
+            {
+                index.setType( tk.image + ( tk2!=null ? " " + tk2.image : "" ));
+                tk2=null;
+            }
+            colNames = ColumnNamesWithParamsList()
+            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
+            {
+                index.withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
+            }
+        )
+        |
+        LOOKAHEAD(3) (
+            {
+                tk=null;
+                tk3=null;
+                idxSpec.clear();
+            }
+            [ tk=<K_UNIQUE> ]
+            [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
+            sk3=RelObjectName()
+            colNames = IndexColumnsWithParamsList()
+            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
+            {
+                index = new Index()
+                    .withType( ( tk!=null ? tk.image + " " : "") + ( tk3!=null ? tk3.image + " ":"" ) + tk2.image)
+                    .withName(sk3)
+                    .withColumns(colNames)
+                    .withIndexSpec(new ArrayList<String>(idxSpec));
+            }
+        )
+        |
+        LOOKAHEAD(3) (
+            { sk3=null; }
+            [ <K_CONSTRAINT> sk3=RelObjectName() ]
+            fkIndex = ForeignKeySpec(sk3)
+            { index = fkIndex; }
+        )
+        |
+        LOOKAHEAD(3) (
+            { sk3 = null; }
+            [ <K_CONSTRAINT> sk3 = RelObjectName() ]
+            checkCs = CheckConstraintSpec(sk3)
+            { index = checkCs; }
+        )
+        |
+        LOOKAHEAD(2) (
+            tk=<K_EXCLUDE> { excludeC = new ExcludeConstraint(); }
+            (tk2=<K_WHERE>
+                ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
+            { index = excludeC; }
+        )
+    )
+    {
+        return index;
+    }
+}
+
+
 CreateTable CreateTable(boolean isUsingOrReplace):
 {
     CreateTable createTable = new CreateTable();
     Table table = null;
     List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
-    List<String> columnSpecs = null;
     List<String> tableOptions = new ArrayList<String>();
     List<String> createOptions = new ArrayList<String>();
-    String columnName;
     Token tk = null;
-    Token tk2 = null;
-    Token tk3 = null;
-    String sk3 = null;
-    ColDataType colDataType = null;
-    String stringList = null;
     ColumnDefinition coldef = null;
     List<Index> indexes = new ArrayList<Index>();
-    List<Index.ColumnParams> colNames = null;
-    List<String> colNames2 = null;
     Index index = null;
-    ForeignKeyIndex fkIndex = null;
     List<String> parameter = new ArrayList<String>();
-    List<String> idxSpec = new ArrayList<String>();
-    Table fkTable = null;
     SpannerInterleaveIn interleaveIn = null;
     Select select = null;
     Table likeTable = null;
-    CheckConstraint checkCs = null;
-    ExcludeConstraint excludeC = null;
     RowMovement rowMovement = null;
-    ReferentialAction.Action action = null;
     String tableColumn = null;
     List<String> columns = new ArrayList<String>();
 }
@@ -9630,8 +9717,6 @@ CreateTable CreateTable(boolean isUsingOrReplace):
 
     // table options, not required but 1 or none
     [ tk=<K_GLOBAL> { createOptions.add(tk.image);} ]
-    /* [ [ (tk=<K_GLOBAL> | tk=<K_LOCAL>) {createOptions.add(tk.image);} ]
-       ( tk=<K_TEMPORARY> | tk=<K_TEMP> ) {createOptions.add(tk.image);}] */
 
     (parameter = CreateParameter() { createOptions.addAll(parameter); })*
 
@@ -9651,117 +9736,9 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                     ","
                     (
                         LOOKAHEAD(3) (
-                            {
-                                idxSpec.clear();
-                            }
-                            tk=<K_INDEX>
-                            sk3=RelObjectName()
-                            colNames = IndexColumnsWithParamsList()
-                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-                            {
-                                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
-                                indexes.add(index);
-                            }
+                            index = CreateTableConstraint()
+                            { indexes.add(index); }
                         )
-                        |
-                        LOOKAHEAD(3) (
-                            {
-                                index = new NamedConstraint();
-                                tk2=null;
-                                idxSpec.clear();
-                            }
-                            [ <K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
-
-                            (
-                                tk=<K_PRIMARY> tk2=<K_KEY>
-                                |
-                                tk=<K_UNIQUE> [ tk2=<K_KEY> ]
-                            )
-                            {
-                                index.setType( tk.image + ( tk2!=null ? " " + tk2.image : "" ));
-                                tk2=null;
-                            }
-
-                            colNames = ColumnNamesWithParamsList()
-                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-                            {
-                                index.withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
-                                indexes.add(index);
-                            }
-                        )
-                        |
-                        LOOKAHEAD(3) (
-                            {
-                                tk=null;
-                                tk3=null;
-                                idxSpec.clear();
-                            }
-                            [ tk=<K_UNIQUE> ]
-                            [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
-                            sk3=RelObjectName()
-                            colNames = IndexColumnsWithParamsList()
-                            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-                            {
-                                index = new Index()
-                                    .withType( ( tk!=null ? tk.image + " " : "") + ( tk3!=null ? tk3.image + " ":"" ) + tk2.image)
-                                    .withName(sk3)
-                                    .withColumns(colNames)
-                                    .withIndexSpec(new ArrayList<String>(idxSpec));
-                                indexes.add(index);
-                            }
-                        )
-                        |
-                        LOOKAHEAD(3)(
-                            {
-                                fkIndex = new ForeignKeyIndex();
-                                sk3=null;
-
-                            }
-                            [ <K_CONSTRAINT> sk3=RelObjectName() { fkIndex.setName(sk3); } ]
-                            tk=<K_FOREIGN> tk2=<K_KEY>
-                            colNames = ColumnNamesWithParamsList()
-                            {
-                                fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
-                            }
-                            <K_REFERENCES> fkTable=Table() colNames2=ColumnsNamesList()
-                            {
-                                fkIndex.setTable(fkTable);
-                                fkIndex.setReferencedColumnNames(colNames2);
-                                indexes.add(fkIndex);
-                            }
-                            [ LOOKAHEAD(2) (
-                                <K_ON>
-                                ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-                                { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                              )
-                            ]
-                            [ LOOKAHEAD(2) (
-                                <K_ON>
-                                ( tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                                { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                                )
-                            ]
-                        )
-                        |
-                         LOOKAHEAD(3)(
-                            {
-                                sk3 = null;
-                                Expression exp = null;
-                            }
-                            [ <K_CONSTRAINT>  sk3 = RelObjectName() ]
-                            <K_CHECK>  ( "(" exp = Expression() ")" )*
-                            {
-                               checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
-                               indexes.add(checkCs);
-                            }
-                        )
-                        |
-                            LOOKAHEAD(2) tk=<K_EXCLUDE> {excludeC = new ExcludeConstraint(); Expression exp = null;}
-                            (tk2=<K_WHERE>
-                                ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
-                            {
-                                indexes.add(excludeC);
-                            }
                         |
                         (
                             coldef = ColumnDefinition()
@@ -10069,6 +10046,101 @@ ReferentialAction.Action Action():
              )
      )
     { return action; }
+}
+
+/**
+ * Parses optional referential actions: [ON DELETE|UPDATE action] [ON DELETE|UPDATE action]
+ * Shared between CREATE TABLE FK and ALTER TABLE FK definitions.
+ */
+void ReferentialActionsOnIndex(ForeignKeyIndex fkIndex):
+{
+    Token tk;
+    ReferentialAction.Action action = null;
+}
+{
+    [ LOOKAHEAD(2) (
+        <K_ON>
+        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
+        { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+    )]
+    [ LOOKAHEAD(2) (
+        <K_ON>
+        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
+        { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+    )]
+}
+
+/**
+ * Parses: CHECK ( expression )
+ * Returns a CheckConstraint. Shared between CREATE TABLE and ALTER TABLE.
+ */
+CheckConstraint CheckConstraintSpec(String constraintName):
+{
+    Expression exp = null;
+}
+{
+    <K_CHECK> ( LOOKAHEAD(2) "(" exp = Expression() ")" )*
+    {
+        return new CheckConstraint().withName(constraintName).withExpression(exp);
+    }
+}
+
+/**
+ * Parses: FOREIGN KEY columns REFERENCES table [columns] [referential actions]
+ * Returns a populated ForeignKeyIndex. Shared between CREATE TABLE and ALTER TABLE.
+ */
+ForeignKeyIndex ForeignKeySpec(String constraintName):
+{
+    ForeignKeyIndex fkIndex = new ForeignKeyIndex();
+    Token tk;
+    Token tk2;
+    List<String> refColNames = null;
+    List<Index.ColumnParams> colNames;
+    Table fkTable;
+}
+{
+    tk=<K_FOREIGN> tk2=<K_KEY>
+    colNames = ColumnNamesWithParamsList()
+    {
+        if (constraintName != null) { fkIndex.setName(constraintName); }
+        fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
+    }
+    <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) refColNames=ColumnsNamesList() ]
+    {
+        fkIndex.setTable(fkTable);
+        fkIndex.setReferencedColumnNames(refColNames);
+    }
+    ReferentialActionsOnIndex(fkIndex)
+    {
+        return fkIndex;
+    }
+}
+
+/**
+ * Parses USING [INDEX] name clause in ALTER TABLE constraint tails.
+ */
+void AlterExpressionUsingIndex(AlterExpression alterExp):
+{
+    String sk4;
+}
+{
+    <K_USING> { alterExp.addParameters("USING"); }
+    [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
+    sk4=RelObjectName() { alterExp.addParameters(sk4); }
+}
+
+/**
+ * Parses the common tail after a named constraint in ALTER TABLE:
+ * constraint_state [USING [INDEX] name] [COMMENT 'text']
+ */
+void AlterExpressionConstraintTail(AlterExpression alterExp, Index index):
+{
+    List<ConstraintState> constraints;
+}
+{
+    constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+    [ LOOKAHEAD(2) AlterExpressionUsingIndex(alterExp) ]
+    [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
 }
 
 AlterView AlterView(boolean useReplace):
@@ -10617,8 +10689,274 @@ List<String> PartitionNamesList() :
 }
 
 /**
-* This production needs refactoring to multiple smaller productions. The target class should
-* be splitted as well.
+ * Parses ADD/ALTER CONSTRAINT clause within AlterExpression.
+ * Handles: CONSTRAINT [UNIQUE [KEY|INDEX]] name columns
+ *          CONSTRAINT name (FOREIGN KEY|PRIMARY KEY|UNIQUE|KEY|CHECK|[NOT] ENFORCED)
+ */
+void AlterExpressionAddConstraint(AlterExpression alterExp):
+{
+    Token tk;
+    Token tk2 = null;
+    String sk3 = null;
+    List<String> columnNames = null;
+    ForeignKeyIndex fkIndex = null;
+    Index index = null;
+    Table fkTable;
+    List<ConstraintState> constraints = null;
+    CheckConstraint checkCs = null;
+}
+{
+    <K_CONSTRAINT>
+    (
+        LOOKAHEAD(2)
+        (
+            <K_UNIQUE> (<K_KEY> { alterExp.setConstraintType("UNIQUE KEY"); }
+            | <K_INDEX> { alterExp.setConstraintType("UNIQUE INDEX"); }
+            | { alterExp.setConstraintType("UNIQUE"); } )
+            sk3=RelObjectName() {
+              alterExp.setConstraintSymbol(sk3);
+              index = new Index();
+            }
+            columnNames=ColumnsNamesList() {
+              index.setColumnsNames(columnNames);
+              alterExp.setIndex(index);
+            }
+        )
+        |
+        sk3=RelObjectName()
+        (
+             ( tk=<K_FOREIGN> tk2=<K_KEY>
+                columnNames=ColumnsNamesList()
+                {
+                    fkIndex = new ForeignKeyIndex()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
+                    columnNames = null;
+                }
+                <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
+                {
+                    fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
+                    alterExp.setIndex(fkIndex);
+                }
+                ReferentialActionsOnIndex(fkIndex)
+                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+            )
+            |
+            ( tk=<K_PRIMARY> tk2=<K_KEY>
+                columnNames=ColumnsNamesList()
+                {
+                    index = new NamedConstraint()
+                        .withName(sk3)
+                        .withType(tk.image + " " + tk2.image)
+                        .withColumnsNames(columnNames);
+                    alterExp.setIndex(index);
+                }
+                AlterExpressionConstraintTail(alterExp, index)
+            )
+            |
+            LOOKAHEAD(2) (
+                { boolean enforced = true; }
+                [ tk = <K_NOT> { enforced = false; } ]
+                <K_ENFORCED> {
+                    alterExp.setEnforced(enforced);
+                    alterExp.setConstraintType("CONSTRAINT");
+                    alterExp.setConstraintSymbol(sk3);
+                }
+            )
+            |
+            (
+                checkCs = CheckConstraintSpec(sk3)
+                { alterExp.setIndex(checkCs); }
+            )
+            |
+            (
+                tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
+                  columnNames=ColumnsNamesList()
+                  {
+                      index = new NamedConstraint()
+                        .withName(sk3)
+                        .withType(tk.image + (tk2!=null?" " + tk2.image:""))
+                        .withColumnsNames(columnNames);
+                      alterExp.setIndex(index);
+                  }
+                  AlterExpressionConstraintTail(alterExp, index)
+            )
+            |
+            (
+                tk=<K_KEY>
+                columnNames=ColumnsNamesList()
+                {
+                    index = new NamedConstraint()
+                      .withName(sk3)
+                      .withType(tk.image)
+                      .withColumnsNames(columnNames);
+                    alterExp.setIndex(index);
+                }
+                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+            )
+        )
+    )
+}
+
+/**
+ * Parses the DROP operations within AlterExpression.
+ * Handles: DROP (PARTITION|columns|COLUMN|INDEX|KEY|UNIQUE|PRIMARY KEY|FOREIGN KEY|CONSTRAINT)
+ */
+void AlterExpressionDrop(AlterExpression alterExp):
+{
+    Token tk;
+    Token tk2;
+    List<String> columnNames = null;
+    List<String> partitions = null;
+    Index index = null;
+}
+{
+    <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
+    (
+        (
+            <K_PARTITION> {
+                alterExp.setOperation(AlterOperation.DROP_PARTITION);
+            }
+            partitions=PartitionNamesList() {
+                alterExp.setPartitions(partitions);
+            }
+        )
+        |
+        (
+            // Oracle Multi Column Drop
+            columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+            [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+            [
+                "CASCADE" { alterExp.addParameters("CASCADE"); }
+                [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+            ]
+        )
+        |
+        (
+            ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
+            [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
+            (tk=KeywordOrIdentifier() ) { alterExp.setColumnName(tk.image); }
+            [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
+            [
+                "CASCADE" { alterExp.addParameters("CASCADE"); }
+                [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
+            ]
+        )
+        |
+        (
+           ( tk=<K_INDEX> | tk=<K_KEY> )
+           ( tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER> ) {
+               index = new Index().withType(tk.image).withName(tk2.image);
+               alterExp.setIndex(index);
+           }
+        )
+        |
+        (
+           tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
+           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+        )
+        |
+        (
+           tk=<K_PRIMARY> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_PRIMARY_KEY); }
+           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+        )
+        |
+        (
+           tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
+           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+        )
+        |
+        (
+            <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
+            ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setConstraintName(tk.image); }
+            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
+        )
+    )
+}
+
+/**
+ * Parses partition maintenance operations within AlterExpression.
+ * Handles: TRUNCATE/ANALYZE/CHECK/OPTIMIZE/REBUILD/REPAIR PARTITION,
+ *          COALESCE/REORGANIZE/EXCHANGE/PARTITION BY, REMOVE PARTITIONING
+ */
+void AlterExpressionPartitionOp(AlterExpression alterExp):
+{
+    Token tk;
+    List<String> partitions = null;
+    List<PartitionDefinition> partitionDefinition = null;
+    List<String> columnNames = null;
+    Expression exp = null;
+}
+{
+    (
+        LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> tk=<S_LONG> {
+            alterExp.setOperation(AlterOperation.COALESCE_PARTITION);
+            alterExp.setCoalescePartitionNumber(Integer.valueOf(tk.image));
+        }
+    |
+        LOOKAHEAD(2) <K_REORGANIZE> <K_PARTITION>
+        partitions=PartitionNamesList() <K_INTO> partitionDefinition=PartitionDefinitions() {
+            alterExp.setOperation(AlterOperation.REORGANIZE_PARTITION);
+            alterExp.setPartitions(partitions);
+            alterExp.setPartitionDefinitions(partitionDefinition);
+        }
+    |
+        LOOKAHEAD(2) <K_EXCHANGE> <K_PARTITION> partitions=PartitionNamesList()
+        <K_WITH> <K_TABLE> tk=<S_IDENTIFIER>
+        [
+            LOOKAHEAD(2) (
+                <K_WITH> <K_VALIDATION> { alterExp.setExchangePartitionWithValidation(true); }
+                |
+                <K_WITHOUT> <K_VALIDATION> { alterExp.setExchangePartitionWithoutValidation(false); }
+            )
+        ]
+        {
+            alterExp.setOperation(AlterOperation.EXCHANGE_PARTITION);
+            alterExp.setPartitions(partitions);
+            alterExp.setExchangePartitionTableName(tk.image);
+        }
+    |
+        LOOKAHEAD(2) <K_ANALYZE> <K_PARTITION> { alterExp.setOperation(AlterOperation.ANALYZE_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_CHECK> <K_PARTITION> { alterExp.setOperation(AlterOperation.CHECK_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_OPTIMIZE> <K_PARTITION> { alterExp.setOperation(AlterOperation.OPTIMIZE_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_REBUILD> <K_PARTITION> { alterExp.setOperation(AlterOperation.REBUILD_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_REPAIR> <K_PARTITION> { alterExp.setOperation(AlterOperation.REPAIR_PARTITION); }
+        partitions=PartitionNamesList() { alterExp.setPartitions(partitions); }
+    |
+        LOOKAHEAD(2) <K_REMOVE> <K_PARTITIONING> { alterExp.setOperation(AlterOperation.REMOVE_PARTITIONING); }
+    |
+        LOOKAHEAD(2) <K_PARTITION> <K_BY> { alterExp.setOperation(AlterOperation.PARTITION_BY); }
+        <K_RANGE> { alterExp.setPartitionType("RANGE"); }
+        (
+            "(" exp=Expression() ")" { alterExp.setPartitionExpression(exp); }
+            |
+            <K_COLUMNS> columnNames=ColumnsNamesList() { alterExp.setPartitionColumns(columnNames); }
+        )
+        partitionDefinition=PartitionDefinitions() { alterExp.setPartitionDefinitions(partitionDefinition); }
+    )
+}
+
+/**
+* This production has been refactored into smaller sub-productions:
+* - AlterExpressionAddConstraint: CONSTRAINT clause
+* - AlterExpressionDrop: DROP operations
+* - AlterExpressionPartitionOp: partition maintenance operations
+* Shared helpers: ReferentialActionsOnIndex, CheckConstraintSpec, ForeignKeySpec,
+*                 AlterExpressionUsingIndex, AlterExpressionConstraintTail
 */
 AlterExpression AlterExpression():
 {
@@ -10627,11 +10965,9 @@ AlterExpression AlterExpression():
     Token tk2 = null;
     String sk3 = null;
     String sk4 = null;
-    ColDataType dataType;
     List<String> columnNames = null;
     List<Index.ColumnParams> indexColumnNames = null;
     List<ConstraintState> constraints = null;
-    ForeignKeyIndex fkIndex = null;
     Index index = null;
     Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
@@ -10640,12 +10976,9 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnSetDefault alterExpressionColumnSetDefault = null;
     AlterExpression.ColumnSetVisibility alterExpressionColumnSetVisibility = null;
     ReferentialAction.Action action = null;
-    List<String> partitions = null;
-    List<PartitionDefinition> partitionDefinition = null;
-    String truncatePartitionName = null;
-
-    String identifier = null;
     List<String> indexSpec = new ArrayList<String>();
+    List<PartitionDefinition> partitionDefinition = null;
+    List<String> partitions = null;
 
     // for captureRest()
     List<String> tokens = new LinkedList<String>();
@@ -10668,9 +11001,7 @@ AlterExpression AlterExpression():
 
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
                 [
-                    <K_USING> { alterExp.addParameters("USING"); }
-                    [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
-                    sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                    AlterExpressionUsingIndex(alterExp)
                 ]
                 |
                 LOOKAHEAD(2) (
@@ -10814,9 +11145,7 @@ AlterExpression AlterExpression():
                     )?
                     columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
                     [
-                        <K_USING> { alterExp.addParameters("USING"); }
-                        [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
-                        sk4=RelObjectName() { alterExp.addParameters(sk4); }
+                        AlterExpressionUsingIndex(alterExp)
                     ]
                     [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
@@ -10854,117 +11183,7 @@ AlterExpression AlterExpression():
                 )
                 |
                 (
-                    <K_CONSTRAINT>
-                    (
-                        LOOKAHEAD(2)
-                        (
-                            <K_UNIQUE> (<K_KEY> { alterExp.setConstraintType("UNIQUE KEY"); }
-                            | <K_INDEX> { alterExp.setConstraintType("UNIQUE INDEX"); }
-                            | { alterExp.setConstraintType("UNIQUE"); } )
-                            sk3=RelObjectName() {
-                              alterExp.setConstraintSymbol(sk3);
-                              index = new Index();
-                            }
-                            columnNames=ColumnsNamesList() {
-                              index.setColumnsNames(columnNames);
-                              alterExp.setIndex(index);
-                            }
-                        )
-                        |
-                        sk3=RelObjectName()
-                        (
-                             ( tk=<K_FOREIGN> tk2=<K_KEY>
-                                columnNames=ColumnsNamesList()
-                                {
-                                    fkIndex = new ForeignKeyIndex()
-                                    .withName(sk3)
-                                    .withType(tk.image + " " + tk2.image)
-                                    .withColumnsNames(columnNames);
-                                                        columnNames = null;
-                                }
-                                <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
-                                {
-                                    fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
-                                    alterExp.setIndex(fkIndex);
-                                }
-
-                                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                                    {  fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                                )]
-                                [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                                    { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                                )]
-                                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                            )
-                            |
-                            ( tk=<K_PRIMARY> tk2=<K_KEY>
-                                columnNames=ColumnsNamesList()
-                                {
-                                    index = new NamedConstraint()
-                                    .withName(sk3)
-                                    .withType(tk.image + " " + tk2.image)
-                                    .withColumnsNames(columnNames);
-                                    alterExp.setIndex(index);
-                                }
-                                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                                [
-                                    <K_USING> { alterExp.addParameters("USING"); }
-                                    [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
-                                    sk4=RelObjectName() { alterExp.addParameters(sk4); }
-                                ]
-                                [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
-                            )
-                            |
-                            LOOKAHEAD(2) (
-                                { boolean enforced = true; }
-                                [ tk = <K_NOT> { enforced = false; } ]
-                                <K_ENFORCED> {
-                                    alterExp.setEnforced(enforced);
-                                    alterExp.setConstraintType("CONSTRAINT");
-                                    alterExp.setConstraintSymbol(sk3);
-                                }
-                            )
-                            |
-                            (
-                                <K_CHECK>  {Expression exp = null;} (LOOKAHEAD(2) "(" exp = Expression() ")")* {
-                                    CheckConstraint checkCs = new CheckConstraint().withName(sk3).withExpression(exp);
-                                    alterExp.setIndex(checkCs);
-                                }
-                            )
-                            |
-                            (
-                                tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
-                                  columnNames=ColumnsNamesList()
-                                  {
-                                      index = new NamedConstraint()
-                                        .withName(sk3)
-                                        .withType(tk.image + (tk2!=null?" " + tk2.image:""))
-                                        .withColumnsNames(columnNames);
-                                      alterExp.setIndex(index);
-                                  }
-                                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                                  [
-                                      <K_USING> { alterExp.addParameters("USING"); }
-                                      [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
-                                      sk4=RelObjectName() { alterExp.addParameters(sk4); }
-                                  ]
-                                  [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
-                            )
-                            |
-                            (
-                                tk=<K_KEY>
-                                columnNames=ColumnsNamesList()
-                                {
-                                    index = new NamedConstraint()
-                                      .withName(sk3)
-                                      .withType(tk.image)
-                                      .withColumnsNames(columnNames);
-                                    alterExp.setIndex(index);
-                                }
-                                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                            )
-                        )
-                    )
+                    AlterExpressionAddConstraint(alterExp)
                 )
             )
       )
@@ -10978,77 +11197,7 @@ AlterExpression AlterExpression():
         )
       )
       |
-        <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
-        (
-            (
-                <K_PARTITION> {
-                    alterExp.setOperation(AlterOperation.DROP_PARTITION);
-                }
-                partitions=PartitionNamesList() {
-                    alterExp.setPartitions(partitions);
-                }
-            )
-            |
-            (
-                (
-                    // we use the PK Columns Field instead of the Column Field
-                    // for holding multiple DROP Columns
-                    columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
-
-                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
-
-                    [
-                        "CASCADE" { alterExp.addParameters("CASCADE"); }
-                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
-                    ]
-                )
-                |
-                (
-                    ( LOOKAHEAD(2) <K_COLUMN> { alterExp.hasColumn(true); } )?
-                    [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
-                    // @todo: replace with a proper identifier
-                    (tk=KeywordOrIdentifier() ) { alterExp.setColumnName(tk.image); }
-
-                    [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
-
-                    [
-                        "CASCADE" { alterExp.addParameters("CASCADE"); }
-                        [ "CONSTRAINTS" { alterExp.addParameters("CONSTRAINTS"); } ]
-                    ]
-                )
-            )
-            |
-            (
-               ( tk=<K_INDEX> | tk=<K_KEY> )
-               ( tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER> ) {
-                   index = new Index().withType(tk.image).withName(tk2.image);
-                   alterExp.setIndex(index);
-               }
-            )
-            |
-            (
-               tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
-               columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
-               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
-            )
-            |
-            (
-               tk=<K_PRIMARY> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_PRIMARY_KEY); }
-               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
-            )
-            |
-            (
-               tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
-               columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
-               [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
-            )
-            |
-            (
-                <K_CONSTRAINT> [<K_IF> <K_EXISTS> { alterExp.setUsingIfExists(true); } ]
-                ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setConstraintName(tk.image); }
-                [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
-            )
-        )
+        AlterExpressionDrop(alterExp)
         |
         LOOKAHEAD(5) (
             <K_FORCE> <K_ROW> <K_LEVEL> <K_SECURITY> {
@@ -11249,28 +11398,6 @@ AlterExpression AlterExpression():
             }
       )
       |
-        LOOKAHEAD(2) (
-            <K_PARTITION> <K_BY> {
-                alterExp.setOperation(AlterOperation.PARTITION_BY);
-            }
-            <K_RANGE> {
-                alterExp.setPartitionType("RANGE");
-                Expression exp = null;
-            }
-            (
-                "(" exp=Expression() ")" {
-                    alterExp.setPartitionExpression(exp);
-                }
-                |
-                <K_COLUMNS> columnNames=ColumnsNamesList() {
-                    alterExp.setPartitionColumns(columnNames);
-                }
-            )
-            partitionDefinition=PartitionDefinitions() {
-                alterExp.setPartitionDefinitions(partitionDefinition);
-            }
-        )
-      |
       LOOKAHEAD(2)
            (<K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}
                     | <K_KEY> {alterExp.setOperation(AlterOperation.RENAME_KEY);})
@@ -11286,71 +11413,7 @@ AlterExpression AlterExpression():
            }
           )
       |
-      LOOKAHEAD(2) <K_TRUNCATE> <K_PARTITION> { alterExp.setOperation(AlterOperation.TRUNCATE_PARTITION); }
-       partitions=PartitionNamesList() {
-           alterExp.setPartitions(partitions);
-       }
-      |
-      LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> tk=<S_LONG> {
-            alterExp.setOperation(AlterOperation.COALESCE_PARTITION);
-            alterExp.setCoalescePartitionNumber(Integer.valueOf(tk.image));
-      }
-      | LOOKAHEAD(2) <K_REORGANIZE> <K_PARTITION>
-        partitions=PartitionNamesList() <K_INTO> partitionDefinition=PartitionDefinitions() {
-          alterExp.setOperation(AlterOperation.REORGANIZE_PARTITION);
-          alterExp.setPartitions(partitions);
-          alterExp.setPartitionDefinitions(partitionDefinition);
-      }
-      |
-      LOOKAHEAD(2) <K_EXCHANGE> <K_PARTITION> partitions=PartitionNamesList()
-        <K_WITH> <K_TABLE> tk=<S_IDENTIFIER>
-        [
-            LOOKAHEAD(2) (
-                <K_WITH> <K_VALIDATION> { alterExp.setExchangePartitionWithValidation(true); }
-                |
-                <K_WITHOUT> <K_VALIDATION> { alterExp.setExchangePartitionWithoutValidation(false); }
-            )
-        ]
-        {
-          alterExp.setOperation(AlterOperation.EXCHANGE_PARTITION);
-          alterExp.setPartitions(partitions);
-          alterExp.setExchangePartitionTableName(tk.image);
-        }
-      |
-      LOOKAHEAD(2) <K_ANALYZE> <K_PARTITION> {
-          alterExp.setOperation(AlterOperation.ANALYZE_PARTITION);
-      }
-      partitions=PartitionNamesList() {
-          alterExp.setPartitions(partitions);
-      }
-      |
-      LOOKAHEAD(2) <K_CHECK> <K_PARTITION> {
-          alterExp.setOperation(AlterOperation.CHECK_PARTITION);
-      }
-      partitions=PartitionNamesList() {
-          alterExp.setPartitions(partitions);
-      }
-      |
-      LOOKAHEAD(2) <K_OPTIMIZE> <K_PARTITION> {
-          alterExp.setOperation(AlterOperation.OPTIMIZE_PARTITION);
-      }
-      partitions=PartitionNamesList() {
-          alterExp.setPartitions(partitions);
-      }
-      |
-      LOOKAHEAD(2) <K_REBUILD> <K_PARTITION> {
-          alterExp.setOperation(AlterOperation.REBUILD_PARTITION);
-      }
-      partitions=PartitionNamesList() {
-          alterExp.setPartitions(partitions);
-      }
-      |
-      LOOKAHEAD(2) <K_REPAIR> <K_PARTITION> { alterExp.setOperation(AlterOperation.REPAIR_PARTITION); }
-      partitions=PartitionNamesList() {
-          alterExp.setPartitions(partitions);
-      }
-      |
-      LOOKAHEAD(2) <K_REMOVE> <K_PARTITIONING> { alterExp.setOperation(AlterOperation.REMOVE_PARTITIONING); }
+      AlterExpressionPartitionOp(alterExp)
       |
       tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
