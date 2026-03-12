@@ -10,8 +10,8 @@
 package net.sf.jsqlparser.statement.alter;
 
 /**
- * Internal subclass for RENAME operations within ALTER TABLE.
- * Handles RENAME COLUMN, RENAME TO (table), RENAME INDEX/KEY/CONSTRAINT.
+ * Internal subclass for RENAME operations within ALTER TABLE. Handles RENAME COLUMN, RENAME TO
+ * (table), RENAME INDEX/KEY/CONSTRAINT.
  */
 public class AlterExpressionRename extends AlterExpression {
 

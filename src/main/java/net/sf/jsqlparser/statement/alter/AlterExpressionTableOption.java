@@ -10,9 +10,9 @@
 package net.sf.jsqlparser.statement.alter;
 
 /**
- * Internal subclass for table-level option operations within ALTER TABLE.
- * Handles ENGINE, ALGORITHM, LOCK, KEY_BLOCK_SIZE, COMMENT, ENCRYPTION,
- * AUTO_INCREMENT (SET_TABLE_OPTION), DISCARD/IMPORT TABLESPACE, DISABLE/ENABLE KEYS.
+ * Internal subclass for table-level option operations within ALTER TABLE. Handles ENGINE,
+ * ALGORITHM, LOCK, KEY_BLOCK_SIZE, COMMENT, ENCRYPTION, AUTO_INCREMENT (SET_TABLE_OPTION),
+ * DISCARD/IMPORT TABLESPACE, DISABLE/ENABLE KEYS.
  */
 public class AlterExpressionTableOption extends AlterExpression {
 

@@ -10,8 +10,8 @@
 package net.sf.jsqlparser.statement.alter;
 
 /**
- * Internal subclass for character set and collation operations within ALTER TABLE.
- * Handles CONVERT TO CHARACTER SET, DEFAULT CHARACTER SET, CHARACTER SET, and COLLATE.
+ * Internal subclass for character set and collation operations within ALTER TABLE. Handles CONVERT
+ * TO CHARACTER SET, DEFAULT CHARACTER SET, CHARACTER SET, and COLLATE.
  */
 public class AlterExpressionCharset extends AlterExpression {
 
