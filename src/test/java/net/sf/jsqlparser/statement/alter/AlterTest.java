@@ -42,6 +42,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
+import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -285,15 +286,14 @@ public class AlterTest {
 
     @Test
     public void testAlterTableFK() throws JSQLParserException {
-        String sql = "ALTER TABLE `Novels` ADD FOREIGN KEY (AuthorID) REFERENCES Author (ID)";
-        Statement stmt = CCJSqlParserUtil.parse(sql);
-        assertStatementCanBeDeparsedAs(stmt, sql);
+        String sql = "ALTER TABLE `Novels` ADD FOREIGN KEY (AuthorID) REFERENCES Author(ID)";
+        Statement stmt = TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
         AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
-        assertEquals(alterExpression.getFkColumns().size(), 1);
-        assertEquals(alterExpression.getFkColumns().get(0), "AuthorID");
-        assertEquals(alterExpression.getFkSourceTable(), "Author");
-        assertEquals(alterExpression.getFkSourceColumns().size(), 1);
-        assertEquals(alterExpression.getFkSourceColumns().get(0), "ID");
+        assertEquals(1, alterExpression.getFkColumns().size());
+        assertEquals("AuthorID", alterExpression.getFkColumns().get(0));
+        assertEquals("Author", alterExpression.getFkSourceTable());
+        assertEquals(1, alterExpression.getFkSourceColumns().size());
+        assertEquals("ID", alterExpression.getFkSourceColumns().get(0));
     }
 
     @Test

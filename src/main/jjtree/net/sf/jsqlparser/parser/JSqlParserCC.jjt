@@ -10434,6 +10434,46 @@ Truncate Truncate():
     }
 }
 
+/**
+ * Parses common column-level changes shared between the COLUMN-prefixed and bare forms:
+ * DROP DEFAULT, SET DEFAULT, SET VISIBLE/INVISIBLE, and bracketed multi-column definitions.
+ */
+void AlterExpressionColumnChanges(AlterExpression alterExp):
+{
+    AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
+    AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
+    AlterExpression.ColumnSetDefault alterExpressionColumnSetDefault = null;
+    AlterExpression.ColumnSetVisibility alterExpressionColumnSetVisibility = null;
+}
+{
+    (
+        LOOKAHEAD(3) alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
+            { alterExp.addColDropDefault(alterExpressionColumnDropDefault); }
+        |
+        LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
+            { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
+        |
+        LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
+            { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
+        |
+        LOOKAHEAD(4) (
+            "("
+                { alterExp.useBrackets(true);}
+                alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                    alterExp.addColDataType(alterExpressionColumnDataType);
+                }
+                (
+                    ","
+                    alterExpressionColumnDataType = AlterExpressionColumnDataType() {
+                        alterExp.addColDataType(alterExpressionColumnDataType);
+                    }
+                )*
+            ")"
+        )
+    )
+}
+
+
 AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {
     String columnName = null;
@@ -10687,6 +10727,37 @@ List<String> PartitionNamesList() :
         return partitionNames;
     }
 }
+
+/**
+ * Parses DISCARD/IMPORT (PARTITION names TABLESPACE | TABLESPACE).
+ * Both keywords share the same structure, differing only in operation enum.
+ */
+void AlterExpressionDiscardOrImport(AlterExpression alterExp):
+{
+    Token tk;
+    List<String> partitions = null;
+    AlterOperation partOp;
+    AlterOperation tableOp;
+}
+{
+    (
+        <K_DISCARD> { partOp = AlterOperation.DISCARD_PARTITION; tableOp = AlterOperation.DISCARD_TABLESPACE; }
+        |
+        <K_IMPORT> { partOp = AlterOperation.IMPORT_PARTITION; tableOp = AlterOperation.IMPORT_TABLESPACE; }
+    )
+    (
+        <K_PARTITION>
+        { alterExp.setOperation(partOp); }
+        partitions = PartitionNamesList()
+        { alterExp.setPartitions(partitions); }
+        <K_TABLESPACE>
+        { alterExp.setTableOption("TABLESPACE"); }
+        |
+        <K_TABLESPACE>
+        { alterExp.setOperation(tableOp); }
+    )
+}
+
 
 /**
  * Parses ADD/ALTER CONSTRAINT clause within AlterExpression.
@@ -10969,16 +11040,10 @@ AlterExpression AlterExpression():
     List<Index.ColumnParams> indexColumnNames = null;
     List<ConstraintState> constraints = null;
     Index index = null;
-    Table fkTable = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
-    AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
-    AlterExpression.ColumnSetDefault alterExpressionColumnSetDefault = null;
-    AlterExpression.ColumnSetVisibility alterExpressionColumnSetVisibility = null;
-    ReferentialAction.Action action = null;
     List<String> indexSpec = new ArrayList<String>();
     List<PartitionDefinition> partitionDefinition = null;
-    List<String> partitions = null;
 
     // for captureRest()
     List<String> tokens = new LinkedList<String>();
@@ -11080,29 +11145,7 @@ AlterExpression AlterExpression():
                     )?
                     [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
                     (
-                        LOOKAHEAD(3) alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
-                            { alterExp.addColDropDefault(alterExpressionColumnDropDefault); }
-                        |
-                        LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
-                            { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
-                        |
-                        LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
-                            { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
-                        |
-                        LOOKAHEAD(4) (
-                            "("
-                                { alterExp.useBrackets(true);}
-                                alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-                                    alterExp.addColDataType(alterExpressionColumnDataType);
-                                }
-                                (
-                                    ","
-                                    alterExpressionColumnDataType = AlterExpressionColumnDataType() {
-                                        alterExp.addColDataType(alterExpressionColumnDataType);
-                                    }
-                                )*
-                            ")"
-                        )
+                        LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
                         |
                         LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
                             { alterExp.addColDataType(alterExpressionColumnDataType); }
@@ -11112,22 +11155,7 @@ AlterExpression AlterExpression():
                     )
                 )
                 |
-                LOOKAHEAD(3) alterExpressionColumnDropDefault = AlterExpressionColumnDropDefault()
-                    { alterExp.addColDropDefault(alterExpressionColumnDropDefault); }
-                |
-                LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
-                    { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
-                |
-                LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
-                    { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
-                |
-                (
-                    "(" alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
-                        (","
-                            alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); }
-                        )*
-                    ")"
-                )
+                LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
                 |
                 (
                     <K_UNIQUE>
@@ -11150,25 +11178,24 @@ AlterExpression AlterExpression():
                     [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
                 )
                 |
-                //following two choices regarding foreign keys should be merged
-                ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
-                     /*
-                        <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
-                        { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
-                     */
-                     <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
-                        {
-                            alterExp.setFkSourceSchema(fkTable.getSchemaName());
-                            alterExp.setFkSourceTable(fkTable.getName());
-                            alterExp.setFkSourceColumns(columnNames);
+                // Standalone FK now uses ForeignKeyIndex, same as CONSTRAINT FK
+                (
+                    { ForeignKeyIndex fkIndex; ReferentialAction ra; }
+                    fkIndex = ForeignKeySpec(null)
+                    {
+                        alterExp.setIndex(fkIndex);
+                        // backward compat: populate deprecated FK fields from ForeignKeyIndex
+                        alterExp.setFkColumns(fkIndex.getColumnsNames());
+                        if (fkIndex.getTable() != null) {
+                            alterExp.setFkSourceSchema(fkIndex.getTable().getSchemaName());
+                            alterExp.setFkSourceTable(fkIndex.getTable().getName());
                         }
-
-                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        { alterExp.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                    )]
-                    [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
-                        { alterExp.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-                    )]
+                        alterExp.setFkSourceColumns(fkIndex.getReferencedColumnNames());
+                        ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
+                        if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
+                        ra = fkIndex.getReferentialAction(ReferentialAction.Type.UPDATE);
+                        if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
+                    }
                 )
                 |
                 LOOKAHEAD(3) (
@@ -11315,51 +11342,7 @@ AlterExpression AlterExpression():
             }
       )
       |
-      (
-          <K_DISCARD>
-          (
-              <K_PARTITION>
-              {
-                  alterExp.setOperation(AlterOperation.DISCARD_PARTITION);
-              }
-              partitions = PartitionNamesList()
-              {
-                  alterExp.setPartitions(partitions);
-              }
-              <K_TABLESPACE>
-              {
-                  alterExp.setTableOption("TABLESPACE");
-              }
-              |
-              <K_TABLESPACE>
-              {
-                  alterExp.setOperation(AlterOperation.DISCARD_TABLESPACE);
-              }
-          )
-      )
-      |
-            (
-                <K_IMPORT>
-                (
-                    <K_PARTITION>
-                    {
-                        alterExp.setOperation(AlterOperation.IMPORT_PARTITION);
-                    }
-                    partitions = PartitionNamesList()
-                    {
-                        alterExp.setPartitions(partitions);
-                    }
-                    <K_TABLESPACE>
-                    {
-                        alterExp.setTableOption("TABLESPACE");
-                    }
-                    |
-                    <K_TABLESPACE>
-                    {
-                        alterExp.setOperation(AlterOperation.IMPORT_TABLESPACE);
-                    }
-                )
-            )
+      AlterExpressionDiscardOrImport(alterExp)
       |
 
       LOOKAHEAD(4) (
