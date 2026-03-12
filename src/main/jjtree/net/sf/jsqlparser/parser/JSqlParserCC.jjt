@@ -11027,16 +11027,13 @@ AlterExpression AlterExpressionPartitionOp():
 }
 
 /**
-* This production has been refactored into smaller sub-productions:
-* - AlterExpressionAddConstraint: CONSTRAINT clause
-* - AlterExpressionDrop: DROP operations
-* - AlterExpressionPartitionOp: partition maintenance operations
-* Shared helpers: ReferentialActionsOnIndex, CheckConstraintSpec, ForeignKeySpec,
-*                 AlterExpressionUsingIndex, AlterExpressionConstraintTail
-*/
-AlterExpression AlterExpression():
+ * Parses ADD/ALTER/MODIFY operations within ALTER TABLE.
+ * Handles: PRIMARY KEY, INDEX/KEY, SPATIAL/FULLTEXT, column COMMENT,
+ * ADD PARTITION, column definitions, UNIQUE, FOREIGN KEY, CHECK ENFORCED, CONSTRAINT.
+ */
+AlterExpression AlterExpressionAddAlterModify():
 {
-    AlterExpression alterExp = null;
+    AlterExpression alterExp = new AlterExpression();
     Token tk;
     Token tk2 = null;
     String sk3 = null;
@@ -11049,6 +11046,229 @@ AlterExpression AlterExpression():
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     List<String> indexSpec = new ArrayList<String>();
     List<PartitionDefinition> partitionDefinition = null;
+}
+{
+    (
+        <K_ADD> { alterExp.setOperation(AlterOperation.ADD); }
+        |
+        <K_ALTER> { alterExp.setOperation(AlterOperation.ALTER); }
+        |
+        <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); }
+    )
+
+    (
+        LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
+
+        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+        [
+            AlterExpressionUsingIndex(alterExp)
+        ]
+        |
+        LOOKAHEAD(2) (
+          (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
+          (
+              LOOKAHEAD(3)
+              sk3 = RelObjectName()
+              [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
+              [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
+              |
+              [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
+              [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
+          )
+          IndexOptionList(indexSpec = new ArrayList<String>())
+          {
+            index = new Index()
+                    .withIndexKeyword(tk.image)
+                    .withName(sk3)
+                    .withUsing(sk4)
+                    .withColumns(indexColumnNames)
+                    .withIndexSpec(indexSpec);
+
+            alterExp.setIndex(index);
+          }
+          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+        )
+        |
+        LOOKAHEAD(4)
+        (
+          ( tk=<K_SPATIAL> | tk=<K_FULLTEXT> )
+          [ LOOKAHEAD(2) ( tk2=<K_INDEX> | tk2=<K_KEY> ) ]
+          (
+              sk3 = RelObjectName()
+              columnNames = ColumnsNamesList()
+              |
+              columnNames = ColumnsNamesList()
+          )
+          IndexOptionList(indexSpec = new ArrayList<String>())
+          {
+              String type = tk.image;
+              String keyword = tk2 != null ? tk2.image : null;
+              index = new Index()
+                  .withType(type)
+                  .withIndexKeyword(keyword)
+                  .withColumnsNames(columnNames)
+                  .withIndexSpec(indexSpec);
+
+              if (sk3 != null) {
+                  index.setName(sk3);
+              }
+
+              alterExp.setIndex(index);
+          }
+        )
+        |
+        LOOKAHEAD(2) (
+          sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
+        )
+        |
+        LOOKAHEAD(3) (
+            <K_PARTITION> {
+                alterExp.setOperation(AlterOperation.ADD_PARTITION);
+            }
+            partitionDefinition=PartitionDefinitions() {
+                alterExp.setPartitionDefinitions(partitionDefinition);
+            }
+        )
+        |
+        LOOKAHEAD(3) (
+            ( LOOKAHEAD(2)
+                (
+                    <K_COLUMN> { alterExp.hasColumn(true); }
+                    |
+                    <K_COLUMNS> { alterExp.hasColumns(true); }
+                )
+            )?
+            [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
+            (
+                LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
+                |
+                LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
+                    { alterExp.addColDataType(alterExpressionColumnDataType); }
+                |
+                LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull()
+                    { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);}
+            )
+        )
+        |
+        LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
+        |
+        (
+            <K_UNIQUE>
+            (
+                (
+                    <K_KEY> { alterExp.setUk(true); }
+                    | <K_INDEX> { alterExp.setUk(false); }
+                )
+                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
+                |
+                (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                    alterExp.setUkTypeSpecified(false);
+                    alterExp.setUkName(tk.image);
+                }
+            )?
+            columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
+            [
+                AlterExpressionUsingIndex(alterExp)
+            ]
+            [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+        )
+        |
+        // Standalone FK now uses ForeignKeyIndex, same as CONSTRAINT FK
+        (
+            { ForeignKeyIndex fkIndex; ReferentialAction ra; }
+            fkIndex = ForeignKeySpec(null)
+            {
+                alterExp.setIndex(fkIndex);
+                // backward compat: populate deprecated FK fields from ForeignKeyIndex
+                alterExp.setFkColumns(fkIndex.getColumnsNames());
+                if (fkIndex.getTable() != null) {
+                    alterExp.setFkSourceSchema(fkIndex.getTable().getSchemaName());
+                    alterExp.setFkSourceTable(fkIndex.getTable().getName());
+                }
+                alterExp.setFkSourceColumns(fkIndex.getReferencedColumnNames());
+                ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
+                if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
+                ra = fkIndex.getReferentialAction(ReferentialAction.Type.UPDATE);
+                if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
+            }
+        )
+        |
+        LOOKAHEAD(3) (
+            <K_CHECK> sk3=RelObjectName()
+            { boolean enforced = true; }
+            [ tk = <K_NOT> { enforced = false; } ]
+            <K_ENFORCED> {
+                alterExp.setEnforced(enforced);
+                alterExp.setConstraintType("CHECK");
+                alterExp.setConstraintSymbol(sk3);
+            }
+        )
+        |
+        (
+            AlterExpressionAddConstraint(alterExp)
+        )
+    )
+    { return alterExp; }
+}
+
+/**
+ * Parses all RENAME variants within ALTER TABLE.
+ * Handles: RENAME [COLUMN] old TO new, RENAME TO tablename,
+ * RENAME INDEX/KEY/CONSTRAINT old TO new.
+ */
+AlterExpression AlterExpressionRenameOp():
+{
+    AlterExpression alterExp = new AlterExpressionRename();
+    Token tk;
+    Token tk2;
+    Index index;
+}
+{
+    <K_RENAME>
+    (
+        LOOKAHEAD(2) (
+            (
+                <K_INDEX> { alterExp.setOperation(AlterOperation.RENAME_INDEX); }
+                | <K_KEY> { alterExp.setOperation(AlterOperation.RENAME_KEY); }
+            )
+            |
+            <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
+        )
+        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+            alterExp.setOldIndex(new Index().withName(tk.image));
+        }
+        <K_TO>
+        (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) {
+            index = new Index().withName(tk2.image);
+            alterExp.setIndex(index);
+        }
+        |
+        LOOKAHEAD(2) (
+            <K_TO> { alterExp.setOperation(AlterOperation.RENAME_TABLE); }
+            (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image); }
+        )
+        |
+        (
+            { alterExp.setOperation(AlterOperation.RENAME); }
+            [ <K_COLUMN> { alterExp.hasColumn(true); } ]
+            (tk=KeywordOrIdentifier()) { alterExp.setColOldName(tk.image); }
+            <K_TO>
+            (tk2=KeywordOrIdentifier()) { alterExp.setColumnName(tk2.image); }
+        )
+    )
+    { return alterExp; }
+}
+
+/**
+* Dispatcher production for all ALTER TABLE expression types.
+* Delegates to focused sub-productions for each operation category.
+*/
+AlterExpression AlterExpression():
+{
+    AlterExpression alterExp = null;
+    Token tk;
+    Token tk2 = null;
+    String sk3 = null;
 
     // for captureRest()
     List<String> tokens = new LinkedList<String>();
@@ -11056,257 +11276,81 @@ AlterExpression AlterExpression():
 {
 
     (
-        (
-            { alterExp = new AlterExpression(); }
-            (
-                <K_ADD> { alterExp.setOperation(AlterOperation.ADD);
-                }
-                |
-                <K_ALTER> { alterExp.setOperation(AlterOperation.ALTER); }
-                |
-                <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); }
-            )
-
-            (
-                LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
-
-                constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                [
-                    AlterExpressionUsingIndex(alterExp)
-                ]
-                |
-                LOOKAHEAD(2) (
-                  (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
-                  (
-                      LOOKAHEAD(3)
-                      sk3 = RelObjectName()
-                      [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
-                      |
-                      [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-                      [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
-                  )
-                  IndexOptionList(indexSpec = new ArrayList<String>())
-                  {
-                    index = new Index()
-                            .withIndexKeyword(tk.image)
-                            .withName(sk3)
-                            .withUsing(sk4)
-                            .withColumns(indexColumnNames)
-                            .withIndexSpec(indexSpec);
-
-                    alterExp.setIndex(index);
-                  }
-                  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                )
-                |
-                LOOKAHEAD(4)
-                (
-                  ( tk=<K_SPATIAL> | tk=<K_FULLTEXT> )
-                  [ LOOKAHEAD(2) ( tk2=<K_INDEX> | tk2=<K_KEY> ) ]
-                  (
-                      sk3 = RelObjectName()
-                      columnNames = ColumnsNamesList()
-                      |
-                      columnNames = ColumnsNamesList()
-                  )
-                  IndexOptionList(indexSpec = new ArrayList<String>())
-                  {
-                      String type = tk.image;
-                      String keyword = tk2 != null ? tk2.image : null;
-                      index = new Index()
-                          .withType(type)
-                          .withIndexKeyword(keyword)
-                          .withColumnsNames(columnNames)
-                          .withIndexSpec(indexSpec);
-
-                      if (sk3 != null) {
-                          index.setName(sk3);
-                      }
-
-                      alterExp.setIndex(index);
-                  }
-                )
-                |
-                LOOKAHEAD(2) (
-                  sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
-                )
-                |
-                LOOKAHEAD(3) (
-                    <K_PARTITION> {
-                        alterExp.setOperation(AlterOperation.ADD_PARTITION);
-                    }
-                    partitionDefinition=PartitionDefinitions() {
-                        alterExp.setPartitionDefinitions(partitionDefinition);
-                    }
-                )
-                |
-                LOOKAHEAD(3) (
-                    ( LOOKAHEAD(2)
-                        (
-                            <K_COLUMN> { alterExp.hasColumn(true); }
-                            |
-                            <K_COLUMNS> { alterExp.hasColumns(true); }
-                        )
-                    )?
-                    [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
-                    (
-                        LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
-                        |
-                        LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
-                            { alterExp.addColDataType(alterExpressionColumnDataType); }
-                        |
-                        LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull()
-                            { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);}
-                    )
-                )
-                |
-                LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
-                |
-                (
-                    <K_UNIQUE>
-                    (
-                        (
-                            <K_KEY> { alterExp.setUk(true); }
-                            | <K_INDEX> { alterExp.setUk(false); }
-                        )
-                        [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
-                        |
-                        (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
-                            alterExp.setUkTypeSpecified(false);
-                            alterExp.setUkName(tk.image);
-                        }
-                    )?
-                    columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
-                    [
-                        AlterExpressionUsingIndex(alterExp)
-                    ]
-                    [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
-                )
-                |
-                // Standalone FK now uses ForeignKeyIndex, same as CONSTRAINT FK
-                (
-                    { ForeignKeyIndex fkIndex; ReferentialAction ra; }
-                    fkIndex = ForeignKeySpec(null)
-                    {
-                        alterExp.setIndex(fkIndex);
-                        // backward compat: populate deprecated FK fields from ForeignKeyIndex
-                        alterExp.setFkColumns(fkIndex.getColumnsNames());
-                        if (fkIndex.getTable() != null) {
-                            alterExp.setFkSourceSchema(fkIndex.getTable().getSchemaName());
-                            alterExp.setFkSourceTable(fkIndex.getTable().getName());
-                        }
-                        alterExp.setFkSourceColumns(fkIndex.getReferencedColumnNames());
-                        ra = fkIndex.getReferentialAction(ReferentialAction.Type.DELETE);
-                        if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
-                        ra = fkIndex.getReferentialAction(ReferentialAction.Type.UPDATE);
-                        if (ra != null) { alterExp.setReferentialAction(ra.getType(), ra.getAction()); }
-                    }
-                )
-                |
-                LOOKAHEAD(3) (
-                    <K_CHECK> sk3=RelObjectName()
-                    { boolean enforced = true; }
-                    [ tk = <K_NOT> { enforced = false; } ]
-                    <K_ENFORCED> {
-                        alterExp.setEnforced(enforced);
-                        alterExp.setConstraintType("CHECK");
-                        alterExp.setConstraintSymbol(sk3);
-                    }
-                )
-                |
-                (
-                    AlterExpressionAddConstraint(alterExp)
-                )
-            )
-      )
+        alterExp = AlterExpressionAddAlterModify()
       |
       (
         { alterExp = new AlterExpression(); }
         <K_CHANGE> { alterExp.setOperation(AlterOperation.CHANGE); }
         [ <K_COLUMN> { alterExp.hasColumn(true); alterExp.setOptionalSpecifier("COLUMN"); } ]
         (
+          { AlterExpression.ColumnDataType alterExpressionColumnDataType; }
           (tk=KeywordOrIdentifier())
           alterExpressionColumnDataType = AlterExpressionColumnDataType() {  alterExp.withColumnOldName(tk.image).addColDataType(alterExpressionColumnDataType); }
         )
       )
       |
         alterExp = AlterExpressionDrop()
-        |
+      |
         LOOKAHEAD(5) (
             { alterExp = new AlterExpression(); }
             <K_FORCE> <K_ROW> <K_LEVEL> <K_SECURITY> {
                 alterExp.setOperation(AlterOperation.FORCE_ROW_LEVEL_SECURITY);
             }
         )
-        |
+      |
         LOOKAHEAD(5) (
             { alterExp = new AlterExpression(); }
             <K_NO> <K_FORCE> <K_ROW> <K_LEVEL> <K_SECURITY> {
                 alterExp.setOperation(AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY);
             }
         )
-        |
+      |
         LOOKAHEAD(1) (
-        { alterExp = new AlterExpression(); }
-        <K_FORCE>{ alterExp.setOperation(AlterOperation.FORCE); }
+            { alterExp = new AlterExpression(); }
+            <K_FORCE>{ alterExp.setOperation(AlterOperation.FORCE); }
         )
-        |
+      |
         (
          { alterExp = new AlterExpressionTableOption(); }
-         <K_ALGORITHM> {
-            alterExp.setOperation(AlterOperation.ALGORITHM);
-         }
+         <K_ALGORITHM> { alterExp.setOperation(AlterOperation.ALGORITHM); }
          ["=" { alterExp.setUseEqual(true);} ]
-         sk3 = RelObjectName() {alterExp.setAlgorithmOption(sk3); }
+         sk3 = RelObjectName() { alterExp.setAlgorithmOption(sk3); }
         )
-        |
+      |
         (
-        { alterExp = new AlterExpressionTableOption(); }
-        <K_KEY_BLOCK_SIZE>{
-            alterExp.setOperation(AlterOperation.KEY_BLOCK_SIZE);
-        }
+         { alterExp = new AlterExpressionTableOption(); }
+         <K_KEY_BLOCK_SIZE> { alterExp.setOperation(AlterOperation.KEY_BLOCK_SIZE); }
          ["=" { alterExp.setUseEqual(true);} ]
          tk=<S_LONG> { alterExp.setKeyBlockSize(Integer.parseInt(tk.image)); }
         )
-        |
+      |
         (
-        { alterExp = new AlterExpressionTableOption(); }
-        <K_LOCK> {
-            alterExp.setOperation(AlterOperation.LOCK);
-        }
-        ["=" { alterExp.setUseEqual(true);} ]
-        sk3 = RelObjectName() {alterExp.setLockOption(sk3); }
-        )
-        |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_ENGINE> {alterExp.setOperation(AlterOperation.ENGINE);}
-        ["=" { alterExp.setUseEqual(true);} ]
-        sk3 = RelObjectName() {alterExp.setEngineOption(sk3); }
+         { alterExp = new AlterExpressionTableOption(); }
+         <K_LOCK> { alterExp.setOperation(AlterOperation.LOCK); }
+         ["=" { alterExp.setUseEqual(true);} ]
+         sk3 = RelObjectName() { alterExp.setLockOption(sk3); }
         )
       |
-      LOOKAHEAD(2) { alterExp = new AlterExpressionRename(); }
-                    <K_RENAME> { alterExp.setOperation(AlterOperation.RENAME); } [ <K_COLUMN> {  alterExp.hasColumn(true);} ]
-                    ( tk=KeywordOrIdentifier() ) { alterExp.setColOldName(tk.image); }
-                    <K_TO>
-                    ( tk2=KeywordOrIdentifier() ) { alterExp.setColumnName(tk2.image); }
+        (
+         { alterExp = new AlterExpressionTableOption(); }
+         <K_ENGINE> { alterExp.setOperation(AlterOperation.ENGINE); }
+         ["=" { alterExp.setUseEqual(true);} ]
+         sk3 = RelObjectName() { alterExp.setEngineOption(sk3); }
+        )
       |
-      LOOKAHEAD(2)(
-        { alterExp = new AlterExpressionRename(); }
-        <K_RENAME> <K_TO> {alterExp.setOperation(AlterOperation.RENAME_TABLE);}
-        (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image);}
-      )
-      | ({ alterExp = new AlterExpressionCharset(); }
+        LOOKAHEAD(2) alterExp = AlterExpressionRenameOp()
+      |
+        ({ alterExp = new AlterExpressionCharset(); }
         <K_CONVERT> {
           alterExp.setOperation(AlterOperation.CONVERT);
           alterExp.setConvertType(AlterExpression.ConvertType.CONVERT_TO);
         }
         <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
         [<K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
-      )
+        )
       |
-      LOOKAHEAD(3)
-      (
+        LOOKAHEAD(3)
+        (
           { alterExp = new AlterExpressionCharset(); }
           <K_DEFAULT>
           (
@@ -11327,8 +11371,9 @@ AlterExpression AlterExpression():
                   alterExp.setDefaultCollateSpecified(true);
               }
           )
-      )
-      | ({ alterExp = new AlterExpressionCharset(); }
+        )
+      |
+        ({ alterExp = new AlterExpressionCharset(); }
         <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
         tk=<S_IDENTIFIER> {
           alterExp.setOperation(AlterOperation.CONVERT);
@@ -11337,23 +11382,22 @@ AlterExpression AlterExpression():
         }
         [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
             tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
-      )
-      | ({ alterExp = new AlterExpressionCharset(); }
+        )
+      |
+        ({ alterExp = new AlterExpressionCharset(); }
         <K_COLLATE> { alterExp.setOperation(AlterOperation.COLLATE); }
-      [ "=" { alterExp.setHasEqualForCollate(true); } ]
-        tk=<S_IDENTIFIER> {
-          alterExp.setCollation(tk.image);
-        }
-      )
+        [ "=" { alterExp.setHasEqualForCollate(true); } ]
+        tk=<S_IDENTIFIER> { alterExp.setCollation(tk.image); }
+        )
       |
-      ({ alterExp = new AlterExpressionTableOption(); }
-      <K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
-          ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
-          tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
-      )
+        ({ alterExp = new AlterExpressionTableOption(); }
+        <K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
+            ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
+            tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
+        )
       |
-      ({ alterExp = new AlterExpressionTableOption(); }
-      <K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
+        ({ alterExp = new AlterExpressionTableOption(); }
+        <K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
             ["=" { alterExp.setUseEqual(true);} ]
             tk=<S_CHAR_LITERAL> {
                 if (alterExp.getUseEqual()) {
@@ -11362,72 +11406,54 @@ AlterExpression AlterExpression():
                     alterExp.setTableOption("ENCRYPTION " + tk.image);
                 }
             }
-      )
+        )
       |
-      alterExp = AlterExpressionDiscardOrImport()
+        alterExp = AlterExpressionDiscardOrImport()
       |
-
-      LOOKAHEAD(4) (
-          { alterExp = new AlterExpression(); }
-          <K_DISABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
-              alterExp.setOperation(AlterOperation.DISABLE_ROW_LEVEL_SECURITY);
-          }
-      )
-      |
-      LOOKAHEAD(2) (
-          { alterExp = new AlterExpressionTableOption(); }
-          <K_DISABLE> <K_KEYS> {
-              alterExp.setOperation(AlterOperation.DISABLE_KEYS);
-          }
-      )
-
-      |
-      LOOKAHEAD(4) (
-          { alterExp = new AlterExpression(); }
-          <K_ENABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
-              alterExp.setOperation(AlterOperation.ENABLE_ROW_LEVEL_SECURITY);
-          }
-      )
-      |
-      LOOKAHEAD(2) (
-          { alterExp = new AlterExpressionTableOption(); }
-          <K_ENABLE> <K_KEYS> {
-              alterExp.setOperation(AlterOperation.ENABLE_KEYS);
-          }
-      )
-      |
-      ({ alterExp = new AlterExpressionTableOption(); }
-      <K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-              ["=" { alterExp.setUseEqual(true);} ]
-              tk=<S_LONG> {
-                  if (alterExp.getUseEqual()) {
-                      alterExp.setTableOption("AUTO_INCREMENT = " + tk.image);
-                  } else {
-                      alterExp.setTableOption("AUTO_INCREMENT " + tk.image);
-                  }
+        LOOKAHEAD(4) (
+            { alterExp = new AlterExpression(); }
+            <K_DISABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
+                alterExp.setOperation(AlterOperation.DISABLE_ROW_LEVEL_SECURITY);
             }
-      )
+        )
       |
-      LOOKAHEAD(2)
-           ({ alterExp = new AlterExpressionRename(); }
-           <K_RENAME> ((<K_INDEX> {alterExp.setOperation(AlterOperation.RENAME_INDEX);}
-                    | <K_KEY> {alterExp.setOperation(AlterOperation.RENAME_KEY);})
-                    | <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
-           )
-           (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>){
-              alterExp.setOldIndex(new Index().withName(tk.image));
-           }
-           <K_TO>
-           (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>){
-              index = new Index().withName(tk2.image);
-              alterExp.setIndex(index);
-           }
-          )
+        LOOKAHEAD(2) (
+            { alterExp = new AlterExpressionTableOption(); }
+            <K_DISABLE> <K_KEYS> {
+                alterExp.setOperation(AlterOperation.DISABLE_KEYS);
+            }
+        )
       |
-      alterExp = AlterExpressionPartitionOp()
+        LOOKAHEAD(4) (
+            { alterExp = new AlterExpression(); }
+            <K_ENABLE> <K_ROW> <K_LEVEL> <K_SECURITY> {
+                alterExp.setOperation(AlterOperation.ENABLE_ROW_LEVEL_SECURITY);
+            }
+        )
       |
-      { alterExp = new AlterExpression(); }
-      tokens = captureRest() {
+        LOOKAHEAD(2) (
+            { alterExp = new AlterExpressionTableOption(); }
+            <K_ENABLE> <K_KEYS> {
+                alterExp.setOperation(AlterOperation.ENABLE_KEYS);
+            }
+        )
+      |
+        ({ alterExp = new AlterExpressionTableOption(); }
+        <K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
+            ["=" { alterExp.setUseEqual(true);} ]
+            tk=<S_LONG> {
+                if (alterExp.getUseEqual()) {
+                    alterExp.setTableOption("AUTO_INCREMENT = " + tk.image);
+                } else {
+                    alterExp.setTableOption("AUTO_INCREMENT " + tk.image);
+                }
+            }
+        )
+      |
+        alterExp = AlterExpressionPartitionOp()
+      |
+        { alterExp = new AlterExpression(); }
+        tokens = captureRest() {
                     alterExp.setOperation(AlterOperation.UNSPECIFIC);
                     StringBuilder optionalSpecifier = new StringBuilder();
                     int i=0;
@@ -11448,7 +11474,6 @@ AlterExpression AlterExpression():
         return alterExp;
     }
 }
-
 Statement Alter():
 {
     Statement statement;
