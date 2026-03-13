@@ -1796,6 +1796,12 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(KeyExpression keyExpression, S context) {
+        keyExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(IfElseStatement ifElseStatement, S context) {
         ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {

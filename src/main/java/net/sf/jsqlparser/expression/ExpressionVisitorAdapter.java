@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -72,11 +76,6 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter<T>
@@ -767,6 +766,11 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(ConnectByPriorOperator connectByPriorOperator, S context) {
         return connectByPriorOperator.getColumn().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(KeyExpression keyExpression, S context) {
+        return keyExpression.getExpression().accept(this, context);
     }
 
     @Override

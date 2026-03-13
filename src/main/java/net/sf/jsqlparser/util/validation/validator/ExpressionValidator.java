@@ -19,8 +19,8 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
-import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateUnitExpression;
 import net.sf.jsqlparser.expression.DateValue;
@@ -40,6 +40,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
@@ -1062,6 +1063,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(KeyExpression keyExpression, S context) {
+        keyExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         oracleNamedFunctionParameter.getExpression().accept(this, context);
         return null;
@@ -1247,6 +1254,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(ConnectByRootOperator connectByRootOperator) {
         visit(connectByRootOperator, null);
+    }
+
+    public void visit(KeyExpression keyExpression) {
+        visit(keyExpression, null);
     }
 
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {

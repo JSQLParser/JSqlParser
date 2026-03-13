@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -67,8 +68,6 @@ import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.UpdateSet;
-
-import java.util.List;
 
 public interface ExpressionVisitor<T> {
 
@@ -789,6 +788,12 @@ public interface ExpressionVisitor<T> {
     <S> T visit(FromQuery fromQuery, S context);
 
     <S> T visit(DateUnitExpression dateUnitExpression, S context);
+
+    <S> T visit(KeyExpression keyExpression, S context);
+
+    default void visit(KeyExpression keyExpression) {
+        this.visit(keyExpression, null);
+    }
 
     <S> T visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter, S context);
 
