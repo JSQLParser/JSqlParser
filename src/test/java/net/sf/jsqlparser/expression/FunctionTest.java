@@ -9,7 +9,11 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -124,6 +128,33 @@ class FunctionTest {
     void TestIntervalParameterIssue2272() throws JSQLParserException {
         String sqlStr =
                 "SELECT DATE_SUB('2025-06-19', INTERVAL QUARTER(STR_TO_DATE('20250619', '%Y%m%d')) - 1 QUARTER) from dual";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAesDecryptWithKeyExpressionParameter() throws JSQLParserException {
+        String expression = "aes_decrypt(from_base64(entity), KEY chain.entity)";
+        TestUtils.assertExpressionCanBeParsedAndDeparsed(expression, true);
+
+        Function function = (Function) CCJSqlParserUtil.parseExpression(expression);
+        KeyExpression keyExpression =
+                assertInstanceOf(KeyExpression.class, function.getParameters().get(1));
+        assertEquals("chain.entity", keyExpression.getExpression().toString());
+
+        function.accept(new ExpressionVisitorAdapter<>(), null);
+    }
+
+    @Test
+    void testAesDecryptWithKeyExpressionInSelect() throws JSQLParserException {
+        String sqlStr = "SELECT t1.entity, SUM(t2.balance) AS total_balance\n"
+                + "FROM (\n"
+                + "    SELECT DISTINCT address, aes_decrypt(from_base64(entity), KEY chain.entity) AS entity\n"
+                + "    FROM bch_entity\n"
+                + ") t1\n"
+                + "JOIN bch_address_token_statis t2\n"
+                + "ON t1.address = t2.address\n"
+                + "GROUP BY t1.entity";
+
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
