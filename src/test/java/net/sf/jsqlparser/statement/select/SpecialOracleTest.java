@@ -61,6 +61,7 @@ public class SpecialOracleTest {
 
     private final List<String> EXPECTED_SUCCESSES = Arrays.asList("aggregate01.sql",
             "analytic_query04.sql", "analytic_query05.sql", "analytic_query06.sql",
+            "analytic_query07.sql",
             "analytic_query08.sql", "analytic_query09.sql", "analytic_query10.sql", "bindvar01.sql",
             "bindvar02.sql", "bindvar05.sql", "case_when01.sql", "case_when02.sql",
             "case_when03.sql", "case_when04.sql", "case_when05.sql", "cast_multiset01.sql",
@@ -75,7 +76,8 @@ public class SpecialOracleTest {
             "cast_multiset30.sql", "cast_multiset31.sql", "cast_multiset32.sql",
             "cast_multiset33.sql", "cast_multiset35.sql", "cast_multiset36.sql",
             "cast_multiset40.sql", "cast_multiset41.sql", "cast_multiset42.sql",
-            "cast_multiset43.sql", "columns01.sql", "condition01.sql", "condition02.sql",
+            "cast_multiset43.sql", "cluster_set01.sql", "columns01.sql", "condition01.sql",
+            "condition02.sql",
             "condition03.sql", "condition04.sql", "condition05.sql", "condition06.sql",
             "condition07.sql",
             "condition08.sql", "condition09.sql", "condition10.sql", "condition11.sql",

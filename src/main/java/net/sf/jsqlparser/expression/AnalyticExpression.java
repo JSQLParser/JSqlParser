@@ -52,6 +52,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
     private Limit limit = null;
 
+    private List<Function.KeywordArgument> keywordArguments = null;
+
     public AnalyticExpression() {}
 
     public AnalyticExpression(Function function) {
@@ -82,6 +84,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         this.onOverflowTruncate = function.getOnOverflowTruncate();
         this.limit = function.getLimit();
         this.keep = function.getKeep();
+        this.keywordArguments = function.getKeywordArguments();
     }
 
 
@@ -263,6 +266,14 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
         return this;
     }
 
+    public List<Function.KeywordArgument> getKeywordArguments() {
+        return keywordArguments;
+    }
+
+    public void setKeywordArguments(List<Function.KeywordArgument> keywordArguments) {
+        this.keywordArguments = keywordArguments;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.MissingBreakInSwitch"})
@@ -311,6 +322,13 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
         if (limit != null) {
             b.append(limit);
+        }
+
+        // Generic keyword arguments (e.g. SEPARATOR ',')
+        if (keywordArguments != null) {
+            for (Function.KeywordArgument ka : keywordArguments) {
+                ka.appendTo(b);
+            }
         }
 
         b.append(") ");

@@ -917,6 +917,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getLimit() != null) {
                 new LimitDeparser(this, builder).deParse(function.getLimit());
             }
+
+            // Generic keyword arguments (e.g. SEPARATOR ',', USING utf8)
+            if (function.getKeywordArguments() != null) {
+                for (Function.KeywordArgument ka : function.getKeywordArguments()) {
+                    builder.append(" ").append(ka.getKeyword()).append(" ");
+                    ka.getExpression().accept(this, context);
+                }
+            }
+
             builder.append(")");
         }
 

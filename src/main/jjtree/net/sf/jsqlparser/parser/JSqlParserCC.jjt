@@ -301,6 +301,83 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Checks whether the next token looks like the start of a generic keyword argument
+     * (KEYWORD expr) inside a function call, e.g. SEPARATOR ',' or USING utf8.
+     *
+     * This must be VERY restrictive to avoid stealing tokens that belong to the outer
+     * expression context. It uses a three-layer filter:
+     *
+     * 1. The token must start with a letter (rejects ALL operators: = > < >= != + - * / etc.)
+     * 2. The token must NOT be a structural SQL keyword (FROM, WHERE, AND, OR, END, etc.)
+     * 3. The following token must look like the start of an expression (not ) or EOF)
+     *
+     * Note: this is called AFTER all explicit optional clauses (ORDER BY, ON OVERFLOW,
+     * HAVING, IGNORE/RESPECT NULLS, LIMIT) have been attempted.
+     */
+    private boolean isKeywordArgumentAhead() {
+        Token t = getToken(1);
+
+        // End of function argument list
+        if (t.kind == EOF || t.image.equals(")")) {
+            return false;
+        }
+
+        // Layer 1: Must be a word token (starts with a letter).
+        // This single check rejects ALL operator/punctuation tokens:
+        //   = > < >= <= <> != + - * / % || && ^ ~ :: .. . ; , ( [ ] { }
+        if (t.image.isEmpty() || !Character.isLetter(t.image.charAt(0))) {
+            return false;
+        }
+
+        // Layer 2a: Reject literal token types
+        switch (t.kind) {
+            case S_LONG: case S_DOUBLE: case S_HEX: case S_CHAR_LITERAL:
+                return false;
+        }
+
+        // Layer 2b: Reject keywords that belong to explicit InternalFunction clauses
+        switch (t.kind) {
+            case K_ORDER:     // ORDER BY
+            case K_ON:        // ON OVERFLOW
+            case K_HAVING:
+            case K_IGNORE:    // IGNORE NULLS
+            case K_RESPECT:   // RESPECT NULLS
+                return false;
+        }
+
+        // Layer 2c: Reject structural SQL keywords that must NEVER be keyword-arg names.
+        // These are clause starters, logical/comparison operators, expression delimiters.
+        switch (t.kind) {
+            // Clause starters
+            case K_SELECT: case K_FROM: case K_WHERE: case K_GROUP: case K_LIMIT:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT:
+            case K_JOIN: case K_INNER: case K_LEFT: case K_RIGHT: case K_FULL: case K_CROSS:
+            case K_INTO: case K_SET:
+            case K_FETCH: case K_OFFSET:
+            case K_OVER: case K_WITHIN: case K_FILTER:
+            case K_WITH: case K_WITHOUT:
+            // Logical / comparison keywords
+            case K_AND: case K_OR: case K_NOT:
+            case K_IN: case K_BETWEEN: case K_LIKE:
+            case K_IS: case K_EXISTS:
+            case K_AS:
+            // CASE expression keywords
+            case K_CASE: case K_WHEN: case K_THEN: case K_ELSE: case K_END:
+            // Literal keywords
+            case K_NULL: case K_TRUE: case K_FALSE:
+                return false;
+        }
+
+        // Layer 3: The token AFTER the keyword must look like it starts an expression
+        Token t2 = getToken(2);
+        if (t2.kind == EOF || t2.image.equals(")")) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Scans ahead through a dotted identifier chain and checks if '*' follows.
      * Identifies table.* patterns for AllTableColumns.
      */
@@ -7114,8 +7191,6 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(4 , {!interrupted}) retval=ExtractExpression()
 
-        | LOOKAHEAD(3) retval=MySQLGroupConcat()
-
         | retval=XMLSerializeExpr()
 
         | LOOKAHEAD(3, { !interrupted}) retval = JsonFunction()
@@ -8820,6 +8895,23 @@ Function SpecialStringFunctionWithNamedParameters() :
     }
 }
 
+/**
+ * Matches a keyword name for generic keyword arguments inside function calls.
+ * Uses RelObjectName() for the ~400 soft-keyword tokens, plus explicit alternatives
+ * for reserved K_ tokens that are valid keyword-arg names but not in RelObjectName.
+ *
+ * Guarded by isKeywordArgumentAhead() — only called when the semantic check passes.
+ */
+String KeywordArgumentName():
+{ String name; Token tk; }
+{
+    (
+        name = RelObjectName()
+        | tk = <K_USING> { name = tk.image; }
+    )
+    { return name; }
+}
+
 Function InternalFunction(boolean escaped):
 {
     Token prefixToken = null;
@@ -8836,6 +8928,9 @@ Function InternalFunction(boolean escaped):
     Token overflowToken = null;
     Limit limit;
     Token extraKeywordToken;
+    String keywordArgName;
+    Expression keywordArgExpr;
+    List<Function.KeywordArgument> keywordArgs = null;
 }
 {
     [ LOOKAHEAD(2) prefixToken = <K_APPROXIMATE> ]
@@ -8856,11 +8951,11 @@ Function InternalFunction(boolean escaped):
             [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
 
             // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
-            [
+            [ LOOKAHEAD(2)
                 <K_ON> <K_OVERFLOW> ( overflowToken=<K_TRUNCATE> | overflowToken=<K_ERROR> ) { onOverflowTruncate=overflowToken.image; }
                 [
                     overflowToken = <S_CHAR_LITERAL> { onOverflowTruncate+= " " + overflowToken.image; }
-                    [ ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
+                    [ LOOKAHEAD(2) ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
                 ]
             ] { retval.setOnOverflowTruncate(onOverflowTruncate); }
 
@@ -8877,7 +8972,7 @@ Function InternalFunction(boolean escaped):
         )
     ]
 
-    [
+    [ LOOKAHEAD(2)
         (
             <K_IGNORE> <K_NULLS> { retval.setNullHandling(Function.NullHandling.IGNORE_NULLS); }
         )
@@ -8890,6 +8985,21 @@ Function InternalFunction(boolean escaped):
     [
         limit = PlainLimit() { retval.setLimit(limit); }
     ]
+
+    // Generic keyword-argument tail: catches KEYWORD expr pairs that are not
+    // consumed by any of the explicit clauses above.
+    // Examples: SEPARATOR ',', USING utf8, DELIMITER CHR(10), FORMAT 'json'
+    (
+        LOOKAHEAD(2, { isKeywordArgumentAhead() })
+        keywordArgName = KeywordArgumentName()
+        keywordArgExpr = SimpleExpression()
+        {
+            if (keywordArgs == null) {
+                keywordArgs = new ArrayList<Function.KeywordArgument>();
+            }
+            keywordArgs.add(new Function.KeywordArgument(keywordArgName, keywordArgExpr));
+        }
+    )*
 
     ")"
 
@@ -8935,6 +9045,7 @@ Function InternalFunction(boolean escaped):
         retval.setChainedParameters(chainedExpressionList);
         retval.setName(funcName.getNames());
         retval.setKeep(keep);
+        retval.setKeywordArguments(keywordArgs);
         return retval;
     }
 }
@@ -8963,24 +9074,9 @@ XMLSerializeExpr XMLSerializeExpr(): {
 }
 
 
-MySQLGroupConcat MySQLGroupConcat():{
-    MySQLGroupConcat retval = new MySQLGroupConcat();
-    ExpressionList expressionList = null;
-    List<OrderByElement> orderByList = null;
-    Token t;
-}
-{
-    <K_GROUP_CONCAT> "("
-       [<K_DISTINCT>  { retval.setDistinct(true); } ]
-       expressionList = ExpressionList()
-       [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
-       [ <K_SEPARATOR> t=<S_CHAR_LITERAL> { retval.setSeparator(t.image); } ]
-    ")"
-    {
-        retval.setExpressionList(expressionList);
-        return retval;
-    }
-}
+// MySQLGroupConcat production removed — GROUP_CONCAT is now handled by InternalFunction
+// with SEPARATOR captured as a generic keyword argument via the (KEYWORD expr)* tail.
+// This also fixes the bug where SEPARATOR only accepted string literals, not expressions.
 
 JsonTableFunction.JsonTablePassingClause JsonTablePassingClause() : {
     Expression valueExpression;
