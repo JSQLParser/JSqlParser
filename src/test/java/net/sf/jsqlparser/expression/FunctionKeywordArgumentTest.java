@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -247,6 +248,34 @@ class FunctionKeywordArgumentTest {
                         "ALL + ORDER BY + SEPARATOR",
                         "SELECT my_agg(ALL col ORDER BY col SEPARATOR ',') FROM t"),
 
+                // -- Multi-value keyword arguments (USING col1, col2, ...) ---
+                // Oracle Data Mining functions use USING followed by a
+                // comma-separated column list.
+
+                Arguments.of(
+                        "Oracle PREDICTION with COST MODEL and USING column list",
+                        "SELECT PREDICTION(dt_sh_clas_sample COST MODEL USING cust_marital_status, education, household_size) FROM t"),
+
+                Arguments.of(
+                        "Oracle PREDICTION in WHERE clause",
+                        "SELECT cust_gender, COUNT(*) AS cnt FROM mining_data_apply_v WHERE PREDICTION(dt_sh_clas_sample COST MODEL USING cust_marital_status, education, household_size) = 1 GROUP BY cust_gender ORDER BY cust_gender"),
+
+                Arguments.of(
+                        "Oracle PREDICTION_PROBABILITY with USING",
+                        "SELECT PREDICTION_PROBABILITY(my_model USING col1, col2, col3) FROM t"),
+
+                Arguments.of(
+                        "Oracle CLUSTER_ID with USING",
+                        "SELECT CLUSTER_ID(my_model USING col1, col2) FROM t"),
+
+                Arguments.of(
+                        "USING with single column",
+                        "SELECT my_func(model USING col1) FROM t"),
+
+                Arguments.of(
+                        "USING with many columns",
+                        "SELECT my_func(model USING a, b, c, d, e) FROM t"),
+
                 // -- Keyword arg in different SQL contexts -------------------
 
                 Arguments.of(
@@ -289,6 +318,31 @@ class FunctionKeywordArgumentTest {
                         + "  original:  " + sql + "\n"
                         + "  deparsed:  " + deparsed + "\n"
                         + "  reparsed:  " + stmt2);
+    }
+
+    // ====================================================================
+    // GitHub Issue #688 / #1257 - CONVERT(expr USING charset)
+    // These were ParseExceptions before the generic keyword-arg tail.
+    // ====================================================================
+
+    @Test
+    void testIssue688_ConvertUsingGbk() throws JSQLParserException {
+        // Exact SQL from issue #688 — was a ParseException before
+        String sql = "SELECT * FROM a ORDER BY CONVERT(a.name USING gbk) DESC";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertNotNull(stmt);
+        // Roundtrip
+        String deparsed = stmt.toString();
+        assertEquals(deparsed, CCJSqlParserUtil.parse(deparsed).toString());
+    }
+
+    @Test
+    void testIssue1257_ConvertUsingGBK() throws JSQLParserException {
+        // Exact SQL from issue #1257
+        String sql =
+                "SELECT id, name FROM tbl_template WHERE name LIKE ? ORDER BY CONVERT(name USING GBK) ASC";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertNotNull(stmt);
     }
 
     // ====================================================================
@@ -386,6 +440,31 @@ class FunctionKeywordArgumentTest {
 
         assertEquals("ENCODING", kwArgs.get(1).getKeyword().toUpperCase());
         assertEquals("'utf8'", kwArgs.get(1).getExpression().toString());
+    }
+
+    @Test
+    void testMultiValueKeywordArgument_OraclePrediction() throws JSQLParserException {
+        String sql = "SELECT PREDICTION(my_model COST MODEL USING col1, col2, col3) FROM t";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        Function func = extractFirstFunction(stmt);
+
+        assertNotNull(func);
+        assertEquals("PREDICTION", func.getName());
+
+        List<Function.KeywordArgument> kwArgs = func.getKeywordArguments();
+        assertNotNull(kwArgs);
+        assertEquals(2, kwArgs.size());
+
+        // COST MODEL — single value, unwrapped to Column
+        assertEquals("COST", kwArgs.get(0).getKeyword().toUpperCase());
+        assertEquals("MODEL", kwArgs.get(0).getExpression().toString());
+
+        // USING col1, col2, col3 — multi-value, kept as ExpressionList
+        assertEquals("USING", kwArgs.get(1).getKeyword().toUpperCase());
+        Expression usingExpr = kwArgs.get(1).getExpression();
+        assertInstanceOf(ExpressionList.class,
+                usingExpr, "Multi-value keyword arg should be an ExpressionList");
+        assertEquals("col1, col2, col3", usingExpr.toString());
     }
 
     @Test

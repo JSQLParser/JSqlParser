@@ -90,7 +90,7 @@ public class SpecialOracleTest {
             "for_update01.sql", "for_update02.sql", "for_update03.sql", "function04.sql",
             "function05.sql", "for_update04.sql", "for_update05.sql", "for_update06.sql",
             "function01.sql", "function02.sql", "function03.sql",
-            "function06.sql",
+            "function06.sql", "function07.sql",
             "groupby01.sql",
             "groupby02.sql", "groupby03.sql", "groupby04.sql", "groupby05.sql", "groupby06.sql",
             "groupby08.sql", "groupby09.sql", "groupby10.sql", "groupby11.sql", "groupby12.sql",
@@ -119,7 +119,7 @@ public class SpecialOracleTest {
             "simple07.sql", "simple08.sql", "simple09.sql", "simple10.sql", "simple11.sql",
             "simple12.sql", "simple13.sql", "union01.sql", "union02.sql", "union03.sql",
             "union04.sql", "union05.sql", "union06.sql", "union07.sql", "union08.sql",
-            "union09.sql", "union10.sql", "xmltable02.sql");
+            "union09.sql", "union10.sql", "xmltable01.sql", "xmltable02.sql");
 
     @Test
     public void testAllSqlsParseDeparse() throws IOException {

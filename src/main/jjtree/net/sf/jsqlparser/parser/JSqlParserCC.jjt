@@ -8929,7 +8929,7 @@ Function InternalFunction(boolean escaped):
     Limit limit;
     Token extraKeywordToken;
     String keywordArgName;
-    Expression keywordArgExpr;
+    ExpressionList keywordArgExprList;
     List<Function.KeywordArgument> keywordArgs = null;
 }
 {
@@ -8988,16 +8988,21 @@ Function InternalFunction(boolean escaped):
 
     // Generic keyword-argument tail: catches KEYWORD expr pairs that are not
     // consumed by any of the explicit clauses above.
-    // Examples: SEPARATOR ',', USING utf8, DELIMITER CHR(10), FORMAT 'json'
+    // Examples: SEPARATOR ',', USING utf8, DELIMITER CHR(10),
+    //           USING col1, col2, col3 (Oracle Data Mining)
     (
         LOOKAHEAD(2, { isKeywordArgumentAhead() })
         keywordArgName = KeywordArgumentName()
-        keywordArgExpr = SimpleExpression()
+        keywordArgExprList = SimpleExpressionList()
         {
             if (keywordArgs == null) {
                 keywordArgs = new ArrayList<Function.KeywordArgument>();
             }
-            keywordArgs.add(new Function.KeywordArgument(keywordArgName, keywordArgExpr));
+            // Unwrap single-element lists so the API returns the expression directly
+            Expression keywordArgValue = keywordArgExprList.size() == 1
+                    ? (Expression) keywordArgExprList.get(0)
+                    : keywordArgExprList;
+            keywordArgs.add(new Function.KeywordArgument(keywordArgName, keywordArgValue));
         }
     )*
 
