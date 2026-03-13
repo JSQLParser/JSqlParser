@@ -1072,7 +1072,8 @@ public class AlterExpression implements Serializable {
      * Handles the general case for ADD, MODIFY, CHANGE, DROP (column), COMMENT, row-level security,
      * and all field-based dispatch (columns, constraints, FK, UK, PK, index).
      */
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.ExcessiveMethodLength"})
     protected void toStringGeneral(StringBuilder b) {
         if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
             b.append("COMMENT =").append(" ");
