@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(".."))
 
 # General options
-needs_sphinx = '1.0'
+needs_sphinx = '7.2'
 add_function_parentheses = True
 
 extensions = ['myst_parser', 'sphinx.ext.autodoc', 'sphinx.ext.autosectionlabel', 'sphinx.ext.extlinks', 'sphinx_substitution_extensions', 'sphinx_inline_tabs', 'pygments.sphinxext', ]
@@ -16,8 +20,7 @@ exclude_patterns = ['_themes', '_static/css']
 logo_only = True
 
 # HTML options
-html_theme = "furo"
-html_theme_path = ["_themes"]
+html_theme = "manticore_sphinx_theme"
 html_short_title = "JSQLParser"
 htmlhelp_basename = "JSQLParser" + '-doc'
 html_use_index = True
@@ -25,8 +28,7 @@ html_show_sourcelink = False
 html_static_path = ['_static']
 html_logo = '_images/logo-no-background.svg'
 html_favicon = '_images/favicon.svg'
-html_css_files = ['svg.css', 'floating_toc.css']
-html_js_files = ['floating_toc.js',]
+html_css_files = ['svg.css']
 
 html_theme_options = {
     'path_to_docs': 'site/sphinx',

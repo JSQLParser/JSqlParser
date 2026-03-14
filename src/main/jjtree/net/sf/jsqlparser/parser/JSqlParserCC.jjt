@@ -300,80 +300,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return true;
     }
 
-    /**
-     * Checks whether the next token looks like the start of a generic keyword argument
-     * (KEYWORD expr) inside a function call, e.g. SEPARATOR ',' or USING utf8.
-     *
-     * This must be VERY restrictive to avoid stealing tokens that belong to the outer
-     * expression context. It uses a three-layer filter:
-     *
-     * 1. The token must start with a letter (rejects ALL operators: = > < >= != + - * / etc.)
-     * 2. The token must NOT be a structural SQL keyword (FROM, WHERE, AND, OR, END, etc.)
-     * 3. The following token must look like the start of an expression (not ) or EOF)
-     *
-     * Note: this is called AFTER all explicit optional clauses (ORDER BY, ON OVERFLOW,
-     * HAVING, IGNORE/RESPECT NULLS, LIMIT) have been attempted.
-     */
     private boolean isKeywordArgumentAhead() {
         Token t = getToken(1);
-
-        // End of function argument list
-        if (t.kind == EOF || t.image.equals(")")) {
-            return false;
-        }
-
-        // Layer 1: Must be a word token (starts with a letter).
-        // This single check rejects ALL operator/punctuation tokens:
-        //   = > < >= <= <> != + - * / % || && ^ ~ :: .. . ; , ( [ ] { }
-        if (t.image.isEmpty() || !Character.isLetter(t.image.charAt(0))) {
-            return false;
-        }
-
-        // Layer 2a: Reject literal token types
+        if (t.kind == EOF || t.image.equals(")")) return false;
+        if (t.image.isEmpty() || !Character.isLetter(t.image.charAt(0))) return false;
+        if (t.kind == S_IDENTIFIER || t.kind == S_QUOTED_IDENTIFIER || t.kind == DATA_TYPE) return false;
         switch (t.kind) {
             case S_LONG: case S_DOUBLE: case S_HEX: case S_CHAR_LITERAL:
-                return false;
-        }
-
-        // Layer 2b: Reject keywords that belong to explicit InternalFunction clauses
-        switch (t.kind) {
-            case K_ORDER:     // ORDER BY
-            case K_ON:        // ON OVERFLOW
-            case K_HAVING:
-            case K_IGNORE:    // IGNORE NULLS
-            case K_RESPECT:   // RESPECT NULLS
-                return false;
-        }
-
-        // Layer 2c: Reject structural SQL keywords that must NEVER be keyword-arg names.
-        // These are clause starters, logical/comparison operators, expression delimiters.
-        switch (t.kind) {
-            // Clause starters
+            case K_DISTINCT: case K_ALL: case K_UNIQUE: case K_TABLE:
+            case K_ORDER: case K_ON: case K_HAVING: case K_IGNORE: case K_RESPECT:
             case K_SELECT: case K_FROM: case K_WHERE: case K_GROUP: case K_LIMIT:
-            case K_UNION: case K_EXCEPT: case K_INTERSECT:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
             case K_JOIN: case K_INNER: case K_LEFT: case K_RIGHT: case K_FULL: case K_CROSS:
-            case K_INTO: case K_SET:
-            case K_FETCH: case K_OFFSET:
-            case K_OVER: case K_WITHIN: case K_FILTER:
-            case K_WITH: case K_WITHOUT:
-            // Logical / comparison keywords
-            case K_AND: case K_OR: case K_NOT:
-            case K_IN: case K_BETWEEN: case K_LIKE:
-            case K_IS: case K_EXISTS:
-            case K_AS:
-            // CASE expression keywords
+            case K_INTO: case K_SET: case K_FETCH: case K_OFFSET:
+            case K_OVER: case K_WITHIN: case K_FILTER: case K_WITH: case K_WITHOUT:
+            case K_AND: case K_OR: case K_NOT: case K_IN: case K_BETWEEN: case K_LIKE:
+            case K_IS: case K_EXISTS: case K_AS:
             case K_CASE: case K_WHEN: case K_THEN: case K_ELSE: case K_END:
-            // Literal keywords
             case K_NULL: case K_TRUE: case K_FALSE:
+            case K_COLUMNS: case K_RETURNING:
                 return false;
         }
-
-        // Layer 3: The token AFTER the keyword must look like it starts an expression
         Token t2 = getToken(2);
-        if (t2.kind == EOF || t2.image.equals(")")) {
-            return false;
-        }
-
+        if (t2.kind == EOF || t2.image.equals(")")) return false;
         return true;
     }
 
@@ -522,489 +471,505 @@ SKIP:
     <WHITESPACE: " " | "\t" | "\r" | "\n">
 }
 
-// http://www.h2database.com/html/advanced.html#keywords
+// Sentinel: start of non-reserved keyword range (for O(1) identifier checks)
+<UNREACHABLE>SKIP:
+{
+    <MIN_NON_RESERVED_WORD: "MIN NON RESERVED WORD">
+}
 
-TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
+/**
+ * Non-reserved SQL keywords usable as unquoted identifiers.
+ * Tokens are declared inline to get consecutive kind values between
+ * MIN_NON_RESERVED_WORD and MAX_NON_RESERVED_WORD sentinels.
+ */
+String NonReservedWord() :
+{    Token tk = null; }
+{
+    (
+        tk=<K_ACTION: "ACTION">
+      | tk=<K_ACTIVE: "ACTIVE">
+      | tk=<K_ADD:"ADD">
+      | tk=<K_ADVANCE:"ADVANCE">
+      | tk=<K_ADVISE:"ADVISE">
+      | tk=<K_AGAINST:"AGAINST">
+      | tk=<K_AGGREGATE: "AGGREGATE">
+      | tk=<K_ALGORITHM: "ALGORITHM">
+      | tk=<K_ALIGN:"ALIGN">
+      | tk=<K_ALTER:"ALTER">
+      | tk=<K_ALWAYS:"ALWAYS">
+      | tk=<K_ANALYZE:"ANALYZE">
+      | tk=<K_APPEND_ONLY:"APPEND_ONLY">
+      | tk=<K_APPLY:"APPLY">
+      | tk=<K_APPROXIMATE:"APPROXIMATE">
+      | tk=<K_ARCHIVE: "ARCHIVE">
+      | tk=<K_ARRAY_LITERAL: "ARRAY" >
+      | tk=<K_ASYMMETRIC: "ASYMMETRIC">
+      | tk=<K_AT: "AT">
+      | tk=<K_ASC:"ASC">
+      | tk=<K_AUTHORIZATION:"AUTHORIZATION">
+      | tk=<K_AUTO:"AUTO">
+      | tk=<K_AUTO_INCREMENT:"AUTO_INCREMENT">
+      | tk=<K_AZURE:"AZURE">
+      | tk=<K_BASE64:"BASE64">
+      | tk=<K_BEFORE: "BEFORE">
+      | tk=<K_BEGIN:"BEGIN">
+      | tk=<K_BERNOULLI: "BERNOULLI">
+      | tk=<K_BINARY: "BINARY">
+      | tk=<K_BIT:"BIT">
+      | tk=<K_BLOBSTORAGE:"BLOBSTORAGE">
+      | tk=<K_BLOCK: "BLOCK">
+      | tk=<K_BOOLEAN:"BOOLEAN">
+      | tk=<K_BREADTH:"BREADTH">
+      | tk=<K_BRANCH:"BRANCH">
+      | tk=<K_BROWSE:"BROWSE">
+      | tk=<K_BY:"BY">
+      | tk=<K_BYTES: "BYTES">
+      | tk=<K_CACHE: "CACHE">
+      | tk=<K_BUFFERS: "BUFFERS">
+      | tk=<K_BYTE: "BYTE">
+      | tk=<K_CALL : "CALL">
+      | tk=<K_CASCADE: "CASCADE">
+      | tk=<K_CASE:"CASE">
+      | tk=<K_CAST: "CAST">
+      | tk=<K_CERTIFICATE: "CERTIFICATE">
+      | tk=<K_CHARACTER:"CHARACTER">
+      | tk=<K_CHANGE:"CHANGE">
+      | tk=<K_CHANGES:"CHANGES">
+      | tk=<K_CHECKPOINT:"CHECKPOINT">
+      | tk=<K_CHAR:"CHAR">
+      | tk=<K_CLOSE:"CLOSE">
+      | tk=<K_CLOUD:"CLOUD">
+      | tk=<K_COALESCE:"COALESCE">
+      | tk=<K_COLLATE:"COLLATE">
+      | tk=<K_COLUMN:"COLUMN">
+      | tk=<K_COLUMNS:"COLUMNS">
+      | tk=<K_COMMIT:"COMMIT">
+      | tk=<K_COMMENT:"COMMENT">
+      | tk=<K_COMMENTS:"COMMENTS">
+      | tk=<K_CONFLICT:"CONFLICT">
+      | tk=<K_CONSTRAINTS:"CONSTRAINTS">
+      | tk=<K_CONVERT:"CONVERT">
+      | tk=<K_CORRESPONDING:"CORRESPONDING">
+      | tk=<K_COSTS: "COSTS">
+      | tk=<K_COUNT: "COUNT">
+      | tk=<K_CREATED:"CREATED">
+      | tk=<K_CYCLE:"CYCLE">
+      | tk=<K_DATABASE:"DATABASE">
+      | tk=<K_DATA:"DATA">
+      | tk=<K_DECLARE: "DECLARE">
+      | tk=<K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
+      | tk=<K_DEFAULTS: "DEFAULTS">
+      | tk=<K_DEPTH: "DEPTH">
+      | tk=<K_DEFERRABLE : "DEFERRABLE">
+      | tk=<K_DELAYED : "DELAYED">
+      | tk=<K_DELETE:"DELETE">
+      | tk=<K_DELIMIT : "DELIMIT">
+      | tk=<K_DELIMITER : "DELIMITER">
+      | tk=<K_DESC:"DESC">
+      | tk=<K_DESCRIBE:"DESCRIBE">
+      | tk=<K_DISABLE : "DISABLE">
+      | tk=<K_DISCARD : "DISCARD">
+      | tk=<K_DISCONNECT:"DISCONNECT">
+      | tk=<K_DIV:"DIV">
+      | tk=<K_DDL:"DDL">
+      | tk=<K_DML:"DML">
+      | tk=<K_DO:"DO">
+      | tk=<K_DOMAIN:"DOMAIN">
+      | tk=<K_DRIVER:"DRIVER">
+      | tk=<K_DROP:"DROP">
+      | tk=<K_DUMP:"DUMP">
+      | tk=<K_DUPLICATE: "DUPLICATE">
+      | tk=<K_ELEMENTS: "ELEMENTS">
+      | tk=<K_EMIT: "EMIT">
+      | tk=<K_ENABLE: "ENABLE">
+      | tk=<K_ENCODING: "ENCODING">
+      | tk=<K_ENCRYPTION: "ENCRYPTION">
+      | tk=<K_END: "END">
+      | tk=<K_ENFORCED: "ENFORCED">
+      | tk=<K_ENGINE: "ENGINE">
+      | tk=<K_ERROR: "ERROR">
+      | tk=<K_ESCAPE: "ESCAPE">
+      | tk=<K_EXA: "EXA">
+      | tk=<K_EXCHANGE: "EXCHANGE">
+      | tk=<K_EXCLUDE: "EXCLUDE">
+      | tk=<K_EXCLUDING: "EXCLUDING">
+      | tk=<K_EXCLUSIVE: "EXCLUSIVE">
+      | tk=<K_EXEC: "EXEC">
+      | tk=<K_EXECUTE: "EXECUTE">
+      | tk=<K_EXPLAIN:"EXPLAIN">
+      | tk=<K_EXPLICIT:"EXPLICIT">
+      | tk=<K_EXTENDED:"EXTENDED">
+      | tk=<K_EXTRACT:"EXTRACT">
+      | tk=<K_EXPORT:"EXPORT">
+      | tk=<K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
+      | tk=<K_FILTER: "FILTER">
+      | tk=<K_FIRST: "FIRST">
+      | tk=<K_FLUSH: "FLUSH">
+      | tk=<K_FOLLOWING: "FOLLOWING">
+      | tk=<K_FORMAT:"FORMAT">
+      | tk=<K_FULLTEXT:"FULLTEXT">
+      | tk=<K_FUNCTION:"FUNCTION">
+      | tk=<K_GRANT:"GRANT">
+      | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
+      | tk=<K_GUARD:"GUARD">
+      | tk=<K_HASH:"HASH">
+      | tk=<K_HIGH : "HIGH">
+      | tk=<K_HIGH_PRIORITY : "HIGH_PRIORITY">
+      | tk=<K_HISTORY : "HISTORY">
+      | tk=<K_HOPPING:"HOPPING">
+      | tk=<K_IDENTIFIED:"IDENTIFIED">
+      | tk=<K_IDENTITY:"IDENTITY">
+      | tk=<K_INCLUDE:"INCLUDE">
+      | tk=<K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
+      | tk=<K_INCLUDING:"INCLUDING">
+      | tk=<K_INCREMENT:"INCREMENT">
+      | tk=<K_INDEX: "INDEX">
+      | tk=<K_INFORMATION: "INFORMATION">
+      | tk=<K_INSERT:"INSERT">
+      | tk=<K_INTERLEAVE: "INTERLEAVE">
+      | tk=<K_INTERPRET: "INTERPRET">
+      | tk=<K_INVALIDATE:"INVALIDATE">
+      | tk=<K_INVERSE:"INVERSE">
+      | tk=<K_INVISIBLE:"INVISIBLE">
+      | tk=<K_ISNULL:"ISNULL">
+      | tk=<K_JDBC:"JDBC">
+      | tk=<K_JSON:"JSON">
+      | tk=<K_JSON_OBJECT: "JSON_OBJECT">
+      | tk=<K_JSON_OBJECTAGG: "JSON_OBJECTAGG">
+      | tk=<K_JSON_ARRAY: "JSON_ARRAY">
+      | tk=<K_JSON_ARRAYAGG: "JSON_ARRAYAGG">
+      | tk=<K_KEEP:"KEEP">
+      | tk=<K_KEY_BLOCK_SIZE: "KEY_BLOCK_SIZE">
+      | tk=<K_KEY:"KEY">
+      | tk=<K_KEYS:"KEYS">
+      | tk=<K_KILL:"KILL">
+      | tk=<K_FN:"FN">
+      | tk=<K_LAST: "LAST">
+      | tk=<K_LEADING:"LEADING">
+      | tk=<K_LESS:"LESS">
+      | tk=<K_LEVEL:"LEVEL">
+      | tk=<K_LOCAL:"LOCAL">
+      | tk=<K_LOCK:"LOCK">
+      | tk=<K_LOCKED:"LOCKED">
+      | tk=<K_LINK:"LINK">
+      | tk=<K_LOG:"LOG">
+      | tk=<K_LOOP:"LOOP">
+      | tk=<K_LOW : "LOW">
+      | tk=<K_LOW_PRIORITY : "LOW_PRIORITY">
+      | tk=<K_LTRIM : "LTRIM">
+      | tk=<K_MATCH: "MATCH">
+      | tk=<K_MATCH_ANY: "MATCH_ANY">
+      | tk=<K_MATCH_ALL: "MATCH_ALL">
+      | tk=<K_MATCH_PHRASE: "MATCH_PHRASE">
+      | tk=<K_MATCH_PHRASE_PREFIX: "MATCH_PHRASE_PREFIX">
+      | tk=<K_MATCH_REGEXP: "MATCH_REGEXP">
+      | tk=<K_MATCHED: "MATCHED">
+      | tk=<K_MATERIALIZED:"MATERIALIZED">
+      | tk=<K_MAX: "MAX">
+      | tk=<K_MAXVALUE: "MAXVALUE">
+      | tk=<K_MEMBER: "MEMBER">
+      | tk=<K_MERGE: "MERGE">
+      | tk=<K_MIN:"MIN">
+      | tk=<K_MINVALUE:"MINVALUE">
+      | tk=<K_MODE: "MODE">
+      | tk=<K_MODIFY: "MODIFY">
+      | tk=<K_MOVEMENT: "MOVEMENT">
+      | tk=<K_NAMES:"NAMES">
+      | tk=<K_NAME:"NAME">
+      | tk=<K_NEVER:"NEVER">
+      | tk=<K_NEXT:"NEXT">
+      | tk=<K_NEXTVAL: (  (("NEXTVAL")((" ")+("FOR"))?)  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
+      | tk=<K_NO:"NO">
+      | tk=<K_NOCACHE:"NOCACHE">
+      | tk=<K_NOKEEP:"NOKEEP">
+      | tk=<K_NOLOCK:"NOLOCK">
+      | tk=<K_NOMAXVALUE:"NOMAXVALUE">
+      | tk=<K_NOMINVALUE:"NOMINVALUE">
+      | tk=<K_NONE:"NONE">
+      | tk=<K_NOORDER:"NOORDER">
+      | tk=<K_NOTHING:"NOTHING">
+      | tk=<K_NOTNULL:"NOTNULL">
+      | tk=<K_NOVALIDATE : "NOVALIDATE">
+      | tk=<K_NULLS: "NULLS">
+      | tk=<K_NOWAIT: "NOWAIT">
+      | tk=<K_OF:"OF">
+      | tk=<K_OFF:"OFF">
+      | tk=<K_OPEN:"OPEN">
+      | tk=<K_ORA: "ORA">
+      | tk=<K_ORDINALITY:"ORDINALITY">
+      | tk=<K_OVER:"OVER">
+      | tk=<K_OVERFLOW:"OVERFLOW">
+      | tk=<K_OVERLAPS:"OVERLAPS">
+      | tk=<K_OVERRIDING:"OVERRIDING">
+      | tk=<K_OVERWRITE:"OVERWRITE">
+      | tk=<K_PADDING:"PADDING">
+      | tk=<K_PARALLEL:"PARALLEL">
+      | tk=<K_PARENT:"PARENT">
+      | tk=<K_PARSER: "PARSER">
+      | tk=<K_PARTITION:"PARTITION">
+      | tk=<K_PARTITIONING:"PARTITIONING">
+      | tk=<K_PATH:"PATH">
+      | tk=<K_PERCENT:"PERCENT">
+      | tk=<K_PLACING:"PLACING">
+      | tk=<K_PLAN:"PLAN">
+      | tk=<K_PLUS:"PLUS">
+      | tk=<K_PRECEDING: "PRECEDING">
+      | tk=<K_PRIMARY:"PRIMARY">
+      | tk=<K_POLICY:"POLICY">
+      | tk=<K_PURGE:"PURGE">
+      | tk=<K_QUERY:"QUERY">
+      | tk=<K_QUICK : "QUICK">
+      | tk=<K_QUIESCE: "QUIESCE">
+      | tk=<K_RANGE: "RANGE">
+      | tk=<K_RAW: "RAW">
+      | tk=<K_READ: "READ" >
+      | tk=<K_REBUILD: "REBUILD">
+      | tk=<K_RECYCLEBIN: "RECYCLEBIN">
+      | tk=<K_RECURSIVE:"RECURSIVE">
+      | tk=<K_REFERENCES:"REFERENCES">
+      | tk=<K_REFRESH:"REFRESH">
+      | tk=<K_REGEXP: "REGEXP">
+      | tk=<K_REJECT: "REJECT">
+      | tk=<K_RESPECT: "RESPECT">
+      | tk=<K_RLIKE: "RLIKE">
+      | tk=<K_REGEXP_LIKE: "REGEXP_LIKE">
+      | tk=<K_REGISTER: "REGISTER">
+      | tk=<K_REMOTE: "REMOTE">
+      | tk=<K_REMOVE: "REMOVE">
+      | tk=<K_RENAME:"RENAME">
+      | tk=<K_REORGANIZE: "REORGANIZE">
+      | tk=<K_REPAIR: "REPAIR">
+      | tk=<K_REPEATABLE: "REPEATABLE">
+      | tk=<K_REPLACE:"REPLACE">
+      | tk=<K_RESET:"RESET">
+      | tk=<K_RESTART:"RESTART">
+      | tk=<K_RESUMABLE: "RESUMABLE">
+      | tk=<K_RESUME: "RESUME">
+      | tk=<K_RESTRICT: "RESTRICT">
+      | tk=<K_RESTRICTED: "RESTRICTED">
+      | tk=<K_RETURN: "RETURN">
+      | tk=<K_ROLLBACK:"ROLLBACK">
+      | tk=<K_ROLLUP:"ROLLUP">
+      | tk=<K_ROOT:"ROOT">
+      | tk=<K_ROW: "ROW">
+      | tk=<K_ROWS: "ROWS">
+      | tk=<K_RTRIM: "RTRIM">
+      | tk=<K_SAFE_CAST: "SAFE_CAST">
+      | tk=<K_SAFE_CONVERT: "SAFE_CONVERT">
+      | tk=<K_SAVEPOINT: "SAVEPOINT">
+      | tk=<K_SCHEMA: "SCHEMA">
+      | tk=<K_SEARCH:"SEARCH">
+      | tk=<K_SECURE: "SECURE">
+      | tk=<K_SECURITY:"SECURITY">
+      | tk=<K_SEED: "SEED">
+      | tk=<K_SEQUENCE: "SEQUENCE">
+      | tk=<K_SEPARATOR:"SEPARATOR">
+      | tk=<K_SESSION:"SESSION">
+      | tk=<K_SETS:"SETS">
+      | tk=<K_SHOW : "SHOW">
+      | tk=<K_SHUTDOWN : "SHUTDOWN">
+      | tk=<K_SHARE : "SHARE">
+      | tk=<K_SIBLINGS:"SIBLINGS">
+      | tk=<K_SIMILAR:"SIMILAR">
+      | tk=<K_SIZE:"SIZE">
+      | tk=<K_SKIP: "SKIP">
+      | tk=<K_SPATIAL:"SPATIAL">
+      | tk=<K_STORED: "STORED">
+      | tk=<K_STREAM: "STREAM">
+      | tk=<K_STRICT: "STRICT">
+      | tk=<K_STRING: "STRING">
+      | tk=<K_STRUCT: "STRUCT">
+      | tk=<K_SUMMARIZE: "SUMMARIZE">
+      | tk=<K_SUSPEND:"SUSPEND">
+      | tk=<K_SWITCH: "SWITCH">
+      | tk=<K_SYMMETRIC:"SYMMETRIC">
+      | tk=<K_SYNONYM:"SYNONYM">
+      | tk=<K_SYSTEM:"SYSTEM">
+      | tk=<K_SYSTEM_TIME:"SYSTEM_TIME">
+      | tk=<K_SYSTEM_TIMESTAMP:"SYSTEM_TIMESTAMP">
+      | tk=<K_SYSTEM_VERSION:"SYSTEM_VERSION">
+      | tk=<K_TABLE:"TABLE">
+      | tk=<K_TABLESPACE: "TABLESPACE">
+      | tk=<K_TRIGGER: "TRIGGER">
+      | tk=<K_THEN:"THEN">
+      | tk=<K_TEMP:"TEMP">
+      | tk=<K_TEXT_LITERAL: "TEXT" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" >
+      | tk=<K_TEMPORARY:"TEMPORARY">
+      | tk=<K_THAN:"THAN">
+      | tk=<K_TIME_KEY_EXPR : ( ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP") | ("CURRENT" ( "_" | (" ")+ ) "TIME") | ("CURRENT" ( "_" | (" ")+ ) "DATE") | ("CURRENT" ( "_" | (" ")+ ) "TIMEZONE") ) ( "()" )?>
+      | tk=<K_TIMEOUT:"TIMEOUT">
+      | tk=<K_TO:"TO">
+      | tk=<K_TRIM:"TRIM">
+      | tk=<K_TRUNCATE:"TRUNCATE">
+      | tk=<K_TRY_CAST: "TRY_CAST">
+      | tk=<K_TRY_CONVERT: "TRY_CONVERT">
+      | tk=<K_TUMBLING:"TUMBLING">
+      | tk=<K_TYPE:"TYPE">
+      | tk=<K_UNLIMITED: "UNLIMITED">
+      | tk=<K_UNLOGGED: "UNLOGGED">
+      | tk=<K_UPDATE:"UPDATE">
+      | tk=<K_UPSERT:"UPSERT">
+      | tk=<K_UNQIESCE:"UNQIESCE">
+      | tk=<K_USER:"USER">
+      | tk=<K_SIGNED:"SIGNED">
+      | tk=<K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
+      | tk=<K_UNSIGNED:"UNSIGNED">
+      | tk=<K_VALIDATE : "VALIDATE">
+      | tk=<K_VALIDATION: "VALIDATION">
+      | tk=<K_VERBOSE: "VERBOSE">
+      | tk=<K_VERSION: "VERSION">
+      | tk=<K_VIEW:"VIEW">
+      | tk=<K_VISIBLE: "VISIBLE">
+      | tk=<K_VOLATILE:"VOLATILE">
+      | tk=<K_CONCURRENTLY:"CONCURRENTLY">
+      | tk=<K_WAIT : "WAIT">
+      | tk=<K_WITH_TIES:"WITH TIES">
+      | tk=<K_WITHIN:"WITHIN">
+      | tk=<K_WITHOUT:"WITHOUT">
+      | tk=<K_WITHOUT_ARRAY_WRAPPER:"WITHOUT_ARRAY_WRAPPER">
+      | tk=<K_WORK:"WORK">
+      | tk=<K_XML:"XML">
+      | tk=<K_XMLAGG:"XMLAGG">
+      | tk=<K_XMLDATA:"XMLDATA">
+      | tk=<K_XMLSCHEMA:"XMLSCHEMA">
+      | tk=<K_XMLTEXT:"XMLTEXT">
+      | tk=<K_XSINIL:"XSINIL">
+      | tk=<K_YAML:"YAML">
+      | tk=<K_YES:"YES">
+      | tk=<K_ZONE:"ZONE">
+    )
+    { return tk.image; }
+}
+
+// Sentinel: end of non-reserved keyword range
+<UNREACHABLE>SKIP:
+{
+    <MAX_NON_RESERVED_WORD: "MAX NON RESERVED WORD">
+}
+
+TOKEN: /* Reserved SQL Keywords and structural tokens */
 {
     <K_AT_SIGN: "@">
 |   <K_AT_V: "@V">
 |   <K_ABSENT: "ABSENT">
-|   <K_ACTION: "ACTION">
-|   <K_ACTIVE: "ACTIVE">
-|   <K_ADD:"ADD">
-|   <K_ADVANCE:"ADVANCE">
-|   <K_ADVISE:"ADVISE">
-|   <K_AGAINST:"AGAINST">
-|   <K_AGGREGATE: "AGGREGATE">
-|   <K_ALGORITHM: "ALGORITHM">
-|   <K_ALIGN:"ALIGN">
 |   <K_ALL:"ALL">
-|   <K_ALTER:"ALTER">
-|   <K_ALWAYS:"ALWAYS">
-|   <K_ANALYZE:"ANALYZE">
 |   <K_AND:"AND">
 |   <K_ANY:"ANY">
-|   <K_APPEND_ONLY:"APPEND_ONLY">
-|   <K_APPLY:"APPLY">
-|   <K_APPROXIMATE:"APPROXIMATE">
-|   <K_ARCHIVE: "ARCHIVE">
-|   <K_ARRAY_LITERAL: "ARRAY" >
 |   <K_AS: "AS">
-|   <K_ASYMMETRIC: "ASYMMETRIC">
-|   <K_AT: "AT">
-|   <K_ASC:"ASC">
-|   <K_AUTHORIZATION:"AUTHORIZATION">
-|   <K_AUTO:"AUTO">
-|   <K_AUTO_INCREMENT:"AUTO_INCREMENT">
-|   <K_AZURE:"AZURE">
-|   <K_BASE64:"BASE64">
-|   <K_BEFORE: "BEFORE">
-|   <K_BEGIN:"BEGIN">
-|   <K_BERNOULLI: "BERNOULLI">
 |   <K_BETWEEN:"BETWEEN">
-|   <K_BINARY: "BINARY">
-|   <K_BIT:"BIT">
-|   <K_BLOBSTORAGE:"BLOBSTORAGE">
-|   <K_BLOCK: "BLOCK">
-|   <K_BOOLEAN:"BOOLEAN">
 |   <K_BOTH:"BOTH">
-|   <K_BREADTH:"BREADTH">
-|   <K_BRANCH:"BRANCH">
-|   <K_BROWSE:"BROWSE">
-|   <K_BY:"BY">
-|   <K_BYTES: "BYTES">
-|   <K_CACHE: "CACHE">
-|   <K_BUFFERS: "BUFFERS">
-|   <K_BYTE: "BYTE">
-|   <K_CALL : "CALL">
-|   <K_CASCADE: "CASCADE">
-|   <K_CASE:"CASE">
 |   <K_CASEWHEN:"CASEWHEN">  /* H2 casewhen function */
-|   <K_CAST: "CAST">
-|   <K_CERTIFICATE: "CERTIFICATE">
-|   <K_CHARACTER:"CHARACTER">
-|   <K_CHANGE:"CHANGE">
-|   <K_CHANGES:"CHANGES">
 |   <K_CHECK:"CHECK">
-|   <K_CHECKPOINT:"CHECKPOINT">
-|   <K_CHAR:"CHAR">
-|   <K_CLOSE:"CLOSE">
-|   <K_CLOUD:"CLOUD">
-|   <K_COALESCE:"COALESCE">
-|   <K_COLLATE:"COLLATE">
-|   <K_COLUMN:"COLUMN">
-|   <K_COLUMNS:"COLUMNS">
 |   <K_COMMA: ",">
-|   <K_COMMIT:"COMMIT">
-|   <K_COMMENT:"COMMENT">
-|   <K_COMMENTS:"COMMENTS">
-|   <K_CONFLICT:"CONFLICT">
 |   <K_CONNECT:"CONNECT">
 |   <K_CONNECT_BY_ROOT: "CONNECT_BY_ROOT">
 |   <K_CONSTRAINT:"CONSTRAINT">
-|   <K_CONSTRAINTS:"CONSTRAINTS">
-|   <K_CONVERT:"CONVERT">
-|   <K_CORRESPONDING:"CORRESPONDING">
-|   <K_COSTS: "COSTS">
-|   <K_COUNT: "COUNT">
 |   <K_CREATE:"CREATE">
-|   <K_CREATED:"CREATED">
 |   <K_CROSS:"CROSS">
 |   <K_CSV:"CSV">
 |   <K_CURRENT: "CURRENT">
-|   <K_CYCLE:"CYCLE">
-|   <K_DATABASE:"DATABASE">
-|   <K_DATA:"DATA">
-|   <K_DECLARE: "DECLARE">
 |   <K_DATETIMELITERAL : "DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ" >
 |   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
-|   <K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
 |   <K_DEFAULT : "DEFAULT">
-|   <K_DEFAULTS: "DEFAULTS">
-|   <K_DEPTH: "DEPTH">
-|   <K_DEFERRABLE : "DEFERRABLE">
-|   <K_DELAYED : "DELAYED">
-|   <K_DELETE:"DELETE">
-|   <K_DELIMIT : "DELIMIT">
-|   <K_DELIMITER : "DELIMITER">
-|   <K_DESC:"DESC">
-|   <K_DESCRIBE:"DESCRIBE">
-|   <K_DISABLE : "DISABLE">
-|   <K_DISCARD : "DISCARD">
-|   <K_DISCONNECT:"DISCONNECT">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DISTINCTROW:"DISTINCTROW">
-|   <K_DIV:"DIV">
-|   <K_DDL:"DDL">
-|   <K_DML:"DML">
-|   <K_DO:"DO">
-|   <K_DOMAIN:"DOMAIN">
-|   <K_DRIVER:"DRIVER">
-|   <K_DROP:"DROP">
-|   <K_DUMP:"DUMP">
-|   <K_DUPLICATE: "DUPLICATE">
-|   <K_ELEMENTS: "ELEMENTS">
 |   <K_ELSE:"ELSE">
-|   <K_EMIT: "EMIT">
-|   <K_ENABLE: "ENABLE">
-|   <K_ENCODING: "ENCODING">
-|   <K_ENCRYPTION: "ENCRYPTION">
-|   <K_END: "END">
-|   <K_ENFORCED: "ENFORCED">
-|   <K_ENGINE: "ENGINE">
-|   <K_ERROR: "ERROR">
 |   <K_ERRORS: "ERRORS">
-|   <K_ESCAPE: "ESCAPE">
-|   <K_EXA: "EXA">
 |   <K_EXCEPT: "EXCEPT">
-|   <K_EXCHANGE: "EXCHANGE">
-|   <K_EXCLUDE: "EXCLUDE">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
-|   <K_EXCLUDING: "EXCLUDING">
-|   <K_EXCLUSIVE: "EXCLUSIVE">
-|   <K_EXEC: "EXEC">
-|   <K_EXECUTE: "EXECUTE">
 |   <K_EXISTS:"EXISTS">
-|   <K_EXPLAIN:"EXPLAIN">
-|   <K_EXPLICIT:"EXPLICIT">
 |   <K_EXTEND:"EXTEND">
-|   <K_EXTENDED:"EXTENDED">
-|   <K_EXTRACT:"EXTRACT">
-|   <K_EXPORT:"EXPORT">
 |   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
-|   <K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
 |   <K_FILE: "FILE">
-|   <K_FILTER: "FILTER">
 |   <K_FINAL: "FINAL">
-|   <K_FIRST: "FIRST">
 |   <K_FALSE: "FALSE">
-|   <K_FLUSH: "FLUSH">
-|   <K_FOLLOWING: "FOLLOWING">
 |   <K_FOR:"FOR">
 |   <K_FORCE : "FORCE">
 |   <K_FOREIGN:"FOREIGN">
-|   <K_FORMAT:"FORMAT">
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
-|   <K_FULLTEXT:"FULLTEXT">
-|   <K_FUNCTION:"FUNCTION">
 |   <K_GLOBAL:"GLOBAL">
-|   <K_GRANT:"GRANT">
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
-|   <K_GROUP_CONCAT:"GROUP_CONCAT">
-|   <K_GUARD:"GUARD">
 |   <K_HAVING:"HAVING">
-|   <K_HASH:"HASH">
-|   <K_HIGH : "HIGH">
-|   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
-|   <K_HISTORY : "HISTORY">
-|   <K_HOPPING:"HOPPING">
-|   <K_IDENTIFIED:"IDENTIFIED">
-|   <K_IDENTITY:"IDENTITY">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
 |   <K_IGNORE : "IGNORE">
 |   <K_ILIKE:"ILIKE">
 |   <K_IMPORT:"IMPORT">
 |   <K_IN:"IN">
-|   <K_INCLUDE:"INCLUDE">
 |   <K_INCLUDES:"INCLUDES"> /* Salesforce SOQL */
-|   <K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
-|   <K_INCLUDING:"INCLUDING">
-|   <K_INCREMENT:"INCREMENT">
-|   <K_INDEX: "INDEX">
-|   <K_INFORMATION: "INFORMATION">
 |   <K_INNER:"INNER">
 |   <K_STATEMENT:"STATEMENT">
 |   <K_STRAIGHT:"STRAIGHT_JOIN">
-|   <K_INSERT:"INSERT">
-|   <K_INTERLEAVE: "INTERLEAVE">
-|   <K_INTERPRET: "INTERPRET">
 |   <K_INTERSECT:"INTERSECT">
 |   <K_INTERVAL:"INTERVAL">
 |   <K_INTO:"INTO">
-|   <K_INVALIDATE:"INVALIDATE">
-|   <K_INVERSE:"INVERSE">
-|   <K_INVISIBLE:"INVISIBLE">
 |   <K_IS:"IS">
-|   <K_ISNULL:"ISNULL">
-|   <K_JDBC:"JDBC">
 |   <K_JOIN:"JOIN">
-|   <K_JSON:"JSON">
-|   <K_JSON_OBJECT: "JSON_OBJECT">
-|   <K_JSON_OBJECTAGG: "JSON_OBJECTAGG">
-|   <K_JSON_ARRAY: "JSON_ARRAY">
-|   <K_JSON_ARRAYAGG: "JSON_ARRAYAGG">
-|   <K_KEEP:"KEEP">
-|   <K_KEY_BLOCK_SIZE: "KEY_BLOCK_SIZE">
-|   <K_KEY:"KEY">
-|   <K_KEYS:"KEYS">
-|   <K_KILL:"KILL">
-|   <K_FN:"FN">
-|   <K_LAST: "LAST">
 |   <K_LATERAL:"LATERAL">
-|   <K_LEADING:"LEADING">
 |   <K_LEFT:"LEFT">
-|   <K_LESS:"LESS">
-|   <K_LEVEL:"LEVEL">
 |   <K_LIKE:"LIKE">
 |   <K_LIMIT:"LIMIT">
-|   <K_LOCAL:"LOCAL">
-|   <K_LOCK:"LOCK">
-|   <K_LOCKED:"LOCKED">
-|   <K_LINK:"LINK">
-|   <K_LOG:"LOG">
-|   <K_LOOP:"LOOP">
-|   <K_LOW : "LOW">
-|   <K_LOW_PRIORITY : "LOW_PRIORITY">
-|   <K_LTRIM : "LTRIM">
-|   <K_MATCH: "MATCH">
-|   <K_MATCH_ANY: "MATCH_ANY">
-|   <K_MATCH_ALL: "MATCH_ALL">
-|   <K_MATCH_PHRASE: "MATCH_PHRASE">
-|   <K_MATCH_PHRASE_PREFIX: "MATCH_PHRASE_PREFIX">
-|   <K_MATCH_REGEXP: "MATCH_REGEXP">
-|   <K_MATCHED: "MATCHED">
-|   <K_MATERIALIZED:"MATERIALIZED">
-|   <K_MAX: "MAX">
-|   <K_MAXVALUE: "MAXVALUE">
-|   <K_MEMBER: "MEMBER">
-|   <K_MERGE: "MERGE">
-|   <K_MIN:"MIN">
 |   <K_MINUS:"MINUS">
-|   <K_MINVALUE:"MINVALUE">
-|   <K_MODE: "MODE">
-|   <K_MODIFY: "MODIFY">
-|   <K_MOVEMENT: "MOVEMENT">
-|   <K_NAMES:"NAMES">
 |   <K_NATURAL:"NATURAL">
-|   <K_NAME:"NAME">
-|   <K_NEVER:"NEVER">
-|   <K_NEXT:"NEXT">
-|   <K_NEXTVAL: (  (("NEXTVAL")((" ")+("FOR"))?)  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
-|   <K_NO:"NO">
-|   <K_NOCACHE:"NOCACHE">
 |   <K_NOCYCLE:"NOCYCLE">
-|   <K_NOKEEP:"NOKEEP">
-|   <K_NOLOCK:"NOLOCK">
-|   <K_NOMAXVALUE:"NOMAXVALUE">
-|   <K_NOMINVALUE:"NOMINVALUE">
-|   <K_NONE:"NONE">
-|   <K_NOORDER:"NOORDER">
 |   <K_NOT:"NOT">
-|   <K_NOTHING:"NOTHING">
-|   <K_NOTNULL:"NOTNULL">
-|   <K_NOVALIDATE : "NOVALIDATE">
 |   <K_NULL:"NULL">
-|   <K_NULLS: "NULLS">
-|   <K_NOWAIT: "NOWAIT">
-|   <K_OF:"OF">
-|   <K_OFF:"OFF">
 |   <K_OFFSET:"OFFSET">
 |   <K_ON:"ON">
 |   <K_ONLY:"ONLY">
-|   <K_OPEN:"OPEN">
 |   <K_OR:"OR">
-|   <K_ORA: "ORA">
 |   <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT: "=>">
 |   <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT: ":=">
 |   <K_ORDER:"ORDER">
-|   <K_ORDINALITY:"ORDINALITY">
 |   <K_OUTER:"OUTER">
 |   <K_OUTPUT:"OUTPUT">
-|   <K_OVER:"OVER">
-|   <K_OVERFLOW:"OVERFLOW">
-|   <K_OVERLAPS:"OVERLAPS">
-|   <K_OVERRIDING:"OVERRIDING">
-|   <K_OVERWRITE:"OVERWRITE">
 |   <K_OPTIMIZE: "OPTIMIZE" >
-|   <K_PADDING:"PADDING">
-|   <K_PARALLEL:"PARALLEL">
-|   <K_PARENT:"PARENT">
-|   <K_PARSER: "PARSER">
-|   <K_PARTITION:"PARTITION">
-|   <K_PARTITIONING:"PARTITIONING">
-|   <K_PATH:"PATH">
-|   <K_PERCENT:"PERCENT">
 |   <K_PIVOT:"PIVOT">
-|   <K_PLACING:"PLACING">
-|   <K_PLAN:"PLAN">
-|   <K_PLUS:"PLUS">
 |   <K_PREFERRING: "PREFERRING">
-|   <K_PRECEDING: "PRECEDING">
 |   <K_PREWHERE: "PREWHERE">
-|   <K_PRIMARY:"PRIMARY">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
-|   <K_POLICY:"POLICY">
-|   <K_PURGE:"PURGE">
 |   <K_QUALIFY: "QUALIFY">
-|   <K_QUERY:"QUERY">
-|   <K_QUICK : "QUICK">
-|   <K_QUIESCE: "QUIESCE">
-|   <K_RANGE: "RANGE">
-|   <K_RAW: "RAW">
-|   <K_READ: "READ" >
-|   <K_REBUILD: "REBUILD">
-|   <K_RECYCLEBIN: "RECYCLEBIN">
-|   <K_RECURSIVE:"RECURSIVE">
-|   <K_REFERENCES:"REFERENCES">
-|   <K_REFRESH:"REFRESH">
-|   <K_REGEXP: "REGEXP">
-|   <K_REJECT: "REJECT">
-|   <K_RESPECT: "RESPECT">
-|   <K_RLIKE: "RLIKE">
-|   <K_REGEXP_LIKE: "REGEXP_LIKE">
-|   <K_REGISTER: "REGISTER">
-|   <K_REMOTE: "REMOTE">
-|   <K_REMOVE: "REMOVE">
-|   <K_RENAME:"RENAME">
-|   <K_REORGANIZE: "REORGANIZE">
-|   <K_REPAIR: "REPAIR">
-|   <K_REPEATABLE: "REPEATABLE">
-|   <K_REPLACE:"REPLACE">
-|   <K_RESET:"RESET">
-|   <K_RESTART:"RESTART">
-|   <K_RESUMABLE: "RESUMABLE">
-|   <K_RESUME: "RESUME">
-|   <K_RESTRICT: "RESTRICT">
-|   <K_RESTRICTED: "RESTRICTED">
-|   <K_RETURN: "RETURN">
 |   <K_RETURNS: "RETURNS">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
-|   <K_ROLLBACK:"ROLLBACK">
-|   <K_ROLLUP:"ROLLUP">
-|   <K_ROOT:"ROOT">
-|   <K_ROW: "ROW">
-|   <K_ROWS: "ROWS">
-|   <K_RTRIM: "RTRIM">
-|   <K_SAFE_CAST: "SAFE_CAST">
-|   <K_SAFE_CONVERT: "SAFE_CONVERT">
 |   <K_SAMPLE: "SAMPLE">
-|   <K_SAVEPOINT: "SAVEPOINT">
-|   <K_SCHEMA: "SCHEMA">
-|   <K_SEARCH:"SEARCH">
 |   <K_SCRIPT: "SCRIPT">
-|   <K_SECURE: "SECURE">
-|   <K_SECURITY:"SECURITY">
-|   <K_SEED: "SEED">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
-|   <K_SEQUENCE: "SEQUENCE">
-|   <K_SEPARATOR:"SEPARATOR">
-|   <K_SESSION:"SESSION">
 |   <K_SET:"SET">
 |   <K_SETTINGS:"SETTINGS">
-|   <K_SETS:"SETS">
-|   <K_SHOW : "SHOW">
-|   <K_SHUTDOWN : "SHUTDOWN">
-|   <K_SHARE : "SHARE">
-|   <K_SIBLINGS:"SIBLINGS">
-|   <K_SIMILAR:"SIMILAR">
-|   <K_SIZE:"SIZE">
-|   <K_SKIP: "SKIP">
 |   <K_SOME:"SOME">
-|   <K_SPATIAL:"SPATIAL">
 |   <K_START:"START">
-|   <K_STORED: "STORED">
-|   <K_STREAM: "STREAM">
-|   <K_STRICT: "STRICT">
-|   <K_STRING: "STRING">
-|   <K_STRUCT: "STRUCT">
-|   <K_SUMMARIZE: "SUMMARIZE">
-|   <K_SUSPEND:"SUSPEND">
-|   <K_SWITCH: "SWITCH">
-|   <K_SYMMETRIC:"SYMMETRIC">
-|   <K_SYNONYM:"SYNONYM">
-|   <K_SYSTEM:"SYSTEM">
-|   <K_SYSTEM_TIME:"SYSTEM_TIME">
-|   <K_SYSTEM_TIMESTAMP:"SYSTEM_TIMESTAMP">
-|   <K_SYSTEM_VERSION:"SYSTEM_VERSION">
-|   <K_TABLE:"TABLE">
 |   <K_TABLES:"TABLES">
 |   <K_TABLESAMPLE: "TABLESAMPLE">
-|   <K_TABLESPACE: "TABLESPACE">
-|   <K_TRIGGER: "TRIGGER">
-|   <K_THEN:"THEN">
-|   <K_TEMP:"TEMP">
-|   <K_TEXT_LITERAL: "TEXT" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" >
-|   <K_TEMPORARY:"TEMPORARY">
-|   <K_THAN:"THAN">
-|   <K_TIME_KEY_EXPR : (
-                         ("CURRENT" ( "_" | (" ")+ ) "TIMESTAMP")
-                         | ("CURRENT" ( "_" | (" ")+ ) "TIME")
-                         | ("CURRENT" ( "_" | (" ")+ ) "DATE")
-                         | ("CURRENT" ( "_" | (" ")+ ) "TIMEZONE")
-                       ) ( "()" )?>
-|   <K_TIMEOUT:"TIMEOUT">
-|   <K_TRIM:"TRIM">
-|   <K_TO:"TO">
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
-|   <K_TRUNCATE:"TRUNCATE">
 |   <K_TRUE:"TRUE">
-|   <K_TRY_CAST: "TRY_CAST">
-|   <K_TRY_CONVERT: "TRY_CONVERT">
-|   <K_TUMBLING:"TUMBLING">
-|   <K_TYPE:"TYPE">
 |   <K_UNBOUNDED: "UNBOUNDED">
 |   <K_UNION:"UNION">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UNKNOWN:"UNKNOWN">
-|   <K_UNLIMITED: "UNLIMITED">
-|   <K_UNLOGGED: "UNLOGGED">
 |   <K_UNPIVOT:"UNPIVOT">
-|   <K_UPDATE:"UPDATE">
-|   <K_UPSERT:"UPSERT">
-|   <K_UNQIESCE:"UNQIESCE">
 |   <K_USE:"USE">
-|   <K_USER:"USER">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
 |   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_SQL_CACHE: "SQL_CACHE">
 |   <K_USING:"USING">
-|   <K_SIGNED:"SIGNED">
-|   <K_STRING_FUNCTION_NAME: ("SUBSTR" | "SUBSTRING" | "TRIM" | "POSITION" | "OVERLAY")>
-|   <K_UNSIGNED:"UNSIGNED">
-|   <K_VALIDATE : "VALIDATE">
-|   <K_VALIDATION: "VALIDATION">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
-|   <K_VERBOSE: "VERBOSE">
 |   <K_VERIFY: "VERIFY">
-|   <K_VERSION: "VERSION">
-|   <K_VIEW:"VIEW">
-|   <K_VISIBLE: "VISIBLE">
-|   <K_VOLATILE:"VOLATILE">
-|   <K_CONCURRENTLY:"CONCURRENTLY">
-|   <K_WAIT : "WAIT">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
-|   <K_WITH_TIES:"WITH TIES">
-|   <K_WITHIN:"WITHIN">
-|   <K_WITHOUT:"WITHOUT">
-|   <K_WITHOUT_ARRAY_WRAPPER:"WITHOUT_ARRAY_WRAPPER">
-|   <K_WORK:"WORK">
-|   <K_XML:"XML">
 |   <K_XOR:"XOR">
 |   <K_XMLSERIALIZE:"XMLSERIALIZE">
-|   <K_XMLAGG:"XMLAGG">
-|   <K_XMLDATA:"XMLDATA">
-|   <K_XMLSCHEMA:"XMLSCHEMA">
-|   <K_XMLTEXT:"XMLTEXT">
-|   <K_XSINIL:"XSINIL">
-|   <K_YAML:"YAML">
-|   <K_YES:"YES">
-|   <K_ZONE:"ZONE">
-
-|   <OPENING_BRACKET: "(">
-|   <CLOSING_BRACKET: ")">
+|   <OPENING_BRACKET: "("> |   <CLOSING_BRACKET: ")">
 |   <OPENING_CURLY_BRACKET: "{">
 |   <CLOSING_CURLY_BRACKET: "}">
 |   <DOUBLE_COLON: ":">
@@ -3753,20 +3718,15 @@ Column Column() #Column :
     }
 }
 
-/*
-The following tokens are allowed as Names for Schema, Table, Column and Aliases
-*/
-
-// Generated Code! Please do not edit manually.
-// Instead:
-// 1) define the ALL_RESERVED_KEYWORDS in the PARSER DECLARATION above (line 157 ff)
-// 2) run the Gradle Task :JSQLParser:updateKeywords, which would update/replace the content of this method
 String RelObjectNameWithoutValue() :
-{    Token tk = null; }
+{    Token tk = null; String result = null; }
 {
-    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL>
-       | tk="ACTION" | tk="ACTIVE" | tk="ADD" | tk="ADVANCE" | tk="ADVISE" | tk="AGAINST" | tk="AGGREGATE" | tk="ALGORITHM" | tk="ALIGN" | tk="ALTER" | tk="ALWAYS" | tk="ANALYZE" | tk="APPEND_ONLY" | tk="APPLY" | tk="APPROXIMATE" | tk="ARCHIVE" | tk="ARRAY" | tk="ASC" | tk="ASYMMETRIC" | tk="AT" | tk="AUTHORIZATION" | tk="AUTO" | tk="AUTO_INCREMENT" | tk="AZURE" | tk="BASE64" | tk="BEFORE" | tk="BEGIN" | tk="BERNOULLI" | tk="BINARY" | tk="BIT" | tk="BLOBSTORAGE" | tk="BLOCK" | tk="BOOLEAN" | tk="BREADTH" | tk="BRANCH" | tk="BROWSE" | tk="BUFFERS" | tk="BY" | tk="BYTE" | tk="BYTES" | tk="CACHE" | tk="CALL" | tk="CASCADE" | tk="CASE" | tk="CAST" | tk="CERTIFICATE" | tk="CHANGE" | tk="CHANGES" | tk="CHAR" | tk="CHARACTER" | tk="CHECKPOINT" | tk="CLOSE" | tk="CLOUD" | tk="COALESCE" | tk="COLLATE" | tk="COLUMN" | tk="COLUMNS" | tk="COMMENT" | tk="COMMENTS" | tk="COMMIT" | tk="CONCURRENTLY" | tk="CONFLICT" | tk="CONSTRAINTS" | tk="CONVERT" | tk="CORRESPONDING" | tk="COSTS" | tk="COUNT" | tk="CREATED" | tk="CS" | tk="CYCLE" | tk="DATA" | tk="DATABASE" | tk="DATETIME" | tk="DBA_RECYCLEBIN" | tk="DDL" | tk="DECLARE" | tk="DEFAULTS" | tk="DEFERRABLE" | tk="DELAYED" | tk="DELETE" | tk="DELIMIT" | tk="DELIMITER" | tk="DEPTH" | tk="DESC" | tk="DESCRIBE" | tk="DISABLE" | tk="DISCARD" | tk="DISCONNECT" | tk="DIV" | tk="DML" | tk="DO" | tk="DOMAIN" | tk="DRIVER" | tk="DROP" | tk="DUMP" | tk="DUPLICATE" | tk="ELEMENTS" | tk="EMIT" | tk="ENABLE" | tk="ENCODING" | tk="ENCRYPTION" | tk="END" | tk="ENFORCED" | tk="ENGINE" | tk="ERROR" | tk="ESCAPE" | tk="EXA" | tk="EXCHANGE" | tk="EXCLUDE" | tk="EXCLUDING" | tk="EXCLUSIVE" | tk="EXEC" | tk="EXECUTE" | tk="EXPLAIN" | tk="EXPLICIT" | tk="EXPORT" | tk="EXTENDED" | tk="EXTRACT" | tk="FILTER" | tk="FIRST" | tk="FLUSH" | tk="FN" | tk="FOLLOWING" | tk="FORMAT" | tk="FULLTEXT" | tk="FUNCTION" | tk="GRANT" | tk="GROUP_CONCAT" | tk="GUARD" | tk="HASH" | tk="HIGH" | tk="HIGH_PRIORITY" | tk="HISTORY" | tk="HOPPING" | tk="IDENTIFIED" | tk="IDENTITY" | tk="INCLUDE" | tk="INCLUDE_NULL_VALUES" | tk="INCLUDING" | tk="INCREMENT" | tk="INDEX" | tk="INFORMATION" | tk="INSERT" | tk="INTERLEAVE" | tk="INTERPRET" | tk="INVALIDATE" | tk="INVERSE" | tk="INVISIBLE" | tk="ISNULL" | tk="JDBC" | tk="JSON" | tk="JSON_ARRAY" | tk="JSON_ARRAYAGG" | tk="JSON_OBJECT" | tk="JSON_OBJECTAGG" | tk="KEEP" | tk="KEY" | tk="KEYS" | tk="KEY_BLOCK_SIZE" | tk="KILL" | tk="LAST" | tk="LEADING" | tk="LESS" | tk="LEVEL" | tk="LINK" | tk="LOCAL" | tk="LOCK" | tk="LOCKED" | tk="LOG" | tk="LONGTEXT" | tk="LOOP" | tk="LOW" | tk="LOW_PRIORITY" | tk="LTRIM" | tk="MATCH" | tk="MATCHED" | tk="MATCH_ALL" | tk="MATCH_ANY" | tk="MATCH_PHRASE" | tk="MATCH_PHRASE_PREFIX" | tk="MATCH_REGEXP" | tk="MATERIALIZED" | tk="MAX" | tk="MAXVALUE" | tk="MEDIUMTEXT" | tk="MEMBER" | tk="MERGE" | tk="MIN" | tk="MINVALUE" | tk="MODE" | tk="MODIFY" | tk="MOVEMENT" | tk="NAME" | tk="NAMES" | tk="NEVER" | tk="NEXT" | tk="NO" | tk="NOCACHE" | tk="NOKEEP" | tk="NOLOCK" | tk="NOMAXVALUE" | tk="NOMINVALUE" | tk="NONE" | tk="NOORDER" | tk="NOTHING" | tk="NOTNULL" | tk="NOVALIDATE" | tk="NOWAIT" | tk="NULLS" | tk="OF" | tk="OFF" | tk="OPEN" | tk="ORA" | tk="ORDINALITY" | tk="OVER" | tk="OVERFLOW" | tk="OVERLAPS" | tk="OVERRIDING" | tk="OVERWRITE" | tk="PADDING" | tk="PARALLEL" | tk="PARENT" | tk="PARSER" | tk="PARTITION" | tk="PARTITIONING" | tk="PATH" | tk="PERCENT" | tk="PLACING" | tk="PLAN" | tk="PLUS" | tk="POLICY" | tk="PRECEDING" | tk="PRIMARY" | tk="PURGE" | tk="QUERY" | tk="QUICK" | tk="QUIESCE" | tk="RANGE" | tk="RAW" | tk="READ" | tk="REBUILD" | tk="RECURSIVE" | tk="RECYCLEBIN" | tk="REFERENCES" | tk="REFRESH" | tk="REGEXP" | tk="REGEXP_LIKE" | tk="REGISTER" | tk="REJECT" | tk="REMOTE" | tk="REMOVE" | tk="RENAME" | tk="REORGANIZE" | tk="REPAIR" | tk="REPEATABLE" | tk="REPLACE" | tk="RESET" | tk="RESPECT" | tk="RESTART" | tk="RESTRICT" | tk="RESTRICTED" | tk="RESUMABLE" | tk="RESUME" | tk="RETURN" | tk="RLIKE" | tk="ROLLBACK" | tk="ROLLUP" | tk="ROOT" | tk="ROW" | tk="ROWS" | tk="RR" | tk="RS" | tk="RTRIM" | tk="SAFE_CAST" | tk="SAFE_CONVERT" | tk="SAVEPOINT" | tk="SCHEMA" | tk="SEARCH" | tk="SECURE" | tk="SECURITY" | tk="SEED" | tk="SEPARATOR" | tk="SEQUENCE" | tk="SESSION" | tk="SETS" | tk="SHARE" | tk="SHOW" | tk="SHUTDOWN" | tk="SIBLINGS" | tk="SIGNED" | tk="SIMILAR" | tk="SIZE" | tk="SKIP" | tk="SPATIAL" | tk="STORED" | tk="STREAM" | tk="STRICT" | tk="STRING" | tk="STRUCT" | tk="SUMMARIZE" | tk="SUSPEND" | tk="SWITCH" | tk="SYMMETRIC" | tk="SYNONYM" | tk="SYSTEM" | tk="SYSTEM_TIME" | tk="SYSTEM_TIMESTAMP" | tk="SYSTEM_VERSION" | tk="TABLE" | tk="TABLESPACE" | tk="TEMP" | tk="TEMPORARY" | tk="TEXT" | tk="THAN" | tk="THEN" | tk="TIMEOUT" | tk="TIMESTAMPTZ" | tk="TIMEZONE" | tk="TINYTEXT" | tk="TO" | tk="TRIGGER" | tk="TRUNCATE" | tk="TRY_CAST" | tk="TRY_CONVERT" | tk="TUMBLING" | tk="TYPE" | tk="UNLIMITED" | tk="UNLOGGED" | tk="UNQIESCE" | tk="UNSIGNED" | tk="UPDATE" | tk="UPSERT" | tk="UR" | tk="USER" | tk="VALIDATE" | tk="VALIDATION" | tk="VERBOSE" | tk="VERSION" | tk="VIEW" | tk="VISIBLE" | tk="VOLATILE" | tk="WAIT" | tk="WITHIN" | tk="WITHOUT" | tk="WITHOUT_ARRAY_WRAPPER" | tk="WORK" | tk="XML" | tk="XMLAGG" | tk="XMLDATA" | tk="XMLSCHEMA" | tk="XMLTEXT" | tk="XSINIL" | tk="YAML" | tk="YES" | tk="ZONE" )
-    { return tk.image; }
+    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
+      | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL>
+      | LOOKAHEAD({ getToken(1).kind >= MIN_NON_RESERVED_WORD
+                        && getToken(1).kind <= MAX_NON_RESERVED_WORD })
+        result = NonReservedWord() )
+    { return result != null ? result : tk.image; }
 }
 
 /*
@@ -8895,21 +8855,21 @@ Function SpecialStringFunctionWithNamedParameters() :
     }
 }
 
-/**
- * Matches a keyword name for generic keyword arguments inside function calls.
- * Uses RelObjectName() for the ~400 soft-keyword tokens, plus explicit alternatives
- * for reserved K_ tokens that are valid keyword-arg names but not in RelObjectName.
- *
- * Guarded by isKeywordArgumentAhead() — only called when the semantic check passes.
- */
-String KeywordArgumentName():
-{ String name; Token tk; }
-{
-    (
-        name = RelObjectName()
-        | tk = <K_USING> { name = tk.image; }
-    )
-    { return name; }
+JAVACODE
+List<Function.KeywordArgument> consumeKeywordArguments() {
+    List<Function.KeywordArgument> args = null;
+    while (isKeywordArgumentAhead()) {
+        String name = getNextToken().image;
+        ExpressionList exprList = SimpleExpressionList();
+        if (args == null) {
+            args = new ArrayList<Function.KeywordArgument>();
+        }
+        Expression value = exprList.size() == 1
+                ? (Expression) exprList.get(0)
+                : exprList;
+        args.add(new Function.KeywordArgument(name, value));
+    }
+    return args;
 }
 
 Function InternalFunction(boolean escaped):
@@ -8928,8 +8888,6 @@ Function InternalFunction(boolean escaped):
     Token overflowToken = null;
     Limit limit;
     Token extraKeywordToken;
-    String keywordArgName;
-    ExpressionList keywordArgExprList;
     List<Function.KeywordArgument> keywordArgs = null;
 }
 {
@@ -8951,11 +8909,11 @@ Function InternalFunction(boolean escaped):
             [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
 
             // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
-            [ LOOKAHEAD(2)
+            [
                 <K_ON> <K_OVERFLOW> ( overflowToken=<K_TRUNCATE> | overflowToken=<K_ERROR> ) { onOverflowTruncate=overflowToken.image; }
                 [
                     overflowToken = <S_CHAR_LITERAL> { onOverflowTruncate+= " " + overflowToken.image; }
-                    [ LOOKAHEAD(2) ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
+                    [ ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
                 ]
             ] { retval.setOnOverflowTruncate(onOverflowTruncate); }
 
@@ -8972,7 +8930,7 @@ Function InternalFunction(boolean escaped):
         )
     ]
 
-    [ LOOKAHEAD(2)
+    [
         (
             <K_IGNORE> <K_NULLS> { retval.setNullHandling(Function.NullHandling.IGNORE_NULLS); }
         )
@@ -8986,25 +8944,9 @@ Function InternalFunction(boolean escaped):
         limit = PlainLimit() { retval.setLimit(limit); }
     ]
 
-    // Generic keyword-argument tail: catches KEYWORD expr pairs that are not
-    // consumed by any of the explicit clauses above.
-    // Examples: SEPARATOR ',', USING utf8, DELIMITER CHR(10),
-    //           USING col1, col2, col3 (Oracle Data Mining)
-    (
-        LOOKAHEAD(2, { isKeywordArgumentAhead() })
-        keywordArgName = KeywordArgumentName()
-        keywordArgExprList = SimpleExpressionList()
-        {
-            if (keywordArgs == null) {
-                keywordArgs = new ArrayList<Function.KeywordArgument>();
-            }
-            // Unwrap single-element lists so the API returns the expression directly
-            Expression keywordArgValue = keywordArgExprList.size() == 1
-                    ? (Expression) keywordArgExprList.get(0)
-                    : keywordArgExprList;
-            keywordArgs.add(new Function.KeywordArgument(keywordArgName, keywordArgValue));
-        }
-    )*
+    {
+        keywordArgs = consumeKeywordArguments();
+    }
 
     ")"
 
@@ -9078,10 +9020,6 @@ XMLSerializeExpr XMLSerializeExpr(): {
     }
 }
 
-
-// MySQLGroupConcat production removed — GROUP_CONCAT is now handled by InternalFunction
-// with SEPARATOR captured as a generic keyword argument via the (KEYWORD expr)* tail.
-// This also fixes the bug where SEPARATOR only accepted string literals, not expressions.
 
 JsonTableFunction.JsonTablePassingClause JsonTablePassingClause() : {
     Expression valueExpression;

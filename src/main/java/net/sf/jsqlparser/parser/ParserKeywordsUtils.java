@@ -34,13 +34,13 @@ public class ParserKeywordsUtils {
     public final static int RESTRICTED_SQL2016 = 64;
 
     public final static int RESTRICTED_JSQLPARSER = 128
-            | RESTRICTED_FUNCTION
-            | RESTRICTED_SCHEMA
-            | RESTRICTED_TABLE
-            | RESTRICTED_COLUMN
-            | RESTRICTED_EXPRESSION
-            | RESTRICTED_ALIAS
-            | RESTRICTED_SQL2016;
+                                                    | RESTRICTED_FUNCTION
+                                                    | RESTRICTED_SCHEMA
+                                                    | RESTRICTED_TABLE
+                                                    | RESTRICTED_COLUMN
+                                                    | RESTRICTED_EXPRESSION
+                                                    | RESTRICTED_ALIAS
+                                                    | RESTRICTED_SQL2016;
 
 
     // Classification follows http://www.h2database.com/html/advanced.html#keywords
@@ -238,14 +238,22 @@ public class ParserKeywordsUtils {
         Pattern tokenBlockPattern = Pattern.compile(
                 "TOKEN\\s*:\\s*/\\*.*\\*/*(?:\\r?\\n|\\r)\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}",
                 Pattern.MULTILINE);
+
+        // Also match the NonReservedWord() BNF production which contains
+        // inline token declarations after the token restructuring
+        Pattern nonReservedWordPattern = Pattern.compile(
+                "String\\s+NonReservedWord\\s*\\(\\s*\\)\\s*:\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}\\s*\\{(?:[^}{]+|\\{(?:[^}{]+|\\{[^}{]*})*})*}",
+                Pattern.MULTILINE);
+
         Pattern tokenStringValuePattern = Pattern.compile("\"(\\w{2,})\"", Pattern.MULTILINE);
 
         TreeSet<String> allKeywords = new TreeSet<>();
 
         Path path = file.toPath();
         Charset charset = Charset.defaultCharset();
-        String content = new String(Files.readAllBytes(path), charset);
+        String content = Files.readString(path, charset);
 
+        // Scan TOKEN blocks (reserved keywords, operators, data types)
         Matcher tokenBlockmatcher = tokenBlockPattern.matcher(content);
         while (tokenBlockmatcher.find()) {
             String tokenBlock = tokenBlockmatcher.group(0);
@@ -266,6 +274,25 @@ public class ParserKeywordsUtils {
                 }
             }
         }
+
+        // Scan NonReservedWord() BNF production (inline token declarations)
+        Matcher nonReservedMatcher = nonReservedWordPattern.matcher(content);
+        while (nonReservedMatcher.find()) {
+            String block = nonReservedMatcher.group(0);
+            for (String tokenDefinition : getTokenDefinitions(block)) {
+                if (tokenDefinition.matches("(?sm)^<\\s*[^#].*")) {
+                    Matcher tokenStringValueMatcher =
+                            tokenStringValuePattern.matcher(tokenDefinition);
+                    while (tokenStringValueMatcher.find()) {
+                        String tokenValue = tokenStringValueMatcher.group(1);
+                        if (CHARSET_ENCODER.canEncode(tokenValue) && tokenValue.matches("\\w+")) {
+                            allKeywords.add(tokenValue);
+                        }
+                    }
+                }
+            }
+        }
+
         return allKeywords;
     }
 
@@ -331,11 +358,11 @@ public class ParserKeywordsUtils {
 
         StringBuilder builder = new StringBuilder();
         builder.append("String RelObjectNameWithoutValue() :\n"
-                + "{    Token tk = null; }\n"
-                + "{\n"
-                // @todo: find a way to avoid those hardcoded compound tokens
-                + "    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> \n"
-                + "      ");
+                       + "{    Token tk = null; }\n"
+                       + "{\n"
+                       // @todo: find a way to avoid those hardcoded compound tokens
+                       + "    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> |  tk=<K_DATE_LITERAL> | tk=<K_DATETIMELITERAL> | tk=<K_STRING_FUNCTION_NAME> | tk=<K_ISOLATION> | tk=<K_TIME_KEY_EXPR> | tk=<K_TEXT_LITERAL> \n"
+                       + "      ");
 
         for (String keyword : allKeywords) {
             builder.append(" | tk=\"").append(keyword).append("\"");
@@ -361,10 +388,10 @@ public class ParserKeywordsUtils {
 
         StringBuilder builder = new StringBuilder();
         builder.append("String RelObjectName() :\n"
-                + "{    Token tk = null; String result = null; }\n"
-                + "{\n"
-                + "    (result = RelObjectNameWithoutValue()\n"
-                + "      ");
+                       + "{    Token tk = null; String result = null; }\n"
+                       + "{\n"
+                       + "    (result = RelObjectNameWithoutValue()\n"
+                       + "      ");
 
         for (String keyword : allKeywords) {
             builder.append(" | tk=\"").append(keyword).append("\"");
@@ -411,19 +438,19 @@ public class ParserKeywordsUtils {
 
         for (Object[] keywordDefinition : ALL_RESERVED_KEYWORDS) {
             builder.append("| ").append(rightPadding(keywordDefinition[0].toString(), ' ', 20))
-                    .append(" | ");
+                   .append(" | ");
 
             int value = (int) keywordDefinition[1];
             int restriction = RESTRICTED_JSQLPARSER;
             String s = (value & restriction) == restriction || (restriction & value) == value
-                    ? "Yes"
-                    : "";
+                       ? "Yes"
+                       : "";
             builder.append(rightPadding(s, ' ', 11)).append(" | ");
 
             restriction = RESTRICTED_SQL2016;
             s = (value & restriction) == restriction || (restriction & value) == value
-                    ? "Yes"
-                    : "";
+                ? "Yes"
+                : "";
             builder.append(rightPadding(s, ' ', 9)).append(" | ");
 
             builder.append("\n");

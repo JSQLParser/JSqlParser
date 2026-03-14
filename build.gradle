@@ -559,7 +559,7 @@ tasks.register('xslt', SaxonXsltTask) {
     stylesheet file('src/main/resources/rr/xhtml2rst.xsl')
 
     parameters(
-            "withFloatingToc": System.getProperty("FLOATING_TOC", "true"),
+            "withFloatingToc": System.getProperty("FLOATING_TOC", "false"),
             "isSnapshot": Boolean.toString(version.endsWith("-SNAPSHOT"))
     )
 
