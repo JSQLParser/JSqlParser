@@ -16,9 +16,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A function as MAX,COUNT...
@@ -42,6 +45,14 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private KeepExpression keep = null;
     private String onOverflowTruncate = null;
     private String extraKeyword = null;
+
+    /**
+     * Generic keyword arguments captured inside function parentheses, e.g.
+     * {@code GROUP_CONCAT(col ORDER BY col SEPARATOR ',')} where {@code SEPARATOR ','} is a keyword
+     * argument. This acts as a catch-all for dialect-specific {@code KEYWORD expr} pairs that don't
+     * have dedicated grammar branches.
+     */
+    private List<KeywordArgument> keywordArguments = null;
 
     public Function() {}
 
@@ -281,6 +292,53 @@ public class Function extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    // ── Generic keyword argument support ───────────────────────────────
+
+    /**
+     * Returns the list of generic keyword arguments, e.g. {@code SEPARATOR ','}.
+     *
+     * @return keyword arguments or {@code null}
+     */
+    public List<KeywordArgument> getKeywordArguments() {
+        return keywordArguments;
+    }
+
+    public void setKeywordArguments(List<KeywordArgument> keywordArguments) {
+        this.keywordArguments = keywordArguments;
+    }
+
+    /**
+     * Adds a single keyword argument (appends to the list, creating it if needed).
+     */
+    public Function addKeywordArgument(String keyword, Expression expression) {
+        if (this.keywordArguments == null) {
+            this.keywordArguments = new ArrayList<>();
+        }
+        this.keywordArguments.add(new KeywordArgument(keyword, expression));
+        return this;
+    }
+
+    public Function withKeywordArguments(List<KeywordArgument> keywordArguments) {
+        this.keywordArguments = keywordArguments;
+        return this;
+    }
+
+    /**
+     * Convenience lookup: returns the expression for the first keyword argument matching the given
+     * keyword (case-insensitive), or {@code null}.
+     */
+    public Expression getKeywordArgumentValue(String keyword) {
+        if (keywordArguments == null) {
+            return null;
+        }
+        for (KeywordArgument ka : keywordArguments) {
+            if (ka.getKeyword().equalsIgnoreCase(keyword)) {
+                return ka.getExpression();
+            }
+        }
+        return null;
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -337,6 +395,13 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
                 if (onOverflowTruncate != null) {
                     b.append(" ON OVERFLOW ").append(onOverflowTruncate);
+                }
+
+                // Generic keyword arguments (e.g. SEPARATOR ',')
+                if (keywordArguments != null) {
+                    for (KeywordArgument ka : keywordArguments) {
+                        ka.appendTo(b);
+                    }
                 }
 
                 b.append(")");
@@ -460,6 +525,74 @@ public class Function extends ASTNodeAccessImpl implements Expression {
 
     public enum NullHandling {
         IGNORE_NULLS, RESPECT_NULLS;
+    }
+
+    // ── KeywordArgument inner class ────────────────────────────────────
+
+    /**
+     * Represents a generic {@code KEYWORD expression} pair inside a function call.
+     * <p>
+     * Examples:
+     * <ul>
+     * <li>{@code GROUP_CONCAT(col SEPARATOR ',')} → keyword="SEPARATOR", expression=','</li>
+     * </ul>
+     */
+    public static class KeywordArgument implements Serializable {
+        private String keyword;
+        private Expression expression;
+
+        public KeywordArgument() {}
+
+        public KeywordArgument(String keyword, Expression expression) {
+            this.keyword = keyword;
+            this.expression = expression;
+        }
+
+        public String getKeyword() {
+            return keyword;
+        }
+
+        public KeywordArgument setKeyword(String keyword) {
+            this.keyword = keyword;
+            return this;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public KeywordArgument setExpression(Expression expression) {
+            this.expression = expression;
+            return this;
+        }
+
+        public StringBuilder appendTo(StringBuilder builder) {
+            builder.append(" ").append(keyword).append(" ").append(expression);
+            return builder;
+        }
+
+        @Override
+        public String toString() {
+            return keyword + " " + expression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof KeywordArgument)) {
+                return false;
+            }
+            KeywordArgument that = (KeywordArgument) o;
+            return Objects.equals(keyword, that.keyword)
+                    && Objects.equals(expression, that.expression);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(keyword, expression);
+        }
     }
 
     public static class HavingClause extends ASTNodeAccessImpl implements Expression {

@@ -222,18 +222,18 @@ javadoc {
 jar {
     manifest {
         attributes (
-            "Automatic-Module-Name": "net.sf.jsqlparser"
+                "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
 
     bundle {
         properties.empty()
         bnd(
-            "Created-By": System.properties.get('user.name'),
-            "Bundle-SymbolicName": "net.sf.jsqlparser",
-            "Import-Package": "*",
-            "Export-Package": "net.sf.jsqlparser.*",
-            "Automatic-Module-Name": "net.sf.jsqlparser"
+                "Created-By": System.properties.get('user.name'),
+                "Bundle-SymbolicName": "net.sf.jsqlparser",
+                "Import-Package": "*",
+                "Export-Package": "net.sf.jsqlparser.*",
+                "Automatic-Module-Name": "net.sf.jsqlparser"
         )
     }
 
@@ -344,7 +344,7 @@ jacocoTestCoverageVerification {
 
                 //@todo: temporarily increased to 7000, we need to bring that down to 5500 after accepting the Keywords PR
                 maximum = 20000
-                }
+            }
             excludes = [
                     'net.sf.jsqlparser.util.validation.*',
                     'net.sf.jsqlparser.**.*Adapter',
@@ -379,27 +379,31 @@ spotbugsMain {
 spotbugs {
     // fail only on P1 and without the net.sf.jsqlparser.parser.*
     excludeFilter = file("config/spotbugs/spotBugsExcludeFilter.xml")
+}
 
-    // do not run over the test, although we should do that eventually
-    spotbugsTest.enabled = false
+// do not run over the test, although we should do that eventually
+tasks.named('spotbugsTest').configure {
+    enabled = false
 }
 
 pmd {
+    // later versions throw NPE
+    toolVersion = '7.17.0'
+
     consoleOutput = true
     sourceSets = [sourceSets.main]
 
     // clear the ruleset in order to use configured rules only
     ruleSets = []
-
-    //rulesMinimumPriority = 1
+    rulesMinimumPriority = 2
     ruleSetFiles = files("config/pmd/ruleset.xml")
+}
 
-    pmdMain {
-        excludes = [
-                "build/generated/*"
-                , "**/net/sf/jsqlparser/parser/SimpleCharStream.java"
-        ]
-    }
+tasks.named('pmdMain').configure {
+    excludes = [
+            "build/generated/*"
+            , "**/net/sf/jsqlparser/parser/SimpleCharStream.java"
+    ]
 }
 
 checkstyle {
@@ -462,28 +466,34 @@ tasks.register('renderRR') {
         }
 
         // Convert JJ file to EBNF
-        tasks.register("convertJJ", JavaExec) {
-            standardOutput = new FileOutputStream(new File(rrDir, "JSqlParserCC.ebnf"))
-            mainClass = "-jar"
-            args = [
-                    new File(rrDir, "convert.war").absolutePath,
-                    layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj").get().asFile.absolutePath
-            ]
-        }.get().exec()
+        def ebnfFile = new File(rrDir, "JSqlParserCC.ebnf")
+        def jjFile = layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj").get().asFile.absolutePath
+
+        def convertProc = new ProcessBuilder('java', '-jar',
+                new File(rrDir, "convert.war").absolutePath,
+                jjFile)
+                .redirectOutput(ebnfFile)
+                .redirectErrorStream(true)
+                .start()
+        if (convertProc.waitFor() != 0) {
+            throw new GradleException("Failed to convert JJ to EBNF")
+        }
 
         // Generate RR diagrams
-        tasks.register("generateRR", JavaExec) {
-            mainClass = "-jar"
-            args = [
-                    new File(rrDir, "rr.war").absolutePath,
-                    "-noepsilon",
-                    "-color:#4D88FF",
-                    "-offset:0",
-                    "-width:800",
-                    "-out:${new File(rrDir, "JSqlParserCC.xhtml")}",
-                    new File(rrDir, "JSqlParserCC.ebnf").absolutePath
-            ]
-        }.get().exec()
+        def rrProc = new ProcessBuilder('java', '-jar',
+                new File(rrDir, "rr.war").absolutePath,
+                "-noepsilon",
+                "-color:#4D88FF",
+                "-offset:0",
+                "-width:800",
+                "-out:${new File(rrDir, "JSqlParserCC.xhtml")}",
+                new File(rrDir, "JSqlParserCC.ebnf").absolutePath)
+                .redirectErrorStream(true)
+                .start()
+        rrProc.inputStream.eachLine { logger.info(it) }
+        if (rrProc.waitFor() != 0) {
+            throw new GradleException("Failed to generate RR diagrams")
+        }
     }
 }
 
@@ -535,7 +545,7 @@ tasks.register('updateKeywords', JavaExec) {
             file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath
             , file('src/site/sphinx/keywords.rst').absolutePath
     ]
-    main("net.sf.jsqlparser.parser.ParserKeywordsUtils")
+    mainClass.set("net.sf.jsqlparser.parser.ParserKeywordsUtils")
 
     dependsOn(compileJava)
 }

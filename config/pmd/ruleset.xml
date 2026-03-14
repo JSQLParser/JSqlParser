@@ -20,14 +20,15 @@ under the License.
 <ruleset name="Default Maven PMD Plugin Ruleset" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
 
 	<description>
-        The default ruleset used by the Maven PMD Plugin, when no other ruleset is specified.
-        It contains the rules of the old (pre PMD 6.0.0) rulesets java-basic, java-empty, java-imports,
-        java-unnecessary, java-unusedcode.
+		Custom PMD ruleset, compatible with PMD 7.x.
 
-        This ruleset might be used as a starting point for an own customized ruleset [0].
+		Based on the old (pre PMD 6.0.0) rulesets java-basic, java-empty, java-imports,
+		java-unnecessary, java-unusedcode, migrated for PMD 7.
 
-        [0] https://pmd.github.io/latest/pmd_userdocs_making_rulesets.html
-    </description>
+		This ruleset might be used as a starting point for an own customized ruleset [0].
+
+		[0] https://pmd.github.io/latest/pmd_userdocs_making_rulesets.html
+	</description>
 
 	<rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP" />
 	<rule ref="category/java/bestpractices.xml/CheckResultSet" />
@@ -46,6 +47,14 @@ under the License.
 	<rule ref="category/java/codestyle.xml/UselessParentheses" />
 	<rule ref="category/java/codestyle.xml/UselessQualifiedThis" />
 
+	<!-- PMD 7: replaces EmptyFinallyBlock, EmptyIfStmt, EmptyInitializer,
+	     EmptyStatementBlock, EmptySwitchStatements, EmptySynchronizedBlock,
+	     EmptyTryBlock, EmptyWhileStmt (all removed in PMD 7) -->
+	<rule ref="category/java/codestyle.xml/EmptyControlStatement" />
+
+	<!-- PMD 7: replaces EmptyStatementNotInLoop (removed in PMD 7) -->
+	<rule ref="category/java/codestyle.xml/UnnecessarySemicolon" />
+
 	<rule ref="category/java/codestyle.xml/MethodNamingConventions">
 		<properties>
 			<property name="methodPattern" value="[a-z][a-zA-Z0-9]*" />
@@ -63,14 +72,15 @@ under the License.
 	<rule ref="category/java/design.xml/UselessOverridingMethod" />
 	<rule ref="category/java/design.xml/AvoidThrowingNullPointerException" />
 
-
 	<rule ref="category/java/design.xml/CyclomaticComplexity">
 		<properties>
 			<property name="classReportLevel" value="200" />
 			<property name="methodReportLevel" value="120" />
 		</properties>
 	</rule>
-	<rule ref="category/java/design.xml/ExcessiveMethodLength" />
+
+	<!-- PMD 7: ExcessiveMethodLength was removed, use NcssCount instead -->
+	<rule ref="category/java/design.xml/NcssCount" />
 
 	<rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
 	<rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />
@@ -80,16 +90,10 @@ under the License.
 	<rule ref="category/java/errorprone.xml/CheckSkipResult" />
 	<rule ref="category/java/errorprone.xml/ClassCastExceptionWithToArray" />
 	<rule ref="category/java/errorprone.xml/DontUseFloatTypeForLoopIndices" />
+
+	<!-- EmptyCatchBlock is explicitly kept as a separate rule in PMD 7 -->
 	<rule ref="category/java/errorprone.xml/EmptyCatchBlock" />
-	<rule ref="category/java/errorprone.xml/EmptyFinallyBlock" />
-	<rule ref="category/java/errorprone.xml/EmptyIfStmt" />
-	<rule ref="category/java/errorprone.xml/EmptyInitializer" />
-	<rule ref="category/java/errorprone.xml/EmptyStatementBlock" />
-	<rule ref="category/java/errorprone.xml/EmptyStatementNotInLoop" />
-	<rule ref="category/java/errorprone.xml/EmptySwitchStatements" />
-	<rule ref="category/java/errorprone.xml/EmptySynchronizedBlock" />
-	<rule ref="category/java/errorprone.xml/EmptyTryBlock" />
-	<rule ref="category/java/errorprone.xml/EmptyWhileStmt" />
+
 	<rule ref="category/java/errorprone.xml/JumbledIncrementer" />
 	<rule ref="category/java/errorprone.xml/MisplacedNullCheck" />
 	<rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode" />
@@ -97,15 +101,14 @@ under the License.
 	<rule ref="category/java/errorprone.xml/UnconditionalIfStatement" />
 	<rule ref="category/java/errorprone.xml/UnnecessaryConversionTemporary" />
 	<rule ref="category/java/errorprone.xml/UnusedNullCheckInEquals" />
-	<rule ref="category/java/errorprone.xml/UselessOperationOnImmutable" />
-    
-    <!-- for Codazy -->
+
+	<!-- for Codazy -->
 	<rule ref="category/java/multithreading.xml/AvoidThreadGroup" />
 	<rule ref="category/java/multithreading.xml/DontCallThreadRun" />
 	<rule ref="category/java/multithreading.xml/DoubleCheckedLocking" />
 
 	<rule ref="category/java/performance.xml/BigIntegerInstantiation" />
 
-    <!-- for Codazy -->
+	<!-- for Codazy -->
 	<!-- <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody" /> -->
 </ruleset>

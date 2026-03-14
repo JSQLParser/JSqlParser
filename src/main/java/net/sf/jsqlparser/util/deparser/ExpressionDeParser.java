@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import static java.util.stream.Collectors.joining;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnalyticType;
@@ -20,8 +25,8 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
-import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateUnitExpression;
 import net.sf.jsqlparser.expression.DateValue;
@@ -41,6 +46,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
@@ -133,12 +139,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.stream.Collectors.joining;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionDeParser extends AbstractDeParser<Expression>
@@ -917,6 +917,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             if (function.getLimit() != null) {
                 new LimitDeparser(this, builder).deParse(function.getLimit());
             }
+
+            // Generic keyword arguments (e.g. SEPARATOR ',', USING utf8)
+            if (function.getKeywordArguments() != null) {
+                for (Function.KeywordArgument ka : function.getKeywordArguments()) {
+                    builder.append(" ").append(ka.getKeyword()).append(" ");
+                    ka.getExpression().accept(this, context);
+                }
+            }
+
             builder.append(")");
         }
 
@@ -1540,6 +1549,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         visit(expr, null);
     }
 
+    public void visit(KeyExpression keyExpression) {
+        visit(keyExpression, null);
+    }
+
 
     @Override
     public <S> StringBuilder visit(ArrayExpression array, S context) {
@@ -1657,6 +1670,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public <S> StringBuilder visit(ConnectByPriorOperator connectByPriorOperator, S context) {
         builder.append("PRIOR ");
         connectByPriorOperator.getColumn().accept(this, context);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(KeyExpression keyExpression, S context) {
+        builder.append("KEY ");
+        keyExpression.getExpression().accept(this, context);
         return builder;
     }
 
