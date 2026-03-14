@@ -8810,22 +8810,14 @@ Execute Execute(): {
 
 FullTextSearch FullTextSearch() : {
     Token searchModifier;
-    Token againstValue;
-    JdbcParameter jdbcParameter;
-    JdbcNamedParameter jdbcNamedParameter;
+    Expression againstValue;
     FullTextSearch fs = new FullTextSearch();
     ExpressionList<Column> matchedColumns;
 }
 {
     <K_MATCH> "(" matchedColumns=ColumnList() ")" <K_AGAINST>
     "("
-    (
-      againstValue=<S_CHAR_LITERAL> { fs.setAgainstValue(new StringValue(againstValue.image)); }
-      |
-      jdbcParameter=JdbcParameter() { fs.setAgainstValue(  jdbcParameter ); }
-      |
-      jdbcNamedParameter=JdbcNamedParameter() { fs.setAgainstValue(  jdbcNamedParameter ); }
-    )
+    againstValue=SimpleExpression() { fs.setAgainstValue(againstValue); }
     [
         (
             searchModifier="IN NATURAL LANGUAGE MODE"

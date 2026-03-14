@@ -275,6 +275,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(FullTextSearch fullTextSearch, S context) {
         validateOptionalExpressions(fullTextSearch.getMatchColumns());
+        validateOptionalExpression(fullTextSearch.getAgainstValue(), this);
         return null;
     }
 
