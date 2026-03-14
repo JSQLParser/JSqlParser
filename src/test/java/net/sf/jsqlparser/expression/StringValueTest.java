@@ -9,13 +9,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -99,6 +99,14 @@ public class StringValueTest {
     @Test
     void testDollarQuotesIssue2267() throws JSQLParserException {
         String sqlStr = "SELECT $$this is a string$$, test, 'text' FROM tbl;";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertInstanceOf(StringValue.class, select.getSelectItem(0).getExpression());
+    }
+
+    @Test
+    void testDollarQuotesWithDollarSignsInside() throws JSQLParserException {
+        String sqlStr = "SELECT $$this references $1 and costs $5$$ FROM tbl;";
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Assertions.assertInstanceOf(StringValue.class, select.getSelectItem(0).getExpression());

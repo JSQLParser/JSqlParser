@@ -706,6 +706,40 @@ TOKEN_MGR_DECLS : {
 			return ((SimpleCharStream)input_stream).getAbsoluteTokenBegin();
 		return -1;
 	}
+
+    private static boolean endsWithDelimiter(Deque<Character> windowQueue, String delimiter) {
+        if (windowQueue.size() != delimiter.length()) {
+            return false;
+        }
+
+        int i = 0;
+        for (char ch : windowQueue) {
+            if (ch != delimiter.charAt(i++)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void consumeDollarQuotedString(String closingQuote) {
+        Deque<Character> windowQueue = new ArrayDeque<Character>();
+        int delimiterLength = closingQuote.length();
+
+        try {
+            while (true) {
+                char ch = input_stream.readChar();
+                windowQueue.addLast(ch);
+                if (windowQueue.size() > delimiterLength) {
+                    windowQueue.removeFirst();
+                }
+                if (endsWithDelimiter(windowQueue, closingQuote)) {
+                    return;
+                }
+            }
+        } catch (java.io.IOException e) {
+            reportError(Math.max(closingQuote.length(), input_stream.GetImage().length()));
+        }
+    }
 }
 
 SKIP:
@@ -1338,10 +1372,18 @@ TOKEN:
 {
 <S_PARAMETER: ["$"] (["0"-"9"])+ >
 |
-<S_IDENTIFIER: <LETTER> (<PART_LETTER>)*>
+<S_DOLLAR_QUOTED_STRING: "$$">
+    {
+        consumeDollarQuotedString(matchedToken.image);
+        matchedToken.image = input_stream.GetImage();
+        matchedToken.kind = charLiteralIndex;
+    }
+|
+<S_IDENTIFIER: (<LETTER> (<PART_LETTER>)*) | "$" | ("$" <PART_LETTER_NO_DOLLAR> (<PART_LETTER>)*)>
 |   <#LETTER: <UnicodeIdentifierStart>
-                | <Nd> | [ "$" , "#", "_" ] // Not SQL:2016 compliant!
+                | <Nd> | [ "#", "_" ] // Not SQL:2016 compliant!
                 >
+|   <#PART_LETTER_NO_DOLLAR: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "#", "_" , "@"  ] >
 |   <#PART_LETTER: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "$" , "#", "_" , "@"  ] >
 | <S_AT_IDENTIFIER: <K_AT_SIGN> (<K_AT_SIGN>)? <S_IDENTIFIER> >
 
@@ -1375,7 +1417,7 @@ TOKEN:
 | < S_CHAR_LITERAL: (
                         (["U","E","N","R","B"]|"RB"|"_utf8")?
                         (
-                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'" | "$$" (~["$"])* "$$")
+                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
                             // Alternative Oracle Escape Modes
                             | ("q'{" (~[])* "}'")
                             | ("q'(" (~[])* ")'")
