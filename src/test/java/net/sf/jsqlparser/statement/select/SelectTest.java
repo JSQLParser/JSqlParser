@@ -55,6 +55,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -2277,6 +2278,18 @@ public class SelectTest {
         String statement =
                 "SELECT col FROM tbl WHERE MATCH (col1,col2,col3) AGAINST ('test') ORDER BY col";
         assertSqlCanBeParsedAndDeparsed(statement);
+    }
+
+    @Test
+    public void testFullTextSearchAgainstFunctionInBooleanMode() throws JSQLParserException {
+        String statement =
+                "SELECT MATCH (name) AGAINST (concat('',?,'') IN BOOLEAN MODE) AS full_text FROM commodity";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
+        FullTextSearch fullTextSearch = assertInstanceOf(FullTextSearch.class,
+                select.getPlainSelect().getSelectItem(0).getExpression());
+
+        assertInstanceOf(Function.class, fullTextSearch.getAgainstValue());
+        assertEquals("IN BOOLEAN MODE", fullTextSearch.getSearchModifier());
     }
 
     @Test
