@@ -27,20 +27,20 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for the generic keyword-argument support inside {@link Function} and the
- * removal of the dedicated {@code MySQLGroupConcat} production.
+ * Tests for the generic keyword-argument support inside {@link Function} and the removal of the
+ * dedicated {@code MySQLGroupConcat} production.
  * <p>
- * The {@code (KEYWORD expr)*} tail in InternalFunction generically captures
- * dialect-specific keyword-expression pairs like {@code SEPARATOR ','} or
- * {@code USING utf8} without requiring a dedicated grammar branch per keyword.
+ * The {@code (KEYWORD expr)*} tail in InternalFunction generically captures dialect-specific
+ * keyword-expression pairs like {@code SEPARATOR ','} or {@code USING utf8} without requiring a
+ * dedicated grammar branch per keyword.
  * <p>
- * GROUP_CONCAT is no longer a special production - it routes through InternalFunction
- * like any other function, with SEPARATOR handled as a keyword argument.
+ * GROUP_CONCAT is no longer a special production - it routes through InternalFunction like any
+ * other function, with SEPARATOR handled as a keyword argument.
  */
 class FunctionKeywordArgumentTest {
 
     // ====================================================================
-    //  Roundtrip parse tests - parameterised
+    // Roundtrip parse tests - parameterised
     // ====================================================================
 
     static Stream<Arguments> roundtripSqlProvider() {
@@ -94,9 +94,9 @@ class FunctionKeywordArgumentTest {
                         "SELECT GROUP_CONCAT(col SEPARATOR sep_col) FROM t"),
 
                 // -- GitHub Issue #688: CONVERT(expr USING charset) ----------
-                //    https://github.com/JSQLParser/JSqlParser/issues/688
-                //    "select * from a order by convert(a.name using gbk) desc"
-                //    Failed: ParseException at "("
+                // https://github.com/JSQLParser/JSqlParser/issues/688
+                // "select * from a order by convert(a.name using gbk) desc"
+                // Failed: ParseException at "("
 
                 Arguments.of(
                         "Issue #688: CONVERT with USING charset",
@@ -111,8 +111,8 @@ class FunctionKeywordArgumentTest {
                         "SELECT CONVERT(col USING utf8mb4) FROM t"),
 
                 // -- GitHub Issue #1257: CONVERT(name USING GBK) -------------
-                //    https://github.com/JSQLParser/JSqlParser/issues/1257
-                //    Same root cause as #688, different reporter.
+                // https://github.com/JSQLParser/JSqlParser/issues/1257
+                // Same root cause as #688, different reporter.
 
                 Arguments.of(
                         "Issue #1257: CONVERT USING GBK with WHERE clause",
@@ -249,8 +249,8 @@ class FunctionKeywordArgumentTest {
                         "SELECT my_agg(ALL col ORDER BY col SEPARATOR ',') FROM t"),
 
                 // -- Multi-value keyword arguments (USING col1, col2, ...) ---
-                //    Oracle Data Mining functions use USING followed by a
-                //    comma-separated column list.
+                // Oracle Data Mining functions use USING followed by a
+                // comma-separated column list.
 
                 Arguments.of(
                         "Oracle PREDICTION with USING column list",
@@ -294,8 +294,7 @@ class FunctionKeywordArgumentTest {
 
                 Arguments.of(
                         "Keyword arg in function with chained call",
-                        "SELECT quantile_agg(col SEPARATOR ',')(cost) FROM t")
-        );
+                        "SELECT quantile_agg(col SEPARATOR ',')(cost) FROM t"));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -315,15 +314,15 @@ class FunctionKeywordArgumentTest {
 
         // Structural equivalence
         assertEquals(deparsed, stmt2.toString(),
-                     "Roundtrip mismatch for [" + label + "]:\n"
-                     + "  original:  " + sql + "\n"
-                     + "  deparsed:  " + deparsed + "\n"
-                     + "  reparsed:  " + stmt2);
+                "Roundtrip mismatch for [" + label + "]:\n"
+                        + "  original:  " + sql + "\n"
+                        + "  deparsed:  " + deparsed + "\n"
+                        + "  reparsed:  " + stmt2);
     }
 
     // ====================================================================
-    //  GitHub Issue #688 / #1257 - CONVERT(expr USING charset)
-    //  These were ParseExceptions before the generic keyword-arg tail.
+    // GitHub Issue #688 / #1257 - CONVERT(expr USING charset)
+    // These were ParseExceptions before the generic keyword-arg tail.
     // ====================================================================
 
     @Test
@@ -347,7 +346,7 @@ class FunctionKeywordArgumentTest {
     }
 
     // ====================================================================
-    //  GROUP_CONCAT migration - now parsed as Function, not MySQLGroupConcat
+    // GROUP_CONCAT migration - now parsed as Function, not MySQLGroupConcat
     // ====================================================================
 
     @Test
@@ -396,12 +395,12 @@ class FunctionKeywordArgumentTest {
 
         Expression separatorExpr = kwArgs.get(0).getExpression();
         assertInstanceOf(Function.class, separatorExpr,
-                         "SEPARATOR expression should be a Function call (CHR)");
+                "SEPARATOR expression should be a Function call (CHR)");
         assertEquals("CHR", ((Function) separatorExpr).getName());
     }
 
     // ====================================================================
-    //  AST structure assertions
+    // AST structure assertions
     // ====================================================================
 
     @Test
@@ -460,7 +459,7 @@ class FunctionKeywordArgumentTest {
         assertEquals("USING", kwArgs.get(0).getKeyword().toUpperCase());
         Expression usingExpr = kwArgs.get(0).getExpression();
         assertInstanceOf(ExpressionList.class,
-                         usingExpr, "Multi-value keyword arg should be an ExpressionList");
+                usingExpr, "Multi-value keyword arg should be an ExpressionList");
         assertEquals("col1, col2, col3", usingExpr.toString());
     }
 
@@ -495,13 +494,13 @@ class FunctionKeywordArgumentTest {
 
         List<Function.KeywordArgument> kwArgs = analytic.getKeywordArguments();
         assertNotNull(kwArgs,
-                      "Keyword arguments should be copied from Function to AnalyticExpression");
+                "Keyword arguments should be copied from Function to AnalyticExpression");
         assertEquals(1, kwArgs.size());
         assertEquals("SEPARATOR", kwArgs.get(0).getKeyword().toUpperCase());
     }
 
     // ====================================================================
-    //  Negative / regression tests - must NOT break existing clauses
+    // Negative / regression tests - must NOT break existing clauses
     // ====================================================================
 
     @Test
@@ -521,7 +520,7 @@ class FunctionKeywordArgumentTest {
         assertNotNull(func);
         assertNotNull(func.getOrderByElements());
         assertNull(func.getKeywordArguments(),
-                   "No keyword args - ORDER BY should be handled by explicit clause");
+                "No keyword args - ORDER BY should be handled by explicit clause");
     }
 
     @Test
@@ -541,7 +540,7 @@ class FunctionKeywordArgumentTest {
         Function func = extractFirstFunction(stmt);
         assertNotNull(func);
         assertNull(func.getKeywordArguments(),
-                   "Normal function should have null keywordArguments");
+                "Normal function should have null keywordArguments");
     }
 
     @Test
@@ -563,7 +562,7 @@ class FunctionKeywordArgumentTest {
     }
 
     // ====================================================================
-    //  Helpers
+    // Helpers
     // ====================================================================
 
     private static PlainSelect getPlainSelect(Statement stmt) {

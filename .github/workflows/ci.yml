@@ -87,7 +87,7 @@ jobs:
         run: sudo apt-get install -y xsltproc sphinx-common
 
       - name: Install Python dependencies
-        run: pip install furo myst_parser sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
+        run: pip install manticore_sphinx_theme myst_parser sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
 
       - name: Build Sphinx documentation with Gradle
         run: FLOATING_TOC=false ./gradlew -DFLOATING_TOC=false gitChangelogTask renderRR xslt xmldoc sphinx

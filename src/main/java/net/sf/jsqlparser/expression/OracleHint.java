@@ -24,7 +24,7 @@ public class OracleHint extends ASTNodeAccessImpl implements Expression {
 
     private static final Pattern SINGLE_LINE = Pattern.compile("--\\+ *([^ ].*[^ ])");
     private static final Pattern MULTI_LINE =
-            Pattern.compile("\\/\\*\\+ *([^ ].*[^ ]) *\\*+\\/", Pattern.MULTILINE | Pattern.DOTALL);
+            Pattern.compile("/\\*\\+ *([^ ].*[^ ]) *\\*+/", Pattern.MULTILINE | Pattern.DOTALL);
 
     private String value;
     private boolean singleLine = false;

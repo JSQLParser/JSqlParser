@@ -91,7 +91,7 @@ tasks.register('generateBuildInfo') {
         def buildTime = Instant.now().toString()
 
         def content = """\
-            |package ai.starlake.jsqltranspiler;
+            |package net.sf.jsqlparser;
             |
             |public final class BuildInfo {
             |  public static final String NAME = "${project.name}";
@@ -539,7 +539,7 @@ Version {{name}}
 
 tasks.register('updateKeywords', JavaExec) {
     group = "Execution"
-    description = "Run the main class with JavaExecTask"
+    description = "Generate the Reserved Keywords documentation"
     classpath = sourceSets.main.runtimeClasspath
     args = [
             file('src/main/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jjt').absolutePath

@@ -304,7 +304,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         Token t = getToken(1);
         if (t.kind == EOF || t.image.equals(")")) return false;
         if (t.image.isEmpty() || !Character.isLetter(t.image.charAt(0))) return false;
-        if (t.kind == S_IDENTIFIER || t.kind == S_QUOTED_IDENTIFIER || t.kind == DATA_TYPE) return false;
+        // S_QUOTED_IDENTIFIER is not a valid keyword arg name.
+        // S_IDENTIFIER and DATA_TYPE ARE allowed — after ExpressionList has
+        // consumed all comma-separated arguments, a remaining identifier or
+        // type keyword before ')' is a keyword argument name (e.g.
+        // PREDICTION(expr COST MODEL USING cols),
+        // XMLTABLE(... COLUMNS "col" VARCHAR2(6) PATH '...')).
+        if (t.kind == S_QUOTED_IDENTIFIER) return false;
         switch (t.kind) {
             case S_LONG: case S_DOUBLE: case S_HEX: case S_CHAR_LITERAL:
             case K_DISTINCT: case K_ALL: case K_UNIQUE: case K_TABLE:
@@ -318,7 +324,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_IS: case K_EXISTS: case K_AS:
             case K_CASE: case K_WHEN: case K_THEN: case K_ELSE: case K_END:
             case K_NULL: case K_TRUE: case K_FALSE:
-            case K_COLUMNS: case K_RETURNING:
+            case K_RETURNING:
                 return false;
         }
         Token t2 = getToken(2);
@@ -358,6 +364,237 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // i.e., the last name part we skipped over was "*"
         // Back up: the last token consumed was at (i-1)
         return getToken(i - 1).image.equals("*");
+    }
+
+    /**
+     * Follower-based disambiguation for reserved keywords in ambiguous
+     * positions (implicit alias, clause boundary, after parenthesised
+     * expression, etc.).
+     *
+     * Checks the candidate keyword ({@code getToken(1)}) and its follower
+     * ({@code getToken(2)}) to decide whether the keyword is being used as
+     * an identifier or as SQL syntax.  Returns {@code true} only for
+     * keywords that provably don't collide with clause syntax in the
+     * current follower context.
+     */
+    private boolean isReservedKeywordSafeByFollower() {
+        Token next2 = getToken(2);
+
+        // If followed by . or = the keyword is a name part / property key
+        if (next2.image != null
+                && (next2.image.equals(".") || next2.image.equals("="))) {
+            return true;
+        }
+
+        int kind = getToken(1).kind;
+        int nextKind = next2.kind;
+
+        switch (kind) {
+            // Safe as implicit identifiers (no clause collision)
+            case K_TABLES: case K_OPTIMIZE: case K_PROCEDURE: case K_PUBLIC:
+            case K_CASEWHEN: case K_IIF:
+                return true;
+
+            // Safe when the follower doesn't form a clause
+            case K_GROUP:    return nextKind != K_BY;
+            case K_ORDER:    return nextKind != K_BY && nextKind != K_SIBLINGS;
+            case K_CONNECT:  return nextKind != K_BY;
+            case K_START:    return nextKind != K_WITH;
+            case K_LEFT:     return nextKind != K_JOIN && nextKind != K_OUTER
+                                    && nextKind != K_SEMI;
+            case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
+                                    && nextKind != K_SEMI;
+            case K_ALL:      return nextKind != K_JOIN;
+            case K_ANY:      return nextKind != OPENING_BRACKET;
+            case K_SOME:     return nextKind != OPENING_BRACKET;
+            case K_IN:       return nextKind != OPENING_BRACKET;
+            case K_IF:       return nextKind != OPENING_BRACKET;
+            case K_GROUPING: return nextKind != OPENING_BRACKET;
+            case K_DEFAULT:  return nextKind != K_VALUES;
+            case K_CREATE:   return nextKind != K_TABLE && nextKind != K_VIEW
+                                    && nextKind != K_INDEX;
+            case K_INTERVAL: return nextKind != S_LONG && nextKind != S_DOUBLE
+                                    && nextKind != S_CHAR_LITERAL;
+            case K_TOP:      return nextKind != S_LONG && nextKind != S_DOUBLE
+                                    && nextKind != OPENING_BRACKET;
+            case K_NEXTVAL:  return nextKind != K_VALUE;
+
+            // IGNORE: blocks NULLS (IGNORE NULLS), FROM (DELETE IGNORE FROM),
+            // INDEX (IGNORE INDEX hint)
+            case K_IGNORE:   return nextKind != K_NULLS && nextKind != K_FROM
+                                    && nextKind != K_INDEX;
+
+            // GLOBAL: blocks IN (GLOBAL IN), TEMPORARY, JOIN (GLOBAL JOIN)
+            case K_GLOBAL:   return nextKind != K_IN && nextKind != K_TEMPORARY
+                                    && nextKind != K_JOIN;
+
+            // Structural keywords — never safe as implicit identifiers
+            case K_SET: case K_ON: case K_QUALIFY:
+            case K_LIMIT: case K_OFFSET:
+                return false;
+
+            // VALUE/VALUES: safe as alias when not starting VALUES(...)
+            case K_VALUE: case K_VALUES:
+                return nextKind != OPENING_BRACKET && nextKind != S_IDENTIFIER
+                    && nextKind != S_QUOTED_IDENTIFIER && nextKind != S_CHAR_LITERAL;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Determines whether a reserved keyword token can be treated as an unquoted
+     * identifier in the current parser position.
+     *
+     * Called from the semantic LOOKAHEAD inside {@code RelObjectName()}.
+     * Uses the previous token to detect name positions (after structural
+     * keywords, delimiters, AS), the follower token (after . or =), and
+     * falls back to conservative follower-based disambiguation.
+     */
+    private boolean isReservedKeywordAsIdentifier() {
+        Token prev = getToken(0);
+
+        // Guard: at the very start of parsing (e.g. parseExpression()),
+        // prev may be null or have null image.  This is always a name /
+        // expression position, so accept any keyword.
+        if (prev == null || prev.image == null) {
+            return true;
+        }
+
+        // ── 1. After AS: explicit alias — accept any keyword ──────────
+        if (prev.kind == K_AS) {
+            return true;
+        }
+
+        // ── 2. After delimiters and operators: expression position ─────
+        //    With K_FROM/K_SELECT/K_CURRENT removed from RelObjectName's
+        //    token list, accepting all remaining keywords after these
+        //    delimiters and operators is safe.
+        if (!prev.image.isEmpty()) {
+            switch (prev.image.charAt(0)) {
+                // Structural delimiters
+                case '.': case ',': case ':': case '(': case '=':
+                // Comparison and arithmetic operators
+                case '>': case '<': case '!': case '^':
+                case '+': case '-': case '*': case '/': case '%':
+                case '~': case '|': case '&': case '?':
+                    return true;
+            }
+        }
+
+        // ── 3. If followed by . or = the keyword is a name/property key ──
+        Token next2 = getToken(2);
+        if (next2.image != null
+                && (next2.image.equals(".") || next2.image.equals("="))) {
+            return true;
+        }
+
+        // ── 4. After TRULY STRUCTURAL keywords that can NEVER be ──────
+        //    consumed as identifiers (i.e. they are never in our own
+        //    keyword-as-identifier set).  After these, any keyword is
+        //    safe as an identifier.
+        //
+        //    Keywords that CAN be identifiers (LEFT, LIMIT, IGNORE,
+        //    etc.) are NOT listed here because they may appear as
+        //    getToken(0) after being consumed as identifiers or
+        //    modifiers, which is NOT a name position.
+        switch (prev.kind) {
+            // Boolean / conditional operators
+            case K_AND: case K_OR: case K_NOT: case K_XOR:
+
+            // Clause keywords
+            case K_SELECT: case K_FROM: case K_WHERE: case K_HAVING:
+            case K_INTO: case K_USING: case K_SET: case K_ON:
+            case K_FETCH: case K_FOR: case K_WITH:
+
+            // Comparison / expression operators
+            case K_BETWEEN: case K_LIKE: case K_ILIKE: case K_IS:
+
+            // Join keywords
+            case K_JOIN: case K_INNER: case K_OUTER: case K_FULL:
+            case K_CROSS: case K_NATURAL: case K_STRAIGHT: case K_SEMI:
+            case K_LATERAL:
+
+            // CASE/WHEN expression structure
+            case K_WHEN: case K_ELSE:
+
+            // Non-reserved keywords that structurally introduce expression
+            // positions (GROUP BY expr, ORDER BY expr, CASE WHEN x THEN expr)
+            case K_BY: case K_THEN:
+
+            // Modifiers
+            case K_DISTINCT: case K_DISTINCTROW:
+
+            // Set operators
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+
+            // DDL / utility keywords (never identifiers)
+            case K_FOREIGN: case K_CONSTRAINT: case K_UNIQUE: case K_CHECK:
+            case K_FORCE:
+            case K_RETURNING: case K_OUTPUT: case K_IMPORT:
+            case K_PIVOT: case K_UNPIVOT:
+            case K_PRIOR: case K_WINDOW: case K_ONLY:
+            case K_PREFERRING: case K_PREWHERE:
+            case K_RETURNS: case K_EXISTS:
+            case K_QUALIFY: case K_CURRENT:
+                return true;
+        }
+
+        // ── 5. Conservative default: fall back to follower check ──────
+        return isReservedKeywordSafeByFollower();
+    }
+
+    /**
+     * Checks whether the next token(s) can plausibly start an {@code Alias}.
+     *
+     * Used as a semantic LOOKAHEAD guard at alias call-sites.  Unlike
+     * {@link #isReservedKeywordAsIdentifier()}, this method does NOT use
+     * the structural-keyword whitelist (step 4), because an alias always
+     * follows an expression — never a structural keyword in isolation.
+     * Instead it goes directly to follower-based disambiguation for
+     * reserved keywords.
+     */
+    private boolean isAliasAhead() {
+        Token t = getToken(1);
+        int kind = t.kind;
+
+        // AS always starts an alias
+        if (kind == K_AS) return true;
+
+        // String-literal alias:  SELECT col 'myAlias'
+        if (kind == S_CHAR_LITERAL) return true;
+
+        // Base identifier tokens
+        if (kind == S_IDENTIFIER || kind == S_QUOTED_IDENTIFIER
+                || kind == DATA_TYPE || kind == K_DATETIMELITERAL
+                || kind == K_DATE_LITERAL) {
+            return true;
+        }
+
+        // Non-reserved keywords
+        if (kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD) {
+            return true;
+        }
+
+        // For reserved keywords in alias position, skip the structural-
+        // keyword whitelist and go directly to follower disambiguation.
+        // Only check keywords that are actually in RelObjectName's token
+        // alternatives — don't fire for brackets, operators, literals, etc.
+        switch (kind) {
+            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
+            case K_CREATE: case K_DEFAULT:
+            case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
+            case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL:
+            case K_LEFT: case K_LIMIT: case K_NEXTVAL: case K_OFFSET:
+            case K_ON: case K_OPTIMIZE: case K_ORDER: case K_PROCEDURE:
+            case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
+            case K_SET: case K_SOME: case K_START: case K_TABLES:
+            case K_TOP: case K_VALUE: case K_VALUES:
+                return isReservedKeywordSafeByFollower();
+            default:
+                return false;
+        }
     }
 
     /**
@@ -411,6 +648,11 @@ PARSER_END(CCJSqlParser)
 
 TOKEN_MGR_DECLS : {
     public FeatureConfiguration configuration = new FeatureConfiguration();
+
+    // Nesting depth for block comments: /* /* ... */ */
+    int commentNesting = 0;
+    // Stores the comment image up to and including the outermost */
+    String storedCommentImage = null;
 
     // Identify the index of the quoting/escaping tokens
     public int charLiteralIndex = -1;
@@ -1051,7 +1293,45 @@ TOKEN : /* Numeric Constants */
 SPECIAL_TOKEN:
 {
    < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*>
-|  < MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+// Nested block comments:  /* ... /* ... */ ... */
+//
+// Uses a nesting counter (commentNesting in TOKEN_MGR_DECLS) and
+// lexer states DEFAULT -> IN_BLOCK_COMMENT -> BLOCK_COMMENT_END.
+//
+// The */ rule has NO `: STATE` suffix — this is critical because
+// JavaCC's `: STATE` always overrides SwitchTo().  Without it,
+// SwitchTo(BLOCK_COMMENT_END) only fires when nesting reaches 0.
+//
+// In BLOCK_COMMENT_END, we match one real char with ~[], then
+// backup(1) to put it back.  This avoids the empty-string-at-EOF
+// problem while cleanly emitting the accumulated comment image.
+MORE:
+{
+    "/*" { commentNesting = 0; } : IN_BLOCK_COMMENT
+}
+
+<IN_BLOCK_COMMENT> MORE:
+{
+    "/*" { commentNesting++; }
+|   "*/" {
+        if (commentNesting > 0) {
+            commentNesting--;
+        } else {
+            storedCommentImage = image.toString();
+            SwitchTo(BLOCK_COMMENT_END);
+        }
+    }
+|   < ~[] >
+}
+
+<BLOCK_COMMENT_END> SPECIAL_TOKEN:
+{
+    <MULTI_LINE_COMMENT: ~[] > {
+        input_stream.backup(1);
+        matchedToken.image = storedCommentImage;
+    } : DEFAULT
 }
 
 TOKEN:
@@ -2178,7 +2458,7 @@ ScriptSourceDestination ScriptSourceDestination(): {
         <K_WITH>
         (
             LOOKAHEAD(2)
-            property = RelObjectNameWithoutValue() "=" token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
+            property = RelObjectName() "=" token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
             {
                 properties.add(property);
                 values.add(value);
@@ -2215,7 +2495,7 @@ ConnectionDefinition ConnectionDefinition(): {
 } {
   <K_AT>
   (
-      connectionObjectName = RelObjectNameWithoutValue() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
+      connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
     | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
   )
 
@@ -2243,7 +2523,7 @@ ConnectionDefinition CloudConnectionDefinition(): {
   )
 
   (
-      connectionObjectName = RelObjectNameWithoutValue() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
+      connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
     | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
   )
 
@@ -2507,7 +2787,7 @@ SetStatement Set(): {
                 ( LOOKAHEAD(2)
                     <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
                     |
-                    (name = RelObjectNameExt() ["=" { useEqual=true; } ])
+                    (name = RelObjectName() ["=" { useEqual=true; } ])
                 )
                 exp=Expression()
                 {
@@ -2758,7 +3038,7 @@ UseStatement Use(): {
     boolean hasSchemaKeyword = false;
 }
 {
-    <K_USE> [ LOOKAHEAD(2) <K_SCHEMA> { hasSchemaKeyword = true; } ] name = RelObjectNameExt()
+    <K_USE> [ LOOKAHEAD(2) <K_SCHEMA> { hasSchemaKeyword = true; } ] name = RelObjectName()
     {
         return new UseStatement(name, hasSchemaKeyword);
     }
@@ -2797,7 +3077,7 @@ ShowColumnsStatement ShowColumns(): {
     String tableName;
 }
 {
-    <K_COLUMNS> <K_FROM> tableName = RelObjectNameExt()
+    <K_COLUMNS> <K_FROM> tableName = RelObjectName()
     {
         return new ShowColumnsStatement(tableName);
     }
@@ -2807,7 +3087,7 @@ ShowIndexStatement ShowIndex(): {
     String tableName;
 }
 {
-    <K_INDEX> <K_FROM> tableName = RelObjectNameExt()
+    <K_INDEX> <K_FROM> tableName = RelObjectName()
     {
         return new ShowIndexStatement(tableName);
     }
@@ -2858,7 +3138,7 @@ ShowTablesStatement ShowTables(): {
         |
         <K_IN> { selectionMode = ShowTablesStatement.SelectionMode.IN; }
     )
-    dbName = RelObjectNameExt()
+    dbName = RelObjectName()
   ]
   [ (<K_LIKE> likeExpression = SimpleExpression() | <K_WHERE> whereCondition = Expression()) ]
   {
@@ -2918,7 +3198,7 @@ ReturningReferenceType ReturningReferenceKind():
     ReturningReferenceType refType;
 }
 {
-    refName = RelObjectNameWithoutValue()
+    refName = RelObjectName()
     {
         refType = ReturningReferenceType.from(refName);
         if (refType == ReturningReferenceType.OLD) {
@@ -2938,7 +3218,7 @@ ReturningOutputAlias ReturningOutputAliasDefinition():
 {
     refType = ReturningReferenceKind()
     <K_AS>
-    aliasName = RelObjectNameWithoutStart()
+    aliasName = RelObjectName()
     {
         return new ReturningOutputAlias(refType, aliasName);
     }
@@ -3214,7 +3494,7 @@ Insert Insert():
             ]   table=Table()
             [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
 
-            [ LOOKAHEAD(2) [<K_AS> { useAs = true; } ] name=RelObjectNameWithoutValue() { table.setAlias(new Alias(name,useAs)); }]
+            [ LOOKAHEAD({ isAliasAhead() }) [<K_AS> { useAs = true; } ] name=RelObjectName() { table.setAlias(new Alias(name,useAs)); }]
 
             [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
 
@@ -3232,7 +3512,7 @@ Insert Insert():
                 select = Select()
             )
 
-            [ LOOKAHEAD(2, { select instanceof Values || useSet }) rowAlias = Alias() {
+            [ LOOKAHEAD({ isAliasAhead() && (select instanceof Values || useSet) }) rowAlias = Alias() {
                 if (select instanceof Values) {
                     select.setAlias(rowAlias);
                 } else {
@@ -3348,8 +3628,8 @@ InsertConflictTarget  InsertConflictTarget():
     (
         (
             "("
-            indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); }
-            ( "," indexColumnName = RelObjectNameExt2() { indexColumnNames.add(indexColumnName); } )*
+            indexColumnName = RelObjectNameExt() { indexColumnNames.add(indexColumnName); }
+            ( "," indexColumnName = RelObjectNameExt() { indexColumnNames.add(indexColumnName); } )*
 //            |
 //            (
 //                "(" indexExpression = Expression() ")"
@@ -3360,7 +3640,7 @@ InsertConflictTarget  InsertConflictTarget():
         )
         |
         (
-         <K_ON> <K_CONSTRAINT> constraintName = RelObjectNameExt2()
+         <K_ON> <K_CONSTRAINT> constraintName = RelObjectNameExt()
         )
     )
 
@@ -3654,7 +3934,7 @@ ObjectNames RelObjectNames() : {
     List<String> data = new ArrayList<String>();
     List<String> delimiters = new ArrayList<String>();
 } {
-    token = RelObjectNameExt() { data.add(token); }
+    token = RelObjectName() { data.add(token); }
     (
         LOOKAHEAD (2) (
             ( delimiter = "..."  { delimiters.add("."); data.add(null); delimiters.add("."); data.add(null); delimiters.add("."); } )
@@ -3664,7 +3944,7 @@ ObjectNames RelObjectNames() : {
             ( ( delimiter = "." | delimiter = ":" ) { delimiters.add(delimiter.image); } )
         )
 
-        token = RelObjectNameExt2() { data.add(token); }
+        token = RelObjectNameExt() { data.add(token); }
     ) *
 
     { return new ObjectNames(data, delimiters); }
@@ -3677,7 +3957,7 @@ ObjectNames ColumnIdentifier() : {
     List<String> data = new ArrayList<String>();
     List<String> delimiters = new ArrayList<String>();
 } {
-    token = RelObjectNameExt() { data.add(token); }
+    token = RelObjectName() { data.add(token); }
     (
         LOOKAHEAD (2) (
             ( delimiter = "..."  { delimiters.add("."); data.add(null); delimiters.add("."); data.add(null); delimiters.add("."); } )
@@ -3687,7 +3967,7 @@ ObjectNames ColumnIdentifier() : {
             ( delimiter = "."  { delimiters.add(delimiter.image); } )
         )
 
-        token = RelObjectNameExt2() { data.add(token); }
+        token = RelObjectNameExt() { data.add(token); }
     ) *
 
     { return new ObjectNames(data, delimiters); }
@@ -3718,79 +3998,68 @@ Column Column() #Column :
     }
 }
 
-String RelObjectNameWithoutValue() :
+/*
+ * Unified identifier production for SQL object names.
+ *
+ * Accepts base identifier tokens (S_IDENTIFIER, S_QUOTED_IDENTIFIER, DATA_TYPE,
+ * date literals), any non-reserved keyword, and — guarded by the semantic
+ * check isReservedKeywordAsIdentifier() — reserved keywords that can serve as
+ * unquoted identifiers in the current parser position.
+ *
+ * NOTE: K_FROM, K_SELECT, and K_CURRENT are deliberately NOT included here
+ * to avoid FIRST-set pollution in JavaCC's choice resolution.  They are only
+ * valid as identifiers in dotted-name continuations (after '.'), named
+ * parameters (after ':'), index columns, constraint names, and similar
+ * restricted contexts.  Those call sites add the three tokens inline.
+ */
+String RelObjectName() :
 {    Token tk = null; String result = null; }
 {
-    ( tk=<DATA_TYPE> | tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>
-      | tk=<K_DATETIMELITERAL> | tk=<K_DATE_LITERAL>
+    (
+      /* ── Base identifier tokens ─────────────────────────────────────── */
+      tk=<DATA_TYPE>
+      | tk=<S_IDENTIFIER>
+      | tk=<S_QUOTED_IDENTIFIER>
+      | tk=<K_DATETIMELITERAL>
+      | tk=<K_DATE_LITERAL>
+
+      /* ── Non-reserved keywords (range-guarded) ──────────────────────── */
       | LOOKAHEAD({ getToken(1).kind >= MIN_NON_RESERVED_WORD
                         && getToken(1).kind <= MAX_NON_RESERVED_WORD })
-        result = NonReservedWord() )
+        result = NonReservedWord()
+
+      /* ── Reserved keywords usable as identifiers (context-guarded) ─── */
+      | LOOKAHEAD({ isReservedKeywordAsIdentifier() })
+        ( tk=<K_ALL> | tk=<K_ANY> | tk=<K_CASEWHEN> | tk=<K_CONNECT>
+          | tk=<K_CREATE> | tk=<K_DEFAULT>
+          | tk=<K_GLOBAL> | tk=<K_GROUP> | tk=<K_GROUPING> | tk=<K_IF>
+          | tk=<K_IIF> | tk=<K_IGNORE> | tk=<K_IN> | tk=<K_INTERVAL>
+          | tk=<K_LEFT> | tk=<K_LIMIT> | tk=<K_NEXTVAL> | tk=<K_OFFSET>
+          | tk=<K_ON> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
+          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT>
+          | tk=<K_SET> | tk=<K_SOME> | tk=<K_START> | tk=<K_TABLES>
+          | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
+    )
     { return result != null ? result : tk.image; }
 }
 
 /*
-These tokens can be used as names for Schema and Tables and Columns
-BUT NOT for Aliases (without quoting)
-*/
-String RelObjectName() :
-{    Token tk = null; String result = null; }
+ * Extended version of RelObjectName that additionally accepts FROM, SELECT,
+ * and CURRENT as unquoted identifiers.
+ *
+ * These three tokens are kept OUT of RelObjectName() to avoid polluting
+ * JavaCC's FIRST-set computation (which would cause choice conflicts in
+ * expression parsing, subselect detection, etc.).
+ *
+ * Used only in specific contexts where the old grammar's RelObjectNameExt2
+ * was called: dotted-name continuations, index/constraint names, type names,
+ * named-parameter identifier chains, and join table references.
+ */
+String RelObjectNameExt() :
+{ Token tk = null; String result = null; }
 {
-    (result = RelObjectNameWithoutValue()
-        | tk=<K_GROUP> | tk=<K_INTERVAL> | tk=<K_ON>  | tk=<K_START> | tk=<K_TOP> | tk=<K_VALUE>
-        | tk=<K_VALUES> | tk=<K_CREATE> | tk=<K_TABLES> | tk=<K_CONNECT> | tk=<K_IGNORE >
-        | tk=<K_QUALIFY> | tk=<K_DEFAULT>
-        )
-
-    { return tk!=null ? tk.image : result; }
-}
-
-String RelObjectNameWithoutStart() :
-{    Token tk = null; String result = null; }
-{
-    (result = RelObjectNameWithoutValue() | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES>
-        | tk=<K_INTERVAL>
-        )
-
-    { return tk!=null ? tk.image : result; }
-}
-
-/*
-Extended version of object names.
-
-These tokens can be used as names for Schema and Tables and Columns
-BUT NOT for Aliases (without quoting)
-
-*/
-String RelObjectNameExt():
-{ Token tk = null;
-  String result=null;
-}
-{
-    ( result=RelObjectName() | tk=<K_ALL> | tk=<K_ANY>  | tk=<K_SOME> | tk=<K_LEFT> | tk=<K_RIGHT> | tk=<K_SET>
-        | tk=<K_IF> | tk=<K_IIF> | tk=<K_OPTIMIZE> | tk=<K_LIMIT>
-        | tk=<K_OFFSET> | tk=<K_PROCEDURE> | tk=<K_PUBLIC>
-        | tk=<K_CASEWHEN> | tk=<K_IN> | tk=<K_GROUPING> | tk=<K_ORDER>
-        | tk=<K_NEXTVAL>
-        | tk=<K_GLOBAL>
-        )
-    { return tk!=null ? tk.image : result; }
-}
-
-/*
-Extended usage of object names - part 2. Using within multipart names as following parts.
-
-These tokens can be used as names for Tables and Columns
-BUT NOT for Schema or  Aliases (without quoting)
-
-*/
-String RelObjectNameExt2():
-{ Token tk = null;
-  String result=null;
-}
-{
-    ( result=RelObjectNameExt() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT> )
-    { return tk!=null ? tk.image : result; }
+    ( result = RelObjectName() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT> )
+    { return tk != null ? tk.image : result; }
 }
 
 Table Table() #TableName :
@@ -3829,7 +4098,7 @@ Table TableWithAlias():
 }
 {
     table=Table()
-    [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); }]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { table.setAlias(alias); }]
     { return table; }
 }
 
@@ -3841,7 +4110,7 @@ Table TableWithAliasAndMysqlIndexHint():
 }
 {
     table=Table()
-    [ LOOKAHEAD(2) alias=Alias() { table.setAlias(alias); } ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { table.setAlias(alias); } ]
     [ LOOKAHEAD(2) indexHint=MySQLIndexHint() { table.setHint(indexHint); } ]
     { return table; }
 }
@@ -3957,7 +4226,7 @@ Select Select() #Select:
                 |
                 LOOKAHEAD(3) select = Values()
                 |
-                LOOKAHEAD(3) select = ParenthesedSelect() [ LOOKAHEAD(2) alias = Alias() {select.setAlias(alias);} ]
+                LOOKAHEAD(3) select = ParenthesedSelect() [ LOOKAHEAD({ isAliasAhead() }) alias = Alias() {select.setAlias(alias);} ]
             )
             [ LOOKAHEAD(2) select = FromQueryFromSelect(select) ]
             [ LOOKAHEAD(2) select = SetOperationList(select) ]
@@ -4239,8 +4508,8 @@ String SetOperationModifier():
             [
                 "MATCHING" { modifier+= " MATCHING"; }
                 "("
-                identifier = RelObjectNameExt() { modifier+="(" + identifier; }
-                ("," identifier = RelObjectNameExt()  { modifier+=", " + identifier; })*
+                identifier = RelObjectName() { modifier+="(" + identifier; }
+                ("," identifier = RelObjectName()  { modifier+=", " + identifier; })*
                 ")" { modifier+=")"; }
             ]
         )
@@ -4252,8 +4521,8 @@ String SetOperationModifier():
             [
                 <K_BY> { modifier+= " BY"; }[ (tk=<K_ALL> | tk="DISTINCT")  { modifier+=tk.image; } ]
                 "("
-                identifier = RelObjectNameExt() { modifier+="(" + identifier; }
-                ("," identifier = RelObjectNameExt()  { modifier+=", " + identifier;})*
+                identifier = RelObjectName() { modifier+="(" + identifier; }
+                ("," identifier = RelObjectName()  { modifier+=", " + identifier;})*
                 ")" { modifier+=")"; }
             ]
         )
@@ -4305,7 +4574,7 @@ CallPipeOperator CallPipeOperator():
     Alias alias=null;
 }
 {
-    <K_CALL> tableFunction = TableFunction() [ LOOKAHEAD(2) alias = Alias() ]
+    <K_CALL> tableFunction = TableFunction() [ LOOKAHEAD({ isAliasAhead() }) alias = Alias() ]
 
     {
         return new CallPipeOperator(tableFunction, alias);
@@ -4336,7 +4605,7 @@ PivotPipeOperator PivotPipeOperator():
     <K_FOR> inputColumn=Column()
     <K_IN> "(" pivotColumns = SelectItemsList() ")"
     ")"
-    [ LOOKAHEAD(2)  alias = Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() })  alias = Alias() ]
     {
         return new PivotPipeOperator(aggregateExpression, inputColumn, pivotColumns, alias);
     }
@@ -4354,7 +4623,7 @@ UnPivotPipeOperator UnPivotPipeOperator():
     <K_FOR> nameColumn=Column()
     <K_IN> "(" pivotColumns = SelectItemsList() ")"
     ")"
-    [ LOOKAHEAD(2) alias = Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias = Alias() ]
     {
         return new UnPivotPipeOperator(valuesColumn, nameColumn, pivotColumns, alias);
     }
@@ -4448,18 +4717,18 @@ LateralView LateralView() #LateralView:
     <K_LATERAL> <K_VIEW> [ <K_OUTER> { useOuter=true; } ]
     generatorFunction = Function()
     [ LOOKAHEAD(2)
-        tableName=RelObjectNameWithoutStart()
+        tableName=RelObjectName()
         {
             tableAlias = new Alias(tableName, false);
         }
     ]
-    <K_AS> columnName = RelObjectNameWithoutStart() { columnAlias = new Alias(columnName, true); }
+    <K_AS> columnName = RelObjectName() { columnAlias = new Alias(columnName, true); }
 
     // Spark SQL supports multiple Alias Columns: https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-lateral-view.html
     // we simulate this by setting the alias name to null and then just adding the columns
     [
         LOOKAHEAD(2) ","  { columnAlias.setName(null);  columnAlias.addAliasColumns( columnName); }
-        columnName = RelObjectNameWithoutStart() { columnAlias.addAliasColumns( columnName); }
+        columnName = RelObjectName() { columnAlias.addAliasColumns( columnName); }
     ]
     {
         return new LateralView(
@@ -5016,7 +5285,7 @@ SelectItem<?> SelectItem() #SelectItem:
         |
         expression=Expression()
     )
-    [ LOOKAHEAD(2) alias=Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
     {
         SelectItem<?> selectItem = new SelectItem(expression, alias);
         linkAST(selectItem,jjtThis);
@@ -5081,7 +5350,7 @@ Alias Alias():
             //      SELECT fun(x) AS (a,b,c)
             //      SELECT fun(x) AS T(a,b,c)
             <K_AS>
-            [ LOOKAHEAD(2) name=RelObjectNameWithoutStart() ]
+            [ LOOKAHEAD(2) name=RelObjectName() ]
             { alias = new Alias(name, true ); }
 
             "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
@@ -5100,7 +5369,7 @@ Alias Alias():
             //      SELECT fun(x) T(a,b,c)
 
             [<K_AS> { useAs = true; } ]
-            ( name=RelObjectNameWithoutStart() | token=<S_CHAR_LITERAL> { name=token.image; } )
+            ( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
             { alias = new Alias(name,useAs); }
 
             [ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
@@ -5153,8 +5422,8 @@ MySQLIndexHint MySQLIndexHint():
 	)
 
 	"("
-	indexName = RelObjectNameWithoutValue() { indexNameList.add(indexName); }
-	("," indexName= RelObjectNameWithoutValue() { indexNameList.add(indexName); })*
+	indexName = RelObjectName() { indexNameList.add(indexName); }
+	("," indexName= RelObjectName() { indexNameList.add(indexName); })*
 	")"
 	{
 		return new MySQLIndexHint(actionToken.image, indexToken.image, indexNameList);
@@ -5168,7 +5437,7 @@ SelectItem<Function> FunctionItem():
 }
 {
     function=Function()
-    [ alias=Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
     { return new SelectItem<Function>(function, alias); }
 }
 
@@ -5204,7 +5473,7 @@ SelectItem<ExpressionList<?>> ExpressionListItem():
 }
 {
     expressionList=ParenthesedExpressionList()
-    [ alias=Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
     { return new SelectItem<ExpressionList<?>>(expressionList, alias); }
 }
 
@@ -5236,7 +5505,7 @@ Pivot Pivot():
     | multiInItems = PivotMultiInItems() )
     ")"
     ")"
-    [ LOOKAHEAD(2) alias = Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias = Alias() ]
     {
         retval.setFunctionItems(functionItems);
         retval.setForColumns(forColumns);
@@ -5296,7 +5565,7 @@ UnPivot UnPivot():
     unpivotInClause = SelectItemsList()
     ")"
     ")"
-    [ LOOKAHEAD(2) alias = Alias() ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias = Alias() ]
     {
         retval.setUnPivotClause(unpivotClause);
         retval.setUnPivotForClause(unpivotForClause);
@@ -5366,7 +5635,9 @@ FromItem FromItem() #FromItem:
                 && getToken(3).kind == OPENING_BRACKET
         }) fromItem=TableFunction()
         |
-        LOOKAHEAD(16) fromItem=TableFunction()
+        LOOKAHEAD({ (isFunctionAhead() && getToken(1).kind != K_LATERAL)
+            || (getToken(1).kind == K_LATERAL && getToken(2).kind != OPENING_BRACKET) })
+        fromItem=TableFunction()
         |
         LOOKAHEAD(3) fromItem=Table()
         |
@@ -5385,7 +5656,7 @@ FromItem FromItem() #FromItem:
         LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
 
-    [ LOOKAHEAD(2) alias=Alias() { fromItem.setAlias(alias); } ]
+    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
     [
         LOOKAHEAD(2, {fromItem instanceof Table }) timeTravelStr = TimeTravelAfterAlias()
         { ((Table) fromItem).setTimeTravelStrAfterAlias(timeTravelStr); }
@@ -7245,7 +7516,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
 
             // RowGet Expressions
-            ( LOOKAHEAD(2) "." tmp=RelObjectNameExt() { retval = new RowGetExpression(retval, tmp); } )*
+            ( LOOKAHEAD(2) "." tmp=RelObjectName() { retval = new RowGetExpression(retval, tmp); } )*
         )
     )
 
@@ -7378,7 +7649,7 @@ OracleNamedFunctionParameter OracleNamedFunctionParameter() : {
     Expression expression;
 }
 {
-    ( name=RelObjectNameExt2() | token=<K_OUTER> )
+    ( name=RelObjectNameExt() | token=<K_OUTER> )
     <K_ORACLE_NAMED_PARAMETER_ASSIGNMENT>
     expression=Expression()
     {
@@ -7392,7 +7663,7 @@ PostgresNamedFunctionParameter PostgresNamedFunctionParameter() : {
     Expression expression;
 }
 {
-    ( name=RelObjectNameExt2() | token=<K_OUTER> )
+    ( name=RelObjectNameExt() | token=<K_OUTER> )
     <K_POSTGRES_NAMED_PARAMETER_ASSIGNMENT>
     expression=Expression()
     {
@@ -7539,12 +7810,12 @@ StructType StructType() #StruckType:
         |
         (
             <OPENING_CURLY_BRACKET> { arguments= new  ArrayList<SelectItem<?>>(); dialect = StructType.Dialect.DUCKDB;}
-            ( id = RelObjectNameExt2() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
+            ( id = RelObjectNameExt() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
             <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
 
             (
                 ","
-                ( id = RelObjectNameExt2() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
+                ( id = RelObjectNameExt() | tk1=<S_CHAR_LITERAL> { id = tk1.image; } )
                 <DOUBLE_COLON> expression = Expression() { arguments.add( new SelectItem( expression, id) ); }
             )*
             <CLOSING_CURLY_BRACKET>
@@ -9913,11 +10184,11 @@ ColDataType ColDataType():
         (
             <K_STRUCT>
             "("
-            type = RelObjectNameExt2()
+            type = RelObjectNameExt()
             colDataType = ColDataType() { argumentsStringList.add( type + " " + colDataType.toString()); }
             (
                 ","
-                type = RelObjectNameExt2()
+                type = RelObjectNameExt()
                 colDataType = ColDataType() { argumentsStringList.add( type + " " + colDataType.toString()); }
             )*
             ")" { colDataType = new ColDataType("STRUCT"); }
@@ -10297,7 +10568,7 @@ String AList():
 
      (
        ( (tk=<S_LONG> | tk=<S_DOUBLE> | tk=<S_CHAR_LITERAL> | tk=<K_TRUE> | tk=<K_FALSE>) { retval.append(tk.image); }
-         | (name=RelObjectNameWithoutValue()) { retval.append(name); })
+         | (name=RelObjectName()) { retval.append(name); })
        [("," {retval.append(",");} | "=" {retval.append("=");})] )*
 
     ")"
@@ -11177,7 +11448,7 @@ AlterExpression AlterExpressionAddAlterModify():
                     <K_COLUMNS> { alterExp.hasColumns(true); }
                 )
             )?
-            [ <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
+            [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
             (
                 LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
                 |
@@ -11863,7 +12134,7 @@ List<String> UsersList():
     String user = null;
 }
 {
-         user=RelObjectNameExt() { users.add(user); }
+         user=RelObjectName() { users.add(user); }
          ( "," user=ColumnsNamesListItem() { users.add(user); } )*
     {
         return users;
@@ -12176,7 +12447,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" checkExpr=Expression() ")" { createPolicy.setWithCheckExpression(checkExpr); } ]
 
     {
-        
+
         return createPolicy;
     }
 }
@@ -12303,8 +12574,8 @@ String IdentifierChain():
     String part;
 }
 {
-    identifierChain=RelObjectNameExt2()
-    ( LOOKAHEAD(2) "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
+    identifierChain=RelObjectNameExt()
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt() { identifierChain += "." + part; }  )*
 
     {
         return identifierChain;
@@ -12316,7 +12587,7 @@ String IdentifierChain2(String identifierChain):
     String part;
 }
 {
-    ( LOOKAHEAD(2) "." part=RelObjectNameExt2() { identifierChain += "." + part; }  )*
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt() { identifierChain += "." + part; }  )*
     {
         return identifierChain;
     }
