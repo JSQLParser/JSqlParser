@@ -469,8 +469,7 @@ TOKEN_MGR_DECLS : {
                 }
             }
         } catch (java.io.IOException e) {
-            throw new TokenMgrException("Unterminated dollar quoted string",
-                    TokenMgrException.LEXICAL_ERROR);
+            reportError(Math.max(closingQuote.length(), input_stream.GetImage().length()));
         }
     }
 }
