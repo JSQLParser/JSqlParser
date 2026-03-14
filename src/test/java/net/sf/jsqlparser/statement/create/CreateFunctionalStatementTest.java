@@ -9,14 +9,16 @@
  */
 package net.sf.jsqlparser.statement.create;
 
-import java.util.Arrays;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.create.function.CreateFunction;
-import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
+import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -85,5 +87,67 @@ public class CreateFunctionalStatementTest {
                 .addFunctionDeclarationParts(Arrays.asList("RETURN 5;", "END;"));
         func.setOrReplace(true);
         assertDeparse(func, statement);
+    }
+
+    @Test
+    public void createFunctionWithPositionalParametersAcrossStatementsIssue2322()
+            throws JSQLParserException {
+        String sql = "create table if not exists test_table (\n"
+                + "  id bigint not null\n"
+                + ");\n"
+                + "\n"
+                + "create or replace function test_fn_1(\n"
+                + "  target text,\n"
+                + "  characters text\n"
+                + ") returns boolean as $$\n"
+                + "  select trim($2 from $1) <> $1\n"
+                + "$$ language sql immutable;\n"
+                + "\n"
+                + "create or replace function test_fn_2(\n"
+                + "  target text,\n"
+                + "  characters text\n"
+                + ") returns boolean as $$\n"
+                + "  select position(repeat(first_char, 2) in translate(\n"
+                + "    $1, $2, repeat(first_char, length($2))\n"
+                + "  )) > 0\n"
+                + "  from (values (left($2, 1))) params(first_char)\n"
+                + "$$ language sql immutable;\n"
+                + "\n"
+                + "create table if not exists test_table_2 (\n"
+                + "  id bigint not null\n"
+                + ");";
+
+        Statements statements = CCJSqlParserUtil.parseStatements(sql);
+
+        assertThat(statements.getStatements()).hasSize(4);
+        assertThat(statements.getStatements().get(1)).isInstanceOf(CreateFunction.class);
+        assertThat(statements.getStatements().get(2)).isInstanceOf(CreateFunction.class);
+
+        CreateFunction function1 = (CreateFunction) statements.getStatements().get(1);
+        CreateFunction function2 = (CreateFunction) statements.getStatements().get(2);
+
+        assertThat(function1.getFunctionDeclarationParts()).anySatisfy(
+                token -> assertThat(token).startsWith("$$").endsWith("$$"));
+        assertThat(function1.getFunctionDeclarationParts()).containsSequence("language", "sql",
+                "immutable", ";");
+        assertThat(String.join(" ", function1.getFunctionDeclarationParts()))
+                .contains("test_fn_1")
+                .contains("$2")
+                .contains("$1")
+                .doesNotContain("create or replace function test_fn_2");
+
+        assertThat(function2.getFunctionDeclarationParts()).anySatisfy(
+                token -> assertThat(token).startsWith("$$").endsWith("$$"));
+        assertThat(function2.getFunctionDeclarationParts()).containsSequence("language", "sql",
+                "immutable", ";");
+        assertThat(String.join(" ", function2.getFunctionDeclarationParts()))
+                .contains("test_fn_2")
+                .contains("params")
+                .doesNotContain("create table if not exists test_table_2");
+
+        assertThat(function1.formatDeclaration()).contains("test_fn_1");
+        assertThat(function1.formatDeclaration()).doesNotContain("test_fn_2");
+        assertThat(function2.formatDeclaration()).contains("test_fn_2");
+        assertThat(function2.formatDeclaration()).doesNotContain("test_table_2");
     }
 }
