@@ -7471,6 +7471,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=ConnectByPriorOperator()
 
+        | LOOKAHEAD(2, { !interrupted && getToken(1).kind == K_KEY && getToken(2).kind != OPENING_BRACKET }) retval=KeyExpression()
+
         | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
@@ -7613,7 +7615,17 @@ ConnectByPriorOperator ConnectByPriorOperator() #ConnectByPriorOperator: {
 {
     <K_PRIOR> expression = Expression()
     {
-      return new ConnectByPriorOperator(expression);
+        return new ConnectByPriorOperator(expression);
+    }
+}
+
+KeyExpression KeyExpression() #KeyExpression: {
+    Expression expression;
+}
+{
+    <K_KEY> expression = Expression()
+    {
+        return new KeyExpression(expression);
     }
 }
 
