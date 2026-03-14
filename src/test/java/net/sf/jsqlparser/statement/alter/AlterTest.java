@@ -1188,6 +1188,30 @@ public class AlterTest {
         assertEquals("EXCLUSIVE", lockExp.getLockOption());
     }
 
+    @Test
+    public void testIssue2091ModifyColumnCharacterSet() throws JSQLParserException {
+        String sql = "ALTER TABLE `jobs`.`runs` MODIFY COLUMN triggerInfo text "
+                + "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL";
+
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertTrue(stmt instanceof Alter);
+
+        Alter alter = (Alter) stmt;
+        assertEquals("`jobs`.`runs`", alter.getTable().getFullyQualifiedName());
+
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        ColumnDataType column = alterExpressions.get(0).getColDataTypeList().get(0);
+        assertEquals("triggerInfo", column.getColumnName());
+        assertEquals("text CHARACTER SET utf8mb4", column.getColDataType().toString());
+        assertEquals(Arrays.asList("COLLATE", "utf8mb4_unicode_ci", "NOT", "NULL"),
+                column.getColumnSpecs());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
     @ParameterizedTest
     @MethodSource("provideMySQLConvertTestCases")
     public void testIssue2089(String sql, String expectedCharacterSet, String expectedCollation)
