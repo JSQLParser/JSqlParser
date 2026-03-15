@@ -33,7 +33,7 @@ public class JsonTableFunction extends Function {
     }
 
     public enum JsonTableOnErrorType {
-        ERROR, EMPTY
+        ERROR, NULL, EMPTY
     }
 
     public static class JsonTablePassingClause extends ASTNodeAccessImpl implements Serializable {
@@ -395,6 +395,7 @@ public class JsonTableFunction extends Function {
         private JsonTableQuotesClause quotesClause;
         private JsonFunction.JsonOnResponseBehavior onEmptyBehavior;
         private JsonFunction.JsonOnResponseBehavior onErrorBehavior;
+        private JsonFunction.ScalarsType scalarsType;
 
         public String getColumnName() {
             return columnName;
@@ -489,6 +490,14 @@ public class JsonTableFunction extends Function {
             return this;
         }
 
+        public void setScalarsType(JsonFunction.ScalarsType scalarsType) {
+            this.scalarsType = scalarsType;
+        }
+
+        public JsonFunction.ScalarsType getScalarsType() {
+            return scalarsType;
+        }
+
         @Override
         public void collectExpressions(List<Expression> expressions) {
             if (pathExpression != null) {
@@ -509,13 +518,19 @@ public class JsonTableFunction extends Function {
                 builder.append(" FOR ORDINALITY");
                 return builder.toString();
             }
-
-            builder.append(" ").append(dataType);
+            if (dataType != null) {
+                builder.append(" ").append(dataType);
+            }
             if (formatJson) {
                 builder.append(" FORMAT JSON");
                 if (encoding != null) {
                     builder.append(" ENCODING ").append(encoding);
                 }
+            }
+            if (scalarsType != null) {
+                builder.append(" ");
+                builder.append(scalarsType);
+                builder.append(" SCALARS");
             }
             if (pathExpression != null) {
                 builder.append(" PATH ").append(pathExpression);
@@ -676,7 +691,10 @@ public class JsonTableFunction extends Function {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("JSON_TABLE(");
-        builder.append(jsonInputExpression).append(", ").append(jsonPathExpression);
+        builder.append(jsonInputExpression);
+        if (jsonPathExpression != null) {
+            builder.append(", ").append(jsonPathExpression);
+        }
         if (pathName != null) {
             builder.append(" AS ").append(pathName);
         }

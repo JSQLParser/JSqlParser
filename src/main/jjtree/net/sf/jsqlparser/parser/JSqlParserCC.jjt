@@ -38,6 +38,7 @@ import java.lang.Integer;
 
 import net.sf.jsqlparser.parser.feature.*;
 import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.json.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.*;
 import net.sf.jsqlparser.expression.operators.relational.*;
@@ -58,6 +59,7 @@ import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
+import net.sf.jsqlparser.statement.from.*;
 import net.sf.jsqlparser.statement.insert.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;
@@ -772,6 +774,7 @@ String NonReservedWord() :
       | tk=<K_ALGORITHM: "ALGORITHM">
       | tk=<K_ALIGN:"ALIGN">
       | tk=<K_ALTER:"ALTER">
+      | tk=<K_ALLOW:"ALLOW">
       | tk=<K_ALWAYS:"ALWAYS">
       | tk=<K_ANALYZE:"ANALYZE">
       | tk=<K_APPEND_ONLY:"APPEND_ONLY">
@@ -844,6 +847,7 @@ String NonReservedWord() :
       | tk=<K_DESC:"DESC">
       | tk=<K_DESCRIBE:"DESCRIBE">
       | tk=<K_DISABLE : "DISABLE">
+      | tk=<K_DISALLOW:"DISALLOW">
       | tk=<K_DISCARD : "DISCARD">
       | tk=<K_DISCONNECT:"DISCONNECT">
       | tk=<K_DIV:"DIV">
@@ -857,6 +861,7 @@ String NonReservedWord() :
       | tk=<K_DUPLICATE: "DUPLICATE">
       | tk=<K_ELEMENTS: "ELEMENTS">
       | tk=<K_EMIT: "EMIT">
+      | tk=<K_EMPTY: "EMPTY">
       | tk=<K_ENABLE: "ENABLE">
       | tk=<K_ENCODING: "ENCODING">
       | tk=<K_ENCRYPTION: "ENCRYPTION">
@@ -1288,6 +1293,7 @@ TOKEN : /* Data Types */
     | <#TYPE_BIT:  "BISTRING">
     | <#TYPE_BLOB: "BLOB" | "BYTEA" | <K_BINARY> | "VARBINARY" | <K_BYTES> >
     | <#TYPE_BOOLEAN: <K_BOOLEAN> | "BOOL" >
+    | <#TYPE_CLOB: "CLOB">
     | <#TYPE_ENUM: "ENUM" >
     | <#TYPE_MAP: "MAP" >
     | <#TYPE_DECIMAL: "DECIMAL" | "NUMBER" | "NUMERIC" >
@@ -1303,7 +1309,7 @@ TOKEN : /* Data Types */
     | <#TYPE_UHUGEINT: "UHUGEINT" >
     | <#TYPE_REAL: "REAL" | "FLOAT4" | "FLOAT">
     | <#TYPE_DOUBLE: "DOUBLE" | "PRECISION"  | "FLOAT8" | "FLOAT64">
-    | <#TYPE_VARCHAR: "NVARCHAR" | "VARCHAR" | "NCHAR" | <K_CHAR> | "BPCHAR" | "TEXT" | "STRING" | <K_CHARACTER> | "VARYING">
+    | <#TYPE_VARCHAR: "NVARCHAR" | "VARCHAR" | "NCHAR" | <K_CHAR> | "BPCHAR" | "TEXT" | "STRING" | <K_CHARACTER> | "VARYING" | "VARCHAR2">
     | <#TYPE_TIME: "TIMETZ" >
     | <#TYPE_TIMESTAMP: "TIMESTAMP_NS" | "TIMESTAMP_MS" | "TIMESTAMP_S"  >
 
@@ -5681,6 +5687,8 @@ FromItem FromItem() #FromItem:
             || (getToken(1).kind == K_LATERAL && getToken(2).kind != OPENING_BRACKET) })
         fromItem=TableFunction()
         |
+//        fromItem=JsonTable()
+//        |
         LOOKAHEAD(3) fromItem=Table()
         |
         LOOKAHEAD(ParenthesedFromItem()) fromItem = ParenthesedFromItem()
@@ -8159,6 +8167,12 @@ JsonFunction.JsonOnResponseBehavior JsonValueOnResponseBehavior() : {
                     JsonFunction.JsonOnResponseBehaviorType.NULL);
         }
         |
+        <K_EMPTY>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.EMPTY);
+        }
+        |
         <K_DEFAULT> expression = Expression()
         {
             behavior = new JsonFunction.JsonOnResponseBehavior(
@@ -8188,26 +8202,26 @@ JsonFunction.JsonOnResponseBehavior JsonQueryOnResponseBehavior() : {
                     JsonFunction.JsonOnResponseBehaviorType.NULL);
         }
         |
-        token = <S_IDENTIFIER>
+        <K_EMPTY>
         {
-            if (!token.image.equalsIgnoreCase("EMPTY")) {
-                throw new ParseException(
-                        "Expected EMPTY, ERROR or NULL but found " + token.image);
-            }
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.EMPTY);
         }
-        (
-            <K_ARRAY_LITERAL>
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
-            }
-            |
-            JsonKeyword("OBJECT")
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
-            }
-        )
+        [
+            (
+                <K_ARRAY_LITERAL>
+                {
+                    behavior = new JsonFunction.JsonOnResponseBehavior(
+                            JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
+                }
+                |
+                JsonKeyword("OBJECT")
+                {
+                    behavior = new JsonFunction.JsonOnResponseBehavior(
+                            JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
+                }
+            )
+        ]
     )
     {
         if (behavior != null) {
@@ -8304,9 +8318,9 @@ JsonFunction JsonValueBody() : {
     [ <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); } ]
 
     [
-        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_EMPTY> )
         behavior = JsonValueOnResponseBehavior()
-        <K_ON> JsonKeyword("EMPTY")
+        <K_ON> <K_EMPTY>
         { result.setOnEmptyBehavior(behavior); }
     ]
 
@@ -8410,9 +8424,9 @@ JsonFunction JsonQueryBody() : {
     ]
 
     [
-        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_EMPTY> )
         behavior = JsonQueryOnResponseBehavior()
-        <K_ON> JsonKeyword("EMPTY")
+        <K_ON> <K_EMPTY>
         { result.setOnEmptyBehavior(behavior); }
     ]
 
@@ -8491,9 +8505,9 @@ JsonFunction JsonQueryBody() : {
             ]
         ]
         [
-            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_EMPTY> )
             additionalOnEmptyBehavior = JsonQueryOnResponseBehavior()
-            <K_ON> JsonKeyword("EMPTY")
+            <K_ON> <K_EMPTY>
         ]
         [
             LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
@@ -9494,13 +9508,20 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
             columnDefinition = valueColumnDefinition;
         }
         (
-            <K_FOR> JsonKeyword("ORDINALITY")
-            { valueColumnDefinition.setForOrdinality(true); }
+            <K_FOR> JsonKeyword("ORDINALITY") { valueColumnDefinition.setForOrdinality(true); }
             |
-            dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
+            [ dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); } ]
             [
                 <K_FORMAT> <K_JSON> { valueColumnDefinition.setFormatJson(true); }
                 [ <K_ENCODING> encoding = JsonEncoding() { valueColumnDefinition.setEncoding(encoding); } ]
+            ]
+            [
+                (
+                    <K_ALLOW> { valueColumnDefinition.setScalarsType(JsonFunction.ScalarsType.ALLOW); }
+                    |
+                    <K_DISALLOW> { valueColumnDefinition.setScalarsType(JsonFunction.ScalarsType.DISALLOW); }
+                )
+                JsonKeyword("SCALARS")
             ]
             [ <K_PATH> expression = Expression() { valueColumnDefinition.setPathExpression(expression); } ]
             [ wrapperClause = JsonTableWrapperClause() { valueColumnDefinition.setWrapperClause(wrapperClause); } ]
@@ -9513,14 +9534,14 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
                 quotesClause = JsonTableQuotesClause() { valueColumnDefinition.setQuotesClause(quotesClause); }
             ]
             [
-                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <S_IDENTIFIER> )
+                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <K_EMPTY> )
                 behavior = JsonTableOnEmptyBehavior()
-                <K_ON> JsonKeyword("EMPTY")
+                <K_ON> <K_EMPTY>
                 { valueColumnDefinition.setOnEmptyBehavior(behavior); }
             ]
             [
-                LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_ERROR> )
-                behavior = JsonValueOnResponseBehavior()
+                LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
+                behavior = JsonQueryOnResponseBehavior()
                 <K_ON> <K_ERROR>
                 { valueColumnDefinition.setOnErrorBehavior(behavior); }
             ]
@@ -9645,14 +9666,7 @@ JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause() : {
     (
         <K_ERROR> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.ERROR); }
         |
-        token = <S_IDENTIFIER>
-        {
-            if (!token.image.equalsIgnoreCase("EMPTY")) {
-                throw new ParseException(
-                        "Expected EMPTY or ERROR but found " + token.image);
-            }
-            onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.EMPTY);
-        }
+        <K_EMPTY> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.EMPTY); }
     )
     <K_ON> <K_ERROR>
     {
@@ -9677,12 +9691,14 @@ JsonTableFunction JsonTableBody() : {
     jsonInput = Expression() {
         function.setJsonInputExpression(jsonInput);
     }
-    ","
-    jsonPath = Expression() {
-        function.setJsonPathExpression(jsonPath);
-        function.setParameters(new ExpressionList(jsonInput, jsonPath));
-    }
-    [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
+    [
+        ","
+        jsonPath = Expression() {
+            function.setJsonPathExpression(jsonPath);
+            function.setParameters(new ExpressionList(jsonInput, jsonPath));
+        }
+        [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
+    ]
     [
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
         JsonKeyword("PASSING")
