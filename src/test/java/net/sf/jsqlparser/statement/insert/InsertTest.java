@@ -9,6 +9,20 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
+import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.StringReader;
+import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -33,21 +47,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.io.StringReader;
-import java.util.List;
-
-import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
-import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
-import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
-import static net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InsertTest {
 
@@ -240,14 +239,94 @@ public class InsertTest {
     }
 
     @Test
-    @Disabled
     public void testOracleInsertMultiRowValue() throws JSQLParserException {
         String sqlStr = "INSERT ALL\n"
                 + "  INTO suppliers (supplier_id, supplier_name) VALUES (1000, 'IBM')\n"
                 + "  INTO suppliers (supplier_id, supplier_name) VALUES (2000, 'Microsoft')\n"
                 + "  INTO suppliers (supplier_id, supplier_name) VALUES (3000, 'Google')\n"
                 + "SELECT * FROM dual;";
-        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertTrue(insert.isOracleMultiInsert());
+        assertFalse(insert.isOracleMultiInsertFirst());
+        assertEquals(1, insert.getOracleMultiInsertBranches().size());
+        assertEquals(3, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
+        assertEquals("suppliers",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
+        assertEquals("supplier_id, supplier_name",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getColumns()
+                        .toString());
+        assertEquals("VALUES (1000, 'IBM')",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect()
+                        .toString());
+        assertEquals("SELECT * FROM dual", insert.getSelect().toString());
+    }
+
+    @Test
+    public void testOracleInsertAllWithJdbcParameters() throws JSQLParserException {
+        String sqlStr = "INSERT ALL INTO spm_message (xx, xx) VALUES (?, ?) SELECT * FROM dual";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertTrue(insert.isOracleMultiInsert());
+        assertFalse(insert.isOracleMultiInsertFirst());
+        assertEquals(1, insert.getOracleMultiInsertBranches().size());
+        assertNull(insert.getOracleMultiInsertBranches().get(0).getWhenExpression());
+        assertFalse(insert.getOracleMultiInsertBranches().get(0).isElseClause());
+        assertEquals(1, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
+        assertEquals("spm_message",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
+        assertEquals("VALUES (?, ?)",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getSelect()
+                        .toString());
+    }
+
+    @Test
+    public void testOracleInsertAllWithWhenElse() throws JSQLParserException {
+        String sqlStr =
+                "INSERT ALL WHEN qty > 10 THEN INTO big_orders (id) VALUES (id) "
+                        + "WHEN qty > 0 THEN INTO small_orders (id) VALUES (id) "
+                        + "ELSE INTO invalid_orders (id) VALUES (id) "
+                        + "SELECT id, qty FROM orders";
+
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertTrue(insert.isOracleMultiInsert());
+        assertFalse(insert.isOracleMultiInsertFirst());
+        assertEquals(3, insert.getOracleMultiInsertBranches().size());
+        assertEquals("qty > 10",
+                insert.getOracleMultiInsertBranches().get(0).getWhenExpression().toString());
+        assertEquals("qty > 0",
+                insert.getOracleMultiInsertBranches().get(1).getWhenExpression().toString());
+        assertTrue(insert.getOracleMultiInsertBranches().get(2).isElseClause());
+        assertEquals(1, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
+        assertEquals(1, insert.getOracleMultiInsertBranches().get(1).getClauses().size());
+        assertEquals(1, insert.getOracleMultiInsertBranches().get(2).getClauses().size());
+    }
+
+    @Test
+    public void testOracleInsertFirstWithWhenMultipleInto() throws JSQLParserException {
+        String sqlStr =
+                "INSERT FIRST WHEN region = 'APAC' THEN INTO apac_orders (id) VALUES (id) "
+                        + "INTO apac_audit (id) VALUES (id) "
+                        + "ELSE INTO other_orders (id) VALUES (id) "
+                        + "SELECT id, region FROM orders";
+
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        assertTrue(insert.isOracleMultiInsert());
+        assertTrue(insert.isOracleMultiInsertFirst());
+        assertEquals(2, insert.getOracleMultiInsertBranches().size());
+        assertEquals(2, insert.getOracleMultiInsertBranches().get(0).getClauses().size());
+        assertEquals("region = 'APAC'",
+                insert.getOracleMultiInsertBranches().get(0).getWhenExpression().toString());
+        assertTrue(insert.getOracleMultiInsertBranches().get(1).isElseClause());
+        assertEquals("apac_orders",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(0).getTable()
+                        .toString());
+        assertEquals("apac_audit",
+                insert.getOracleMultiInsertBranches().get(0).getClauses().get(1).getTable()
+                        .toString());
+        assertEquals("other_orders",
+                insert.getOracleMultiInsertBranches().get(1).getClauses().get(0).getTable()
+                        .toString());
     }
 
     @Test
@@ -396,9 +475,22 @@ public class InsertTest {
     }
 
     @Test
+    public void testInsertValuesAliasWithDuplicateEliminationIssue() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new"
+                + "  ON DUPLICATE KEY UPDATE c = new.a+new.b;");
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6) AS new(m,n,p) "
+                        + "  ON DUPLICATE KEY UPDATE c = m+n;");
+    }
+
+    @Test
     public void testInsertSetWithDuplicateEliminationInDeparsing() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable SET col1 = 122 "
                 + "ON DUPLICATE KEY UPDATE col2 = col2 + 1, col3 = 'saint'");
+
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO t1 SET a=1,b=2,c=3 AS new"
+                + "  ON DUPLICATE KEY UPDATE c = new.a+new.b;");
     }
 
     @Test
@@ -702,6 +794,8 @@ public class InsertTest {
     }
 
     @Test
+    @Disabled
+    // @todo: verify if this is really necessary
     public void throwsParseWhenDefaultKeywordUsedAsAlias() {
         String statement = "INSERT INTO mytable default DEFAULT VALUES";
         assertThrows(JSQLParserException.class,

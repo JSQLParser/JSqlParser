@@ -1,9 +1,0 @@
-version: 2
-updates:
-  - package-ecosystem: "gradle"  # Specify Gradle as the package manager
-    directory: "/"               # Root directory of your project
-    schedule:
-      interval: "weekly"          # Define how often Dependabot should check for updates
-    ignore:
-      - dependency-name: "se.bjurr.gitchangelog.git-changelog-gradle-plugin"
-        versions: ["*"]  # This will ignore all versions for this specific plugin

@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
@@ -16,13 +22,6 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression, FromItem {
     protected Table forUpdateTable = null;
@@ -381,11 +380,11 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         appendTo(builder, alias, null, pivot, unPivot);
 
+        builder.append(orderByToString(oracleSiblings, orderByElements));
+
         if (forClause != null) {
             forClause.appendTo(builder);
         }
-
-        builder.append(orderByToString(oracleSiblings, orderByElements));
 
         if (limitBy != null) {
             builder.append(limitBy);

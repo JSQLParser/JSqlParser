@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
@@ -214,6 +215,16 @@ public class ExpressionValidatorTest extends ValidationTestAsserts {
                 "SELECT MATCH (col1) AGAINST ('test' IN NATURAL LANGUAGE MODE) relevance FROM tbl",
                 1,
                 EXPRESSIONS);
+    }
+
+    @Test
+    public void testFullTextSearchAgainstFunctionRequiresJdbcFeature() throws JSQLParserException {
+        validateNotAllowed(
+                "SELECT * FROM commodity WHERE MATCH (name) AGAINST (concat('',?,'') IN BOOLEAN MODE)",
+                1,
+                1,
+                EXPRESSIONS,
+                Feature.jdbcParameter);
     }
 
     @Test

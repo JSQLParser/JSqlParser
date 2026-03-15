@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
@@ -53,12 +52,36 @@ public class AlterExpression implements Serializable {
     private Index oldIndex = null;
     private String constraintName;
     private boolean usingIfExists;
+
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     private List<String> fkColumns;
+
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     private String fkSourceSchema;
 
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     private String fkSourceTable;
+
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     private List<String> fkSourceColumns;
     private boolean uk;
+    private boolean ukTypeSpecified;
     private boolean useEqual;
 
     private List<String> partitions;
@@ -135,10 +158,20 @@ public class AlterExpression implements Serializable {
         this.hasColumns = hasColumns;
     }
 
+    /**
+     * @deprecated Use {@link #getIndex()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public String getFkSourceSchema() {
         return fkSourceSchema;
     }
 
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public void setFkSourceSchema(String fkSourceSchema) {
         this.fkSourceSchema = fkSourceSchema;
     }
@@ -178,11 +211,19 @@ public class AlterExpression implements Serializable {
     /**
      * @param type
      * @param action
+     * @deprecated Standalone FK fields are deprecated. Use a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} via
+     *             {@link #setIndex(Index)} instead.
      */
+    @Deprecated
     public void setReferentialAction(Type type, Action action) {
         setReferentialAction(type, action, true);
     }
 
+    /**
+     * @deprecated Standalone FK fields are deprecated.
+     */
+    @Deprecated
     public AlterExpression withReferentialAction(Type type, Action action) {
         setReferentialAction(type, action);
         return this;
@@ -190,7 +231,9 @@ public class AlterExpression implements Serializable {
 
     /**
      * @param type
+     * @deprecated Standalone FK fields are deprecated.
      */
+    @Deprecated
     public void removeReferentialAction(Type type) {
         setReferentialAction(type, null, false);
     }
@@ -198,7 +241,9 @@ public class AlterExpression implements Serializable {
     /**
      * @param type
      * @return
+     * @deprecated Standalone FK fields are deprecated.
      */
+    @Deprecated
     public ReferentialAction getReferentialAction(Type type) {
         return referentialActions.stream()
                 .filter(ra -> type.equals(ra.getType()))
@@ -279,18 +324,38 @@ public class AlterExpression implements Serializable {
         setReferentialAction(Type.DELETE, Action.SET_NULL, onDeleteSetNull);
     }
 
+    /**
+     * @deprecated Use {@link #getIndex()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public List<String> getFkColumns() {
         return fkColumns;
     }
 
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public void setFkColumns(List<String> fkColumns) {
         this.fkColumns = fkColumns;
     }
 
+    /**
+     * @deprecated Use {@link #getIndex()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public String getFkSourceTable() {
         return fkSourceTable;
     }
 
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public void setFkSourceTable(String fkSourceTable) {
         this.fkSourceTable = fkSourceTable;
     }
@@ -350,10 +415,20 @@ public class AlterExpression implements Serializable {
         return columnSetVisibilityList;
     }
 
+    /**
+     * @deprecated Use {@link #getIndex()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public List<String> getFkSourceColumns() {
         return fkSourceColumns;
     }
 
+    /**
+     * @deprecated Use {@link #setIndex(Index)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     */
+    @Deprecated
     public void setFkSourceColumns(List<String> fkSourceColumns) {
         this.fkSourceColumns = fkSourceColumns;
     }
@@ -533,6 +608,15 @@ public class AlterExpression implements Serializable {
 
     public void setUk(boolean uk) {
         this.uk = uk;
+        this.ukTypeSpecified = true;
+    }
+
+    public boolean isUkTypeSpecified() {
+        return ukTypeSpecified;
+    }
+
+    public void setUkTypeSpecified(boolean ukTypeSpecified) {
+        this.ukTypeSpecified = ukTypeSpecified;
     }
 
     public boolean isUseIfNotExists() {
@@ -645,19 +729,115 @@ public class AlterExpression implements Serializable {
     }
 
     @Override
+    public final String toString() {
+        StringBuilder b = new StringBuilder();
+        appendBody(b);
+        appendCommonTail(b);
+        return b.toString();
+    }
+
+    /**
+     * Appends the main body of this ALTER expression to the builder. Subclasses override this for
+     * type-specific rendering.
+     */
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength", "PMD.SwitchStmtsShouldHaveDefault"})
-    public String toString() {
-
-        StringBuilder b = new StringBuilder();
-
+    protected void appendBody(StringBuilder b) {
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
-        } else if (operation == AlterOperation.ALTER && constraintType != null
-                && constraintSymbol != null) {
-            // This is for ALTER INDEX ... INVISIBLE
-            b.append("ALTER ").append(constraintType).append(" ").append(constraintSymbol);
+        } else if (constraintType != null && constraintSymbol != null
+                && (operation == AlterOperation.ALTER || operation == AlterOperation.ADD)) {
+            toStringConstraintAlter(b);
+        } else if (operation == AlterOperation.ALTER
+                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
+                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
+                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty())) {
+            toStringAlterColumn(b);
+        } else if (isSimpleKeywordOperation()) {
+            toStringSimpleKeyword(b);
+        } else if (isRenameOperation()) {
+            toStringRename(b);
+        } else if (isDropSpecialOperation()) {
+            toStringDropSpecial(b);
+        } else if (operation == AlterOperation.CONVERT || operation == AlterOperation.COLLATE) {
+            toStringConvert(b);
+        } else if (isPartitionOperation()) {
+            toStringPartition(b);
+        } else {
+            toStringGeneral(b);
+        }
+    }
 
+    /**
+     * Appends the common tail (parameters, index comment) shared by all ALTER expressions.
+     */
+    protected void appendCommonTail(StringBuilder b) {
+        if (parameters != null && !parameters.isEmpty()) {
+            b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
+        }
+        if (index != null && index.getCommentText() != null) {
+            b.append(" COMMENT ").append(index.getCommentText());
+        }
+    }
+
+    protected boolean isSimpleKeywordOperation() {
+        switch (operation) {
+            case SET_TABLE_OPTION:
+            case DISCARD_TABLESPACE:
+            case IMPORT_TABLESPACE:
+            case DISABLE_KEYS:
+            case ENABLE_KEYS:
+            case ENGINE:
+            case ALGORITHM:
+            case KEY_BLOCK_SIZE:
+            case LOCK:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    protected boolean isRenameOperation() {
+        return getOldIndex() != null || operation == AlterOperation.RENAME_TABLE;
+    }
+
+    protected boolean isDropSpecialOperation() {
+        switch (operation) {
+            case DROP_PRIMARY_KEY:
+            case DROP_UNIQUE:
+            case DROP_FOREIGN_KEY:
+                return true;
+            case DROP:
+                return columnName == null && pkColumns != null && !pkColumns.isEmpty();
+            default:
+                return false;
+        }
+    }
+
+    protected boolean isPartitionOperation() {
+        switch (operation) {
+            case DISCARD_PARTITION:
+            case IMPORT_PARTITION:
+            case TRUNCATE_PARTITION:
+            case COALESCE_PARTITION:
+            case REORGANIZE_PARTITION:
+            case EXCHANGE_PARTITION:
+            case ANALYZE_PARTITION:
+            case CHECK_PARTITION:
+            case OPTIMIZE_PARTITION:
+            case REBUILD_PARTITION:
+            case REPAIR_PARTITION:
+            case REMOVE_PARTITIONING:
+            case PARTITION_BY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    protected void toStringConstraintAlter(StringBuilder b) {
+        if (operation == AlterOperation.ALTER) {
+            b.append("ALTER ").append(constraintType).append(" ").append(constraintSymbol);
             if (invisible) {
                 b.append(" INVISIBLE");
             } else if (!isEnforced()) {
@@ -665,71 +845,80 @@ public class AlterExpression implements Serializable {
             } else if (enforced) {
                 b.append(" ENFORCED");
             }
-        } else if (operation == AlterOperation.ADD && constraintType != null
-                && constraintSymbol != null) {
+        } else {
             b.append("ADD CONSTRAINT ").append(constraintType).append(" ").append(constraintSymbol)
                     .append(" ");
-
             if (index != null && index.getColumnsNames() != null) {
                 b.append(" ")
                         .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
             }
-        } else if (operation == AlterOperation.ALTER
-                && columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
-            b.append("ALTER ");
-            if (hasColumn) {
-                b.append("COLUMN ");
-            }
+        }
+    }
+
+    protected void toStringAlterColumn(StringBuilder b) {
+        b.append("ALTER ");
+        if (hasColumn) {
+            b.append("COLUMN ");
+        }
+        if (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
             b.append(PlainSelect.getStringList(columnDropDefaultList));
-        } else if (operation == AlterOperation.ALTER
-                && columnSetDefaultList != null && !columnSetDefaultList.isEmpty()) {
-            b.append("ALTER ");
-            if (hasColumn) {
-                b.append("COLUMN ");
-            }
+        } else if (columnSetDefaultList != null && !columnSetDefaultList.isEmpty()) {
             b.append(PlainSelect.getStringList(columnSetDefaultList));
-        } else if (operation == AlterOperation.ALTER
-                && columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty()) {
-            b.append("ALTER ");
-            if (hasColumn) {
-                b.append("COLUMN ");
-            }
+        } else {
             b.append(PlainSelect.getStringList(columnSetVisibilityList));
-        } else if (operation == AlterOperation.SET_TABLE_OPTION) {
-            b.append(tableOption);
-        } else if (operation == AlterOperation.DISCARD_TABLESPACE) {
-            b.append("DISCARD TABLESPACE");
-        } else if (operation == AlterOperation.IMPORT_TABLESPACE) {
-            b.append("IMPORT TABLESPACE");
-        } else if (operation == AlterOperation.DISABLE_KEYS) {
-            b.append("DISABLE KEYS");
-        } else if (operation == AlterOperation.ENABLE_KEYS) {
-            b.append("ENABLE KEYS");
-        } else if (operation == AlterOperation.ENGINE) {
-            b.append("ENGINE ");
-            if (useEqual) {
-                b.append("= ");
-            }
-            b.append(engineOption);
-        } else if (operation == AlterOperation.ALGORITHM) {
-            b.append("ALGORITHM ");
-            if (useEqual) {
-                b.append("= ");
-            }
-            b.append(algorithmOption);
-        } else if (operation == AlterOperation.KEY_BLOCK_SIZE) {
-            b.append("KEY_BLOCK_SIZE ");
-            if (useEqual) {
-                b.append("= ");
-            }
-            b.append(keyBlockSize);
-        } else if (operation == AlterOperation.LOCK) {
-            b.append("LOCK ");
-            if (useEqual) {
-                b.append("= ");
-            }
-            b.append(lockOption);
-        } else if (getOldIndex() != null) {
+        }
+    }
+
+    protected void toStringSimpleKeyword(StringBuilder b) {
+        switch (operation) {
+            case SET_TABLE_OPTION:
+                b.append(tableOption);
+                break;
+            case DISCARD_TABLESPACE:
+                b.append("DISCARD TABLESPACE");
+                break;
+            case IMPORT_TABLESPACE:
+                b.append("IMPORT TABLESPACE");
+                break;
+            case DISABLE_KEYS:
+                b.append("DISABLE KEYS");
+                break;
+            case ENABLE_KEYS:
+                b.append("ENABLE KEYS");
+                break;
+            case ENGINE:
+                b.append("ENGINE ");
+                if (useEqual) {
+                    b.append("= ");
+                }
+                b.append(engineOption);
+                break;
+            case ALGORITHM:
+                b.append("ALGORITHM ");
+                if (useEqual) {
+                    b.append("= ");
+                }
+                b.append(algorithmOption);
+                break;
+            case KEY_BLOCK_SIZE:
+                b.append("KEY_BLOCK_SIZE ");
+                if (useEqual) {
+                    b.append("= ");
+                }
+                b.append(keyBlockSize);
+                break;
+            case LOCK:
+                b.append("LOCK ");
+                if (useEqual) {
+                    b.append("= ");
+                }
+                b.append(lockOption);
+                break;
+        }
+    }
+
+    protected void toStringRename(StringBuilder b) {
+        if (getOldIndex() != null) {
             b.append("RENAME");
             switch (operation) {
                 case RENAME_KEY:
@@ -743,13 +932,32 @@ public class AlterExpression implements Serializable {
                     break;
             }
             b.append(getOldIndex().getName()).append(" TO ").append(getIndex().getName());
-        } else if (operation == AlterOperation.RENAME_TABLE) {
-
+        } else {
             b.append("RENAME TO ").append(newTableName);
-        } else if (operation == AlterOperation.DROP_PRIMARY_KEY) {
+        }
+    }
 
-            b.append("DROP PRIMARY KEY ");
-        } else if (operation == AlterOperation.CONVERT) {
+    protected void toStringDropSpecial(StringBuilder b) {
+        switch (operation) {
+            case DROP_PRIMARY_KEY:
+                b.append("DROP PRIMARY KEY ");
+                break;
+            case DROP_UNIQUE:
+                b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
+                break;
+            case DROP_FOREIGN_KEY:
+                b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns))
+                        .append(')');
+                break;
+            default:
+                // Oracle Multi Column Drop
+                b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+                break;
+        }
+    }
+
+    protected void toStringConvert(StringBuilder b) {
+        if (operation == AlterOperation.CONVERT) {
             if (convertType == ConvertType.CONVERT_TO) {
                 b.append("CONVERT TO CHARACTER SET ");
             } else if (convertType == ConvertType.DEFAULT_CHARACTER_SET) {
@@ -763,11 +971,9 @@ public class AlterExpression implements Serializable {
                     b.append("= ");
                 }
             }
-
             if (getCharacterSet() != null) {
                 b.append(getCharacterSet());
             }
-
             if (getCollation() != null) {
                 b.append(" COLLATE ");
                 if (hasEqualForCollate) {
@@ -775,7 +981,7 @@ public class AlterExpression implements Serializable {
                 }
                 b.append(getCollation());
             }
-        } else if (operation == AlterOperation.COLLATE) {
+        } else {
             if (isDefaultCollateSpecified()) {
                 b.append("DEFAULT ");
             }
@@ -786,193 +992,201 @@ public class AlterExpression implements Serializable {
             if (getCollation() != null) {
                 b.append(getCollation());
             }
-        } else if (operation == AlterOperation.DROP_UNIQUE) {
+        }
+    }
 
-            b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
-        } else if (operation == AlterOperation.DROP_FOREIGN_KEY) {
-
-            b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-        } else if (operation == AlterOperation.DROP && columnName == null && pkColumns != null
-                && !pkColumns.isEmpty()) {
-            // Oracle Multi Column Drop
-            b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
-        } else if (operation == AlterOperation.DISCARD_PARTITION && partitions != null) {
-            b.append("DISCARD PARTITION ").append(PlainSelect.getStringList(partitions));
-            if (tableOption != null) {
-                b.append(" ").append(tableOption);
-            }
-        } else if (operation == AlterOperation.IMPORT_PARTITION) {
-            b.append("IMPORT PARTITION ").append(PlainSelect.getStringList(partitions));
-            if (tableOption != null) {
-                b.append(" ").append(tableOption);
-            }
-        } else if (operation == AlterOperation.TRUNCATE_PARTITION
-                && partitions != null) {
-            b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.COALESCE_PARTITION) {
-            b.append("COALESCE PARTITION ").append(coalescePartitionNumber);
-        } else if (operation == AlterOperation.REORGANIZE_PARTITION
-                && partitions != null
-                && partitionDefinitions != null) {
-            b.append("REORGANIZE PARTITION ")
-                    .append(PlainSelect.getStringList(partitions))
-                    .append(" INTO (")
-                    .append(partitionDefinitions.stream()
-                            .map(PartitionDefinition::toString)
-                            .collect(Collectors.joining(", ")))
-                    .append(")");
-        } else if (operation == AlterOperation.EXCHANGE_PARTITION) {
-            b.append("EXCHANGE PARTITION ");
-            b.append(partitions.get(0)).append(" WITH TABLE ").append(exchangePartitionTableName);
-            if (exchangePartitionWithValidation) {
-                b.append(" WITH VALIDATION ");
-            } else if (exchangePartitionWithoutValidation) {
-                b.append(" WITHOUT VALIDATION ");
-            }
-        } else if (operation == AlterOperation.ANALYZE_PARTITION && partitions != null) {
-            b.append("ANALYZE PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.CHECK_PARTITION && partitions != null) {
-            b.append("CHECK PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.OPTIMIZE_PARTITION && partitions != null) {
-            b.append("OPTIMIZE PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.REBUILD_PARTITION && partitions != null) {
-            b.append("REBUILD PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.REPAIR_PARTITION && partitions != null) {
-            b.append("REPAIR PARTITION ").append(PlainSelect.getStringList(partitions));
-        } else if (operation == AlterOperation.REMOVE_PARTITIONING) {
-            b.append("REMOVE PARTITIONING");
-        } else if (operation == AlterOperation.PARTITION_BY) {
-            b.append("PARTITION BY ").append(partitionType).append(" ");
-            if (partitionExpression != null) {
-                b.append("(").append(partitionExpression).append(") ");
-            } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
-                b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
-            }
-
-            b.append("(").append(partitionDefinitions.stream()
-                    .map(PartitionDefinition::toString)
-                    .collect(Collectors.joining(", ")))
-                    .append(")");
-        } else {
-            if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
-                b.append("COMMENT =").append(" ");
-            } else if (operation == AlterOperation.ENABLE_ROW_LEVEL_SECURITY) {
-                b.append("ENABLE ROW LEVEL SECURITY").append(" ");
-            } else if (operation == AlterOperation.DISABLE_ROW_LEVEL_SECURITY) {
-                b.append("DISABLE ROW LEVEL SECURITY").append(" ");
-            } else if (operation == AlterOperation.FORCE_ROW_LEVEL_SECURITY) {
-                b.append("FORCE ROW LEVEL SECURITY").append(" ");
-            } else if (operation == AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY) {
-                b.append("NO FORCE ROW LEVEL SECURITY").append(" ");
-            } else {
-                b.append(operation).append(" ");
-            }
-            if (commentText != null) {
-                if (columnName != null) {
-                    b.append(columnName).append(" COMMENT ");
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    protected void toStringPartition(StringBuilder b) {
+        switch (operation) {
+            case DISCARD_PARTITION:
+                b.append("DISCARD PARTITION ").append(PlainSelect.getStringList(partitions));
+                if (tableOption != null) {
+                    b.append(" ").append(tableOption);
                 }
-                b.append(commentText);
-            } else if (columnName != null) {
+                break;
+            case IMPORT_PARTITION:
+                b.append("IMPORT PARTITION ").append(PlainSelect.getStringList(partitions));
+                if (tableOption != null) {
+                    b.append(" ").append(tableOption);
+                }
+                break;
+            case TRUNCATE_PARTITION:
+                b.append("TRUNCATE PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case COALESCE_PARTITION:
+                b.append("COALESCE PARTITION ").append(coalescePartitionNumber);
+                break;
+            case REORGANIZE_PARTITION:
+                b.append("REORGANIZE PARTITION ")
+                        .append(PlainSelect.getStringList(partitions))
+                        .append(" INTO (")
+                        .append(partitionDefinitions.stream()
+                                .map(PartitionDefinition::toString)
+                                .collect(Collectors.joining(", ")))
+                        .append(")");
+                break;
+            case EXCHANGE_PARTITION:
+                b.append("EXCHANGE PARTITION ");
+                b.append(partitions.get(0)).append(" WITH TABLE ")
+                        .append(exchangePartitionTableName);
+                if (exchangePartitionWithValidation) {
+                    b.append(" WITH VALIDATION ");
+                } else if (exchangePartitionWithoutValidation) {
+                    b.append(" WITHOUT VALIDATION ");
+                }
+                break;
+            case ANALYZE_PARTITION:
+                b.append("ANALYZE PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case CHECK_PARTITION:
+                b.append("CHECK PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case OPTIMIZE_PARTITION:
+                b.append("OPTIMIZE PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case REBUILD_PARTITION:
+                b.append("REBUILD PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case REPAIR_PARTITION:
+                b.append("REPAIR PARTITION ").append(PlainSelect.getStringList(partitions));
+                break;
+            case REMOVE_PARTITIONING:
+                b.append("REMOVE PARTITIONING");
+                break;
+            case PARTITION_BY:
+                b.append("PARTITION BY ").append(partitionType).append(" ");
+                if (partitionExpression != null) {
+                    b.append("(").append(partitionExpression).append(") ");
+                } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
+                    b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
+                }
+                b.append("(").append(partitionDefinitions.stream()
+                        .map(PartitionDefinition::toString)
+                        .collect(Collectors.joining(", ")))
+                        .append(")");
+                break;
+        }
+    }
+
+    /**
+     * Handles the general case for ADD, MODIFY, CHANGE, DROP (column), COMMENT, row-level security,
+     * and all field-based dispatch (columns, constraints, FK, UK, PK, index).
+     */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
+            "PMD.ExcessiveMethodLength"})
+    protected void toStringGeneral(StringBuilder b) {
+        if (operation == AlterOperation.COMMENT_WITH_EQUAL_SIGN) {
+            b.append("COMMENT =").append(" ");
+        } else if (operation == AlterOperation.ENABLE_ROW_LEVEL_SECURITY) {
+            b.append("ENABLE ROW LEVEL SECURITY").append(" ");
+        } else if (operation == AlterOperation.DISABLE_ROW_LEVEL_SECURITY) {
+            b.append("DISABLE ROW LEVEL SECURITY").append(" ");
+        } else if (operation == AlterOperation.FORCE_ROW_LEVEL_SECURITY) {
+            b.append("FORCE ROW LEVEL SECURITY").append(" ");
+        } else if (operation == AlterOperation.NO_FORCE_ROW_LEVEL_SECURITY) {
+            b.append("NO FORCE ROW LEVEL SECURITY").append(" ");
+        } else {
+            b.append(operation).append(" ");
+        }
+        if (commentText != null) {
+            if (columnName != null) {
+                b.append(columnName).append(" COMMENT ");
+            }
+            b.append(commentText);
+        } else if (columnName != null) {
+            if (hasColumn) {
+                b.append("COLUMN ");
+            }
+            if (usingIfExists) {
+                b.append("IF EXISTS ");
+            }
+            if (operation == AlterOperation.RENAME) {
+                b.append(columnOldName).append(" TO ");
+            }
+            b.append(columnName);
+        } else if (getColDataTypeList() != null) {
+            if (operation == AlterOperation.CHANGE) {
+                if (optionalSpecifier != null) {
+                    b.append(optionalSpecifier).append(" ");
+                }
+                b.append(columnOldName).append(" ");
+            } else if (colDataTypeList.size() > 1) {
+                b.append("(");
+            } else {
                 if (hasColumn) {
                     b.append("COLUMN ");
+                } else if (hasColumns) {
+                    b.append("COLUMNS ");
                 }
-                if (usingIfExists) {
-                    b.append("IF EXISTS ");
+                if (useIfNotExists
+                        && operation == AlterOperation.ADD) {
+                    b.append("IF NOT EXISTS ");
                 }
-                if (operation == AlterOperation.RENAME) {
-                    b.append(columnOldName).append(" TO ");
-                }
-                b.append(columnName);
-            } else if (getColDataTypeList() != null) {
-                if (operation == AlterOperation.CHANGE) {
-                    if (optionalSpecifier != null) {
-                        b.append(optionalSpecifier).append(" ");
-                    }
-                    b.append(columnOldName).append(" ");
-                } else if (colDataTypeList.size() > 1) {
-                    b.append("(");
-                } else {
-                    if (hasColumn) {
-                        b.append("COLUMN ");
-                    } else if (hasColumns) {
-                        b.append("COLUMNS ");
-                    }
-                    if (useIfNotExists
-                            && operation == AlterOperation.ADD) {
-                        b.append("IF NOT EXISTS ");
-                    }
-                }
-                if (useBrackets && colDataTypeList.size() == 1) {
-                    b.append(" ( ");
-                }
-                b.append(PlainSelect.getStringList(colDataTypeList));
-                if (useBrackets && colDataTypeList.size() == 1) {
-                    b.append(" ) ");
-                }
-                if (colDataTypeList.size() > 1) {
-                    b.append(")");
-                }
-            } else if (getColumnDropNotNullList() != null) {
-                b.append("COLUMN ");
-                b.append(PlainSelect.getStringList(columnDropNotNullList));
-            } else if (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
-                b.append("COLUMN ");
-                b.append(PlainSelect.getStringList(columnDropDefaultList));
-            } else if (constraintName != null) {
-                b.append("CONSTRAINT ");
-                if (usingIfExists) {
-                    b.append("IF EXISTS ");
-                }
-                b.append(constraintName);
-            } else if (pkColumns != null) {
-                b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-            } else if (ukColumns != null) {
-                b.append("UNIQUE");
-                if (ukName != null) {
+            }
+            if (useBrackets && colDataTypeList.size() == 1) {
+                b.append(" ( ");
+            }
+            b.append(PlainSelect.getStringList(colDataTypeList));
+            if (useBrackets && colDataTypeList.size() == 1) {
+                b.append(" ) ");
+            }
+            if (colDataTypeList.size() > 1) {
+                b.append(")");
+            }
+        } else if (getColumnDropNotNullList() != null) {
+            b.append("COLUMN ");
+            b.append(PlainSelect.getStringList(columnDropNotNullList));
+        } else if (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
+            b.append("COLUMN ");
+            b.append(PlainSelect.getStringList(columnDropDefaultList));
+        } else if (constraintName != null) {
+            b.append("CONSTRAINT ");
+            if (usingIfExists) {
+                b.append("IF EXISTS ");
+            }
+            b.append(constraintName);
+        } else if (pkColumns != null) {
+            b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
+        } else if (ukColumns != null) {
+            b.append("UNIQUE");
+            if (ukName != null) {
+                if (isUkTypeSpecified()) {
                     if (getUk()) {
                         b.append(" KEY ");
                     } else {
                         b.append(" INDEX ");
                     }
-                    b.append(ukName);
+                } else {
+                    b.append(" ");
                 }
-                b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
-            } else if (fkColumns != null) {
-                b.append("FOREIGN KEY (")
-                        .append(PlainSelect.getStringList(fkColumns))
-                        .append(") REFERENCES ")
-                        .append(
-                                fkSourceSchema != null && fkSourceSchema.trim().length() > 0
-                                        ? fkSourceSchema + "."
-                                        : "")
-                        .append(fkSourceTable)
-                        .append(" (")
-                        .append(PlainSelect.getStringList(fkSourceColumns))
-                        .append(")");
-                referentialActions.forEach(b::append);
-            } else if (index != null) {
-                b.append(index);
+                b.append(ukName);
             }
-
-
-            if (getConstraints() != null && !getConstraints().isEmpty()) {
-                b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
-            }
-            if (getUseEqual()) {
-                b.append('=');
-            }
+            b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
+        } else if (fkColumns != null
+                && !(index instanceof net.sf.jsqlparser.statement.create.table.ForeignKeyIndex)) {
+            // @deprecated path - kept for backward compatibility when ForeignKeyIndex is not set
+            b.append("FOREIGN KEY (")
+                    .append(PlainSelect.getStringList(fkColumns))
+                    .append(") REFERENCES ")
+                    .append(
+                            fkSourceSchema != null && fkSourceSchema.trim().length() > 0
+                                    ? fkSourceSchema + "."
+                                    : "")
+                    .append(fkSourceTable)
+                    .append(" (")
+                    .append(PlainSelect.getStringList(fkSourceColumns))
+                    .append(")");
+            referentialActions.forEach(b::append);
+        } else if (index != null) {
+            b.append(index);
         }
 
-        if (parameters != null && !parameters.isEmpty()) {
-            b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
+        if (getConstraints() != null && !getConstraints().isEmpty()) {
+            b.append(' ').append(PlainSelect.getStringList(constraints, false, false));
         }
-
-        if (index != null && index.getCommentText() != null) {
-            // `USING` is a parameters
-            b.append(" COMMENT ").append(index.getCommentText());
+        if (getUseEqual()) {
+            b.append('=');
         }
-
-        return b.toString();
     }
 
     public AlterExpression withOperation(AlterOperation operation) {
@@ -1035,21 +1249,25 @@ public class AlterExpression implements Serializable {
         return this;
     }
 
+    @Deprecated
     public AlterExpression withFkColumns(List<String> fkColumns) {
         this.setFkColumns(fkColumns);
         return this;
     }
 
+    @Deprecated
     public AlterExpression withFkSourceSchema(String fkSourceSchema) {
         this.setFkSourceTable(fkSourceSchema);
         return this;
     }
 
+    @Deprecated
     public AlterExpression withFkSourceTable(String fkSourceTable) {
         this.setFkSourceTable(fkSourceTable);
         return this;
     }
 
+    @Deprecated
     public AlterExpression withFkSourceColumns(List<String> fkSourceColumns) {
         this.setFkSourceColumns(fkSourceColumns);
         return this;
@@ -1104,18 +1322,21 @@ public class AlterExpression implements Serializable {
         return this.withUkColumns(collection);
     }
 
+    @Deprecated
     public AlterExpression addFkColumns(String... fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, fkColumns);
         return this.withFkColumns(collection);
     }
 
+    @Deprecated
     public AlterExpression addFkColumns(Collection<String> fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
         collection.addAll(fkColumns);
         return this.withFkColumns(collection);
     }
 
+    @Deprecated
     public AlterExpression addFkSourceColumns(String... fkSourceColumns) {
         List<String> collection =
                 Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);
@@ -1123,6 +1344,7 @@ public class AlterExpression implements Serializable {
         return this.withFkSourceColumns(collection);
     }
 
+    @Deprecated
     public AlterExpression addFkSourceColumns(Collection<String> fkSourceColumns) {
         List<String> collection =
                 Optional.ofNullable(getFkSourceColumns()).orElseGet(ArrayList::new);

@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -73,11 +77,6 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.WithItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class ExpressionVisitorAdapter<T>
         implements ExpressionVisitor<T>, PivotVisitor<T>, SelectItemVisitor<T> {
@@ -111,6 +110,9 @@ public class ExpressionVisitorAdapter<T>
         ArrayList<Expression> subExpressions = new ArrayList<>();
         if (function.getParameters() != null) {
             subExpressions.addAll(function.getParameters());
+        }
+        if (function.getChainedParameters() != null) {
+            subExpressions.addAll(function.getChainedParameters());
         }
         if (function.getKeep() != null) {
             subExpressions.add(function.getKeep());
@@ -722,10 +724,38 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(JsonFunction jsonFunction, S context) {
         ArrayList<Expression> subExpressions = new ArrayList<>();
+        for (JsonKeyValuePair keyValuePair : jsonFunction.getKeyValuePairs()) {
+            if (keyValuePair.getKey() instanceof Expression) {
+                subExpressions.add((Expression) keyValuePair.getKey());
+            }
+            if (keyValuePair.getValue() instanceof Expression) {
+                subExpressions.add((Expression) keyValuePair.getValue());
+            }
+        }
         for (JsonFunctionExpression expr : jsonFunction.getExpressions()) {
             subExpressions.add(expr.getExpression());
         }
+        if (jsonFunction.getInputExpression() != null) {
+            subExpressions.add(jsonFunction.getInputExpression().getExpression());
+        }
+        if (jsonFunction.getJsonPathExpression() != null) {
+            subExpressions.add(jsonFunction.getJsonPathExpression());
+        }
+        subExpressions.addAll(jsonFunction.getPassingExpressions());
+        if (jsonFunction.getOnEmptyBehavior() != null
+                && jsonFunction.getOnEmptyBehavior().getExpression() != null) {
+            subExpressions.add(jsonFunction.getOnEmptyBehavior().getExpression());
+        }
+        if (jsonFunction.getOnErrorBehavior() != null
+                && jsonFunction.getOnErrorBehavior().getExpression() != null) {
+            subExpressions.add(jsonFunction.getOnErrorBehavior().getExpression());
+        }
         return visitExpressions(jsonFunction, context, subExpressions);
+    }
+
+    @Override
+    public <S> T visit(JsonTableFunction jsonTableFunction, S context) {
+        return visitExpressions(jsonTableFunction, context, jsonTableFunction.getAllExpressions());
     }
 
     @Override
@@ -739,8 +769,18 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(KeyExpression keyExpression, S context) {
+        return keyExpression.getExpression().accept(this, context);
+    }
+
+    @Override
     public <S> T visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         return oracleNamedFunctionParameter.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter, S context) {
+        return postgresNamedFunctionParameter.getExpression().accept(this, context);
     }
 
     @Override

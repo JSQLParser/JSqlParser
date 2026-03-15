@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
@@ -105,6 +110,8 @@ import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
@@ -138,12 +145,6 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -318,6 +319,9 @@ public class TablesNamesFinder<Void>
         }
 
         visitJoins(plainSelect.getJoins(), context);
+        if (plainSelect.getPreWhere() != null) {
+            plainSelect.getPreWhere().accept(this, context);
+        }
         if (plainSelect.getWhere() != null) {
             plainSelect.getWhere().accept(this, context);
         }
@@ -424,6 +428,10 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(Function function, S context) {
         ExpressionList<?> exprList = function.getParameters();
+        if (exprList != null) {
+            visit(exprList, context);
+        }
+        exprList = function.getChainedParameters();
         if (exprList != null) {
             visit(exprList, context);
         }
@@ -1049,7 +1057,24 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Insert insert, S context) {
-        visit(insert.getTable(), context);
+        if (insert.isOracleMultiInsert() && insert.getOracleMultiInsertBranches() != null) {
+            for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
+                if (branch.getWhenExpression() != null) {
+                    branch.getWhenExpression().accept(this, context);
+                }
+                if (branch.getClauses() == null) {
+                    continue;
+                }
+                for (OracleMultiInsertClause clause : branch.getClauses()) {
+                    visit(clause.getTable(), context);
+                    if (clause.getSelect() != null) {
+                        visit(clause.getSelect(), context);
+                    }
+                }
+            }
+        } else if (insert.getTable() != null) {
+            visit(insert.getTable(), context);
+        }
         if (insert.getWithItemsList() != null) {
             for (WithItem<?> withItem : insert.getWithItemsList()) {
                 withItem.accept((SelectVisitor<?>) this, context);
@@ -1380,7 +1405,6 @@ public class TablesNamesFinder<Void>
         }
         for (Join join : joins) {
             join.getFromItem().accept(this, context);
-            join.getRightItem().accept(this, context);
             for (Expression expression : join.getOnExpressions()) {
                 expression.accept(this, context);
             }
@@ -1725,6 +1749,38 @@ public class TablesNamesFinder<Void>
         for (JsonFunctionExpression expr : expression.getExpressions()) {
             expr.getExpression().accept(this, context);
         }
+
+        if (expression.getInputExpression() != null) {
+            expression.getInputExpression().getExpression().accept(this, context);
+        }
+
+        if (expression.getJsonPathExpression() != null) {
+            expression.getJsonPathExpression().accept(this, context);
+        }
+
+        for (Expression passingExpression : expression.getPassingExpressions()) {
+            passingExpression.accept(this, context);
+        }
+
+        if (expression.getOnEmptyBehavior() != null
+                && expression.getOnEmptyBehavior().getExpression() != null) {
+            expression.getOnEmptyBehavior().getExpression().accept(this, context);
+        }
+
+        if (expression.getOnErrorBehavior() != null
+                && expression.getOnErrorBehavior().getExpression() != null) {
+            expression.getOnErrorBehavior().getExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(JsonTableFunction expression, S context) {
+        for (Expression jsonExpression : expression.getAllExpressions()) {
+            if (jsonExpression != null) {
+                jsonExpression.accept(this, context);
+            }
+        }
         return null;
     }
 
@@ -1746,6 +1802,12 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(KeyExpression keyExpression, S context) {
+        keyExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(IfElseStatement ifElseStatement, S context) {
         ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {
@@ -1762,6 +1824,13 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         oracleNamedFunctionParameter.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+            S context) {
+        postgresNamedFunctionParameter.getExpression().accept(this, context);
         return null;
     }
 

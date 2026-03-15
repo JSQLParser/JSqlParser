@@ -24,3 +24,4 @@ and ( ( t1.scode like 'mmm'  and t2.scode like 'xax' ) )
 
 --@FAILURE: Encountered unexpected token: "(" "(" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: <K_IS> / "is", at line 19, column 31, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 8 Mar 2026, 18:41:51

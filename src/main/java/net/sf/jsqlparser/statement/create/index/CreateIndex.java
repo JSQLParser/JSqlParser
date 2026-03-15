@@ -12,7 +12,6 @@ package net.sf.jsqlparser.statement.create.index;
 import static java.util.stream.Collectors.joining;
 
 import java.util.*;
-
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
@@ -106,9 +105,7 @@ public class CreateIndex implements Statement {
 
             buffer.append(
                     index.getColumns().stream()
-                            .map(cp -> cp.columnName + (cp.getParams() != null
-                                    ? " " + String.join(" ", cp.getParams())
-                                    : ""))
+                            .map(Index.ColumnParams::toString)
                             .collect(joining(", ")));
 
             buffer.append(")");

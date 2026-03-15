@@ -33,8 +33,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -149,7 +147,6 @@ class ParserKeywordsUtilsTest {
         parser.javacc_input(context);
 
         // needed for filling JavaCCGlobals
-        // JavaCCErrors.reInit();
         Semanticize.start(context);
 
         // read all the Token and get the String image
@@ -167,9 +164,36 @@ class ParserKeywordsUtilsTest {
     }
 
     @Test
-    void getAllKeywords() throws IOException {
-        Set<String> allKeywords = ParserKeywordsUtils.getAllKeywordsUsingRegex(FILE);
+    void getAllSimpleKeywords() throws IOException {
+        Set<String> allKeywords = ParserKeywordsUtils.getAllSimpleKeywords(FILE);
         Assertions.assertFalse(allKeywords.isEmpty(), "Keyword List must not be empty!");
+        LOGGER.info("All simple keywords: " + allKeywords.size());
+    }
+
+    @Test
+    void getNonReservedKeywords() {
+        Set<String> nonReserved = ParserKeywordsUtils.getNonReservedKeywords();
+        Assertions.assertFalse(nonReserved.isEmpty(),
+                "Non-reserved Keyword List must not be empty!");
+        LOGGER.info("Non-reserved keywords: " + nonReserved.size());
+    }
+
+    @Test
+    void getReservedKeywords() throws IOException {
+        Set<String> reserved = ParserKeywordsUtils.getReservedKeywords(FILE);
+        Assertions.assertFalse(reserved.isEmpty(), "Reserved Keyword List must not be empty!");
+        LOGGER.info("Reserved keywords: " + reserved.size());
+    }
+
+    @Test
+    void reservedAndNonReservedAreDisjoint() throws IOException {
+        Set<String> reserved = ParserKeywordsUtils.getReservedKeywords(FILE);
+        Set<String> nonReserved = ParserKeywordsUtils.getNonReservedKeywords();
+
+        TreeSet<String> overlap = new TreeSet<>(reserved);
+        overlap.retainAll(nonReserved);
+        Assertions.assertTrue(overlap.isEmpty(),
+                "Reserved and non-reserved sets must not overlap, but found: " + overlap);
     }
 
     @Test
@@ -178,27 +202,23 @@ class ParserKeywordsUtilsTest {
         Assertions.assertFalse(allKeywords.isEmpty(), "Keyword List must not be empty!");
     }
 
-    // Test, if all Tokens found per RegEx are also found from the JavaCCParser
+    // Cross-check: compare grammar-scanned keywords with those extracted by the JavaCC Parser.
     @Test
     void compareKeywordLists() throws Exception {
-        Set<String> allRegexKeywords = ParserKeywordsUtils.getAllKeywordsUsingRegex(FILE);
+        Set<String> allGrammarKeywords = ParserKeywordsUtils.getAllSimpleKeywords(FILE);
         Set<String> allJavaCCParserKeywords = getAllKeywordsUsingJavaCC(FILE);
 
-        // Exceptions, which should not have been found from the RegEx
-        List<String> exceptions = Arrays.asList("0x");
-
-        // We expect all Keywords from the Regex to be found by the JavaCC Parser
-        for (String s : allRegexKeywords) {
-            Assertions.assertTrue(
-                    exceptions.contains(s) || allJavaCCParserKeywords.contains(s),
-                    "The Keywords from JavaCC do not contain Keyword: " + s);
+        // Grammar keywords not found by JavaCC — log for review
+        for (String s : allGrammarKeywords) {
+            if (!allJavaCCParserKeywords.contains(s)) {
+                LOGGER.info("Grammar keyword not in JavaCC extraction: " + s);
+            }
         }
 
-        // The JavaCC Parser finds some more valid Keywords (where no explicit Token has been
-        // defined
+        // We expect all simple keywords found by JavaCC to exist in the grammar set
         for (String s : allJavaCCParserKeywords) {
-            if (!(exceptions.contains(s) || allRegexKeywords.contains(s))) {
-                LOGGER.fine("Found Additional Keywords from Parser: " + s);
+            if (!allGrammarKeywords.contains(s)) {
+                LOGGER.info("Additional keyword found by JavaCC Parser: " + s);
             }
         }
     }

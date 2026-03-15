@@ -39,7 +39,12 @@ public class CheckConstraint extends NamedConstraint {
 
     @Override
     public String toString() {
-        return "CONSTRAINT " + getName() + " CHECK (" + expression + ")";
+        StringBuilder b = new StringBuilder();
+        if (getName() != null) {
+            b.append("CONSTRAINT ").append(getName()).append(" ");
+        }
+        b.append("CHECK (").append(expression).append(")");
+        return b.toString();
     }
 
     public CheckConstraint withTable(Table table) {

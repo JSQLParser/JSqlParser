@@ -11,6 +11,8 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -41,8 +43,29 @@ public class InsertValidator extends AbstractValidator<Insert> {
                     Feature.insertReturningExpressionList);
         }
 
-        validateOptionalFromItem(insert.getTable());
-        validateOptionalExpressions(insert.getColumns());
+        if (insert.isOracleMultiInsert() && insert.getOracleMultiInsertBranches() != null) {
+            ExpressionValidator v = getValidator(ExpressionValidator.class);
+            for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
+                if (branch.getWhenExpression() != null) {
+                    branch.getWhenExpression().accept(v, null);
+                }
+                if (branch.getClauses() == null) {
+                    continue;
+                }
+                for (OracleMultiInsertClause clause : branch.getClauses()) {
+                    validateOptionalFromItem(clause.getTable());
+                    validateOptionalExpressions(clause.getColumns());
+                    if (clause.getSelect() instanceof Values) {
+                        clause.getSelect().accept(getValidator(StatementValidator.class), null);
+                        validateOptionalExpressions(
+                                clause.getSelect().as(Values.class).getExpressions());
+                    }
+                }
+            }
+        } else {
+            validateOptionalFromItem(insert.getTable());
+            validateOptionalExpressions(insert.getColumns());
+        }
 
         if (insert.getSelect() instanceof Values) {
             insert.getSelect().accept(getValidator(StatementValidator.class), null);

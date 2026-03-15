@@ -9,6 +9,16 @@
  */
 package net.sf.jsqlparser.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -20,17 +30,6 @@ import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TablesNamesFinderTest {
 
@@ -53,6 +52,14 @@ public class TablesNamesFinderTest {
     public void testGetTablesWithXor() throws Exception {
         String sqlStr = "SELECT * FROM MY_TABLE1 WHERE true XOR false";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1");
+    }
+
+    @Test
+    public void testGetTablesWithPreWhere() throws Exception {
+        String sqlStr =
+                "SELECT * FROM MY_TABLE1 PREWHERE ID IN (SELECT ID FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
     }
 
     @Test
@@ -106,6 +113,25 @@ public class TablesNamesFinderTest {
     public void testGetTablesFromInsertValues() throws Exception {
         String sqlStr = "INSERT INTO MY_TABLE1 (a) VALUES (5)";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1");
+    }
+
+    @Test
+    public void testGetTablesFromOracleInsertAll() throws Exception {
+        String sqlStr =
+                "INSERT ALL INTO MY_TABLE1 (a) VALUES (1) INTO MY_TABLE2 (a) VALUES (2) SELECT * FROM dual";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "dual");
+    }
+
+    @Test
+    public void testGetTablesFromOracleInsertAllWhenElse() throws Exception {
+        String sqlStr =
+                "INSERT ALL WHEN EXISTS (SELECT 1 FROM CHECK_TABLE c WHERE c.id = s.id) "
+                        + "THEN INTO MY_TABLE1 (a) VALUES (a) "
+                        + "ELSE INTO MY_TABLE2 (a) VALUES (a) "
+                        + "SELECT a, id FROM SOURCE_TABLE s";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "CHECK_TABLE", "SOURCE_TABLE");
     }
 
     @Test
@@ -746,4 +772,3 @@ public class TablesNamesFinderTest {
     }
 
 }
-

@@ -9,16 +9,17 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.Iterator;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
+import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.Iterator;
 
 public class InsertDeParser extends AbstractDeParser<Insert> {
 
@@ -62,6 +63,19 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         }
         if (insert.isModifierIgnore()) {
             builder.append("IGNORE ");
+        }
+        if (insert.isOracleMultiInsert()) {
+            builder.append(insert.isOracleMultiInsertFirst() ? "FIRST" : "ALL");
+            if (insert.getOracleMultiInsertBranches() != null) {
+                for (OracleMultiInsertBranch branch : insert.getOracleMultiInsertBranches()) {
+                    appendOracleMultiInsertBranch(branch);
+                }
+            }
+            if (insert.getSelect() != null) {
+                builder.append(" ");
+                insert.getSelect().accept(selectVisitor, null);
+            }
+            return;
         }
         if (insert.isOverwrite()) {
             builder.append("OVERWRITE ");
@@ -113,6 +127,9 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
         if (insert.getSetUpdateSets() != null) {
             builder.append(" SET ");
             deparseUpdateSets(insert.getSetUpdateSets(), builder, expressionVisitor);
+            if (insert.getRowAlias() != null) {
+                builder.append(" ").append(insert.getRowAlias());
+            }
         }
 
         if (insert.getDuplicateAction() != null) {
@@ -154,5 +171,47 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
 
     public void setSelectVisitor(SelectVisitor<StringBuilder> visitor) {
         selectVisitor = visitor;
+    }
+
+    private void appendOracleIntoClause(OracleMultiInsertClause clause) {
+        builder.append("INTO ").append(clause.getTable().toString());
+        if (clause.getColumns() != null && !clause.getColumns().isEmpty()) {
+            builder.append(" (");
+            for (Iterator<Column> iter = clause.getColumns().iterator(); iter.hasNext();) {
+                Column column = iter.next();
+                builder.append(column.getColumnName());
+                if (iter.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+            builder.append(")");
+        }
+        if (clause.getSelect() != null) {
+            builder.append(" ");
+            clause.getSelect().accept(selectVisitor, null);
+        }
+    }
+
+    private void appendOracleMultiInsertBranch(OracleMultiInsertBranch branch) {
+        if (branch == null || branch.getClauses() == null || branch.getClauses().isEmpty()) {
+            return;
+        }
+
+        if (branch.getWhenExpression() != null) {
+            builder.append(" WHEN ");
+            if (expressionVisitor != null) {
+                branch.getWhenExpression().accept(expressionVisitor, null);
+            } else {
+                builder.append(branch.getWhenExpression().toString());
+            }
+            builder.append(" THEN");
+        } else if (branch.isElseClause()) {
+            builder.append(" ELSE");
+        }
+
+        for (OracleMultiInsertClause clause : branch.getClauses()) {
+            builder.append(" ");
+            appendOracleIntoClause(clause);
+        }
     }
 }

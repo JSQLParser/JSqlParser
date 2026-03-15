@@ -12,11 +12,12 @@ package net.sf.jsqlparser.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.ReturningReferenceType;
 
 /**
  * A column. It can have the table name it belongs to.
@@ -28,6 +29,9 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     private String commentText;
     private ArrayConstructor arrayConstructor;
     private String tableDelimiter = ".";
+    private int oldOracleJoinSyntax = SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN;
+    private ReturningReferenceType returningReferenceType = null;
+    private String returningQualifier = null;
 
     // holds the physical table when resolved against an actual schema information
     private Table resolvedTable = null;
@@ -192,6 +196,14 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         this.tableDelimiter = tableDelimiter;
     }
 
+    public int getOldOracleJoinSyntax() {
+        return oldOracleJoinSyntax;
+    }
+
+    public void setOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.oldOracleJoinSyntax = oldOracleJoinSyntax;
+    }
+
     @Override
     public String getFullyQualifiedName() {
         return getFullyQualifiedName(false);
@@ -205,7 +217,9 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     public String getFullyQualifiedName(boolean aliases) {
         StringBuilder fqn = new StringBuilder();
 
-        if (table != null) {
+        if (returningQualifier != null) {
+            fqn.append(returningQualifier);
+        } else if (table != null) {
             if (table.getAlias() != null && aliases) {
                 fqn.append(table.getAlias().getName());
             } else {
@@ -245,6 +259,7 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     @Override
     public String toString() {
         return getFullyQualifiedName(true)
+                + (oldOracleJoinSyntax != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN ? "(+)" : "")
                 + (commentText != null ? " /* " + commentText + "*/ " : "");
     }
 
@@ -265,6 +280,36 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
 
     public Column withTableDelimiter(String delimiter) {
         this.setTableDelimiter(delimiter);
+        return this;
+    }
+
+    public Column withOldOracleJoinSyntax(int oldOracleJoinSyntax) {
+        this.setOldOracleJoinSyntax(oldOracleJoinSyntax);
+        return this;
+    }
+
+    public ReturningReferenceType getReturningReferenceType() {
+        return returningReferenceType;
+    }
+
+    public Column setReturningReferenceType(ReturningReferenceType returningReferenceType) {
+        this.returningReferenceType = returningReferenceType;
+        return this;
+    }
+
+    public String getReturningQualifier() {
+        return returningQualifier;
+    }
+
+    public Column setReturningQualifier(String returningQualifier) {
+        this.returningQualifier = returningQualifier;
+        return this;
+    }
+
+    public Column withReturningReference(ReturningReferenceType returningReferenceType,
+            String returningQualifier) {
+        this.returningReferenceType = returningReferenceType;
+        this.returningQualifier = returningQualifier;
         return this;
     }
 

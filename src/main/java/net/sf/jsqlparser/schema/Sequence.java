@@ -9,13 +9,12 @@
  */
 package net.sf.jsqlparser.schema;
 
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 /**
  * Represents the database type for a {@code SEQUENCE}
@@ -29,6 +28,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     private List<String> partItems = new ArrayList<>();
 
     private List<Parameter> parameters;
+    private String dataType;
 
     public Sequence() {}
 
@@ -43,6 +43,19 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
     public void setParameters(List<Parameter> parameters) {
         this.parameters = parameters;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public Sequence withDataType(String dataType) {
+        this.setDataType(dataType);
+        return this;
     }
 
     public Database getDatabase() {
@@ -129,6 +142,9 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
     @Override
     public String toString() {
         StringBuilder sql = new StringBuilder(getFullyQualifiedName());
+        if (dataType != null) {
+            sql.append(" AS ").append(dataType);
+        }
         if (parameters != null) {
             for (Sequence.Parameter parameter : parameters) {
                 sql.append(" ").append(parameter.formatParameter());

@@ -38,7 +38,9 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
+import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
+import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
@@ -51,6 +53,7 @@ import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
+import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
@@ -272,6 +275,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(FullTextSearch fullTextSearch, S context) {
         validateOptionalExpressions(fullTextSearch.getMatchColumns());
+        validateOptionalExpression(fullTextSearch.getAgainstValue(), this);
         return null;
     }
 
@@ -526,6 +530,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(Column tableColumn, S context) {
+        if (tableColumn
+                .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
+            validateFeature(Feature.oracleOldJoinSyntax);
+        }
         validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
         return null;
     }
@@ -536,6 +544,7 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
         validateOptionalExpressionList(function.getNamedParameters());
         validateOptionalExpressionList(function.getParameters());
+        validateOptionalExpressionList(function.getChainedParameters());
 
         Object attribute = function.getAttribute();
         if (attribute instanceof Expression) {
@@ -1035,6 +1044,14 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(JsonTableFunction expression, S context) {
+        for (Expression jsonExpression : expression.getAllExpressions()) {
+            validateOptionalExpression(jsonExpression, this);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ConnectByRootOperator connectByRootOperator, S context) {
         connectByRootOperator.getColumn().accept(this, context);
         return null;
@@ -1047,8 +1064,21 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(KeyExpression keyExpression, S context) {
+        keyExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter, S context) {
         oracleNamedFunctionParameter.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PostgresNamedFunctionParameter postgresNamedFunctionParameter,
+            S context) {
+        postgresNamedFunctionParameter.getExpression().accept(this, context);
         return null;
     }
 
@@ -1225,6 +1255,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(ConnectByRootOperator connectByRootOperator) {
         visit(connectByRootOperator, null);
+    }
+
+    public void visit(KeyExpression keyExpression) {
+        visit(keyExpression, null);
     }
 
     public void visit(OracleNamedFunctionParameter oracleNamedFunctionParameter) {

@@ -31,6 +31,13 @@ class ForClauseTest {
     }
 
     @Test
+    void testForXMLPathAfterOrderByInSubSelect() throws JSQLParserException {
+        String sqlStr =
+                "SELECT STUFF((SELECT ',' + name FROM class ORDER BY id FOR XML PATH('')),1,1,'') AS names FROM users";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     void testForXMLRaw() throws JSQLParserException {
         String sqlStr =
                 "SELECT * " +

@@ -16,18 +16,6 @@ We would like to recommend writing portable, standard compliant  SQL in general.
             dbms_output.put_line('The number is ' || num);
         END;
 
-
-
-- Oracle `INSERT ALL ...` is not supported
-    
-    .. code-block:: sql
-
-        INSERT ALL
-          INTO mytable (column1, column2, column_n) VALUES (expr1, expr2, expr_n)
-          INTO mytable (column1, column2, column_n) VALUES (expr1, expr2, expr_n)
-          INTO mytable (column1, column2, column_n) VALUES (expr1, expr2, expr_n)
-        SELECT * FROM dual;
-
 - DDL statements
 
     While *JSQLParser* provides a lot of generic support for DDL statements, it is possible that certain RDBMS specific syntax (especially about indices, encodings, compression) won't be supported.
@@ -39,7 +27,6 @@ We would like to recommend writing portable, standard compliant  SQL in general.
     .. code-block:: sql
 
         values cast ((time '12:03:34' - time '11:57:23') minute to second as varchar(8));
-
 
 
 

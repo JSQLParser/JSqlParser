@@ -23,6 +23,7 @@ public class JsonKeyValuePair implements Serializable {
     private boolean usingKeyKeyword;
     private JsonKeyValuePairSeparator separator;
     private boolean usingFormatJson = false;
+    private String encoding;
 
     /**
      * Please use the Constructor with {@link JsonKeyValuePairSeparator} parameter.
@@ -108,6 +109,19 @@ public class JsonKeyValuePair implements Serializable {
         return this;
     }
 
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public JsonKeyValuePair withEncoding(String encoding) {
+        this.setEncoding(encoding);
+        return this;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
@@ -151,6 +165,9 @@ public class JsonKeyValuePair implements Serializable {
 
         if (isUsingFormatJson()) {
             builder.append(" FORMAT JSON");
+            if (encoding != null) {
+                builder.append(" ENCODING ").append(encoding);
+            }
         }
 
         return builder;

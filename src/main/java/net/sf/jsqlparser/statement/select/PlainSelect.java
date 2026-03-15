@@ -9,13 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
-import net.sf.jsqlparser.expression.OracleHint;
-import net.sf.jsqlparser.expression.PreferringClause;
-import net.sf.jsqlparser.expression.WindowDefinition;
-import net.sf.jsqlparser.schema.Table;
+import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +18,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.joining;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
+import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.PreferringClause;
+import net.sf.jsqlparser.expression.WindowDefinition;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PlainSelect extends Select {
@@ -37,6 +37,7 @@ public class PlainSelect extends Select {
     private FromItem fromItem;
     private List<LateralView> lateralViews;
     private List<Join> joins;
+    private Expression preWhere;
     private Expression where;
     private GroupByElement groupBy;
     private Expression having;
@@ -64,6 +65,7 @@ public class PlainSelect extends Select {
     private boolean isUsingOnly = false;
     private boolean useWithNoLog = false;
     private Table intoTempTable = null;
+    private List<UpdateSet> settings = null;
 
     public PlainSelect() {}
 
@@ -158,6 +160,14 @@ public class PlainSelect extends Select {
 
     public void setWhere(Expression where) {
         this.where = where;
+    }
+
+    public Expression getPreWhere() {
+        return preWhere;
+    }
+
+    public void setPreWhere(Expression preWhere) {
+        this.preWhere = preWhere;
     }
 
     public PlainSelect withFromItem(FromItem item) {
@@ -311,6 +321,19 @@ public class PlainSelect extends Select {
 
     public PlainSelect withIntoTempTable(Table intoTempTable) {
         this.setIntoTempTable(intoTempTable);
+        return this;
+    }
+
+    public List<UpdateSet> getSettings() {
+        return settings;
+    }
+
+    public void setSettings(List<UpdateSet> settings) {
+        this.settings = settings;
+    }
+
+    public PlainSelect withSettings(List<UpdateSet> settings) {
+        this.setSettings(settings);
         return this;
     }
 
@@ -569,6 +592,9 @@ public class PlainSelect extends Select {
             if (ksqlWindow != null) {
                 builder.append(" WINDOW ").append(ksqlWindow);
             }
+            if (preWhere != null) {
+                builder.append(" PREWHERE ").append(preWhere);
+            }
             if (where != null) {
                 builder.append(" WHERE ").append(where);
             }
@@ -597,6 +623,9 @@ public class PlainSelect extends Select {
             }
         } else {
             // without from
+            if (preWhere != null) {
+                builder.append(" PREWHERE ").append(preWhere);
+            }
             if (where != null) {
                 builder.append(" WHERE ").append(where);
             }
@@ -616,6 +645,11 @@ public class PlainSelect extends Select {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         super.appendTo(builder);
+
+        if (settings != null && !settings.isEmpty()) {
+            builder.append(" SETTINGS ");
+            UpdateSet.appendUpdateSetsTo(builder, settings);
+        }
 
         if (optimizeFor != null) {
             builder.append(optimizeFor);
@@ -666,6 +700,11 @@ public class PlainSelect extends Select {
 
     public PlainSelect withWhere(Expression where) {
         this.setWhere(where);
+        return this;
+    }
+
+    public PlainSelect withPreWhere(Expression preWhere) {
+        this.setPreWhere(preWhere);
         return this;
     }
 
@@ -759,12 +798,28 @@ public class PlainSelect extends Select {
         return this.withJoins(collection);
     }
 
+    public PlainSelect addSettings(UpdateSet... settings) {
+        List<UpdateSet> collection = Optional.ofNullable(getSettings()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, settings);
+        return this.withSettings(collection);
+    }
+
+    public PlainSelect addSettings(Collection<? extends UpdateSet> settings) {
+        List<UpdateSet> collection = Optional.ofNullable(getSettings()).orElseGet(ArrayList::new);
+        collection.addAll(settings);
+        return this.withSettings(collection);
+    }
+
     public <E extends FromItem> E getFromItem(Class<E> type) {
         return type.cast(getFromItem());
     }
 
     public <E extends Expression> E getWhere(Class<E> type) {
         return type.cast(getWhere());
+    }
+
+    public <E extends Expression> E getPreWhere(Class<E> type) {
+        return type.cast(getPreWhere());
     }
 
     public <E extends Expression> E getHaving(Class<E> type) {

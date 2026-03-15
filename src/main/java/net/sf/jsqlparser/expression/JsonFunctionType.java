@@ -14,7 +14,7 @@ package net.sf.jsqlparser.expression;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public enum JsonFunctionType {
-    OBJECT, ARRAY,
+    OBJECT, ARRAY, VALUE, QUERY, EXISTS,
 
     /**
      * Not used anymore

@@ -13,32 +13,42 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.Objects;
+import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.create.CreateTableTest;
 import net.sf.jsqlparser.test.TestException;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
+
 
 public class CCJSqlParserManagerTest {
 
-    @Test
-    public void testParse() throws Exception {
-        CCJSqlParserManager parserManager = new CCJSqlParserManager();
+    // Create a DynamicTest stream for every statement in the file simple_parsing.txt
+    @TestFactory
+    Stream<DynamicTest> testParsePerStatement() {
         BufferedReader in = new BufferedReader(new InputStreamReader(Objects
                 .requireNonNull(CreateTableTest.class.getResourceAsStream("/simple_parsing.txt"))));
 
-        String statement = "";
-        while (true) {
+        // Convert buffered reader to stream of statements
+        return Stream.generate(() -> {
             try {
-                statement = CCJSqlParserManagerTest.getStatement(in);
-                if (statement == null) {
-                    break;
-                }
-
-                parserManager.parse(new StringReader(statement));
-            } catch (JSQLParserException e) {
-                throw new TestException("impossible to parse statement: " + statement, e);
+                return CCJSqlParserManagerTest.getStatement(in);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+        }).takeWhile(Objects::nonNull)
+                .map(statement -> DynamicTest.dynamicTest("Parsing statement: " + statement, () -> {
+                    testParse(statement);
+                }));
+    }
+
+    private void testParse(String statement) throws Exception {
+        CCJSqlParserManager parserManager = new CCJSqlParserManager();
+        try {
+            parserManager.parse(new StringReader(statement));
+        } catch (JSQLParserException e) {
+            throw new TestException("impossible to parse statement: " + statement, e);
         }
     }
 

@@ -3,7 +3,7 @@
 [![CI](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml/badge.svg)](https://github.com/JSQLParser/JSqlParser/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/JSQLParser/JSqlParser/badge.svg?branch=master)](https://coveralls.io/r/JSQLParser/JSqlParser?branch=master)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6f9a2d7eb98f45969749e101322634a1)](https://www.codacy.com/gh/JSQLParser/JSqlParser/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JSQLParser/JSqlParser&amp;utm_campaign=Badge_Grade)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser/badge.svg)](http://maven-badges.herokuapp.com/maven-central/com.github.jsqlparser/jsqlparser) [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.jsqlparser/jsqlparser.svg?label=maven-central)](https://central.sonatype.com/artifact/com.github.jsqlparser/jsqlparser) [![Javadocs](https://www.javadoc.io/badge/com.github.jsqlparser/jsqlparser.svg)](https://www.javadoc.io/doc/com.github.jsqlparser/jsqlparser)
 [![Gitter](https://badges.gitter.im/JSQLParser/JSqlParser.svg)](https://gitter.im/JSQLParser/JSqlParser?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A huge thank you to our sponsor, [Starlake.ai](https://starlake.ai/) who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
@@ -76,9 +76,11 @@ JSQLParser-5.4 Snapshot and later use JavaCC-8 Snapshots for generating the pars
 Unfortunately the released JSQLParser-5.2 shows a performance deterioration caused by commit [30cf5d7](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a076f49deb5cc841d39e62b3dc) related to `FunctionAllColumns()`.
 This has been resolved in JSQLParser 5.3-SNAPSHOT and JMH benchmarks have been added to avoid such regressions in the future. Further all `LOOKAHEAD` have been revised one by one, and we have gained back a very good performance of the Parser.
 
+As per March-2026, the productions `Condition()`, `RegularCondition()` and `AndExpression()` have been refactored successfully. This resulted in a massive performance boost and seem to have solved most of the performance issues.
+
 ```text
 Benchmark                               (version)  Mode  Cnt   Score   Error  Units
-JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  82.695 ± 2.841  ms/op
+JSQLParserBenchmark.parseSQLStatements     latest  avgt   15  15.908 ± 0.446  ms/op <-- March/26
 JSQLParserBenchmark.parseSQLStatements        5.3  avgt   15  84.687 ± 3.321  ms/op
 JSQLParserBenchmark.parseSQLStatements        5.1  avgt   15  86.592 ± 5.781  ms/op
 ```
@@ -105,7 +107,6 @@ If you like JSqlParser then please check out its related projects:
 * [JSQLTranspiler](https://manticore-projects.com/JSQLTranspiler/index.html) for dialect specific rewriting, SQL Column resolution and Lineage, provided by [Starlake.ai](https://starlake.ai/)
 
 ## Alternatives to JSqlParser?
-[**General SQL Parser**](http://www.sqlparser.com/features/introduce.php?utm_source=github-jsqlparser&utm_medium=text-general) looks pretty good, with extended SQL syntax (like PL/SQL and T-SQL) and java + .NET APIs. The tool is commercial (license available online), with a free download option.
 
 Alternatively the dual-licensed [JOOQ](https://www.jooq.org/doc/latest/manual/sql-building/sql-parser/) provides a handwritten Parser supporting a lot of RDBMS, translation between dialects, SQL transformation, can be used as a JDBC proxy for translation and transformation purposes.
 

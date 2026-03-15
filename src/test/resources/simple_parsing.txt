@@ -249,3 +249,236 @@ WITH
     RETURNS double
     RETURN x[1] + x[2] + x[3]
 SELECT takesArray(array[1.0, 2.0, 3.0]);
+
+SELECT
+      id,
+      json_exists(
+                  description,
+                  'lax $.children[*]?(@ > 10)'
+                 ) AS children_above_ten
+FROM customers;
+
+SELECT
+      id,
+      json_exists(
+                  description,
+                  'strict $.children[2]?(@ > 10)'
+                  UNKNOWN ON ERROR
+                 ) AS child_3_above_ten
+FROM customers;
+
+SELECT
+      id,
+      json_query(
+                 description,
+                 'lax $.children'
+                ) AS children
+FROM customers;
+
+SELECT
+      id,
+      json_query(
+                 description,
+                 'lax $.children[*]'
+                 WITHOUT ARRAY WRAPPER
+                 NULL ON ERROR
+                ) AS children
+FROM customers;
+
+SELECT
+      id,
+      json_query(
+                 description,
+                 'lax $.children[last]'
+                 WITH ARRAY WRAPPER
+                ) AS last_child
+FROM customers;
+
+SELECT
+      id,
+      json_query(
+                 description,
+                 'strict $.children[*]?(@ > 12)'
+                 WITH ARRAY WRAPPER
+                 EMPTY ARRAY ON EMPTY
+                ) AS children
+FROM customers;
+
+SELECT
+      id,
+      json_query(description, 'strict $.comment' KEEP QUOTES) AS quoted_comment,
+      json_query(description, 'strict $.comment' OMIT QUOTES) AS unquoted_comment
+FROM customers;
+
+SELECT id, json_value(
+                      description,
+                      'lax $.comment'
+                      RETURNING char(12)
+                     ) AS comment
+FROM customers;
+
+SELECT id, json_value(
+                      description,
+                      'lax $.children[0]'
+                      RETURNING tinyint
+                     ) AS child
+FROM customers;
+
+SELECT id, json_value(
+                      description,
+                      'strict $.children[2]'
+                      DEFAULT 'err' ON ERROR
+                     ) AS child
+FROM customers;
+
+SELECT id, json_value(
+                      description,
+                      'lax $.children[2]'
+                      DEFAULT 'missing' ON EMPTY
+                     ) AS child
+FROM customers;
+
+SELECT
+      *
+FROM
+      json_table(
+                '[
+                  {"id":1,"name":"Africa","wikiDataId":"Q15"},
+                  {"id":2,"name":"Americas","wikiDataId":"Q828"},
+                  {"id":3,"name":"Asia","wikiDataId":"Q48"},
+                  {"id":4,"name":"Europe","wikiDataId":"Q51"}
+                ]',
+                'strict $' COLUMNS (
+                  NESTED PATH 'strict $[*]' COLUMNS (
+                    id integer PATH 'strict $.id',
+                    name varchar PATH 'strict $.name',
+                    wiki_data_id varchar PATH 'strict $."wikiDataId"'
+                  )
+                )
+              );
+
+SELECT
+      *
+FROM
+      json_table(
+                '[
+                    {"continent": "Asia", "countries": [
+                        {"name": "Japan", "population": 125.7},
+                        {"name": "Thailand", "population": 71.6}
+                    ]},
+                    {"continent": "Europe", "countries": [
+                        {"name": "France", "population": 67.4},
+                        {"name": "Germany", "population": 83.2}
+                    ]}
+                ]',
+                'lax $' COLUMNS (
+                    NESTED PATH 'lax $[*]' COLUMNS (
+                        continent varchar PATH 'lax $.continent',
+                        NESTED PATH 'lax $.countries[*]' COLUMNS (
+                            country varchar PATH 'lax $.name',
+                            population double PATH 'lax $.population'
+                        )
+                    )
+                ));
+
+SELECT
+      *
+FROM
+      JSON_TABLE(
+                '[]',
+                'lax $' AS "root_path"
+                COLUMNS(
+                    a varchar(1) PATH 'lax "A"',
+                    NESTED PATH 'lax $[*]' AS "nested_path"
+                            COLUMNS (b varchar(1) PATH 'lax "B"'))
+                PLAN ("root_path" OUTER "nested_path")
+                );
+
+SELECT
+      *
+FROM
+      JSON_TABLE(
+                '[]',
+                'lax $' AS "root_path"
+                COLUMNS(
+                    a varchar(1) PATH 'lax "A"',
+                    NESTED PATH 'lax $[*]' AS "nested_path"
+                            COLUMNS (b varchar(1) PATH 'lax "B"'))
+                PLAN ("root_path" INNER "nested_path")
+                );
+
+SELECT json_array(true, 12e-1, 'text');
+
+SELECT json_array(
+                  '[  "text"  ] ' FORMAT JSON,
+                  X'5B0035005D00' FORMAT JSON ENCODING UTF16
+                 );
+
+SELECT json_array(
+                  json_query('{"key" : [  "value"  ]}', 'lax $.key')
+                 );
+
+SELECT json_array(
+                  DATE '2001-01-31',
+                  UUID '12151fd2-7586-11e9-8f9e-2a86e4085a59'
+                 );
+
+SELECT json_array();
+
+SELECT json_array(true, null, 1);
+
+SELECT json_array(true, null, 1 ABSENT ON NULL);
+
+SELECT json_array(true, null, 1 NULL ON NULL);
+
+SELECT json_array(true, 1 RETURNING VARCHAR(100));
+
+SELECT json_array(true, 1 RETURNING VARBINARY);
+
+SELECT json_array(true, 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF8);
+
+SELECT json_array(true, 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF16);
+
+SELECT json_array(true, 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF32);
+
+SELECT json_object('key1' : 1, 'key2' : true);
+
+SELECT json_object(KEY 'key1' VALUE 1, KEY 'key2' VALUE true);
+
+SELECT json_object('key1' VALUE 1, 'key2' VALUE true);
+
+SELECT json_object('x' : true, 'y' : 12e-1, 'z' : 'text');
+
+SELECT json_object(
+                   'x' : '[  "text"  ] ' FORMAT JSON,
+                   'y' : X'5B0035005D00' FORMAT JSON ENCODING UTF16
+                  );
+
+SELECT json_object(
+                   'x' : json_query('{"key" : [  "value"  ]}', 'lax $.key')
+                  );
+
+SELECT json_object(
+                   'x' : DATE '2001-01-31',
+                   'y' : UUID '12151fd2-7586-11e9-8f9e-2a86e4085a59'
+                  );
+
+SELECT json_object();
+
+SELECT json_object('x' : null, 'y' : 1);
+
+SELECT json_object('x' : null, 'y' : 1 NULL ON NULL);
+
+SELECT json_object('x' : null, 'y' : 1 ABSENT ON NULL);
+
+SELECT json_object('x' : null, 'x' : 1 WITH UNIQUE KEYS);
+
+SELECT json_object('x' : 1 RETURNING VARCHAR(100));
+
+SELECT json_object('x' : 1 RETURNING VARBINARY);
+
+SELECT json_object('x' : 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF8);
+
+SELECT json_object('x' : 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF16);
+
+SELECT json_object('x' : 1 RETURNING VARBINARY FORMAT JSON ENCODING UTF32);

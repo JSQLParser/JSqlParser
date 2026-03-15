@@ -55,6 +55,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -1211,6 +1212,12 @@ public class SelectTest {
     }
 
     @Test
+    public void testJoinFetch() throws JSQLParserException {
+        String statement = "SELECT c FROM Customer c LEFT JOIN FETCH c.orders o";
+        assertSqlCanBeParsedAndDeparsed(statement, true);
+    }
+
+    @Test
     public void testFunctions() throws JSQLParserException {
         String statement = "SELECT MAX(id) AS max FROM mytable WHERE mytable.col = 9";
         Select select = (Select) parserManager.parse(new StringReader(statement));
@@ -2274,6 +2281,18 @@ public class SelectTest {
     }
 
     @Test
+    public void testFullTextSearchAgainstFunctionInBooleanMode() throws JSQLParserException {
+        String statement =
+                "SELECT MATCH (name) AGAINST (concat('',?,'') IN BOOLEAN MODE) AS full_text FROM commodity";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(statement);
+        FullTextSearch fullTextSearch = assertInstanceOf(FullTextSearch.class,
+                select.getPlainSelect().getSelectItem(0).getExpression());
+
+        assertInstanceOf(Function.class, fullTextSearch.getAgainstValue());
+        assertEquals("IN BOOLEAN MODE", fullTextSearch.getSearchModifier());
+    }
+
+    @Test
     public void testIsTrue() throws JSQLParserException {
         String statement = "SELECT col FROM tbl WHERE col IS TRUE";
         assertSqlCanBeParsedAndDeparsed(statement);
@@ -2371,6 +2390,19 @@ public class SelectTest {
     public void testOracleJoinIssue318() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT * FROM TBL_A, TBL_B, TBL_C WHERE TBL_A.ID(+) = TBL_B.ID AND TBL_C.ROOM(+) = TBL_B.ROOM");
+    }
+
+    @Test
+    public void testOracleJoinWithinNvlArgument() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM dual d, dual d2 WHERE d.dummy = nvl(d2.dummy (+), 'y')", true);
+    }
+
+    @Test
+    public void testOracleJoinWithinCoalesceArgument() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM dual d, dual d2 WHERE d.dummy = coalesce(d2.dummy (+), 'y')",
+                true);
     }
 
     @Test
