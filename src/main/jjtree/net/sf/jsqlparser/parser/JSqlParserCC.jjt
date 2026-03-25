@@ -5093,7 +5093,7 @@ Select SetOperationList(Select select) #SetOperationList: {
         selects.add(select);
     }
 
-    ( LOOKAHEAD(2) (
+    ( LOOKAHEAD(2) { modifier = null; } (
             (
                 <K_UNION> [ modifier=SetOperationModifier() ] { UnionOp union = new UnionOp(modifier); linkAST(union,jjtThis); operations.add(union); }
 
@@ -5104,11 +5104,11 @@ Select SetOperationList(Select select) #SetOperationList: {
             )
             |
             (
-                <K_MINUS> [ modifier=SetOperationModifier() ] { MinusOp minus = new MinusOp(); linkAST(minus,jjtThis); operations.add(minus); }
+                <K_MINUS> [ modifier=SetOperationModifier() ] { MinusOp minus = new MinusOp(modifier); linkAST(minus,jjtThis); operations.add(minus); }
             )
             |
             (
-                <K_EXCEPT> [ modifier=SetOperationModifier() ] { ExceptOp except = new ExceptOp(); linkAST(except,jjtThis); operations.add(except); }
+                <K_EXCEPT> [ modifier=SetOperationModifier() ] { ExceptOp except = new ExceptOp(modifier); linkAST(except,jjtThis); operations.add(except); }
             )
 
         )
