@@ -148,4 +148,5 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     public <S> T visit(FromQuery fromQuery, S context) {
         return fromQuery.accept(selectVisitor, context);
     }
+
 }

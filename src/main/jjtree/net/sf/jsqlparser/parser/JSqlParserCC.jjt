@@ -892,6 +892,7 @@ String NonReservedWord() :
       | tk=<K_ELEMENTS: "ELEMENTS">
       | tk=<K_ENCLOSED: "ENCLOSED">
       | tk=<K_EMIT: "EMIT">
+      | tk=<K_EMPTY: "EMPTY">
       | tk=<K_ENABLE: "ENABLE">
       | tk=<K_ENCODING: "ENCODING">
       | tk=<K_ENCRYPTION: "ENCRYPTION">
@@ -1330,6 +1331,7 @@ TOKEN : /* Data Types */
     | <#TYPE_BIT:  "BISTRING">
     | <#TYPE_BLOB: "BLOB" | "BYTEA" | <K_BINARY> | "VARBINARY" | <K_BYTES> >
     | <#TYPE_BOOLEAN: <K_BOOLEAN> | "BOOL" >
+    | <#TYPE_CLOB: "CLOB">
     | <#TYPE_ENUM: "ENUM" >
     | <#TYPE_MAP: "MAP" >
     | <#TYPE_DECIMAL: "DECIMAL" | "NUMBER" | "NUMERIC" >
@@ -8310,6 +8312,12 @@ JsonFunction.JsonOnResponseBehavior JsonValueOnResponseBehavior() : {
                     JsonFunction.JsonOnResponseBehaviorType.NULL);
         }
         |
+        <K_EMPTY>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.EMPTY);
+        }
+        |
         <K_DEFAULT> expression = Expression()
         {
             behavior = new JsonFunction.JsonOnResponseBehavior(
@@ -8339,31 +8347,41 @@ JsonFunction.JsonOnResponseBehavior JsonQueryOnResponseBehavior() : {
                     JsonFunction.JsonOnResponseBehaviorType.NULL);
         }
         |
-        token = <S_IDENTIFIER>
+        <K_TRUE>
         {
-            if (!token.image.equalsIgnoreCase("EMPTY")) {
-                throw new ParseException(
-                        "Expected EMPTY, ERROR or NULL but found " + token.image);
-            }
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.TRUE);
         }
-        (
-            <K_ARRAY_LITERAL>
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
-            }
-            |
-            JsonKeyword("OBJECT")
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
-            }
-        )
+        |
+        <K_FALSE>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.FALSE);
+        }
+        |
+        <K_EMPTY>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.EMPTY);
+        }
+        [
+            (
+                <K_ARRAY_LITERAL>
+                {
+                    behavior = new JsonFunction.JsonOnResponseBehavior(
+                            JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
+                }
+                |
+                JsonKeyword("OBJECT")
+                {
+                    behavior = new JsonFunction.JsonOnResponseBehavior(
+                            JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
+                }
+            )
+        ]
     )
     {
-        if (behavior != null) {
-            return behavior;
-        }
+        return behavior;
     }
 }
 
@@ -8455,9 +8473,9 @@ JsonFunction JsonValueBody() : {
     [ <K_RETURNING> dataType = ColDataType() { result.setReturningType(dataType); } ]
 
     [
-        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_EMPTY> )
         behavior = JsonValueOnResponseBehavior()
-        <K_ON> JsonKeyword("EMPTY")
+        <K_ON> <K_EMPTY>
         { result.setOnEmptyBehavior(behavior); }
     ]
 
@@ -8561,9 +8579,9 @@ JsonFunction JsonQueryBody() : {
     ]
 
     [
-        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+        LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_EMPTY> )
         behavior = JsonQueryOnResponseBehavior()
-        <K_ON> JsonKeyword("EMPTY")
+        <K_ON> <K_EMPTY>
         { result.setOnEmptyBehavior(behavior); }
     ]
 
@@ -8642,9 +8660,9 @@ JsonFunction JsonQueryBody() : {
             ]
         ]
         [
-            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <S_IDENTIFIER> )
+            LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_EMPTY> )
             additionalOnEmptyBehavior = JsonQueryOnResponseBehavior()
-            <K_ON> JsonKeyword("EMPTY")
+            <K_ON> <K_EMPTY>
         ]
         [
             LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
@@ -9521,6 +9539,18 @@ JsonFunction.JsonOnResponseBehavior JsonTableOnEmptyBehavior() : {
                     JsonFunction.JsonOnResponseBehaviorType.NULL);
         }
         |
+        <K_TRUE>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.TRUE);
+        }
+        |
+        <K_FALSE>
+        {
+            behavior = new JsonFunction.JsonOnResponseBehavior(
+                    JsonFunction.JsonOnResponseBehaviorType.FALSE);
+        }
+        |
         <K_DEFAULT> expression = Expression()
         {
             behavior = new JsonFunction.JsonOnResponseBehavior(
@@ -9556,9 +9586,9 @@ JsonFunction.JsonOnResponseBehavior JsonTableOnEmptyBehavior() : {
     }
 }
 
-JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause() : {
+JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause(boolean beforePathExpr) : {
     JsonTableFunction.JsonTableWrapperClause wrapperClause =
-            new JsonTableFunction.JsonTableWrapperClause();
+            new JsonTableFunction.JsonTableWrapperClause(beforePathExpr);
     Token token;
 }
 {
@@ -9645,16 +9675,46 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
             columnDefinition = valueColumnDefinition;
         }
         (
-            <K_FOR> JsonKeyword("ORDINALITY")
-            { valueColumnDefinition.setForOrdinality(true); }
+            <K_FOR> <K_ORDINALITY> { valueColumnDefinition.setForOrdinality(true); }
             |
-            dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
+            [
+                // Very ugly: ColDataType can consume an IDENTIFIER, which is fine, but we don't want it to
+                // consume an ALLOW or DISALLOW because that's a keyword for Oracle in this place.
+                // So we make a LOOKAHEAD on ColDataType, BUT we exclude the two cases for the IDENTIFIER
+
+                /*
+                [ ColDataType ]
+                [ FORMAT JSON ]
+                [ (ALLOW | DISALLOW) SCALARS ]
+                 */
+
+                LOOKAHEAD(
+                    ColDataType(),
+                        { !(getToken(1).kind == S_IDENTIFIER && (
+                                getToken(1).image.equalsIgnoreCase("ALLOW")
+                                || getToken(1).image.equalsIgnoreCase("DISALLOW"))) } )
+                dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
+            ]
             [
                 <K_FORMAT> <K_JSON> { valueColumnDefinition.setFormatJson(true); }
                 [ <K_ENCODING> encoding = JsonEncoding() { valueColumnDefinition.setEncoding(encoding); } ]
             ]
+            [
+                (
+                    LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("ALLOW") })
+                            JsonKeyword("ALLOW") { valueColumnDefinition.setScalarsType(JsonFunction.ScalarsType.ALLOW); }
+                    |
+                    LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("DISALLOW") })
+                            JsonKeyword("DISALLOW") { valueColumnDefinition.setScalarsType(JsonFunction.ScalarsType.DISALLOW); }
+                )
+                JsonKeyword("SCALARS")
+            ]
+            [ <K_EXISTS> { valueColumnDefinition.setExistsKeyword(true); } ]
+            // In Oracle, the wrapper clause comes before the PATH expression
+            [ LOOKAHEAD(2) wrapperClause = JsonTableWrapperClause(true) { valueColumnDefinition.setWrapperClause(wrapperClause); } ]
             [ <K_PATH> expression = Expression() { valueColumnDefinition.setPathExpression(expression); } ]
-            [ wrapperClause = JsonTableWrapperClause() { valueColumnDefinition.setWrapperClause(wrapperClause); } ]
+            // In Truno the wrapper clause comes after the PATH expression
+            [ wrapperClause = JsonTableWrapperClause(false) { valueColumnDefinition.setWrapperClause(wrapperClause); } ]
             [
                 LOOKAHEAD({
                     getToken(1).kind == K_KEEP
@@ -9664,16 +9724,25 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
                 quotesClause = JsonTableQuotesClause() { valueColumnDefinition.setQuotesClause(quotesClause); }
             ]
             [
-                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <S_IDENTIFIER> )
+                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <K_EMPTY> )
                 behavior = JsonTableOnEmptyBehavior()
-                <K_ON> JsonKeyword("EMPTY")
+                <K_ON> <K_EMPTY>
                 { valueColumnDefinition.setOnEmptyBehavior(behavior); }
             ]
             [
-                LOOKAHEAD( JsonValueOnResponseBehavior() <K_ON> <K_ERROR> )
-                behavior = JsonValueOnResponseBehavior()
+                LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
+                behavior = JsonQueryOnResponseBehavior()
                 <K_ON> <K_ERROR>
                 { valueColumnDefinition.setOnErrorBehavior(behavior); }
+            ]
+            [
+                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <K_EMPTY> )
+                behavior = JsonTableOnEmptyBehavior()
+                <K_ON> <K_EMPTY>
+                {
+                    valueColumnDefinition.setOnEmptyBehavior(behavior);
+                    valueColumnDefinition.setOnEmptyAfterOnError(true);
+                }
             ]
         )
     )
@@ -9787,29 +9856,67 @@ JsonTableFunction.JsonTablePlanClause JsonTablePlanClause() : {
     }
 }
 
-JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause() : {
+JsonTableFunction.JsonTableOnErrorClause JsonTableOnErrorClause(boolean beforeColumns) : {
     JsonTableFunction.JsonTableOnErrorClause onErrorClause =
-            new JsonTableFunction.JsonTableOnErrorClause();
+            new JsonTableFunction.JsonTableOnErrorClause(beforeColumns);
     Token token;
 }
 {
     (
         <K_ERROR> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.ERROR); }
         |
-        token = <S_IDENTIFIER>
-        {
-            if (!token.image.equalsIgnoreCase("EMPTY")) {
-                throw new ParseException(
-                        "Expected EMPTY or ERROR but found " + token.image);
-            }
-            onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.EMPTY);
-        }
+        <K_EMPTY> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.EMPTY); }
+        |
+        <K_TRUE> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.TRUE); }
+        |
+        <K_FALSE> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.FALSE); }
+        |
+        <K_NULL> { onErrorClause.setType(JsonTableFunction.JsonTableOnErrorType.NULL); }
     )
     <K_ON> <K_ERROR>
     {
-        if (onErrorClause.getType() != null) {
-            return onErrorClause;
-        }
+        return onErrorClause;
+    }
+}
+
+JsonTableFunction.JsonTableOnEmptyClause JsonTableOnEmptyClause() : {
+    JsonTableFunction.JsonTableOnEmptyClause onEmptyClause =
+            new JsonTableFunction.JsonTableOnEmptyClause();
+    Token token;
+}
+{
+    (
+        <K_ERROR> { onEmptyClause.setType(JsonTableFunction.JsonTableOnEmptyType.ERROR); }
+        |
+        <K_EMPTY> { onEmptyClause.setType(JsonTableFunction.JsonTableOnEmptyType.EMPTY); }
+        |
+        <K_TRUE> { onEmptyClause.setType(JsonTableFunction.JsonTableOnEmptyType.TRUE); }
+        |
+        <K_FALSE> { onEmptyClause.setType(JsonTableFunction.JsonTableOnEmptyType.FALSE); }
+        |
+        <K_NULL> { onEmptyClause.setType(JsonTableFunction.JsonTableOnEmptyType.NULL); }
+    )
+    <K_ON> <K_EMPTY>
+    {
+        return onEmptyClause;
+    }
+}
+
+JsonTableFunction.JsonTableParsingTypeClause JsonTableParsingTypeClause() : {
+    JsonTableFunction.JsonTableParsingTypeClause parsingType = new JsonTableFunction.JsonTableParsingTypeClause();
+}
+{
+    <K_TYPE>
+    <OPENING_BRACKET>
+    (
+        <K_STRICT> { parsingType.setType(JsonTableFunction.JsonTableParsingType.STRICT); }
+        |
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("LAX") })
+                JsonKeyword("LAX") { parsingType.setType(JsonTableFunction.JsonTableParsingType.LAX); }
+    )
+    <CLOSING_BRACKET>
+    {
+        return parsingType;
     }
 }
 
@@ -9822,18 +9929,23 @@ JsonTableFunction JsonTableBody() : {
     JsonTableFunction.JsonTableColumnsClause columnsClause;
     JsonTableFunction.JsonTablePlanClause planClause = null;
     JsonTableFunction.JsonTableOnErrorClause onErrorClause = null;
+    JsonTableFunction.JsonTableParsingTypeClause parsingTypeClause = null;
+    JsonTableFunction.JsonTableOnEmptyClause onEmptyClause = null;
 }
 {
     "("
     jsonInput = Expression() {
         function.setJsonInputExpression(jsonInput);
     }
-    ","
-    jsonPath = Expression() {
-        function.setJsonPathExpression(jsonPath);
-        function.setParameters(new ExpressionList(jsonInput, jsonPath));
-    }
-    [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
+    [ <K_FORMAT> <K_JSON> { function.setFormatJson(true); } ]
+    [
+        ","
+        jsonPath = Expression() {
+            function.setJsonPathExpression(jsonPath);
+            function.setParameters(new ExpressionList(jsonInput, jsonPath));
+        }
+        [ <K_AS> pathName = RelObjectName() { function.setPathName(pathName); } ]
+    ]
     [
         LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
         JsonKeyword("PASSING")
@@ -9843,9 +9955,12 @@ JsonTableFunction JsonTableBody() : {
             passingClause = JsonTablePassingClause() { function.addPassingClause(passingClause); }
         )*
     ]
+    [ LOOKAHEAD(3) onErrorClause = JsonTableOnErrorClause(true) { function.setOnErrorClause(onErrorClause); } ]
+    [ parsingTypeClause = JsonTableParsingTypeClause() { function.setParsingTypeClause(parsingTypeClause); } ]
+    [ onEmptyClause = JsonTableOnEmptyClause() { function.setOnEmptyClause(onEmptyClause); } ]
     columnsClause = JsonTableColumnsClause() { function.setColumnsClause(columnsClause); }
     [ planClause = JsonTablePlanClause() { function.setPlanClause(planClause); } ]
-    [ onErrorClause = JsonTableOnErrorClause() { function.setOnErrorClause(onErrorClause); } ]
+    [ onErrorClause = JsonTableOnErrorClause(false) { function.setOnErrorClause(onErrorClause); } ]
     ")"
     {
         return function;
@@ -10346,6 +10461,7 @@ ColDataType DataType():
             ]
             [
                 LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
+                [ <K_BYTE> | <K_CHAR> ]
                 [ "," tk = <S_LONG> { scale = Integer.valueOf(tk.image); } ]
                 ")"
             ]

@@ -27,7 +27,7 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
  */
 public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     public enum JsonOnResponseBehaviorType {
-        ERROR, NULL, DEFAULT, EMPTY_ARRAY, EMPTY_OBJECT, TRUE, FALSE, UNKNOWN
+        ERROR, NULL, DEFAULT, EMPTY, EMPTY_ARRAY, EMPTY_OBJECT, TRUE, FALSE, UNKNOWN
     }
 
     public enum JsonWrapperType {
@@ -40,6 +40,10 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
 
     public enum JsonQuotesType {
         KEEP, OMIT
+    }
+
+    public enum ScalarsType {
+        ALLOW, DISALLOW
     }
 
     public static class JsonOnResponseBehavior {
@@ -82,6 +86,9 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                 case DEFAULT:
                     builder.append("DEFAULT ").append(expression);
                     break;
+                case EMPTY:
+                    builder.append("EMPTY ");
+                    break;
                 case EMPTY_ARRAY:
                     builder.append("EMPTY ARRAY");
                     break;
@@ -98,7 +105,8 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                     builder.append("UNKNOWN");
                     break;
                 default:
-                    // this should never happen
+                    throw new IllegalStateException("Unhandled JsonOnResponseBehavior: " + type);
+                // this should never happen
             }
             return builder;
         }
@@ -130,6 +138,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
     private boolean wrapperArray;
     private JsonQuotesType quotesType;
     private boolean quotesOnScalarString;
+    private ScalarsType scalarsType;
 
     public JsonFunction() {}
 
@@ -292,6 +301,14 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
 
     public void setQuotesOnScalarString(boolean quotesOnScalarString) {
         this.quotesOnScalarString = quotesOnScalarString;
+    }
+
+    public ScalarsType getScalarsType() {
+        return scalarsType;
+    }
+
+    public void setScalarsType(ScalarsType type) {
+        this.scalarsType = type;
     }
 
     public boolean isEmpty() {

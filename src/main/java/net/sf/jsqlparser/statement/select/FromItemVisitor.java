@@ -104,4 +104,5 @@ public interface FromItemVisitor<T> {
     }
 
     <S> T visit(FromQuery fromQuery, S context);
+
 }
