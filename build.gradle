@@ -132,6 +132,7 @@ tasks.withType(Checkstyle).configureEach {
 
 repositories {
     gradlePluginPortal()
+    mavenLocal()
     mavenCentral()
 
     // JavaCC 8 Snapshots
@@ -172,13 +173,13 @@ dependencies {
     xmlDoclet ('com.manticore-projects.tools:xml-doclet:+'){ changing = true }
 
     // enforce latest version of JavaCC
-    testImplementation('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
-    testImplementation('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+    testImplementation('org.javacc:core:8.1.1-SNAPSHOT') { changing = true }
+    testImplementation('org.javacc.generator:java:8.1.1-SNAPSHOT') { changing = true }
 
     jmh 'org.openjdk.jmh:jmh-core:1.37'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
-    javacc('org.javacc:core:8.1.0-SNAPSHOT') { changing = true }
-    javacc('org.javacc.generator:java:8.1.0-SNAPSHOT') { changing = true }
+    javacc('org.javacc:core:8.1.1-SNAPSHOT') { changing = true }
+    javacc('org.javacc.generator:java:8.1.1-SNAPSHOT') { changing = true }
 }
 configurations.configureEach {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -187,6 +188,10 @@ configurations.configureEach {
             resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
         }
     }
+}
+configurations.javacc {
+    resolutionStrategy.force 'org.javacc:core:8.1.1-SNAPSHOT',
+            'org.javacc.generator:java:8.1.1-SNAPSHOT'
 }
 
 compileJavacc {
@@ -198,79 +203,6 @@ compileJavacc {
             DEBUG_PARSER: 'false',
             DEBUG_LOOKAHEAD: 'false'
     ]
-}
-
-// Post-process the generated CCJSqlParserTokenManager.java to split large static
-// array initializers into separate methods, preventing the <clinit> method from
-// exceeding the JVM's 64KB bytecode limit (which breaks ASM-based tools like sbt-assembly).
-tasks.register('splitTokenManagerStaticInit') {
-    dependsOn(compileJavacc)
-
-    def tokenManagerFile = layout.buildDirectory.file(
-            "generated/javacc/net/sf/jsqlparser/parser/CCJSqlParserTokenManager.java"
-    )
-
-    inputs.file(tokenManagerFile)
-    outputs.file(tokenManagerFile)
-
-    doLast {
-        def file = tokenManagerFile.get().asFile
-        if (!file.exists()) {
-            throw new GradleException("CCJSqlParserTokenManager.java not found at ${file}")
-        }
-        def content = file.text
-
-        // Pattern matches static final array field declarations with inline initialization.
-        // We extract large ones and move their initialization into separate methods.
-        def fieldsToExtract = [
-                // [regex-safe field name, array type for method return]
-                ['stringLiterals',      'int[]'],
-                ['jjstrLiteralImages',  'String[]'],
-                ['jjmatchKinds',        'int[]'],
-                ['jjnewLexState',       'int[]'],
-        ]
-
-        fieldsToExtract.each { entry ->
-            def fieldName = entry[0]
-            def arrayType = entry[1]
-
-            // Match: <modifiers> <type> <fieldName> = { ... };
-            // The field declaration may use 'public' or 'private' and 'static final'
-            def pattern = ~"(?s)((?:public|private)\\s+static\\s+final\\s+${java.util.regex.Pattern.quote(arrayType)}\\s+${fieldName}\\s*=\\s*)\\{(.*?)\\};"
-            def matcher = pattern.matcher(content)
-            if (matcher.find()) {
-                def prefix = matcher.group(1)
-                def body = matcher.group(2)
-                def methodName = "_init_${fieldName}"
-                def replacement = "${prefix}${methodName}();\n" +
-                        "  private static ${arrayType} ${methodName}() { return new ${arrayType} {${body}}; }"
-                content = matcher.replaceFirst(java.util.regex.Matcher.quoteReplacement(replacement))
-                logger.lifecycle("splitTokenManagerStaticInit: extracted ${fieldName} initialization into ${methodName}()")
-            }
-        }
-
-        // Handle int[][] arrays separately (jjcompositeState, jjnextStateSet)
-        def arrayArrayFields = ['jjcompositeState', 'jjnextStateSet']
-        arrayArrayFields.each { fieldName ->
-            def pattern = ~"(?s)(private\\s+static\\s+final\\s+int\\[\\]\\[\\]\\s+${fieldName}\\s*=\\s*)\\{(.*?)\\};"
-            def matcher = pattern.matcher(content)
-            if (matcher.find()) {
-                def prefix = matcher.group(1)
-                def body = matcher.group(2)
-                def methodName = "_init_${fieldName}"
-                def replacement = "${prefix}${methodName}();\n" +
-                        "  private static int[][] ${methodName}() { return new int[][] {${body}}; }"
-                content = matcher.replaceFirst(java.util.regex.Matcher.quoteReplacement(replacement))
-                logger.lifecycle("splitTokenManagerStaticInit: extracted ${fieldName} initialization into ${methodName}()")
-            }
-        }
-
-        file.text = content
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    dependsOn('splitTokenManagerStaticInit')
 }
 
 java {
