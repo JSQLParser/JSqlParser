@@ -212,16 +212,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    protected boolean isParenthesedSelectAhead() {
-        if (getToken(1).kind != OPENING_BRACKET) {
-            return false;
-        }
-        int nextKind = getToken(2).kind;
-        return nextKind == K_SELECT
-            || nextKind == K_WITH
-            || nextKind == K_VALUES
-            || nextKind == K_FROM;
-    }
 
     /**
      * Tokens that have dedicated branches in PrimaryExpression AFTER the Function branch.
@@ -246,6 +236,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * Replaces LOOKAHEAD(16) on Function() with a targeted O(chain-length) check.
      */
     protected boolean isFunctionAhead() {
+      try {
         int i = 1;
         Token t = getToken(i);
 
@@ -298,6 +289,106 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
 
         return true;
+      } catch (TokenMgrError e) {
+        return false;
+      }
+    }
+
+    // True when ( (SELECT ...) UNION/INTERSECT/EXCEPT (SELECT ...) ) — a set-operation
+    // subquery used as IN RHS. Bracket-scans past the inner select to verify a set
+    // operator follows, distinguishing from comma-separated ((SELECT...), (SELECT...)).
+    protected boolean isNestedSetOperationAhead() {
+        try {
+            if (getToken(1).kind != OPENING_BRACKET) return false;
+            if (getToken(2).kind != OPENING_BRACKET) return false;
+            int k3 = getToken(3).kind;
+            if (k3 != K_SELECT && k3 != K_WITH && k3 != K_VALUES) return false;
+            // Scan forward counting brackets to find end of inner ( SELECT ... )
+            int depth = 1; // inside the inner (
+            int i = 4;
+            while (i <= 500) {
+                Token t; try { t = getToken(i); } catch (TokenMgrError e) { return false; }
+                if (t == null || t.kind == 0) return false; // EOF
+                if (t.kind == OPENING_BRACKET) depth++;
+                else if (t.kind == CLOSING_BRACKET) {
+                    if (--depth == 0) break;
+                }
+                i++;
+            }
+            if (i > 500) return false;
+            // Token at position i+1 is what follows the inner closing )
+            Token next; try { next = getToken(i + 1); } catch (TokenMgrError e) { return false; }
+            if (next == null) return false;
+            return next.kind == K_UNION || next.kind == K_INTERSECT ||
+                   next.kind == K_EXCEPT || next.kind == K_MINUS;
+        } catch (TokenMgrError e) { return false; }
+    }
+
+    protected boolean isParenthesedSelectAhead() {
+        try {
+            if (getToken(1).kind != OPENING_BRACKET) return false;
+            int k = getToken(2).kind;
+            return k == K_SELECT || k == K_WITH || k == K_VALUES;
+        } catch (TokenMgrError e) {
+            return false;
+        }
+    }
+
+    protected boolean isImplicitCastAhead() {
+        try {
+            int k1 = getToken(1).kind;
+            // DT_ZONE (TIMESTAMP WITH TIME ZONE / WITHOUT TIME ZONE) is also a valid
+            // implicit cast type prefix handled by DataType(), but distinct from DATA_TYPE.
+            if (k1 == DT_ZONE) return true;
+            if (k1 != DATA_TYPE) return false;
+            int k2 = getToken(2).kind;
+            if (k2 != OPENING_BRACKET) return true; // DATA_TYPE literal - simple cast
+            // DATA_TYPE( ... ) - precision cast if content is only S_LONG literals
+            // function call otherwise (e.g. UUID(), VARCHAR(col))
+            int k3 = getToken(3).kind;
+            if (k3 == CLOSING_BRACKET) return false; // DATA_TYPE() - empty call
+            if (k3 != S_LONG) return false;           // DATA_TYPE(expr) - function call
+            int k4 = getToken(4).kind;
+            if (k4 == CLOSING_BRACKET) return true;   // DATA_TYPE(N) - precision cast
+            if (k4 != K_COMMA) return false;           // DATA_TYPE(N expr) - function call
+            int k5 = getToken(5).kind;
+            if (k5 != S_LONG) return false;            // DATA_TYPE(N, expr) - function call
+            return getToken(6).kind == CLOSING_BRACKET; // DATA_TYPE(N,M) - precision cast
+        } catch (TokenMgrError e) {
+            return false;
+        }
+    }
+
+    protected boolean isCaseExpressionAhead() {
+        try {
+            if (getToken(1).kind != K_CASE) return false;
+            int k2 = getToken(2).kind;
+            // CASE WHEN ... is unambiguously a CASE expression
+            if (k2 == K_WHEN) return true;
+            // CASE followed by tokens that only appear after an expression means
+            // CASE is being used as a column/table name identifier
+            if (k2 == K_FROM || k2 == K_WHERE || k2 == K_AS ||
+                k2 == K_AND || k2 == K_OR ||
+                k2 == K_IS || k2 == K_IN || k2 == K_LIKE || k2 == K_BETWEEN ||
+                k2 == K_THEN || k2 == K_ELSE || k2 == K_END ||
+                k2 == K_GROUP || k2 == K_ORDER || k2 == K_HAVING || k2 == K_LIMIT ||
+                k2 == K_UNION || k2 == K_INTERSECT || k2 == K_EXCEPT ||
+                k2 == K_OVER || k2 == CLOSING_BRACKET || k2 == 0) return false;
+            // Also check single-char operator tokens by image
+            Token t2 = getToken(2);
+            if (t2 != null && t2.image != null) {
+                String img = t2.image;
+                if (img.length() == 1) {
+                    char c = img.charAt(0);
+                    if (c == '=' || c == '>' || c == '<' || c == '+' || c == '-' ||
+                        c == '*' || c == ',' || c == '.' || c == ';') return false;
+                }
+            }
+            // Otherwise assume it is a CASE expression with a switch value
+            return true;
+        } catch (TokenMgrError e) {
+            return false;
+        }
     }
 
     private boolean isKeywordArgumentAhead() {
@@ -675,6 +766,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return false;
         }
     }
+
+
 }
 
 PARSER_END(CCJSqlParser)
@@ -1307,8 +1400,13 @@ TOKEN : /* Operators */
 |   <OP_MINORTHANEQUALS: "<" (<WHITESPACE>)* "=">
 |   <OP_NOTEQUALSSTANDARD: "<" (<WHITESPACE>)* ">">
 |   <OP_NOTEQUALSBANG: "!" (<WHITESPACE>)* "=">
-|   <OP_NOTEQUALSHAT: "^" (<WHITESPACE>)* "=">
-|   <OP_CONCAT: "|" (<WHITESPACE>)* "|">
+|   <OP_NOTEQUALSHAT: "^=">
+|   <OP_CONCAT: "||">
+|   <OP_PIPE: "|">
+|   <OP_CARET: "^">
+|   <OP_SLASH: "/">
+|   <OP_LSHIFT: "<<">
+|   <OP_RSHIFT: ">>">
 | 	<OP_DOUBLEAND: "&&">
 | 	<OP_CONTAINS: "&>">
 | 	<OP_CONTAINEDBY: "<&">
@@ -5378,8 +5476,6 @@ SelectItem<?> SelectItem() #SelectItem:
         |
         LOOKAHEAD( 3 ) expression = XorExpression()
         |
-        LOOKAHEAD( 3 ) expression = ConcatExpression()
-        |
         expression=Expression()
     )
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
@@ -5859,6 +5955,12 @@ FromItem FromItem() #FromItem:
         fromItem=TableFunction()
         |
         LOOKAHEAD(3) fromItem=Table()
+        |
+        LOOKAHEAD({ isNestedSetOperationAhead() }) (
+            fromItem=ParenthesedSelect()
+            [ LOOKAHEAD(2) pivot=Pivot() { fromItem.setPivot(pivot); } ]
+            [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        )
         |
         LOOKAHEAD(ParenthesedFromItem()) fromItem = ParenthesedFromItem()
         |
@@ -6578,7 +6680,7 @@ Top Top() #Top:
         [ LOOKAHEAD(2) token = <S_IDENTIFIER> { ((JdbcNamedParameter)top.getExpression()).setName(token.image); } ]
         |
         "("
-        expr=AdditiveExpression()
+        expr=SimpleExpression()
         {
             top.setExpression(expr);
             top.setParenthesis(true);
@@ -6670,70 +6772,38 @@ Expression Expression() #Expression :
 
 Expression XorExpression():
 {
-    Expression left, right, result;
+    Expression result;
+    Expression right;
 }
 {
-    left=OrExpression() { result = left; }
-    ( LOOKAHEAD(2)
-        <K_XOR>
-        right=OrExpression()
-        {
-            result = new XorExpression(left, right);
-            left = result;
+    result=AndChain()
+    (
+        LOOKAHEAD(2) <K_OR>  right=AndChain() { result = new OrExpression(result, right); }
+        |
+        LOOKAHEAD(2) <K_XOR> right=AndChain() { result = new XorExpression(result, right); }
+    )*
+    { return result; }
+}
+
+/** AND — higher precedence than OR/XOR */
+Expression AndChain():
+{
+    Expression result;
+    Expression right;
+}
+{
+    result=Condition()
+    (
+        LOOKAHEAD(2) <K_AND> right=Condition() {
+            AndExpression a = new AndExpression(result, right); result = a;
         }
-     )*
-     {
-         return result;
-     }
-}
-
-Expression OrExpression():
-{
-    Expression left, right, result;
-}
-{
-    left=AndExpression() { result = left; }
-    ( LOOKAHEAD(2)
-        <K_OR>
-        right=AndExpression()
-        {
-            result = new OrExpression(left, right);
-            left = result;
-        }
-     )*
-     {
-         return result;
-     }
-
-}
-
-Expression AndExpression() :
-{
-    Expression left, right, result;
-}
-{
-    // ParenthesedExpressionList always delegates to ComplexExpressionList which
-    // uses full Expression(), so Condition() can handle ALL parenthesized content
-    // (including boolean operators like LIKE/IN/BETWEEN/IS inside parens).
-    // No speculative parsing or XorExpression fallback needed.
-    left=Condition()
-    { result = left; }
-
-    ( LOOKAHEAD(2)
-        { boolean useOperator = false; }
-         (<K_AND> | <OP_DOUBLEAND> {useOperator=true;} )
-
-        right=Condition()
-
-        {
-            result = new AndExpression(left, right);
-            ((AndExpression)result).setUseOperator(useOperator);
-            left = result;
+        |
+        LOOKAHEAD(2) <OP_DOUBLEAND> right=Condition() {
+            AndExpression a = new AndExpression(result, right);
+            a.setUseOperator(true); result = a;
         }
     )*
-    {
-        return result;
-    }
+    { return result; }
 }
 
 Expression Condition():
@@ -6937,6 +7007,8 @@ Expression InExpression(Expression leftExpression) #InExpression :
     <K_IN>
     (
         LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
+        |
+        LOOKAHEAD({ isNestedSetOperationAhead() }) rightExpression = ParenthesedSelect()
         |
         rightExpression = PrimaryExpression()
     )
@@ -7405,7 +7477,7 @@ Expression SimpleExpression():
 }
 {
     [ LOOKAHEAD( 5 ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
-    retval=ConcatExpression()
+    retval=AddChain()
     {
         if (user != null) {
             VariableAssignment assignment = new VariableAssignment();
@@ -7418,136 +7490,54 @@ Expression SimpleExpression():
     }
 }
 
-Expression ConcatExpression():
+/** Multiplicative/bitwise-shift — higher precedence */
+Expression MulChain():
 {
-    Expression result = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
+    Expression retval;
+    Expression right;
 }
 {
-    leftExpression=BitwiseAndOr()  { result = leftExpression; }
-    (LOOKAHEAD(3)
-        <OP_CONCAT>  /* Oracle allows space between the bars. */
-        rightExpression=BitwiseAndOr()
-        {
-            Concat binExp = new Concat();
-            binExp.setLeftExpression(leftExpression);
-            binExp.setRightExpression(rightExpression);
-            result = binExp;
-            leftExpression = result;
-        }
-    )*
-
-    { return result; }
-}
-
-Expression BitwiseAndOr():
-{
-    Expression result = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
-}
-{
-    leftExpression=AdditiveExpression()  { result = leftExpression; }
+    retval=PrimaryExpression()
     (
-        LOOKAHEAD(2) (
-            "|" { result = new BitwiseOr(); }
-            |
-            "&" { result = new BitwiseAnd(); }
-			|
-			"<<" { result = new BitwiseLeftShift(); }
-			|
-			">>" { result = new BitwiseRightShift(); }
-        )
-
-        rightExpression=AdditiveExpression()
-
-        {
-            BinaryExpression binExp = (BinaryExpression) result;
-            binExp.setLeftExpression(leftExpression);
-            binExp.setRightExpression(rightExpression);
-            leftExpression = result;
-        }
+        LOOKAHEAD(2) "*"          right=PrimaryExpression() { Multiplication r = new Multiplication(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_SLASH>   right=PrimaryExpression() { Division r = new Division(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) "%"          right=PrimaryExpression() { Modulo r = new Modulo(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_CARET>   right=PrimaryExpression() { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <K_DIV>      right=PrimaryExpression() { IntegerDivision r = new IntegerDivision(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
     )*
-
-    { return result; }
+    { return retval; }
 }
 
-Expression AdditiveExpression():
+/** Additive/concat/bitwise — lower precedence */
+Expression AddChain():
 {
-    Expression result = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
+    Expression retval;
+    Expression right;
 }
 {
-    leftExpression=MultiplicativeExpression()  { result = leftExpression; }
-    ( LOOKAHEAD(2)
-        ("+" { result = new Addition(); }
-                                    | "-" { result = new Subtraction(); } )
-
-        rightExpression=MultiplicativeExpression()
-        {
-             BinaryExpression binExp = (BinaryExpression) result;
-            binExp.setLeftExpression(leftExpression);
-            binExp.setRightExpression(rightExpression);
-            leftExpression = result;
-        }
-    )*
-
-    { return result; }
-}
-
-Expression MultiplicativeExpression():
-{
-    Expression result = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
-}
-{
+    retval=MulChain()
     (
-      leftExpression=BitwiseXor()
-    )
-      { result = leftExpression; }
-    (
-        LOOKAHEAD(2) ("*" { result = new Multiplication(); }
-                                    | "/" { result = new Division(); }
-                                    | <K_DIV> { result = new IntegerDivision(); }
-                                    | "%" { result = new Modulo(); }
-                    )
-
-        rightExpression=BitwiseXor()
-
-        {
-             BinaryExpression binExp = (BinaryExpression) result;
-            binExp.setLeftExpression(leftExpression);
-            binExp.setRightExpression(rightExpression);
-            leftExpression = result;
-        }
+        LOOKAHEAD(2) "+"           right=MulChain() { Addition r = new Addition(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) "-"           right=MulChain() { Subtraction r = new Subtraction(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_CONCAT>   right=MulChain() { Concat r = new Concat(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_PIPE> <OP_PIPE>  right=MulChain() { Concat r = new Concat(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_PIPE>     right=MulChain() { BitwiseOr r = new BitwiseOr(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) "&"           right=MulChain() { BitwiseAnd r = new BitwiseAnd(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_LSHIFT>   right=MulChain() { BitwiseLeftShift r = new BitwiseLeftShift(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
+        |
+        LOOKAHEAD(2) <OP_RSHIFT>   right=MulChain() { BitwiseRightShift r = new BitwiseRightShift(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }
     )*
-    { return result; }
-}
-
-Expression BitwiseXor():
-{
-    Expression result = null;
-    Expression leftExpression = null;
-    Expression rightExpression = null;
-}
-{
-    leftExpression=PrimaryExpression()  { result = leftExpression; }
-    (  LOOKAHEAD(2)
-        "^"
-        rightExpression=PrimaryExpression()
-        {
-            BitwiseXor binExp = new BitwiseXor();
-            binExp.setLeftExpression(leftExpression);
-            binExp.setRightExpression(rightExpression);
-            result = binExp;
-            leftExpression = result;
-        }
-    )*
-
-    { return result; }
+    { return retval; }
 }
 
 Expression ArrayExpression(Expression obj): {
@@ -7601,11 +7591,11 @@ Expression PrimaryExpression() #PrimaryExpression:
     (
         <K_NULL> { retval = new NullValue(); }
 
-        | LOOKAHEAD(3, {!interrupted}) retval=CaseWhenExpression()
+        | LOOKAHEAD({!interrupted && isCaseExpressionAhead()}) retval=CaseWhenExpression()
 
         | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
-        | LOOKAHEAD(6, {!interrupted}) retval=ImplicitCast()
+        | LOOKAHEAD({!interrupted && isImplicitCastAhead()}) retval=ImplicitCast()
 
         | retval = JdbcParameter()
 
@@ -7686,9 +7676,13 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | "{ts" token=<S_CHAR_LITERAL> "}" { retval = new TimestampValue(token.image); }
 
-        | LOOKAHEAD( Select() , { getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=Select()
+        | LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted
+                && (getToken(1).kind == K_SELECT || getToken(1).kind == K_WITH || getToken(1).kind == K_VALUES
+                    || (getToken(1).kind == OPENING_BRACKET && (getToken(2).kind == K_SELECT || getToken(2).kind == K_WITH || getToken(2).kind == K_VALUES))) }) retval=Select()
 
-        | LOOKAHEAD( ParenthesedSelect() , { !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted } ) retval=ParenthesedSelect()
+        | LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) && !interrupted && isParenthesedSelectAhead() }) retval=ParenthesedSelect()
+
+        | LOOKAHEAD({ !interrupted && isNestedSetOperationAhead() }) retval=ParenthesedSelect()
 
         |
         (

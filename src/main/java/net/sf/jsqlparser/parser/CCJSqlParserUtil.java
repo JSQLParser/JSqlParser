@@ -220,7 +220,7 @@ public final class CCJSqlParserUtil {
                             "could only parse partial expression " + expression.toString());
                 }
             } catch (ParseException ex) {
-                throw new JSQLParserException(ex);
+                throw new JSQLParserException(expressionStr, ex);
             }
         } catch (JSQLParserException ex1) {
             // when fast simple parsing fails, try complex parsing but only if it has a chance to
