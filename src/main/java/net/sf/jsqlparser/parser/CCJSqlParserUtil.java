@@ -88,6 +88,8 @@ public final class CCJSqlParserUtil {
         Statement statement;
         try {
             statement = parse(sql, executorService, consumer);
+        } catch (JSQLParserException ex) {
+            throw new JSQLParserException(sql, ex);
         } finally {
             executorService.shutdown();
         }
