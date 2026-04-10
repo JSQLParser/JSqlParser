@@ -846,10 +846,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * in Condition(), eliminating choice conflicts.
      */
     protected boolean isConditionSuffixAhead() {
-        if (isComparisonOperatorAhead()) {
-            return true;
-        }
         Token t = getToken(1);
+        // Inline isComparisonOperatorAhead for single getToken(1) call
+        if (t.kind == OPENING_BRACKET && getToken(2).image.equals("+")) {
+            return isComparisonOperator(getToken(4));
+        }
+        if (isComparisonOperator(t)) return true;
         switch (t.kind) {
             // Each suffix's start token:
             case K_OVERLAPS:          // OVERLAPS
@@ -6203,8 +6205,8 @@ Join JoinerExpression() #JoinerExpression:
     [
         LOOKAHEAD(2) (
                         [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);} ]
-                        ( <K_ON> onExpression=Condition() { onExpression = prattExpressionRest(onExpression, 2); join.addOnExpression(onExpression); }
-                          ( LOOKAHEAD(2)  <K_ON> onExpression=Condition() { onExpression = prattExpressionRest(onExpression, 2); join.addOnExpression(onExpression); } )*
+                        ( <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); }
+                          ( LOOKAHEAD(2)  <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); } )*
                         )
                         |
                         (
@@ -6298,8 +6300,8 @@ Expression WhereClause():
     Expression retval = null;
 }
 {
-    <K_WHERE> retval=Condition()
-    { retval = prattExpressionRest(retval, 2); return retval; }
+    <K_WHERE> retval=Expression()
+    { return retval; }
 }
 
 Expression PreWhereClause():
@@ -6307,8 +6309,7 @@ Expression PreWhereClause():
     Expression retval = null;
 }
 {
-    <K_PREWHERE> retval=Condition()
-    { retval = prattExpressionRest(retval, 2); }
+    <K_PREWHERE> retval=Expression()
     { return retval; }
 }
 
@@ -7557,15 +7558,11 @@ Expression ComparisonItem() :
 }
 {
   (
-    LOOKAHEAD( 6 ) retval=AnyComparisonExpression()
+    LOOKAHEAD(6, { getToken(1).kind == K_ANY || getToken(1).kind == K_SOME || getToken(1).kind == K_ALL }) retval=AnyComparisonExpression()
     |
-    LOOKAHEAD( 3 ) retval=SimpleExpression()
+    LOOKAHEAD({ getToken(1).kind == K_ROW }) retval=RowConstructor()
     |
-    LOOKAHEAD( 3 ) retval=ParenthesedExpressionList()
-    |
-    LOOKAHEAD( 3 ) retval=RowConstructor()
-    |
-    retval=PrimaryExpression()
+    retval=SimpleExpression()
   )
 
    {

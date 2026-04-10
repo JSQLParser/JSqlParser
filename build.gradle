@@ -185,11 +185,10 @@ configurations.configureEach {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
             // Check for updates every build
-            resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
+            resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
         }
     }
-}
-configurations.javacc {
+
     resolutionStrategy.force 'org.javacc:core:8.1.1-SNAPSHOT',
             'org.javacc.generator:java:8.1.1-SNAPSHOT'
 }
@@ -706,6 +705,17 @@ check {
 }
 
 jmh {
+    jmhVersion = '1.37'
+    jvmArgs = [
+            "--enable-native-access=ALL-UNNAMED"
+            , "--add-opens=java.base/sun.misc=ALL-UNNAMED"
+            , "--add-opens=java.base/java.lang=ALL-UNNAMED"
+            , "-XX:+UnlockDiagnosticVMOptions"
+            , "-XX:+DebugNonSafepoints"
+    ]
+
+    profilers = ['async:libPath=/opt/async-profiler/lib/libasyncProfiler.so;output=tree;dir=build/reports/jmh']
+
     includes = ['.*JSQLParserBenchmark.*']
     warmupIterations = 2
     fork = 3
