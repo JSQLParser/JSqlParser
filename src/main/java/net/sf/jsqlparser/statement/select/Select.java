@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 public abstract class Select extends ASTNodeAccessImpl implements Statement, Expression, FromItem {
-    protected Table forUpdateTable = null;
+    protected List<Table> forUpdateTables = null;
     protected List<WithItem<?>> withItemsList;
     Limit limitBy;
     Limit limit;
@@ -40,6 +40,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     private boolean skipLocked;
     private Wait wait;
     private boolean noWait = false;
+    private boolean forUpdateBeforeOrderBy = false;
     Alias alias;
     Pivot pivot;
     UnPivot unPivot;
@@ -291,12 +292,92 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         this.forMode = forMode;
     }
 
+    /**
+     * Returns the first table from the {@code FOR UPDATE OF} clause, or {@code null} if no table
+     * was specified. Use {@link #getForUpdateTables()} to retrieve all tables.
+     *
+     * @return the first table, or {@code null}
+     */
     public Table getForUpdateTable() {
-        return this.forUpdateTable;
+        return (forUpdateTables != null && !forUpdateTables.isEmpty()) ? forUpdateTables.get(0)
+                : null;
     }
 
+    /**
+     * Sets a single table for the {@code FOR UPDATE OF} clause.
+     *
+     * @param forUpdateTable the table, or {@code null} to clear
+     */
     public void setForUpdateTable(Table forUpdateTable) {
-        this.forUpdateTable = forUpdateTable;
+        if (forUpdateTable == null) {
+            this.forUpdateTables = null;
+        } else {
+            this.forUpdateTables = new ArrayList<>();
+            this.forUpdateTables.add(forUpdateTable);
+        }
+    }
+
+    /**
+     * Returns the list of tables named in the {@code FOR UPDATE OF t1, t2, ...} clause, or
+     * {@code null} if no OF clause was present.
+     *
+     * @return list of tables, or {@code null}
+     */
+    public List<Table> getForUpdateTables() {
+        return forUpdateTables;
+    }
+
+    /**
+     * Sets the list of tables for the {@code FOR UPDATE OF t1, t2, ...} clause.
+     *
+     * @param forUpdateTables list of tables
+     */
+    public void setForUpdateTables(List<Table> forUpdateTables) {
+        this.forUpdateTables = forUpdateTables;
+    }
+
+    public Select withForUpdateTables(List<Table> forUpdateTables) {
+        this.setForUpdateTables(forUpdateTables);
+        return this;
+    }
+
+    /**
+     * Builds and returns a {@link ForUpdateClause} representing the current FOR UPDATE / FOR SHARE
+     * state of this SELECT, or {@code null} if no FOR clause is present.
+     *
+     * @return a {@link ForUpdateClause} view, or {@code null}
+     */
+    public ForUpdateClause getForUpdate() {
+        if (forMode == null) {
+            return null;
+        }
+        ForUpdateClause clause = new ForUpdateClause();
+        clause.setMode(forMode);
+        clause.setTables(forUpdateTables);
+        clause.setWait(wait);
+        clause.setNoWait(noWait);
+        clause.setSkipLocked(skipLocked);
+        return clause;
+    }
+
+    /**
+     * Returns {@code true} when the {@code FOR UPDATE} clause appears before the {@code ORDER BY}
+     * clause in the original SQL (non-standard ordering supported by some databases).
+     *
+     * @return {@code true} if FOR UPDATE precedes ORDER BY
+     */
+    public boolean isForUpdateBeforeOrderBy() {
+        return forUpdateBeforeOrderBy;
+    }
+
+    /**
+     * Indicates whether the {@code FOR UPDATE} clause precedes the {@code ORDER BY} clause in the
+     * SQL output.
+     *
+     * @param forUpdateBeforeOrderBy {@code true} to emit FOR UPDATE before ORDER BY
+     */
+    public void setForUpdateBeforeOrderBy(boolean forUpdateBeforeOrderBy) {
+        this.forUpdateBeforeOrderBy = forUpdateBeforeOrderBy;
     }
 
     /**
@@ -380,7 +461,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         appendTo(builder, alias, null, pivot, unPivot);
 
-        builder.append(orderByToString(oracleSiblings, orderByElements));
+        if (!forUpdateBeforeOrderBy) {
+            builder.append(orderByToString(oracleSiblings, orderByElements));
+        }
 
         if (forClause != null) {
             forClause.appendTo(builder);
@@ -405,8 +488,14 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
             builder.append(" FOR ");
             builder.append(forMode.getValue());
 
-            if (getForUpdateTable() != null) {
-                builder.append(" OF ").append(forUpdateTable);
+            if (forUpdateTables != null && !forUpdateTables.isEmpty()) {
+                builder.append(" OF ");
+                for (int i = 0; i < forUpdateTables.size(); i++) {
+                    if (i > 0) {
+                        builder.append(", ");
+                    }
+                    builder.append(forUpdateTables.get(i));
+                }
             }
 
             if (wait != null) {
@@ -419,6 +508,10 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
             } else if (isSkipLocked()) {
                 builder.append(" SKIP LOCKED");
             }
+        }
+
+        if (forUpdateBeforeOrderBy) {
+            builder.append(orderByToString(oracleSiblings, orderByElements));
         }
 
         return builder;
