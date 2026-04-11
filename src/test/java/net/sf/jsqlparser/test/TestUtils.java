@@ -373,8 +373,7 @@ public class TestUtils {
             Expression expression = CCJSqlParserUtil.parseExpression(expressionStr);
             assertEquals(
                     buildSqlString(expressionStr, laxDeparsingCheck),
-                    buildSqlString(expression.toString(), laxDeparsingCheck)
-            );
+                    buildSqlString(expression.toString(), laxDeparsingCheck));
         } catch (JSQLParserException ex) {
             throw new JSQLParserException(expressionStr, ex);
         }

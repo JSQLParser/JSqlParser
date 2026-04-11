@@ -328,7 +328,8 @@ public class SimpleCharStream {
         if (bufpos >= tokenBegin) {
             return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
         } else {
-            return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1);
+            return new String(buffer, tokenBegin, bufsize - tokenBegin)
+                    + new String(buffer, 0, bufpos + 1);
         }
     }
 
@@ -375,10 +376,9 @@ public class SimpleCharStream {
         int nextColDiff;
         int columnDiff = 0;
 
-        while (
-            i < len &&
-            (int) (buflinecolumn[j = start % bufsize] >>> 32) == (int) (buflinecolumn[k = ++start % bufsize] >>> 32)
-        ) {
+        while (i < len &&
+                (int) (buflinecolumn[j = start % bufsize] >>> 32) == (int) (buflinecolumn[k =
+                        ++start % bufsize] >>> 32)) {
             int colJ = (int) buflinecolumn[j];
             int colK = (int) buflinecolumn[k];
             nextColDiff = columnDiff + colK - colJ;
@@ -394,7 +394,8 @@ public class SimpleCharStream {
                 int lineJ = (int) (buflinecolumn[j = start % bufsize] >>> 32);
                 int lineNext = (int) (buflinecolumn[++start % bufsize] >>> 32);
                 if (lineJ != lineNext) {
-                    buflinecolumn[j] = ((long) (newLine++) << 32) | (buflinecolumn[j] & 0xFFFFFFFFL);
+                    buflinecolumn[j] =
+                            ((long) (newLine++) << 32) | (buflinecolumn[j] & 0xFFFFFFFFL);
                 } else {
                     buflinecolumn[j] = ((long) newLine << 32) | (buflinecolumn[j] & 0xFFFFFFFFL);
                 }

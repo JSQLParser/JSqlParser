@@ -7,18 +7,16 @@ import java.util.*;
 import java.util.stream.*;
 
 /**
- * Zero-dependency bytecode verifier that scans compiled .class files
- * and reports methods approaching or exceeding the JVM 64KB code size limit.
+ * Zero-dependency bytecode verifier that scans compiled .class files and reports methods
+ * approaching or exceeding the JVM 64KB code size limit.
  *
- * Also checks clinit (static initializer) sizes separately since
- * large static initializers are a common problem with generated parsers.
+ * Also checks clinit (static initializer) sizes separately since large static initializers are a
+ * common problem with generated parsers.
  *
- * Usage as standalone tool:
- *   java BytecodeSizeVerifier path/to/classes [--warn-pct 75] [--fail]
+ * Usage as standalone tool: java BytecodeSizeVerifier path/to/classes [--warn-pct 75] [--fail]
  *
- * Usage as library (from JUnit test):
- *   BytecodeSizeVerifier.Result r = BytecodeSizeVerifier.verify(classFile, 80);
- *   assertTrue(r.violations.isEmpty(), r.report());
+ * Usage as library (from JUnit test): BytecodeSizeVerifier.Result r =
+ * BytecodeSizeVerifier.verify(classFile, 80); assertTrue(r.violations.isEmpty(), r.report());
  */
 public class BytecodeSizeVerifier {
 
@@ -113,7 +111,8 @@ public class BytecodeSizeVerifier {
 
     /**
      * Verify a single .class file.
-     * @param classFile   path to the .class file
+     * 
+     * @param classFile path to the .class file
      * @param warnPercent warn when method exceeds this % of the 64KB limit (e.g. 75)
      */
     public static Result verify(Path classFile, int warnPercent) throws IOException {
@@ -123,11 +122,13 @@ public class BytecodeSizeVerifier {
 
     /**
      * Verify class bytes directly.
-     * @param name        descriptive name for reporting
-     * @param classBytes  raw .class file bytes
+     * 
+     * @param name descriptive name for reporting
+     * @param classBytes raw .class file bytes
      * @param warnPercent warn threshold (0-100)
      */
-    public static Result verify(String name, byte[] classBytes, int warnPercent) throws IOException {
+    public static Result verify(String name, byte[] classBytes, int warnPercent)
+            throws IOException {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(classBytes));
 
         int magic = in.readInt();
@@ -149,21 +150,31 @@ public class BytecodeSizeVerifier {
                 case 1: // CONSTANT_Utf8
                     cpUtf8[i] = in.readUTF();
                     break;
-                case 3: case 4: // Integer, Float
+                case 3:
+                case 4: // Integer, Float
                     in.readInt();
                     break;
-                case 5: case 6: // Long, Double
+                case 5:
+                case 6: // Long, Double
                     in.readLong();
                     i++; // takes two CP slots
                     break;
                 case 7: // CONSTANT_Class
                     cpClassNameIdx[i] = in.readUnsignedShort();
                     break;
-                case 8: case 16: case 19: case 20:
+                case 8:
+                case 16:
+                case 19:
+                case 20:
                     // String, MethodType, Module, Package
                     in.readUnsignedShort();
                     break;
-                case 9: case 10: case 11: case 12: case 17: case 18:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 17:
+                case 18:
                     // Fieldref, Methodref, InterfaceMethodref, NameAndType, Dynamic, InvokeDynamic
                     in.readUnsignedShort();
                     in.readUnsignedShort();
@@ -173,7 +184,8 @@ public class BytecodeSizeVerifier {
                     in.readUnsignedShort();
                     break;
                 default:
-                    throw new IOException("Unknown CP tag: " + tag + " at index " + i + " in " + name);
+                    throw new IOException(
+                            "Unknown CP tag: " + tag + " at index " + i + " in " + name);
             }
         }
 
@@ -194,7 +206,9 @@ public class BytecodeSizeVerifier {
         in.readUnsignedShort(); // super class
 
         int ifCount = in.readUnsignedShort();
-        for (int i = 0; i < ifCount; i++) in.readUnsignedShort();
+        for (int i = 0; i < ifCount; i++) {
+            in.readUnsignedShort();
+        }
 
         // Fields - skip
         int fieldCount = in.readUnsignedShort();
@@ -244,7 +258,8 @@ public class BytecodeSizeVerifier {
         List<Result> results = new ArrayList<>();
         Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
                 if (file.toString().endsWith(".class")) {
                     results.add(verify(file, warnPercent));
                 }
@@ -343,7 +358,9 @@ public class BytecodeSizeVerifier {
         for (Result result : results) {
             if (!result.violations.isEmpty() || !result.warnings.isEmpty()) {
                 System.out.println(result.report());
-                if (!result.violations.isEmpty()) hasViolations = true;
+                if (!result.violations.isEmpty()) {
+                    hasViolations = true;
+                }
             }
         }
 
