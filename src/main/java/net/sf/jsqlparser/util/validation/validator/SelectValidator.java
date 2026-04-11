@@ -101,6 +101,11 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
                 validateOptionalFeature(c, plainSelect.getForUpdateTable(),
                         Feature.selectForUpdateOfTable);
+                if (plainSelect.getForUpdateTables() != null) {
+                    plainSelect.getForUpdateTables()
+                            .forEach(t -> validateOptionalFeature(c, t,
+                                    Feature.selectForUpdateOfTable));
+                }
                 validateOptionalFeature(c, plainSelect.getWait(), Feature.selectForUpdateWait);
                 validateFeature(c, plainSelect.isNoWait(), Feature.selectForUpdateNoWait);
                 validateFeature(c, plainSelect.isSkipLocked(), Feature.selectForUpdateSkipLocked);
