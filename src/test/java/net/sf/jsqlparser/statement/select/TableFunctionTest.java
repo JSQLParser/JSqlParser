@@ -9,13 +9,13 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TableFunctionTest {
 
@@ -58,5 +58,23 @@ class TableFunctionTest {
     void testTableFunctionWithSupportedWithClauses(String withClause) throws JSQLParserException {
         String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) WITH " + withClause + " AS t(a, b)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testRowsFromTableFunction() throws JSQLParserException {
+        String sqlStr = "SELECT *\n"
+                + "FROM ROWS FROM (\n"
+                + "    generate_series(1,3),\n"
+                + "    generate_series(10,12)\n"
+                + ") AS t(a,b)";
+
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction tableFunction = select.getFromItem(TableFunction.class);
+
+        assertTrue(tableFunction.isRowsFrom());
+        assertNotNull(tableFunction.getRowsFromFunctions());
+        assertEquals(2, tableFunction.getRowsFromFunctions().size());
+        assertEquals("generate_series", tableFunction.getRowsFromFunctions().get(0).getName());
+        assertEquals("generate_series", tableFunction.getRowsFromFunctions().get(1).getName());
     }
 }

@@ -1302,7 +1302,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(TableFunction tableFunction, S context) {
-        visit(tableFunction.getFunction(), null);
+        if (tableFunction.getFunctions() != null) {
+            for (var function : tableFunction.getFunctions()) {
+                visit(function, null);
+            }
+        }
         return null;
     }
 

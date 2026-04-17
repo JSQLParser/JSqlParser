@@ -5862,7 +5862,11 @@ FromItem FromItem() #FromItem:
                 && getToken(3).kind == OPENING_BRACKET
         }) fromItem=TableFunction()
         |
-        LOOKAHEAD({ (isFunctionAhead() && getToken(1).kind != K_LATERAL)
+        LOOKAHEAD({
+            (getToken(1).kind == K_ROWS
+                && getToken(2).kind == K_FROM
+                && getToken(3).kind == OPENING_BRACKET)
+            || (isFunctionAhead() && getToken(1).kind != K_LATERAL)
             || (getToken(1).kind == K_LATERAL && getToken(2).kind != OPENING_BRACKET) })
         fromItem=TableFunction()
         |
@@ -9978,12 +9982,15 @@ JsonTableFunction JsonTableBody() : {
 TableFunction TableFunction():
 {
     Token prefix = null;
-    Function function;
+    Function function = null;
+    ParenthesedExpressionList<Function> rowsFromFunctions = null;
     Token withClause = null;
 }
 {
     [ prefix = <K_LATERAL> ]
     (
+        LOOKAHEAD(3) <K_ROWS> <K_FROM> rowsFromFunctions = RowsFromFunctionList()
+        |
         LOOKAHEAD({
             getToken(1).kind == S_IDENTIFIER
                 && getToken(1).image.equalsIgnoreCase("JSON_TABLE")
@@ -9995,13 +10002,41 @@ TableFunction TableFunction():
     )
     [ LOOKAHEAD(2) <K_WITH> ( withClause = <K_OFFSET> | withClause = <K_ORDINALITY> ) ]
     {
-        return  prefix!=null
-            ? withClause!=null
+        if (rowsFromFunctions != null) {
+            return prefix != null
+                ? withClause != null
+                    ? new TableFunction(prefix.image, rowsFromFunctions, withClause.image)
+                    : new TableFunction(prefix.image, rowsFromFunctions)
+                : withClause != null
+                    ? new TableFunction(rowsFromFunctions, withClause.image)
+                    : new TableFunction(rowsFromFunctions);
+        }
+
+        return prefix != null
+            ? withClause != null
                 ? new TableFunction(prefix.image, function, withClause.image)
                 : new TableFunction(prefix.image, function)
-            : withClause!=null
+            : withClause != null
                 ? new TableFunction(function, withClause.image)
                 : new TableFunction(function);
+    }
+}
+
+ParenthesedExpressionList<Function> RowsFromFunctionList():
+{
+    ParenthesedExpressionList<Function> functions = new ParenthesedExpressionList<Function>();
+    Function function;
+}
+{
+    "("
+        function = Function() { functions.add(function); }
+        (
+            ","
+            function = Function() { functions.add(function); }
+        )*
+    ")"
+    {
+        return functions;
     }
 }
 
