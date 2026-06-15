@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public class WindowElement implements Serializable {
 
@@ -73,7 +74,7 @@ public class WindowElement implements Serializable {
         ROWS, RANGE;
 
         public static Type from(String type) {
-            return Enum.valueOf(Type.class, type.toUpperCase());
+            return Enum.valueOf(Type.class, type.toUpperCase(Locale.ROOT));
         }
     }
 

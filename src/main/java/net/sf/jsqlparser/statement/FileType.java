@@ -9,11 +9,13 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.Locale;
+
 public class FileType implements SourceDestinationType {
     private final Kind fileType;
 
     public FileType(String fileType) {
-        this.fileType = Kind.valueOf(fileType.toUpperCase());
+        this.fileType = Kind.valueOf(fileType.toUpperCase(Locale.ROOT));
     }
 
     private enum Kind {

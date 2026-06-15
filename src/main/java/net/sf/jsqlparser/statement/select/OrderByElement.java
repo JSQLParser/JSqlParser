@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import java.io.Serializable;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.Expression;
 
 public class OrderByElement implements Serializable {
@@ -116,7 +117,7 @@ public class OrderByElement implements Serializable {
         NULLS_FIRST, NULLS_LAST;
 
         public static NullOrdering from(String ordering) {
-            return Enum.valueOf(NullOrdering.class, ordering.toUpperCase());
+            return Enum.valueOf(NullOrdering.class, ordering.toUpperCase(Locale.ROOT));
         }
     }
 

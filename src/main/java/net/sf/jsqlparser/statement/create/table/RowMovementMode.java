@@ -9,11 +9,13 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import java.util.Locale;
+
 public enum RowMovementMode {
     ENABLE, DISABLE;
 
     public static RowMovementMode from(String mode) {
-        return Enum.valueOf(RowMovementMode.class, mode.toUpperCase());
+        return Enum.valueOf(RowMovementMode.class, mode.toUpperCase(Locale.ROOT));
     }
 }
 

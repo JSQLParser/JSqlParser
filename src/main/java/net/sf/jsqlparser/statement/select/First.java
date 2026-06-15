@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.JdbcParameter;
 
 import java.io.Serializable;
@@ -91,7 +92,7 @@ public class First implements Serializable {
         FIRST, LIMIT;
 
         public static Keyword from(String keyword) {
-            return Enum.valueOf(Keyword.class, keyword.toUpperCase());
+            return Enum.valueOf(Keyword.class, keyword.toUpperCase(Locale.ROOT));
         }
     }
 }

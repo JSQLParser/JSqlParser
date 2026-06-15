@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
@@ -177,7 +178,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
         INCREMENT_BY, INCREMENT, START_WITH, START, RESTART_WITH, MAXVALUE, NOMAXVALUE, MINVALUE, NOMINVALUE, CYCLE, NOCYCLE, CACHE, NOCACHE, ORDER, NOORDER, KEEP, NOKEEP, SESSION, GLOBAL;
 
         public static ParameterType from(String type) {
-            return Enum.valueOf(ParameterType.class, type.toUpperCase());
+            return Enum.valueOf(ParameterType.class, type.toUpperCase(Locale.ROOT));
         }
     }
 

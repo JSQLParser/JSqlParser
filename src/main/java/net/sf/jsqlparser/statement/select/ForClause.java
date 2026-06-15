@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class ForClause extends ASTNodeAccessImpl {
@@ -32,7 +33,7 @@ public class ForClause extends ASTNodeAccessImpl {
         BROWSE, XML, JSON;
 
         public static ForOption from(String option) {
-            return Enum.valueOf(ForOption.class, option.toUpperCase());
+            return Enum.valueOf(ForOption.class, option.toUpperCase(Locale.ROOT));
         }
     }
 }

@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.Locale;
+
 public enum TemporaryOption {
     NONE, TEMP, TEMPORARY, VOLATILE;
 
     public static TemporaryOption from(String option) {
-        return Enum.valueOf(TemporaryOption.class, option.toUpperCase());
+        return Enum.valueOf(TemporaryOption.class, option.toUpperCase(Locale.ROOT));
     }
 }

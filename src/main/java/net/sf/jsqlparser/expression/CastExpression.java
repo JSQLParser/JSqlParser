@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
@@ -276,7 +277,8 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         ARRAY, BIT, BITSTRING, BLOB, BYTEA, BINARY, VARBINARY, BYTES, BOOLEAN, BOOL, ENUM, INTERVAL, LIST, MAP, STRUCT, TINYINT, INT1, SMALLINT, INT2, SHORT, INTEGER, INT4, INT, SIGNED, BIGINT, INT8, LONG, HUGEINT, UTINYINT, USMALLINT, UINTEGER, UBIGINT, UHUGEINT, DECIMAL, NUMBER, NUMERIC, REAL, FLOAT4, FLOAT, DOUBLE, DOUBLE_PRECISION, FLOAT8, FLOAT64, UUID, VARCHAR, NVARCHAR, CHAR, NCHAR, BPCHAR, STRING, TEXT, CLOB, DATE, TIME, TIME_WITHOUT_TIME_ZONE, TIMETZ, TIME_WITH_TIME_ZONE, TIMESTAMP_NS, TIMESTAMP, TIMESTAMP_WITHOUT_TIME_ZONE, DATETIME, TIMESTAMP_MS, TIMESTAMP_S, TIMESTAMPTZ, TIMESTAMP_WITH_TIME_ZONE, UNKNOWN, VARBYTE, JSON;
 
         public static DataType from(String typeStr) {
-            Matcher matcher = PATTERN.matcher(typeStr.trim().replaceAll("\\s+", "_").toUpperCase());
+            Matcher matcher = PATTERN.matcher(
+                    typeStr.trim().replaceAll("\\s+", "_").toUpperCase(Locale.ROOT));
             if (matcher.find()) {
                 try {
                     return Enum.valueOf(DataType.class, matcher.group(0));

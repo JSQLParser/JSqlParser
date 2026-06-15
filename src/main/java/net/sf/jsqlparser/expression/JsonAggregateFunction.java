@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -73,7 +74,7 @@ public class JsonAggregateFunction extends FilterOverImpl implements Expression 
                 .valueOf(Objects
                         .requireNonNull(typeName,
                                 "The Type of the JSON Aggregate Function must not be null")
-                        .toUpperCase());
+                        .toUpperCase(Locale.ROOT));
     }
 
     public JsonAggregateFunction withType(JsonFunctionType type) {

@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
+
 public enum AnyType {
     ANY, SOME, ALL;
 
     public static AnyType from(String type) {
-        return Enum.valueOf(AnyType.class, type.toUpperCase());
+        return Enum.valueOf(AnyType.class, type.toUpperCase(Locale.ROOT));
     }
 }

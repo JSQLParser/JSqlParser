@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.schema.Table;
 
@@ -144,7 +145,7 @@ public class ExplainStatement implements Statement {
         ANALYZE, VERBOSE, COSTS, BUFFERS, FORMAT, PLAN, PLAN_FOR;
 
         public static OptionType from(String type) {
-            return Enum.valueOf(OptionType.class, type.toUpperCase());
+            return Enum.valueOf(OptionType.class, type.toUpperCase(Locale.ROOT));
         }
     }
 

@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.Locale;
+
 public enum ForceOption {
     NONE, FORCE, NO_FORCE;
 
     public static ForceOption from(String option) {
-        return Enum.valueOf(ForceOption.class, option.toUpperCase());
+        return Enum.valueOf(ForceOption.class, option.toUpperCase(Locale.ROOT));
     }
 }

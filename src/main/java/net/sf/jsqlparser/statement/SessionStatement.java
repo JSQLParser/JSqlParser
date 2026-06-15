@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public class SessionStatement implements Statement {
         START, APPLY, DROP, SHOW, DESCRIBE;
 
         public static Action from(String flag) {
-            return Enum.valueOf(Action.class, flag.toUpperCase());
+            return Enum.valueOf(Action.class, flag.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -53,7 +54,8 @@ public class SessionStatement implements Statement {
     }
 
     public String putOption(String key, String value) {
-        return options.put(key.replaceAll("[\"']", "").toLowerCase(), value.toLowerCase());
+        return options.put(key.replaceAll("[\"']", "").toLowerCase(Locale.ROOT),
+                value.toLowerCase(Locale.ROOT));
     }
 
     public boolean hasOptions() {

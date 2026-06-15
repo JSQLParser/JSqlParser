@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.nio.charset.StandardCharsets;
@@ -60,7 +61,7 @@ public class HexValue extends ASTNodeAccessImpl implements Expression {
     }
 
     public String getDigits() {
-        return value.toUpperCase().startsWith("0X")
+        return value.toUpperCase(Locale.ROOT).startsWith("0X")
                 ? value.substring(2)
                 : value.substring(2, value.length() - 1);
     }
