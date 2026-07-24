@@ -771,4 +771,12 @@ public class TablesNamesFinderTest {
 
     }
 
+    @Test
+    void testWindowExpressionWithNoRangeAndNoOffsetDoesNotThrowException() {
+        String sqlStr = "SELECT c, SUM(COUNT(*)) OVER (ORDER BY c ASC ROWS UNBOUNDED PRECEDING) FROM tbl GROUP BY c";
+
+        assertThatCode(() -> TablesNamesFinder.findTables(sqlStr))
+                .doesNotThrowAnyException();
+    }
+
 }
