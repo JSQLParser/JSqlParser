@@ -767,11 +767,13 @@ public class TablesNamesFinder<Void>
 
         if (analytic.getWindowElement() != null) {
             if (analytic.getWindowElement().getRange() != null) {
-                if (analytic.getWindowElement().getRange().getStart().getExpression() != null) {
+                if (analytic.getWindowElement().getRange().getStart() != null
+                        && analytic.getWindowElement().getRange().getStart().getExpression() != null) {
                     analytic.getWindowElement().getRange().getStart().getExpression().accept(this,
                             context);
                 }
-                if (analytic.getWindowElement().getRange().getEnd().getExpression() != null) {
+                if (analytic.getWindowElement().getRange().getEnd() != null
+                        && analytic.getWindowElement().getRange().getEnd().getExpression() != null) {
                     analytic.getWindowElement().getRange().getEnd().getExpression().accept(this,
                             context);
                 }
