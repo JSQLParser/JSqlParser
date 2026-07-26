@@ -295,6 +295,26 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * True when the next token can only start a bare (unparenthesized) sub-select.
+     *
+     * Used where the alternative to Select() is an ExpressionList: the Pratt
+     * arithmetic loop runs inside a Java action (prattArithRest) and JavaCC does
+     * not execute actions while evaluating syntactic lookahead, so a jj_3R probe
+     * cannot see through any infix operator. A syntactic LOOKAHEAD(n) over an
+     * expression therefore fails as soon as an operator appears within the first
+     * n tokens - e.g. "( 1 + a ) / ( 1 + b )" - and control wrongly falls through
+     * to the Select() branch. This O(1) token check replaces that probe.
+     */
+    protected boolean isUnparenthesizedSelectAhead() {
+        try {
+            int kind = getToken(1).kind;
+            return kind == K_SELECT || kind == K_WITH || kind == K_VALUES;
+        } catch (TokenMgrError e) {
+            return false;
+        }
+    }
+
+    /**
      * Pratt arithmetic operator precedence loop.
      * Handles: *, /, %, ^, DIV (prec=6)  and  +, -, ||, |, &, <<, >> (prec=5)
      * Called only in real-parse mode (not syntactic-LOOKAHEAD mode) so action
@@ -385,7 +405,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     // True when "(" opens a parenthesised FROM item (table/function/lateral/join)
-    // rather than a SELECT subquery. Cheap 2-token check replaces expensive 
+    // rather than a SELECT subquery. Cheap 2-token check replaces expensive
     // syntactic LOOKAHEAD(ParenthesedFromItem()).
     protected boolean isParenthesedFromItemAhead() {
         try {
@@ -7376,6 +7396,16 @@ ExpressionList ExpressionList() #ExpressionList:
         LOOKAHEAD(3) expressionList = SimpleExpressionList()
         |
         LOOKAHEAD(3) expressionList = ParenthesedExpressionList()
+        |
+        // Fallback, see isUnparenthesizedSelectAhead(): the three probes above are
+        // syntactic and cannot see through the Pratt operator loop, which lives in a
+        // Java action. They all fail on a bracketed operand of a larger expression,
+        // e.g. "( 1 + a ) / ( 1 + b )" or "( 1 + a )" - the third token is an operator
+        // where the probe expects "," or ")". Such input is still a valid expression
+        // list, so parse it as one instead of raising a ParseException.
+        LOOKAHEAD({ !interrupted }) expressionList = ComplexExpressionList()
+        |
+        expressionList = SimpleExpressionList()
     )
     {
         // Avoid redundant ExpressionLists containing only one ParenthesedExpressionList
@@ -9490,11 +9520,7 @@ Function InternalFunction(boolean escaped):
     Expression expr = null;
     Expression attributeExpression = null;
     Column attributeColumn = null;
-    List<OrderByElement> orderByList;
-    String onOverflowTruncate = null;
-    Token overflowToken = null;
     Limit limit;
-    Token extraKeywordToken;
     List<Function.KeywordArgument> keywordArgs = null;
 }
 {
@@ -9511,18 +9537,15 @@ Function InternalFunction(boolean escaped):
             )
         ]
         (
-            LOOKAHEAD(3) [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
-            expressionList=ExpressionList()
-            [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
+            LOOKAHEAD(3) expressionList = FunctionArgumentList(retval)
 
-            // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
-            [
-                <K_ON> <K_OVERFLOW> ( overflowToken=<K_TRUNCATE> | overflowToken=<K_ERROR> ) { onOverflowTruncate=overflowToken.image; }
-                [
-                    overflowToken = <S_CHAR_LITERAL> { onOverflowTruncate+= " " + overflowToken.image; }
-                    [ ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
-                ]
-            ] { retval.setOnOverflowTruncate(onOverflowTruncate); }
+            |
+            // The probe above is syntactic and cannot see through the Pratt operator
+            // loop, so it fails on arguments such as "( 1 + a ) / ( 1 + b )" and used
+            // to fall through to Select(), reporting "Encountered <OPENING_BRACKET> ...
+            // was expecting <K_WITH>". Select() is only reachable here for a bare
+            // sub-select, so decide on that instead.
+            LOOKAHEAD({ !isUnparenthesizedSelectAhead() }) expressionList = FunctionArgumentList(retval)
 
             |
             LOOKAHEAD({ !getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) expr = Select() { expressionList = new ExpressionList(expr); }
@@ -9601,6 +9624,37 @@ Function InternalFunction(boolean escaped):
         retval.setKeep(keep);
         retval.setKeywordArguments(keywordArgs);
         return retval;
+    }
+}
+
+/**
+ * Argument list of a Function, extracted from InternalFunction() so that it can be
+ * reached from more than one lookahead guard without duplicating the expansion.
+ */
+ExpressionList FunctionArgumentList(Function retval):
+{
+    ExpressionList expressionList = null;
+    List<OrderByElement> orderByList;
+    String onOverflowTruncate = null;
+    Token overflowToken = null;
+    Token extraKeywordToken;
+}
+{
+    [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
+    expressionList=ExpressionList()
+    [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
+
+    // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
+    [
+        <K_ON> <K_OVERFLOW> ( overflowToken=<K_TRUNCATE> | overflowToken=<K_ERROR> ) { onOverflowTruncate=overflowToken.image; }
+        [
+            overflowToken = <S_CHAR_LITERAL> { onOverflowTruncate+= " " + overflowToken.image; }
+            [ ( overflowToken=<K_WITH> |  overflowToken=<K_WITHOUT> ) <K_COUNT> { onOverflowTruncate+=" " + overflowToken.image + " COUNT"; }]
+        ]
+    ] { retval.setOnOverflowTruncate(onOverflowTruncate); }
+
+    {
+        return expressionList;
     }
 }
 
