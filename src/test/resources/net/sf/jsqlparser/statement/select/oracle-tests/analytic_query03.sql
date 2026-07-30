@@ -18,3 +18,4 @@ select times.time_id, product, quantity from inventory
 
 --@FAILURE: Encountered unexpected token: "by" "BY" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: <K_BY> / "by", at line 11, column 14, in lexical state DEFAULT. recorded first on 23 May 2025, 22:04:10
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19

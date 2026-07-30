@@ -40,3 +40,4 @@ select spf.*, nvl(a, ddr_a) as a, b, d,
 
 --@FAILURE: Encountered unexpected token: "partition" "PARTITION" recorded first on Aug 3, 2021, 7:20:07 AM
 --@FAILURE: Encountered: <K_PARTITION> / "partition", at line 28, column 3, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19

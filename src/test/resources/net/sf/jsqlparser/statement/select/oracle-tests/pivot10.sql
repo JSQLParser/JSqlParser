@@ -29,3 +29,4 @@
 
 --@FAILURE: Encountered unexpected token: "pivot" "PIVOT" recorded first on Aug 3, 2021, 7:20:08 AM
 --@FAILURE: Encountered: <K_PIVOT> / "pivot", at line 12, column 2, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19

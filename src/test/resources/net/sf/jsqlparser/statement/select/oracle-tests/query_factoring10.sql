@@ -45,3 +45,4 @@ select root,lev,obj,link,path,cycle,
 --@FAILURE: Encountered unexpected token: "union" "UNION" recorded first on Feb 13, 2025, 10:16:06 AM
 --@FAILURE: Encountered: <S_IDENTIFIER> / "search", at line 33, column 1, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:09
 --@FAILURE: Encountered: <K_CYCLE> / "cycle", at line 34, column 1, in lexical state DEFAULT. recorded first on 8 Mar 2026, 18:41:51
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19

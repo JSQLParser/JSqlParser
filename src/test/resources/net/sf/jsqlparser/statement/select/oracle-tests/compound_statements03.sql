@@ -19,3 +19,4 @@ BEGIN
 --@FAILURE: Encountered unexpected token: "INTO" "INTO" recorded first on 4 May 2023, 18:47:18
 --@FAILURE: Encountered: <K_INTO> / "INTO", at line 12, column 24, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
 --@FAILURE: Encountered: <DOUBLE_COLON> / ":", at line 12, column 29, in lexical state DEFAULT. recorded first on 28 Mar 2026, 16:43:42
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19

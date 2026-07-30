@@ -20,3 +20,4 @@ explain plan
 --@FAILURE: Encountered unexpected token: "set" "SET" recorded first on 2023年12月23日 下午1:38:33
 --@FAILURE: Encountered unexpected token: "plan" "PLAN" recorded first on 23 Aug 2024, 21:35:20
 --@FAILURE: Encountered: <K_SET> / "set", at line 11, column 5, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
+--@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19
