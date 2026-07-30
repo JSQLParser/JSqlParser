@@ -9,9 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.List;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class TableFunction extends Function implements FromItem {
@@ -20,6 +22,7 @@ public class TableFunction extends Function implements FromItem {
     private Pivot pivot = null;
     private UnPivot unPivot = null;
     private Function function;
+    private ParenthesedExpressionList<Function> rowsFromFunctions;
     private String withClause = null;
 
     public TableFunction(Function function) {
@@ -42,6 +45,27 @@ public class TableFunction extends Function implements FromItem {
         this.withClause = withClause;
     }
 
+    public TableFunction(ParenthesedExpressionList<Function> rowsFromFunctions) {
+        this.rowsFromFunctions = rowsFromFunctions;
+    }
+
+    public TableFunction(String prefix, ParenthesedExpressionList<Function> rowsFromFunctions) {
+        this.prefix = prefix;
+        this.rowsFromFunctions = rowsFromFunctions;
+    }
+
+    public TableFunction(ParenthesedExpressionList<Function> rowsFromFunctions, String withClause) {
+        this.rowsFromFunctions = rowsFromFunctions;
+        this.withClause = withClause;
+    }
+
+    public TableFunction(String prefix, ParenthesedExpressionList<Function> rowsFromFunctions,
+            String withClause) {
+        this.prefix = prefix;
+        this.rowsFromFunctions = rowsFromFunctions;
+        this.withClause = withClause;
+    }
+
     public TableFunction(String prefix, String name, Expression... parameters) {
         this.prefix = prefix;
         this.function = new Function(name, parameters);
@@ -57,7 +81,30 @@ public class TableFunction extends Function implements FromItem {
 
     public TableFunction setFunction(Function function) {
         this.function = function;
+        this.rowsFromFunctions = null;
         return this;
+    }
+
+    public ParenthesedExpressionList<Function> getRowsFromFunctions() {
+        return rowsFromFunctions;
+    }
+
+    public TableFunction setRowsFromFunctions(
+            ParenthesedExpressionList<Function> rowsFromFunctions) {
+        this.rowsFromFunctions = rowsFromFunctions;
+        this.function = null;
+        return this;
+    }
+
+    public boolean isRowsFrom() {
+        return rowsFromFunctions != null;
+    }
+
+    public List<Function> getFunctions() {
+        if (rowsFromFunctions != null) {
+            return rowsFromFunctions;
+        }
+        return function != null ? List.of(function) : null;
     }
 
     @Deprecated
@@ -151,7 +198,11 @@ public class TableFunction extends Function implements FromItem {
         if (prefix != null) {
             builder.append(prefix).append(" ");
         }
-        builder.append(function.toString());
+        if (rowsFromFunctions != null) {
+            builder.append("ROWS FROM ").append(rowsFromFunctions);
+        } else {
+            builder.append(function);
+        }
 
         if (withClause != null) {
             builder.append(" WITH ").append(withClause);
