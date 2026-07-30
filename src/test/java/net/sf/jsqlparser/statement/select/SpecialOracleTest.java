@@ -89,6 +89,7 @@ public class SpecialOracleTest {
             "datetime02.sql", "datetime04.sql", "datetime05.sql", "datetime06.sql", "dblink01.sql",
             "for_update01.sql", "for_update02.sql", "for_update03.sql", "function04.sql",
             "function05.sql", "for_update04.sql", "for_update05.sql", "for_update06.sql",
+            "for_update07.sql", "for_update08.sql",
             "function01.sql", "function02.sql", "function03.sql",
             "function06.sql", "function07.sql",
             "groupby01.sql",

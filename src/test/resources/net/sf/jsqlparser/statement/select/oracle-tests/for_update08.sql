@@ -15,3 +15,4 @@ order by su.d
 
 --@FAILURE: select su.ttype,su.cid,su.s_id,sessiontimezone from sku su where(nvl(su.up,'n')='n' and su.ttype=:b0)order by su.d for update of su.up recorded first on 20 Apr 2024, 15:59:32
 --@FAILURE: Encountered unexpected token: "order" "ORDER" recorded first on Feb 13, 2025, 10:16:06 AM
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on Apr 11, 2026, 4:05:22 PM

@@ -335,7 +335,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             unpivot.accept(this, context);
         }
 
-        deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
+        if (!plainSelect.isForUpdateBeforeOrderBy()) {
+            deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
+        }
 
         if (plainSelect.getForClause() != null) {
             plainSelect.getForClause().appendTo(builder);
@@ -363,8 +365,15 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" FOR ");
             builder.append(plainSelect.getForMode().getValue());
 
-            if (plainSelect.getForUpdateTable() != null) {
-                builder.append(" OF ").append(plainSelect.getForUpdateTable());
+            List<Table> forUpdateTables = plainSelect.getForUpdateTables();
+            if (forUpdateTables != null && !forUpdateTables.isEmpty()) {
+                builder.append(" OF ");
+                for (int i = 0; i < forUpdateTables.size(); i++) {
+                    if (i > 0) {
+                        builder.append(", ");
+                    }
+                    builder.append(forUpdateTables.get(i));
+                }
             }
             if (plainSelect.getWait() != null) {
                 // wait's toString will do the formatting for us
@@ -375,6 +384,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             } else if (plainSelect.isSkipLocked()) {
                 builder.append(" SKIP LOCKED");
             }
+        }
+
+        if (plainSelect.isForUpdateBeforeOrderBy()) {
+            deparseOrderByElementsClause(plainSelect, plainSelect.getOrderByElements());
         }
         if (plainSelect.getMySqlSelectIntoClause() != null
                 && plainSelect.getMySqlSelectIntoClause()
