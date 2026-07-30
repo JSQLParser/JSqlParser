@@ -32,11 +32,11 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -406,107 +406,74 @@ public class CCJSqlParserUtilTest {
         verifier.assertGarbageCollected();
     }
 
+    // INVALID on purpose; crafted INTO keywords make the complex-parsing path explode
+    // combinatorially. Historically it took 40s+ to fail, which the timeout test used to
+    // rely on — it no longer does, see testTimeOutIssue1582_timesOut().
+    private static final String ISSUE_1582_SQL =
+            "select\n"
+                    + "  t0.operatienr\n"
+                    + "  , case\n"
+                    + "        when\n"
+                    + "            case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
+                    + "                 else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
+                    + "        end = 0 then null\n"
+                    + "            else '25. Meer dan 4 uur'\n"
+                    + "        end\n"
+                    + "      as snijtijd_interval";
+
     @Test
-    @Disabled
-    // @todo: check if this still has a chance to timeout since we got too fast
-    public void testTimeOutIssue1582() {
-        // This statement is INVALID on purpose
-        // There are crafted INTO keywords in order to make it fail but only after a long time (40
-        // seconds plus)
-
-        String sqlStr =
-                "select\n"
-                        + "  t0.operatienr\n"
-                        + "  , case\n"
-                        + "        when\n"
-                        + "            case when (t0.vc_begintijd_operatie is null or lpad((extract('hours' into t0.vc_begintijd_operatie::timestamp))::text,2,'0') ||':'|| lpad(extract('minutes' from t0.vc_begintijd_operatie::timestamp)::text,2,'0') = '00:00') then null\n"
-                        + "                 else (greatest(((extract('hours' into (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp))*60 + extract('minutes' from (t0.vc_eindtijd_operatie::timestamp-t0.vc_begintijd_operatie::timestamp)))/60)::numeric(12,2),0))*60\n"
-                        + "        end = 0 then null\n"
-                        + "            else '25. Meer dan 4 uur'\n"
-                        + "        end\n"
-                        + "      as snijtijd_interval";
-
-        // Within timeout, we expect the statement to timeout normally
-        // A TimeoutException wrapped into a Parser Exception should be thrown
-        assertThrows(JSQLParserException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                try {
-                    CCJSqlParserUtil.parse(sqlStr, p -> p.withTimeOut(1));
-                } catch (JSQLParserException ex) {
-                    assertInstanceOf(TimeoutException.class, ex.getCause());
-                    throw ex;
-                }
-            }
-        });
-
-        // With custom TIMEOUT 60 Seconds, we expect the statement to not timeout but to fail
-        // instead
-        // No TimeoutException wrapped into a Parser Exception must be thrown
-        // Instead we expect a Parser Exception only
-        assertThrows(JSQLParserException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                try {
-                    CCJSqlParserUtil.parse(sqlStr, parser -> {
-                        parser.withTimeOut(60000);
+    void testTimeOutIssue1582_timesOut() throws Exception {
+        // Occupy the only worker thread so the parse task provably cannot complete within
+        // the budget. This tests the contract -- a timeout is reported as a TimeoutException
+        // cause -- rather than testing how slow the parser or the CI runner happens to be.
+        ExecutorService single = Executors.newSingleThreadExecutor();
+        CountDownLatch block = new CountDownLatch(1);
+        single.submit(() -> block.await(30, TimeUnit.SECONDS));
+        try {
+            JSQLParserException ex = assertThrows(JSQLParserException.class,
+                    () -> CCJSqlParserUtil.parse(ISSUE_1582_SQL, single, parser -> {
+                        parser.withTimeOut(50);
+                        // single attempt, so exactly one task is submitted
                         parser.withAllowComplexParsing(false);
-                    });
-                } catch (JSQLParserException ex) {
-                    assertFalse(ex.getCause() instanceof TimeoutException);
-                    throw ex;
-                }
-            }
-        });
+                    }));
+            assertInstanceOf(TimeoutException.class, ex.getCause(),
+                    () -> "actual cause: " + ex.getCause());
+        } finally {
+            block.countDown();
+            single.shutdownNow();
+        }
     }
 
-    // Supposed to time out
     @Test
-    void testComplexIssue1792() throws JSQLParserException {
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        CCJSqlParserUtil.LOGGER.setLevel(Level.ALL);
+    void testTimeOutIssue1582_failsWithoutTimingOut() {
+        // Generous timeout and simple parsing only: must fail as a plain parse error,
+        // never as a timeout.
+        JSQLParserException ex = assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(ISSUE_1582_SQL, parser -> {
+                    parser.withTimeOut(60000);
+                    parser.withAllowComplexParsing(false);
+                }));
+        assertFalse(ex.getCause() instanceof TimeoutException,
+                () -> "expected a parse failure, got a timeout: " + ex.getCause());
+    }
 
-        // Expect to fail fast with SIMPLE Parsing only when COMPLEX is not allowed
-        // No TIMEOUT Exception shall be thrown
-        // CCJSqlParserUtil.LOGGER will report:
-        // 1) Allowed Complex Parsing: false
-        // 2) Trying SIMPLE parsing only
-        assertThrows(JSQLParserException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                try {
-                    CCJSqlParserUtil.parse(INVALID_SQL, executorService, parser -> {
-                        parser.withTimeOut(10000);
-                        parser.withAllowComplexParsing(false);
-                    });
-                } catch (JSQLParserException ex) {
-                    assertFalse(ex.getCause() instanceof TimeoutException);
-                    throw ex;
-                }
-            }
-        });
-
-        // Expect to time-out with COMPLEX Parsing allowed
-        // CCJSqlParserUtil.LOGGER will report:
-        // 1) Allowed Complex Parsing: true
-        // 2) Trying SIMPLE parsing first
-        // 3) Trying COMPLEX parsing when SIMPLE parsing failed
-        assertThrows(JSQLParserException.class, new Executable() {
-            @Override
-            public void execute() throws Throwable {
-                try {
-                    CCJSqlParserUtil.parse(INVALID_SQL, executorService, parser -> {
-                        parser.withTimeOut(1);
+    @Test
+    void testTimeoutSurfacesAsTimeoutException() throws Exception {
+        ExecutorService single = Executors.newSingleThreadExecutor();
+        CountDownLatch block = new CountDownLatch(1);
+        single.submit(() -> block.await(5, TimeUnit.SECONDS)); // occupies the only thread
+        try {
+            JSQLParserException ex = assertThrows(JSQLParserException.class,
+                    () -> CCJSqlParserUtil.parse(INVALID_SQL, single, parser -> {
+                        parser.withTimeOut(50);
                         parser.withAllowComplexParsing(true);
-                    });
-                } catch (JSQLParserException ex) {
-                    assertInstanceOf(TimeoutException.class, ex.getCause());
-                    throw ex;
-                }
-            }
-        });
-        executorService.shutdownNow();
-        CCJSqlParserUtil.LOGGER.setLevel(Level.OFF);
+                    }));
+            assertInstanceOf(TimeoutException.class, ex.getCause(),
+                    () -> "actual cause: " + ex.getCause());
+        } finally {
+            block.countDown();
+            single.shutdownNow();
+        }
     }
 
     @Test

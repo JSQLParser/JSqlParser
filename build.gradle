@@ -273,7 +273,7 @@ test {
     maxHeapSize = "4G"
 
     // set JVM stack size
-    jvmArgs = ['-Xss2m', '--add-opens=java.base/java.lang=ALL-UNNAMED']
+    jvmArgs = ['-Xss4m', '--add-opens=java.base/java.lang=ALL-UNNAMED']
 
     jacoco {
         excludes = ['net/sf/jsqlparser/parser/CCJSqlParserTokenManager']
