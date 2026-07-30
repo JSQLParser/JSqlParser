@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Locale;
+
 /**
  * @author tw
  */
@@ -16,6 +18,6 @@ public enum MySqlSqlCacheFlags {
     SQL_CACHE, SQL_NO_CACHE;
 
     public static MySqlSqlCacheFlags from(String flag) {
-        return Enum.valueOf(MySqlSqlCacheFlags.class, flag.toUpperCase());
+        return Enum.valueOf(MySqlSqlCacheFlags.class, flag.toUpperCase(Locale.ROOT));
     }
 }

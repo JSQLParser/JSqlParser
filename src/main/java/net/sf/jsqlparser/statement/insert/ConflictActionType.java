@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import java.util.Locale;
+
 public enum ConflictActionType {
     NOTHING, DO_NOTHING, DO_UPDATE;
 
     public static ConflictActionType from(String type) {
-        return Enum.valueOf(ConflictActionType.class, type.toUpperCase());
+        return Enum.valueOf(ConflictActionType.class, type.toUpperCase(Locale.ROOT));
     }
 }

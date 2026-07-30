@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.show;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -106,7 +107,7 @@ public class ShowTablesStatement implements Statement {
         FROM, IN;
 
         public static SelectionMode from(String mode) {
-            return Enum.valueOf(SelectionMode.class, mode.toUpperCase());
+            return Enum.valueOf(SelectionMode.class, mode.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -114,7 +115,7 @@ public class ShowTablesStatement implements Statement {
         EXTENDED, FULL;
 
         public static Modifiers from(String modifier) {
-            return Enum.valueOf(Modifiers.class, modifier.toUpperCase());
+            return Enum.valueOf(Modifiers.class, modifier.toUpperCase(Locale.ROOT));
         }
     }
 }

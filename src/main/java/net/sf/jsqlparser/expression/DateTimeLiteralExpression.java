@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expression {
@@ -56,7 +57,7 @@ public class DateTimeLiteralExpression extends ASTNodeAccessImpl implements Expr
         DATE, DATETIME, TIME, TIMESTAMP, TIMESTAMPTZ;
 
         public static DateTime from(String dateTimeStr) {
-            return Enum.valueOf(DateTime.class, dateTimeStr.toUpperCase());
+            return Enum.valueOf(DateTime.class, dateTimeStr.toUpperCase(Locale.ROOT));
         }
     }
 }

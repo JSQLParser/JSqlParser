@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
@@ -22,7 +23,7 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
     private String transcodingName;
 
     public TranscodingFunction(String keyword, Expression expression, String transcodingName) {
-        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase(Locale.ROOT);
         this.expression = expression;
         this.transcodingName = transcodingName;
     }
@@ -34,7 +35,7 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
 
     public TranscodingFunction(String keyword, ColDataType colDataType, Expression expression,
             String transcodingName) {
-        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase(Locale.ROOT);
         this.colDataType = colDataType;
         this.expression = expression;
         this.transcodingName = transcodingName;
@@ -58,7 +59,7 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
     }
 
     public TranscodingFunction setKeyword(String keyword) {
-        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase();
+        this.keyword = Objects.requireNonNullElse(keyword, "CONVERT").toUpperCase(Locale.ROOT);
         return this;
     }
 

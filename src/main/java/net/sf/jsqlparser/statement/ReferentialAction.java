@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public class ReferentialAction implements Serializable {
 
@@ -90,7 +91,7 @@ public class ReferentialAction implements Serializable {
         DELETE, UPDATE;
 
         public static Type from(String name) {
-            return Enum.valueOf(Type.class, name.toUpperCase());
+            return Enum.valueOf(Type.class, name.toUpperCase(Locale.ROOT));
         }
     }
 

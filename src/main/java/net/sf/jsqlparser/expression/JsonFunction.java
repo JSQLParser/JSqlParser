@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Objects;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -355,7 +356,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         this.functionType = JsonFunctionType.valueOf(
                 Objects.requireNonNull(typeName,
                         "The Type of the JSON Aggregate Function must not be null")
-                        .toUpperCase());
+                        .toUpperCase(Locale.ROOT));
     }
 
     public JsonFunction withType(JsonFunctionType type) {

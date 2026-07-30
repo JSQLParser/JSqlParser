@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.update;
 
+import java.util.Locale;
+
 public enum UpdateModifierPriority {
     LOW_PRIORITY;
 
     public static UpdateModifierPriority from(String priority) {
-        return Enum.valueOf(UpdateModifierPriority.class, priority.toUpperCase());
+        return Enum.valueOf(UpdateModifierPriority.class, priority.toUpperCase(Locale.ROOT));
     }
 }

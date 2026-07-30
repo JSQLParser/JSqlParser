@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.util.Objects;
@@ -44,7 +45,7 @@ public class DateUnitExpression extends ASTNodeAccessImpl implements Expression 
         CENTURY, DECADE, YEAR, QUARTER, MONTH, WEEK, DAY, HOUR, MINUTE, SECOND, MILLISECOND, MICROSECOND, NANOSECOND;
 
         public static DateUnit from(String UnitStr) {
-            return Enum.valueOf(DateUnit.class, UnitStr.toUpperCase());
+            return Enum.valueOf(DateUnit.class, UnitStr.toUpperCase(Locale.ROOT));
         }
     }
 }

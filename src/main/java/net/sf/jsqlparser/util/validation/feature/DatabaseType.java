@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.feature;
 
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Set;
 
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -59,7 +60,7 @@ public enum DatabaseType implements FeatureSetValidation, Version {
      * @throws NullPointerException if {@code jdbcIdentifier} is null
      */
     public static DatabaseType get(String jdbcIdentifier) {
-        return DatabaseType.valueOf(jdbcIdentifier.toUpperCase());
+        return DatabaseType.valueOf(jdbcIdentifier.toUpperCase(Locale.ROOT));
     }
 
     /**

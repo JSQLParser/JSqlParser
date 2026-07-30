@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public class WindowOffset implements Serializable {
 
@@ -79,7 +80,7 @@ public class WindowOffset implements Serializable {
         PRECEDING, FOLLOWING, CURRENT, EXPR;
 
         public static Type from(String type) {
-            return Enum.valueOf(Type.class, type.toUpperCase());
+            return Enum.valueOf(Type.class, type.toUpperCase(Locale.ROOT));
         }
     }
 

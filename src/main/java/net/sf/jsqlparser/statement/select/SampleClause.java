@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Locale;
+
 public class SampleClause {
     private SampleKeyword keyword;
     private SampleMethod method;
@@ -177,7 +179,7 @@ public class SampleClause {
 
         public static SampleKeyword from(String sampleKeyword) {
             return Enum.valueOf(SampleKeyword.class,
-                    sampleKeyword.toUpperCase().replaceAll(" ", "_"));
+                    sampleKeyword.toUpperCase(Locale.ROOT).replaceAll(" ", "_"));
         }
 
         @Override
@@ -191,7 +193,7 @@ public class SampleClause {
 
         public static SampleMethod from(String sampleMethod) {
             return Enum.valueOf(SampleMethod.class,
-                    sampleMethod.toUpperCase().replaceAll(" ", "_"));
+                    sampleMethod.toUpperCase(Locale.ROOT).replaceAll(" ", "_"));
         }
     }
 }
