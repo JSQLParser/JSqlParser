@@ -24,54 +24,10 @@
         </license>
     </licenses>
 
-    <repositories>
-        <repository>
-            <id>javacc8-snapshots</id>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases><enabled>false</enabled></releases>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        </repository>
-        <repository>
-            <id>ossrh-snapshots</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-            <releases><enabled>false</enabled></releases>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>javacc8-snapshots</id>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases><enabled>false</enabled></releases>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>ossrh-snapshots</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-            <releases><enabled>false</enabled></releases>
-        </pluginRepository>
-    </pluginRepositories>
+
 
     <dependencies>
-        <!-- needed for parsing the Keywords via JTree in ParserKeywordsUtils -->
-        <dependency>
-            <groupId>org.javacc</groupId>
-            <artifactId>core</artifactId>
-            <version>8.1.0-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.javacc.generator</groupId>
-            <artifactId>java</artifactId>
-            <version>8.1.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -287,26 +243,26 @@
                         </goals>
                         <configuration>
                             <javaccCmdLineArgs>
-                                <gen>-CODE_GENERATOR="Java"</gen>
-                                <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
+                                <arg>-CODE_GENERATOR:"Java"</arg>
+                                <arg>-GRAMMAR_ENCODING:"UTF-8"</arg>
                             </javaccCmdLineArgs>
                             <jjtreeCmdLineArgs>
-                                <enc>-GRAMMAR_ENCODING="UTF-8"</enc>
-                                <gen>-CODE_GENERATOR="Java"</gen>
+                                <arg>-GRAMMAR_ENCODING:"UTF-8"</arg>
+                                <arg>-CODE_GENERATOR:"Java"</arg>
                             </jjtreeCmdLineArgs>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>org.javacc.generator</groupId>
-                        <artifactId>java</artifactId>
-                        <version>8.1.0-SNAPSHOT</version>
+                        <groupId>com.manticore-projects.jsqlformatter</groupId>
+                        <artifactId>javacc-java</artifactId>
+                        <version>[8.1.1.1939,)</version>
                     </dependency>
                     <dependency>
-                        <groupId>org.javacc</groupId>
-                        <artifactId>core</artifactId>
-                        <version>8.1.0-SNAPSHOT</version>
+                        <groupId>com.manticore-projects.jsqlformatter</groupId>
+                        <artifactId>javacc-core</artifactId>
+                        <version>[8.1.1.1939,)</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -345,11 +301,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <!--
-                dont switch to version 3.0.1, that makes the strange certificate problems
-                start maven release with -Dmaven.wagon.http.ssl.allowall=true since JDK 1.8
-                does not have a complete truststore
-                -->
                 <version>3.1.1</version>
                 <configuration>
                     <localCheckout>true</localCheckout>

@@ -131,15 +131,7 @@ tasks.withType(Checkstyle).configureEach {
 }
 
 repositories {
-    gradlePluginPortal()
-    mavenLocal()
     mavenCentral()
-
-    // JavaCC 8 Snapshots
-    maven {
-        url = uri('https://central.sonatype.com/repository/maven-snapshots/')
-    }
-
     maven { url "https://dev.saxonica.com/maven" }
 }
 
@@ -157,13 +149,13 @@ dependencies {
     testImplementation 'com.h2database:h2:+'
 
     // for JaCoCo Reports
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5+'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter
-    testImplementation 'org.mockito:mockito-junit-jupiter:5.18.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.+'
 
     // Performance Benchmark
     testImplementation 'org.openjdk.jmh:jmh-core:+'
@@ -173,24 +165,13 @@ dependencies {
     xmlDoclet ('com.manticore-projects.tools:xml-doclet:+'){ changing = true }
 
     // enforce latest version of JavaCC
-    testImplementation('org.javacc:core:8.1.1-SNAPSHOT') { changing = true }
-    testImplementation('org.javacc.generator:java:8.1.1-SNAPSHOT') { changing = true }
+    testImplementation('com.manticore-projects.jsqlformatter:javacc-core:+')
+    testImplementation('com.manticore-projects.jsqlformatter:javacc-java:+')
 
-    jmh 'org.openjdk.jmh:jmh-core:1.37'
-    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
-    javacc('org.javacc:core:8.1.1-SNAPSHOT') { changing = true }
-    javacc('org.javacc.generator:java:8.1.1-SNAPSHOT') { changing = true }
-}
-configurations.configureEach {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group in ['org.javacc:core', 'org.javacc.generator']) {
-            // Check for updates every build
-            resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-        }
-    }
-
-    resolutionStrategy.force 'org.javacc:core:8.1.1-SNAPSHOT',
-            'org.javacc.generator:java:8.1.1-SNAPSHOT'
+    jmh 'org.openjdk.jmh:jmh-core:+'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:+'
+    javacc('com.manticore-projects.jsqlformatter:javacc-core:+')
+    javacc('com.manticore-projects.jsqlformatter:javacc-java:+')
 }
 
 compileJavacc {
@@ -200,7 +181,8 @@ compileJavacc {
             java_template_type: 'modern',
             // Comment this in to build the parser with tracing.
             DEBUG_PARSER: 'false',
-            DEBUG_LOOKAHEAD: 'false'
+            DEBUG_LOOKAHEAD: 'false',
+            LEGACY_EXCEPTION_HANDLING: 'false'
     ]
 }
 
