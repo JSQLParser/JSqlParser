@@ -289,7 +289,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
 
         return true;
-      } catch (TokenMgrError e) {
+      } catch (TokenMgrException e) {
         return false;
       }
     }
@@ -309,7 +309,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         try {
             int kind = getToken(1).kind;
             return kind == K_SELECT || kind == K_WITH || kind == K_VALUES;
-        } catch (TokenMgrError e) {
+        } catch (TokenMgrException e) {
             return false;
         }
     }
@@ -423,7 +423,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // by LOOKAHEAD(2, Dialect.EXASOL...) SubImport() - must NOT go into ParenthesedFromItem
             if (k2 == K_IMPORT) return false;
             return true;
-        } catch (TokenMgrError e) { return false; }
+        } catch (TokenMgrException e) { return false; }
     }
 
     // True when ( (SELECT ...) UNION/INTERSECT/EXCEPT (SELECT ...) ) — a set-operation
@@ -444,7 +444,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             int depth = i - 2; // brackets from position 2 to i-1 inclusive
             i++;
             while (i <= 500) {
-                Token t; try { t = getToken(i); } catch (TokenMgrError e) { return false; }
+                Token t; try { t = getToken(i); } catch (TokenMgrException e) { return false; }
                 if (t == null || t.kind == 0) return false;
                 if (t.kind == OPENING_BRACKET) depth++;
                 else if (t.kind == CLOSING_BRACKET) {
@@ -454,11 +454,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
             if (i > 500) return false;
             // Token at position i+1 follows the innermost closing )
-            Token next; try { next = getToken(i + 1); } catch (TokenMgrError e) { return false; }
+            Token next; try { next = getToken(i + 1); } catch (TokenMgrException e) { return false; }
             if (next == null) return false;
             return next.kind == K_UNION || next.kind == K_INTERSECT ||
                    next.kind == K_EXCEPT || next.kind == K_MINUS;
-        } catch (TokenMgrError e) { return false; }
+        } catch (TokenMgrException e) { return false; }
     }
 
     protected boolean isParenthesedSelectAhead() {
@@ -466,7 +466,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             int k = getToken(2).kind;
             return k == K_SELECT || k == K_WITH || k == K_VALUES;
-        } catch (TokenMgrError e) {
+        } catch (TokenMgrException e) {
             return false;
         }
     }
@@ -491,7 +491,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             int k5 = getToken(5).kind;
             if (k5 != S_LONG) return false;            // DATA_TYPE(N, expr) - function call
             return getToken(6).kind == CLOSING_BRACKET; // DATA_TYPE(N,M) - precision cast
-        } catch (TokenMgrError e) {
+        } catch (TokenMgrException e) {
             return false;
         }
     }
@@ -523,7 +523,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
             // Otherwise assume it is a CASE expression with a switch value
             return true;
-        } catch (TokenMgrError e) {
+        } catch (TokenMgrException e) {
             return false;
         }
     }
