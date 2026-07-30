@@ -50,7 +50,12 @@ Java SQL Parser Library
     :alt: Java Docs
     :target: https://javadoc.io/doc/com.github.jsqlparser/jsqlparser/latest/index.html
 
+
 A huge thank you to our sponsor, `Starlake.ai <https://starlake.ai/>`_ who simplifies data ingestion, transformation, and orchestration, enabling faster delivery of high-quality data. Starlake has been instrumental in providing Piped SQL and numerous test cases for BigQuery, Redshift, DataBricks, and DuckDB. Show your support for ongoing development by visiting Starlake.ai and giving us a star!
+
+.. sidebar:: Java API Website
+
+	.. image:: _images/JavaAST.png
 
 **JSQLParser** is a SQL statement parser built from JavaCC. It translates SQLs in a traversable hierarchy of Java classes.
 Since the 5.0 release JSQLParser depends on Java 11 and has introduced new Visitors. Please see the :ref:`Migration to 5.0` guide.
@@ -59,9 +64,7 @@ Latest stable release: |JSQLPARSER_STABLE_VERSION_LINK|
 
 Development version: |JSQLPARSER_SNAPSHOT_VERSION_LINK|
 
-.. sidebar:: Java API Website
 
-	.. image:: _images/JavaAST.png
 
 
 .. code-block:: SQL
@@ -85,35 +88,35 @@ SQL Dialects
 
 **JSqlParser** is RDBMS agnostic and provides support for many dialects such as:
 
-    * Oracle Database
-    * MS SqlServer
-    * MySQL and MariaDB
-    * PostgreSQL
-    * H2
-    * DuckDB
-    * Google BigQuery
-    * Amazon Redshift
-    * DataBricks
-    * Snowflake
+* Oracle Database
+* MS SqlServer
+* MySQL and MariaDB
+* PostgreSQL
+* H2
+* DuckDB
+* Google BigQuery
+* Amazon Redshift
+* DataBricks
+* Snowflake
 
 *******************************
 Features
 *******************************
 
-    * Comprehensive support for statements:
-        - QUERY: ``SELECT ...``
-        - DML: ``INSERT ... INTO ...`` ``UPDATE ...`` ``MERGE ... INTO ...`` ``DELETE ... FROM ...``
-        - DDL: ``CREATE ...`` ``ALTER ...`` ``DROP ...``
+* Comprehensive support for statements:
+    - QUERY: ``SELECT ...``
+    - DML: ``INSERT ... INTO ...`` ``UPDATE ...`` ``MERGE ... INTO ...`` ``DELETE ... FROM ...``
+    - DDL: ``CREATE ...`` ``ALTER ...`` ``DROP ...``
 
-    * Nested Expressions (e.g. Sub-Selects)
-    * ``WITH`` clauses
-    * Old Oracle ``JOIN (+)``
-    * PostgreSQL implicit ``CAST ::``
-    * SQL Parameters (e.g. ``?`` or ``:parameter``)
-    * Arrays vs. T-SQL Squared Bracket Quotes
-    * Fluent API to create SQL Statements from java Code
-    * Statement De-Parser to write SQL from Java Objects
-    * Piped SQL (also known as FROM SQL)
+* Nested Expressions (e.g. Sub-Selects)
+* ``WITH`` clauses
+* Old Oracle ``JOIN (+)``
+* PostgreSQL implicit ``CAST ::``
+* SQL Parameters (e.g. ``?`` or ``:parameter``)
+* Arrays vs. T-SQL Squared Bracket Quotes
+* Fluent API to create SQL Statements from java Code
+* Statement De-Parser to write SQL from Java Objects
+* Piped SQL (also known as FROM SQL)
 
 
 
