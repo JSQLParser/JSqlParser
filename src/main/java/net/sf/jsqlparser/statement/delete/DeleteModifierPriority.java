@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.delete;
 
+import java.util.Locale;
+
 public enum DeleteModifierPriority {
     LOW_PRIORITY;
 
     public static DeleteModifierPriority from(String priority) {
-        return Enum.valueOf(DeleteModifierPriority.class, priority.toUpperCase());
+        return Enum.valueOf(DeleteModifierPriority.class, priority.toUpperCase(Locale.ROOT));
     }
 }

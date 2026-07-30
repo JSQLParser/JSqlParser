@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Locale;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 public class KSQLWindow extends ASTNodeAccessImpl {
@@ -115,7 +116,7 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         DAY, HOUR, MINUTE, SECOND, MILLISECOND, DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS;
 
         public static TimeUnit from(String unit) {
-            return Enum.valueOf(TimeUnit.class, unit.toUpperCase());
+            return Enum.valueOf(TimeUnit.class, unit.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -129,7 +130,7 @@ public class KSQLWindow extends ASTNodeAccessImpl {
         }
 
         public static WindowType from(String type) {
-            return Enum.valueOf(WindowType.class, type.toUpperCase());
+            return Enum.valueOf(WindowType.class, type.toUpperCase(Locale.ROOT));
         }
 
         public String getWindowType() {

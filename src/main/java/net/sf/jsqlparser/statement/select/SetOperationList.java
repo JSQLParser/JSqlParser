@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class SetOperationList extends Select {
@@ -134,7 +135,7 @@ public class SetOperationList extends Select {
         INTERSECT, EXCEPT, MINUS, UNION;
 
         public static SetOperationType from(String type) {
-            return Enum.valueOf(SetOperationType.class, type.toUpperCase());
+            return Enum.valueOf(SetOperationType.class, type.toUpperCase(Locale.ROOT));
         }
     }
 }

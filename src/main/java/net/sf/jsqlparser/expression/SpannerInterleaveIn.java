@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.schema.Table;
 
 import java.util.Collections;
@@ -74,7 +75,7 @@ public class SpannerInterleaveIn {
         CASCADE, NO_ACTION;
 
         public static OnDelete from(String action) {
-            return Enum.valueOf(OnDelete.class, action.toUpperCase());
+            return Enum.valueOf(OnDelete.class, action.toUpperCase(Locale.ROOT));
         }
     }
 }

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.execute;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.statement.Statement;
@@ -95,7 +96,7 @@ public class Execute implements Statement {
         EXECUTE, EXEC, CALL;
 
         public static ExecType from(String type) {
-            return Enum.valueOf(ExecType.class, type.toUpperCase());
+            return Enum.valueOf(ExecType.class, type.toUpperCase(Locale.ROOT));
         }
     }
 }

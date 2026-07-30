@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.create.view;
 
+import java.util.Locale;
+
 public enum AutoRefreshOption {
     NONE, YES, NO;
 
     public static AutoRefreshOption from(String option) {
-        return Enum.valueOf(AutoRefreshOption.class, option.toUpperCase());
+        return Enum.valueOf(AutoRefreshOption.class, option.toUpperCase(Locale.ROOT));
     }
 }

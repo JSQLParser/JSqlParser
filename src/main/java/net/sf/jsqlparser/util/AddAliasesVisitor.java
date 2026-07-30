@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util;
 import java.util.LinkedList;
 import java.util.List;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -79,12 +80,12 @@ public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor
     public <S> T visit(SelectItem<?> selectExpressionItem, S context) {
         if (firstRun) {
             if (selectExpressionItem.getAlias() != null) {
-                aliases.add(selectExpressionItem.getAlias().getName().toUpperCase());
+                aliases.add(selectExpressionItem.getAlias().getName().toUpperCase(Locale.ROOT));
             }
         } else {
             if (selectExpressionItem.getAlias() == null) {
                 while (true) {
-                    String alias = getNextAlias().toUpperCase();
+                    String alias = getNextAlias().toUpperCase(Locale.ROOT);
                     if (!aliases.contains(alias)) {
                         aliases.add(alias);
                         selectExpressionItem.setAlias(new Alias(alias));

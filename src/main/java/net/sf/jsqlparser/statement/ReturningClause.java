@@ -245,7 +245,7 @@ public class ReturningClause extends ArrayList<SelectItem<?>> {
         RETURN, RETURNING;
 
         public static Keyword from(String keyword) {
-            return Enum.valueOf(Keyword.class, keyword.toUpperCase());
+            return Enum.valueOf(Keyword.class, keyword.toUpperCase(Locale.ROOT));
         }
     }
 }

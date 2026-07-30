@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.select.Limit;
@@ -243,7 +244,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
 
     public AnalyticExpression setHavingClause(String havingType, Expression expression) {
         this.havingClause = new Function.HavingClause(
-                Function.HavingClause.HavingType.valueOf(havingType.trim().toUpperCase()),
+                Function.HavingClause.HavingType
+                        .valueOf(havingType.trim().toUpperCase(Locale.ROOT)),
                 expression);
         return this;
     }

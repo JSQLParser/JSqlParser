@@ -25,6 +25,8 @@
 
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
+
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
@@ -32,6 +34,6 @@ public enum JsonAggregateUniqueKeysType {
     WITH, WITHOUT;
 
     public static JsonAggregateUniqueKeysType from(String type) {
-        return Enum.valueOf(JsonAggregateUniqueKeysType.class, type.toUpperCase());
+        return Enum.valueOf(JsonAggregateUniqueKeysType.class, type.toUpperCase(Locale.ROOT));
     }
 }

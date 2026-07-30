@@ -9,10 +9,12 @@
  */
 package net.sf.jsqlparser.statement.upsert;
 
+import java.util.Locale;
+
 public enum UpsertType {
     UPSERT, REPLACE, REPLACE_SET, INSERT_OR_ABORT, INSERT_OR_FAIL, INSERT_OR_IGNORE, INSERT_OR_REPLACE, INSERT_OR_ROLLBACK;
 
     public static UpsertType from(String type) {
-        return Enum.valueOf(UpsertType.class, type.toUpperCase());
+        return Enum.valueOf(UpsertType.class, type.toUpperCase(Locale.ROOT));
     }
 }

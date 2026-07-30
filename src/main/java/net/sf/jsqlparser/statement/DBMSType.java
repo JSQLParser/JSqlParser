@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.Locale;
 import net.sf.jsqlparser.expression.StringValue;
 
 public class DBMSType implements SourceDestinationType {
@@ -20,7 +21,7 @@ public class DBMSType implements SourceDestinationType {
     }
 
     public DBMSType(String dbmsType, String jdbcDriverDefinition) {
-        this.dbmsType = Kind.valueOf(dbmsType.toUpperCase());
+        this.dbmsType = Kind.valueOf(dbmsType.toUpperCase(Locale.ROOT));
         if (jdbcDriverDefinition != null) {
             this.jdbcDriverDefinition = new StringValue(jdbcDriverDefinition);
         }

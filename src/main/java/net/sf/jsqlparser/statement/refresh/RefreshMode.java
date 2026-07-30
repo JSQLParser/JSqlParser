@@ -9,11 +9,13 @@
  */
 package net.sf.jsqlparser.statement.refresh;
 
+import java.util.Locale;
+
 public enum RefreshMode {
 
     DEFAULT, WITH_DATA, WITH_NO_DATA;
 
     public static RefreshMode from(String type) {
-        return Enum.valueOf(RefreshMode.class, type.toUpperCase());
+        return Enum.valueOf(RefreshMode.class, type.toUpperCase(Locale.ROOT));
     }
 }

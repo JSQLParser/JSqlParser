@@ -10,6 +10,8 @@
 
 package net.sf.jsqlparser.expression;
 
+import java.util.Locale;
+
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
@@ -29,6 +31,6 @@ public enum JsonFunctionType {
     MYSQL_OBJECT;
 
     public static JsonFunctionType from(String type) {
-        return Enum.valueOf(JsonFunctionType.class, type.toUpperCase());
+        return Enum.valueOf(JsonFunctionType.class, type.toUpperCase(Locale.ROOT));
     }
 }
