@@ -71,7 +71,7 @@
     <properties>
         <!-- ==== build platform ==================================================== -->
         <maven.compiler.release>11</maven.compiler.release>
-        <toolchain.jdk.version>[17,23)</toolchain.jdk.version>
+        <toolchain.jdk.version>[17,24)</toolchain.jdk.version>
         <toolchain.jdk.mode>IfMatch</toolchain.jdk.mode>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -127,7 +127,7 @@
         <hamcrest.version>3.0</hamcrest.version>
         <commons-io.version>2.18.0</commons-io.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
-        <h2.version>[2.3.232,)</h2.version>
+        <h2.version>2.3.232</h2.version>
         <jmh.version>1.37</jmh.version>
 
         <!-- ==== GPG ============================================================== -->
@@ -516,6 +516,15 @@
                         <configuration>
                             <excludePackageNames>net.sf.jsqlparser.parser</excludePackageNames>
                             <doclint>none</doclint>
+                            <!--
+                                maven-javadoc-plugin >= 3.11.3 adds the JDK 23+ "no-fonts" doclet
+                                flag based on the JDK running Maven, not on the javadoc executable
+                                it actually forks. With a toolchain (or any JAVA_HOME) below 23 that
+                                produces "error: invalid flag". Upstream bug, see
+                                https://github.com/apache/maven-javadoc-plugin/issues/1244
+                                Override from the CLI with -Dmaven.javadoc.disableNoFonts=false.
+                            -->
+                            <disableNoFonts>true</disableNoFonts>
                             <useStandardDocletOptions>true</useStandardDocletOptions>
                             <maxmemory>2g</maxmemory>
                             <minmemory>800m</minmemory>
@@ -656,6 +665,8 @@
                 <configuration>
                     <useStandardDocletOptions>true</useStandardDocletOptions>
                     <doclint>none</doclint>
+                    <!-- See the note on the attach-javadocs execution above. -->
+                    <disableNoFonts>true</disableNoFonts>
                     <maxmemory>2g</maxmemory>
                     <minmemory>800m</minmemory>
                     <additionalJOptions>
