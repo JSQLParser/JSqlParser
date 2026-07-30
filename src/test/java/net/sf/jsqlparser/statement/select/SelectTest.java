@@ -6517,4 +6517,14 @@ public class SelectTest {
                         "  from u ;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testIssue2445FunctionWithBracketParameters() throws JSQLParserException {
+        String sqlStr =
+                "select sum( (1 + COALESCE(g.inflation_rate,0)) \n" +
+                        "                                   / (1 + COALESCE(g.depreciation_rate,0))\n"
+                        +
+                        "                                  , cast(ex.value_date - f.appraisal_date AS DECIMAL) / 365 )";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
