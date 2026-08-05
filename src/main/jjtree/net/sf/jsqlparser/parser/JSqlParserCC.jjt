@@ -1756,7 +1756,7 @@ TOKEN:
  * Supported tokens:
  *  - <S_IDENTIFIER>: Standard unquoted SQL identifier
  *  - <S_QUOTED_IDENTIFIER>: Quoted identifier (e.g., `identifier` or "identifier")
- *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>, <K_DATA>: Specific keywords treated as identifiers
+ *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>, <K_DATA>, <K_TYPE>: Specific keywords treated as identifiers
  *
  * @return Token representing the identifier or keyword used as identifier
  */
@@ -1774,6 +1774,7 @@ Token KeywordOrIdentifier():
       | tk = <K_PUBLIC>
       | tk = <K_STRING>
       | tk = <K_DATA>
+      | tk = <K_TYPE>
     )
     { return tk; }
 }
