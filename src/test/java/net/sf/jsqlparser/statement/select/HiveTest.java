@@ -9,12 +9,16 @@
  */
 package net.sf.jsqlparser.statement.select;
 
-import net.sf.jsqlparser.schema.Table;
-import org.junit.jupiter.api.Test;
-
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
+import org.junit.jupiter.api.Test;
 
 public class HiveTest {
 
@@ -53,5 +57,31 @@ public class HiveTest {
                 + "    Sometable\n"
                 + "GROUP BY GROUPING SETS (())";
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testLateralViewManyColumnAliasesIssue2433() throws Exception {
+        // Hive/Spark LATERAL VIEW allows an arbitrary number of column aliases
+        // (e.g. json_tuple yielding many columns). Only the first two were absorbed;
+        // any further aliases leaked into the FROM clause as implicit cross-join
+        // tables, so the failure was silent and even round-tripped identically.
+        String sql = "SELECT a FROM t"
+                + " LATERAL VIEW json_tuple(j, 'a', 'b', 'c', 'd', 'e', 'f', 'g')"
+                + " x AS c1, c2, c3, c4, c5, c6, c7";
+
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+
+        // The extra aliases must not leak as cross-join tables.
+        assertNull(plainSelect.getJoins());
+
+        java.util.List<LateralView> lateralViews = plainSelect.getLateralViews();
+        assertNotNull(lateralViews);
+        assertEquals(1, lateralViews.size());
+
+        Alias columnAlias = lateralViews.get(0).getColumnAlias();
+        assertNotNull(columnAlias);
+        assertNotNull(columnAlias.getAliasColumns());
+        assertEquals(7, columnAlias.getAliasColumns().size());
     }
 }
