@@ -10707,6 +10707,7 @@ ColDataType ColDataType():
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
     ColDataType arrayType;
+    ColDataType nestedType = null;
 
     int precision = -1;
     int scale = -1;
@@ -10756,6 +10757,9 @@ ColDataType ColDataType():
         LOOKAHEAD(2) "(" {tk2 =null;}
         (
             (
+            LOOKAHEAD((<DATA_TYPE> | <S_IDENTIFIER>) "(") nestedType=ColDataType()
+            |
+            (
                 (
                     ( tk=<S_LONG> | tk=<K_MAX> ) [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ]
                 )
@@ -10766,8 +10770,14 @@ ColDataType ColDataType():
                 |
                 tk=<K_CHAR>
             )
+            )
 		    {
-		        argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+            if (nestedType != null) {
+                argumentsStringList.add(nestedType.toString());
+                nestedType = null;
+            } else {
+                argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+            }
             }
 
             [ "," ]

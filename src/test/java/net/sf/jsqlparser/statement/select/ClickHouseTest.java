@@ -140,4 +140,16 @@ public class ClickHouseTest {
         Assertions.assertNotNull(select.getSettings());
         Assertions.assertEquals(2, select.getSettings().size());
     }
+
+    @Test
+    public void testCastToNestedParametricTypeIssue2441() throws JSQLParserException {
+        // ClickHouse allows parametric (constructor-style) data types as a CAST target,
+        // including nested ones such as Nullable(Decimal(p, s)).
+        String sql = "SELECT CAST(x AS Nullable(Decimal(10, 2))) FROM cast_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // The inner parametric type may itself be wrapped by another parametric type.
+        sql = "SELECT CAST(x AS LowCardinality(Decimal(10, 2))) FROM cast_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
 }
