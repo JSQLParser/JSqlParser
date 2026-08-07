@@ -4225,31 +4225,53 @@ MergeOperation MergeUpdateClause(Expression predicate) : {
     { return mu; }
 }
 
-MergeOperation MergeWhenNotMatched() : {
+MergeInsert MergeInsertClause(Expression predicate) : {
     MergeInsert mi = new MergeInsert();
-    Expression predicate;
     ExpressionList<Column> columns;
     ExpressionList expList;
     Expression condition;
 }
 {
-    <K_WHEN> <K_NOT> <K_MATCHED>
-    [ <K_AND> predicate = Expression() { mi.setAndPredicate(predicate); } ]
-    <K_THEN>
-        <K_INSERT>
-        [ "(" columns = ColumnList() ")"
-            {
-                mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
-            }
-        ]
-        <K_VALUES> "(" expList = SimpleExpressionList() ")"
+    <K_INSERT>
+    [ "(" columns = ColumnList() ")"
         {
-            mi.setValues( new ParenthesedExpressionList(expList) );
+            mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
         }
+    ]
+    <K_VALUES> "(" expList = SimpleExpressionList() ")"
+    {
+        mi.setValues( new ParenthesedExpressionList(expList) );
+    }
 
-        [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); }]
+    [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
 
-        { return mi; }
+    {
+        mi.setAndPredicate(predicate);
+        return mi;
+    }
+}
+
+MergeOperation MergeWhenNotMatched() : {
+    MergeOperation operation;
+    Expression predicate = null;
+    MergeSide side = null;
+    Token sideToken;
+}
+{
+    <K_WHEN> <K_NOT> <K_MATCHED>
+    [ <K_BY> sideToken = <S_IDENTIFIER> {
+        side = MergeSide.fromImage(sideToken.image);
+    } ]
+    [ <K_AND> predicate = Expression() ]
+    <K_THEN>
+    (
+        operation = MergeInsertClause(predicate) { ((MergeInsert) operation).setSide(side); }
+        |
+        operation = MergeUpdateClause(predicate) { ((MergeUpdate) operation).setSide(side); }
+        |
+        operation = MergeDeleteClause(predicate) { ((MergeDelete) operation).setSide(side); }
+    )
+    { return operation; }
 }
 
 // table names seem to allow ":" delimiters, e.g. for Informix see #1134

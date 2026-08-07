@@ -67,7 +67,7 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeDelete mergeDelete, S context) {
-        builder.append(" WHEN MATCHED");
+        builder.append(mergeDelete.getSide() == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
         if (mergeDelete.getAndPredicate() != null) {
             builder.append(" AND ");
             mergeDelete.getAndPredicate().accept(expressionDeParser, context);
@@ -82,7 +82,7 @@ public class MergeDeParser extends AbstractDeParser<Merge>
 
     @Override
     public <S> StringBuilder visit(MergeUpdate mergeUpdate, S context) {
-        builder.append(" WHEN MATCHED");
+        builder.append(mergeUpdate.getSide() == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
         if (mergeUpdate.getAndPredicate() != null) {
             builder.append(" AND ");
             mergeUpdate.getAndPredicate().accept(expressionDeParser, context);
@@ -110,6 +110,9 @@ public class MergeDeParser extends AbstractDeParser<Merge>
     @Override
     public <S> StringBuilder visit(MergeInsert mergeInsert, S context) {
         builder.append(" WHEN NOT MATCHED");
+        if (mergeInsert.getSide() == MergeSide.TARGET) {
+            builder.append(" BY TARGET");
+        }
         if (mergeInsert.getAndPredicate() != null) {
             builder.append(" AND ");
             mergeInsert.getAndPredicate().accept(expressionDeParser, context);
