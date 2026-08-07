@@ -1162,4 +1162,48 @@ public class CreateTableTest {
         assertEquals("session1", t.getSchemaName());
         assertEquals("a", t.getUnquotedName());
     }
+
+    @Test
+    void testCreateTableIndexVisibility() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE `orders` (" +
+                "`id` bigint NOT NULL AUTO_INCREMENT" +
+                ", `status` varchar (32) NOT NULL" +
+                ", `quote_id` varchar (191) NOT NULL" +
+                ", PRIMARY KEY (`id`)" +
+                ", KEY `idx_status` (`status`) INVISIBLE" +
+                ", UNIQUE KEY `idx_quote_id` (`quote_id`) VISIBLE" +
+                ") ENGINE = InnoDB";
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        assertEquals(Arrays.asList("INVISIBLE"), createTable.getIndexes().get(1).getIndexSpec());
+        assertEquals(Arrays.asList("VISIBLE"), createTable.getIndexes().get(2).getIndexSpec());
+    }
+
+    @Test
+    void testCreateTableColumnVisibility() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE t1 (id bigint NOT NULL VISIBLE, secret varchar (10) INVISIBLE)";
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        assertEquals(Arrays.asList("NOT", "NULL", "VISIBLE"),
+                createTable.getColumnDefinitions().get(0).getColumnSpecs());
+        assertEquals(Arrays.asList("INVISIBLE"),
+                createTable.getColumnDefinitions().get(1).getColumnSpecs());
+    }
+
+    @Test
+    void testCreateTableIndexVisibilityWithOtherIndexOptions() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t1 (a int, KEY idx_a (a) INVISIBLE COMMENT 'retiring')", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t1 (a int, KEY idx_a (a) COMMENT 'retiring' INVISIBLE)", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t1 (a int, KEY idx_a (a) USING BTREE INVISIBLE)", true);
+    }
+
+    @Test
+    void testCreateTableQuotedColumnNamedVisible() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t1 (`visible` int, `invisible` varchar (10))", true);
+    }
 }

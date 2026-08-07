@@ -168,4 +168,10 @@ public class CreateIndexTest {
 
         assertSqlCanBeParsedAndDeparsed(statement);
     }
+
+    @Test
+    public void testCreateIndexVisibility() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) INVISIBLE", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) VISIBLE", true);
+    }
 }
