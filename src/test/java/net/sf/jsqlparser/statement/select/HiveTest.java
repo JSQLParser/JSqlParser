@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +68,7 @@ public class HiveTest {
                 + " LATERAL VIEW json_tuple(j, 'a', 'b', 'c', 'd', 'e', 'f', 'g')"
                 + " x AS c1, c2, c3, c4, c5, c6, c7";
 
-        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sql, true);
         PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
 
         // The extra aliases must not leak as cross-join tables.
