@@ -39,4 +39,23 @@ class HexValueTest {
 
         Assertions.assertEquals("'\\xC3\\xBC'", hex3.getBlob().toString());
     }
+
+    @Test
+    void testHexLiteralFollowedByPrimaryKeyword() throws JSQLParserException {
+        // Issue #2435: a "0x"-prefixed hex literal must not greedily consume the
+        // following whitespace nor adjacent hex letters (e.g. the "F" of FROM),
+        // which previously made "SELECT 0xFF FROM t" fail to parse.
+        assertHexSelectItem("SELECT 0xFF FROM t", "FF");
+        assertHexSelectItem("SELECT 0xff FROM t", "ff");
+        assertHexSelectItem("SELECT 0xDEADBEEF FROM t", "DEADBEEF");
+        assertHexSelectItem("SELECT 0xab FROM dual", "ab");
+    }
+
+    private static void assertHexSelectItem(String sql, String expectedDigits)
+            throws JSQLParserException {
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
+        Expression expr = select.getSelectItem(0).getExpression();
+        Assertions.assertTrue(expr instanceof HexValue, () -> "Expected HexValue for: " + sql);
+        Assertions.assertEquals(expectedDigits, ((HexValue) expr).getDigits());
+    }
 }
