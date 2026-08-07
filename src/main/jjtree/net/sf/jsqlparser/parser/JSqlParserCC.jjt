@@ -5053,6 +5053,9 @@ LateralView LateralView() #LateralView:
     [
         LOOKAHEAD(2) ","  { columnAlias.setName(null);  columnAlias.addAliasColumns( columnName); }
         columnName = RelObjectName() { columnAlias.addAliasColumns( columnName); }
+        (
+            LOOKAHEAD(2) "," columnName = RelObjectName() { columnAlias.addAliasColumns( columnName); }
+        )*
     ]
     {
         return new LateralView(
