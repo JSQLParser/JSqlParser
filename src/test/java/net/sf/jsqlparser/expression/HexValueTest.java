@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -53,7 +55,7 @@ class HexValueTest {
 
     private static void assertHexSelectItem(String sql, String expectedDigits)
             throws JSQLParserException {
-        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         Expression expr = select.getSelectItem(0).getExpression();
         Assertions.assertTrue(expr instanceof HexValue, () -> "Expected HexValue for: " + sql);
         Assertions.assertEquals(expectedDigits, ((HexValue) expr).getDigits());
