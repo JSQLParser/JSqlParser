@@ -10456,14 +10456,15 @@ Index CreateTableConstraint():
 }
 {
     (
-        LOOKAHEAD(3) (
-            { idxSpec.clear(); }
+        LOOKAHEAD(4) (
+            { idxSpec.clear(); tk3=null; }
+            [ tk3=<K_UNIQUE> ]
             tk=<K_INDEX>
             sk3=RelObjectName()
             colNames = IndexColumnsWithParamsList()
             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
             {
-                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
+                index = new Index().withType((tk3!=null ? tk3.image + " " : "") + tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
             }
         )
         |

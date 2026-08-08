@@ -1206,4 +1206,15 @@ public class CreateTableTest {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE t1 (`visible` int, `invisible` varchar (10))", true);
     }
+
+    @Test
+    void testUniqueIndexIssue1893() throws JSQLParserException {
+        // MySQL `UNIQUE INDEX name (cols) ...` was rejected (only INDEX / [UNIQUE] KEY were
+        // accepted).
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t (a int, b int, UNIQUE INDEX idx (a, b) USING BTREE COMMENT 'unique index')",
+                true);
+        // A plain INDEX must still parse unchanged.
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a int, INDEX idx (a))", true);
+    }
 }
