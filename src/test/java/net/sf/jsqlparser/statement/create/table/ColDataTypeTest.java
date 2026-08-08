@@ -14,6 +14,7 @@ import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ColDataTypeTest {
     @Test
@@ -56,5 +57,27 @@ class ColDataTypeTest {
                         "    name VARCHAR(255) NOT NULL\n" +
                         "  );\n";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    // PG/Oracle allow an INTERVAL column type carrying a time-unit qualifier,
+    // e.g. `interval hour to minute`. Previously the qualifier was not consumed
+    // as part of the data type, so parsing failed with "Encountered ... <K_DATE_LITERAL>".
+    @Test
+    void testIntervalQualifierIssue1728() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE films (code char(5), len interval hour to minute)";
+        CreateTable create = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        // The qualifier must be attached to the column's data type, not parsed as an
+        // alias or left unconsumed.
+        ColumnDefinition len = create.getColumnDefinitions().stream()
+                .filter(c -> c.getColumnName().equalsIgnoreCase("len"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("interval hour to minute", len.getColDataType().getDataType());
+    }
+
+    @Test
+    void testIntervalQualifierYearToMonthIssue1728() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a interval year to month)", true);
     }
 }

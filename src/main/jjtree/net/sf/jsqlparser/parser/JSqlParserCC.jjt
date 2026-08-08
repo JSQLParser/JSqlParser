@@ -10705,6 +10705,8 @@ ColDataType ColDataType():
     Token prefix = null;
     Token tk = null;
     Token tk2 = null;
+    Token intervalUnit = null;
+    Token intervalTo = null;
     String schema;
     String type="";
     List<String> argumentsStringList = new ArrayList<String>();
@@ -10753,6 +10755,9 @@ ColDataType ColDataType():
 			| tk=<K_NAME>
         ) { schema = tk.image; }
 
+        // INTERVAL qualifier such as `interval hour to minute` or `interval year` (PG/Oracle column type)
+        [ LOOKAHEAD({ tk.kind == K_INTERVAL && getToken(1).kind == K_DATE_LITERAL }) intervalUnit=<K_DATE_LITERAL> { schema += " " + intervalUnit.image; }
+            [ intervalTo=<K_TO> intervalUnit=<K_DATE_LITERAL> { schema += " " + intervalTo.image + " " + intervalUnit.image; } ] ]
         [ LOOKAHEAD(2) "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
         { colDataType.setDataType(schema); }
     )
