@@ -45,4 +45,10 @@ class LambdaExpressionTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
+    @Test
+    void testLambdaFirstArgumentIssue2195() throws JSQLParserException {
+        String sqlStr = "select array_map((x,y,z) -> x + y, [1], [2], [4]) FROM table_name";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
 }
