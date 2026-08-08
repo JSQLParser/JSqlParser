@@ -10192,6 +10192,71 @@ JsonTableFunction JsonTableBody() : {
     }
 }
 
+XmlTableFunction.XmlTablePassingClause XmlTablePassingClause() : {
+    XmlTableFunction.XmlTablePassingClause passingClause = new XmlTableFunction.XmlTablePassingClause();
+    Expression valueExpression;
+    String name = null;
+}
+{
+    valueExpression = Expression() { passingClause.setValueExpression(valueExpression); }
+    [ <K_AS> name = RelObjectName() { passingClause.setName(name); } ]
+    {
+        return passingClause;
+    }
+}
+
+XmlTableFunction.XmlTableColumnDefinition XmlTableColumnDefinition() : {
+    XmlTableFunction.XmlTableColumnDefinition columnDefinition = new XmlTableFunction.XmlTableColumnDefinition();
+    String columnName;
+    ColDataType dataType;
+    Expression expression;
+}
+{
+    columnName = RelObjectName() { columnDefinition.setColumnName(columnName); }
+    (
+        <K_FOR> <K_ORDINALITY> { columnDefinition.setForOrdinality(true); }
+        |
+        dataType = ColDataType() { columnDefinition.setDataType(dataType); }
+        [ <K_PATH> expression = Expression() { columnDefinition.setPathExpression(expression); } ]
+        [ <K_DEFAULT> expression = Expression() { columnDefinition.setDefaultExpression(expression); } ]
+    )
+    {
+        return columnDefinition;
+    }
+}
+
+XmlTableFunction XmlTableBody() : {
+    XmlTableFunction function = new XmlTableFunction();
+    Expression rowPath;
+    XmlTableFunction.XmlTablePassingClause passingClause;
+    XmlTableFunction.XmlTableColumnDefinition columnDefinition;
+}
+{
+    "("
+    rowPath = Expression() { function.setRowPathExpression(rowPath); }
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        <S_IDENTIFIER>
+        passingClause = XmlTablePassingClause() { function.addPassingClause(passingClause); }
+        (
+            ","
+            passingClause = XmlTablePassingClause() { function.addPassingClause(passingClause); }
+        )*
+    ]
+    [
+        <K_COLUMNS>
+        columnDefinition = XmlTableColumnDefinition() { function.addColumnDefinition(columnDefinition); }
+        (
+            ","
+            columnDefinition = XmlTableColumnDefinition() { function.addColumnDefinition(columnDefinition); }
+        )*
+    ]
+    ")"
+    {
+        return function;
+    }
+}
+
 TableFunction TableFunction():
 {
     Token prefix = null;
@@ -10210,6 +10275,13 @@ TableFunction TableFunction():
         })
         JsonKeyword("JSON_TABLE")
         function = JsonTableBody()
+        |
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("XMLTABLE")
+        })
+        <S_IDENTIFIER>
+        function = XmlTableBody()
         |
         function=Function()
     )
