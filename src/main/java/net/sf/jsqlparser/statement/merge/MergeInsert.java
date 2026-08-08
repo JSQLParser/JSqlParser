@@ -24,6 +24,15 @@ public class MergeInsert implements Serializable, MergeOperation {
     private ExpressionList<Column> columns;
     private ExpressionList<Expression> values;
     private Expression whereCondition;
+    private MergeSide side;
+
+    public MergeSide getSide() {
+        return side;
+    }
+
+    public void setSide(MergeSide side) {
+        this.side = side;
+    }
 
     public Expression getAndPredicate() {
         return andPredicate;
@@ -66,6 +75,9 @@ public class MergeInsert implements Serializable, MergeOperation {
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append(" WHEN NOT MATCHED");
+        if (side == MergeSide.TARGET) {
+            b.append(" BY TARGET");
+        }
         if (andPredicate != null) {
             b.append(" AND ").append(andPredicate);
         }
@@ -119,6 +131,11 @@ public class MergeInsert implements Serializable, MergeOperation {
 
     public MergeInsert withWhereCondition(Expression whereCondition) {
         this.setWhereCondition(whereCondition);
+        return this;
+    }
+
+    public MergeInsert withSide(MergeSide side) {
+        this.setSide(side);
         return this;
     }
 

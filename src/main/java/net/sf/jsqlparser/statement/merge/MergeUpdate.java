@@ -21,6 +21,7 @@ public class MergeUpdate implements Serializable, MergeOperation {
     private Expression andPredicate;
     private Expression whereCondition;
     private Expression deleteWhereCondition;
+    private MergeSide side;
 
     public MergeUpdate() {}
 
@@ -61,6 +62,15 @@ public class MergeUpdate implements Serializable, MergeOperation {
         this.deleteWhereCondition = deleteWhereCondition;
     }
 
+    public MergeSide getSide() {
+        return side;
+    }
+
+    public MergeUpdate setSide(MergeSide side) {
+        this.side = side;
+        return this;
+    }
+
     @Override
     public <S, T> T accept(MergeOperationVisitor<T> mergeOperationVisitor, S context) {
         return mergeOperationVisitor.visit(this, context);
@@ -69,7 +79,7 @@ public class MergeUpdate implements Serializable, MergeOperation {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(" WHEN MATCHED");
+        b.append(side == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
         if (andPredicate != null) {
             b.append(" AND ").append(andPredicate.toString());
         }
@@ -97,6 +107,11 @@ public class MergeUpdate implements Serializable, MergeOperation {
 
     public MergeUpdate withDeleteWhereCondition(Expression deleteWhereCondition) {
         this.setDeleteWhereCondition(deleteWhereCondition);
+        return this;
+    }
+
+    public MergeUpdate withSide(MergeSide side) {
+        this.setSide(side);
         return this;
     }
 
