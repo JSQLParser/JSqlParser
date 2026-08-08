@@ -7885,22 +7885,22 @@ Expression PrimaryExpression() #PrimaryExpression:
             list=ParenthesedExpressionList()
              // Mutli-Variable Lambda Expression, e. g.
             // SELECT map_filter(my_column, (k,v) -> v.my_inner_column = 'some_value')
-            [ LOOKAHEAD(2) "->"
-                  retval = Expression()
-                  {
-                      retval = LambdaExpression.from(list, retval);
-                  }
-            ]
-
-
-            {
-                if (list.size() == 1) {
-                    retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
-                } else {
-                    retval = list;
+            // First-arg form (issue #2195): array_map((x,y,z) -> x + y, ...)
+            (
+                LOOKAHEAD(2) "->"
+                      retval = Expression()
+                      {
+                          retval = LambdaExpression.from(list, retval);
+                      }
+                |
+                {
+                    if (list.size() == 1) {
+                        retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
+                    } else {
+                        retval = list;
+                    }
                 }
-            }
-
+            )
 
             // RowGet Expressions
             ( LOOKAHEAD(2) "." tmp=RelObjectName() { retval = new RowGetExpression(retval, tmp); } )*
