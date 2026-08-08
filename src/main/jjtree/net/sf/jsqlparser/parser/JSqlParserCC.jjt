@@ -9559,6 +9559,7 @@ Function InternalFunction(boolean escaped):
     Expression expr = null;
     Expression attributeExpression = null;
     Column attributeColumn = null;
+    Token attributeToken = null;
     Limit limit;
     List<Function.KeywordArgument> keywordArgs = null;
 }
@@ -9624,14 +9625,24 @@ Function InternalFunction(boolean escaped):
     ]
 
 
-    [ LOOKAHEAD(2) "." (
-            // tricky lookahead since we do need to support the following constructs
-            // schema.f1().f2() - Function with Function Column
-            // schema.f1().f2.f3 - Function with Attribute Column
-            LOOKAHEAD( 6 ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+    [
+        LOOKAHEAD(2)
+        (
+            LOOKAHEAD({ getToken(1).kind == S_DOUBLE
+                    && getToken(1).image.matches("\\.[0-9]+") })
+            attributeToken=<S_DOUBLE> {
+                retval.setAttribute(new LongValue(attributeToken.image.substring(1)));
+            }
             |
-            attributeColumn=Column() { retval.setAttribute(attributeColumn); }
-          )
+            "." (
+                    // tricky lookahead since we do need to support the following constructs
+                    // schema.f1().f2() - Function with Function Column
+                    // schema.f1().f2.f3 - Function with Attribute Column
+                    LOOKAHEAD( 6 ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+                    |
+                    attributeColumn=Column() { retval.setAttribute(attributeColumn); }
+                )
+        )
     ]
 
     [ LOOKAHEAD(2) (

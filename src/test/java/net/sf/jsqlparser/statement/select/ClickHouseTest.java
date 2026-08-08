@@ -79,6 +79,12 @@ public class ClickHouseTest {
     }
 
     @Test
+    public void testTuplePositionalAccessIssue2442() throws JSQLParserException {
+        String sql = "SELECT tuple(1, 2, 3).2 FROM tuple_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
     public void testGlobalIn() throws JSQLParserException {
         String sql =
                 "SELECT lo_linenumber,lo_orderkey from lo_linenumber where lo_linenumber global in (1,2,3)";
