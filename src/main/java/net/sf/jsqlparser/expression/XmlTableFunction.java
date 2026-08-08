@@ -42,8 +42,6 @@ public class XmlTableFunction extends Function {
         private Expression valueExpression;
         private String name;
 
-        public XmlTablePassingClause() {}
-
         public Expression getValueExpression() {
             return valueExpression;
         }
@@ -80,8 +78,6 @@ public class XmlTableFunction extends Function {
         private ColDataType dataType;
         private Expression pathExpression;
         private Expression defaultExpression;
-
-        public XmlTableColumnDefinition() {}
 
         public String getColumnName() {
             return columnName;
