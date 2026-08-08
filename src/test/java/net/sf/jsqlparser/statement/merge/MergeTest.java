@@ -275,19 +275,22 @@ public class MergeTest {
     @Test
     void testBigQueryMergeNotMatchedByTargetAndSource() throws JSQLParserException {
         // BigQuery/SQL Server allow "WHEN NOT MATCHED [BY TARGET|BY SOURCE]" (issue #2421)
-        String sql = "MERGE INTO target_table AS tt USING (SELECT key, field FROM source_table) AS st"
-                + " ON tt.key = st.key"
-                + " WHEN NOT MATCHED BY TARGET THEN INSERT (key, field) VALUES (st.key, st.field)"
-                + " WHEN NOT MATCHED BY SOURCE THEN DELETE";
+        String sql =
+                "MERGE INTO target_table AS tt USING (SELECT key, field FROM source_table) AS st"
+                        + " ON tt.key = st.key"
+                        + " WHEN NOT MATCHED BY TARGET THEN INSERT (key, field) VALUES (st.key, st.field)"
+                        + " WHEN NOT MATCHED BY SOURCE THEN DELETE";
 
         assertSqlCanBeParsedAndDeparsed(sql, true);
 
         Merge merge = (Merge) CCJSqlParserUtil.parse(sql);
         assertThat(merge.getOperations()).hasSize(2);
         assertThat(merge.getOperations().get(0)).isInstanceOf(MergeInsert.class);
-        assertThat(((MergeInsert) merge.getOperations().get(0)).getSide()).isEqualTo(MergeSide.TARGET);
+        assertThat(((MergeInsert) merge.getOperations().get(0)).getSide())
+                .isEqualTo(MergeSide.TARGET);
         assertThat(merge.getOperations().get(1)).isInstanceOf(MergeDelete.class);
-        assertThat(((MergeDelete) merge.getOperations().get(1)).getSide()).isEqualTo(MergeSide.SOURCE);
+        assertThat(((MergeDelete) merge.getOperations().get(1)).getSide())
+                .isEqualTo(MergeSide.SOURCE);
     }
 
     @Test
@@ -301,7 +304,8 @@ public class MergeTest {
         Merge merge = (Merge) CCJSqlParserUtil.parse(sql);
         assertThat(merge.getOperations()).hasSize(1);
         assertThat(merge.getOperations().get(0)).isInstanceOf(MergeUpdate.class);
-        assertThat(((MergeUpdate) merge.getOperations().get(0)).getSide()).isEqualTo(MergeSide.SOURCE);
+        assertThat(((MergeUpdate) merge.getOperations().get(0)).getSide())
+                .isEqualTo(MergeSide.SOURCE);
         assertThat(((MergeUpdate) merge.getOperations().get(0)).getAndPredicate()).isNotNull();
     }
 
