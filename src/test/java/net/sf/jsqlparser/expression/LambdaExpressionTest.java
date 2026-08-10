@@ -41,7 +41,8 @@ class LambdaExpressionTest {
 
     @Test
     void testLambdaMultiParameterIssue2032() throws JSQLParserException {
-        String sqlStr = "SELECT  array_sort(array_agg(named_struct('depth', events_union.depth, 'eventtime',events_union.eventtime)), (left, right) -> case when(left.eventtime, left.depth) <(right.eventtime, right.depth) then -1 when(left.eventtime, left.depth) >(right.eventtime, right.depth) then 1 else 0 end) as col1 FROM your_table;";
+        String sqlStr =
+                "SELECT  array_sort(array_agg(named_struct('depth', events_union.depth, 'eventtime',events_union.eventtime)), (left, right) -> case when(left.eventtime, left.depth) <(right.eventtime, right.depth) then -1 when(left.eventtime, left.depth) >(right.eventtime, right.depth) then 1 else 0 end) as col1 FROM your_table;";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 
