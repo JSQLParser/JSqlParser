@@ -9,7 +9,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.AnalyticExpression;
+import net.sf.jsqlparser.expression.WindowElement;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -37,5 +42,31 @@ public class WindowFunctionTest {
                         + "order by venuestate;";
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlString, true);
+    }
+
+    @Test
+    public void testWindowFrameGroupsIssue2431() throws JSQLParserException {
+        String sqlString =
+                "SELECT SUM(value) OVER (ORDER BY ts "
+                        + "GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM events";
+
+        PlainSelect plainSelect = (PlainSelect) CCJSqlParserUtil.parse(sqlString);
+        AnalyticExpression analyticExpression =
+                plainSelect.getSelectItem(0).getExpression(AnalyticExpression.class);
+
+        assertEquals(WindowElement.Type.GROUPS, analyticExpression.getWindowElement().getType());
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlString, true);
+    }
+
+    @Test
+    public void testWindowFrameGroupsVariantsIssue2431() throws JSQLParserException {
+        String singleSidedSqlString =
+                "SELECT SUM(value) OVER (ORDER BY ts GROUPS UNBOUNDED PRECEDING) FROM events";
+        String namedWindowSqlString =
+                "SELECT SUM(value) OVER w FROM events "
+                        + "WINDOW w AS (ORDER BY ts GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW)";
+
+        TestUtils.assertSqlCanBeParsedAndDeparsed(singleSidedSqlString, true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(namedWindowSqlString, true);
     }
 }

@@ -71,7 +71,7 @@ public class WindowElement implements Serializable {
     }
 
     public enum Type {
-        ROWS, RANGE;
+        ROWS, RANGE, GROUPS;
 
         public static Type from(String type) {
             return Enum.valueOf(Type.class, type.toUpperCase(Locale.ROOT));

@@ -1157,6 +1157,7 @@ String NonReservedWord() :
       | tk=<K_FUNCTION:"FUNCTION">
       | tk=<K_GRANT:"GRANT">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
+      | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GUARD:"GUARD">
       | tk=<K_HASH:"HASH">
       | tk=<K_HIGH : "HIGH">
@@ -9205,7 +9206,9 @@ WindowElement WindowElement():
     WindowOffset offset = null;
 }
 {
-    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }  |  <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); } )
+    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }
+     | <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); }
+     | <K_GROUPS> { windowElement.setType(WindowElement.Type.GROUPS); })
     ( (
       <K_BETWEEN> { windowElement.setRange(range); }
       offset = WindowOffset() { range.setStart(offset); }
