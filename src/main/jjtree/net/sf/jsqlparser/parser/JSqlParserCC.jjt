@@ -1443,6 +1443,7 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_GLOBAL:"GLOBAL">
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
+|   <K_GROUPS:"GROUPS">
 |   <K_HAVING:"HAVING">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
@@ -9203,9 +9204,12 @@ WindowElement WindowElement():
     WindowElement windowElement = new WindowElement();
     WindowRange range = new WindowRange();
     WindowOffset offset = null;
+    WindowElement.Exclusion exclusion = null;
 }
 {
-    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }  |  <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); } )
+    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }
+     | <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); }
+     | <K_GROUPS> { windowElement.setType(WindowElement.Type.GROUPS); })
     ( (
       <K_BETWEEN> { windowElement.setRange(range); }
       offset = WindowOffset() { range.setStart(offset); }
@@ -9214,10 +9218,42 @@ WindowElement WindowElement():
     |
       offset = WindowOffset() { windowElement.setOffset(offset); }
     )
+    [ exclusion = FrameExclusion() { windowElement.setExclusion(exclusion); } ]
 
     {
         return windowElement;
     }
+}
+
+WindowElement.Exclusion FrameExclusion():
+{
+    WindowElement.Exclusion exclusion = null;
+}
+{
+    <K_EXCLUDE>
+    (
+        <K_CURRENT> <K_ROW>
+        { exclusion = WindowElement.Exclusion.CURRENT_ROW; }
+        |
+        <K_GROUP>
+        { exclusion = WindowElement.Exclusion.GROUP; }
+        |
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("TIES")
+        })
+        <S_IDENTIFIER>
+        { exclusion = WindowElement.Exclusion.TIES; }
+        |
+        <K_NO>
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("OTHERS")
+        })
+        <S_IDENTIFIER>
+        { exclusion = WindowElement.Exclusion.NO_OTHERS; }
+    )
+    { return exclusion; }
 }
 
 WindowOffset WindowOffset():
