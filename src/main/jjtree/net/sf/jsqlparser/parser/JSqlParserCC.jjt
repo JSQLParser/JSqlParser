@@ -9066,6 +9066,7 @@ IntervalExpression IntervalExpression() : {
     Token token = null;
     Expression expr = null;
     boolean signed = false;
+    IntervalQualifier qualifier = null;
 }
 {
 
@@ -9089,7 +9090,13 @@ IntervalExpression IntervalExpression() : {
             interval.setParameter((signed?"-":"") + token.image);
         }
     }
-    [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
+    [
+        // Standard qualifier (field [TO field] [(precision)]) such as DAY or DAY TO SECOND.
+        LOOKAHEAD(2, { getToken(1).kind == K_DATE_LITERAL }) qualifier = IntervalQualifier() { interval.setIntervalQualifier(qualifier); }
+        // Non-standard single identifier field (e.g. MySQL `INTERVAL 1 foo`), kept for
+        // backwards compatibility.
+        | LOOKAHEAD(2) (token = <S_IDENTIFIER>) { interval.setIntervalType(token.image); }
+    ]
     {
         return interval;
     }
@@ -9097,7 +9104,7 @@ IntervalExpression IntervalExpression() : {
 
 IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
     IntervalExpression interval;
-    Token token;
+    IntervalQualifier qualifier = null;
     boolean signed = false;
 }
 {
@@ -9105,10 +9112,55 @@ IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
         interval = new IntervalExpression(false);
         interval.setExpression(expr);
     }
-    token = <K_DATE_LITERAL>
+    qualifier = IntervalQualifier()
     {
-        interval.setIntervalType(token.image);
+        interval.setIntervalQualifier(qualifier);
         return interval;
+    }
+}
+
+/**
+ * Parses an SQL interval qualifier, e.g. {@code DAY}, {@code DAY TO SECOND},
+ * {@code DAY(9) TO SECOND} or {@code SECOND(2, 4)}, as defined by the SQL standard.
+ * Shared by {@link IntervalExpression} (DML interval literals) and by {@code ColDataType}
+ * (DDL {@code INTERVAL} column / cast target types).
+ */
+IntervalQualifier IntervalQualifier() : {
+    Token field = null;
+    Token toField = null;
+    Token leadingPrecision = null;
+    Token fractionalPrecision = null;
+    Token trailingFractionalPrecision = null;
+}
+{
+    field = <K_DATE_LITERAL>
+    [
+        LOOKAHEAD(2) "(" leadingPrecision = <S_LONG>
+        [ "," fractionalPrecision = <S_LONG> ]
+        ")"
+    ]
+    [
+        LOOKAHEAD(2) <K_TO> toField = <K_DATE_LITERAL>
+        [ LOOKAHEAD(2) "(" trailingFractionalPrecision = <S_LONG> ")" ]
+    ]
+    {
+        // SECOND(2, 4) TO SECOND(3) specifies fractional seconds precision for both the leading
+        // and the trailing field. Reject such contradictory input instead of silently dropping one
+        // of the values. The rejection is placed last so the production does not complete normally
+        // and JavaCC does not append an unreachable "missing return" guard.
+        if (fractionalPrecision == null || trailingFractionalPrecision == null) {
+            return new IntervalQualifier(
+                    field != null ? field.image : null,
+                    leadingPrecision != null ? Integer.valueOf(leadingPrecision.image) : null,
+                    toField != null ? toField.image : null,
+                    trailingFractionalPrecision != null
+                            ? Integer.valueOf(trailingFractionalPrecision.image)
+                            : (fractionalPrecision != null
+                                    ? Integer.valueOf(fractionalPrecision.image) : null));
+        }
+        throw new ParseException(
+                "Invalid interval qualifier: fractional seconds precision is specified for both"
+                        + " the leading field and the trailing field");
     }
 }
 
@@ -10854,6 +10906,7 @@ ColDataType ColDataType():
     List<String> name;
     ColDataType arrayType;
     ColDataType nestedType = null;
+    IntervalQualifier intervalQualifier = null;
 
     int precision = -1;
     int scale = -1;
@@ -10895,6 +10948,15 @@ ColDataType ColDataType():
 			| tk=<K_NAME>
         ) { schema = tk.image; }
 
+        // Consume an optional INTERVAL qualifier such as `hour to minute` or
+        // `day(9) to second`. Only applicable when the matched type is an INTERVAL and
+        // is immediately followed by a field word, so other types (and the existing
+        // `interval (2)` precision form handled below) are unaffected.
+        [
+            LOOKAHEAD({ "interval".equalsIgnoreCase(schema)
+                    && getToken(1).kind == K_DATE_LITERAL })
+            intervalQualifier = IntervalQualifier() { colDataType.setIntervalQualifier(intervalQualifier); }
+        ]
         [ LOOKAHEAD(2) "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
         { colDataType.setDataType(schema); }
     )
