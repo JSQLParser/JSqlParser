@@ -595,6 +595,55 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Detects PostgreSQL composite row expansion {@code (function()).*} (and any
+     * number of surrounding parentheses), where a parenthesised expression wrapping
+     * a single {@link Function} is immediately followed by {@code .*}.
+     *
+     * <p>This is a constant-time follower check (unwraps the already-parsed
+     * {@code retval} and peeks the next two tokens). It deliberately avoids the
+     * speculative syntactic lookahead that previously degraded performance, see
+     * issue #2207.
+     *
+     * @param retval the expression parsed so far within the
+     *        {@code ParenthesedExpressionList} branch of {@code PrimaryExpression}
+     */
+    protected boolean isFunctionAllColumnsAhead(Expression retval) {
+        // Fast follower gate: the overwhelming majority of parenthesised
+        // expressions are not followed by ".*", so reject on the token stream
+        // before ever touching the already-parsed expression.
+        if (!getToken(1).image.equals(".") || !getToken(2).image.equals("*")) {
+            return false;
+        }
+        if (retval == null) {
+            return false;
+        }
+
+        Expression inner = retval;
+        while (inner instanceof ParenthesedExpressionList) {
+            ParenthesedExpressionList<?> parenthesed = (ParenthesedExpressionList<?>) inner;
+            if (parenthesed.size() != 1) {
+                return false;
+            }
+            inner = parenthesed.get(0);
+        }
+
+        return inner instanceof Function;
+    }
+
+    /**
+     * Unwraps any number of surrounding parentheses from a parenthesised
+     * {@link Function} and returns the inner function. Only call this after
+     * {@link #isFunctionAllColumnsAhead(Expression)} has confirmed the shape.
+     */
+    protected Function unwrapParenthesedFunction(Expression retval) {
+        Expression inner = retval;
+        while (inner instanceof ParenthesedExpressionList) {
+            inner = ((ParenthesedExpressionList<?>) inner).get(0);
+        }
+        return (Function) inner;
+    }
+
+    /**
      * Follower-based disambiguation for reserved keywords in ambiguous
      * positions (implicit alias, clause boundary, after parenthesised
      * expression, etc.).
@@ -7902,6 +7951,15 @@ Expression PrimaryExpression() #PrimaryExpression:
                     }
                 }
             )
+
+            // PostgreSQL composite row expansion: (function()).*
+            // Re-enables FunctionAllColumns, which was disabled in #2207 due to the
+            // performance toll of a speculative syntactic lookahead. A bounded
+            // semantic follower check instead reads the already-parsed retval and
+            // peeks the next two tokens, avoiding any speculative production.
+            [ LOOKAHEAD( { isFunctionAllColumnsAhead(retval) } )
+                "." "*"
+                { retval = new FunctionAllColumns(unwrapParenthesedFunction(retval)); } ]
 
             // RowGet Expressions
             ( LOOKAHEAD(2) "." tmp=RelObjectName() { retval = new RowGetExpression(retval, tmp); } )*

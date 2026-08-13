@@ -925,7 +925,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(FunctionAllColumns functionAllColumns, S context) {
-
+        functionAllColumns.getFunction().accept(this, context);
         return null;
     }
 
