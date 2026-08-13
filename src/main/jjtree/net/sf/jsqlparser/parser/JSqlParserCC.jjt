@@ -10507,6 +10507,7 @@ CreateIndex CreateIndex():
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
     List<Index.ColumnParams> colNames;
+    List<String> includeColumns;
     String indexType;
     Index index = null;
     List<String> parameter = new ArrayList<String>();
@@ -10535,6 +10536,9 @@ CreateIndex CreateIndex():
         )
     )
     colNames = IndexColumnsWithParamsList()
+    [ <K_INCLUDE> includeColumns=ColumnsNamesList()
+        { tailParameters.add("INCLUDE (" + String.join(", ", includeColumns) + ")"); }
+    ]
     ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);

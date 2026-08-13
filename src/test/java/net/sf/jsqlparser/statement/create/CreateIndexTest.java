@@ -174,4 +174,9 @@ public class CreateIndexTest {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) INVISIBLE", true);
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) VISIBLE", true);
     }
+
+    @Test
+    public void testCreateIndexIncludeIssue2459() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) INCLUDE (b, c)");
+    }
 }
