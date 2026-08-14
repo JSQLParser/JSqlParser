@@ -5383,8 +5383,19 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
-    [ LOOKAHEAD(7) limit = LimitBy() { plainSelect.setLimitBy(limit);  } ]
-    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    // Parse the LIMIT row count once (this accepts a parenthesized subquery too), then
+    // optionally attach ClickHouse's `LIMIT ... BY ...`. Checking BY right after the limit
+    // expression avoids a numeric LOOKAHEAD, which cannot see past a long parenthesized
+    // subquery and would wrongly commit to LIMIT BY (issue #2359).
+    [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset()
+        [ LOOKAHEAD(<K_BY>) <K_BY> expressionList = ExpressionList() { limit.setByExpressions(expressionList); } ]
+        {
+            if (limit.getByExpressions() != null) {
+                plainSelect.setLimitBy(limit);
+            } else {
+                plainSelect.setLimit(limit);
+            }
+        } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
@@ -6769,24 +6780,6 @@ Limit PlainLimit() #PlainLimit:
     {
         limit.setRowCount(rowCountExpression);
         linkAST(limit,jjtThis);
-        return limit;
-    }
-}
-
-/**
- * Clickhouse LIMIT BY
- * @see <a href='https://clickhouse.com/docs/en/sql-reference/statements/select'>SELECT Query</a>
- */
-Limit LimitBy():
-{
-    Limit limit;
-    ExpressionList byExpressions;
-}
-{
-    limit = LimitWithOffset()
-    <K_BY> byExpressions = ExpressionList()
-    {
-        limit.setByExpressions(byExpressions);
         return limit;
     }
 }
