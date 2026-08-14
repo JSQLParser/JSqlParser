@@ -737,6 +737,12 @@ public interface ExpressionVisitor<T> {
         this.visit(rangeExpression, null);
     }
 
+    <S> T visit(TernaryExpression ternaryExpression, S context);
+
+    default void visit(TernaryExpression ternaryExpression) {
+        this.visit(ternaryExpression, null);
+    }
+
     <S> T visit(TSQLLeftJoin tsqlLeftJoin, S context);
 
     default void visit(TSQLLeftJoin tsqlLeftJoin) {

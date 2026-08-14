@@ -62,6 +62,7 @@ import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
+import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
@@ -819,6 +820,16 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(TernaryExpression ternaryExpression, S context) {
+        ternaryExpression.getCondition().accept(this, context);
+        builder.append(" ? ");
+        ternaryExpression.getThenExpression().accept(this, context);
+        builder.append(" : ");
+        ternaryExpression.getElseExpression().accept(this, context);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(Column tableColumn, S context) {
         final Table table = tableColumn.getTable();
         String tableName = null;
@@ -1043,6 +1054,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     public void visit(RangeExpression rangeExpression) {
         visit(rangeExpression, null);
+    }
+
+    public void visit(TernaryExpression ternaryExpression) {
+        visit(ternaryExpression, null);
     }
 
     public void visit(Column tableColumn) {

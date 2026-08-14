@@ -101,6 +101,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     	return this;
     }
 
+    // depth of open ClickHouse-style ternary then-branches: a ":" directly after the
+    // then-branch closes the ternary and must not be taken as the JSON path operator
+    private int ternaryThenBranchDepth = 0;
+
     private void linkAST(ASTNodeAccess access, Node node) {
         access.setASTNode(node);
         node.jjtSetValue(access);
@@ -182,6 +186,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 // comparison operator follows after "(" "+" ")"
                 return isComparisonOperator(getToken(4));
             }
+            if ("?".equals(token.image) && isTernaryAhead()) {
+                // ClickHouse ternary `cond ? then : else` — the `?` must not be taken
+                // as the PostgreSQL JSON operator here, it is consumed by prattExpressionRest
+                return false;
+            }
             return isComparisonOperator(token);
         } catch (Exception e) {
             return false;
@@ -209,6 +218,52 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case '^': return token.image.startsWith("^=");
             case '&': return token.image.equals("&&") || token.image.equals("&>");
             default:  return false;
+        }
+    }
+
+    /**
+     * True when the pending "?" starts a ClickHouse-style ternary conditional
+     * {@code cond ? then : else} rather than the PostgreSQL JSON operator:
+     * a standalone ":" closes the then-branch at the same nesting depth before
+     * any expression boundary (",", ";", EOF, an unbalanced closing bracket or a
+     * clause keyword such as FROM/WHERE).
+     */
+    protected boolean isTernaryAhead() {
+        try {
+            int depth = 0;
+            for (int i = 2; ; i++) {
+                Token t = getToken(i);
+                if (t == null || t.kind == EOF) {
+                    return false;
+                }
+                String image = t.image;
+                if ("(".equals(image) || "[".equals(image)) {
+                    depth++;
+                } else if (")".equals(image) || "]".equals(image)) {
+                    if (depth == 0) {
+                        return false;
+                    }
+                    depth--;
+                } else if (depth == 0) {
+                    if (":".equals(image)) {
+                        return true;
+                    }
+                    if (",".equals(image) || ";".equals(image)) {
+                        return false;
+                    }
+                    switch (t.kind) {
+                        case K_SELECT: case K_FROM: case K_WHERE: case K_GROUP:
+                        case K_HAVING: case K_ORDER: case K_LIMIT: case K_UNION:
+                        case K_INTERSECT: case K_EXCEPT: case K_MINUS: case K_INTO:
+                        case K_VALUES: case K_FETCH: case K_OFFSET:
+                            return false;
+                        default:
+                            break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -328,12 +383,35 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected Expression prattExpressionRest(Expression left, int minPrec) throws ParseException {
         while (!interrupted) {
-            int op = getToken(1).kind;
+            Token t = getToken(1);
+            int op = t.kind;
+            boolean ternary = "?".equals(t.image) && isTernaryAhead();
             int prec;
             if      (op == K_AND || op == OP_DOUBLEAND) prec = 4;
             else if (op == K_XOR || op == K_OR)         prec = 2;
+            else if (ternary)                           prec = 2;
             else break;
             if (prec < minPrec) break;
+            if (ternary) {
+                // ClickHouse-style ternary conditional: cond ? then : else
+                // Right-associative: both branches parse at the full expression
+                // level (prec 2), nested ternaries are absorbed by the else-branch.
+                jj_consume_token(op, t.image);
+                Expression thenExpression;
+                ternaryThenBranchDepth++;
+                try {
+                    thenExpression = prattExpressionRest(Condition(), 2);
+                } finally {
+                    ternaryThenBranchDepth--;
+                }
+                if (!":".equals(getToken(1).image)) {
+                    throw new ParseException("Expected ':' closing the ternary conditional operator");
+                }
+                jj_consume_token(getToken(1).kind, getToken(1).image);
+                Expression elseExpression = prattExpressionRest(Condition(), 2);
+                left = new TernaryExpression(left, thenExpression, elseExpression);
+                continue;
+            }
             jj_consume_token(op, getToken(1).image);
             // +1 makes OR/AND/XOR left-associative
             Expression right = prattExpressionRest(Condition(), prec + 1);
@@ -920,6 +998,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (t.kind == OPENING_BRACKET && getToken(2).image.equals("+")) {
             return isComparisonOperator(getToken(4));
         }
+        // ClickHouse ternary `cond ? then : else` — the `?` must not be taken as the
+        // PostgreSQL JSON operator, it is consumed by prattExpressionRest instead
+        if ("?".equals(t.image) && isTernaryAhead()) return false;
         if (isComparisonOperator(t)) return true;
         switch (t.kind) {
             // Each suffix's start token:
@@ -7980,7 +8061,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     // Check for JSON operands
     [
-        LOOKAHEAD(2) (
+        LOOKAHEAD(2, { ternaryThenBranchDepth == 0 || !":".equals(getToken(1).image) }) (
             LOOKAHEAD(2) (
                 token="->"
                 |
@@ -8310,7 +8391,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
         }
 
         (
-            LOOKAHEAD(2) (
+            LOOKAHEAD(2, { ternaryThenBranchDepth == 0 || !":".equals(getToken(1).image) }) (
                 token="->"
                 |
                 token=":"

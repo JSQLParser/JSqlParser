@@ -823,6 +823,12 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(TernaryExpression ternaryExpression, S context) {
+        return visitExpressions(ternaryExpression, context, ternaryExpression.getCondition(),
+                ternaryExpression.getThenExpression(), ternaryExpression.getElseExpression());
+    }
+
+    @Override
     public <S> T visit(TSQLLeftJoin tsqlLeftJoin, S context) {
         return visitBinaryExpression(tsqlLeftJoin, context);
     }
