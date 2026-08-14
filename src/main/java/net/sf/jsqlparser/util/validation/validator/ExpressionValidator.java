@@ -56,6 +56,7 @@ import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
+import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
@@ -1154,6 +1155,14 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(TernaryExpression ternaryExpression, S context) {
+        ternaryExpression.getCondition().accept(this, context);
+        ternaryExpression.getThenExpression().accept(this, context);
+        ternaryExpression.getElseExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(TSQLLeftJoin tsqlLeftJoin, S context) {
         tsqlLeftJoin.getLeftExpression().accept(this, context);
         tsqlLeftJoin.getRightExpression().accept(this, context);
@@ -1308,6 +1317,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(RangeExpression rangeExpression) {
         visit(rangeExpression, null);
+    }
+
+    public void visit(TernaryExpression ternaryExpression) {
+        visit(ternaryExpression, null);
     }
 
     public void visit(TSQLLeftJoin tsqlLeftJoin) {

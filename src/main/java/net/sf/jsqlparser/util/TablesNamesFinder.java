@@ -249,6 +249,14 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+    @Override
+    public <S> Void visit(TernaryExpression ternaryExpression, S context) {
+        ternaryExpression.getCondition().accept(this, context);
+        ternaryExpression.getThenExpression().accept(this, context);
+        ternaryExpression.getElseExpression().accept(this, context);
+        return null;
+    }
+
     /**
      * Main entry for this Tool class. A list of found tables is returned.
      */
