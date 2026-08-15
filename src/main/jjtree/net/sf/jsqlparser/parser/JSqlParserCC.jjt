@@ -1287,6 +1287,7 @@ String NonReservedWord() :
       | tk=<K_FULLTEXT:"FULLTEXT">
       | tk=<K_FUNCTION:"FUNCTION">
       | tk=<K_GRANT:"GRANT">
+      | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
       | tk=<K_GUARD:"GUARD">
       | tk=<K_HASH:"HASH">
@@ -1577,7 +1578,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_GLOBAL:"GLOBAL">
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
-|   <K_GROUPS:"GROUPS">
 |   <K_HAVING:"HAVING">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
