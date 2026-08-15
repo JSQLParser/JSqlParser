@@ -1279,6 +1279,7 @@ String NonReservedWord() :
       | tk=<K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
       | tk=<K_FILTER: "FILTER">
       | tk=<K_FIELDS: "FIELDS">
+      | tk=<K_FILL: "FILL">
       | tk=<K_FIRST: "FIRST">
       | tk=<K_FLUSH: "FLUSH">
       | tk=<K_FOLLOWING: "FOLLOWING">
@@ -1303,6 +1304,7 @@ String NonReservedWord() :
       | tk=<K_INFORMATION: "INFORMATION">
       | tk=<K_INSERT:"INSERT">
       | tk=<K_INTERLEAVE: "INTERLEAVE">
+      | tk=<K_INTERPOLATE: "INTERPOLATE">
       | tk=<K_INTERPRET: "INTERPRET">
       | tk=<K_INVALIDATE:"INVALIDATE">
       | tk=<K_INVERSE:"INVERSE">
@@ -1453,7 +1455,9 @@ String NonReservedWord() :
       | tk=<K_SIZE:"SIZE">
       | tk=<K_SKIP: "SKIP">
       | tk=<K_SPATIAL:"SPATIAL">
+      | tk=<K_STALENESS: "STALENESS">
       | tk=<K_STARTING:"STARTING">
+      | tk=<K_STEP: "STEP">
       | tk=<K_STORED: "STORED">
       | tk=<K_STREAM: "STREAM">
       | tk=<K_STRICT: "STRICT">
@@ -4686,6 +4690,7 @@ Select Select() #Select:
     Select select = null;
     List<WithItem<?>> with = null;
     List<OrderByElement> orderByElements = null;
+    List<InterpolateElement> interpolateElements = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
@@ -4693,7 +4698,6 @@ Select Select() #Select:
     Alias alias = null;
 }
 {
-
     [ with=WithList() ]
     (
         LOOKAHEAD(3) select = FromQuery()
@@ -4710,6 +4714,7 @@ Select Select() #Select:
             [ LOOKAHEAD(2) select = SetOperationList(select) ]
 
             [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
+            [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { select.setInterpolate(interpolateElements); } ]
 
             [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
             [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
@@ -5334,6 +5339,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Expression where = null;
     ForClause forClause = null;
     List<OrderByElement> orderByElements;
+    List<InterpolateElement> interpolateElements = null;
     GroupByElement groupBy = null;
     Expression having = null;
     Expression qualify;
@@ -5462,6 +5468,7 @@ PlainSelect PlainSelect() #PlainSelect:
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
+    [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     // Parse the LIMIT row count once (this accepts a parenthesized subquery too), then
@@ -5502,6 +5509,7 @@ PlainSelect PlainSelect() #PlainSelect:
         [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements()
             { plainSelect.setOrderByElements(orderByElements); plainSelect.setForUpdateBeforeOrderBy(true); }
         ]
+        [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
     ]
     [ LOOKAHEAD(<K_INTO> (<K_OUTFILE> | <K_DUMPFILE>))
         mySqlSelectIntoClause = MySqlSelectIntoClause(MySqlSelectIntoClause.Position.TRAILING)
@@ -5528,6 +5536,7 @@ PlainSelect PlainSelect() #PlainSelect:
 Select SetOperationList(Select select) #SetOperationList: {
     SetOperationList list = new SetOperationList();
     List<OrderByElement> orderByElements = null;
+    List<InterpolateElement> interpolateElements = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
@@ -5575,6 +5584,7 @@ Select SetOperationList(Select select) #SetOperationList: {
     )+
 
     [ LOOKAHEAD(2) orderByElements=OrderByElements() {list.setOrderByElements(orderByElements);} ]
+    [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { list.setInterpolate(interpolateElements); } ]
     [ LOOKAHEAD(<K_LIMIT>) limit = LimitWithOffset() { list.setLimit(limit);    } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { list.setOffset(offset);    } ]
     [ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { list.setLimit(limit);    } ]
@@ -5591,6 +5601,10 @@ Select SetOperationList(Select select) #SetOperationList: {
                 ps.setOrderByElements(null);
                 ps.setLimit(null);
                 ps.setOffset(null);
+            }
+            if (ps.getInterpolate() != null) {
+                list.setInterpolate(ps.getInterpolate());
+                ps.setInterpolate(null);
             }
             if (ps.getFetch() != null) {
                 list.setFetch(ps.getFetch());
@@ -6778,6 +6792,7 @@ OrderByElement OrderByElement():
     OrderByElement orderByElement = new OrderByElement();
     Expression columnReference = null;
     Token collateToken = null;
+    WithFill withFill = null;
 }
 {
     columnReference = Expression()
@@ -6791,11 +6806,53 @@ OrderByElement OrderByElement():
             )
         ]
     ]
+    [ LOOKAHEAD(2) withFill = WithFill() { orderByElement.setWithFill(withFill); } ]
     [ LOOKAHEAD(2) <K_WITH> <K_ROLLUP> { orderByElement.setMysqlWithRollup(true); } ]
     {
         orderByElement.setExpression(columnReference);
         return orderByElement;
     }
+}
+
+WithFill WithFill():
+{
+    WithFill withFill = new WithFill();
+    Expression fillExpression = null;
+}
+{
+    <K_WITH> <K_FILL>
+    [ LOOKAHEAD(2) <K_FROM> fillExpression = Expression() { withFill.setFrom(fillExpression); } ]
+    [ LOOKAHEAD(2) <K_TO> fillExpression = Expression() { withFill.setTo(fillExpression); } ]
+    [ LOOKAHEAD(2) <K_STEP> fillExpression = Expression() { withFill.setStep(fillExpression); } ]
+    [ LOOKAHEAD(2) <K_STALENESS> fillExpression = Expression() { withFill.setStaleness(fillExpression); } ]
+    { return withFill; }
+}
+
+List<InterpolateElement> InterpolateClause():
+{
+    List<InterpolateElement> interpolateElements = new ArrayList<InterpolateElement>();
+    InterpolateElement interpolateElement = null;
+}
+{
+    <K_INTERPOLATE>
+    [ "("
+        [ interpolateElement = InterpolateElement() { interpolateElements.add(interpolateElement); }
+          ( "," interpolateElement = InterpolateElement() { interpolateElements.add(interpolateElement); } )*
+        ]
+    ")" ]
+    { return interpolateElements; }
+}
+
+InterpolateElement InterpolateElement():
+{
+    InterpolateElement interpolateElement = new InterpolateElement();
+    Column column = null;
+    Expression expression = null;
+}
+{
+    column = Column() { interpolateElement.setColumn(column); }
+    [ <K_AS> expression = Expression() { interpolateElement.setExpression(expression); } ]
+    { return interpolateElement; }
 }
 
 JdbcParameter JdbcParameter() : {

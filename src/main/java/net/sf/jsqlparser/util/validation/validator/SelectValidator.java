@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.select.ExceptOp;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.ForMode;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.InterpolateElement;
 import net.sf.jsqlparser.statement.select.IntersectOp;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
@@ -136,6 +137,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
         validateOptionalExpression(plainSelect.getHaving());
         validateOptionalOrderByElements(plainSelect.getOrderByElements());
+        validateOptionalInterpolate(plainSelect.getInterpolate());
 
         if (plainSelect.getLimit() != null) {
             getValidator(LimitValidator.class).validate(plainSelect.getLimit());
@@ -161,6 +163,15 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptionalExpression(mySqlSelectIntoClause.getFieldsEscapedBy());
         validateOptionalExpression(mySqlSelectIntoClause.getLinesStartingBy());
         validateOptionalExpression(mySqlSelectIntoClause.getLinesTerminatedBy());
+    }
+
+    private void validateOptionalInterpolate(List<InterpolateElement> interpolate) {
+        if (interpolate != null) {
+            for (InterpolateElement element : interpolate) {
+                validateOptionalExpression(element.getColumn());
+                validateOptionalExpression(element.getExpression());
+            }
+        }
     }
 
     @Override
@@ -308,6 +319,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         }
 
         validateOptionalOrderByElements(setOperation.getOrderByElements());
+        validateOptionalInterpolate(setOperation.getInterpolate());
 
         if (setOperation.getLimit() != null) {
             getValidator(LimitValidator.class).validate(setOperation.getLimit());

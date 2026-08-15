@@ -36,6 +36,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     ForClause forClause = null;
 
     List<OrderByElement> orderByElements;
+    List<InterpolateElement> interpolate;
     ForMode forMode = null;
     private boolean skipLocked;
     private Wait wait;
@@ -52,6 +53,16 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     public static String orderByToString(boolean oracleSiblings,
             List<OrderByElement> orderByElements) {
         return getFormattedList(orderByElements, oracleSiblings ? "ORDER SIBLINGS BY" : "ORDER BY");
+    }
+
+    public static String interpolateToString(List<InterpolateElement> interpolate) {
+        if (interpolate == null) {
+            return "";
+        }
+        if (interpolate.isEmpty()) {
+            return " INTERPOLATE";
+        }
+        return getFormattedList(interpolate, "INTERPOLATE", true, true);
     }
 
     public static String getFormattedList(List<?> list, String expression) {
@@ -190,6 +201,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
     public void setOrderByElements(List<OrderByElement> orderByElements) {
         this.orderByElements = orderByElements;
+    }
+
+    public List<InterpolateElement> getInterpolate() {
+        return interpolate;
+    }
+
+    public void setInterpolate(List<InterpolateElement> interpolate) {
+        this.interpolate = interpolate;
+    }
+
+    public Select withInterpolate(List<InterpolateElement> interpolate) {
+        setInterpolate(interpolate);
+        return this;
     }
 
     public Select withOrderByElements(List<OrderByElement> orderByElements) {
@@ -463,6 +487,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         if (!forUpdateBeforeOrderBy) {
             builder.append(orderByToString(oracleSiblings, orderByElements));
+            builder.append(interpolateToString(interpolate));
         }
 
         if (forClause != null) {
@@ -512,6 +537,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         if (forUpdateBeforeOrderBy) {
             builder.append(orderByToString(oracleSiblings, orderByElements));
+            builder.append(interpolateToString(interpolate));
         }
 
         return builder;

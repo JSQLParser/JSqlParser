@@ -51,6 +51,7 @@ import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.InterpolateElement;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.LateralView;
@@ -136,6 +137,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (select.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, builder).deParse(select.isOracleSiblings(),
                     select.getOrderByElements());
+            deParseInterpolate(select.getInterpolate());
         }
 
         Alias alias = select.getAlias();
@@ -471,7 +473,31 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (orderByElements != null) {
             new OrderByDeParser(expressionVisitor, builder).deParse(plainSelect.isOracleSiblings(),
                     orderByElements);
+            deParseInterpolate(plainSelect.getInterpolate());
         }
+    }
+
+    private void deParseInterpolate(List<InterpolateElement> interpolate) {
+        if (interpolate == null) {
+            return;
+        }
+        if (interpolate.isEmpty()) {
+            builder.append(" INTERPOLATE");
+            return;
+        }
+        builder.append(" INTERPOLATE (");
+        for (Iterator<InterpolateElement> iter = interpolate.iterator(); iter.hasNext();) {
+            InterpolateElement element = iter.next();
+            element.getColumn().accept(expressionVisitor, null);
+            if (element.getExpression() != null) {
+                builder.append(" AS ");
+                element.getExpression().accept(expressionVisitor, null);
+            }
+            if (iter.hasNext()) {
+                builder.append(", ");
+            }
+        }
+        builder.append(")");
     }
 
     @Override
@@ -729,6 +755,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
         if (list.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, builder).deParse(list.getOrderByElements());
+            deParseInterpolate(list.getInterpolate());
         }
 
         if (list.getLimit() != null) {
