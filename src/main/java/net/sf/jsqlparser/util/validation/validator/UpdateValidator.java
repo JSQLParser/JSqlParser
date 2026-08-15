@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -58,6 +59,15 @@ public class UpdateValidator extends AbstractValidator<Update> {
 
         if (update.getLimit() != null) {
             getValidator(LimitValidator.class).validate(update.getLimit());
+        }
+
+        if (update.getOption() != null) {
+            for (OptionHint optionHint : update.getOption().getOptionHints()) {
+                validateOptionalExpression(optionHint.getValue());
+                if (optionHint.getParameters() != null) {
+                    optionHint.getParameters().forEach(this::validateOptionalExpression);
+                }
+            }
         }
 
         if (update.getReturningClause() != null) {

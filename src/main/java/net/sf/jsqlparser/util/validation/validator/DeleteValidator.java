@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
 /**
@@ -46,6 +47,15 @@ public class DeleteValidator extends AbstractValidator<Delete> {
 
         if (delete.getLimit() != null) {
             getValidator(LimitValidator.class).validate(delete.getLimit());
+        }
+
+        if (delete.getOption() != null) {
+            for (OptionHint optionHint : delete.getOption().getOptionHints()) {
+                validateOptionalExpression(optionHint.getValue());
+                if (optionHint.getParameters() != null) {
+                    optionHint.getParameters().forEach(this::validateOptionalExpression);
+                }
+            }
         }
 
         if (delete.getReturningClause() != null) {

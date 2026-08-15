@@ -722,6 +722,45 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether the next token can continue the (possibly multi-word) keyword of
+     * an OPTION query hint, e.g. any word of {@code HASH JOIN}, {@code KEEP PLAN},
+     * {@code OPTIMIZE FOR UNKNOWN} or {@code IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX}.
+     *
+     * Reserved words usable inside hint keywords are enumerated here because
+     * they cannot be matched by {@code RelObjectName()}.
+     */
+    private boolean isOptionHintWordAhead() {
+        int kind = getToken(1).kind;
+        if (kind == S_IDENTIFIER
+                || (kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD)) {
+            return true;
+        }
+        switch (kind) {
+            case K_JOIN: case K_FOR: case K_ORDER:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT:
+            case K_USE: case K_OPTIMIZE: case K_FORCE: case K_UNKNOWN:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Whether the next token can start the single value argument of an OPTION
+     * query hint, e.g. the {@code 100} of {@code FAST 100} or the {@code 25}
+     * of {@code MAX_GRANT_PERCENT = 25}.
+     */
+    private boolean isOptionHintValueAhead() {
+        switch (getToken(1).kind) {
+            case S_LONG: case S_DOUBLE: case S_CHAR_LITERAL:
+            case S_PARAMETER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Follower-based disambiguation for reserved keywords in ambiguous
      * positions (implicit alias, clause boundary, after parenthesised
      * expression, etc.).
@@ -925,6 +964,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || kind == DATA_TYPE || kind == K_DATETIMELITERAL
                 || kind == K_DATE_LITERAL) {
             return true;
+        }
+
+        // OPTION (...) introduces a query hint clause, not an alias
+        if (kind == K_OPTION && getToken(2).kind == OPENING_BRACKET) {
+            return false;
         }
 
         // Non-reserved keywords
@@ -1373,6 +1417,7 @@ String NonReservedWord() :
       | tk=<K_NOWAIT: "NOWAIT">
       | tk=<K_OF:"OF">
       | tk=<K_OFF:"OFF">
+      | tk=<K_OPTION: "OPTION">
       | tk=<K_OPTIONALLY:"OPTIONALLY">
       | tk=<K_OPEN:"OPEN">
       | tk=<K_ORA: "ORA">
@@ -3724,6 +3769,7 @@ Update Update():
     FromItem fromItem = null;
     List<Join> joins = null;
     Limit limit = null;
+    OptionClause optionClause = null;
     List<OrderByElement> orderByElements;
     boolean useColumnsBrackets = false;
     ReturningClause returningClause;
@@ -3751,6 +3797,7 @@ Update Update():
 
     [ orderByElements = OrderByElements() { update.setOrderByElements(orderByElements); } ]
     [ limit = PlainLimit() { update.setLimit(limit); } ]
+    [ LOOKAHEAD(2) optionClause = OptionClause() { update.setOption(optionClause); } ]
     [ returningClause = ReturningClause() { update.setReturningClause(returningClause); } ]
 
     {
@@ -4250,6 +4297,7 @@ Delete Delete():
     Expression where = null;
     PreferringClause preferringClause = null;
     Limit limit = null;
+    OptionClause optionClause = null;
     List<OrderByElement> orderByElements;
     boolean hasFrom = false;
     Token tk = null;
@@ -4277,6 +4325,7 @@ Delete Delete():
     [preferringClause=PreferringClause() { delete.setPreferringClause(preferringClause);} ]
     [orderByElements = OrderByElements() { delete.setOrderByElements(orderByElements); } ]
     [limit=PlainLimit() {delete.setLimit(limit); } ]
+    [ LOOKAHEAD(2) optionClause = OptionClause() { delete.setOption(optionClause); } ]
 
     [ returningClause = ReturningClause() { delete.setReturningClause(returningClause); } ]
     {
@@ -4691,6 +4740,7 @@ Select Select() #Select:
     List<WithItem<?>> with = null;
     List<OrderByElement> orderByElements = null;
     List<InterpolateElement> interpolateElements = null;
+    OptionClause optionClause = null;
     Limit limit = null;
     Offset offset = null;
     Fetch fetch = null;
@@ -4715,6 +4765,7 @@ Select Select() #Select:
 
             [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
             [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { select.setInterpolate(interpolateElements); } ]
+            [ LOOKAHEAD(2) optionClause = OptionClause() { select.setOption(optionClause); } ]
 
             [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
             [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
@@ -5338,6 +5389,7 @@ PlainSelect PlainSelect() #PlainSelect:
     Expression preWhere = null;
     Expression where = null;
     ForClause forClause = null;
+    OptionClause optionClause = null;
     List<OrderByElement> orderByElements;
     List<InterpolateElement> interpolateElements = null;
     GroupByElement groupBy = null;
@@ -5470,6 +5522,7 @@ PlainSelect PlainSelect() #PlainSelect:
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
+    [ LOOKAHEAD(2) optionClause = OptionClause() { plainSelect.setOption(optionClause); } ]
     [ LOOKAHEAD(2) <K_EMIT> <K_CHANGES> { plainSelect.setEmitChanges(true); } ]
     // Parse the LIMIT row count once (this accepts a parenthesized subquery too), then
     // optionally attach ClickHouse's `LIMIT ... BY ...`. Checking BY right after the limit
@@ -5605,6 +5658,10 @@ Select SetOperationList(Select select) #SetOperationList: {
             if (ps.getInterpolate() != null) {
                 list.setInterpolate(ps.getInterpolate());
                 ps.setInterpolate(null);
+            }
+            if (ps.getOption() != null) {
+                list.setOption(ps.getOption());
+                ps.setOption(null);
             }
             if (ps.getFetch() != null) {
                 list.setFetch(ps.getFetch());
@@ -6853,6 +6910,64 @@ InterpolateElement InterpolateElement():
     column = Column() { interpolateElement.setColumn(column); }
     [ <K_AS> expression = Expression() { interpolateElement.setExpression(expression); } ]
     { return interpolateElement; }
+}
+
+OptionClause OptionClause():
+{
+    OptionClause optionClause = new OptionClause();
+    OptionHint optionHint = null;
+}
+{
+    <K_OPTION> "(" optionHint = OptionHint() { optionClause.addOptionHint(optionHint); }
+    ( "," optionHint = OptionHint() { optionClause.addOptionHint(optionHint); } )*
+    ")"
+    { return optionClause; }
+}
+
+OptionHint OptionHint():
+{
+    OptionHint optionHint = new OptionHint();
+    String name = null;
+    Expression value = null;
+    Expression parameter = null;
+}
+{
+    name = OptionHintName() { optionHint.setName(name); }
+    [
+        (
+            LOOKAHEAD("=") "=" value = Expression() { optionHint.setValue(value); optionHint.setUseEquals(true); }
+            |
+            LOOKAHEAD("(") "(" parameter = Expression() { optionHint.addParameter(parameter); }
+            ( "," parameter = Expression() { optionHint.addParameter(parameter); } )*
+            ")"
+            |
+            LOOKAHEAD({ isOptionHintValueAhead() }) value = Expression() { optionHint.setValue(value); }
+        )
+    ]
+    { return optionHint; }
+}
+
+String OptionHintName():
+{
+    Token tk = null;
+    String word = null;
+    StringBuilder name = new StringBuilder();
+}
+{
+    (
+        LOOKAHEAD({ isOptionHintWordAhead() })
+        ( tk=<S_IDENTIFIER> | word = NonReservedWord()
+          | tk=<K_JOIN> | tk=<K_FOR> | tk=<K_ORDER>
+          | tk=<K_UNION> | tk=<K_EXCEPT> | tk=<K_INTERSECT>
+          | tk=<K_USE> | tk=<K_OPTIMIZE> | tk=<K_FORCE> | tk=<K_UNKNOWN> )
+        {
+            if (name.length() > 0) { name.append(' '); }
+            name.append(tk != null ? tk.image : word);
+            tk = null;
+            word = null;
+        }
+    )+
+    { return name.toString(); }
 }
 
 JdbcParameter JdbcParameter() : {

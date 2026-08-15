@@ -103,6 +103,10 @@ public class UpdateDeParser extends AbstractDeParser<Update>
             new LimitDeparser(expressionVisitor, builder).deParse(update.getLimit());
         }
 
+        if (update.getOption() != null) {
+            builder.append(update.getOption());
+        }
+
         if (update.getReturningClause() != null) {
             update.getReturningClause().appendTo(builder);
         }

@@ -140,6 +140,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             deParseInterpolate(select.getInterpolate());
         }
 
+        if (select.getOption() != null) {
+            builder.append(select.getOption());
+        }
+
         Alias alias = select.getAlias();
         if (alias != null) {
             builder.append(alias);
@@ -343,6 +347,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
         if (plainSelect.getForClause() != null) {
             plainSelect.getForClause().appendTo(builder);
+        }
+
+        if (plainSelect.getOption() != null) {
+            builder.append(plainSelect.getOption());
         }
 
         if (plainSelect.isEmitChanges()) {
@@ -756,6 +764,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (list.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, builder).deParse(list.getOrderByElements());
             deParseInterpolate(list.getInterpolate());
+        }
+
+        if (list.getOption() != null) {
+            builder.append(list.getOption());
         }
 
         if (list.getLimit() != null) {
