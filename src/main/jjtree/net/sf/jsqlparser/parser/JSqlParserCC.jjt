@@ -227,11 +227,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * {@code cond ? then : else} rather than the PostgreSQL JSON operator:
      * a standalone ":" closes the then-branch at the same nesting depth before
      * any expression boundary (",", ";", EOF, an unbalanced closing bracket or a
-     * clause keyword such as FROM/WHERE).
+     * clause keyword such as FROM/WHERE). A ":" in operand position (directly
+     * after an operator) starts a JDBC named parameter instead and cannot close
+     * the then-branch.
      */
     protected boolean isTernaryAhead() {
         try {
             int depth = 0;
+            Token prev = null;
             for (int i = 2; ; i++) {
                 Token t = getToken(i);
                 if (t == null || t.kind == EOF) {
@@ -246,7 +249,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     }
                     depth--;
                 } else if (depth == 0) {
-                    if (":".equals(image)) {
+                    if (":".equals(image) && canEndExpression(prev)) {
                         return true;
                     }
                     if (",".equals(image) || ";".equals(image)) {
@@ -262,9 +265,36 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                             break;
                     }
                 }
+                prev = t;
             }
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * True when the token can be the LAST token of an expression: an
+     * identifier, a literal, a JDBC parameter, or a balanced closing bracket.
+     * Only such a token may directly precede the ":" closing the ternary
+     * then-branch, since the then-branch must be a complete expression. A ":"
+     * in operand position instead (directly after an operator, e.g. `x = :name`
+     * or directly after the leading "?") starts a JDBC named parameter.
+     * DATA_TYPE tokens end expressions as well, because a cast's target type
+     * (`b :: int`) or a bare type keyword closes the then-branch.
+     */
+    private boolean canEndExpression(Token t) {
+        if (t == null) {
+            return false;
+        }
+        switch (t.kind) {
+            case S_IDENTIFIER: case S_QUOTED_IDENTIFIER: case S_PARAMETER:
+            case S_LONG: case S_DOUBLE: case S_HEX: case S_CHAR_LITERAL:
+            case K_DATE_LITERAL: case K_DATETIMELITERAL: case DATA_TYPE:
+            case K_NULL: case K_TRUE: case K_FALSE:
+                return true;
+            default:
+                return (t.kind >= MIN_NON_RESERVED_WORD && t.kind <= MAX_NON_RESERVED_WORD)
+                        || ")".equals(t.image) || "]".equals(t.image);
         }
     }
 
