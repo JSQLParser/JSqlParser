@@ -32,6 +32,12 @@ public class OrderByValidator<Void> extends AbstractValidator<OrderByElement>
             validateOptionalFeature(c, orderBy.getNullOrdering(), Feature.orderByNullOrdering);
         }
         getValidator(ExpressionValidator.class).validate(orderBy.getExpression());
+        if (orderBy.getWithFill() != null) {
+            validateOptionalExpression(orderBy.getWithFill().getFrom());
+            validateOptionalExpression(orderBy.getWithFill().getTo());
+            validateOptionalExpression(orderBy.getWithFill().getStep());
+            validateOptionalExpression(orderBy.getWithFill().getStaleness());
+        }
         return null;
     }
 

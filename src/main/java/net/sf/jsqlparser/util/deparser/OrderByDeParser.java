@@ -14,6 +14,7 @@ import java.util.List;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.WithFill;
 
 public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
 
@@ -64,8 +65,32 @@ public class OrderByDeParser extends AbstractDeParser<List<OrderByElement>> {
                     ? "NULLS FIRST"
                     : "NULLS LAST");
         }
+        if (orderBy.getWithFill() != null) {
+            builder.append(' ');
+            deParseWithFill(orderBy.getWithFill());
+        }
         if (orderBy.isMysqlWithRollup()) {
             builder.append(" WITH ROLLUP");
+        }
+    }
+
+    private void deParseWithFill(WithFill withFill) {
+        builder.append("WITH FILL");
+        if (withFill.getFrom() != null) {
+            builder.append(" FROM ");
+            withFill.getFrom().accept(expressionVisitor, null);
+        }
+        if (withFill.getTo() != null) {
+            builder.append(" TO ");
+            withFill.getTo().accept(expressionVisitor, null);
+        }
+        if (withFill.getStep() != null) {
+            builder.append(" STEP ");
+            withFill.getStep().accept(expressionVisitor, null);
+        }
+        if (withFill.getStaleness() != null) {
+            builder.append(" STALENESS ");
+            withFill.getStaleness().accept(expressionVisitor, null);
         }
     }
 

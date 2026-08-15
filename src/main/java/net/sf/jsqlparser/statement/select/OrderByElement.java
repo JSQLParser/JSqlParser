@@ -22,6 +22,7 @@ public class OrderByElement implements Serializable {
     private boolean asc = true;
     private boolean ascDescPresent = false;
     private NullOrdering nullOrdering;
+    private WithFill withFill;
 
     public boolean isAsc() {
         return asc;
@@ -37,6 +38,20 @@ public class OrderByElement implements Serializable {
 
     public void setNullOrdering(NullOrdering nullOrdering) {
         this.nullOrdering = nullOrdering;
+    }
+
+    public WithFill getWithFill() {
+        return withFill;
+    }
+
+    public OrderByElement setWithFill(WithFill withFill) {
+        this.withFill = withFill;
+        return this;
+    }
+
+    public OrderByElement withWithFill(WithFill withFill) {
+        setWithFill(withFill);
+        return this;
     }
 
     public boolean isAscDescPresent() {
@@ -73,6 +88,9 @@ public class OrderByElement implements Serializable {
         if (nullOrdering != null) {
             b.append(' ');
             b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
+        if (withFill != null) {
+            b.append(' ').append(withFill);
         }
         if (isMysqlWithRollup()) {
             b.append(" WITH ROLLUP");
