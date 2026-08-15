@@ -41,6 +41,7 @@ import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -427,6 +428,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CreateSchema aThis, S context) {
+        builder.append(aThis.toString());
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateDatabase aThis, S context) {
         builder.append(aThis.toString());
         return builder;
     }

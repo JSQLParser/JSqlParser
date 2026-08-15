@@ -37,6 +37,7 @@ import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -296,6 +297,13 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(CreateSchema aThis, S context) {
         validateFeatureAndName(Feature.createSchema, NamedObject.schema, aThis.getSchemaName());
         aThis.getStatements().forEach(s -> s.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateDatabase aThis, S context) {
+        validateFeatureAndName(Feature.createDatabase, NamedObject.database,
+                aThis.getDatabaseName());
         return null;
     }
 

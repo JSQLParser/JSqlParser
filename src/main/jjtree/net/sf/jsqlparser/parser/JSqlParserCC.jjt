@@ -47,6 +47,7 @@ import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
+import net.sf.jsqlparser.statement.create.database.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.policy.*;
@@ -10820,6 +10821,22 @@ List<String> PathSpecification():
     }
 }
 
+CreateDatabase CreateDatabase():
+{
+    CreateDatabase createDatabase = new CreateDatabase();
+    String databaseName = null;
+    List<String> databaseOptions = null;
+}
+{
+    <K_DATABASE>
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createDatabase.setIfNotExists(true); } ]
+    databaseName = RelObjectName() { createDatabase.setDatabaseName(databaseName); }
+    [ databaseOptions = captureRest() { createDatabase.setDatabaseOptions(databaseOptions); } ]
+    {
+        return createDatabase;
+    }
+}
+
 /**
  * Parses a single table-level constraint inside CREATE TABLE (...).
  * Handles INDEX, PRIMARY KEY, UNIQUE, KEY, FOREIGN KEY, CHECK, EXCLUDE.
@@ -13266,6 +13283,8 @@ Statement Create():
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
+        |
+        statement = CreateDatabase()
         |
         statement = CreateSequence()
         |
