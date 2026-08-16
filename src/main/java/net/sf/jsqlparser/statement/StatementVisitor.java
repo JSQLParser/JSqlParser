@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -116,6 +117,12 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateSchema createSchema) {
         this.visit(createSchema, null);
+    }
+
+    <S> T visit(CreateDatabase createDatabase, S context);
+
+    default void visit(CreateDatabase createDatabase) {
+        this.visit(createDatabase, null);
     }
 
     <S> T visit(CreateTable createTable, S context);

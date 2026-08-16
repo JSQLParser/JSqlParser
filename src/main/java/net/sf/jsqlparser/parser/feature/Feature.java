@@ -30,6 +30,7 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.procedure.CreateProcedure;
@@ -475,6 +476,12 @@ public enum Feature {
      */
     drop, dropTable, dropIndex, dropView, dropSchema, dropSequence, dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
 
+    /**
+     * SQL "CREATE DATABASE" statement is allowed
+     *
+     * @see CreateDatabase
+     */
+    createDatabase,
     /**
      * SQL "CREATE SCHEMA" statement is allowed
      *

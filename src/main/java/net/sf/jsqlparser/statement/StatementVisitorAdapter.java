@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -258,6 +259,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateSchema createSchema, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateDatabase createDatabase, S context) {
         return null;
     }
 

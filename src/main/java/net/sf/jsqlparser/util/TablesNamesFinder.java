@@ -94,6 +94,7 @@ import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.database.CreateDatabase;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -1164,6 +1165,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateSchema createSchema) {
         StatementVisitor.super.visit(createSchema);
+    }
+
+    @Override
+    public <S> Void visit(CreateDatabase createDatabase, S context) {
+        throwUnsupported(createDatabase);
+        return null;
+    }
+
+    @Override
+    public void visit(CreateDatabase createDatabase) {
+        StatementVisitor.super.visit(createDatabase);
     }
 
     @Override
