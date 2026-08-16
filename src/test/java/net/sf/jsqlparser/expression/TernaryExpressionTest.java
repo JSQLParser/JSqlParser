@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -65,6 +66,8 @@ class TernaryExpressionTest {
             "SELECT a IS NULL ? 'x' : y FROM t",
             // jdbc parameters as branches
             "SELECT a ? ? : c FROM t",
+            "SELECT a ? b + ? : c FROM t",
+            "SELECT a ? ? : ? FROM t",
             "SELECT a ? b : ? FROM t",
             "SELECT * FROM t WHERE x = ? AND y ? z : w",
             // case expression inside a branch
@@ -154,6 +157,23 @@ class TernaryExpressionTest {
         TernaryExpression ternary = (TernaryExpression) ((PlainSelect) select).getSelectItem(0)
                 .getExpression();
         Assertions.assertTrue(ternary.getThenExpression() instanceof CastExpression);
+    }
+
+    @Test
+    void testTernaryWithPositionalParameterThenBranch() throws JSQLParserException {
+        // regression guard: a bare "?" positional parameter is a complete
+        // expression, so the ":" after it closes the ternary instead of being
+        // skipped in favor of the jsonb reading
+        Select select = (Select) CCJSqlParserUtil.parse("SELECT a ? ? : c FROM t");
+        TernaryExpression ternary = (TernaryExpression) ((PlainSelect) select).getSelectItem(0)
+                .getExpression();
+        Assertions.assertTrue(ternary.getThenExpression() instanceof JdbcParameter);
+        Assertions.assertTrue(ternary.getElseExpression() instanceof Column);
+
+        // a positional parameter as the LAST token of the then-branch, too
+        select = (Select) CCJSqlParserUtil.parse("SELECT a ? b + ? : c FROM t");
+        ternary = (TernaryExpression) ((PlainSelect) select).getSelectItem(0).getExpression();
+        Assertions.assertTrue(ternary.getThenExpression() instanceof Addition);
     }
 
     @ParameterizedTest
