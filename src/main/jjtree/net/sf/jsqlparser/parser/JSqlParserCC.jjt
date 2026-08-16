@@ -280,7 +280,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * in operand position instead (directly after an operator, e.g. `x = :name`
      * or directly after the leading "?") starts a JDBC named parameter.
      * DATA_TYPE tokens end expressions as well, because a cast's target type
-     * (`b :: int`) or a bare type keyword closes the then-branch.
+     * (`b :: int`) or a bare type keyword closes the then-branch. The bare "?"
+     * positional parameter has no token-kind constant (anonymous token), so it
+     * is recognized by its image, like the closing brackets.
      */
     private boolean canEndExpression(Token t) {
         if (t == null) {
@@ -294,7 +296,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
             default:
                 return (t.kind >= MIN_NON_RESERVED_WORD && t.kind <= MAX_NON_RESERVED_WORD)
-                        || ")".equals(t.image) || "]".equals(t.image);
+                        || ")".equals(t.image) || "]".equals(t.image)
+                        || "?".equals(t.image);
         }
     }
 
