@@ -51,4 +51,15 @@ public class KeywordsTest {
         String sqlStr = "SELECT current_date(3)";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    // #2473: GROUPS is a non-reserved keyword in PostgreSQL and must stay usable as an
+    // identifier, although it also introduces the GROUPS window frame unit.
+    @Test
+    public void testGroupsAsIdentifier() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT groups FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM groups", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a AS groups FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a groups FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (groups INT)", true);
+    }
 }
