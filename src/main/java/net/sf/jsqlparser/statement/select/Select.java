@@ -34,6 +34,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     boolean oracleSiblings = false;
 
     ForClause forClause = null;
+    OptionClause option = null;
 
     List<OrderByElement> orderByElements;
     List<InterpolateElement> interpolate;
@@ -193,6 +194,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     public Select setForClause(ForClause forClause) {
         this.forClause = forClause;
         return this;
+    }
+
+    public OptionClause getOption() {
+        return option;
+    }
+
+    public Select setOption(OptionClause option) {
+        this.option = option;
+        return this;
+    }
+
+    public Select withOption(OptionClause option) {
+        return setOption(option);
     }
 
     public List<OrderByElement> getOrderByElements() {
@@ -492,6 +506,10 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
 
         if (forClause != null) {
             forClause.appendTo(builder);
+        }
+
+        if (option != null) {
+            builder.append(option);
         }
 
         if (limitBy != null) {

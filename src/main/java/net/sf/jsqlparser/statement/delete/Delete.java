@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.OptionClause;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -45,6 +46,7 @@ public class Delete implements Statement {
     private Expression where;
     private PreferringClause preferringClause;
     private Limit limit;
+    private OptionClause option;
     private List<OrderByElement> orderByElements;
     private boolean hasFrom = true;
     private DeleteModifierPriority modifierPriority;
@@ -145,6 +147,19 @@ public class Delete implements Statement {
 
     public Limit getLimit() {
         return limit;
+    }
+
+    public OptionClause getOption() {
+        return option;
+    }
+
+    public Delete setOption(OptionClause option) {
+        this.option = option;
+        return this;
+    }
+
+    public Delete withOption(OptionClause option) {
+        return setOption(option);
     }
 
     public void setLimit(Limit limit) {
@@ -278,6 +293,10 @@ public class Delete implements Statement {
 
         if (limit != null) {
             b.append(limit);
+        }
+
+        if (option != null) {
+            b.append(option);
         }
 
         if (returningClause != null) {

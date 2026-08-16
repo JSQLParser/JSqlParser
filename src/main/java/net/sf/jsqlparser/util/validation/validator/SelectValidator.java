@@ -37,6 +37,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.OptionClause;
+import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.TableStatement;
@@ -138,6 +140,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptionalExpression(plainSelect.getHaving());
         validateOptionalOrderByElements(plainSelect.getOrderByElements());
         validateOptionalInterpolate(plainSelect.getInterpolate());
+        validateOptionalOption(plainSelect.getOption());
 
         if (plainSelect.getLimit() != null) {
             getValidator(LimitValidator.class).validate(plainSelect.getLimit());
@@ -154,6 +157,17 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         validateOptional(plainSelect.getPivot(), p -> p.accept(this, context));
 
         return null;
+    }
+
+    private void validateOptionalOption(OptionClause option) {
+        if (option != null) {
+            for (OptionHint optionHint : option.getOptionHints()) {
+                validateOptionalExpression(optionHint.getValue());
+                if (optionHint.getParameters() != null) {
+                    optionHint.getParameters().forEach(this::validateOptionalExpression);
+                }
+            }
+        }
     }
 
     private void validateMySqlSelectIntoClause(MySqlSelectIntoClause mySqlSelectIntoClause) {
@@ -320,6 +334,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
         validateOptionalOrderByElements(setOperation.getOrderByElements());
         validateOptionalInterpolate(setOperation.getInterpolate());
+        validateOptionalOption(setOperation.getOption());
 
         if (setOperation.getLimit() != null) {
             getValidator(LimitValidator.class).validate(setOperation.getLimit());

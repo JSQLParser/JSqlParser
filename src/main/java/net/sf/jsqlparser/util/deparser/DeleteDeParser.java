@@ -105,6 +105,10 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             new LimitDeparser(expressionVisitor, builder).deParse(delete.getLimit());
         }
 
+        if (delete.getOption() != null) {
+            builder.append(delete.getOption());
+        }
+
         if (delete.getReturningClause() != null) {
             delete.getReturningClause().appendTo(builder);
         }
