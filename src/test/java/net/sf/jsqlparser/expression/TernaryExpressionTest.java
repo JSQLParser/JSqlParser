@@ -14,6 +14,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -67,7 +68,11 @@ class TernaryExpressionTest {
             "SELECT a ? b : ? FROM t",
             "SELECT * FROM t WHERE x = ? AND y ? z : w",
             // case expression inside a branch
-            "SELECT a ? CASE WHEN b THEN c ELSE d END : e FROM t"
+            "SELECT a ? CASE WHEN b THEN c ELSE d END : e FROM t",
+            // cast target type ends the then-branch (a bare ":" after a type
+            // keyword is the ternary separator, not a named parameter)
+            "SELECT a ? b :: int : c FROM t",
+            "SELECT x > 0 ? CAST(b AS int) : c FROM t"
     })
     void testTernaryInVariousContexts(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
@@ -127,6 +132,42 @@ class TernaryExpressionTest {
             "SELECT CAST(a AS CHAR)"
     })
     void testUnrelatedSyntaxUnaffected(String sqlStr) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testJsonbOperatorWithNamedParameter() throws JSQLParserException {
+        // regression guard (ternary support, #2466): a ":" in operand position
+        // starts a JDBC named parameter and must not close a ternary then-branch
+        Select select = (Select) CCJSqlParserUtil.parse("SELECT * FROM t WHERE j ? :key");
+        Expression where = ((PlainSelect) select).getWhere();
+        Assertions.assertTrue(where instanceof JsonOperator);
+        Assertions.assertTrue(
+                ((JsonOperator) where).getRightExpression() instanceof JdbcNamedParameter);
+    }
+
+    @Test
+    void testTernaryWithCastThenBranch() throws JSQLParserException {
+        // regression guard: a DATA_TYPE token can end the then-branch, so the
+        // ":" after the cast target type must close the ternary
+        Select select = (Select) CCJSqlParserUtil.parse("SELECT a ? b :: int : c FROM t");
+        TernaryExpression ternary = (TernaryExpression) ((PlainSelect) select).getSelectItem(0)
+                .getExpression();
+        Assertions.assertTrue(ternary.getThenExpression() instanceof CastExpression);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // PostgreSQL jsonb operator combined with JDBC named parameters
+            "SELECT * FROM t WHERE j ? :key",
+            "SELECT * FROM t WHERE j ? 'k' AND x = :p",
+            "SELECT * FROM t WHERE j ? 'k' OR x = :p",
+            "SELECT * FROM t WHERE j ? :key AND x = 1",
+            // named parameters keep working inside ternary branches, too
+            "SELECT a ? :t : :e FROM t",
+            "SELECT * FROM t WHERE c = :c AND a ? :t : :e"
+    })
+    void testTernaryAndJsonbWithJdbcNamedParameters(String sqlStr) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
