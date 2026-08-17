@@ -29,6 +29,29 @@ public enum MergeSide {
      * @throws IllegalArgumentException if {@code image} is neither {@code TARGET} nor
      *         {@code SOURCE}
      */
+    /**
+     * Validates the clause pairing of a {@code WHEN NOT MATCHED} branch: {@code BY TARGET} (the
+     * default) only allows an {@code INSERT} clause, {@code BY SOURCE} only allows {@code UPDATE}
+     * or {@code DELETE}.
+     *
+     * @param side the parsed {@code BY TARGET}/{@code BY SOURCE} qualifier, null when absent
+     * @param operation the parsed clause
+     * @return the passed {@code operation}
+     * @throws IllegalArgumentException when the pairing is not legal in any dialect
+     */
+    public static MergeOperation validatePairing(MergeSide side, MergeOperation operation) {
+        if (side == MergeSide.SOURCE) {
+            if (operation instanceof MergeInsert) {
+                throw new IllegalArgumentException(
+                        "WHEN NOT MATCHED BY SOURCE cannot take an INSERT clause");
+            }
+        } else if (!(operation instanceof MergeInsert)) {
+            throw new IllegalArgumentException(
+                    "WHEN NOT MATCHED [BY TARGET] cannot take an UPDATE or DELETE clause");
+        }
+        return operation;
+    }
+
     public static MergeSide fromImage(String image) {
         for (MergeSide value : values()) {
             if (value.name().equalsIgnoreCase(image)) {

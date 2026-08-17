@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import static net.sf.jsqlparser.test.TestUtils.assertOracleHintExists;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -362,5 +363,37 @@ public class MergeTest {
                         insert1, false),
                 Arguments.of(Arrays.asList(insert1, insert2, update1, update2, delete1), update1,
                         insert1, true));
+    }
+
+    @Test
+    void testMergeRejectsInvalidWhenNotMatchedClausePairings() {
+        // WHEN MATCHED rows exist in the target: INSERT is not legal
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(
+                "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN INSERT (a) VALUES (1)"));
+
+        // WHEN NOT MATCHED [BY TARGET] rows do not exist in the target: only INSERT is legal
+        assertInvalidMergePairing(
+                "MERGE INTO t USING s ON t.id = s.id WHEN NOT MATCHED THEN UPDATE SET a = 1");
+        assertInvalidMergePairing(
+                "MERGE INTO t USING s ON t.id = s.id WHEN NOT MATCHED THEN DELETE");
+        assertInvalidMergePairing(
+                "MERGE INTO t USING s ON t.id = s.id WHEN NOT MATCHED BY TARGET THEN UPDATE SET a = 1");
+        assertInvalidMergePairing(
+                "MERGE INTO t USING s ON t.id = s.id WHEN NOT MATCHED BY TARGET THEN DELETE");
+
+        // WHEN NOT MATCHED BY SOURCE rows exist in the target: INSERT is not legal
+        assertInvalidMergePairing(
+                "MERGE INTO t USING s ON t.id = s.id WHEN NOT MATCHED BY SOURCE THEN INSERT (a) VALUES (1)");
+    }
+
+    private static void assertInvalidMergePairing(String sql) {
+        JSQLParserException exception = assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(sql));
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        assertThat(cause).isInstanceOf(IllegalArgumentException.class);
+        assertThat(cause.getMessage()).contains("WHEN NOT MATCHED");
     }
 }

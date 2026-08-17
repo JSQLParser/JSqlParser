@@ -4489,7 +4489,7 @@ MergeOperation MergeWhenNotMatched() : {
         |
         operation = MergeDeleteClause(predicate) { ((MergeDelete) operation).setSide(side); }
     )
-    { return operation; }
+    { return MergeSide.validatePairing(side, operation); }
 }
 
 // table names seem to allow ":" delimiters, e.g. for Informix see #1134
