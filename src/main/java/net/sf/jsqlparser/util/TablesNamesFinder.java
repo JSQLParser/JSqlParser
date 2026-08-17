@@ -76,6 +76,7 @@ import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
+import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
@@ -92,6 +93,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
@@ -111,12 +113,38 @@ import net.sf.jsqlparser.statement.export.Export;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.insert.InsertConflictAction;
+import net.sf.jsqlparser.statement.insert.InsertDuplicateAction;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.merge.MergeDelete;
+import net.sf.jsqlparser.statement.merge.MergeInsert;
+import net.sf.jsqlparser.statement.merge.MergeOperation;
+import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
+import net.sf.jsqlparser.statement.merge.MergeUpdate;
+import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
+import net.sf.jsqlparser.statement.piped.AsPipeOperator;
+import net.sf.jsqlparser.statement.piped.CallPipeOperator;
+import net.sf.jsqlparser.statement.piped.DropPipeOperator;
+import net.sf.jsqlparser.statement.piped.ExtendPipeOperator;
 import net.sf.jsqlparser.statement.piped.FromQuery;
+import net.sf.jsqlparser.statement.piped.JoinPipeOperator;
+import net.sf.jsqlparser.statement.piped.LimitPipeOperator;
+import net.sf.jsqlparser.statement.piped.OrderByPipeOperator;
+import net.sf.jsqlparser.statement.piped.PipeOperator;
+import net.sf.jsqlparser.statement.piped.PipeOperatorVisitor;
+import net.sf.jsqlparser.statement.piped.PivotPipeOperator;
+import net.sf.jsqlparser.statement.piped.RenamePipeOperator;
+import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetOperationPipeOperator;
+import net.sf.jsqlparser.statement.piped.SetPipeOperator;
+import net.sf.jsqlparser.statement.piped.TableSamplePipeOperator;
+import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
+import net.sf.jsqlparser.statement.piped.WherePipeOperator;
+import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
@@ -156,7 +184,8 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.UncommentedEmptyMethodBody"})
 public class TablesNamesFinder<Void>
         implements SelectVisitor<Void>, FromItemVisitor<Void>, ExpressionVisitor<Void>,
-        SelectItemVisitor<Void>, StatementVisitor<Void> {
+        SelectItemVisitor<Void>, StatementVisitor<Void>, MergeOperationVisitor<Void>,
+        PipeOperatorVisitor<Void, Void> {
 
     private Set<String> tables;
     private boolean allowColumnProcessing = false;
@@ -277,9 +306,8 @@ public class TablesNamesFinder<Void>
         if (withItem.getAlias() != null) {
             otherItemNames.add(withItem.getAlias().getName());
         }
-        if (withItem.getSelect() != null) {
-            withItem.getSelect().accept((SelectVisitor<?>) this, context);
-        }
+        // dispatch any ParenthesedStatement payload (Select, Delete, Update, Insert)
+        withItem.accept((StatementVisitor<?>) this, context);
         return null;
     }
 
@@ -768,7 +796,15 @@ public class TablesNamesFinder<Void>
         if (analytic.getKeep() != null) {
             analytic.getKeep().accept(this, context);
         }
+        if (analytic.getFilterExpression() != null) {
+            analytic.getFilterExpression().accept(this, context);
+        }
         if (analytic.getFuncOrderBy() != null) {
+            for (OrderByElement element : analytic.getFuncOrderBy()) {
+                element.getExpression().accept(this, context);
+            }
+        }
+        if (analytic.getOrderByElements() != null) {
             for (OrderByElement element : analytic.getOrderByElements()) {
                 element.getExpression().accept(this, context);
             }
@@ -852,7 +888,141 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(FromQuery fromQuery, S context) {
+        List<WithItem<?>> withItemsList = fromQuery.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            for (WithItem<?> withItem : withItemsList) {
+                withItem.accept((SelectVisitor<?>) this, context);
+            }
+        }
+        if (fromQuery.getFromItem() != null) {
+            fromQuery.getFromItem().accept(this, context);
+        }
+        for (PipeOperator pipeOperator : fromQuery.getPipeOperators()) {
+            pipeOperator.accept(this, null);
+        }
         return null;
+    }
+
+    @Override
+    public Void visit(AggregatePipeOperator aggregate, Void context) {
+        for (SelectItem<?> selectItem : aggregate.getSelectItems()) {
+            selectItem.accept(this, context);
+        }
+        for (SelectItem<?> groupItem : aggregate.getGroupItems()) {
+            groupItem.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(AsPipeOperator as, Void context) {
+        if (as.getAlias() != null) {
+            otherItemNames.add(as.getAlias().getName());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(CallPipeOperator call, Void context) {
+        visit(call.getTableFunction(), context);
+        return null;
+    }
+
+    @Override
+    public Void visit(DropPipeOperator drop, Void context) {
+        drop.getColumns().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public Void visit(ExtendPipeOperator extend, Void context) {
+        return visit((SelectPipeOperator) extend, context);
+    }
+
+    @Override
+    public Void visit(JoinPipeOperator joinPipeOperator, Void context) {
+        visitJoins(List.of(joinPipeOperator.getJoin()), context);
+        return null;
+    }
+
+    @Override
+    public Void visit(LimitPipeOperator limit, Void context) {
+        limit.getLimitExpression().accept(this, context);
+        if (limit.getOffsetExpression() != null) {
+            limit.getOffsetExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(OrderByPipeOperator orderBy, Void context) {
+        for (OrderByElement element : orderBy.getOrderByElements()) {
+            element.getExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(PivotPipeOperator pivot, Void context) {
+        pivot.getAggregateExpression().accept(this, context);
+        for (SelectItem<?> pivotColumn : pivot.getPivotColumns()) {
+            pivotColumn.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(RenamePipeOperator rename, Void context) {
+        return visit((SelectPipeOperator) rename, context);
+    }
+
+    @Override
+    public Void visit(SelectPipeOperator select, Void context) {
+        for (SelectItem<?> selectItem : select.getSelectItems()) {
+            selectItem.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(SetPipeOperator set, Void context) {
+        for (UpdateSet updateSet : set.getUpdateSets()) {
+            updateSet.getColumns().accept(this, context);
+            updateSet.getValues().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(TableSamplePipeOperator tableSample, Void context) {
+        return null;
+    }
+
+    @Override
+    public Void visit(SetOperationPipeOperator setOperation, Void context) {
+        for (ParenthesedSelect select : setOperation.getSelects()) {
+            select.accept((SelectVisitor<?>) this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(UnPivotPipeOperator unPivot, Void context) {
+        for (SelectItem<?> pivotColumn : unPivot.getPivotColumns()) {
+            pivotColumn.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(WherePipeOperator where, Void context) {
+        where.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public Void visit(WindowPipeOperator window, Void context) {
+        return visit((SelectPipeOperator) window, context);
     }
 
     @Override
@@ -988,6 +1158,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Delete delete, S context) {
+        if (delete.getWithItemsList() != null) {
+            for (WithItem<?> withItem : delete.getWithItemsList()) {
+                withItem.accept((SelectVisitor<?>) this, context);
+            }
+        }
         visit(delete.getTable(), context);
 
         if (delete.getUsingFromItemList() != null) {
@@ -1001,6 +1176,8 @@ public class TablesNamesFinder<Void>
         if (delete.getWhere() != null) {
             delete.getWhere().accept(this, context);
         }
+        visitOutputClause(delete.getOutputClause(), context);
+        visitReturningClause(delete.getReturningClause(), context);
         return null;
     }
 
@@ -1058,6 +1235,8 @@ public class TablesNamesFinder<Void>
         if (update.getWhere() != null) {
             update.getWhere().accept(this, context);
         }
+        visitOutputClause(update.getOutputClause(), context);
+        visitReturningClause(update.getReturningClause(), context);
         return null;
     }
 
@@ -1096,10 +1275,53 @@ public class TablesNamesFinder<Void>
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
+        if (insert.getSetUpdateSets() != null) {
+            visitUpdateSets(insert.getSetUpdateSets(), context);
+        }
+        if (insert.getDuplicateAction() != null) {
+            visitInsertAction(insert.getDuplicateAction(), context);
+        }
+        if (insert.getConflictAction() != null) {
+            visitInsertAction(insert.getConflictAction(), context);
+        }
+        visitOutputClause(insert.getOutputClause(), context);
+        visitReturningClause(insert.getReturningClause(), context);
         if (insert.getSelect() != null) {
             visit(insert.getSelect(), context);
         }
         return null;
+    }
+
+    private <S> void visitInsertAction(InsertDuplicateAction action, S context) {
+        visitUpdateSets(action.getUpdateSets(), context);
+        if (action.getWhereExpression() != null) {
+            action.getWhereExpression().accept(this, context);
+        }
+    }
+
+    private <S> void visitInsertAction(InsertConflictAction action, S context) {
+        visitUpdateSets(action.getUpdateSets(), context);
+        if (action.getWhereExpression() != null) {
+            action.getWhereExpression().accept(this, context);
+        }
+    }
+
+    @Override
+    public <S> Void visitOutputClause(OutputClause outputClause, S context) {
+        if (outputClause != null && outputClause.getSelectItemList() != null) {
+            for (SelectItem<?> selectItem : outputClause.getSelectItemList()) {
+                selectItem.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    private <S> void visitReturningClause(ReturningClause returningClause, S context) {
+        if (returningClause != null) {
+            for (SelectItem<?> selectItem : returningClause) {
+                selectItem.accept(this, context);
+            }
+        }
     }
 
     @Override
@@ -1314,6 +1536,53 @@ public class TablesNamesFinder<Void>
 
         if (merge.getFromItem() != null) {
             merge.getFromItem().accept(this, context);
+        }
+
+        if (merge.getOnCondition() != null) {
+            merge.getOnCondition().accept(this, context);
+        }
+
+        if (merge.getOperations() != null) {
+            for (MergeOperation operation : merge.getOperations()) {
+                operation.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MergeDelete mergeDelete, S context) {
+        if (mergeDelete.getAndPredicate() != null) {
+            mergeDelete.getAndPredicate().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MergeInsert mergeInsert, S context) {
+        if (mergeInsert.getAndPredicate() != null) {
+            mergeInsert.getAndPredicate().accept(this, context);
+        }
+        if (mergeInsert.getValues() != null) {
+            mergeInsert.getValues().accept(this, context);
+        }
+        if (mergeInsert.getWhereCondition() != null) {
+            mergeInsert.getWhereCondition().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MergeUpdate mergeUpdate, S context) {
+        if (mergeUpdate.getAndPredicate() != null) {
+            mergeUpdate.getAndPredicate().accept(this, context);
+        }
+        visitUpdateSets(mergeUpdate.getUpdateSets(), context);
+        if (mergeUpdate.getWhereCondition() != null) {
+            mergeUpdate.getWhereCondition().accept(this, context);
+        }
+        if (mergeUpdate.getDeleteWhereCondition() != null) {
+            mergeUpdate.getDeleteWhereCondition().accept(this, context);
         }
         return null;
     }
