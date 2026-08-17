@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,21 @@ class JsonExpressionTest {
                         + "    THEN (SELECT ((('{\"obj\":{\"field\": \"value\"}}'::JSON -> 'obj'::TEXT ->> 'field'::TEXT))))\n"
                         + " END";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testHashArrowOperatorsRoundTrip() throws JSQLParserException {
+        // #> and #>> must survive deparse+reparse: without spaces the operator glues
+        // onto the object (a#>'{b}') and re-parses as the comparison a# > '{b}'.
+        for (String sqlStr : new String[] {"SELECT a #> '{b}' FROM t",
+                "SELECT a #>> '{b}' FROM t"}) {
+            PlainSelect st = (PlainSelect) CCJSqlParserUtil.parse(sqlStr);
+            Assertions.assertInstanceOf(JsonExpression.class, st.getSelectItem(0).getExpression());
+            PlainSelect reparsed = (PlainSelect) CCJSqlParserUtil.parse(st.toString());
+            Assertions.assertInstanceOf(JsonExpression.class,
+                    reparsed.getSelectItem(0).getExpression(),
+                    sqlStr + " deparsed to " + st);
+        }
     }
 
     @Test
