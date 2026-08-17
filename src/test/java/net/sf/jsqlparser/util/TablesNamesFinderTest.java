@@ -773,10 +773,138 @@ public class TablesNamesFinderTest {
 
     @Test
     void testWindowExpressionWithNoRangeAndNoOffsetDoesNotThrowException() {
-        String sqlStr = "SELECT c, SUM(COUNT(*)) OVER (ORDER BY c ASC ROWS UNBOUNDED PRECEDING) FROM tbl GROUP BY c";
+        String sqlStr =
+                "SELECT c, SUM(COUNT(*)) OVER (ORDER BY c ASC ROWS UNBOUNDED PRECEDING) FROM tbl GROUP BY c";
 
         assertThatCode(() -> TablesNamesFinder.findTables(sqlStr))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testPipedQuery() throws JSQLParserException {
+        String sqlStr = "FROM MY_TABLE1\n"
+                + "|> WHERE id IN (SELECT id FROM MY_TABLE2)\n"
+                + "|> LEFT JOIN (SELECT item, id FROM MY_TABLE3) AS t3 ON t3.item = item\n"
+                + "|> UNION ALL (SELECT * FROM MY_TABLE4)\n"
+                + "|> SELECT item";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "MY_TABLE3", "MY_TABLE4");
+    }
+
+    @Test
+    void testDeleteWithWithItemList() throws JSQLParserException {
+        String sqlStr =
+                "WITH cte AS (SELECT * FROM MY_TABLE2) DELETE FROM MY_TABLE1 WHERE id IN (SELECT id FROM cte)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testMergeOnConditionAndOperations() throws JSQLParserException {
+        String sqlStr = "MERGE INTO MY_TABLE1 t USING MY_TABLE2 s "
+                + "ON t.id IN (SELECT id FROM MY_TABLE3) "
+                + "WHEN MATCHED AND t.v > (SELECT MIN(v) FROM MY_TABLE4) THEN UPDATE SET t.v = (SELECT MAX(v) FROM MY_TABLE5) "
+                + "WHEN NOT MATCHED THEN INSERT (v) VALUES (1)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "MY_TABLE3", "MY_TABLE4", "MY_TABLE5");
+    }
+
+    @Test
+    void testInsertWithSetUpdateSets() throws JSQLParserException {
+        String sqlStr = "INSERT INTO MY_TABLE1 SET a = (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testInsertWithOnDuplicateKeyUpdate() throws JSQLParserException {
+        String sqlStr =
+                "INSERT INTO MY_TABLE1 (a) VALUES (1) ON DUPLICATE KEY UPDATE b = (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testInsertWithOnConflictDoUpdate() throws JSQLParserException {
+        String sqlStr =
+                "INSERT INTO MY_TABLE1 (a) VALUES (1) ON CONFLICT (a) DO UPDATE SET b = (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testWithDataModifyingCte() throws JSQLParserException {
+        String sqlStr =
+                "WITH del AS (DELETE FROM MY_TABLE2) INSERT INTO MY_TABLE1 SELECT * FROM del";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testUpdateWithOutputClause() throws JSQLParserException {
+        String sqlStr =
+                "UPDATE MY_TABLE1 SET a = 1 OUTPUT (SELECT x FROM MY_TABLE2) INTO @tv";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testUpdateWithReturningClause() throws JSQLParserException {
+        String sqlStr = "UPDATE MY_TABLE1 SET a = 1 RETURNING (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testInsertWithReturningClause() throws JSQLParserException {
+        String sqlStr =
+                "INSERT INTO MY_TABLE1 (a) VALUES (1) RETURNING (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testDeleteWithReturningClause() throws JSQLParserException {
+        String sqlStr = "DELETE FROM MY_TABLE1 RETURNING (SELECT x FROM MY_TABLE2)";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testAnalyticFunctionsWithFunctionOrderBy() throws JSQLParserException {
+        String sqlStr =
+                "SELECT string_agg(name, ',' ORDER BY id) OVER (PARTITION BY grp) FROM MY_TABLE1";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1");
+    }
+
+    @Test
+    void testAnalyticFunctionsWithWindowOrderBy() throws JSQLParserException {
+        String sqlStr =
+                "SELECT SUM(v) OVER (ORDER BY (SELECT MAX(k) FROM MY_TABLE2)) FROM MY_TABLE1";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testAnalyticFunctionsWithFilterClause() throws JSQLParserException {
+        String sqlStr =
+                "SELECT SUM(v) FILTER (WHERE id IN (SELECT id FROM MY_TABLE2)) OVER () FROM MY_TABLE1";
+
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
     }
 
 }
