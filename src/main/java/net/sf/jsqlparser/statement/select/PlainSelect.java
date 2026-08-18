@@ -607,43 +607,35 @@ public class PlainSelect extends Select {
             if (ksqlWindow != null) {
                 builder.append(" WINDOW ").append(ksqlWindow);
             }
-            if (preWhere != null) {
-                builder.append(" PREWHERE ").append(preWhere);
-            }
-            if (where != null) {
-                builder.append(" WHERE ").append(where);
-            }
-            if (oracleHierarchical != null) {
-                builder.append(oracleHierarchical);
-            }
-            if (preferringClause != null) {
-                builder.append(" ").append(preferringClause);
-            }
-            if (groupBy != null) {
-                builder.append(" ").append(groupBy);
-            }
-            if (having != null) {
-                builder.append(" HAVING ").append(having);
-            }
-            if (qualify != null) {
-                builder.append(" QUALIFY ").append(qualify);
-            }
-            if (windowDefinitions != null) {
-                builder.append(" WINDOW ");
-                builder.append(windowDefinitions.stream().map(WindowDefinition::toString)
-                        .collect(joining(", ")));
-            }
-            if (emitChanges) {
-                builder.append(" EMIT CHANGES");
-            }
-        } else {
-            // without from
-            if (preWhere != null) {
-                builder.append(" PREWHERE ").append(preWhere);
-            }
-            if (where != null) {
-                builder.append(" WHERE ").append(where);
-            }
+        }
+        if (preWhere != null) {
+            builder.append(" PREWHERE ").append(preWhere);
+        }
+        if (where != null) {
+            builder.append(" WHERE ").append(where);
+        }
+        if (oracleHierarchical != null) {
+            builder.append(oracleHierarchical);
+        }
+        if (preferringClause != null) {
+            builder.append(" ").append(preferringClause);
+        }
+        if (groupBy != null) {
+            builder.append(" ").append(groupBy);
+        }
+        if (having != null) {
+            builder.append(" HAVING ").append(having);
+        }
+        if (qualify != null) {
+            builder.append(" QUALIFY ").append(qualify);
+        }
+        if (windowDefinitions != null) {
+            builder.append(" WINDOW ");
+            builder.append(windowDefinitions.stream().map(WindowDefinition::toString)
+                    .collect(joining(", ")));
+        }
+        if (emitChanges) {
+            builder.append(" EMIT CHANGES");
         }
         if (intoTempTable != null) {
             builder.append(" INTO TEMP ").append(intoTempTable);

@@ -1908,6 +1908,29 @@ public class SelectTest {
     }
 
     @Test
+    public void testSelectWithoutFromRetainsWhereGroupByHaving() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 WHERE 1 = 1");
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed("SELECT 1 GROUP BY 1 HAVING 1 = 1");
+        assertNotNull(plainSelect.getGroupBy());
+        assertNotNull(plainSelect.getHaving());
+    }
+
+    @Test
+    public void testSelectWithoutFromRetainsWindowAndQualify() throws JSQLParserException {
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed("SELECT 1 WINDOW w AS (ORDER BY 1)");
+        assertEquals(1, plainSelect.getWindowDefinitions().size());
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 QUALIFY 1 = 1");
+    }
+
+    @Test
+    public void testSelectWithoutFromRetainsHierarchicalAndPreferring() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 START WITH 1 = 1 CONNECT BY LEVEL <= 1");
+        assertSqlCanBeParsedAndDeparsed("SELECT 1 PREFERRING HIGH 1");
+    }
+
+    @Test
     public void testWeirdSelect() throws JSQLParserException {
         String sql =
                 "select r.reviews_id, substring(rd.reviews_text, 100) as reviews_text, r.reviews_rating, r.date_added, r.customers_name from reviews r, reviews_description rd where r.products_id = '19' and r.reviews_id = rd.reviews_id and rd.languages_id = '1' and r.reviews_status = 1 order by r.reviews_id desc limit 0, 6";
