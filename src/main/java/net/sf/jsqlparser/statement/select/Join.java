@@ -40,6 +40,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean straight = false;
     private boolean apply = false;
     private boolean fetch = false;
+    private boolean array = false;
     private FromItem fromItem;
     private KSQLJoinWindow joinWindow;
 
@@ -73,7 +74,10 @@ public class Join extends ASTNodeAccessImpl {
                         || cross
 
                         /* Natural Join */
-                        || natural);
+                        || natural
+
+                        /* Array Join */
+                        || array);
     }
 
     /**
@@ -337,6 +341,19 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    public boolean isArray() {
+        return array;
+    }
+
+    public void setArray(boolean array) {
+        this.array = array;
+    }
+
+    public Join withArray(boolean array) {
+        this.setArray(array);
+        return this;
+    }
+
     /**
      * Returns the right item of the join
      */
@@ -487,6 +504,10 @@ public class Join extends ASTNodeAccessImpl {
                 builder.append("INNER ");
             } else if (isSemi()) {
                 builder.append("SEMI ");
+            }
+
+            if (isArray()) {
+                builder.append("ARRAY ");
             }
 
             if (isStraight()) {

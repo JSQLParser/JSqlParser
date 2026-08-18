@@ -829,9 +829,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_CONNECT:  return nextKind != K_BY;
             case K_START:    return nextKind != K_WITH;
             case K_LEFT:     return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI;
+                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
             case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI;
+                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+            case K_ARRAY_LITERAL:
+                             return nextKind != K_JOIN;
             case K_ALL:      return nextKind != K_JOIN;
             case K_ANY:      return nextKind != OPENING_BRACKET;
             case K_SOME:     return nextKind != OPENING_BRACKET;
@@ -993,21 +995,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // String-literal alias:  SELECT col 'myAlias'
         if (kind == S_CHAR_LITERAL) return true;
 
-        // Base identifier tokens
-        if (kind == S_IDENTIFIER || kind == S_QUOTED_IDENTIFIER
-                || kind == DATA_TYPE || kind == K_DATETIMELITERAL
-                || kind == K_DATE_LITERAL) {
-            return true;
-        }
-
         // OPTION (...) introduces a query hint clause, not an alias
         if (kind == K_OPTION && getToken(2).kind == OPENING_BRACKET) {
             return false;
-        }
-
-        // Non-reserved keywords
-        if (kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD) {
-            return true;
         }
 
         // For reserved keywords in alias position, skip the structural-
@@ -1015,7 +1005,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // Only check keywords that are actually in RelObjectName's token
         // alternatives — don't fire for brackets, operators, literals, etc.
         switch (kind) {
-            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
+            case K_ALL: case K_ARRAY_LITERAL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
             case K_CREATE: case K_DEFAULT:
             case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL:
@@ -1026,8 +1016,22 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_TOP: case K_VALUE: case K_VALUES:
                 return isReservedKeywordSafeByFollower();
             default:
-                return false;
+                break;
         }
+
+        // Base identifier tokens
+        if (kind == S_IDENTIFIER || kind == S_QUOTED_IDENTIFIER
+                || kind == DATA_TYPE || kind == K_DATETIMELITERAL
+                || kind == K_DATE_LITERAL) {
+            return true;
+        }
+
+        // Non-reserved keywords
+        if (kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -6491,6 +6495,8 @@ Join JoinerExpression() #JoinerExpression:
         |
         <K_OUTER> { join.setOuter(true); }
     ]
+
+    [ <K_ARRAY_LITERAL> { join.setArray(true); } ]
 
     (
         (

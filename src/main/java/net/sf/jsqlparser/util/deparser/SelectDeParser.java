@@ -683,6 +683,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
                 builder.append(" SEMI");
             }
 
+            if (join.isArray()) {
+                builder.append(" ARRAY");
+            }
+
             if (join.isStraight()) {
                 builder.append(" STRAIGHT_JOIN ");
             } else if (join.isApply()) {
