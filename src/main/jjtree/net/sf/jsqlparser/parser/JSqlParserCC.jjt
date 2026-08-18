@@ -829,12 +829,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_CONNECT:  return nextKind != K_BY;
             case K_START:    return nextKind != K_WITH;
             case K_LEFT:     return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL
-                                    && (next2.image == null || !next2.image.equalsIgnoreCase("ARRAY"));
-
+                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
             case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL
-                                    && (next2.image == null || !next2.image.equalsIgnoreCase("ARRAY"));
+                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+            case K_ARRAY_LITERAL:
+                             return nextKind != K_JOIN;
             case K_ALL:      return nextKind != K_JOIN;
             case K_ANY:      return nextKind != OPENING_BRACKET;
             case K_SOME:     return nextKind != OPENING_BRACKET;
@@ -1006,7 +1005,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // Only check keywords that are actually in RelObjectName's token
         // alternatives — don't fire for brackets, operators, literals, etc.
         switch (kind) {
-            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
+            case K_ALL: case K_ARRAY_LITERAL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
             case K_CREATE: case K_DEFAULT:
             case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL:

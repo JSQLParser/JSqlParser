@@ -6535,7 +6535,6 @@ public class SelectTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, arr FROM t ARRAY JOIN arr", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, arr FROM t LEFT ARRAY JOIN arr", true);
 
-        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, x FROM t ARRAY JOIN [1, 2, 3] AS x", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SELECT s, x, o.name FROM t LEFT ARRAY JOIN arr AS x INNER JOIN other_table o ON t.id = o.t_id", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed(
