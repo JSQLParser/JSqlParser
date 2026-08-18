@@ -63,6 +63,13 @@ public class MergeDeParser extends AbstractDeParser<Merge>
         if (merge.getOutputClause() != null) {
             merge.getOutputClause().appendTo(builder);
         }
+
+        if (merge.getOption() != null) {
+            if (merge.getOutputClause() != null) {
+                builder.setLength(builder.length() - 1);
+            }
+            builder.append(merge.getOption());
+        }
     }
 
     @Override

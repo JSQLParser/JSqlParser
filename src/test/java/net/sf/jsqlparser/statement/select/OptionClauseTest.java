@@ -13,7 +13,10 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.merge.Merge;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -145,6 +148,64 @@ public class OptionClauseTest {
 
         Statement update = CCJSqlParserUtil.parse("UPDATE t SET a = 1 OPTION (RECOMPILE)");
         Assertions.assertNotNull(((net.sf.jsqlparser.statement.update.Update) update).getOption());
+    }
+
+    @Test
+    public void testOptionOptimizeForUnknownParameter() throws JSQLParserException {
+        String sql = "SELECT * FROM t WHERE c = @p OPTION (OPTIMIZE FOR (@p UNKNOWN))";
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        OptionHint optimizeFor = plainSelect.getOption().getOptionHints().get(0);
+        Assertions.assertEquals(1, optimizeFor.getParameters().size());
+        Column parameter =
+                Assertions.assertInstanceOf(Column.class, optimizeFor.getParameters().get(0));
+        Assertions.assertEquals("@p UNKNOWN", parameter.getColumnName());
+    }
+
+    @Test
+    public void testOptionOptimizeForMixedParameters() throws JSQLParserException {
+        String sql = "SELECT * FROM t WHERE c = @p OPTION (OPTIMIZE FOR (@p = 1, @q UNKNOWN))";
+        PlainSelect plainSelect =
+                (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        OptionHint optimizeFor = plainSelect.getOption().getOptionHints().get(0);
+        Assertions.assertEquals(2, optimizeFor.getParameters().size());
+        Assertions.assertEquals("@p = 1", optimizeFor.getParameters().get(0).toString());
+        Column parameter =
+                Assertions.assertInstanceOf(Column.class, optimizeFor.getParameters().get(1));
+        Assertions.assertEquals("@q UNKNOWN", parameter.getColumnName());
+    }
+
+    @Test
+    public void testOptionAfterInsertValuesIsRejected() {
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse(
+                        "INSERT INTO t (a) VALUES (1) OPTION (RECOMPILE)"));
+    }
+
+    @Test
+    public void testOptionAfterInsertSelect() throws JSQLParserException {
+        String sql = "INSERT INTO t (a) SELECT a FROM s OPTION (RECOMPILE)";
+        Statement statement = assertSqlCanBeParsedAndDeparsed(sql, true);
+        Insert insert = (Insert) statement;
+        Assertions.assertNotNull(insert.getSelect().getOption());
+    }
+
+    @Test
+    public void testOptionAfterMergeStatement() throws JSQLParserException {
+        String sql =
+                "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET a = s.a OPTION (HASH JOIN)";
+        Statement statement = assertSqlCanBeParsedAndDeparsed(sql, true);
+        Merge merge = (Merge) statement;
+        Assertions.assertNotNull(merge.getOption());
+        Assertions.assertEquals("HASH JOIN", merge.getOption().getOptionHints().get(0).getName());
+    }
+
+    @Test
+    public void testOptionAfterMergeOutputClause() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET a = s.a "
+                        + "OUTPUT deleted.a OPTION (HASH JOIN)",
+                false);
     }
 
     @Test

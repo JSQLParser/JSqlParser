@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.merge.*;
+import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 
@@ -31,6 +32,14 @@ public class MergeValidator<Void> extends AbstractValidator<Merge>
             merge.getOperations().forEach(operation -> operation.accept(this, null));
         }
         validateOptionalFromItems(merge.getFromItem());
+        if (merge.getOption() != null) {
+            for (OptionHint optionHint : merge.getOption().getOptionHints()) {
+                validateOptionalExpression(optionHint.getValue());
+                if (optionHint.getParameters() != null) {
+                    optionHint.getParameters().forEach(this::validateOptionalExpression);
+                }
+            }
+        }
     }
 
     @Override
