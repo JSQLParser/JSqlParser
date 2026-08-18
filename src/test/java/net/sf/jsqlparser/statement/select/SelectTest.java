@@ -6530,22 +6530,27 @@ public class SelectTest {
 
     @Test
     void testClickHouseArrayJoin() throws Exception {
-        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, x FROM t LEFT ARRAY JOIN arr AS x", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, x FROM t LEFT ARRAY JOIN arr AS x",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, x FROM t ARRAY JOIN arr AS x", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, arr FROM t ARRAY JOIN arr", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT s, arr FROM t LEFT ARRAY JOIN arr", true);
 
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "SELECT s, x, o.name FROM t LEFT ARRAY JOIN arr AS x INNER JOIN other_table o ON t.id = o.t_id", true);
+                "SELECT s, x, o.name FROM t LEFT ARRAY JOIN arr AS x INNER JOIN other_table o ON t.id = o.t_id",
+                true);
         TestUtils.assertSqlCanBeParsedAndDeparsed(
-                "WITH exploded AS (SELECT s, x FROM t LEFT ARRAY JOIN arr AS x) SELECT * FROM exploded", true);
+                "WITH exploded AS (SELECT s, x FROM t LEFT ARRAY JOIN arr AS x) SELECT * FROM exploded",
+                true);
 
-        PlainSelect selectLeft = (PlainSelect) CCJSqlParserUtil.parse("SELECT s, x FROM t LEFT ARRAY JOIN arr AS x");
+        PlainSelect selectLeft =
+                (PlainSelect) CCJSqlParserUtil.parse("SELECT s, x FROM t LEFT ARRAY JOIN arr AS x");
         Join joinLeft = selectLeft.getJoins().get(0);
         Assertions.assertTrue(joinLeft.isArray(), "Should be an array join");
         Assertions.assertTrue(joinLeft.isLeft(), "Should be a left join");
 
-        PlainSelect selectInner = (PlainSelect) CCJSqlParserUtil.parse("SELECT s, x FROM t ARRAY JOIN arr AS x");
+        PlainSelect selectInner =
+                (PlainSelect) CCJSqlParserUtil.parse("SELECT s, x FROM t ARRAY JOIN arr AS x");
         Join joinInner = selectInner.getJoins().get(0);
         Assertions.assertTrue(joinInner.isArray(), "Should be an array join");
         Assertions.assertFalse(joinInner.isLeft(), "Should not be a left join");
