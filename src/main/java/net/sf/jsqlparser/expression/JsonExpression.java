@@ -87,7 +87,10 @@ public class JsonExpression extends ASTNodeAccessImpl implements Expression {
         StringBuilder b = new StringBuilder();
         b.append(expr.toString());
         for (Map.Entry<Expression, String> ident : idents) {
-            b.append(ident.getValue()).append(ident.getKey());
+            // Separate the operator with spaces: without them `#>`/`#>>` glue onto
+            // the operand (e.g. `a#>'{b}'`), and since `#` is a legal identifier
+            // character the result re-parses as `a#` `>` `...` -- a different tree.
+            b.append(' ').append(ident.getValue()).append(' ').append(ident.getKey());
         }
         return b.toString();
     }
