@@ -14,7 +14,7 @@ import java.util.regex.*;
 public final class Server implements MultiPartName {
 
     public static final Pattern SERVER_PATTERN =
-            Pattern.compile("\\[([^\\]]+?)(?:\\\\([^\\]]+))?\\]");
+            Pattern.compile("\\[([^\\]\\\\]+)(?:\\\\([^\\]]+))?\\]");
 
     private String serverName;
 
