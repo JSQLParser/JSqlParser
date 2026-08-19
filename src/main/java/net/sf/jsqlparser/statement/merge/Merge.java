@@ -17,6 +17,7 @@ import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.OptionClause;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -41,6 +42,7 @@ public class Merge implements Statement {
     private List<MergeOperation> operations;
 
     private OutputClause outputClause;
+    private OptionClause option;
 
     private void deriveOperationsFromStandardClauses() {
         List<MergeOperation> operations = new ArrayList<>();
@@ -214,6 +216,19 @@ public class Merge implements Statement {
         return this;
     }
 
+    public OptionClause getOption() {
+        return option;
+    }
+
+    public Merge setOption(OptionClause option) {
+        this.option = option;
+        return this;
+    }
+
+    public Merge withOption(OptionClause option) {
+        return setOption(option);
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public String toString() {
@@ -246,6 +261,13 @@ public class Merge implements Statement {
 
         if (outputClause != null) {
             b.append(outputClause);
+        }
+
+        if (option != null) {
+            if (outputClause != null) {
+                b.setLength(b.length() - 1);
+            }
+            b.append(option);
         }
 
         return b.toString();

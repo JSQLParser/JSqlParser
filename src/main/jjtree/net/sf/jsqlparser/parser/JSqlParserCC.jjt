@@ -4388,6 +4388,7 @@ Statement Merge( List<WithItem<?>> with ) : {
     Expression condition;
     List<MergeOperation> operations;
     OutputClause outputClause;
+    OptionClause optionClause = null;
 }
 {
     <K_MERGE> { merge.setOracleHint(getOracleHint()); } <K_INTO> table=TableWithAlias() { merge.setTable(table); }
@@ -4397,6 +4398,8 @@ Statement Merge( List<WithItem<?>> with ) : {
     operations = MergeOperations() { merge.setOperations(operations); }
 
     [ outputClause = OutputClause() { merge.setOutputClause(outputClause); } ]
+
+    [ LOOKAHEAD(2) optionClause = OptionClause() { merge.setOption(optionClause); } ]
 
     { return merge.withWithItemsList(with); }
 }
@@ -4803,7 +4806,7 @@ Select Select() #Select:
 
             [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { select.setOrderByElements(orderByElements); } ]
             [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { select.setInterpolate(interpolateElements); } ]
-            [ LOOKAHEAD(2) optionClause = OptionClause() { select.setOption(optionClause); } ]
+            [ LOOKAHEAD(2, { !(select instanceof Values) }) optionClause = OptionClause() { select.setOption(optionClause); } ]
 
             [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() {select.setLimit(limit);} ]
             [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { select.setOffset(offset);} ]
@@ -6952,6 +6955,23 @@ InterpolateElement InterpolateElement():
     { return interpolateElement; }
 }
 
+Expression OptionHintParameter():
+{
+    UserVariable userVariable = null;
+    Expression parameter = null;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == S_AT_IDENTIFIER && getToken(2).kind == K_UNKNOWN })
+        userVariable = UserVariable() <K_UNKNOWN>
+        {
+            return new Column(userVariable + " UNKNOWN");
+        }
+        |
+        parameter = Expression() { return parameter; }
+    )
+}
+
 OptionClause OptionClause():
 {
     OptionClause optionClause = new OptionClause();
@@ -6977,8 +6997,8 @@ OptionHint OptionHint():
         (
             LOOKAHEAD("=") "=" value = Expression() { optionHint.setValue(value); optionHint.setUseEquals(true); }
             |
-            LOOKAHEAD("(") "(" parameter = Expression() { optionHint.addParameter(parameter); }
-            ( "," parameter = Expression() { optionHint.addParameter(parameter); } )*
+            LOOKAHEAD("(") "(" parameter = OptionHintParameter() { optionHint.addParameter(parameter); }
+            ( "," parameter = OptionHintParameter() { optionHint.addParameter(parameter); } )*
             ")"
             |
             LOOKAHEAD({ isOptionHintValueAhead() }) value = Expression() { optionHint.setValue(value); }

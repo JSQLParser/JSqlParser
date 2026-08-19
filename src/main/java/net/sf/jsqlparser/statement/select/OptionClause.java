@@ -15,8 +15,9 @@ import java.util.List;
 
 /**
  * Models the SQL Server (T-SQL) {@code OPTION (...)} query hint clause, which attaches a list of
- * {@link OptionHint}s to the end of a {@code SELECT}, {@code UPDATE} or {@code DELETE} statement,
- * see <a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query">Hints
+ * {@link OptionHint}s to the end of a {@code SELECT}, {@code UPDATE}, {@code DELETE} or
+ * {@code MERGE} statement, see
+ * <a href="https://learn.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-query">Hints
  * (Transact-SQL) - Query Hints</a>.
  */
 public class OptionClause implements Serializable {
