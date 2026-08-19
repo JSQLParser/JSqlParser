@@ -477,6 +477,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // DT_ZONE (TIMESTAMP WITH TIME ZONE / WITHOUT TIME ZONE) is also a valid
             // implicit cast type prefix handled by DataType(), but distinct from DATA_TYPE.
             if (k1 == DT_ZONE) return true;
+            // BigQuery JSON 'literal' - JSON lexes as K_JSON, but DataType() accepts it
+            if (k1 == K_JSON) return getToken(2).kind == S_CHAR_LITERAL;
             if (k1 != DATA_TYPE) return false;
             int k2 = getToken(2).kind;
             if (k2 != OPENING_BRACKET) return true; // DATA_TYPE literal - simple cast

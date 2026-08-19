@@ -53,6 +53,18 @@ public class CastExpressionTest {
     }
 
     @Test
+    void testImplicitCastJsonLiteral() throws JSQLParserException {
+        String sqlStr = "SELECT JSON '{\"name\": \"Jakob\"}'";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(select.getSelectItem(0).getExpression() instanceof CastExpression);
+
+        // BigQuery wraps JSON literals in functions, e. g. BOOL(JSON 'true')
+        sqlStr = "SELECT BOOL(JSON 'true') AS vacancy";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
     void testImplicitCastTimestampIssue1364() throws JSQLParserException {
         String sqlStr = "SELECT TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54+02'";
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
