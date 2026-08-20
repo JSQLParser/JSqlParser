@@ -6,21 +6,21 @@ Changelog of JSqlParser.
 
 ### Features
 
--  Session Statement ([7d2e6](https://github.com/JSQLParser/JSqlParser/commit/7d2e6b65324ce57) manticore-projects)  
--  sync with Master ([e14d7](https://github.com/JSQLParser/JSqlParser/commit/e14d7eb1c4e9963) manticore-projects)  
--  JavaCC 8 keyword utils ([cfe2d](https://github.com/JSQLParser/JSqlParser/commit/cfe2d8ccaf7c76d) manticore-projects)  
--  Complete on JavaCC-8 ([1b7ed](https://github.com/JSQLParser/JSqlParser/commit/1b7ed2d7be000ce) manticore-projects)  
--  Optimise performance ([e91c4](https://github.com/JSQLParser/JSqlParser/commit/e91c480b0bbe0a9) manticore-projects)  
--  avoid looping through the tokens every single time ([b18fb](https://github.com/JSQLParser/JSqlParser/commit/b18fbca1f48e63e) manticore-projects)  
--  avoid looping through the tokens every single time ([7ac6c](https://github.com/JSQLParser/JSqlParser/commit/7ac6cd0fa08d713) manticore-projects)  
--  add proper JMH benchmarks ([21c98](https://github.com/JSQLParser/JSqlParser/commit/21c983fc1f4f3f2) manticore-projects)  
--  JavaCC-8 ([9d144](https://github.com/JSQLParser/JSqlParser/commit/9d1442e9a4800e2) manticore-projects)  
--  remove all semantic lookaheads ([5abca](https://github.com/JSQLParser/JSqlParser/commit/5abcaeaede27cfe) manticore-projects)  
+-  Session Statement ([7d2e6](https://github.com/JSQLParser/JSqlParser/commit/7d2e6b65324ce57) manticore-projects)
+-  sync with Master ([e14d7](https://github.com/JSQLParser/JSqlParser/commit/e14d7eb1c4e9963) manticore-projects)
+-  JavaCC 8 keyword utils ([cfe2d](https://github.com/JSQLParser/JSqlParser/commit/cfe2d8ccaf7c76d) manticore-projects)
+-  Complete on JavaCC-8 ([1b7ed](https://github.com/JSQLParser/JSqlParser/commit/1b7ed2d7be000ce) manticore-projects)
+-  Optimise performance ([e91c4](https://github.com/JSQLParser/JSqlParser/commit/e91c480b0bbe0a9) manticore-projects)
+-  avoid looping through the tokens every single time ([b18fb](https://github.com/JSQLParser/JSqlParser/commit/b18fbca1f48e63e) manticore-projects)
+-  avoid looping through the tokens every single time ([7ac6c](https://github.com/JSQLParser/JSqlParser/commit/7ac6cd0fa08d713) manticore-projects)
+-  add proper JMH benchmarks ([21c98](https://github.com/JSQLParser/JSqlParser/commit/21c983fc1f4f3f2) manticore-projects)
+-  JavaCC-8 ([9d144](https://github.com/JSQLParser/JSqlParser/commit/9d1442e9a4800e2) manticore-projects)
+-  remove all semantic lookaheads ([5abca](https://github.com/JSQLParser/JSqlParser/commit/5abcaeaede27cfe) manticore-projects)
 
 ### Bug Fixes
 
--  bring back `SYNTACTIC LOOKAHEAD` where it makes sense ([b3c5b](https://github.com/JSQLParser/JSqlParser/commit/b3c5b63344de193) manticore-projects)  
--  the Quotes Token manipulation ([bad81](https://github.com/JSQLParser/JSqlParser/commit/bad818e0b872c6a) manticore-projects)  
+-  bring back `SYNTACTIC LOOKAHEAD` where it makes sense ([b3c5b](https://github.com/JSQLParser/JSqlParser/commit/b3c5b63344de193) manticore-projects)
+-  the Quotes Token manipulation ([bad81](https://github.com/JSQLParser/JSqlParser/commit/bad818e0b872c6a) manticore-projects)
 
 ### Other changes
 
@@ -29,10 +29,10 @@ Changelog of JSqlParser.
 
 ### Features
 
--  eliminate another expensive syntactic lookahead ([6049f](https://github.com/JSQLParser/JSqlParser/commit/6049fd729ec4073) manticore-projects)  
--  avoid looping through the tokens every single time ([ac175](https://github.com/JSQLParser/JSqlParser/commit/ac175138405726b) manticore-projects)  
--  adopt proper JMH based benchmark ([fe860](https://github.com/JSQLParser/JSqlParser/commit/fe860ddd18f28f8) manticore-projects)  
--  Optimise performance ([7d42f](https://github.com/JSQLParser/JSqlParser/commit/7d42ff614bd2cca) manticore-projects)  
+-  eliminate another expensive syntactic lookahead ([6049f](https://github.com/JSQLParser/JSqlParser/commit/6049fd729ec4073) manticore-projects)
+-  avoid looping through the tokens every single time ([ac175](https://github.com/JSQLParser/JSqlParser/commit/ac175138405726b) manticore-projects)
+-  adopt proper JMH based benchmark ([fe860](https://github.com/JSQLParser/JSqlParser/commit/fe860ddd18f28f8) manticore-projects)
+-  Optimise performance ([7d42f](https://github.com/JSQLParser/JSqlParser/commit/7d42ff614bd2cca) manticore-projects)
 
 ### Other changes
 
@@ -41,62 +41,62 @@ Changelog of JSqlParser.
 
 ### Features
 
--  enhance ALTER TABLE support with UNIQUE KEY and INVISIBLE index (#2234) ([78318](https://github.com/JSQLParser/JSqlParser/commit/78318bb64bcfc96) Minjae Lee)  
--  link all Expression AST Nodes ([98e03](https://github.com/JSQLParser/JSqlParser/commit/98e03d4c5e5f659) manticore-projects)  
--  add support for parsing MySQL ALTER TABLE statements with new options (#2223) ([9a36a](https://github.com/JSQLParser/JSqlParser/commit/9a36a48087eb311) Minjae Lee)  
--  support MySQL ALTER TABLE ... PARTITION BY syntax (#2210) ([d60c7](https://github.com/JSQLParser/JSqlParser/commit/d60c762f1d71c9f) Minjae Lee)  
--  add support SELECT all columns from function result (#2207) ([30cf5](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a) Lian Hu)  
--  `WithItem` must accept statements too for supporting `Delete`, `Insert`, `Update` with `Returning` ([585b6](https://github.com/JSQLParser/JSqlParser/commit/585b69c9149d418) manticore-projects)  
--  allow simple expressions for `JsonExpression` ([eef8e](https://github.com/JSQLParser/JSqlParser/commit/eef8e6e08ac39c9) Andreas Reichel)  
--  System.getProperty("SPLIT_NAMES_ON_DELIMITER") for allowing `.` dots in Table Names ([1d37e](https://github.com/JSQLParser/JSqlParser/commit/1d37eb0b94effdb) Andreas Reichel)  
--  Nested `WithItem` allows `FromQuery` ([0f749](https://github.com/JSQLParser/JSqlParser/commit/0f7493fa3d63af8) Andreas Reichel)  
--  add Order Suffixes to `AggregatePipeOperator` and support some weird BigQuery Syntax ([f932b](https://github.com/JSQLParser/JSqlParser/commit/f932b8f9807530c) Andreas Reichel)  
--  More lenient `FromQuery` allowing for `Join` and `WithItem` ([bcac0](https://github.com/JSQLParser/JSqlParser/commit/bcac023a5e43297) Andreas Reichel)  
--  More lenient `FromQuery` allowing for `Join` and `WithItem` ([5c2a4](https://github.com/JSQLParser/JSqlParser/commit/5c2a4537506a632) Andreas Reichel)  
--  `SELECT` piper operator to support `ALL | DISTINCT` ([5b209](https://github.com/JSQLParser/JSqlParser/commit/5b209f5477464ec) Andreas Reichel)  
--  improve TableSample Operator ([19f0a](https://github.com/JSQLParser/JSqlParser/commit/19f0aa4762667d0) Andreas Reichel)  
--  rewrite Piped SQL, WIP ([47583](https://github.com/JSQLParser/JSqlParser/commit/47583dea7e23992) Andreas Reichel)  
--  rewrite Piped SQL, WIP ([519b0](https://github.com/JSQLParser/JSqlParser/commit/519b02040af3ad6) Andreas Reichel)  
--  rewrite Piped SQL, WIP ([1cb26](https://github.com/JSQLParser/JSqlParser/commit/1cb26a731efae14) Andreas Reichel)  
--  rewrite Piped SQL, WIP ([0e488](https://github.com/JSQLParser/JSqlParser/commit/0e488b05159745b) Andreas Reichel)  
--  `ParenthesedSelect` can have `Alias` ([b5b24](https://github.com/JSQLParser/JSqlParser/commit/b5b242a3f6648ce) Andreas Reichel)  
--  `ParenthesedSelect` can have `Alias` ([a510f](https://github.com/JSQLParser/JSqlParser/commit/a510f135d50964e) Andreas Reichel)  
--  rework the Visitors ([8c051](https://github.com/JSQLParser/JSqlParser/commit/8c05188d74f50c0) Andreas Reichel)  
--  rework the Visitors ([d8162](https://github.com/JSQLParser/JSqlParser/commit/d816220f155d5a3) Andreas Reichel)  
--  rework the Visitors ([13879](https://github.com/JSQLParser/JSqlParser/commit/1387986effd76f3) Andreas Reichel)  
--  parsing Piped SQL, complete all Operators ([48cc2](https://github.com/JSQLParser/JSqlParser/commit/48cc2f748eb5685) Andreas Reichel)  
--  parsing Piped SQL ([f687f](https://github.com/JSQLParser/JSqlParser/commit/f687f77d38e9328) Andreas Reichel)  
--  Support not equals operator with a hat (#2153) ([3fee9](https://github.com/JSQLParser/JSqlParser/commit/3fee9aa9a2d621d) Stefan Steinhauser)  
--  Support unknown keyword (#2141) ([9ab1e](https://github.com/JSQLParser/JSqlParser/commit/9ab1ebded5fa493) Emily Ong)  
--  serialize `WithItem` ([df665](https://github.com/JSQLParser/JSqlParser/commit/df66569a87ce6fb) manticore-projects)  
--  Adding coverage for Postgres "OVERRIDING SYSTEM VALUE" (#2142) ([0ab13](https://github.com/JSQLParser/JSqlParser/commit/0ab131922d972aa) nicky6s)  
--  Piped SQL and FROM queries (WIP) ([01dc5](https://github.com/JSQLParser/JSqlParser/commit/01dc5f3472ce5ec) manticore-projects)  
--  Piped SQL and FROM queries (WIP) ([abf13](https://github.com/JSQLParser/JSqlParser/commit/abf137e04ca765d) manticore-projects)  
--  Piped SQL and FROM queries (WIP) ([f25e2](https://github.com/JSQLParser/JSqlParser/commit/f25e28bff4c96cb) manticore-projects)  
+-  enhance ALTER TABLE support with UNIQUE KEY and INVISIBLE index (#2234) ([78318](https://github.com/JSQLParser/JSqlParser/commit/78318bb64bcfc96) Minjae Lee)
+-  link all Expression AST Nodes ([98e03](https://github.com/JSQLParser/JSqlParser/commit/98e03d4c5e5f659) manticore-projects)
+-  add support for parsing MySQL ALTER TABLE statements with new options (#2223) ([9a36a](https://github.com/JSQLParser/JSqlParser/commit/9a36a48087eb311) Minjae Lee)
+-  support MySQL ALTER TABLE ... PARTITION BY syntax (#2210) ([d60c7](https://github.com/JSQLParser/JSqlParser/commit/d60c762f1d71c9f) Minjae Lee)
+-  add support SELECT all columns from function result (#2207) ([30cf5](https://github.com/JSQLParser/JSqlParser/commit/30cf5d7b930ae0a) Lian Hu)
+-  `WithItem` must accept statements too for supporting `Delete`, `Insert`, `Update` with `Returning` ([585b6](https://github.com/JSQLParser/JSqlParser/commit/585b69c9149d418) manticore-projects)
+-  allow simple expressions for `JsonExpression` ([eef8e](https://github.com/JSQLParser/JSqlParser/commit/eef8e6e08ac39c9) Andreas Reichel)
+-  System.getProperty("SPLIT_NAMES_ON_DELIMITER") for allowing `.` dots in Table Names ([1d37e](https://github.com/JSQLParser/JSqlParser/commit/1d37eb0b94effdb) Andreas Reichel)
+-  Nested `WithItem` allows `FromQuery` ([0f749](https://github.com/JSQLParser/JSqlParser/commit/0f7493fa3d63af8) Andreas Reichel)
+-  add Order Suffixes to `AggregatePipeOperator` and support some weird BigQuery Syntax ([f932b](https://github.com/JSQLParser/JSqlParser/commit/f932b8f9807530c) Andreas Reichel)
+-  More lenient `FromQuery` allowing for `Join` and `WithItem` ([bcac0](https://github.com/JSQLParser/JSqlParser/commit/bcac023a5e43297) Andreas Reichel)
+-  More lenient `FromQuery` allowing for `Join` and `WithItem` ([5c2a4](https://github.com/JSQLParser/JSqlParser/commit/5c2a4537506a632) Andreas Reichel)
+-  `SELECT` piper operator to support `ALL | DISTINCT` ([5b209](https://github.com/JSQLParser/JSqlParser/commit/5b209f5477464ec) Andreas Reichel)
+-  improve TableSample Operator ([19f0a](https://github.com/JSQLParser/JSqlParser/commit/19f0aa4762667d0) Andreas Reichel)
+-  rewrite Piped SQL, WIP ([47583](https://github.com/JSQLParser/JSqlParser/commit/47583dea7e23992) Andreas Reichel)
+-  rewrite Piped SQL, WIP ([519b0](https://github.com/JSQLParser/JSqlParser/commit/519b02040af3ad6) Andreas Reichel)
+-  rewrite Piped SQL, WIP ([1cb26](https://github.com/JSQLParser/JSqlParser/commit/1cb26a731efae14) Andreas Reichel)
+-  rewrite Piped SQL, WIP ([0e488](https://github.com/JSQLParser/JSqlParser/commit/0e488b05159745b) Andreas Reichel)
+-  `ParenthesedSelect` can have `Alias` ([b5b24](https://github.com/JSQLParser/JSqlParser/commit/b5b242a3f6648ce) Andreas Reichel)
+-  `ParenthesedSelect` can have `Alias` ([a510f](https://github.com/JSQLParser/JSqlParser/commit/a510f135d50964e) Andreas Reichel)
+-  rework the Visitors ([8c051](https://github.com/JSQLParser/JSqlParser/commit/8c05188d74f50c0) Andreas Reichel)
+-  rework the Visitors ([d8162](https://github.com/JSQLParser/JSqlParser/commit/d816220f155d5a3) Andreas Reichel)
+-  rework the Visitors ([13879](https://github.com/JSQLParser/JSqlParser/commit/1387986effd76f3) Andreas Reichel)
+-  parsing Piped SQL, complete all Operators ([48cc2](https://github.com/JSQLParser/JSqlParser/commit/48cc2f748eb5685) Andreas Reichel)
+-  parsing Piped SQL ([f687f](https://github.com/JSQLParser/JSqlParser/commit/f687f77d38e9328) Andreas Reichel)
+-  Support not equals operator with a hat (#2153) ([3fee9](https://github.com/JSQLParser/JSqlParser/commit/3fee9aa9a2d621d) Stefan Steinhauser)
+-  Support unknown keyword (#2141) ([9ab1e](https://github.com/JSQLParser/JSqlParser/commit/9ab1ebded5fa493) Emily Ong)
+-  serialize `WithItem` ([df665](https://github.com/JSQLParser/JSqlParser/commit/df66569a87ce6fb) manticore-projects)
+-  Adding coverage for Postgres "OVERRIDING SYSTEM VALUE" (#2142) ([0ab13](https://github.com/JSQLParser/JSqlParser/commit/0ab131922d972aa) nicky6s)
+-  Piped SQL and FROM queries (WIP) ([01dc5](https://github.com/JSQLParser/JSqlParser/commit/01dc5f3472ce5ec) manticore-projects)
+-  Piped SQL and FROM queries (WIP) ([abf13](https://github.com/JSQLParser/JSqlParser/commit/abf137e04ca765d) manticore-projects)
+-  Piped SQL and FROM queries (WIP) ([f25e2](https://github.com/JSQLParser/JSqlParser/commit/f25e28bff4c96cb) manticore-projects)
 
 ### Bug Fixes
 
--  `GRANT` to `PUBLIC` (allow keyword) ([4c4ff](https://github.com/JSQLParser/JSqlParser/commit/4c4ff286434f35e) manticore-projects)  
--  Oracle Hierarchical Expression shall allow XOR (not AND only) ([c9c84](https://github.com/JSQLParser/JSqlParser/commit/c9c844aa22d1bbc) manticore-projects)  
--  grammar ambiguities from #2217 ([b409c](https://github.com/JSQLParser/JSqlParser/commit/b409ceb5aa2c9d6) Andreas Reichel)  
--  SelectItem generics ([b73ce](https://github.com/JSQLParser/JSqlParser/commit/b73cee65cd74710) Andreas Reichel)  
--  add some public getters ([09f3d](https://github.com/JSQLParser/JSqlParser/commit/09f3dbcd1d8ad44) Andreas Reichel)  
--  avoid NPE on empty Window Element properties ([16685](https://github.com/JSQLParser/JSqlParser/commit/16685289d7d5879) Andreas Reichel)  
--  `IntervalExpression` supports complex expressions ([e30f3](https://github.com/JSQLParser/JSqlParser/commit/e30f30d27b58325) Andreas Reichel)  
--  avoid one JavaCC ambiguity warning ([0c092](https://github.com/JSQLParser/JSqlParser/commit/0c092afff549d52) Andreas Reichel)  
--  avoid NPE ([9714f](https://github.com/JSQLParser/JSqlParser/commit/9714f940d249af9) Andreas Reichel)  
--  Remove unneeded `LOOKAHEAD` ([fb978](https://github.com/JSQLParser/JSqlParser/commit/fb978ce11a81655) Andreas Reichel)  
--  `Like`, better use `SimpleExpression` only else there are precedence issues ([1d594](https://github.com/JSQLParser/JSqlParser/commit/1d59430eeeaf67e) Andreas Reichel)  
--  `Like` Expression accepts Complex Expressions including `BY PRIOR` ([9b92c](https://github.com/JSQLParser/JSqlParser/commit/9b92cdfcec7206c) Andreas Reichel)  
--  use `SelectItem` for `UnPivot` ([b1b86](https://github.com/JSQLParser/JSqlParser/commit/b1b86f549529ab6) Andreas Reichel)  
--  move `Pivot` and `UnPivot` before `OrderBy` ([9c37f](https://github.com/JSQLParser/JSqlParser/commit/9c37fe8eb8f3d42) Andreas Reichel)  
--  move `Pivot` and `UnPivot` before `OrderBy` ([2ca16](https://github.com/JSQLParser/JSqlParser/commit/2ca167a90f59c6c) Andreas Reichel)  
--  use `Function` and `SelectItem` ([931d3](https://github.com/JSQLParser/JSqlParser/commit/931d376ed9adc2a) Andreas Reichel)  
--  use `Function` and `SelectItem` ([db008](https://github.com/JSQLParser/JSqlParser/commit/db0081d18ba4b19) Andreas Reichel)  
--  `AllColumns` replace rewrite ([b366f](https://github.com/JSQLParser/JSqlParser/commit/b366f2b0a4e6ab6) Andreas Reichel)  
--  use proper tokens `..` and `...` in multi-part names for correct white space handling ([38d0e](https://github.com/JSQLParser/JSqlParser/commit/38d0e36e3335dab) Andreas Reichel)  
--  `AllColumns` replace takes expressions ([a2f40](https://github.com/JSQLParser/JSqlParser/commit/a2f40dd5f79fdef) Andreas Reichel)  
--  allowing skyline keywords as columns, tables, etc. (#2137) ([f9b1c](https://github.com/JSQLParser/JSqlParser/commit/f9b1cbd8a8e1c8d) nicky6s)  
+-  `GRANT` to `PUBLIC` (allow keyword) ([4c4ff](https://github.com/JSQLParser/JSqlParser/commit/4c4ff286434f35e) manticore-projects)
+-  Oracle Hierarchical Expression shall allow XOR (not AND only) ([c9c84](https://github.com/JSQLParser/JSqlParser/commit/c9c844aa22d1bbc) manticore-projects)
+-  grammar ambiguities from #2217 ([b409c](https://github.com/JSQLParser/JSqlParser/commit/b409ceb5aa2c9d6) Andreas Reichel)
+-  SelectItem generics ([b73ce](https://github.com/JSQLParser/JSqlParser/commit/b73cee65cd74710) Andreas Reichel)
+-  add some public getters ([09f3d](https://github.com/JSQLParser/JSqlParser/commit/09f3dbcd1d8ad44) Andreas Reichel)
+-  avoid NPE on empty Window Element properties ([16685](https://github.com/JSQLParser/JSqlParser/commit/16685289d7d5879) Andreas Reichel)
+-  `IntervalExpression` supports complex expressions ([e30f3](https://github.com/JSQLParser/JSqlParser/commit/e30f30d27b58325) Andreas Reichel)
+-  avoid one JavaCC ambiguity warning ([0c092](https://github.com/JSQLParser/JSqlParser/commit/0c092afff549d52) Andreas Reichel)
+-  avoid NPE ([9714f](https://github.com/JSQLParser/JSqlParser/commit/9714f940d249af9) Andreas Reichel)
+-  Remove unneeded `LOOKAHEAD` ([fb978](https://github.com/JSQLParser/JSqlParser/commit/fb978ce11a81655) Andreas Reichel)
+-  `Like`, better use `SimpleExpression` only else there are precedence issues ([1d594](https://github.com/JSQLParser/JSqlParser/commit/1d59430eeeaf67e) Andreas Reichel)
+-  `Like` Expression accepts Complex Expressions including `BY PRIOR` ([9b92c](https://github.com/JSQLParser/JSqlParser/commit/9b92cdfcec7206c) Andreas Reichel)
+-  use `SelectItem` for `UnPivot` ([b1b86](https://github.com/JSQLParser/JSqlParser/commit/b1b86f549529ab6) Andreas Reichel)
+-  move `Pivot` and `UnPivot` before `OrderBy` ([9c37f](https://github.com/JSQLParser/JSqlParser/commit/9c37fe8eb8f3d42) Andreas Reichel)
+-  move `Pivot` and `UnPivot` before `OrderBy` ([2ca16](https://github.com/JSQLParser/JSqlParser/commit/2ca167a90f59c6c) Andreas Reichel)
+-  use `Function` and `SelectItem` ([931d3](https://github.com/JSQLParser/JSqlParser/commit/931d376ed9adc2a) Andreas Reichel)
+-  use `Function` and `SelectItem` ([db008](https://github.com/JSQLParser/JSqlParser/commit/db0081d18ba4b19) Andreas Reichel)
+-  `AllColumns` replace rewrite ([b366f](https://github.com/JSQLParser/JSqlParser/commit/b366f2b0a4e6ab6) Andreas Reichel)
+-  use proper tokens `..` and `...` in multi-part names for correct white space handling ([38d0e](https://github.com/JSQLParser/JSqlParser/commit/38d0e36e3335dab) Andreas Reichel)
+-  `AllColumns` replace takes expressions ([a2f40](https://github.com/JSQLParser/JSqlParser/commit/a2f40dd5f79fdef) Andreas Reichel)
+-  allowing skyline keywords as columns, tables, etc. (#2137) ([f9b1c](https://github.com/JSQLParser/JSqlParser/commit/f9b1cbd8a8e1c8d) nicky6s)
 
 ### Other changes
 
@@ -117,74 +117,74 @@ Changelog of JSqlParser.
 
 **Add support for TableFunction [WITH OFFSET|ORDINALITY] (#2219)**
 
-* Add support for TableFunction [WITH OFFSET|ORDINALITY] 
-* This PR fixes #2218, by adding a new &#x60;withClause&#x60; to a TableFunction, which allows for support of SQL-99&#x27;s &#x60;UNNEST(...) WITH ORDINALITY&#x60; or GoogleSQL&#x27;s &#x60;UNNEST(...) WITH OFFSET&#x60;. 
-* Currently, this is a feeler PR, as I&#x27;m getting a test failure, as the output of the parsing differs in my tests: 
-* &#x60;&#x60;&#x60; 
-* org.opentest4j.AssertionFailedError: Output from Deparser does not match. &#x3D;&#x3D;&gt; 
-* Expected :select*from unnest(array[1,2,3])with offset as t(a,b) 
-* Actual   :select*from unnest(array[1,2,3])as t(a,b) 
-* &lt;Click to see difference&gt; 
-* at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151) 
-* at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132) 
-* at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197) 
-* at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182) 
-* at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156) 
-* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs(TestUtils.java:126) 
-* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed(TestUtils.java:99) 
-* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed(TestUtils.java:85) 
-* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.statement.select.TableFunctionTest.testTableFunctionWithSupportedWithClauses(TableFunctionTest.java:60) 
-* at java.base/java.lang.reflect.Method.invoke(Method.java:580) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024) 
-* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) 
-* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) 
-* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) 
-* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) 
-* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276) 
-* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) 
-* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) 
-* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) 
-* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) 
-* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) 
-* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) 
-* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) 
-* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) 
-* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) 
-* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) 
-* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) 
-* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276) 
-* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708) 
-* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) 
-* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) 
-* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) 
-* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) 
-* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) 
-* &#x60;&#x60;&#x60; 
-* rename clause -&gt; withClause 
-* Resolving test failure, and modifying the SelectDeParser to add the withClause where present 
-* Addressing PR Review comments. Using existing WITH and OFFSET keywords, adding ORDINALITY keyword. 
-* Removing ORDINALITY from the reserved keywords list in ParserKeywordsUtils, and updating pushing the result of &#x60;gradle updateKeywords&#x60; 
-* --------- 
-* Co-authored-by: David Hayes &lt;dhayes@adobe.com&gt; 
+* Add support for TableFunction [WITH OFFSET|ORDINALITY]
+* This PR fixes #2218, by adding a new &#x60;withClause&#x60; to a TableFunction, which allows for support of SQL-99&#x27;s &#x60;UNNEST(...) WITH ORDINALITY&#x60; or GoogleSQL&#x27;s &#x60;UNNEST(...) WITH OFFSET&#x60;.
+* Currently, this is a feeler PR, as I&#x27;m getting a test failure, as the output of the parsing differs in my tests:
+* &#x60;&#x60;&#x60;
+* org.opentest4j.AssertionFailedError: Output from Deparser does not match. &#x3D;&#x3D;&gt;
+* Expected :select*from unnest(array[1,2,3])with offset as t(a,b)
+* Actual   :select*from unnest(array[1,2,3])as t(a,b)
+* &lt;Click to see difference&gt;
+* at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+* at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+* at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+* at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+* at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertStatementCanBeDeparsedAs(TestUtils.java:126)
+* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed(TestUtils.java:99)
+* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed(TestUtils.java:85)
+* at net.sf.jsqlparser@5.2-SNAPSHOT/net.sf.jsqlparser.statement.select.TableFunctionTest.testTableFunctionWithSupportedWithClauses(TableFunctionTest.java:60)
+* at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:1024)
+* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+* at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+* at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+* at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+* at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+* at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+* at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+* at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+* at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+* &#x60;&#x60;&#x60;
+* rename clause -&gt; withClause
+* Resolving test failure, and modifying the SelectDeParser to add the withClause where present
+* Addressing PR Review comments. Using existing WITH and OFFSET keywords, adding ORDINALITY keyword.
+* Removing ORDINALITY from the reserved keywords list in ParserKeywordsUtils, and updating pushing the result of &#x60;gradle updateKeywords&#x60;
+* ---------
+* Co-authored-by: David Hayes &lt;dhayes@adobe.com&gt;
 
 [e5fa0](https://github.com/JSQLParser/JSqlParser/commit/e5fa004cdffdcc8) David Hayes *2025-04-08 09:22:59*
 
@@ -195,11 +195,11 @@ Changelog of JSqlParser.
 
 **Add MySQL Index Parsing Support for ALTER TABLE Statements (#2215)**
 
-* add spatial, fulltext index 
-* add complex spatial index case 
-* fix Reflection test 
-* add test case about add index 
-* fix for passing test 
+* add spatial, fulltext index
+* add complex spatial index case
+* fix Reflection test
+* add test case about add index
+* fix for passing test
 
 [090bb](https://github.com/JSQLParser/JSqlParser/commit/090bb60da58c3f4) Minjae Lee *2025-04-04 12:32:44*
 
@@ -235,16 +235,16 @@ Changelog of JSqlParser.
 
 **Add support for parsing MySQL DISCARD and IMPORT TABLESPACE DDL statements (#2198)**
 
-* Add support for parsing MySQL DISCARD and IMPORT TABLESPACE DDL statements 
-* fix code formatting 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* Add support for parsing MySQL DISCARD and IMPORT TABLESPACE DDL statements
+* fix code formatting
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [8e651](https://github.com/JSQLParser/JSqlParser/commit/8e651ff232171eb) Minjae Lee *2025-03-20 23:44:30*
 
 **IsNullExpression and IsBooleanExpression children are not visited in TablesNamesFinder (#2180)**
 
-* IsNullExpression and IsBooleanExpression children are not visited in TablesNamesFinder 
+* IsNullExpression and IsBooleanExpression children are not visited in TablesNamesFinder
 
 [ad575](https://github.com/JSQLParser/JSqlParser/commit/ad5758048f06462) SuperPat *2025-03-04 14:07:39*
 
@@ -255,16 +255,16 @@ Changelog of JSqlParser.
 
 **added support for minus all; except all; intersect all; (#2081)**
 
-* Co-authored-by: sunanda-vs &lt;22m2107@iitb.ac.in&gt; 
+* Co-authored-by: sunanda-vs &lt;22m2107@iitb.ac.in&gt;
 
 [4492e](https://github.com/JSQLParser/JSqlParser/commit/4492e74fd36f8a4) Sunanda Somwase *2025-02-07 23:42:00*
 
 **#2119 add support INSERT OVERWRITE PARTITION (#2135)**
 
-* #2119 add support INSERT OVERWRITE PARTITION 
-* #2119 fix test case 
-* #2119 add reserved keyword 
-* run spotlessApply 
+* #2119 add support INSERT OVERWRITE PARTITION
+* #2119 fix test case
+* #2119 add reserved keyword
+* run spotlessApply
 
 [f1dee](https://github.com/JSQLParser/JSqlParser/commit/f1dee4c43a9a300) tt20061904 *2025-01-06 06:07:23*
 
@@ -273,48 +273,48 @@ Changelog of JSqlParser.
 
 ### Features
 
--  allow file names as `Table` supporting CSV or Parquet files ([b2877](https://github.com/JSQLParser/JSqlParser/commit/b287779823e338b) manticore-projects)  
--  add support MATCH_ANY MATCH_ALL MATCH_PHRASE MATCH_PHRASE_PREFIX MATCH_REGEXP (#2132) ([f6c3c](https://github.com/JSQLParser/JSqlParser/commit/f6c3c7dc2a1b4ff) Liming Deng)  
--  syntax sugar for table functions ([e8ff9](https://github.com/JSQLParser/JSqlParser/commit/e8ff9fb98d299dc) manticore-projects)  
--  functions with extra keywords, like BigQuery Timeseries functions ([b0b0f](https://github.com/JSQLParser/JSqlParser/commit/b0b0f4d6178918b) manticore-projects)  
--  add JSON to the list of data types ([92bbd](https://github.com/JSQLParser/JSqlParser/commit/92bbd90e8755d8d) Andreas Reichel)  
--  proper `:` JSon operator ([f8080](https://github.com/JSQLParser/JSqlParser/commit/f80800ca5294e89) Andreas Reichel)  
--  Snowflake `GET` operator `:` ([6eb58](https://github.com/JSQLParser/JSqlParser/commit/6eb588752f0f780) Andreas Reichel)  
--  `LATERAL VIEW` supports multiple alias columns ([4814c](https://github.com/JSQLParser/JSqlParser/commit/4814ccdd35b4277) Andreas Reichel)  
--  `ON OVERFLOW` support for the `ListAgg` function (Oracle, DB2) ([5cf28](https://github.com/JSQLParser/JSqlParser/commit/5cf281f1de4f9d3) Andreas Reichel)  
--  `JsonExpression` supports Expressions rather than Char/Long only ([3d488](https://github.com/JSQLParser/JSqlParser/commit/3d4883523e255e9) Andreas Reichel)  
--  `CosineSimilarity` Expression ([90adf](https://github.com/JSQLParser/JSqlParser/commit/90adf829153e00f) Andreas Reichel)  
--  add syntax sugar for accessing name parts easier ([25b08](https://github.com/JSQLParser/JSqlParser/commit/25b08b15e3cc670) manticore-projects)  
--  add Oracle/H2 `EXPLAIN PLAN [FOR] select` ([d837b](https://github.com/JSQLParser/JSqlParser/commit/d837b677add70ef) manticore-projects)  
--  add DuckDB `SUMMARIZE table | select` ([ad132](https://github.com/JSQLParser/JSqlParser/commit/ad132ee298d7bfe) manticore-projects)  
--  methods for returning unquoted names and identifiers ([7e7ac](https://github.com/JSQLParser/JSqlParser/commit/7e7acba1b7d8e54) manticore-projects)  
--  methods for returning unquoted names and identifiers ([728b2](https://github.com/JSQLParser/JSqlParser/commit/728b286f0948aba) manticore-projects)  
--  `CREATE SCHEMA IF NOT EXISTS ...` ([d7bf2](https://github.com/JSQLParser/JSqlParser/commit/d7bf249b94c97ff) manticore-projects)  
--  improve the Expression Visitor Adapter ([e8bc4](https://github.com/JSQLParser/JSqlParser/commit/e8bc4463f907b75) Andreas Reichel)  
--  improve Visitors ([8a662](https://github.com/JSQLParser/JSqlParser/commit/8a662af8109b650) Andreas Reichel)  
--  syntax sugar ([13572](https://github.com/JSQLParser/JSqlParser/commit/13572a83b703324) Andreas Reichel)  
--  improve String representation of `Table` and `Column` ([f3268](https://github.com/JSQLParser/JSqlParser/commit/f3268e73bdd0040) Andreas Reichel)  
--  improve usability of the `ExpressionVisitorAdapter` ([6a36b](https://github.com/JSQLParser/JSqlParser/commit/6a36b3fc6af5ae1) Andreas Reichel)  
+-  allow file names as `Table` supporting CSV or Parquet files ([b2877](https://github.com/JSQLParser/JSqlParser/commit/b287779823e338b) manticore-projects)
+-  add support MATCH_ANY MATCH_ALL MATCH_PHRASE MATCH_PHRASE_PREFIX MATCH_REGEXP (#2132) ([f6c3c](https://github.com/JSQLParser/JSqlParser/commit/f6c3c7dc2a1b4ff) Liming Deng)
+-  syntax sugar for table functions ([e8ff9](https://github.com/JSQLParser/JSqlParser/commit/e8ff9fb98d299dc) manticore-projects)
+-  functions with extra keywords, like BigQuery Timeseries functions ([b0b0f](https://github.com/JSQLParser/JSqlParser/commit/b0b0f4d6178918b) manticore-projects)
+-  add JSON to the list of data types ([92bbd](https://github.com/JSQLParser/JSqlParser/commit/92bbd90e8755d8d) Andreas Reichel)
+-  proper `:` JSon operator ([f8080](https://github.com/JSQLParser/JSqlParser/commit/f80800ca5294e89) Andreas Reichel)
+-  Snowflake `GET` operator `:` ([6eb58](https://github.com/JSQLParser/JSqlParser/commit/6eb588752f0f780) Andreas Reichel)
+-  `LATERAL VIEW` supports multiple alias columns ([4814c](https://github.com/JSQLParser/JSqlParser/commit/4814ccdd35b4277) Andreas Reichel)
+-  `ON OVERFLOW` support for the `ListAgg` function (Oracle, DB2) ([5cf28](https://github.com/JSQLParser/JSqlParser/commit/5cf281f1de4f9d3) Andreas Reichel)
+-  `JsonExpression` supports Expressions rather than Char/Long only ([3d488](https://github.com/JSQLParser/JSqlParser/commit/3d4883523e255e9) Andreas Reichel)
+-  `CosineSimilarity` Expression ([90adf](https://github.com/JSQLParser/JSqlParser/commit/90adf829153e00f) Andreas Reichel)
+-  add syntax sugar for accessing name parts easier ([25b08](https://github.com/JSQLParser/JSqlParser/commit/25b08b15e3cc670) manticore-projects)
+-  add Oracle/H2 `EXPLAIN PLAN [FOR] select` ([d837b](https://github.com/JSQLParser/JSqlParser/commit/d837b677add70ef) manticore-projects)
+-  add DuckDB `SUMMARIZE table | select` ([ad132](https://github.com/JSQLParser/JSqlParser/commit/ad132ee298d7bfe) manticore-projects)
+-  methods for returning unquoted names and identifiers ([7e7ac](https://github.com/JSQLParser/JSqlParser/commit/7e7acba1b7d8e54) manticore-projects)
+-  methods for returning unquoted names and identifiers ([728b2](https://github.com/JSQLParser/JSqlParser/commit/728b286f0948aba) manticore-projects)
+-  `CREATE SCHEMA IF NOT EXISTS ...` ([d7bf2](https://github.com/JSQLParser/JSqlParser/commit/d7bf249b94c97ff) manticore-projects)
+-  improve the Expression Visitor Adapter ([e8bc4](https://github.com/JSQLParser/JSqlParser/commit/e8bc4463f907b75) Andreas Reichel)
+-  improve Visitors ([8a662](https://github.com/JSQLParser/JSqlParser/commit/8a662af8109b650) Andreas Reichel)
+-  syntax sugar ([13572](https://github.com/JSQLParser/JSqlParser/commit/13572a83b703324) Andreas Reichel)
+-  improve String representation of `Table` and `Column` ([f3268](https://github.com/JSQLParser/JSqlParser/commit/f3268e73bdd0040) Andreas Reichel)
+-  improve usability of the `ExpressionVisitorAdapter` ([6a36b](https://github.com/JSQLParser/JSqlParser/commit/6a36b3fc6af5ae1) Andreas Reichel)
 
 ### Bug Fixes
 
--  rewrite the production to make it comptaible with the Maven build ([785af](https://github.com/JSQLParser/JSqlParser/commit/785af163575f189) manticore-projects)  
--  [FEATURE] TablesNamesFinder does not support CREATE VIEW #2123 (#2124) ([8f843](https://github.com/JSQLParser/JSqlParser/commit/8f8439e485a412e) Cedric Dandoy)  
--  De-parse `TableFunction` ([e122b](https://github.com/JSQLParser/JSqlParser/commit/e122bcf7d7a01cf) manticore-projects)  
--  Alias of the ParenthesedSelect when FromItem is a TableFunction ([46919](https://github.com/JSQLParser/JSqlParser/commit/469190d03709254) manticore-projects)  
--  JSon functions with Column parameters ([82251](https://github.com/JSQLParser/JSqlParser/commit/822517899546f19) Andreas Reichel)  
--  Issue #2109 true and false value parsed as column instead of BooleanValue (#2110) ([7acf9](https://github.com/JSQLParser/JSqlParser/commit/7acf9d548edc854) lucarota)  
--  `CREATE TABLE` UNIQUE vs. UNIQUE KEY ([3030c](https://github.com/JSQLParser/JSqlParser/commit/3030c35d28ad3cf) Andreas Reichel)  
--  clean up minor issues around #2083 ([be8ff](https://github.com/JSQLParser/JSqlParser/commit/be8ff930ebc4fa0) Andreas Reichel)  
--  avoid NPE ([db4b0](https://github.com/JSQLParser/JSqlParser/commit/db4b04dd0b8ce28) manticore-projects)  
--  fix the Grammar so it builds with Maven ([d3d3a](https://github.com/JSQLParser/JSqlParser/commit/d3d3af9b5974fb5) manticore-projects)  
--  `TableNameFinder` for `Alter Table` ([33ba5](https://github.com/JSQLParser/JSqlParser/commit/33ba5eb521c4dae) manticore-projects)  
--  remove obsolete `SimpleFunction` ([cd068](https://github.com/JSQLParser/JSqlParser/commit/cd0689e0120fc8e) manticore-projects)  
--  license headers ([e842e](https://github.com/JSQLParser/JSqlParser/commit/e842e18511c65f5) Andreas Reichel)  
--  add needed LOOKAHEAD(2) ([421e2](https://github.com/JSQLParser/JSqlParser/commit/421e2894b226018) Andreas Reichel)  
--  TablesNamesFinder `UpdateSets` ([11ceb](https://github.com/JSQLParser/JSqlParser/commit/11cebcfd1220944) Andreas Reichel)  
--  Multi-Variable `LambdaExpression` ([e0ad7](https://github.com/JSQLParser/JSqlParser/commit/e0ad7c84b688c39) Andreas Reichel)  
--  `FromItem` alias must not shade an actual table (found before) ([d8207](https://github.com/JSQLParser/JSqlParser/commit/d8207aaf616f10e) Andreas Reichel)  
+-  rewrite the production to make it comptaible with the Maven build ([785af](https://github.com/JSQLParser/JSqlParser/commit/785af163575f189) manticore-projects)
+-  [FEATURE] TablesNamesFinder does not support CREATE VIEW #2123 (#2124) ([8f843](https://github.com/JSQLParser/JSqlParser/commit/8f8439e485a412e) Cedric Dandoy)
+-  De-parse `TableFunction` ([e122b](https://github.com/JSQLParser/JSqlParser/commit/e122bcf7d7a01cf) manticore-projects)
+-  Alias of the ParenthesedSelect when FromItem is a TableFunction ([46919](https://github.com/JSQLParser/JSqlParser/commit/469190d03709254) manticore-projects)
+-  JSon functions with Column parameters ([82251](https://github.com/JSQLParser/JSqlParser/commit/822517899546f19) Andreas Reichel)
+-  Issue #2109 true and false value parsed as column instead of BooleanValue (#2110) ([7acf9](https://github.com/JSQLParser/JSqlParser/commit/7acf9d548edc854) lucarota)
+-  `CREATE TABLE` UNIQUE vs. UNIQUE KEY ([3030c](https://github.com/JSQLParser/JSqlParser/commit/3030c35d28ad3cf) Andreas Reichel)
+-  clean up minor issues around #2083 ([be8ff](https://github.com/JSQLParser/JSqlParser/commit/be8ff930ebc4fa0) Andreas Reichel)
+-  avoid NPE ([db4b0](https://github.com/JSQLParser/JSqlParser/commit/db4b04dd0b8ce28) manticore-projects)
+-  fix the Grammar so it builds with Maven ([d3d3a](https://github.com/JSQLParser/JSqlParser/commit/d3d3af9b5974fb5) manticore-projects)
+-  `TableNameFinder` for `Alter Table` ([33ba5](https://github.com/JSQLParser/JSqlParser/commit/33ba5eb521c4dae) manticore-projects)
+-  remove obsolete `SimpleFunction` ([cd068](https://github.com/JSQLParser/JSqlParser/commit/cd0689e0120fc8e) manticore-projects)
+-  license headers ([e842e](https://github.com/JSQLParser/JSqlParser/commit/e842e18511c65f5) Andreas Reichel)
+-  add needed LOOKAHEAD(2) ([421e2](https://github.com/JSQLParser/JSqlParser/commit/421e2894b226018) Andreas Reichel)
+-  TablesNamesFinder `UpdateSets` ([11ceb](https://github.com/JSQLParser/JSqlParser/commit/11cebcfd1220944) Andreas Reichel)
+-  Multi-Variable `LambdaExpression` ([e0ad7](https://github.com/JSQLParser/JSqlParser/commit/e0ad7c84b688c39) Andreas Reichel)
+-  `FromItem` alias must not shade an actual table (found before) ([d8207](https://github.com/JSQLParser/JSqlParser/commit/d8207aaf616f10e) Andreas Reichel)
 
 ### Other changes
 
@@ -345,7 +345,7 @@ Changelog of JSqlParser.
 
 **feat mysql alter force,engine,algorithm,lock (#2121)**
 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [18c1a](https://github.com/JSQLParser/JSqlParser/commit/18c1a2c63d9719b) Minjae Lee *2024-12-09 09:09:37*
 
@@ -361,111 +361,111 @@ Changelog of JSqlParser.
 
 **Fix issue 2089: Enhance MySQL CONVERT Statement Parsing (#2117)**
 
-* fix convert toString 
-* fix mysql convert 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* fix convert toString
+* fix mysql convert
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [8b414](https://github.com/JSQLParser/JSqlParser/commit/8b4149b3b7e9a35) Minjae Lee *2024-11-26 05:55:37*
 
 **Fix issue 2106: Add parsing functionality for MySQL ALTER Table option statements (#2115)**
 
-* add alter table option 
-* fix CreateParameter by adding auto_increment for passing test 
-* fix by updatekeywords 
-* test add assertSqlCanBeParsedAndDeparsed 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* add alter table option
+* fix CreateParameter by adding auto_increment for passing test
+* fix by updatekeywords
+* test add assertSqlCanBeParsedAndDeparsed
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [fee2f](https://github.com/JSQLParser/JSqlParser/commit/fee2f90c0283b3e) Minjae Lee *2024-11-24 00:46:00*
 
 **Fix issue 2106: Add parsing functionality for MySQL ADD PARTITION and DROP PARTITION clauses in ALTER TABLE statements(2) (#2108)**
 
-* feat MySQL Alter add partition 
-* fix PartitionDefinition to Serializable 
-* add Engine variable to MySQL partition definition 
-* fix: Update parser to correctly handle ENGINE token and pass existing CREATE TABLE tests 
-* feat mysql alter drop partition 
-* refactor truncate partition 
-* fix codacy 
-* fix: add LOOKAHEADs 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* doc: mention running &#x60;gradle check&#x60; 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* style: add license header 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* --------- 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
-* Co-authored-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
+* feat MySQL Alter add partition
+* fix PartitionDefinition to Serializable
+* add Engine variable to MySQL partition definition
+* fix: Update parser to correctly handle ENGINE token and pass existing CREATE TABLE tests
+* feat mysql alter drop partition
+* refactor truncate partition
+* fix codacy
+* fix: add LOOKAHEADs
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* doc: mention running &#x60;gradle check&#x60;
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* style: add license header
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* ---------
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
+* Co-authored-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
 
 [12952](https://github.com/JSQLParser/JSqlParser/commit/12952d64f87bdef) Minjae Lee *2024-11-14 01:05:19*
 
 **Fix issue 2106: Add parsing functionality for MySQL `ADD PARTITION` and `DROP PARTITION` clauses in `ALTER TABLE` statements  (#2107)**
 
-* feat MySQL Alter add partition 
-* fix PartitionDefinition to Serializable 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* feat MySQL Alter add partition
+* fix PartitionDefinition to Serializable
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [7b0e4](https://github.com/JSQLParser/JSqlParser/commit/7b0e42f60a60153) Minjae Lee *2024-11-12 12:05:28*
 
 **Add parsing functionality for MySQL CONVERT TO statement (#2097)**
 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [dc123](https://github.com/JSQLParser/JSqlParser/commit/dc123820f869803) Minjae Lee *2024-10-25 15:33:05*
 
 **Fix issue 2090: Correctly parse LOCK clause in ALTER TABLE statements (#2095)**
 
-* Add support for parsing LOCK clause in ALTER TABLE statements 
-* fix code formatting 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* Add support for parsing LOCK clause in ALTER TABLE statements
+* fix code formatting
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [f3f6b](https://github.com/JSQLParser/JSqlParser/commit/f3f6b72731d5c92) Minjae Lee *2024-10-24 12:20:58*
 
 **Fix parsing `ALTER TABLE ... ADD COLUMNS (...)` (#2087)**
 
-* The current behaviour fails when it encounters &#x60;ADD COLUMNS&#x60; and merges 
-* everything in the &#x60;()&#x60; into one string with no whitespace. 
-* So &#x60;ALTER TABLE catalog.table.name ADD COLUMNS (apples int)&#x60; becomes 
-* &#x60;ALTER TABLE catalog.table.name ADD COLUMNS (applesint)&#x60;. 
-* This commit adds an understanding of how &#x60;ADD COLUMNS&#x60; to the grammar. 
+* The current behaviour fails when it encounters &#x60;ADD COLUMNS&#x60; and merges
+* everything in the &#x60;()&#x60; into one string with no whitespace.
+* So &#x60;ALTER TABLE catalog.table.name ADD COLUMNS (apples int)&#x60; becomes
+* &#x60;ALTER TABLE catalog.table.name ADD COLUMNS (applesint)&#x60;.
+* This commit adds an understanding of how &#x60;ADD COLUMNS&#x60; to the grammar.
 
 [22909](https://github.com/JSQLParser/JSqlParser/commit/229099c74b92845) Nathan Jaremko *2024-10-24 01:11:46*
 
 **Failure to parse query with PRIOR in select list (#2083)**
 
-* Added support for PRIOR operator to be used in select list 
-* Fixed copy paste issue 
+* Added support for PRIOR operator to be used in select list
+* Fixed copy paste issue
 
 [30469](https://github.com/JSQLParser/JSqlParser/commit/30469248935ecb9) hannes92 *2024-10-02 23:57:04*
 
 **Skyline syntax (preferring clause) (#2078)**
 
-* feat: Implement skyline syntax (preferring clause) 
-* fix: Fix codacy errors 
-* style: Execute :spotlessApply 
-* fix: Remove unused import 
-* refactor: Replace wildcard imports 
-* refactor: Remove redundant imports 
-* --------- 
-* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt; 
+* feat: Implement skyline syntax (preferring clause)
+* fix: Fix codacy errors
+* style: Execute :spotlessApply
+* fix: Remove unused import
+* refactor: Replace wildcard imports
+* refactor: Remove redundant imports
+* ---------
+* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt;
 
 [d1373](https://github.com/JSQLParser/JSqlParser/commit/d1373c5f7048224) Stefan Steinhauser *2024-09-17 09:31:32*
 
 **Unparenthesized `SubSelect` as `FromItem` (#2073)**
 
-* feat: Implement FromItem in Select 
-* Implement FromItem interface in Select to allow Select being an unparenthesized FromItem 
-* Refs: JSQLParser/JSqlParser#2071 
-* feat: Implement grammar to support Select as FromItem 
-* Refs: JSQLParser/JSqlParser#2071 
-* style: Run gradle :spotlessApply 
-* style: Run gradle :spotlessApply 
-* --------- 
-* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt; 
+* feat: Implement FromItem in Select
+* Implement FromItem interface in Select to allow Select being an unparenthesized FromItem
+* Refs: JSQLParser/JSqlParser#2071
+* feat: Implement grammar to support Select as FromItem
+* Refs: JSQLParser/JSqlParser#2071
+* style: Run gradle :spotlessApply
+* style: Run gradle :spotlessApply
+* ---------
+* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt;
 
 [60f4d](https://github.com/JSQLParser/JSqlParser/commit/60f4d74f7d8d500) Stefan Steinhauser *2024-09-10 10:49:49*
 
@@ -481,51 +481,51 @@ Changelog of JSqlParser.
 
 **Exasol support (#2046)**
 
-* feat: Support REGEXP_LIKE as LikeExpression 
-* Implement support of REGEXP_LIKE as LikeExpression as described here: https://docs.exasol.com/db/latest/sql_references/predicates/not_regexp_like.htm 
-* feat: Support sub select as part of function parameters 
-* Allow unparenthesesed sub selects being part of multiple function parameters 
-* fix: Readd mistakenly removed K_TEXT_LITERAL 
-* revert: Revert code formatting changes 
-* fix: Fix choice conflicts 
-* refactor: Rename test methods 
-* refactor: Apply  on changed files 
-* feat: Introduce allowUnparenthesizedSubSelects feature 
-* refactor: Apply formatApply 
-* test: add test for the standard grammar, expected to fail 
-* test: make the performance tests more robust regarding the time-outs 
-* style: reformat code 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* fix: Revert default keyword changes 
-* fix: Revert default keyword changes 
-* --------- 
-* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
-* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt; 
-* Co-authored-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt; 
+* feat: Support REGEXP_LIKE as LikeExpression
+* Implement support of REGEXP_LIKE as LikeExpression as described here: https://docs.exasol.com/db/latest/sql_references/predicates/not_regexp_like.htm
+* feat: Support sub select as part of function parameters
+* Allow unparenthesesed sub selects being part of multiple function parameters
+* fix: Readd mistakenly removed K_TEXT_LITERAL
+* revert: Revert code formatting changes
+* fix: Fix choice conflicts
+* refactor: Rename test methods
+* refactor: Apply  on changed files
+* feat: Introduce allowUnparenthesizedSubSelects feature
+* refactor: Apply formatApply
+* test: add test for the standard grammar, expected to fail
+* test: make the performance tests more robust regarding the time-outs
+* style: reformat code
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* fix: Revert default keyword changes
+* fix: Revert default keyword changes
+* ---------
+* Signed-off-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
+* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt;
+* Co-authored-by: Andreas Reichel &lt;andreas@manticore-projects.com&gt;
 
 [93ca6](https://github.com/JSQLParser/JSqlParser/commit/93ca6610425fc8a) Stefan Steinhauser *2024-08-20 08:16:27*
 
 **chore removing system.out.println lines + minor clean up of unit test scripts (#2060)**
 
-* chore removing system.out.println lines + minor clean up 
-* formatting fixes via spotlessApply 
+* chore removing system.out.println lines + minor clean up
+* formatting fixes via spotlessApply
 
 [11616](https://github.com/JSQLParser/JSqlParser/commit/11616a0206ed7c5) nicky6s *2024-08-19 07:50:32*
 
 **feature/fix: parsing inserts/updates/delete within CTEs (#2055)**
 
-* feature parsing inserts/updates/delete within CTEs 
-* removing System lines 
-* fixing codacy issues 
-* reducing the looping in NestedBracketsPerformanceTest to just 6 
-* formatting fixes via spotlessApply 
+* feature parsing inserts/updates/delete within CTEs
+* removing System lines
+* fixing codacy issues
+* reducing the looping in NestedBracketsPerformanceTest to just 6
+* formatting fixes via spotlessApply
 
 [82470](https://github.com/JSQLParser/JSqlParser/commit/82470e55aaf9157) nicky6s *2024-08-04 16:45:56*
 
 **chore adding extra details to unit test scenarios (#2051)**
 
-* chore adding extra details to unit test scenarios 
-* addressing review comments 
+* chore adding extra details to unit test scenarios
+* addressing review comments
 
 [21c60](https://github.com/JSQLParser/JSqlParser/commit/21c605e3e2f5f52) nicky6s *2024-07-31 19:19:08*
 
@@ -536,32 +536,32 @@ Changelog of JSqlParser.
 
 **fix truncate parsing to capture multiple tables (#2048)**
 
-* fix truncate parsing to capture multiple tables 
-* followup fixes including adding a lookahead 
-* replacng tabs with spaces 
-* increasing lookahead 
-* fixing after getting maven working locally 
+* fix truncate parsing to capture multiple tables
+* followup fixes including adding a lookahead
+* replacng tabs with spaces
+* increasing lookahead
+* fixing after getting maven working locally
 
 [aca82](https://github.com/JSQLParser/JSqlParser/commit/aca82f5926b2e95) Nick Redfearn *2024-07-26 11:52:27*
 
 **Resolve parsing error for CHARACTER SET and COLLATE in MySQL ALTER TABLE (issue 2027) (#2045)**
 
-* fix: parsing alter text character set 
-* style: remove unnecessary comment 
-* fix: TEXT as a data type token 
-* --------- 
-* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt; 
+* fix: parsing alter text character set
+* style: remove unnecessary comment
+* fix: TEXT as a data type token
+* ---------
+* Co-authored-by: mj-db &lt;mj.db@kakaocorp.com&gt;
 
 [93c82](https://github.com/JSQLParser/JSqlParser/commit/93c8210e218d7f5) Minjae Lee *2024-07-23 02:27:05*
 
 **Avoid private tokens to be white listed and allow any word character in token value (#2044)**
 
-* fix: Avoid private tokens to be white listed 
-* Closes JSQLParser/JSqlParser#2040 
-* feat: Allow all word characters as token value 
-* Closes JSQLParser/JSqlParser#2041 
-* --------- 
-* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt; 
+* fix: Avoid private tokens to be white listed
+* Closes JSQLParser/JSqlParser#2040
+* feat: Allow all word characters as token value
+* Closes JSQLParser/JSqlParser#2041
+* ---------
+* Co-authored-by: Stefan Steinhauser &lt;stefan.steinhauser@arz.at&gt;
 
 [821e9](https://github.com/JSQLParser/JSqlParser/commit/821e92e8fb6e48e) Stefan Steinhauser *2024-07-20 10:35:47*
 
@@ -570,97 +570,97 @@ Changelog of JSqlParser.
 
 ### Breaking changes
 
--  Visitors return Objects and accept parameters ([5bd28](https://github.com/JSQLParser/JSqlParser/commit/5bd28c8b309df6c) Andreas Reichel)  
--  Visitors return Objects ([131a9](https://github.com/JSQLParser/JSqlParser/commit/131a988ccea2d91) Andreas Reichel)  
--  Visitors return Objects ([c2328](https://github.com/JSQLParser/JSqlParser/commit/c2328120e7a79ff) Andreas Reichel)  
--  Visitors return Objects ([ec497](https://github.com/JSQLParser/JSqlParser/commit/ec49762708e920a) Andreas Reichel)  
--  Visitors return Objects ([681ca](https://github.com/JSQLParser/JSqlParser/commit/681cac933d83516) Andreas Reichel)  
+-  Visitors return Objects and accept parameters ([5bd28](https://github.com/JSQLParser/JSqlParser/commit/5bd28c8b309df6c) Andreas Reichel)
+-  Visitors return Objects ([131a9](https://github.com/JSQLParser/JSqlParser/commit/131a988ccea2d91) Andreas Reichel)
+-  Visitors return Objects ([c2328](https://github.com/JSQLParser/JSqlParser/commit/c2328120e7a79ff) Andreas Reichel)
+-  Visitors return Objects ([ec497](https://github.com/JSQLParser/JSqlParser/commit/ec49762708e920a) Andreas Reichel)
+-  Visitors return Objects ([681ca](https://github.com/JSQLParser/JSqlParser/commit/681cac933d83516) Andreas Reichel)
 
 ### Features
 
--  provide compatibility methods ([3f995](https://github.com/JSQLParser/JSqlParser/commit/3f99548b99bbfe3) Andreas Reichel)  
--  apply the new parametrized Visitor patterns to all entities and provide default implementations ([e1692](https://github.com/JSQLParser/JSqlParser/commit/e1692990c543ed1) Andreas Reichel)  
--  syntax sugar ([2fce4](https://github.com/JSQLParser/JSqlParser/commit/2fce4c009b77d85) Andreas Reichel)  
--  Visitors return Objects and accept parameters ([5bd28](https://github.com/JSQLParser/JSqlParser/commit/5bd28c8b309df6c) Andreas Reichel)  
--  Visitors return Objects ([131a9](https://github.com/JSQLParser/JSqlParser/commit/131a988ccea2d91) Andreas Reichel)  
--  Visitors return Objects ([c2328](https://github.com/JSQLParser/JSqlParser/commit/c2328120e7a79ff) Andreas Reichel)  
--  Visitors return Objects ([ec497](https://github.com/JSQLParser/JSqlParser/commit/ec49762708e920a) Andreas Reichel)  
--  Visitors return Objects ([681ca](https://github.com/JSQLParser/JSqlParser/commit/681cac933d83516) Andreas Reichel)  
--  Allow OUTER keyword as function parameter name (#2021) ([fc90c](https://github.com/JSQLParser/JSqlParser/commit/fc90c0b5e566533) Chris Crabtree)  
--  BigQuery `SELECT AS STRUCT ...` and `SELECT AS VALUE ...` ([5c360](https://github.com/JSQLParser/JSqlParser/commit/5c360a2fc95c261) Andreas Reichel)  
--  add syntax sugar ([2ace7](https://github.com/JSQLParser/JSqlParser/commit/2ace74d1047e87d) Andreas Reichel)  
--  `AllColumns`, DuckDB uses `EXCLUDE` instead of `EXCEPT` ([1ad42](https://github.com/JSQLParser/JSqlParser/commit/1ad4234280f7a70) Andreas Reichel)  
--  syntax sugar ([ae1ef](https://github.com/JSQLParser/JSqlParser/commit/ae1eff9f7434c08) Andreas Reichel)  
--  syntax sugar ([81846](https://github.com/JSQLParser/JSqlParser/commit/818464c93ae665a) Andreas Reichel)  
--  syntax sugar ([2cb3e](https://github.com/JSQLParser/JSqlParser/commit/2cb3e589b60e192) Andreas Reichel)  
--  syntax sugar ([b2eed](https://github.com/JSQLParser/JSqlParser/commit/b2eed1e910c97de) Andreas Reichel)  
--  Databricks IGNORE/RESPECT NULLS ([e9c9a](https://github.com/JSQLParser/JSqlParser/commit/e9c9a173a660bbe) Andreas Reichel)  
--  Databricks IGNORE/RESPECT NULLS ([544b1](https://github.com/JSQLParser/JSqlParser/commit/544b1683789f20b) Andreas Reichel)  
--  Capture expression name part delimiters (#2001) ([0368b](https://github.com/JSQLParser/JSqlParser/commit/0368b9ebad76742) Chris Crabtree)  
--  syntax sugar ([ca5c5](https://github.com/JSQLParser/JSqlParser/commit/ca5c553efde37eb) Andreas Reichel)  
--  translate HEX to Unicode String and ByteArray String ([df519](https://github.com/JSQLParser/JSqlParser/commit/df519333ff34740) Andreas Reichel)  
--  `StructType` syntax sugar ([6e9bf](https://github.com/JSQLParser/JSqlParser/commit/6e9bf42b0b2d783) Andreas Reichel)  
--  `Values` implement `FromItem` ([e426c](https://github.com/JSQLParser/JSqlParser/commit/e426c5a67c505b5) Andreas Reichel)  
--  add `ParenthesedSelect` delegate ([66d05](https://github.com/JSQLParser/JSqlParser/commit/66d05a2bb7c41f3) Andreas Reichel)  
--  add `ParenthesedSelect` delegate ([f1699](https://github.com/JSQLParser/JSqlParser/commit/f16999393589702) Andreas Reichel)  
--  Simplify traversing the AST bottom to top ([bddc4](https://github.com/JSQLParser/JSqlParser/commit/bddc41cddf5b5bf) Andreas Reichel)  
--  AST Node access for `FromItem` ([c1edf](https://github.com/JSQLParser/JSqlParser/commit/c1edf0f8f21bd52) Andreas Reichel)  
--  RedShift specific Window function IGNORE | RESPECT NULLS ([321c8](https://github.com/JSQLParser/JSqlParser/commit/321c88098a75791) Andreas Reichel)  
--  RedShift allows `TOP` before `DISTINCT`, see https://docs.aws.amazon.com/redshift/latest/dg/r_SELECT_list.html ([13e61](https://github.com/JSQLParser/JSqlParser/commit/13e61a726a87c2f) Andreas Reichel)  
--  Redshift `APPROXIMATE` Aggregate functions ([e4ece](https://github.com/JSQLParser/JSqlParser/commit/e4ece0c3ecd7ce3) Andreas Reichel)  
--  add `CCJSqlParserUtil.sanitizeSingleSql(String sqlStr)` to help MyBatikPlus users to clean their statements ([1606e](https://github.com/JSQLParser/JSqlParser/commit/1606e5f0492a485) Andreas Reichel)  
--  return any `UnsupportedStatement` content ([063d2](https://github.com/JSQLParser/JSqlParser/commit/063d2442d82f920) Andreas Reichel)  
--  re-enable `UnsupportedStatement` ([82b45](https://github.com/JSQLParser/JSqlParser/commit/82b459bfcd23851) Andreas Reichel)  
--  better statement error recovery ([b3d3a](https://github.com/JSQLParser/JSqlParser/commit/b3d3a8e492f74a8) Andreas Reichel)  
--  Syntax Sugar for the parser features ([1d943](https://github.com/JSQLParser/JSqlParser/commit/1d9438e7ef1a86f) Andreas Reichel)  
--  allow `EXTRACT` to be parsed as regular function also ([b85dc](https://github.com/JSQLParser/JSqlParser/commit/b85dc2fd0004652) Andreas Reichel)  
--  syntax sugar ([a3858](https://github.com/JSQLParser/JSqlParser/commit/a38581acd538d95) Andreas Reichel)  
--  syntax sugar ([df7c7](https://github.com/JSQLParser/JSqlParser/commit/df7c792184c61a6) Andreas Reichel)  
--  Syntax sugar ([67bfa](https://github.com/JSQLParser/JSqlParser/commit/67bfae673421d7c) Andreas Reichel)  
--  syntax sugar ([b0317](https://github.com/JSQLParser/JSqlParser/commit/b03170e180175b1) Andreas Reichel)  
--  syntax sugar ([57a29](https://github.com/JSQLParser/JSqlParser/commit/57a296b2c8c5bb0) Andreas Reichel)  
--  remove Aliases of `ParenthesedSelect`, `LateralSubSelect` and `ParenthesedFromItem` from the Table Names ([46682](https://github.com/JSQLParser/JSqlParser/commit/466826b9b115cb7) Andreas Reichel)  
--  better access to the `DataType` checks ([edeaf](https://github.com/JSQLParser/JSqlParser/commit/edeafc311c2ab7e) Andreas Reichel)  
--  Add Data Type information to task for making it easy to understand the expected return type ([31c55](https://github.com/JSQLParser/JSqlParser/commit/31c5533f49776c6) Andreas Reichel)  
--  Implicit Casts `SELECT DOUBLE PRECISION '1'` ([411a3](https://github.com/JSQLParser/JSqlParser/commit/411a3da9facf206) Andreas Reichel)  
--  Function Column Aliases without an Alias Name `func(x) (a, b, c)` ([b4ef7](https://github.com/JSQLParser/JSqlParser/commit/b4ef763614bf3a4) Andreas Reichel)  
--  Support BigQuery specific Aggregate clauses ([0179c](https://github.com/JSQLParser/JSqlParser/commit/0179cc0cac9ceeb) Andreas Reichel)  
--  syntax sugar for Binary Expressions like Conact, Addition, Multiplication ([ffdde](https://github.com/JSQLParser/JSqlParser/commit/ffddeef7199a056) Andreas Reichel)  
--  Hex to Long conversion ([620db](https://github.com/JSQLParser/JSqlParser/commit/620db709e48c22e) Andreas Reichel)  
--  syntax sugar for Expressions ([a5693](https://github.com/JSQLParser/JSqlParser/commit/a56934da1d3a7ae) Andreas Reichel)  
--  Salesforce SOQL `INCLUDES` and `EXCLUDES` operators (#1985) ([f3f0e](https://github.com/JSQLParser/JSqlParser/commit/f3f0e051358a493) lucarota)  
--  Google BigQuery `CAST` with `FORMAT` clause ([0d813](https://github.com/JSQLParser/JSqlParser/commit/0d813f03faa2b3b) Andreas Reichel)  
--  DuckDB Lambda Functions ([23679](https://github.com/JSQLParser/JSqlParser/commit/236793aaeabc30f) Andreas Reichel)  
--  DuckDB `STRUCT` with curly brackets and explicit Column Type Cast ([1cd57](https://github.com/JSQLParser/JSqlParser/commit/1cd576b32c774e8) Andreas Reichel)  
--  `RECURSIVE` does not need to be a reserved ([5cb4c](https://github.com/JSQLParser/JSqlParser/commit/5cb4c55067f4fe2) Andreas Reichel)  
--  DuckDB `STRUCT` with curly brackets ([339d6](https://github.com/JSQLParser/JSqlParser/commit/339d6baece2c199) Andreas Reichel)  
--  BigQuery `STRUCT` data types and literal ([4c187](https://github.com/JSQLParser/JSqlParser/commit/4c187d51055a3d8) Andreas Reichel)  
--  TablesNamesFinder can return also references to WITH items ([9d645](https://github.com/JSQLParser/JSqlParser/commit/9d64511239a4514) Andreas Reichel)  
--  allow double-quoted `DateTimeLiteral` like `DATETIME "2005-01-03 12:34:56"` ([f6790](https://github.com/JSQLParser/JSqlParser/commit/f6790913b754850) Andreas Reichel)  
--  support `DATETIME` literal used for Google BigQuery ([a386d](https://github.com/JSQLParser/JSqlParser/commit/a386d297c418921) Andreas Reichel)  
--  link `TOP` to AST node ([79c42](https://github.com/JSQLParser/JSqlParser/commit/79c42ed31eb6986) Andreas Reichel)  
+-  provide compatibility methods ([3f995](https://github.com/JSQLParser/JSqlParser/commit/3f99548b99bbfe3) Andreas Reichel)
+-  apply the new parametrized Visitor patterns to all entities and provide default implementations ([e1692](https://github.com/JSQLParser/JSqlParser/commit/e1692990c543ed1) Andreas Reichel)
+-  syntax sugar ([2fce4](https://github.com/JSQLParser/JSqlParser/commit/2fce4c009b77d85) Andreas Reichel)
+-  Visitors return Objects and accept parameters ([5bd28](https://github.com/JSQLParser/JSqlParser/commit/5bd28c8b309df6c) Andreas Reichel)
+-  Visitors return Objects ([131a9](https://github.com/JSQLParser/JSqlParser/commit/131a988ccea2d91) Andreas Reichel)
+-  Visitors return Objects ([c2328](https://github.com/JSQLParser/JSqlParser/commit/c2328120e7a79ff) Andreas Reichel)
+-  Visitors return Objects ([ec497](https://github.com/JSQLParser/JSqlParser/commit/ec49762708e920a) Andreas Reichel)
+-  Visitors return Objects ([681ca](https://github.com/JSQLParser/JSqlParser/commit/681cac933d83516) Andreas Reichel)
+-  Allow OUTER keyword as function parameter name (#2021) ([fc90c](https://github.com/JSQLParser/JSqlParser/commit/fc90c0b5e566533) Chris Crabtree)
+-  BigQuery `SELECT AS STRUCT ...` and `SELECT AS VALUE ...` ([5c360](https://github.com/JSQLParser/JSqlParser/commit/5c360a2fc95c261) Andreas Reichel)
+-  add syntax sugar ([2ace7](https://github.com/JSQLParser/JSqlParser/commit/2ace74d1047e87d) Andreas Reichel)
+-  `AllColumns`, DuckDB uses `EXCLUDE` instead of `EXCEPT` ([1ad42](https://github.com/JSQLParser/JSqlParser/commit/1ad4234280f7a70) Andreas Reichel)
+-  syntax sugar ([ae1ef](https://github.com/JSQLParser/JSqlParser/commit/ae1eff9f7434c08) Andreas Reichel)
+-  syntax sugar ([81846](https://github.com/JSQLParser/JSqlParser/commit/818464c93ae665a) Andreas Reichel)
+-  syntax sugar ([2cb3e](https://github.com/JSQLParser/JSqlParser/commit/2cb3e589b60e192) Andreas Reichel)
+-  syntax sugar ([b2eed](https://github.com/JSQLParser/JSqlParser/commit/b2eed1e910c97de) Andreas Reichel)
+-  Databricks IGNORE/RESPECT NULLS ([e9c9a](https://github.com/JSQLParser/JSqlParser/commit/e9c9a173a660bbe) Andreas Reichel)
+-  Databricks IGNORE/RESPECT NULLS ([544b1](https://github.com/JSQLParser/JSqlParser/commit/544b1683789f20b) Andreas Reichel)
+-  Capture expression name part delimiters (#2001) ([0368b](https://github.com/JSQLParser/JSqlParser/commit/0368b9ebad76742) Chris Crabtree)
+-  syntax sugar ([ca5c5](https://github.com/JSQLParser/JSqlParser/commit/ca5c553efde37eb) Andreas Reichel)
+-  translate HEX to Unicode String and ByteArray String ([df519](https://github.com/JSQLParser/JSqlParser/commit/df519333ff34740) Andreas Reichel)
+-  `StructType` syntax sugar ([6e9bf](https://github.com/JSQLParser/JSqlParser/commit/6e9bf42b0b2d783) Andreas Reichel)
+-  `Values` implement `FromItem` ([e426c](https://github.com/JSQLParser/JSqlParser/commit/e426c5a67c505b5) Andreas Reichel)
+-  add `ParenthesedSelect` delegate ([66d05](https://github.com/JSQLParser/JSqlParser/commit/66d05a2bb7c41f3) Andreas Reichel)
+-  add `ParenthesedSelect` delegate ([f1699](https://github.com/JSQLParser/JSqlParser/commit/f16999393589702) Andreas Reichel)
+-  Simplify traversing the AST bottom to top ([bddc4](https://github.com/JSQLParser/JSqlParser/commit/bddc41cddf5b5bf) Andreas Reichel)
+-  AST Node access for `FromItem` ([c1edf](https://github.com/JSQLParser/JSqlParser/commit/c1edf0f8f21bd52) Andreas Reichel)
+-  RedShift specific Window function IGNORE | RESPECT NULLS ([321c8](https://github.com/JSQLParser/JSqlParser/commit/321c88098a75791) Andreas Reichel)
+-  RedShift allows `TOP` before `DISTINCT`, see https://docs.aws.amazon.com/redshift/latest/dg/r_SELECT_list.html ([13e61](https://github.com/JSQLParser/JSqlParser/commit/13e61a726a87c2f) Andreas Reichel)
+-  Redshift `APPROXIMATE` Aggregate functions ([e4ece](https://github.com/JSQLParser/JSqlParser/commit/e4ece0c3ecd7ce3) Andreas Reichel)
+-  add `CCJSqlParserUtil.sanitizeSingleSql(String sqlStr)` to help MyBatikPlus users to clean their statements ([1606e](https://github.com/JSQLParser/JSqlParser/commit/1606e5f0492a485) Andreas Reichel)
+-  return any `UnsupportedStatement` content ([063d2](https://github.com/JSQLParser/JSqlParser/commit/063d2442d82f920) Andreas Reichel)
+-  re-enable `UnsupportedStatement` ([82b45](https://github.com/JSQLParser/JSqlParser/commit/82b459bfcd23851) Andreas Reichel)
+-  better statement error recovery ([b3d3a](https://github.com/JSQLParser/JSqlParser/commit/b3d3a8e492f74a8) Andreas Reichel)
+-  Syntax Sugar for the parser features ([1d943](https://github.com/JSQLParser/JSqlParser/commit/1d9438e7ef1a86f) Andreas Reichel)
+-  allow `EXTRACT` to be parsed as regular function also ([b85dc](https://github.com/JSQLParser/JSqlParser/commit/b85dc2fd0004652) Andreas Reichel)
+-  syntax sugar ([a3858](https://github.com/JSQLParser/JSqlParser/commit/a38581acd538d95) Andreas Reichel)
+-  syntax sugar ([df7c7](https://github.com/JSQLParser/JSqlParser/commit/df7c792184c61a6) Andreas Reichel)
+-  Syntax sugar ([67bfa](https://github.com/JSQLParser/JSqlParser/commit/67bfae673421d7c) Andreas Reichel)
+-  syntax sugar ([b0317](https://github.com/JSQLParser/JSqlParser/commit/b03170e180175b1) Andreas Reichel)
+-  syntax sugar ([57a29](https://github.com/JSQLParser/JSqlParser/commit/57a296b2c8c5bb0) Andreas Reichel)
+-  remove Aliases of `ParenthesedSelect`, `LateralSubSelect` and `ParenthesedFromItem` from the Table Names ([46682](https://github.com/JSQLParser/JSqlParser/commit/466826b9b115cb7) Andreas Reichel)
+-  better access to the `DataType` checks ([edeaf](https://github.com/JSQLParser/JSqlParser/commit/edeafc311c2ab7e) Andreas Reichel)
+-  Add Data Type information to task for making it easy to understand the expected return type ([31c55](https://github.com/JSQLParser/JSqlParser/commit/31c5533f49776c6) Andreas Reichel)
+-  Implicit Casts `SELECT DOUBLE PRECISION '1'` ([411a3](https://github.com/JSQLParser/JSqlParser/commit/411a3da9facf206) Andreas Reichel)
+-  Function Column Aliases without an Alias Name `func(x) (a, b, c)` ([b4ef7](https://github.com/JSQLParser/JSqlParser/commit/b4ef763614bf3a4) Andreas Reichel)
+-  Support BigQuery specific Aggregate clauses ([0179c](https://github.com/JSQLParser/JSqlParser/commit/0179cc0cac9ceeb) Andreas Reichel)
+-  syntax sugar for Binary Expressions like Conact, Addition, Multiplication ([ffdde](https://github.com/JSQLParser/JSqlParser/commit/ffddeef7199a056) Andreas Reichel)
+-  Hex to Long conversion ([620db](https://github.com/JSQLParser/JSqlParser/commit/620db709e48c22e) Andreas Reichel)
+-  syntax sugar for Expressions ([a5693](https://github.com/JSQLParser/JSqlParser/commit/a56934da1d3a7ae) Andreas Reichel)
+-  Salesforce SOQL `INCLUDES` and `EXCLUDES` operators (#1985) ([f3f0e](https://github.com/JSQLParser/JSqlParser/commit/f3f0e051358a493) lucarota)
+-  Google BigQuery `CAST` with `FORMAT` clause ([0d813](https://github.com/JSQLParser/JSqlParser/commit/0d813f03faa2b3b) Andreas Reichel)
+-  DuckDB Lambda Functions ([23679](https://github.com/JSQLParser/JSqlParser/commit/236793aaeabc30f) Andreas Reichel)
+-  DuckDB `STRUCT` with curly brackets and explicit Column Type Cast ([1cd57](https://github.com/JSQLParser/JSqlParser/commit/1cd576b32c774e8) Andreas Reichel)
+-  `RECURSIVE` does not need to be a reserved ([5cb4c](https://github.com/JSQLParser/JSqlParser/commit/5cb4c55067f4fe2) Andreas Reichel)
+-  DuckDB `STRUCT` with curly brackets ([339d6](https://github.com/JSQLParser/JSqlParser/commit/339d6baece2c199) Andreas Reichel)
+-  BigQuery `STRUCT` data types and literal ([4c187](https://github.com/JSQLParser/JSqlParser/commit/4c187d51055a3d8) Andreas Reichel)
+-  TablesNamesFinder can return also references to WITH items ([9d645](https://github.com/JSQLParser/JSqlParser/commit/9d64511239a4514) Andreas Reichel)
+-  allow double-quoted `DateTimeLiteral` like `DATETIME "2005-01-03 12:34:56"` ([f6790](https://github.com/JSQLParser/JSqlParser/commit/f6790913b754850) Andreas Reichel)
+-  support `DATETIME` literal used for Google BigQuery ([a386d](https://github.com/JSQLParser/JSqlParser/commit/a386d297c418921) Andreas Reichel)
+-  link `TOP` to AST node ([79c42](https://github.com/JSQLParser/JSqlParser/commit/79c42ed31eb6986) Andreas Reichel)
 
 ### Bug Fixes
 
--  `AllTableColumns`, DuckDB specific `EXCLUDE` ([c9ecf](https://github.com/JSQLParser/JSqlParser/commit/c9ecfc6ddbdd139) Andreas Reichel)  
--  `AllColumns` Replacement shall be about Columns only ([f4b40](https://github.com/JSQLParser/JSqlParser/commit/f4b40e43a4f8d3d) Andreas Reichel)  
--  `FromItem` with Alias without `AS` keyword ([5f580](https://github.com/JSQLParser/JSqlParser/commit/5f580af190c6fbb) Andreas Reichel)  
--  set `stringValue` in `DoubleValue.setValue` (#2009) ([e07f8](https://github.com/JSQLParser/JSqlParser/commit/e07f8d019ddf38d) Damian)  
--  try working around `UnsupportedStatement` issue ([fbe97](https://github.com/JSQLParser/JSqlParser/commit/fbe97a8deb84ae9) Andreas Reichel)  
--  allow `BASE64` keyword ([7daf7](https://github.com/JSQLParser/JSqlParser/commit/7daf7af36d825f7) Andreas Reichel)  
--  `StructType` expressions must use Visitor instead of `toString()` ([b95d8](https://github.com/JSQLParser/JSqlParser/commit/b95d8e3e4ee01b0) Andreas Reichel)  
--  `AnyComparisionItem` with extra brackets ([4e1a1](https://github.com/JSQLParser/JSqlParser/commit/4e1a1535f4ef706) Andreas Reichel)  
--  `FOR UPDATE` clause should come after the select body ([cf7fe](https://github.com/JSQLParser/JSqlParser/commit/cf7fe157de372f3) Andreas Reichel)  
--  initialise the `SelectDeparser` with an `ExpressionDeparser` (but not with an empty Adaptor only) ([f417c](https://github.com/JSQLParser/JSqlParser/commit/f417c8f248c7bb1) Andreas Reichel)  
--  `ALTER ...` shall `captureRest()` only to the next statement terminator ([15d14](https://github.com/JSQLParser/JSqlParser/commit/15d14ab0b9dcadf) Andreas Reichel)  
--  correct the wrong Assertion ([8461e](https://github.com/JSQLParser/JSqlParser/commit/8461e8ad1a3f5e3) Andreas Reichel)  
--  don't insert space after certain punctuation ([159c2](https://github.com/JSQLParser/JSqlParser/commit/159c28ee8f68cab) Andreas Reichel)  
--  treat Array Brackets `[..]` as syntax characters and surround by space when normalizing for comparison ([c9d1e](https://github.com/JSQLParser/JSqlParser/commit/c9d1eaefca91c6e) Andreas Reichel)  
--  `REGEXP` does not need to be reserved ([f6524](https://github.com/JSQLParser/JSqlParser/commit/f65240f381f9855) Andreas Reichel)  
--  `REGEXP` does not need to be reserved ([a9e67](https://github.com/JSQLParser/JSqlParser/commit/a9e67667b9c1590) Andreas Reichel)  
--  Array Arguments without `ARRAY` keyword ([0f9a8](https://github.com/JSQLParser/JSqlParser/commit/0f9a8ec02786f5d) Andreas Reichel)  
--  Function with Array Arguments ([f782e](https://github.com/JSQLParser/JSqlParser/commit/f782eda7afa17d3) Andreas Reichel)  
--  parsing `SelectItem` shall support `Xor` ([c8839](https://github.com/JSQLParser/JSqlParser/commit/c883920a1175ffc) Andreas Reichel)  
+-  `AllTableColumns`, DuckDB specific `EXCLUDE` ([c9ecf](https://github.com/JSQLParser/JSqlParser/commit/c9ecfc6ddbdd139) Andreas Reichel)
+-  `AllColumns` Replacement shall be about Columns only ([f4b40](https://github.com/JSQLParser/JSqlParser/commit/f4b40e43a4f8d3d) Andreas Reichel)
+-  `FromItem` with Alias without `AS` keyword ([5f580](https://github.com/JSQLParser/JSqlParser/commit/5f580af190c6fbb) Andreas Reichel)
+-  set `stringValue` in `DoubleValue.setValue` (#2009) ([e07f8](https://github.com/JSQLParser/JSqlParser/commit/e07f8d019ddf38d) Damian)
+-  try working around `UnsupportedStatement` issue ([fbe97](https://github.com/JSQLParser/JSqlParser/commit/fbe97a8deb84ae9) Andreas Reichel)
+-  allow `BASE64` keyword ([7daf7](https://github.com/JSQLParser/JSqlParser/commit/7daf7af36d825f7) Andreas Reichel)
+-  `StructType` expressions must use Visitor instead of `toString()` ([b95d8](https://github.com/JSQLParser/JSqlParser/commit/b95d8e3e4ee01b0) Andreas Reichel)
+-  `AnyComparisionItem` with extra brackets ([4e1a1](https://github.com/JSQLParser/JSqlParser/commit/4e1a1535f4ef706) Andreas Reichel)
+-  `FOR UPDATE` clause should come after the select body ([cf7fe](https://github.com/JSQLParser/JSqlParser/commit/cf7fe157de372f3) Andreas Reichel)
+-  initialise the `SelectDeparser` with an `ExpressionDeparser` (but not with an empty Adaptor only) ([f417c](https://github.com/JSQLParser/JSqlParser/commit/f417c8f248c7bb1) Andreas Reichel)
+-  `ALTER ...` shall `captureRest()` only to the next statement terminator ([15d14](https://github.com/JSQLParser/JSqlParser/commit/15d14ab0b9dcadf) Andreas Reichel)
+-  correct the wrong Assertion ([8461e](https://github.com/JSQLParser/JSqlParser/commit/8461e8ad1a3f5e3) Andreas Reichel)
+-  don't insert space after certain punctuation ([159c2](https://github.com/JSQLParser/JSqlParser/commit/159c28ee8f68cab) Andreas Reichel)
+-  treat Array Brackets `[..]` as syntax characters and surround by space when normalizing for comparison ([c9d1e](https://github.com/JSQLParser/JSqlParser/commit/c9d1eaefca91c6e) Andreas Reichel)
+-  `REGEXP` does not need to be reserved ([f6524](https://github.com/JSQLParser/JSqlParser/commit/f65240f381f9855) Andreas Reichel)
+-  `REGEXP` does not need to be reserved ([a9e67](https://github.com/JSQLParser/JSqlParser/commit/a9e67667b9c1590) Andreas Reichel)
+-  Array Arguments without `ARRAY` keyword ([0f9a8](https://github.com/JSQLParser/JSqlParser/commit/0f9a8ec02786f5d) Andreas Reichel)
+-  Function with Array Arguments ([f782e](https://github.com/JSQLParser/JSqlParser/commit/f782eda7afa17d3) Andreas Reichel)
+-  parsing `SelectItem` shall support `Xor` ([c8839](https://github.com/JSQLParser/JSqlParser/commit/c883920a1175ffc) Andreas Reichel)
 
 ### Other changes
 
@@ -686,18 +686,18 @@ Changelog of JSqlParser.
 
 **Add missing java.sql require (#1999)**
 
-* Add missing java.sql 
-* Update maven checkstyle 
-* Fix gradle checkstyle 
-* Bump surefire plugin 
-* Skip modules in tests 
+* Add missing java.sql
+* Update maven checkstyle
+* Fix gradle checkstyle
+* Bump surefire plugin
+* Skip modules in tests
 
 [df48c](https://github.com/JSQLParser/JSqlParser/commit/df48c4ba5b2b44f) Ethan McCue *2024-04-30 05:13:54*
 
 **Add module info (#1998)**
 
-* Add module info 
-* Trailing newline 
+* Add module info
+* Trailing newline
 
 [761b4](https://github.com/JSQLParser/JSqlParser/commit/761b45b2f6c4b81) Ethan McCue *2024-04-30 04:36:41*
 
@@ -711,24 +711,24 @@ Changelog of JSqlParser.
 
 ### Features
 
--  add DB2 special register `CURRENT TIMEZONE` ([c412d](https://github.com/JSQLParser/JSqlParser/commit/c412d6a52f9b2ea) Andreas Reichel)  
--  add additional CREATE VIEW modifiers (#1964) ([67e22](https://github.com/JSQLParser/JSqlParser/commit/67e220425f24148) David Goss)  
--  with no log (#1953) ([d9c44](https://github.com/JSQLParser/JSqlParser/commit/d9c44499d096b1f) mjh)  
--  support keyword "only" for postgresql (#1952) ([f1676](https://github.com/JSQLParser/JSqlParser/commit/f1676dd992911d9) 猫屎咖啡)  
--  support any number/order of merge operations (#1938) ([f1c52](https://github.com/JSQLParser/JSqlParser/commit/f1c525a1eaf3087) David Goss)  
+-  add DB2 special register `CURRENT TIMEZONE` ([c412d](https://github.com/JSQLParser/JSqlParser/commit/c412d6a52f9b2ea) Andreas Reichel)
+-  add additional CREATE VIEW modifiers (#1964) ([67e22](https://github.com/JSQLParser/JSqlParser/commit/67e220425f24148) David Goss)
+-  with no log (#1953) ([d9c44](https://github.com/JSQLParser/JSqlParser/commit/d9c44499d096b1f) mjh)
+-  support keyword "only" for postgresql (#1952) ([f1676](https://github.com/JSQLParser/JSqlParser/commit/f1676dd992911d9) 猫屎咖啡)
+-  support any number/order of merge operations (#1938) ([f1c52](https://github.com/JSQLParser/JSqlParser/commit/f1c525a1eaf3087) David Goss)
 
 ### Bug Fixes
 
--  chained function calls of `SimpleFunction` ([98055](https://github.com/JSQLParser/JSqlParser/commit/9805581accf89d2) Andreas Reichel)  
--  issue #1948 `Between` with expression ([b9453](https://github.com/JSQLParser/JSqlParser/commit/b9453f228adf9ad) Andreas Reichel)  
--  return NULL when parsing empty Strings ([94fb8](https://github.com/JSQLParser/JSqlParser/commit/94fb87237f36cce) Andreas Reichel)  
--  allow Parameters like `$1`,`$2` ([17f5f](https://github.com/JSQLParser/JSqlParser/commit/17f5f2ad680dfdb) Andreas Reichel)  
--  allow `DATA` as `ColumnType()` keyword ([72a51](https://github.com/JSQLParser/JSqlParser/commit/72a51e58413a291) Andreas Reichel)  
--  make analytic expression visitor null-safe (#1944) ([768c6](https://github.com/JSQLParser/JSqlParser/commit/768c63f4660509b) David Goss)  
--  Fixes parsing failing for ALTER MODIFY queries not containing datatype (#1961) ([029fd](https://github.com/JSQLParser/JSqlParser/commit/029fd42e84e65ee) Tanish Grover)  
--  tables not find in parentheses join sql. (#1956) ([182f4](https://github.com/JSQLParser/JSqlParser/commit/182f484dc43945b) hancher)  
--  issue1875 (#1957) ([98aa9](https://github.com/JSQLParser/JSqlParser/commit/98aa90cb988580a) mjh)  
--  ExpressionVisitor.visit(AllTableColumns) method isn't being called. (#1942) ([bc166](https://github.com/JSQLParser/JSqlParser/commit/bc16618eaa8fd93) Brian S. O&#x27;Neill)  
+-  chained function calls of `SimpleFunction` ([98055](https://github.com/JSQLParser/JSqlParser/commit/9805581accf89d2) Andreas Reichel)
+-  issue #1948 `Between` with expression ([b9453](https://github.com/JSQLParser/JSqlParser/commit/b9453f228adf9ad) Andreas Reichel)
+-  return NULL when parsing empty Strings ([94fb8](https://github.com/JSQLParser/JSqlParser/commit/94fb87237f36cce) Andreas Reichel)
+-  allow Parameters like `$1`,`$2` ([17f5f](https://github.com/JSQLParser/JSqlParser/commit/17f5f2ad680dfdb) Andreas Reichel)
+-  allow `DATA` as `ColumnType()` keyword ([72a51](https://github.com/JSQLParser/JSqlParser/commit/72a51e58413a291) Andreas Reichel)
+-  make analytic expression visitor null-safe (#1944) ([768c6](https://github.com/JSQLParser/JSqlParser/commit/768c63f4660509b) David Goss)
+-  Fixes parsing failing for ALTER MODIFY queries not containing datatype (#1961) ([029fd](https://github.com/JSQLParser/JSqlParser/commit/029fd42e84e65ee) Tanish Grover)
+-  tables not find in parentheses join sql. (#1956) ([182f4](https://github.com/JSQLParser/JSqlParser/commit/182f484dc43945b) hancher)
+-  issue1875 (#1957) ([98aa9](https://github.com/JSQLParser/JSqlParser/commit/98aa90cb988580a) mjh)
+-  ExpressionVisitor.visit(AllTableColumns) method isn't being called. (#1942) ([bc166](https://github.com/JSQLParser/JSqlParser/commit/bc16618eaa8fd93) Brian S. O&#x27;Neill)
 
 ### Other changes
 
@@ -744,33 +744,33 @@ Changelog of JSqlParser.
 
 **Update README.md**
 
-* Fixes  #1968 
+* Fixes  #1968
 
 [8dcfb](https://github.com/JSQLParser/JSqlParser/commit/8dcfb4a3bf5682d) manticore-projects *2024-02-17 12:03:43*
 
 **Guard Values against null/empty values (#1965)**
 
-* Guard Values against null/empty values 
-* The classes modified by this commit are &#x60;DoubleValue&#x60;, &#x60;LongValue&#x60;, and 
-* &#x60;TimeValue&#x60;. Both &#x60;null&#x60; and empty strings provided to their 
-* constructors fail, but they provide very different error messages 
-* (NullPointerException and StringIndexOutOfBoundsException), which is 
-* neither sensible nor helpful in debugging. 
-* This commit adds a guard to throw &#x60;IllegalArgumentException&#x60; for both 
-* cases in order to improve coherency and usefulness of the error 
-* messages. 
-* fix checkstyle issues 
+* Guard Values against null/empty values
+* The classes modified by this commit are &#x60;DoubleValue&#x60;, &#x60;LongValue&#x60;, and
+* &#x60;TimeValue&#x60;. Both &#x60;null&#x60; and empty strings provided to their
+* constructors fail, but they provide very different error messages
+* (NullPointerException and StringIndexOutOfBoundsException), which is
+* neither sensible nor helpful in debugging.
+* This commit adds a guard to throw &#x60;IllegalArgumentException&#x60; for both
+* cases in order to improve coherency and usefulness of the error
+* messages.
+* fix checkstyle issues
 
 [b0032](https://github.com/JSQLParser/JSqlParser/commit/b00322efa0c77d2) Heewon Lee *2024-02-14 07:34:40*
 
 **support oracle alter table truncate partition  (#1954)**
 
-* feat: oracle alter table truncate partition 
-* feat: oracle alter table truncate partition 
-* feat: code format 
-* feat: code format 
-* --------- 
-* Co-authored-by: mjh &lt;majh118@chinaunicom.cn&gt; 
+* feat: oracle alter table truncate partition
+* feat: oracle alter table truncate partition
+* feat: code format
+* feat: code format
+* ---------
+* Co-authored-by: mjh &lt;majh118@chinaunicom.cn&gt;
 
 [cc7aa](https://github.com/JSQLParser/JSqlParser/commit/cc7aa01913a7201) mjh *2024-02-04 07:19:19*
 
@@ -804,35 +804,35 @@ Changelog of JSqlParser.
 
 ### Features
 
--  support mysql with rollup (#1923) ([77f6f](https://github.com/JSQLParser/JSqlParser/commit/77f6fb8c92b3378) jxnu-liguobin)  
--  Support `FOR SHARE` (#1922) ([815f8](https://github.com/JSQLParser/JSqlParser/commit/815f8753d552d89) jxnu-liguobin)  
--  [MySQL] Support `TABLE STATEMENT` (#1921) ([313a4](https://github.com/JSQLParser/JSqlParser/commit/313a4b42444b2d2) jxnu-liguobin)  
--  Support `RENAME INDEX` for MySQL, `RENAME CONSTRAINT` for PostgreSQL (#1920) ([989a8](https://github.com/JSQLParser/JSqlParser/commit/989a84bb215283b) jxnu-liguobin)  
--  Add support comment in `create view` for MySQL and MariaDb (#1913) ([4d47e](https://github.com/JSQLParser/JSqlParser/commit/4d47e0ab7bc2872) jxnu-liguobin)  
--  Add support for `REFRESH MATERIALIZED VIEW` (#1911) ([425c7](https://github.com/JSQLParser/JSqlParser/commit/425c72eb7d7f931) jxnu-liguobin)  
--  `SimpleFunction` for faster parsing of simple, but deep nested functions ([085d7](https://github.com/JSQLParser/JSqlParser/commit/085d7504235e58c) Andreas Reichel)  
--  add support for snowflake merge statements (#1887) ([36b80](https://github.com/JSQLParser/JSqlParser/commit/36b806dede06260) David Goss)  
--  `ColDataType` supports `PUBLIC` schema and all non-restricted keywords for type ([1088d](https://github.com/JSQLParser/JSqlParser/commit/1088db7aea0b2f9) Andreas Reichel)  
--  T-SQL Join Hints ([5f09e](https://github.com/JSQLParser/JSqlParser/commit/5f09ec4914fbdd1) Andreas Reichel)  
--  old TSQL Joins `*=` and `=*` ([0b50d](https://github.com/JSQLParser/JSqlParser/commit/0b50da4cca555b6) Andreas Reichel)  
--  MS SQL Server `Merge` `Output` clause ([7bd42](https://github.com/JSQLParser/JSqlParser/commit/7bd42edaa0d9aed) Andreas Reichel)  
--  MS SQL Server `UPDATE ...` Index Hint ([f919e](https://github.com/JSQLParser/JSqlParser/commit/f919e00c30ff5df) Andreas Reichel)  
--  Postgres `Contains` and `ContainedBy` Operators ([28a4c](https://github.com/JSQLParser/JSqlParser/commit/28a4c080b718aba) Andreas Reichel)  
--  Postgres `Contains` and `ContainedBy` Operators ([09d6d](https://github.com/JSQLParser/JSqlParser/commit/09d6dfe7bc7acb8) Andreas Reichel)  
--  Clickhouse `GLOBAL IN ...` ([ced0d](https://github.com/JSQLParser/JSqlParser/commit/ced0d0090c5c9a9) Andreas Reichel)  
--  `CREATE INDEX IF NOT EXISTS...` ([da13d](https://github.com/JSQLParser/JSqlParser/commit/da13d7dc1dd1608) Andreas Reichel)  
--  support clickhouse global keyword in IN Expression ([a9ed7](https://github.com/JSQLParser/JSqlParser/commit/a9ed79825110df7) hezw)  
+-  support mysql with rollup (#1923) ([77f6f](https://github.com/JSQLParser/JSqlParser/commit/77f6fb8c92b3378) jxnu-liguobin)
+-  Support `FOR SHARE` (#1922) ([815f8](https://github.com/JSQLParser/JSqlParser/commit/815f8753d552d89) jxnu-liguobin)
+-  [MySQL] Support `TABLE STATEMENT` (#1921) ([313a4](https://github.com/JSQLParser/JSqlParser/commit/313a4b42444b2d2) jxnu-liguobin)
+-  Support `RENAME INDEX` for MySQL, `RENAME CONSTRAINT` for PostgreSQL (#1920) ([989a8](https://github.com/JSQLParser/JSqlParser/commit/989a84bb215283b) jxnu-liguobin)
+-  Add support comment in `create view` for MySQL and MariaDb (#1913) ([4d47e](https://github.com/JSQLParser/JSqlParser/commit/4d47e0ab7bc2872) jxnu-liguobin)
+-  Add support for `REFRESH MATERIALIZED VIEW` (#1911) ([425c7](https://github.com/JSQLParser/JSqlParser/commit/425c72eb7d7f931) jxnu-liguobin)
+-  `SimpleFunction` for faster parsing of simple, but deep nested functions ([085d7](https://github.com/JSQLParser/JSqlParser/commit/085d7504235e58c) Andreas Reichel)
+-  add support for snowflake merge statements (#1887) ([36b80](https://github.com/JSQLParser/JSqlParser/commit/36b806dede06260) David Goss)
+-  `ColDataType` supports `PUBLIC` schema and all non-restricted keywords for type ([1088d](https://github.com/JSQLParser/JSqlParser/commit/1088db7aea0b2f9) Andreas Reichel)
+-  T-SQL Join Hints ([5f09e](https://github.com/JSQLParser/JSqlParser/commit/5f09ec4914fbdd1) Andreas Reichel)
+-  old TSQL Joins `*=` and `=*` ([0b50d](https://github.com/JSQLParser/JSqlParser/commit/0b50da4cca555b6) Andreas Reichel)
+-  MS SQL Server `Merge` `Output` clause ([7bd42](https://github.com/JSQLParser/JSqlParser/commit/7bd42edaa0d9aed) Andreas Reichel)
+-  MS SQL Server `UPDATE ...` Index Hint ([f919e](https://github.com/JSQLParser/JSqlParser/commit/f919e00c30ff5df) Andreas Reichel)
+-  Postgres `Contains` and `ContainedBy` Operators ([28a4c](https://github.com/JSQLParser/JSqlParser/commit/28a4c080b718aba) Andreas Reichel)
+-  Postgres `Contains` and `ContainedBy` Operators ([09d6d](https://github.com/JSQLParser/JSqlParser/commit/09d6dfe7bc7acb8) Andreas Reichel)
+-  Clickhouse `GLOBAL IN ...` ([ced0d](https://github.com/JSQLParser/JSqlParser/commit/ced0d0090c5c9a9) Andreas Reichel)
+-  `CREATE INDEX IF NOT EXISTS...` ([da13d](https://github.com/JSQLParser/JSqlParser/commit/da13d7dc1dd1608) Andreas Reichel)
+-  support clickhouse global keyword in IN Expression ([a9ed7](https://github.com/JSQLParser/JSqlParser/commit/a9ed79825110df7) hezw)
 
 ### Bug Fixes
 
--  refactor `JsonExpression`, avoiding expensive semantic lookahead and improving performance ([56515](https://github.com/JSQLParser/JSqlParser/commit/56515aba6ca893f) Andreas Reichel)  
--  `GO` shall terminate statement only, when appearing alone on an empty line ([14637](https://github.com/JSQLParser/JSqlParser/commit/14637ce64763b42) Andreas Reichel)  
--  De-Parse Oracle Hints in UPDATE, INSERT, DELETE and MERGE ([aaca0](https://github.com/JSQLParser/JSqlParser/commit/aaca05855f9a11b) Andreas Reichel)  
--  `UpdateSet` shall not have brackets with single element only ([15b9a](https://github.com/JSQLParser/JSqlParser/commit/15b9aef7ca05416) Andreas Reichel)  
--  make `GLOBAL` a restricted keyword, not usable as an Alias ([dd6cf](https://github.com/JSQLParser/JSqlParser/commit/dd6cf23150f4804) Andreas Reichel)  
--  Postgres `NextVal()` function ([e3afa](https://github.com/JSQLParser/JSqlParser/commit/e3afa5fbdebc715) Andreas Reichel)  
--  optional `Expression` in `FETCH` clause ([daee3](https://github.com/JSQLParser/JSqlParser/commit/daee30f7ae88bea) Andreas Reichel)  
--  allow `RAW` as `CreateParameter` ([ecd40](https://github.com/JSQLParser/JSqlParser/commit/ecd40386585a519) Andreas Reichel)  
+-  refactor `JsonExpression`, avoiding expensive semantic lookahead and improving performance ([56515](https://github.com/JSQLParser/JSqlParser/commit/56515aba6ca893f) Andreas Reichel)
+-  `GO` shall terminate statement only, when appearing alone on an empty line ([14637](https://github.com/JSQLParser/JSqlParser/commit/14637ce64763b42) Andreas Reichel)
+-  De-Parse Oracle Hints in UPDATE, INSERT, DELETE and MERGE ([aaca0](https://github.com/JSQLParser/JSqlParser/commit/aaca05855f9a11b) Andreas Reichel)
+-  `UpdateSet` shall not have brackets with single element only ([15b9a](https://github.com/JSQLParser/JSqlParser/commit/15b9aef7ca05416) Andreas Reichel)
+-  make `GLOBAL` a restricted keyword, not usable as an Alias ([dd6cf](https://github.com/JSQLParser/JSqlParser/commit/dd6cf23150f4804) Andreas Reichel)
+-  Postgres `NextVal()` function ([e3afa](https://github.com/JSQLParser/JSqlParser/commit/e3afa5fbdebc715) Andreas Reichel)
+-  optional `Expression` in `FETCH` clause ([daee3](https://github.com/JSQLParser/JSqlParser/commit/daee30f7ae88bea) Andreas Reichel)
+-  allow `RAW` as `CreateParameter` ([ecd40](https://github.com/JSQLParser/JSqlParser/commit/ecd40386585a519) Andreas Reichel)
 
 ### Other changes
 
@@ -928,14 +928,14 @@ Changelog of JSqlParser.
 
 **Fix typo in migration.rst (#1888)**
 
-* Found a typo in the 4.7 migration document. Trivial PR. Please merge. 
+* Found a typo in the 4.7 migration document. Trivial PR. Please merge.
 
 [902e4](https://github.com/JSQLParser/JSqlParser/commit/902e4c46f783985) Ed Sabol *2023-11-10 03:05:39*
 
 **Unit tests support multi-os and higher versions of jdk (#1886)**
 
-* fix: tokenBlockPattern support \r\n or \r 
-* test: remove nashorn ignore annotation to support jdk11+ 
+* fix: tokenBlockPattern support \r\n or \r
+* test: remove nashorn ignore annotation to support jdk11+
 
 [97e92](https://github.com/JSQLParser/JSqlParser/commit/97e9229d15df7d6) human-user *2023-11-08 03:07:04*
 
@@ -969,65 +969,65 @@ Changelog of JSqlParser.
 
 ### Breaking changes
 
--  add support for INTERPRET function parsing (#1816) ([180ec](https://github.com/JSQLParser/JSqlParser/commit/180ec68cc9fa7eb) Matteo Sist)  
--  Remove `ItemsList`, `MultiExpressionList`, `Replace` ([14170](https://github.com/JSQLParser/JSqlParser/commit/141708eabc4f2ea) Andreas Reichel)  
--  Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions ([288b1](https://github.com/JSQLParser/JSqlParser/commit/288b177fe9c8a4c) Andreas Reichel)  
--  remove `SelectExpressionItem` in favor of `SelectItem` ([b9057](https://github.com/JSQLParser/JSqlParser/commit/b9057d2b75cd1d7) Andreas Reichel)  
--  ClickHouse `Select...` ``FINAL` modifier ([4b7f2](https://github.com/JSQLParser/JSqlParser/commit/4b7f21c54c24d04) Andreas Reichel)  
+-  add support for INTERPRET function parsing (#1816) ([180ec](https://github.com/JSQLParser/JSqlParser/commit/180ec68cc9fa7eb) Matteo Sist)
+-  Remove `ItemsList`, `MultiExpressionList`, `Replace` ([14170](https://github.com/JSQLParser/JSqlParser/commit/141708eabc4f2ea) Andreas Reichel)
+-  Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions ([288b1](https://github.com/JSQLParser/JSqlParser/commit/288b177fe9c8a4c) Andreas Reichel)
+-  remove `SelectExpressionItem` in favor of `SelectItem` ([b9057](https://github.com/JSQLParser/JSqlParser/commit/b9057d2b75cd1d7) Andreas Reichel)
+-  ClickHouse `Select...` ``FINAL` modifier ([4b7f2](https://github.com/JSQLParser/JSqlParser/commit/4b7f21c54c24d04) Andreas Reichel)
 
 ### Features
 
--  H2 BYTEA Values `X'01' '02'` ([54828](https://github.com/JSQLParser/JSqlParser/commit/54828a456a7f192) Andreas Reichel)  
--  BigQuery Except(..) Replace(..) syntax ([4b4ae](https://github.com/JSQLParser/JSqlParser/commit/4b4ae04f44ff18b) Andreas Reichel)  
--  implement a few missing expressions ([04128](https://github.com/JSQLParser/JSqlParser/commit/0412897f9ea809f) Andreas Reichel)  
--  SQL:2016 TABLESAMPLE clause ([4d8a5](https://github.com/JSQLParser/JSqlParser/commit/4d8a512191a4a1b) Andreas Reichel)  
--  add a method checking balanced brackets ([52df3](https://github.com/JSQLParser/JSqlParser/commit/52df32dd8ec2c10) Andreas Reichel)  
--  add support for INTERPRET function parsing (#1816) ([180ec](https://github.com/JSQLParser/JSqlParser/commit/180ec68cc9fa7eb) Matteo Sist)  
--  MySQL `NOT RLIKE`, `NOT REGEXP` expressions ([f1325](https://github.com/JSQLParser/JSqlParser/commit/f132547f56a1edd) Andreas Reichel)  
--  Postgres `NOTNULL` support ([386dc](https://github.com/JSQLParser/JSqlParser/commit/386dc7a0df98f1c) manticore-projects)  
--  `QUALIFY` clause ([75e4d](https://github.com/JSQLParser/JSqlParser/commit/75e4d30747a7e6e) Andreas Reichel)  
--  T-SQL `FOR ...` clause ([8027d](https://github.com/JSQLParser/JSqlParser/commit/8027dbf2cbf9163) Andreas Reichel)  
--  Quoted Identifiers can contain double-quotes (PostgreSQL) ([73c55](https://github.com/JSQLParser/JSqlParser/commit/73c55fda1ac6a42) Andreas Reichel)  
--  functions blocks, parenthesed JSON Expressions ([5263b](https://github.com/JSQLParser/JSqlParser/commit/5263b91f3e555b7) Andreas Reichel)  
--  functions blocks, parenthesed JSON Expressions ([e19dc](https://github.com/JSQLParser/JSqlParser/commit/e19dc0e081f741d) Andreas Reichel)  
--  parse CREATE TRIGGER as UnsupportedStatement ([64b03](https://github.com/JSQLParser/JSqlParser/commit/64b0331f772278b) Andreas Reichel)  
--  chaining JSON Expressions ([6ef5e](https://github.com/JSQLParser/JSqlParser/commit/6ef5e0b6ee06211) Andreas Reichel)  
--  Write API documentation to the WebSite via XMLDoclet ([c5366](https://github.com/JSQLParser/JSqlParser/commit/c53667f8eff30e3) Andreas Reichel)  
--  `MEMBER OF` condition as shown at https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#operator_member-of ([6e7a7](https://github.com/JSQLParser/JSqlParser/commit/6e7a78dfc563749) Andreas Reichel)  
--  access Elements of Array Columns ([09a70](https://github.com/JSQLParser/JSqlParser/commit/09a70a499121792) Andreas Reichel)  
--  JdbcNamedParameter allows "&" (instead of ":") ([c07a4](https://github.com/JSQLParser/JSqlParser/commit/c07a43b3c128a5d) Andreas Reichel)  
--  Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions ([288b1](https://github.com/JSQLParser/JSqlParser/commit/288b177fe9c8a4c) Andreas Reichel)  
--  ClickHouse `LIMIT ... BY ...` clause ([4d5e2](https://github.com/JSQLParser/JSqlParser/commit/4d5e26d3febe686) Andreas Reichel)  
--  implement SQL:2016 Convert() and Trim() ([3a27a](https://github.com/JSQLParser/JSqlParser/commit/3a27a9dd4add700) Andreas Reichel)  
--  Switch off contradicting `JOIN` qualifiers, when setting a qualifier ([b6ea8](https://github.com/JSQLParser/JSqlParser/commit/b6ea8b162450545) Andreas Reichel)  
--  Test if a JOIN is an INNER JOIN according to the SQL:2016 ([6281b](https://github.com/JSQLParser/JSqlParser/commit/6281b07a543b088) Andreas Reichel)  
--  ClickHouse `Select...` ``FINAL` modifier ([4b7f2](https://github.com/JSQLParser/JSqlParser/commit/4b7f21c54c24d04) Andreas Reichel)  
--  Multi-Part Names for Variables and Parameters ([9da7a](https://github.com/JSQLParser/JSqlParser/commit/9da7a06ebe9b036) Andreas Reichel)  
--  Oracle `HAVING` before `GROUP BY` ([4efb9](https://github.com/JSQLParser/JSqlParser/commit/4efb99f1510ad16) Andreas Reichel)  
--  Lateral View ([8a1bd](https://github.com/JSQLParser/JSqlParser/commit/8a1bdeccbadb04f) Andreas Reichel)  
--  FETCH uses EXPRESSION ([0979b](https://github.com/JSQLParser/JSqlParser/commit/0979b2e5ea76b8c) Andreas Reichel)  
--  Support more Statement Separators ([b0814](https://github.com/JSQLParser/JSqlParser/commit/b08148414bd8f30) Andreas Reichel)  
--  CREATE VIEW ... REFRESH AUTO... ([1c8d8](https://github.com/JSQLParser/JSqlParser/commit/1c8d8daf48ebac1) Andreas Reichel)  
--  Oracle Alternative Quoting ([c57c4](https://github.com/JSQLParser/JSqlParser/commit/c57c427032c91d0) Andreas Reichel)  
--  make important Classes Serializable ([b94b2](https://github.com/JSQLParser/JSqlParser/commit/b94b2cc6a8f8c7d) Andreas Reichel)  
+-  H2 BYTEA Values `X'01' '02'` ([54828](https://github.com/JSQLParser/JSqlParser/commit/54828a456a7f192) Andreas Reichel)
+-  BigQuery Except(..) Replace(..) syntax ([4b4ae](https://github.com/JSQLParser/JSqlParser/commit/4b4ae04f44ff18b) Andreas Reichel)
+-  implement a few missing expressions ([04128](https://github.com/JSQLParser/JSqlParser/commit/0412897f9ea809f) Andreas Reichel)
+-  SQL:2016 TABLESAMPLE clause ([4d8a5](https://github.com/JSQLParser/JSqlParser/commit/4d8a512191a4a1b) Andreas Reichel)
+-  add a method checking balanced brackets ([52df3](https://github.com/JSQLParser/JSqlParser/commit/52df32dd8ec2c10) Andreas Reichel)
+-  add support for INTERPRET function parsing (#1816) ([180ec](https://github.com/JSQLParser/JSqlParser/commit/180ec68cc9fa7eb) Matteo Sist)
+-  MySQL `NOT RLIKE`, `NOT REGEXP` expressions ([f1325](https://github.com/JSQLParser/JSqlParser/commit/f132547f56a1edd) Andreas Reichel)
+-  Postgres `NOTNULL` support ([386dc](https://github.com/JSQLParser/JSqlParser/commit/386dc7a0df98f1c) manticore-projects)
+-  `QUALIFY` clause ([75e4d](https://github.com/JSQLParser/JSqlParser/commit/75e4d30747a7e6e) Andreas Reichel)
+-  T-SQL `FOR ...` clause ([8027d](https://github.com/JSQLParser/JSqlParser/commit/8027dbf2cbf9163) Andreas Reichel)
+-  Quoted Identifiers can contain double-quotes (PostgreSQL) ([73c55](https://github.com/JSQLParser/JSqlParser/commit/73c55fda1ac6a42) Andreas Reichel)
+-  functions blocks, parenthesed JSON Expressions ([5263b](https://github.com/JSQLParser/JSqlParser/commit/5263b91f3e555b7) Andreas Reichel)
+-  functions blocks, parenthesed JSON Expressions ([e19dc](https://github.com/JSQLParser/JSqlParser/commit/e19dc0e081f741d) Andreas Reichel)
+-  parse CREATE TRIGGER as UnsupportedStatement ([64b03](https://github.com/JSQLParser/JSqlParser/commit/64b0331f772278b) Andreas Reichel)
+-  chaining JSON Expressions ([6ef5e](https://github.com/JSQLParser/JSqlParser/commit/6ef5e0b6ee06211) Andreas Reichel)
+-  Write API documentation to the WebSite via XMLDoclet ([c5366](https://github.com/JSQLParser/JSqlParser/commit/c53667f8eff30e3) Andreas Reichel)
+-  `MEMBER OF` condition as shown at https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#operator_member-of ([6e7a7](https://github.com/JSQLParser/JSqlParser/commit/6e7a78dfc563749) Andreas Reichel)
+-  access Elements of Array Columns ([09a70](https://github.com/JSQLParser/JSqlParser/commit/09a70a499121792) Andreas Reichel)
+-  JdbcNamedParameter allows "&" (instead of ":") ([c07a4](https://github.com/JSQLParser/JSqlParser/commit/c07a43b3c128a5d) Andreas Reichel)
+-  Consolidate the `ExpressionList`, removing many redundant List alike Classes and Productions ([288b1](https://github.com/JSQLParser/JSqlParser/commit/288b177fe9c8a4c) Andreas Reichel)
+-  ClickHouse `LIMIT ... BY ...` clause ([4d5e2](https://github.com/JSQLParser/JSqlParser/commit/4d5e26d3febe686) Andreas Reichel)
+-  implement SQL:2016 Convert() and Trim() ([3a27a](https://github.com/JSQLParser/JSqlParser/commit/3a27a9dd4add700) Andreas Reichel)
+-  Switch off contradicting `JOIN` qualifiers, when setting a qualifier ([b6ea8](https://github.com/JSQLParser/JSqlParser/commit/b6ea8b162450545) Andreas Reichel)
+-  Test if a JOIN is an INNER JOIN according to the SQL:2016 ([6281b](https://github.com/JSQLParser/JSqlParser/commit/6281b07a543b088) Andreas Reichel)
+-  ClickHouse `Select...` ``FINAL` modifier ([4b7f2](https://github.com/JSQLParser/JSqlParser/commit/4b7f21c54c24d04) Andreas Reichel)
+-  Multi-Part Names for Variables and Parameters ([9da7a](https://github.com/JSQLParser/JSqlParser/commit/9da7a06ebe9b036) Andreas Reichel)
+-  Oracle `HAVING` before `GROUP BY` ([4efb9](https://github.com/JSQLParser/JSqlParser/commit/4efb99f1510ad16) Andreas Reichel)
+-  Lateral View ([8a1bd](https://github.com/JSQLParser/JSqlParser/commit/8a1bdeccbadb04f) Andreas Reichel)
+-  FETCH uses EXPRESSION ([0979b](https://github.com/JSQLParser/JSqlParser/commit/0979b2e5ea76b8c) Andreas Reichel)
+-  Support more Statement Separators ([b0814](https://github.com/JSQLParser/JSqlParser/commit/b08148414bd8f30) Andreas Reichel)
+-  CREATE VIEW ... REFRESH AUTO... ([1c8d8](https://github.com/JSQLParser/JSqlParser/commit/1c8d8daf48ebac1) Andreas Reichel)
+-  Oracle Alternative Quoting ([c57c4](https://github.com/JSQLParser/JSqlParser/commit/c57c427032c91d0) Andreas Reichel)
+-  make important Classes Serializable ([b94b2](https://github.com/JSQLParser/JSqlParser/commit/b94b2cc6a8f8c7d) Andreas Reichel)
 
 ### Bug Fixes
 
--  ExpressionList of Expressions in `Values` ([994e6](https://github.com/JSQLParser/JSqlParser/commit/994e6c63d065a48) Andreas Reichel)  
--  check for NULL before iterating ([beb68](https://github.com/JSQLParser/JSqlParser/commit/beb68d55239da97) Andreas Reichel)  
--  Backslash escaped single quote `'\''` ([a2975](https://github.com/JSQLParser/JSqlParser/commit/a29754341adeffc) Andreas Reichel)  
--  `INSERT` must use simple Column Names only ([420d7](https://github.com/JSQLParser/JSqlParser/commit/420d7d834760f14) Andreas Reichel)  
--  SPHINX modules and themes ([6f277](https://github.com/JSQLParser/JSqlParser/commit/6f277654b9344ec) Andreas Reichel)  
--  expose IntervalExpression attributes and use DeParser ([b6fab](https://github.com/JSQLParser/JSqlParser/commit/b6fab2a484e0b47) Andreas Reichel)  
--  throw the specific exception ([cb960](https://github.com/JSQLParser/JSqlParser/commit/cb960a35647a19a) Andreas Reichel)  
--  Complex Parsing Approach ([4f048](https://github.com/JSQLParser/JSqlParser/commit/4f0488ccb4611f0) Andreas Reichel)  
--  issue #1789 ([32ec5](https://github.com/JSQLParser/JSqlParser/commit/32ec56114c1fbc4) Andreas Reichel)  
--  issue #1789 ([d20c8](https://github.com/JSQLParser/JSqlParser/commit/d20c8e94de64e2a) Andreas Reichel)  
--  issue #1791 ([88d1b](https://github.com/JSQLParser/JSqlParser/commit/88d1b62f0038a9a) Andreas Reichel)  
--  Java Version 8 ([7cecd](https://github.com/JSQLParser/JSqlParser/commit/7cecd293cf4e0ea) Andreas Reichel)  
--  find the correct position when field belongs to an internal class ([21389](https://github.com/JSQLParser/JSqlParser/commit/21389b712995674) Andreas Reichel)  
--  Remove tests for `()`, since `ParenthesedExpressionList` will catch those too ([905ef](https://github.com/JSQLParser/JSqlParser/commit/905ef6512d592d6) Andreas Reichel)  
--  assign Enum case insensitive ([fc577](https://github.com/JSQLParser/JSqlParser/commit/fc577caa4146878) Andreas Reichel)  
+-  ExpressionList of Expressions in `Values` ([994e6](https://github.com/JSQLParser/JSqlParser/commit/994e6c63d065a48) Andreas Reichel)
+-  check for NULL before iterating ([beb68](https://github.com/JSQLParser/JSqlParser/commit/beb68d55239da97) Andreas Reichel)
+-  Backslash escaped single quote `'\''` ([a2975](https://github.com/JSQLParser/JSqlParser/commit/a29754341adeffc) Andreas Reichel)
+-  `INSERT` must use simple Column Names only ([420d7](https://github.com/JSQLParser/JSqlParser/commit/420d7d834760f14) Andreas Reichel)
+-  SPHINX modules and themes ([6f277](https://github.com/JSQLParser/JSqlParser/commit/6f277654b9344ec) Andreas Reichel)
+-  expose IntervalExpression attributes and use DeParser ([b6fab](https://github.com/JSQLParser/JSqlParser/commit/b6fab2a484e0b47) Andreas Reichel)
+-  throw the specific exception ([cb960](https://github.com/JSQLParser/JSqlParser/commit/cb960a35647a19a) Andreas Reichel)
+-  Complex Parsing Approach ([4f048](https://github.com/JSQLParser/JSqlParser/commit/4f0488ccb4611f0) Andreas Reichel)
+-  issue #1789 ([32ec5](https://github.com/JSQLParser/JSqlParser/commit/32ec56114c1fbc4) Andreas Reichel)
+-  issue #1789 ([d20c8](https://github.com/JSQLParser/JSqlParser/commit/d20c8e94de64e2a) Andreas Reichel)
+-  issue #1791 ([88d1b](https://github.com/JSQLParser/JSqlParser/commit/88d1b62f0038a9a) Andreas Reichel)
+-  Java Version 8 ([7cecd](https://github.com/JSQLParser/JSqlParser/commit/7cecd293cf4e0ea) Andreas Reichel)
+-  find the correct position when field belongs to an internal class ([21389](https://github.com/JSQLParser/JSqlParser/commit/21389b712995674) Andreas Reichel)
+-  Remove tests for `()`, since `ParenthesedExpressionList` will catch those too ([905ef](https://github.com/JSQLParser/JSqlParser/commit/905ef6512d592d6) Andreas Reichel)
+-  assign Enum case insensitive ([fc577](https://github.com/JSQLParser/JSqlParser/commit/fc577caa4146878) Andreas Reichel)
 
 ### Other changes
 
@@ -1038,9 +1038,9 @@ Changelog of JSqlParser.
 
 **Fixing a problem with an OP_CONCAT in WhenExpression (#1837)**
 
-* fix: Concatenation in inner ELSE statement (Second level of Case Expression) 
-* fix: broken tests 
-* fix: Delete lookahead(3) 
+* fix: Concatenation in inner ELSE statement (Second level of Case Expression)
+* fix: broken tests
+* fix: Delete lookahead(3)
 
 [f05cb](https://github.com/JSQLParser/JSqlParser/commit/f05cb7ff4aa46c5) amigalev *2023-08-20 04:43:30*
 
@@ -1066,7 +1066,7 @@ Changelog of JSqlParser.
 
 **Update sphinx.yml**
 
-* fix the FURO theme 
+* fix the FURO theme
 
 [51cc4](https://github.com/JSQLParser/JSqlParser/commit/51cc444ff98ad1d) manticore-projects *2023-06-01 02:49:23*
 
@@ -1087,157 +1087,157 @@ Changelog of JSqlParser.
 
 **Fix #1758: Use long for Feature.timeOut (#1759)**
 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [3314e](https://github.com/JSQLParser/JSqlParser/commit/3314edf0ea17772) Tomasz Zarna *2023-04-27 20:30:31*
 
 **Ignoring unnecessarily generated jacoco report (#1762)**
 
-* Ignoring unnecessarily generated jacoco report 
-* Ignoring unnecessarily generated by pmd plugin 
-* --------- 
-* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt; 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Ignoring unnecessarily generated jacoco report
+* Ignoring unnecessarily generated by pmd plugin
+* ---------
+* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt;
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [1bbb1](https://github.com/JSQLParser/JSqlParser/commit/1bbb1443d84684c) optimizing-ci-builds *2023-04-27 19:50:42*
 
 **Ignoring unnecessarily generated by pmd plugin (#1763)**
 
-* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt; 
+* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt;
 
 [52648](https://github.com/JSQLParser/JSqlParser/commit/52648277e69fa07) optimizing-ci-builds *2023-04-27 19:49:15*
 
 **Refactor Parenthesed SelectBody and FromItem (#1754)**
 
-* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH 
-* Support parsing create view statements in Redshift with AUTO REFRESH 
-* option. 
-* Reduce cyclomatic complexity in CreateView.toString 
-* Extract adding the force option into a dedicated method resulting in the 
-* cyclomatic complexity reduction of the CreateView.toString method. 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Sphinx Documentation 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
-* doc: request for &#x60;Conventional Commit&#x60; messages 
-* feat: make important Classes Serializable 
-* Implement Serializable for persisting via ObjectOutputStream 
-* chore: Make Serializable 
-* doc: Better integration of the RR diagrams 
-* - apply neutral Sphinx theme 
-* - insert the RR diagrams into the sphinx sources 
-* - better documentation on Gradle dependencies 
-* - link GitHub repository 
-* Merge 
-* feat: Oracle Alternative Quoting 
-* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60; 
-* - fixes #1718 
-* - add a Logo and FavIcon to the Website 
-* - document recent changes on Quoting/Escaping 
-* - add an example on building SQL from Java 
-* - rework the README.md, promote the Website 
-* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces) 
-* style: Appease PMD/Codacy 
-* doc: fix the issue template 
-* - fix the issue template 
-* - fix the -SNAPSHOT version number 
-* Update issue templates 
-* Update issue templates 
-* feat: Support more Statement Separators 
-* - &#x60;GO&#x60; 
-* - Slash &#x60;/&#x60; 
-* - Two empty lines 
-* feat: FETCH uses EXPRESSION 
-* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only 
-* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test() 
-* style: apply Spotless 
-* test: commit missing test 
-* fix: JSon Operator can use Simple Function 
-* Supports &#x60;Function() -&gt;&gt; Literal&#x60; (although &#x60;Function()&#x60; would not allow Nested Expression Parameters) 
-* fixes #1571 
-* style: Reformat changed files and headers 
-* style: Remove unused variable 
-* feat: Add support for Hangul &quot;\uAC00&quot;-&quot;\uD7A3&quot; 
-* fixes #1747 
-* style: expose &#x60;SetStatement&#x60; key-value list 
-* fixes #1746 
-* style: Appease PMD/Codacy 
-* feat: &#x60;ConflictTarget&#x60; allows multiple &#x60;IndexColumnNames&#x60; 
-* fixes #1749 
-* fixes #1633 
-* fixes #955 
-* doc: fix reference in the Java Doc 
-* build: better Upload Groovy Task 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - First properly working version 
-* - Work in progress, 13 tests failing 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - delete unneeded ParenthesedJoin 
-* - rename ParenthesisFromItem into ParenthesedFromItem 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - fix &#x60;NULLS FIRST&#x60; and &#x60;NULLS LAST&#x60; 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - fix Oracle Hints 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - parse &#x60;SetOperation&#x60; only after a (first plain) SelectBody has found, this fixes the performance issue 
-* - one more special Oracle Test succeeds 
-* - 5 remaining test failures 
-* feat: ParenthesedSelectBody and ParenthesedFromItem 
-* - extract &#x60;OrderByElements&#x60; into &#x60;SelectBody&#x60; 
-* - one more special Oracle Test succeeds 
-* - all tests succeed 
-* style: Appease PMD/Codacy 
-* style: Appease PMD/Codacy 
-* feat: Refactor SelectBody implementations 
-* - &#x60;SelectBody&#x60; implements &#x60;FromItem&#x60; 
-* - get rid of &#x60;SubSelect&#x60; and &#x60;SpecialSubSelect&#x60; 
-* - &#x60;Merge&#x60; can use &#x60;FromItem&#x60; instead of &#x60;SubSelect&#x60; or &#x60;Table&#x60; 
-* - &#x60;LateralSubSelect&#x60; extends &#x60;ParenthesedSelectBody&#x60; directly 
-* - Simplify the &#x60;Select&#x60; statement, although it is still redundant since     &#x60;SelectBody&#x60; also could implement &#x60;Statement&#x60; directly 
-* - &#x60;WithItem&#x60; can use &#x60;SelectBody&#x60; directly, which allows for nested &#x60;WithItems&#x60; 
-* BREAKING-CHANGE: Lots of redundant methods and intermediate removed 
-* feat: Refactor SelectBody implementations 
-* - &#x60;SelectBody&#x60; implements &#x60;Statement&#x60; and so makes &#x60;Select&#x60; redundant 
-* - get rid of &#x60;ValuesList&#x60; 
-* - refactor &#x60;ValuesStatement&#x60; into &#x60;Values&#x60; which just implements &#x60;SelectBody&#x60; (and becomes a &#x60;Statement&#x60; and a &#x60;FromItem&#x60;), move to &#x60;select&#x60; package 
-* BREAKING-CHANGE: Lots of redundant methods and intermediate removed 
-* style: Code cleanup 
-* - remove 3 unused/obsolete productions 
-* - appease PMD/Codacy 
-* feat: Merge &#x60;SelectBody&#x60; into &#x60;Select&#x60; Statement 
-* - former &#x60;SelectBody&#x60; implements &#x60;Statement&#x60; and so becomes &#x60;Select&#x60; 
-* - this reduces the AST by 1 hierarchy level 
-* style: Remove unused import 
-* test: @Disabled invalid Test 
-* style: Appease PMD/Codacy 
-* test: Add a SubSelect Parsing Test 
-* --------- 
-* Co-authored-by: zaza &lt;tzarna@gmail.com&gt; 
+* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH
+* Support parsing create view statements in Redshift with AUTO REFRESH
+* option.
+* Reduce cyclomatic complexity in CreateView.toString
+* Extract adding the force option into a dedicated method resulting in the
+* cyclomatic complexity reduction of the CreateView.toString method.
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Sphinx Documentation
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
+* doc: request for &#x60;Conventional Commit&#x60; messages
+* feat: make important Classes Serializable
+* Implement Serializable for persisting via ObjectOutputStream
+* chore: Make Serializable
+* doc: Better integration of the RR diagrams
+* - apply neutral Sphinx theme
+* - insert the RR diagrams into the sphinx sources
+* - better documentation on Gradle dependencies
+* - link GitHub repository
+* Merge
+* feat: Oracle Alternative Quoting
+* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60;
+* - fixes #1718
+* - add a Logo and FavIcon to the Website
+* - document recent changes on Quoting/Escaping
+* - add an example on building SQL from Java
+* - rework the README.md, promote the Website
+* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces)
+* style: Appease PMD/Codacy
+* doc: fix the issue template
+* - fix the issue template
+* - fix the -SNAPSHOT version number
+* Update issue templates
+* Update issue templates
+* feat: Support more Statement Separators
+* - &#x60;GO&#x60;
+* - Slash &#x60;/&#x60;
+* - Two empty lines
+* feat: FETCH uses EXPRESSION
+* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only
+* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test()
+* style: apply Spotless
+* test: commit missing test
+* fix: JSon Operator can use Simple Function
+* Supports &#x60;Function() -&gt;&gt; Literal&#x60; (although &#x60;Function()&#x60; would not allow Nested Expression Parameters)
+* fixes #1571
+* style: Reformat changed files and headers
+* style: Remove unused variable
+* feat: Add support for Hangul &quot;\uAC00&quot;-&quot;\uD7A3&quot;
+* fixes #1747
+* style: expose &#x60;SetStatement&#x60; key-value list
+* fixes #1746
+* style: Appease PMD/Codacy
+* feat: &#x60;ConflictTarget&#x60; allows multiple &#x60;IndexColumnNames&#x60;
+* fixes #1749
+* fixes #1633
+* fixes #955
+* doc: fix reference in the Java Doc
+* build: better Upload Groovy Task
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - First properly working version
+* - Work in progress, 13 tests failing
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - delete unneeded ParenthesedJoin
+* - rename ParenthesisFromItem into ParenthesedFromItem
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - fix &#x60;NULLS FIRST&#x60; and &#x60;NULLS LAST&#x60;
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - fix Oracle Hints
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - parse &#x60;SetOperation&#x60; only after a (first plain) SelectBody has found, this fixes the performance issue
+* - one more special Oracle Test succeeds
+* - 5 remaining test failures
+* feat: ParenthesedSelectBody and ParenthesedFromItem
+* - extract &#x60;OrderByElements&#x60; into &#x60;SelectBody&#x60;
+* - one more special Oracle Test succeeds
+* - all tests succeed
+* style: Appease PMD/Codacy
+* style: Appease PMD/Codacy
+* feat: Refactor SelectBody implementations
+* - &#x60;SelectBody&#x60; implements &#x60;FromItem&#x60;
+* - get rid of &#x60;SubSelect&#x60; and &#x60;SpecialSubSelect&#x60;
+* - &#x60;Merge&#x60; can use &#x60;FromItem&#x60; instead of &#x60;SubSelect&#x60; or &#x60;Table&#x60;
+* - &#x60;LateralSubSelect&#x60; extends &#x60;ParenthesedSelectBody&#x60; directly
+* - Simplify the &#x60;Select&#x60; statement, although it is still redundant since     &#x60;SelectBody&#x60; also could implement &#x60;Statement&#x60; directly
+* - &#x60;WithItem&#x60; can use &#x60;SelectBody&#x60; directly, which allows for nested &#x60;WithItems&#x60;
+* BREAKING-CHANGE: Lots of redundant methods and intermediate removed
+* feat: Refactor SelectBody implementations
+* - &#x60;SelectBody&#x60; implements &#x60;Statement&#x60; and so makes &#x60;Select&#x60; redundant
+* - get rid of &#x60;ValuesList&#x60;
+* - refactor &#x60;ValuesStatement&#x60; into &#x60;Values&#x60; which just implements &#x60;SelectBody&#x60; (and becomes a &#x60;Statement&#x60; and a &#x60;FromItem&#x60;), move to &#x60;select&#x60; package
+* BREAKING-CHANGE: Lots of redundant methods and intermediate removed
+* style: Code cleanup
+* - remove 3 unused/obsolete productions
+* - appease PMD/Codacy
+* feat: Merge &#x60;SelectBody&#x60; into &#x60;Select&#x60; Statement
+* - former &#x60;SelectBody&#x60; implements &#x60;Statement&#x60; and so becomes &#x60;Select&#x60;
+* - this reduces the AST by 1 hierarchy level
+* style: Remove unused import
+* test: @Disabled invalid Test
+* style: Appease PMD/Codacy
+* test: Add a SubSelect Parsing Test
+* ---------
+* Co-authored-by: zaza &lt;tzarna@gmail.com&gt;
 
 [a312d](https://github.com/JSQLParser/JSqlParser/commit/a312dcdc2d618f1) manticore-projects *2023-04-27 19:38:24*
 
@@ -1248,181 +1248,181 @@ Changelog of JSqlParser.
 
 **Assorted Fixes #7 (#1745)**
 
-* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH 
-* Support parsing create view statements in Redshift with AUTO REFRESH 
-* option. 
-* Reduce cyclomatic complexity in CreateView.toString 
-* Extract adding the force option into a dedicated method resulting in the 
-* cyclomatic complexity reduction of the CreateView.toString method. 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Sphinx Documentation 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
-* doc: request for &#x60;Conventional Commit&#x60; messages 
-* feat: make important Classes Serializable 
-* Implement Serializable for persisting via ObjectOutputStream 
-* chore: Make Serializable 
-* doc: Better integration of the RR diagrams 
-* - apply neutral Sphinx theme 
-* - insert the RR diagrams into the sphinx sources 
-* - better documentation on Gradle dependencies 
-* - link GitHub repository 
-* Merge 
-* feat: Oracle Alternative Quoting 
-* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60; 
-* - fixes #1718 
-* - add a Logo and FavIcon to the Website 
-* - document recent changes on Quoting/Escaping 
-* - add an example on building SQL from Java 
-* - rework the README.md, promote the Website 
-* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces) 
-* style: Appease PMD/Codacy 
-* doc: fix the issue template 
-* - fix the issue template 
-* - fix the -SNAPSHOT version number 
-* Update issue templates 
-* Update issue templates 
-* feat: Support more Statement Separators 
-* - &#x60;GO&#x60; 
-* - Slash &#x60;/&#x60; 
-* - Two empty lines 
-* feat: FETCH uses EXPRESSION 
-* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only 
-* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test() 
-* style: apply Spotless 
-* test: commit missing test 
-* fix: JSon Operator can use Simple Function 
-* Supports &#x60;Function() -&gt;&gt; Literal&#x60; (although &#x60;Function()&#x60; would not allow Nested Expression Parameters) 
-* fixes #1571 
-* style: Reformat changed files and headers 
-* style: Remove unused variable 
-* feat: Add support for Hangul &quot;\uAC00&quot;-&quot;\uD7A3&quot; 
-* fixes #1747 
-* style: expose &#x60;SetStatement&#x60; key-value list 
-* fixes #1746 
-* style: Appease PMD/Codacy 
-* feat: &#x60;ConflictTarget&#x60; allows multiple &#x60;IndexColumnNames&#x60; 
-* fixes #1749 
-* fixes #1633 
-* fixes #955 
-* doc: fix reference in the Java Doc 
-* build: better Upload Groovy Task 
-* --------- 
-* Co-authored-by: zaza &lt;tzarna@gmail.com&gt; 
+* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH
+* Support parsing create view statements in Redshift with AUTO REFRESH
+* option.
+* Reduce cyclomatic complexity in CreateView.toString
+* Extract adding the force option into a dedicated method resulting in the
+* cyclomatic complexity reduction of the CreateView.toString method.
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Sphinx Documentation
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
+* doc: request for &#x60;Conventional Commit&#x60; messages
+* feat: make important Classes Serializable
+* Implement Serializable for persisting via ObjectOutputStream
+* chore: Make Serializable
+* doc: Better integration of the RR diagrams
+* - apply neutral Sphinx theme
+* - insert the RR diagrams into the sphinx sources
+* - better documentation on Gradle dependencies
+* - link GitHub repository
+* Merge
+* feat: Oracle Alternative Quoting
+* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60;
+* - fixes #1718
+* - add a Logo and FavIcon to the Website
+* - document recent changes on Quoting/Escaping
+* - add an example on building SQL from Java
+* - rework the README.md, promote the Website
+* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces)
+* style: Appease PMD/Codacy
+* doc: fix the issue template
+* - fix the issue template
+* - fix the -SNAPSHOT version number
+* Update issue templates
+* Update issue templates
+* feat: Support more Statement Separators
+* - &#x60;GO&#x60;
+* - Slash &#x60;/&#x60;
+* - Two empty lines
+* feat: FETCH uses EXPRESSION
+* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only
+* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test()
+* style: apply Spotless
+* test: commit missing test
+* fix: JSon Operator can use Simple Function
+* Supports &#x60;Function() -&gt;&gt; Literal&#x60; (although &#x60;Function()&#x60; would not allow Nested Expression Parameters)
+* fixes #1571
+* style: Reformat changed files and headers
+* style: Remove unused variable
+* feat: Add support for Hangul &quot;\uAC00&quot;-&quot;\uD7A3&quot;
+* fixes #1747
+* style: expose &#x60;SetStatement&#x60; key-value list
+* fixes #1746
+* style: Appease PMD/Codacy
+* feat: &#x60;ConflictTarget&#x60; allows multiple &#x60;IndexColumnNames&#x60;
+* fixes #1749
+* fixes #1633
+* fixes #955
+* doc: fix reference in the Java Doc
+* build: better Upload Groovy Task
+* ---------
+* Co-authored-by: zaza &lt;tzarna@gmail.com&gt;
 
 [31ef1](https://github.com/JSQLParser/JSqlParser/commit/31ef1aaf23e2917) manticore-projects *2023-03-21 22:04:58*
 
 **disable xml report (#1748)**
 
-* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt; 
+* Co-authored-by: other &lt;other@ECE-A55006.austin.utexas.edu&gt;
 
 [476d9](https://github.com/JSQLParser/JSqlParser/commit/476d96965492131) optimizing-ci-builds *2023-03-21 21:58:25*
 
 **Assorted Fixes #6 (#1740)**
 
-* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH 
-* Support parsing create view statements in Redshift with AUTO REFRESH 
-* option. 
-* Reduce cyclomatic complexity in CreateView.toString 
-* Extract adding the force option into a dedicated method resulting in the 
-* cyclomatic complexity reduction of the CreateView.toString method. 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Sphinx Documentation 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
-* doc: request for &#x60;Conventional Commit&#x60; messages 
-* feat: make important Classes Serializable 
-* Implement Serializable for persisting via ObjectOutputStream 
-* chore: Make Serializable 
-* doc: Better integration of the RR diagrams 
-* - apply neutral Sphinx theme 
-* - insert the RR diagrams into the sphinx sources 
-* - better documentation on Gradle dependencies 
-* - link GitHub repository 
-* Merge 
-* feat: Oracle Alternative Quoting 
-* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60; 
-* - fixes #1718 
-* - add a Logo and FavIcon to the Website 
-* - document recent changes on Quoting/Escaping 
-* - add an example on building SQL from Java 
-* - rework the README.md, promote the Website 
-* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces) 
-* style: Appease PMD/Codacy 
-* doc: fix the issue template 
-* - fix the issue template 
-* - fix the -SNAPSHOT version number 
-* Update issue templates 
-* Update issue templates 
-* feat: Support more Statement Separators 
-* - &#x60;GO&#x60; 
-* - Slash &#x60;/&#x60; 
-* - Two empty lines 
-* feat: FETCH uses EXPRESSION 
-* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only 
-* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String 
-* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test() 
-* style: apply Spotless 
-* test: commit missing test 
-* feat: Unicode CJK Unified Ideographs (Unicode block) 
-* fixes #1741 
-* feat: Unicode CJK Unified Ideographs (Unicode block) 
-* fixes #1741 
-* feat: Functions with nested Attributes 
-* Supports &#x60;SELECT schemaName.f1(arguments).f2(arguments).f3.f4&#x60; and similar constructs 
-* fixes #1742 
-* fixes #1050 
-* --------- 
-* Co-authored-by: zaza &lt;tzarna@gmail.com&gt; 
+* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH
+* Support parsing create view statements in Redshift with AUTO REFRESH
+* option.
+* Reduce cyclomatic complexity in CreateView.toString
+* Extract adding the force option into a dedicated method resulting in the
+* cyclomatic complexity reduction of the CreateView.toString method.
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Sphinx Documentation
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
+* doc: request for &#x60;Conventional Commit&#x60; messages
+* feat: make important Classes Serializable
+* Implement Serializable for persisting via ObjectOutputStream
+* chore: Make Serializable
+* doc: Better integration of the RR diagrams
+* - apply neutral Sphinx theme
+* - insert the RR diagrams into the sphinx sources
+* - better documentation on Gradle dependencies
+* - link GitHub repository
+* Merge
+* feat: Oracle Alternative Quoting
+* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60;
+* - fixes #1718
+* - add a Logo and FavIcon to the Website
+* - document recent changes on Quoting/Escaping
+* - add an example on building SQL from Java
+* - rework the README.md, promote the Website
+* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces)
+* style: Appease PMD/Codacy
+* doc: fix the issue template
+* - fix the issue template
+* - fix the -SNAPSHOT version number
+* Update issue templates
+* Update issue templates
+* feat: Support more Statement Separators
+* - &#x60;GO&#x60;
+* - Slash &#x60;/&#x60;
+* - Two empty lines
+* feat: FETCH uses EXPRESSION
+* - &#x60;FETCH&#x60; uses &#x60;EXPRESSION&#x60; instead of SimpleJDBCParameter only
+* - Visit/Accept &#x60;FETCH&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Visit/Accept &#x60;OFFSET&#x60; &#x60;EXPRESSION&#x60; instead of &#x60;append&#x60; to String
+* - Gradle: remove obsolete/incompatible &#x60;jvmArgs&#x60; from Test()
+* style: apply Spotless
+* test: commit missing test
+* feat: Unicode CJK Unified Ideographs (Unicode block)
+* fixes #1741
+* feat: Unicode CJK Unified Ideographs (Unicode block)
+* fixes #1741
+* feat: Functions with nested Attributes
+* Supports &#x60;SELECT schemaName.f1(arguments).f2(arguments).f3.f4&#x60; and similar constructs
+* fixes #1742
+* fixes #1050
+* ---------
+* Co-authored-by: zaza &lt;tzarna@gmail.com&gt;
 
 [adeed](https://github.com/JSQLParser/JSqlParser/commit/adeed5359c65b8f) manticore-projects *2023-03-09 21:22:40*
 
@@ -1443,34 +1443,34 @@ Changelog of JSqlParser.
 
 **Sphinx Documentation**
 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
 
 [2ef66](https://github.com/JSQLParser/JSqlParser/commit/2ef6637afffa943) Andreas Reichel *2023-01-21 04:06:00*
 
 **Define Reserved Keywords explicitly**
 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
 
 [f49e8](https://github.com/JSQLParser/JSqlParser/commit/f49e828fc9c5f2f) Andreas Reichel *2023-01-21 04:05:51*
 
 **Adjust Gradle to JUnit 5**
 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
 
 [e960a](https://github.com/JSQLParser/JSqlParser/commit/e960a35e591ce07) Andreas Reichel *2023-01-21 04:05:51*
 
 **Enhanced Keywords**
 
-* Add Keywords and document, which keywords are allowed for what purpose 
+* Add Keywords and document, which keywords are allowed for what purpose
 
 [b5321](https://github.com/JSQLParser/JSqlParser/commit/b5321d6e8bac588) Andreas Reichel *2023-01-21 04:05:51*
 
@@ -1501,9 +1501,9 @@ Changelog of JSqlParser.
 
 **Adjust Gradle to JUnit 5**
 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
 
 [2d51a](https://github.com/JSQLParser/JSqlParser/commit/2d51a82d3e9e51c) Andreas Reichel *2023-01-21 04:05:51*
 
@@ -1514,15 +1514,15 @@ Changelog of JSqlParser.
 
 **Reduce cyclomatic complexity in CreateView.toString**
 
-* Extract adding the force option into a dedicated method resulting in the 
-* cyclomatic complexity reduction of the CreateView.toString method. 
+* Extract adding the force option into a dedicated method resulting in the
+* cyclomatic complexity reduction of the CreateView.toString method.
 
 [ea447](https://github.com/JSQLParser/JSqlParser/commit/ea4477bb775ebdb) zaza *2023-01-08 20:43:40*
 
 **Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH**
 
-* Support parsing create view statements in Redshift with AUTO REFRESH 
-* option. 
+* Support parsing create view statements in Redshift with AUTO REFRESH
+* option.
 
 [74715](https://github.com/JSQLParser/JSqlParser/commit/747152a9fc1bfd1) zaza *2022-12-11 20:03:52*
 
@@ -1531,7 +1531,7 @@ Changelog of JSqlParser.
 
 ### Bug Fixes
 
--  add missing public Getter (#1632) ([d2212](https://github.com/JSQLParser/JSqlParser/commit/d2212776ac5eb83) manticore-projects)  
+-  add missing public Getter (#1632) ([d2212](https://github.com/JSQLParser/JSqlParser/commit/d2212776ac5eb83) manticore-projects)
 
 ### Other changes
 
@@ -1562,88 +1562,88 @@ Changelog of JSqlParser.
 
 **Oracle Alternative Quoting (#1722)**
 
-* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH 
-* Support parsing create view statements in Redshift with AUTO REFRESH 
-* option. 
-* Reduce cyclomatic complexity in CreateView.toString 
-* Extract adding the force option into a dedicated method resulting in the 
-* cyclomatic complexity reduction of the CreateView.toString method. 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Sphinx Documentation 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
-* doc: request for &#x60;Conventional Commit&#x60; messages 
-* feat: make important Classes Serializable 
-* Implement Serializable for persisting via ObjectOutputStream 
-* chore: Make Serializable 
-* doc: Better integration of the RR diagrams 
-* - apply neutral Sphinx theme 
-* - insert the RR diagrams into the sphinx sources 
-* - better documentation on Gradle dependencies 
-* - link GitHub repository 
-* Merge 
-* feat: Oracle Alternative Quoting 
-* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60; 
-* - fixes #1718 
-* - add a Logo and FavIcon to the Website 
-* - document recent changes on Quoting/Escaping 
-* - add an example on building SQL from Java 
-* - rework the README.md, promote the Website 
-* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces) 
-* style: Appease PMD/Codacy 
-* doc: fix the issue template 
-* - fix the issue template 
-* - fix the -SNAPSHOT version number 
-* Update issue templates 
-* Update issue templates 
-* feat: Support more Statement Separators 
-* - &#x60;GO&#x60; 
-* - Slash &#x60;/&#x60; 
-* - Two empty lines 
-* --------- 
-* Co-authored-by: zaza &lt;tzarna@gmail.com&gt; 
+* Fixes #1684: Support CREATE MATERIALIZED VIEW with AUTO REFRESH
+* Support parsing create view statements in Redshift with AUTO REFRESH
+* option.
+* Reduce cyclomatic complexity in CreateView.toString
+* Extract adding the force option into a dedicated method resulting in the
+* cyclomatic complexity reduction of the CreateView.toString method.
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Sphinx Documentation
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
+* doc: request for &#x60;Conventional Commit&#x60; messages
+* feat: make important Classes Serializable
+* Implement Serializable for persisting via ObjectOutputStream
+* chore: Make Serializable
+* doc: Better integration of the RR diagrams
+* - apply neutral Sphinx theme
+* - insert the RR diagrams into the sphinx sources
+* - better documentation on Gradle dependencies
+* - link GitHub repository
+* Merge
+* feat: Oracle Alternative Quoting
+* - add support for Oracle Alternative Quoting e.g. &#x60;q&#x27;(...)&#x27;&#x60;
+* - fixes #1718
+* - add a Logo and FavIcon to the Website
+* - document recent changes on Quoting/Escaping
+* - add an example on building SQL from Java
+* - rework the README.md, promote the Website
+* - add Spotless Formatter, using Google Java Style (with Tab&#x3D;4 Spaces)
+* style: Appease PMD/Codacy
+* doc: fix the issue template
+* - fix the issue template
+* - fix the -SNAPSHOT version number
+* Update issue templates
+* Update issue templates
+* feat: Support more Statement Separators
+* - &#x60;GO&#x60;
+* - Slash &#x60;/&#x60;
+* - Two empty lines
+* ---------
+* Co-authored-by: zaza &lt;tzarna@gmail.com&gt;
 
 [e71e5](https://github.com/JSQLParser/JSqlParser/commit/e71e57dfe4b377c) manticore-projects *2023-02-07 20:18:52*
 
 **Issue1673 case within brackets (#1675)**
 
-* fix: add missing public Getter 
-* Add public Getter for &#x60;updateSets&#x60; 
-* Fixes #1630 
-* fix: Case within brackets 
-* fixes #1673 
+* fix: add missing public Getter
+* Add public Getter for &#x60;updateSets&#x60;
+* Fixes #1630
+* fix: Case within brackets
+* fixes #1673
 
 [2ced7](https://github.com/JSQLParser/JSqlParser/commit/2ced7ded930f8b0) manticore-projects *2023-01-31 20:56:01*
 
 **Added support for SHOW INDEX from table (#1704)**
 
-* Added support for SHOW INDEX from table 
-* Added * import 
-* fix for javadoc 
-* added &lt;doclint&gt;none&lt;/doclint&gt; 
+* Added support for SHOW INDEX from table
+* Added * import
+* fix for javadoc
+* added &lt;doclint&gt;none&lt;/doclint&gt;
 
 [a2618](https://github.com/JSQLParser/JSqlParser/commit/a2618321135d517) Jayant Kumar Yadav *2023-01-31 20:54:05*
 
@@ -1654,149 +1654,149 @@ Changelog of JSqlParser.
 
 **Sphinx Website (#1624)**
 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Keyword test adopt JUnit5 
-* Update keywords 
-* CheckStyle sanitation of method names 
-* Merge Master 
-* Add Jupiter Parameters dependency again 
-* Automate the &#x60;updateKeywords&#x60; Step 
-* Update PMD and rules 
-* Rewrite test expected to fail 
-* Appease Codacy 
-* Remove broken rule warning about perfectly fine switch-case statements 
-* Force Changes 
-* Fix Merge Issues 
-* Read Tokens directly from the Grammar File without invoking JTREE 
-* - read Tokens per REGEX Matcher 
-* - move Reserved Keywords from Grammar into ParserKeywordsUtils 
-* - adjust the Tests 
-* Appease PMD/Codacy 
-* Extract the Keywords from the Grammar by using JTRee (instead of Regex) 
-* Add some tests to ensure, that all Keywords or found 
-* Appease Codacy/PMD 
-* Separate UpdateKeywords Task again 
-* Including it into compileJavacc won&#x27;t work since it depends on compiling the ParserKeywordUtils.java 
-* Single file compilation did not work 
-* Clean-up the imports 
-* Add JavaCC dependency to Maven for building ParserKeywordsUtils 
-* Add JavaCC dependency to Maven for building ParserKeywordsUtils 
-* Merge Upstream 
-* Merge Master 
-* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed 
-* Add AST Visualization 
-* Show the Statement&#x27;s Java Objects in a tree hierarchy 
-* Sphinx Documentation 
-* Update the MANTICORE Sphinx Theme, but ignore it in GIT 
-* Add the content to the Sphinx sites 
-* Add a Gradle function to derive Stable and Snapshot version from GIT Tags 
-* Add a Gradle GIT change task 
-* Add a Gradle sphinx task 
-* Add a special Test case for illustrating the use of JSQLParser 
-* test: Document an additional Special Oracle test success 
-* doc: ignore the autogenerated changelog.rst in GIT 
-* build: temporarily reduce the Code Coverage requirements 
-* Temporarily reduce the Coverage checks regarding Minimum Coverage and Maximum Missed Lines in order to get the Keywords PR accepted. We should do a major Code cleanup afterwards. 
-* build: Clean-up the Gradle Build 
-* Prefix the Sphinx Prolog Variables with JSQLPARSER in order to allow for build the Main Website for various projects 
-* Remove some redundant version requests for PMD, CheckStyle and friends 
-* Remove JUnit-4 dependency and add HarmCrest 
-* Complete the PUBLISHING task 
-* doc: Explain the &#x60;&#x60;updateKeywords&#x60;&#x60; Gradle Task 
-* build: Un-escape the Unicode on the changelog file 
-* build: Un-escape the Unicode on the changelog file 
-* doc: Cleanup 
-* Unescape unicode characters from Git Changelog 
-* Remove obsolete code from Sphinx&#x27; conf.py 
-* doc: Properly un-escape the Git Commit message 
-* doc: request for &#x60;Conventional Commit&#x60; messages 
-* doc: correctly refer to &#x60;RelObjectNameWithoutValue()&#x60; 
-* build: upload the built files via Excec/SFTP 
-* doc: Add an example on Token White-listing 
-* doc: write the correct Git Repository 
-* doc: pronounce the OVERLAPS example more 
-* feat: make important Classes Serializable 
-* Implement Serializable for persisting via ObjectOutputStream 
-* doc: Add the &quot;How to Use&quot; java code 
-* chore: Make Serializable 
-* fix: Non-serializable field in serializable class 
-* build: various fixes to the Maven build file 
-* add the Keywords Documentation file to the task 
-* exclude the Sphinx files from the license header plugin 
-* fix the JavaDoc plugin options 
-* build: add the Keywords Documentation file to the task 
-* doc: add a page about actually Reserved Keywords 
-* build: avoid PMD/Codacy for Sphinx Documentation 
-* update Changelog 
-* build: Add Sphinx GitHub Action 
-* Add a GitHub Action, which will 
-* - Install Sphinx and Extensions 
-* - Install Gradle Wrapper 
-* - Run Gradle Wrapper Task &#x60;sphinx&#x60; 
-* - Deploy the generated static HTML site to GH Pages 
-* fix: fix a merge error, brackets 
-* fix: remove JavaCC dependency 
-* Parse Tokens via Regex 
-* Move JavaCC Token Parser into the KeywordsTest 
-* Make JavaCC a Test Dependency only 
-* doc: Fix Maven Artifact Version 
-* style: Avoid throwing raw exception types. 
-* style: Avoid throwing raw exception types. 
-* doc: Better integration of the RR diagrams 
-* - apply neutral Sphinx theme 
-* - insert the RR diagrams into the sphinx sources 
-* - better documentation on Gradle dependencies 
-* - link GitHub repository 
-* build: gradle, execute all Checks after Test 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Keyword test adopt JUnit5
+* Update keywords
+* CheckStyle sanitation of method names
+* Merge Master
+* Add Jupiter Parameters dependency again
+* Automate the &#x60;updateKeywords&#x60; Step
+* Update PMD and rules
+* Rewrite test expected to fail
+* Appease Codacy
+* Remove broken rule warning about perfectly fine switch-case statements
+* Force Changes
+* Fix Merge Issues
+* Read Tokens directly from the Grammar File without invoking JTREE
+* - read Tokens per REGEX Matcher
+* - move Reserved Keywords from Grammar into ParserKeywordsUtils
+* - adjust the Tests
+* Appease PMD/Codacy
+* Extract the Keywords from the Grammar by using JTRee (instead of Regex)
+* Add some tests to ensure, that all Keywords or found
+* Appease Codacy/PMD
+* Separate UpdateKeywords Task again
+* Including it into compileJavacc won&#x27;t work since it depends on compiling the ParserKeywordUtils.java
+* Single file compilation did not work
+* Clean-up the imports
+* Add JavaCC dependency to Maven for building ParserKeywordsUtils
+* Add JavaCC dependency to Maven for building ParserKeywordsUtils
+* Merge Upstream
+* Merge Master
+* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed
+* Add AST Visualization
+* Show the Statement&#x27;s Java Objects in a tree hierarchy
+* Sphinx Documentation
+* Update the MANTICORE Sphinx Theme, but ignore it in GIT
+* Add the content to the Sphinx sites
+* Add a Gradle function to derive Stable and Snapshot version from GIT Tags
+* Add a Gradle GIT change task
+* Add a Gradle sphinx task
+* Add a special Test case for illustrating the use of JSQLParser
+* test: Document an additional Special Oracle test success
+* doc: ignore the autogenerated changelog.rst in GIT
+* build: temporarily reduce the Code Coverage requirements
+* Temporarily reduce the Coverage checks regarding Minimum Coverage and Maximum Missed Lines in order to get the Keywords PR accepted. We should do a major Code cleanup afterwards.
+* build: Clean-up the Gradle Build
+* Prefix the Sphinx Prolog Variables with JSQLPARSER in order to allow for build the Main Website for various projects
+* Remove some redundant version requests for PMD, CheckStyle and friends
+* Remove JUnit-4 dependency and add HarmCrest
+* Complete the PUBLISHING task
+* doc: Explain the &#x60;&#x60;updateKeywords&#x60;&#x60; Gradle Task
+* build: Un-escape the Unicode on the changelog file
+* build: Un-escape the Unicode on the changelog file
+* doc: Cleanup
+* Unescape unicode characters from Git Changelog
+* Remove obsolete code from Sphinx&#x27; conf.py
+* doc: Properly un-escape the Git Commit message
+* doc: request for &#x60;Conventional Commit&#x60; messages
+* doc: correctly refer to &#x60;RelObjectNameWithoutValue()&#x60;
+* build: upload the built files via Excec/SFTP
+* doc: Add an example on Token White-listing
+* doc: write the correct Git Repository
+* doc: pronounce the OVERLAPS example more
+* feat: make important Classes Serializable
+* Implement Serializable for persisting via ObjectOutputStream
+* doc: Add the &quot;How to Use&quot; java code
+* chore: Make Serializable
+* fix: Non-serializable field in serializable class
+* build: various fixes to the Maven build file
+* add the Keywords Documentation file to the task
+* exclude the Sphinx files from the license header plugin
+* fix the JavaDoc plugin options
+* build: add the Keywords Documentation file to the task
+* doc: add a page about actually Reserved Keywords
+* build: avoid PMD/Codacy for Sphinx Documentation
+* update Changelog
+* build: Add Sphinx GitHub Action
+* Add a GitHub Action, which will
+* - Install Sphinx and Extensions
+* - Install Gradle Wrapper
+* - Run Gradle Wrapper Task &#x60;sphinx&#x60;
+* - Deploy the generated static HTML site to GH Pages
+* fix: fix a merge error, brackets
+* fix: remove JavaCC dependency
+* Parse Tokens via Regex
+* Move JavaCC Token Parser into the KeywordsTest
+* Make JavaCC a Test Dependency only
+* doc: Fix Maven Artifact Version
+* style: Avoid throwing raw exception types.
+* style: Avoid throwing raw exception types.
+* doc: Better integration of the RR diagrams
+* - apply neutral Sphinx theme
+* - insert the RR diagrams into the sphinx sources
+* - better documentation on Gradle dependencies
+* - link GitHub repository
+* build: gradle, execute all Checks after Test
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [be8e7](https://github.com/JSQLParser/JSqlParser/commit/be8e7a8a1d77184) manticore-projects *2023-01-20 21:45:35*
 
 **Assorted Fixes #5 (#1715)**
 
-* refactor: Merge REPLACE into UPSERT 
-* fixes #1706 
-* feat: &#x60;DROP TEMPORARY TABLE ...&#x60; 
-* fixes #1712 
-* build: PMD compliance 
-* ci: Merge master 
-* feat: Configurable backslash &#x60;\&#x60; escaping 
-* - Enables &#x60;\&#x60; as escape character in String Literals (beside SQL:2016 compliant &#x60;&#x27;&#x60;) 
-* - Default is OFF (since its not SQL:2016 compliant) 
-* - Activate per Parser Feature 
-* - Fixes #1638 
-* - Fixes #1209 
-* - Fixes #1173 
-* - Fixes #1172 
-* - Fixes #832 
-* - Fixes #827 
-* - Fixes #578 
-* BREAKING-CHANGE: Backslash Escaping needs to be activated explicitly or else Backslash won&#x27;t work as Escape Character. 
-* style: Checkstyle 
-* style: remove dead code 
-* style: PMD compliance 
-* style: Checkstyle, unused import 
-* feat: allow &#x60;S_CHAR_LITERAL&#x60; to break lines 
-* - fixes #875 
+* refactor: Merge REPLACE into UPSERT
+* fixes #1706
+* feat: &#x60;DROP TEMPORARY TABLE ...&#x60;
+* fixes #1712
+* build: PMD compliance
+* ci: Merge master
+* feat: Configurable backslash &#x60;\&#x60; escaping
+* - Enables &#x60;\&#x60; as escape character in String Literals (beside SQL:2016 compliant &#x60;&#x27;&#x60;)
+* - Default is OFF (since its not SQL:2016 compliant)
+* - Activate per Parser Feature
+* - Fixes #1638
+* - Fixes #1209
+* - Fixes #1173
+* - Fixes #1172
+* - Fixes #832
+* - Fixes #827
+* - Fixes #578
+* BREAKING-CHANGE: Backslash Escaping needs to be activated explicitly or else Backslash won&#x27;t work as Escape Character.
+* style: Checkstyle
+* style: remove dead code
+* style: PMD compliance
+* style: Checkstyle, unused import
+* feat: allow &#x60;S_CHAR_LITERAL&#x60; to break lines
+* - fixes #875
 
 [a00d7](https://github.com/JSQLParser/JSqlParser/commit/a00d77a100bfab7) manticore-projects *2023-01-20 21:32:20*
 
@@ -1812,7 +1812,7 @@ Changelog of JSqlParser.
 
 **Update README.md**
 
-* lgtm removed 
+* lgtm removed
 
 [954b8](https://github.com/JSQLParser/JSqlParser/commit/954b8dd2e760a01) Tobias *2022-12-27 10:34:18*
 
@@ -1823,69 +1823,69 @@ Changelog of JSqlParser.
 
 **Assorted Fixes #4 (#1676)**
 
-* support clickhouse global keyword in join 
-* fix: add missing public Getter 
-* Add public Getter for &#x60;updateSets&#x60; 
-* Fixes #1630 
-* feat: Clickhouse GLOBAL JOIN 
-* All credits to @julianzlzhang 
-* fixes #1615 
-* fixes #1535 
-* feat: IF/ELSE statements supports Block 
-* Make &#x60;If... Else...&#x60; statements work with Blocks 
-* Make &#x60;Statement()&#x60; production work with &#x60;Block()&#x60; 
-* Rewrite the &#x60;Block()&#x60; related Unit Tests 
-* fixes #1682 
-* fix: Revert unintended changes to the Special Oracle Tests 
-* fix: &#x60;SET&#x60; statement supports &#x60;UserVariable&#x60; 
-* Make &#x60;SetStatement&#x60; parse Objects instead of Names only 
-* Add Grammar to accept &#x60;UserVariable&#x60; (e.g. &quot;set @Flag &#x3D; 1&quot;) 
-* Add Test Case for &#x60;UserVariable&#x60; 
-* fixes #1682 
-* feat: Google Spanner Support 
-* Replaces PR #1415, all credit goes to @s13o 
-* Re-arranged some recently added Tokens in alphabetical order 
-* Update Keywords 
-* fix: fix JSonExpression, accept Expressions 
-* Make JSonExpression accept Expressions 
-* Add Testcase 
-* Expose Idents() and Operators() 
-* Fixes #1696 
-* test: add Test for Issue #1237 
-* Co-authored-by: Zhang Zhongliang &lt;zhangzhongliang@xiaomi.com&gt; 
+* support clickhouse global keyword in join
+* fix: add missing public Getter
+* Add public Getter for &#x60;updateSets&#x60;
+* Fixes #1630
+* feat: Clickhouse GLOBAL JOIN
+* All credits to @julianzlzhang
+* fixes #1615
+* fixes #1535
+* feat: IF/ELSE statements supports Block
+* Make &#x60;If... Else...&#x60; statements work with Blocks
+* Make &#x60;Statement()&#x60; production work with &#x60;Block()&#x60;
+* Rewrite the &#x60;Block()&#x60; related Unit Tests
+* fixes #1682
+* fix: Revert unintended changes to the Special Oracle Tests
+* fix: &#x60;SET&#x60; statement supports &#x60;UserVariable&#x60;
+* Make &#x60;SetStatement&#x60; parse Objects instead of Names only
+* Add Grammar to accept &#x60;UserVariable&#x60; (e.g. &quot;set @Flag &#x3D; 1&quot;)
+* Add Test Case for &#x60;UserVariable&#x60;
+* fixes #1682
+* feat: Google Spanner Support
+* Replaces PR #1415, all credit goes to @s13o
+* Re-arranged some recently added Tokens in alphabetical order
+* Update Keywords
+* fix: fix JSonExpression, accept Expressions
+* Make JSonExpression accept Expressions
+* Add Testcase
+* Expose Idents() and Operators()
+* Fixes #1696
+* test: add Test for Issue #1237
+* Co-authored-by: Zhang Zhongliang &lt;zhangzhongliang@xiaomi.com&gt;
 
 [8d9db](https://github.com/JSQLParser/JSqlParser/commit/8d9db7052c3aeb5) manticore-projects *2022-12-22 21:17:55*
 
 **Fixed download war script in the renderRR task (#1659)**
 
-* Co-authored-by: Hai Chang &lt;haichang@microsoft.com&gt; 
+* Co-authored-by: Hai Chang &lt;haichang@microsoft.com&gt;
 
 [08a92](https://github.com/JSQLParser/JSqlParser/commit/08a92fcd7b4f7f2) haha1903 *2022-12-10 09:23:53*
 
 **Assorted fixes (#1666)**
 
-* fix: add missing public Getter 
-* Add public Getter for &#x60;updateSets&#x60; 
-* Fixes #1630 
-* feat: LISTAGG() with OVER() clause 
-* fixes issue #1652 
-* fixes 3 more Special Oracle Tests 
-* fix: White-list CURRENT_DATE and CURRENT_TIMESTAMP tokens 
-* allows CURRENT_DATE(3) and CURRENT_TIMESTAMP(3) as regular functions 
-* fixes #1507 
-* fixes #1607 
-* feat: Deparser for Expression Lists 
-* Visit each Expression of a List instead ExpressionList.toString() 
-* fixes #1608 
-* fix: Lookahead needed 
+* fix: add missing public Getter
+* Add public Getter for &#x60;updateSets&#x60;
+* Fixes #1630
+* feat: LISTAGG() with OVER() clause
+* fixes issue #1652
+* fixes 3 more Special Oracle Tests
+* fix: White-list CURRENT_DATE and CURRENT_TIMESTAMP tokens
+* allows CURRENT_DATE(3) and CURRENT_TIMESTAMP(3) as regular functions
+* fixes #1507
+* fixes #1607
+* feat: Deparser for Expression Lists
+* Visit each Expression of a List instead ExpressionList.toString()
+* fixes #1608
+* fix: Lookahead needed
 
 [bff26](https://github.com/JSQLParser/JSqlParser/commit/bff268a7c699947) manticore-projects *2022-11-20 10:06:01*
 
 **Fix parsing statements with multidimensional array PR2 (#1665)**
 
-* Fix parsing statements with multidimensional array 
-* fix: Whitelist LOCKED keyword 
-* Co-authored-by: Andrei Lisouski &lt;alisousk@akamai.com&gt; 
+* Fix parsing statements with multidimensional array
+* fix: Whitelist LOCKED keyword
+* Co-authored-by: Andrei Lisouski &lt;alisousk@akamai.com&gt;
 
 [e1865](https://github.com/JSQLParser/JSqlParser/commit/e186588f044753f) manticore-projects *2022-11-20 09:59:26*
 
@@ -1911,83 +1911,83 @@ Changelog of JSqlParser.
 
 **Enhanced Keywords (#1382)**
 
-* Enhanced Keywords 
-* Add Keywords and document, which keywords are allowed for what purpose 
-* Fix incorrect tests 
-* Define Reserved Keywords explicitly 
-* Derive All Keywords from Grammar directly 
-* Generate production for Object Names (semi-) automatically 
-* Add parametrized Keyword Tests 
-* Fix test resources 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Keyword test adopt JUnit5 
-* Update keywords 
-* CheckStyle sanitation of method names 
-* Merge Master 
-* Add Jupiter Parameters dependency again 
-* Automate the &#x60;updateKeywords&#x60; Step 
-* Update PMD and rules 
-* Rewrite test expected to fail 
-* Appease Codacy 
-* Remove broken rule warning about perfectly fine switch-case statements 
-* Force Changes 
-* Fix Merge Issues 
-* Read Tokens directly from the Grammar File without invoking JTREE 
-* - read Tokens per REGEX Matcher 
-* - move Reserved Keywords from Grammar into ParserKeywordsUtils 
-* - adjust the Tests 
-* Appease PMD/Codacy 
-* Extract the Keywords from the Grammar by using JTRee (instead of Regex) 
-* Add some tests to ensure, that all Keywords or found 
-* Appease Codacy/PMD 
-* Separate UpdateKeywords Task again 
-* Including it into compileJavacc won&#x27;t work since it depends on compiling the ParserKeywordUtils.java 
-* Single file compilation did not work 
-* Clean-up the imports 
-* Add JavaCC dependency to Maven for building ParserKeywordsUtils 
-* Add JavaCC dependency to Maven for building ParserKeywordsUtils 
-* Merge Upstream 
-* Merge Master 
-* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed 
-* Add AST Visualization 
-* Show the Statement&#x27;s Java Objects in a tree hierarchy 
-* build: temporarily reduce the Code Coverage requirements 
-* Temporarily reduce the Coverage checks regarding Minimum Coverage and Maximum Missed Lines in order to get the Keywords PR accepted. We should do a major Code cleanup afterwards. 
-* build:  JSQLParser is a build  dependency 
-* chore:  Update keywords 
-* feat: add line count to output 
+* Enhanced Keywords
+* Add Keywords and document, which keywords are allowed for what purpose
+* Fix incorrect tests
+* Define Reserved Keywords explicitly
+* Derive All Keywords from Grammar directly
+* Generate production for Object Names (semi-) automatically
+* Add parametrized Keyword Tests
+* Fix test resources
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Keyword test adopt JUnit5
+* Update keywords
+* CheckStyle sanitation of method names
+* Merge Master
+* Add Jupiter Parameters dependency again
+* Automate the &#x60;updateKeywords&#x60; Step
+* Update PMD and rules
+* Rewrite test expected to fail
+* Appease Codacy
+* Remove broken rule warning about perfectly fine switch-case statements
+* Force Changes
+* Fix Merge Issues
+* Read Tokens directly from the Grammar File without invoking JTREE
+* - read Tokens per REGEX Matcher
+* - move Reserved Keywords from Grammar into ParserKeywordsUtils
+* - adjust the Tests
+* Appease PMD/Codacy
+* Extract the Keywords from the Grammar by using JTRee (instead of Regex)
+* Add some tests to ensure, that all Keywords or found
+* Appease Codacy/PMD
+* Separate UpdateKeywords Task again
+* Including it into compileJavacc won&#x27;t work since it depends on compiling the ParserKeywordUtils.java
+* Single file compilation did not work
+* Clean-up the imports
+* Add JavaCC dependency to Maven for building ParserKeywordsUtils
+* Add JavaCC dependency to Maven for building ParserKeywordsUtils
+* Merge Upstream
+* Merge Master
+* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed
+* Add AST Visualization
+* Show the Statement&#x27;s Java Objects in a tree hierarchy
+* build: temporarily reduce the Code Coverage requirements
+* Temporarily reduce the Coverage checks regarding Minimum Coverage and Maximum Missed Lines in order to get the Keywords PR accepted. We should do a major Code cleanup afterwards.
+* build:  JSQLParser is a build  dependency
+* chore:  Update keywords
+* feat: add line count to output
 
 [4863e](https://github.com/JSQLParser/JSqlParser/commit/4863eb5a8e30a5d) manticore-projects *2022-10-25 23:15:32*
 
 **#1610 Support for SKIP LOCKED tokens on SELECT statements (#1649)**
 
-* Co-authored-by: Lucas Dillmann &lt;lucas.dillmann@totvs.com.br&gt; 
+* Co-authored-by: Lucas Dillmann &lt;lucas.dillmann@totvs.com.br&gt;
 
 [e6d50](https://github.com/JSQLParser/JSqlParser/commit/e6d50f756e99846) Lucas Dillmann *2022-10-25 22:59:09*
 
 **Assorted fixes (#1646)**
 
-* fix: add missing public Getter 
-* Add public Getter for &#x60;updateSets&#x60; 
-* Fixes #1630 
-* fix: Assorted Fixes 
-* SelectExpressionItem with Function and Complex Parameters 
-* Tables with Oracle DB Links 
-* Make Table Name Parts accessible 
-* Fixes #1644 
-* Fixes #1643 
-* fix: Revert correct test case 
+* fix: add missing public Getter
+* Add public Getter for &#x60;updateSets&#x60;
+* Fixes #1630
+* fix: Assorted Fixes
+* SelectExpressionItem with Function and Complex Parameters
+* Tables with Oracle DB Links
+* Make Table Name Parts accessible
+* Fixes #1644
+* Fixes #1643
+* fix: Revert correct test case
 
 [15ff8](https://github.com/JSQLParser/JSqlParser/commit/15ff84348228278) manticore-projects *2022-10-16 20:15:36*
 
@@ -1998,30 +1998,30 @@ Changelog of JSqlParser.
 
 **Bump h2 from 1.4.200 to 2.1.210 (#1639)**
 
-* Bumps [h2](https://github.com/h2database/h2database) from 1.4.200 to 2.1.210. 
-* - [Release notes](https://github.com/h2database/h2database/releases) 
-* - [Commits](https://github.com/h2database/h2database/compare/version-1.4.200...version-2.1.210) 
-* --- 
-* updated-dependencies: 
-* - dependency-name: com.h2database:h2 
-* dependency-type: direct:development 
-* ... 
-* Signed-off-by: dependabot[bot] &lt;support@github.com&gt; 
-* Signed-off-by: dependabot[bot] &lt;support@github.com&gt; 
-* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt; 
+* Bumps [h2](https://github.com/h2database/h2database) from 1.4.200 to 2.1.210.
+* - [Release notes](https://github.com/h2database/h2database/releases)
+* - [Commits](https://github.com/h2database/h2database/compare/version-1.4.200...version-2.1.210)
+* ---
+* updated-dependencies:
+* - dependency-name: com.h2database:h2
+* dependency-type: direct:development
+* ...
+* Signed-off-by: dependabot[bot] &lt;support@github.com&gt;
+* Signed-off-by: dependabot[bot] &lt;support@github.com&gt;
+* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt;
 
 [fc3c4](https://github.com/JSQLParser/JSqlParser/commit/fc3c4cfd6b1eda9) dependabot[bot] *2022-09-28 19:52:31*
 
 **Support BigQuery SAFE_CAST (#1622) (#1634)**
 
-* Co-authored-by: Zhang, Dequn &lt;deqzhang@paypal.com&gt; 
+* Co-authored-by: Zhang, Dequn &lt;deqzhang@paypal.com&gt;
 
 [d9985](https://github.com/JSQLParser/JSqlParser/commit/d9985ae4f559cda) dequn *2022-09-20 18:22:25*
 
 **Support timestamptz dateliteral (#1621)**
 
-* support timestamptz as datetime literal 
-* rename test 
+* support timestamptz as datetime literal
+* rename test
 
 [81a64](https://github.com/JSQLParser/JSqlParser/commit/81a648eba8db92d) Todd Pollak *2022-08-31 20:31:44*
 
@@ -2042,25 +2042,25 @@ Changelog of JSqlParser.
 
 **Fixes  PR #1524 support hive alter sql (#1609)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Fixes broken PR #1524 and Commit fb6e950ce0e62ebcd7a44ba9eea679da2b04b2ed
 
 [2619c](https://github.com/JSQLParser/JSqlParser/commit/2619ce0a6fd8bd5) manticore-projects *2022-08-14 16:29:18*
 
 **#1524  support hive alter sql : ALTER TABLE name ADD COLUMNS (col_spec[, col_spec ...]) (#1605)**
 
-* Co-authored-by: zhum@aotain.com &lt;zm7705264&gt; 
+* Co-authored-by: zhum@aotain.com &lt;zm7705264&gt;
 
 [fb6e9](https://github.com/JSQLParser/JSqlParser/commit/fb6e950ce0e62eb) Zhumin-lv-wn *2022-08-03 20:56:44*
 
@@ -2116,55 +2116,55 @@ Changelog of JSqlParser.
 
 **PostgreSQL INSERT ... ON CONFLICT Issue #1551 (#1552)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Support Postgres INSERT ... ON CONFLICT 
-* Fixes #1551 
-* Refactor UpdateSet.toString(), which is used by Insert and Update 
-* Allow KEEP keyword 
-* Enables special Oracle Test keywordasidentifier04.sql, now 191 tests succeed 
-* Sanitize before push 
-* Tweak Grammar in order to survive the Maven Build 
-* Ammend the README 
-* Move Plugin configuration files to the CONFIG folder (hoping, that Codacy will find it there) 
-* Update PMD in the Maven configuration 
-* Update PMD in the Maven and Gradle configuration 
-* Appease Codacy 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Support Postgres INSERT ... ON CONFLICT
+* Fixes #1551
+* Refactor UpdateSet.toString(), which is used by Insert and Update
+* Allow KEEP keyword
+* Enables special Oracle Test keywordasidentifier04.sql, now 191 tests succeed
+* Sanitize before push
+* Tweak Grammar in order to survive the Maven Build
+* Ammend the README
+* Move Plugin configuration files to the CONFIG folder (hoping, that Codacy will find it there)
+* Update PMD in the Maven configuration
+* Update PMD in the Maven and Gradle configuration
+* Appease Codacy
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [5ae09](https://github.com/JSQLParser/JSqlParser/commit/5ae09ad097c7294) manticore-projects *2022-07-19 21:18:02*
 
 **Configurable Parser Timeout via Feature (#1592)**
 
-* Configurable Parser Timeout via Feature 
-* Fixes #1582 
-* Implement Parser Timeout Feature, e. g. &#x60;CCJSqlParserUtil.parse(sqlStr, parser -&gt; parser.withTimeOut(60000));&#x60; 
-* Add a special test failing after a long time only, to test TimeOut vs. Parser Exception 
-* Appease Codacy 
-* Appease Codacy 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Configurable Parser Timeout via Feature
+* Fixes #1582
+* Implement Parser Timeout Feature, e. g. &#x60;CCJSqlParserUtil.parse(sqlStr, parser -&gt; parser.withTimeOut(60000));&#x60;
+* Add a special test failing after a long time only, to test TimeOut vs. Parser Exception
+* Appease Codacy
+* Appease Codacy
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [74000](https://github.com/JSQLParser/JSqlParser/commit/74000130e850788) manticore-projects *2022-07-19 20:48:49*
 
@@ -2180,10 +2180,10 @@ Changelog of JSqlParser.
 
 **extended support Postgres' `Extract( field FROM source)` where `field` is a String instead of a Keyword (#1591)**
 
-* Fixes #1582 
-* Amend the ExtractExpression 
-* Add Test case for issue #1582 
-* Amend the README 
+* Fixes #1582
+* Amend the ExtractExpression
+* Add Test case for issue #1582
+* Amend the README
 
 [2b3ce](https://github.com/JSQLParser/JSqlParser/commit/2b3ce25a23b264a) manticore-projects *2022-07-19 19:25:23*
 
@@ -2214,9 +2214,9 @@ Changelog of JSqlParser.
 
 **Closes #1583:: Implement Postgresql optional TABLE in TRUNCATE (#1585)**
 
-* Closes #1583 
-* Closes #1583, removed unnecessary local variable. 
-* Closes #1583, proper support for deparsing. 
+* Closes #1583
+* Closes #1583, removed unnecessary local variable.
+* Closes #1583, proper support for deparsing.
 
 [26248](https://github.com/JSQLParser/JSqlParser/commit/262482610b80d18) Rob Audenaerde *2022-07-14 18:55:44*
 
@@ -2227,10 +2227,10 @@ Changelog of JSqlParser.
 
 **Support table option character set and index options (#1586)**
 
-* Support table option character set and index options 
-* Signed-off-by: luofei &lt;luoffei@outlook.com&gt; 
-* move test 
-* Signed-off-by: luofei &lt;luoffei@outlook.com&gt; 
+* Support table option character set and index options
+* Signed-off-by: luofei &lt;luoffei@outlook.com&gt;
+* move test
+* Signed-off-by: luofei &lt;luoffei@outlook.com&gt;
 
 [27cdf](https://github.com/JSQLParser/JSqlParser/commit/27cdfa9ca1237f6) luofei *2022-07-14 18:46:14*
 
@@ -2266,8 +2266,8 @@ Changelog of JSqlParser.
 
 **Add test for LikeExpression.setEscape and LikeExpression.getStringExpression (#1568)**
 
-* Add test for LikeExpression.setEscape and LikeExpression.getStringExpression 
-* like + set escape test for $ as escape character 
+* Add test for LikeExpression.setEscape and LikeExpression.getStringExpression
+* like + set escape test for $ as escape character
 
 [bcf6f](https://github.com/JSQLParser/JSqlParser/commit/bcf6ff4157277f9) Caro *2022-07-07 19:27:43*
 
@@ -2288,8 +2288,8 @@ Changelog of JSqlParser.
 
 **Add support for Hive dialect GROUPING SETS. (#1539)**
 
-* Add support for Hive GROUPING SETS dialect &#x60;GROUP BY a, b, c GROUPING SETS ((a, b), (a, c))&#x60; 
-* Simplify HiveTest::testGroupByGroupingSets. 
+* Add support for Hive GROUPING SETS dialect &#x60;GROUP BY a, b, c GROUPING SETS ((a, b), (a, c))&#x60;
+* Simplify HiveTest::testGroupByGroupingSets.
 
 [03c58](https://github.com/JSQLParser/JSqlParser/commit/03c58de9d341a13) chenwl *2022-07-06 19:40:41*
 
@@ -2300,13 +2300,13 @@ Changelog of JSqlParser.
 
 **Postgres NATURAL LEFT/RIGHT joins (#1560)**
 
-* Postgres NATURAL LEFT/RIGHT joins 
-* Fixes #1559 
-* Make NATURAL an optional Join Keyword, which can be combined with LEFT, RIGHT, INNER 
-* Add tests 
-* Postgres NATURAL LEFT/RIGHT joins 
-* Amend readme 
-* Revert successful Oracle test 
+* Postgres NATURAL LEFT/RIGHT joins
+* Fixes #1559
+* Make NATURAL an optional Join Keyword, which can be combined with LEFT, RIGHT, INNER
+* Add tests
+* Postgres NATURAL LEFT/RIGHT joins
+* Amend readme
+* Revert successful Oracle test
 
 [74a0f](https://github.com/JSQLParser/JSqlParser/commit/74a0f2fb22e24fe) manticore-projects *2022-06-28 20:15:34*
 
@@ -2327,7 +2327,7 @@ Changelog of JSqlParser.
 
 **Create maven.yml**
 
-* started maven build using github actions 
+* started maven build using github actions
 
 [b7e5c](https://github.com/JSQLParser/JSqlParser/commit/b7e5c151df37f5e) Tobias *2022-05-16 09:24:24*
 
@@ -2343,40 +2343,40 @@ Changelog of JSqlParser.
 
 **INSERT with SetOperations (#1531)**
 
-* INSERT with SetOperations 
-* Simplify the INSERT production 
-* Use SetOperations for Select and Values 
-* Better Bracket handling for WITH ... SELECT ... 
-* Fixes #1491 
-* INSERT with SetOperations 
-* Appease Codazy/PMD 
-* INSERT with SetOperations 
-* Appease Codazy/PMD 
-* Update Readme 
-* List the changes 
-* Minor rephrases 
-* Correct the Maven Artifact Example 
-* Fix the two test cases (missing white space) 
-* Remove unused import 
+* INSERT with SetOperations
+* Simplify the INSERT production
+* Use SetOperations for Select and Values
+* Better Bracket handling for WITH ... SELECT ...
+* Fixes #1491
+* INSERT with SetOperations
+* Appease Codazy/PMD
+* INSERT with SetOperations
+* Appease Codazy/PMD
+* Update Readme
+* List the changes
+* Minor rephrases
+* Correct the Maven Artifact Example
+* Fix the two test cases (missing white space)
+* Remove unused import
 
 [b5672](https://github.com/JSQLParser/JSqlParser/commit/b5672c54386cdf8) manticore-projects *2022-05-15 20:29:06*
 
 **#1516 rename without column keyword (#1533)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* &#x60;RENAME ... TO ...&#x60; without &#x60;COLUMN&#x60; keyword 
-* Fixes #1516 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* &#x60;RENAME ... TO ...&#x60; without &#x60;COLUMN&#x60; keyword
+* Fixes #1516
 
 [e8f07](https://github.com/JSQLParser/JSqlParser/commit/e8f0750d75e74c7) manticore-projects *2022-05-11 20:44:34*
 
@@ -2392,16 +2392,16 @@ Changelog of JSqlParser.
 
 **#1527 DELETE ... RETURNING ... (#1528)**
 
-* #1527 DELETE ... RETURNING ... 
-* Fixes #1527 
-* Add DELETE... RETURNING ... expression 
-* Simplify INSERT ... RETURNING ... expression 
-* Simply UPDATE ... RETURNING ... expression 
-* TSQL Output Clause 
-* According to https://docs.microsoft.com/en-us/sql/t-sql/queries/output-clause-transact-sql?view&#x3D;sql-server-ver15 
-* Implement Output Clause for INSERT, UPDATE and DELETE 
-* Add Tests according the Microsoft Documentation 
-* Appease Codacy/PMD 
+* #1527 DELETE ... RETURNING ...
+* Fixes #1527
+* Add DELETE... RETURNING ... expression
+* Simplify INSERT ... RETURNING ... expression
+* Simply UPDATE ... RETURNING ... expression
+* TSQL Output Clause
+* According to https://docs.microsoft.com/en-us/sql/t-sql/queries/output-clause-transact-sql?view&#x3D;sql-server-ver15
+* Implement Output Clause for INSERT, UPDATE and DELETE
+* Add Tests according the Microsoft Documentation
+* Appease Codacy/PMD
 
 [4d815](https://github.com/JSQLParser/JSqlParser/commit/4d8152159454069) manticore-projects *2022-05-11 20:04:23*
 
@@ -2417,37 +2417,37 @@ Changelog of JSqlParser.
 
 **Unsupported statement (#1519)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Implement UnsupportedStatement 
-* - Add Feature allowUnsupportedStatement, default&#x3D;false 
-* - Fully implement UnsupportedStatement for the Statement() production 
-* - Partially implement UnsupportedStatement for the Statements() production, works only when UnsupportedStatement comes first 
-* Revert unintended changes of the test resources 
-* Reformat BLOCK production 
-* Disable STATEMENTS() test, which will never fail and add comments to this regard 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Implement UnsupportedStatement
+* - Add Feature allowUnsupportedStatement, default&#x3D;false
+* - Fully implement UnsupportedStatement for the Statement() production
+* - Partially implement UnsupportedStatement for the Statements() production, works only when UnsupportedStatement comes first
+* Revert unintended changes of the test resources
+* Reformat BLOCK production
+* Disable STATEMENTS() test, which will never fail and add comments to this regard
 
 [59bb9](https://github.com/JSQLParser/JSqlParser/commit/59bb9a4e40753cf) manticore-projects *2022-05-11 19:23:35*
 
@@ -2458,8 +2458,8 @@ Changelog of JSqlParser.
 
 **Update bug_report.md (#1512)**
 
-* Focus more on the particular SQL Statement and the JSQLParser Version. 
-* Link to the Online Formatter for testing. 
+* Focus more on the particular SQL Statement and the JSQLParser Version.
+* Link to the Online Formatter for testing.
 
 [13441](https://github.com/JSQLParser/JSqlParser/commit/13441f47fbd8023) manticore-projects *2022-04-22 22:29:07*
 
@@ -2470,40 +2470,40 @@ Changelog of JSqlParser.
 
 **Performance Improvements (#1439)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Performance Improvements 
-* Simplify the Primary Expression Production 
-* Try to simple parse without Complex Expressions first, before parsing complex and slow (if supported by max nesting depth) 
-* Add Test cases for issues #1397 and #1438 
-* Update Libraries to its latest version 
-* Remove JUnit 4 from Gradle 
-* Appease PMD 
-* Update Gradle Plugins to its latest versions 
-* Let Parser timeout after 6 seconds and fail gently 
-* Add a special test verifying the clean up after timeout 
-* Revert unintended changes to the Test Resources 
-* Appease PMD/Codacy 
-* Correct the Gradle &quot;+&quot; dependencies 
-* Bump version to 4.4.-SNAPSHOT 
-* update build file 
-* revert unwarranted changes in test files 
-* strip the Exception Class Name from the Message 
-* maxDepth &#x3D; 10 collides with the Parser Timeout &#x3D; 6 seconds 
-* License Headers 
-* Unused imports 
-* Bump version to 4.5-SNAPSHOT 
-* Reduce test loops to fit intothe timeout 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Performance Improvements
+* Simplify the Primary Expression Production
+* Try to simple parse without Complex Expressions first, before parsing complex and slow (if supported by max nesting depth)
+* Add Test cases for issues #1397 and #1438
+* Update Libraries to its latest version
+* Remove JUnit 4 from Gradle
+* Appease PMD
+* Update Gradle Plugins to its latest versions
+* Let Parser timeout after 6 seconds and fail gently
+* Add a special test verifying the clean up after timeout
+* Revert unintended changes to the Test Resources
+* Appease PMD/Codacy
+* Correct the Gradle &quot;+&quot; dependencies
+* Bump version to 4.4.-SNAPSHOT
+* update build file
+* revert unwarranted changes in test files
+* strip the Exception Class Name from the Message
+* maxDepth &#x3D; 10 collides with the Parser Timeout &#x3D; 6 seconds
+* License Headers
+* Unused imports
+* Bump version to 4.5-SNAPSHOT
+* Reduce test loops to fit intothe timeout
 
 [181a2](https://github.com/JSQLParser/JSqlParser/commit/181a21ab90870e1) manticore-projects *2022-04-14 21:18:18*
 
@@ -2519,31 +2519,31 @@ Changelog of JSqlParser.
 
 **Json function Improvements (#1506)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Improve JSON Functions 
-* Space around the &#x60;:&#x60; delimiter of JSON Functions 
-* Improve JSON Functions 
-* Enforce &#x60;KEY&#x60; as &#x60;S_CHAR_LITERAL&#x60; 
-* Allow &#x60;Column&#x60; as &#x60;VALUE&#x60; 
-* Temporarily disable Postgres Syntax 
-* Improve JSON Functions 
-* Bring back Postgres Syntax 
-* Enable MySQL Syntax JSON_OBJECT(key, value [, key, value, ...]) 
-* Fix some more tests, where key was not a String 
-* Appease Codacy 
-* Let JSON_OBJECT accept Expressions as value 
-* set Version &#x3D; 4.4-SNAPSHOT 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Improve JSON Functions
+* Space around the &#x60;:&#x60; delimiter of JSON Functions
+* Improve JSON Functions
+* Enforce &#x60;KEY&#x60; as &#x60;S_CHAR_LITERAL&#x60;
+* Allow &#x60;Column&#x60; as &#x60;VALUE&#x60;
+* Temporarily disable Postgres Syntax
+* Improve JSON Functions
+* Bring back Postgres Syntax
+* Enable MySQL Syntax JSON_OBJECT(key, value [, key, value, ...])
+* Fix some more tests, where key was not a String
+* Appease Codacy
+* Let JSON_OBJECT accept Expressions as value
+* set Version &#x3D; 4.4-SNAPSHOT
 
 [e3f53](https://github.com/JSQLParser/JSqlParser/commit/e3f531caf7ad9ba) manticore-projects *2022-04-09 22:37:36*
 
@@ -2564,25 +2564,25 @@ Changelog of JSqlParser.
 
 **Issue1500 - Circular References in `AllColumns` and `AllTableColumns` (#1501)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
-* Remove circular reference revealed by issue #1500 
-* Add test for Issue 1500 Circular reference for All Columns Expression 
-* Fix Test case 
-* Add Test for AllTableColumn due to similar circular reference 
-* Remove similar circular reference from AllTableColumn 
-* Update dependencies 
-* Adjust Jacoco Missed Lines count 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
+* Remove circular reference revealed by issue #1500
+* Add test for Issue 1500 Circular reference for All Columns Expression
+* Fix Test case
+* Add Test for AllTableColumn due to similar circular reference
+* Remove similar circular reference from AllTableColumn
+* Update dependencies
+* Adjust Jacoco Missed Lines count
 
 [0949d](https://github.com/JSQLParser/JSqlParser/commit/0949df9d789123c) manticore-projects *2022-04-03 18:51:35*
 
@@ -2593,26 +2593,26 @@ Changelog of JSqlParser.
 
 **Optimize assertCanBeParsedAndDeparsed (#1389)**
 
-* Optimize assertCanBeParsedAndDeparsed 
-* - Avoid redundant calls of buildSqlString() 
-* - Replace String.replaceAll() with Matcher.replaceAll() based on precompiled Regex Patterns 
-* Reset the testcase results 
+* Optimize assertCanBeParsedAndDeparsed
+* - Avoid redundant calls of buildSqlString()
+* - Replace String.replaceAll() with Matcher.replaceAll() based on precompiled Regex Patterns
+* Reset the testcase results
 
 [ea316](https://github.com/JSQLParser/JSqlParser/commit/ea3164a1e418f3b) manticore-projects *2022-04-02 22:40:09*
 
 **Add geometry distance operator (#1493)**
 
-* Add support for geometry distance operators in PostGIS. 
-* Fix missing imports. 
-* Co-authored-by: Thomas Powell &lt;tpowell@palantir.com&gt; 
+* Add support for geometry distance operators in PostGIS.
+* Fix missing imports.
+* Co-authored-by: Thomas Powell &lt;tpowell@palantir.com&gt;
 
 [98c47](https://github.com/JSQLParser/JSqlParser/commit/98c476a6c9fa1a1) Thomas Powell *2022-04-02 22:31:08*
 
 **Support WITH TIES option in TOP #1435 (#1479)**
 
-* Support WITH TIES option in TOP 
-* - Add the support of WITH TIES option in SELECT TOP statement. 
-* add specific test 
+* Support WITH TIES option in TOP
+* - Add the support of WITH TIES option in SELECT TOP statement.
+* add specific test
 
 [1756a](https://github.com/JSQLParser/JSqlParser/commit/1756adcade48fb4) Olivier Cavadenti *2022-04-02 21:26:54*
 
@@ -2628,10 +2628,10 @@ Changelog of JSqlParser.
 
 **Extending CaseExpression, covering #1458 (#1459)**
 
-* Add unit tests for Case expressions. 
-* More tests for CaseExpression. 
-* Switch expression becomes an Expression instead of a Condition. 
-* It allows complex expressions in the switch, similarly to what is allowed in when clauses. 
+* Add unit tests for Case expressions.
+* More tests for CaseExpression.
+* Switch expression becomes an Expression instead of a Condition.
+* It allows complex expressions in the switch, similarly to what is allowed in when clauses.
 
 [4df13](https://github.com/JSQLParser/JSqlParser/commit/4df1391a28a7402) Mathieu Goeminne *2022-03-15 20:07:43*
 
@@ -2652,7 +2652,7 @@ Changelog of JSqlParser.
 
 **Add support for IS DISTINCT FROM clause (#1457)**
 
-* Co-authored-by: Tomer Shay &lt;tomer@Tomers-MBP.lan&gt; 
+* Co-authored-by: Tomer Shay &lt;tomer@Tomers-MBP.lan&gt;
 
 [31ed3](https://github.com/JSQLParser/JSqlParser/commit/31ed383ff0f3903) Tomer Shay (Shimshi) *2022-01-18 07:01:14*
 
@@ -2688,12 +2688,12 @@ Changelog of JSqlParser.
 
 **Adjust Gradle to JUnit 5 (#1428)**
 
-* Adjust Gradle to JUnit 5 
-* Parallel Test execution 
-* Gradle Caching 
-* Explicitly request for latest JavaCC 7.0.10 
-* Do not mark SpeedTest for concurrent execution 
-* Remove unused imports 
+* Adjust Gradle to JUnit 5
+* Parallel Test execution
+* Gradle Caching
+* Explicitly request for latest JavaCC 7.0.10
+* Do not mark SpeedTest for concurrent execution
+* Remove unused imports
 
 [af7bc](https://github.com/JSQLParser/JSqlParser/commit/af7bc1cc06700c3) manticore-projects *2021-11-28 21:43:10*
 
@@ -2719,7 +2719,7 @@ Changelog of JSqlParser.
 
 **Support EMIT CHANGES for KSQL (#1426)**
 
-* - Add the EMIT CHANGES syntax used in KSQL. 
+* - Add the EMIT CHANGES syntax used in KSQL.
 
 [f6c17](https://github.com/JSQLParser/JSqlParser/commit/f6c17412accdd18) Olivier Cavadenti *2021-11-21 12:20:56*
 
@@ -2750,13 +2750,13 @@ Changelog of JSqlParser.
 
 **Support RESTART without value (#1425)**
 
-* Since Postgre 8.4, RESTART in ALTER SEQUENCE can be set without value. 
+* Since Postgre 8.4, RESTART in ALTER SEQUENCE can be set without value.
 
 [98b66](https://github.com/JSQLParser/JSqlParser/commit/98b66be4b2919df) Olivier Cavadenti *2021-11-20 00:00:32*
 
 **Add support for oracle UnPivot when use multi columns at once. (#1419)**
 
-* Co-authored-by: LeiJun &lt;02280245@yto.net.cn&gt; 
+* Co-authored-by: LeiJun &lt;02280245@yto.net.cn&gt;
 
 [8e8bb](https://github.com/JSQLParser/JSqlParser/commit/8e8bb708636e6c6) LeiJun *2021-11-19 23:22:29*
 
@@ -2767,10 +2767,10 @@ Changelog of JSqlParser.
 
 **Fix issue in parsing TRY_CAST() function (#1391)**
 
-* Fix issue in parsing TRY_CAST() function 
-* Fix issue in parsing TRY_CAST() function 
-* Add parser, deparser, validator and vistior implementation for try_cast function 
-* Update toString() method of TryCastExpression class 
+* Fix issue in parsing TRY_CAST() function
+* Fix issue in parsing TRY_CAST() function
+* Add parser, deparser, validator and vistior implementation for try_cast function
+* Update toString() method of TryCastExpression class
 
 [bfcf0](https://github.com/JSQLParser/JSqlParser/commit/bfcf00f9dfcc0a3) Prashant Sutar *2021-11-19 22:24:49*
 
@@ -2781,27 +2781,27 @@ Changelog of JSqlParser.
 
 **Add support for expressions (such as columns) in AT TIME ZONE expressions (#1413)**
 
-* Co-authored-by: EverSQL &lt;tomer@eversql.com&gt; 
+* Co-authored-by: EverSQL &lt;tomer@eversql.com&gt;
 
 [ebe17](https://github.com/JSQLParser/JSqlParser/commit/ebe171b3b502089) Tomer Shay (Shimshi) *2021-11-19 22:04:40*
 
 **Add supported for quoted cast expressions for PostgreSQL (#1411)**
 
-* Co-authored-by: EverSQL &lt;tomer@eversql.com&gt; 
+* Co-authored-by: EverSQL &lt;tomer@eversql.com&gt;
 
 [dbbce](https://github.com/JSQLParser/JSqlParser/commit/dbbcebbf0490e1c) Tomer Shay (Shimshi) *2021-11-19 21:54:37*
 
 **added USE SCHEMA <schema> and CREATE OR REPLACE <table> support; things that are allowed in Snowflake SQL (#1409)**
 
-* Co-authored-by: Richard Kooijman &lt;richard.kooijman@inergy.nl&gt; 
+* Co-authored-by: Richard Kooijman &lt;richard.kooijman@inergy.nl&gt;
 
 [f35d2](https://github.com/JSQLParser/JSqlParser/commit/f35d24cfbb88342) Richard Kooijman *2021-11-19 21:40:45*
 
 **Issue #420 Like Expression with Escape Expression (#1406)**
 
-* Issue #420 Like Expression with Escape Expression 
-* Fixes issue #420 
-* CheckStyle compliance 
+* Issue #420 Like Expression with Escape Expression
+* Fixes issue #420
+* CheckStyle compliance
 
 [8eaa4](https://github.com/JSQLParser/JSqlParser/commit/8eaa4d2fc243f0a) manticore-projects *2021-11-19 21:38:54*
 
@@ -2822,136 +2822,136 @@ Changelog of JSqlParser.
 
 **Add Delete / Update modifiers for MySQL #1254 (#1396)**
 
-* Add Delete / Update modifiers for MySQL #1254 
-* fix codacy issues + pr return 
-* simplify low_priority 
+* Add Delete / Update modifiers for MySQL #1254
+* fix codacy issues + pr return
+* simplify low_priority
 
 [7be5d](https://github.com/JSQLParser/JSqlParser/commit/7be5d8e65e23f6e) Olivier Cavadenti *2021-11-19 20:31:00*
 
 **Fixes #1381 (#1383)**
 
-* Allow Complex Expressions as SelectItem 
+* Allow Complex Expressions as SelectItem
 
 [cdf0f](https://github.com/JSQLParser/JSqlParser/commit/cdf0f095294b04a) manticore-projects *2021-11-19 20:27:44*
 
 **Allows CASE ... ELSE ComplexExpression (#1388)**
 
-* Fixes #1375 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Fixes #1375
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [60a7d](https://github.com/JSQLParser/JSqlParser/commit/60a7d103853cb5e) manticore-projects *2021-11-02 20:48:39*
 
 **IN() with complex expressions (#1384)**
 
-* IN() with Complex Expressions 
-* Fixes #905 
-* Allow Complex Expressions and multiple SubSelects for the IN() Expression 
-* Tune the Test Coverage 
-* Remove unused import 
-* Reset TEST status 
+* IN() with Complex Expressions
+* Fixes #905
+* Allow Complex Expressions and multiple SubSelects for the IN() Expression
+* Tune the Test Coverage
+* Remove unused import
+* Reset TEST status
 
 [c4232](https://github.com/JSQLParser/JSqlParser/commit/c42322440d5fb36) manticore-projects *2021-11-01 21:23:48*
 
 **Fixes #1385 and PR#1380 (#1386)**
 
-* Add another Alias() Keyword related LOOKAHEAD 
-* Fix a Keyword Spelling Error in the Deparser 
-* Remove UNPIVOT from the PARENTHESIS Deparser, as it was an ugly workaround made obsolete by PR #1380 
+* Add another Alias() Keyword related LOOKAHEAD
+* Fix a Keyword Spelling Error in the Deparser
+* Remove UNPIVOT from the PARENTHESIS Deparser, as it was an ugly workaround made obsolete by PR #1380
 
 [8c1eb](https://github.com/JSQLParser/JSqlParser/commit/8c1eba24be61cf0) manticore-projects *2021-10-22 20:19:15*
 
 **Fixes #1369 (#1370)**
 
-* Issue1369 
-* Add test 
+* Issue1369
+* Add test
 
 [2335e](https://github.com/JSQLParser/JSqlParser/commit/2335ed136e92163) Ben Grabham *2021-10-20 21:44:06*
 
 **Fixes #1371 (#1377)**
 
-* Fixes #1371 
-* Postgres specific JSON_OBJECT syntax supporting: 
-* SELECT json_object(&#x27;{a, 1, b, 2}&#x27;); 
-* SELECT json_object(&#x27;{{a, 1}, {b, 2}}&#x27;); 
-* SELECT json_object(&#x27;{a, b}&#x27;, &#x27;{1,2 }&#x27;); 
-* Improve Test Coverage 
+* Fixes #1371
+* Postgres specific JSON_OBJECT syntax supporting:
+* SELECT json_object(&#x27;{a, 1, b, 2}&#x27;);
+* SELECT json_object(&#x27;{{a, 1}, {b, 2}}&#x27;);
+* SELECT json_object(&#x27;{a, b}&#x27;, &#x27;{1,2 }&#x27;);
+* Improve Test Coverage
 
 [cbffe](https://github.com/JSQLParser/JSqlParser/commit/cbffe6b58cd0074) manticore-projects *2021-10-20 21:13:54*
 
 **LIMIT OFFSET with Expressions (#1378)**
 
-* Fixes #933 
+* Fixes #933
 
 [a52db](https://github.com/JSQLParser/JSqlParser/commit/a52db54ff61be34) manticore-projects *2021-10-20 21:05:27*
 
 **Oracle Multi Column Drop (#1379)**
 
-* Fixes #1363 
+* Fixes #1363
 
 [9ad18](https://github.com/JSQLParser/JSqlParser/commit/9ad18d29efb66a2) manticore-projects *2021-10-20 21:01:04*
 
 **Support alias for UnPivot statement (see discussion #1374) (#1380)**
 
-* - Changed JSqlParserCC.jjt file to add the alias to the UnPivot lexical entity. 
-* - Added Alias to the UnPivot object. 
-* - Improved SelectDeParser to correctly deparse SubSelect&#x27;s UnPivot component. 
+* - Changed JSqlParserCC.jjt file to add the alias to the UnPivot lexical entity.
+* - Added Alias to the UnPivot object.
+* - Improved SelectDeParser to correctly deparse SubSelect&#x27;s UnPivot component.
 
 [0c0c3](https://github.com/JSQLParser/JSqlParser/commit/0c0c32e9cda0f1a) fabriziodelfranco *2021-10-20 20:18:13*
 
 **Issue1352 (#1353)**
 
-* Fixes #1352 
-* Allow SYSTEM as table- or column- name 
-* Fixes #1352 
-* Allow SYSTEM as tablename 
-* Fixes #1352 
-* Allow SYSTEM as tablename and columnname 
-* Fixes #1352 
-* Allow QUERY as tablename and columnname 
-* Fixes #1352 
-* Allow FULLTEXT as tablename and columnname 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Fixes #1352
+* Allow SYSTEM as table- or column- name
+* Fixes #1352
+* Allow SYSTEM as tablename
+* Fixes #1352
+* Allow SYSTEM as tablename and columnname
+* Fixes #1352
+* Allow QUERY as tablename and columnname
+* Fixes #1352
+* Allow FULLTEXT as tablename and columnname
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [a8afd](https://github.com/JSQLParser/JSqlParser/commit/a8afd9a4e6a8bc0) manticore-projects *2021-10-09 21:31:45*
 
 **Enhance ALTER TABLE ... DROP CONSTRAINTS ... (#1351)**
 
-* Enhance ALTER TABLE ... DROP CONSTRAINTS ... 
-* Add support for DROP PRIMARY KEY, DROP UNIQUE(...) 
-* Add support for DROP FOREIGN KEY(...) 
-* Fixes #1342 
-* Remove one useless PMD rule 
-* Add more tests 
-* Adjust Test Coverage 
+* Enhance ALTER TABLE ... DROP CONSTRAINTS ...
+* Add support for DROP PRIMARY KEY, DROP UNIQUE(...)
+* Add support for DROP FOREIGN KEY(...)
+* Fixes #1342
+* Remove one useless PMD rule
+* Add more tests
+* Adjust Test Coverage
 
 [388b7](https://github.com/JSQLParser/JSqlParser/commit/388b7c3afff4f50) manticore-projects *2021-10-08 23:02:46*
 
 **Function to use AllColumns or AllTableColumns Expression (#1350)**
 
-* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141 
-* Function use AllColumns or AllTableColumns 
-* Fixes #1346 
-* Remove one useless PMD rule 
+* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141
+* Function use AllColumns or AllTableColumns
+* Fixes #1346
+* Remove one useless PMD rule
 
 [b0ada](https://github.com/JSQLParser/JSqlParser/commit/b0adaa8de1421ea) manticore-projects *2021-10-08 21:58:04*
 
 **Postgres compliant ALTER TABLE ... RENAME TO ... (#1334)**
 
-* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141 
-* Fixes #1333 
-* Postgres compliant ALTER TABLE ... RENAME TO ... 
-* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ... 
-* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ... 
+* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141
+* Fixes #1333
+* Postgres compliant ALTER TABLE ... RENAME TO ...
+* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ...
+* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ...
 
 [f353e](https://github.com/JSQLParser/JSqlParser/commit/f353ec830deb719) manticore-projects *2021-09-18 11:35:17*
 
 **Postgres compliant ALTER TABLE ... RENAME TO ... (#1334)**
 
-* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141 
-* Fixes #1333 
-* Postgres compliant ALTER TABLE ... RENAME TO ... 
-* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ... 
-* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ... 
+* Fix a trivial MERGE error from Commit 4797a8d676625fcc6cf8c9e3b403ca120b6a8141
+* Fixes #1333
+* Postgres compliant ALTER TABLE ... RENAME TO ...
+* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ...
+* Postgres compliant ALTER TABLE IF EXISTS ... RENAME TO ...
 
 [5e904](https://github.com/JSQLParser/JSqlParser/commit/5e9045f431d9cc4) manticore-projects *2021-09-18 11:34:50*
 
@@ -2982,18 +2982,18 @@ Changelog of JSqlParser.
 
 **Prepare4.2 (#1329)**
 
-* Implement caching of the Gradle and Maven files 
-* Provided by @YunLemon via PR #1307 
-* Fix CREATE TABLE AS SELECT ... UNION SELECT ... 
-* Provided by @fanchuo via PR #1309 
-* Fix #1316 
-* Add more specific tests verifying the nature of the UpdateSets 
-* Allow &quot;SELECT *&quot; (without FROM) to parse, its a valid SELECT statement 
-* Add the enhancements since Release 4.1 
-* Adjust the Coverage 
-* Improve Test Coverage 
-* Revert the Special Oracle Tests (accidentally set to FAILURE) 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Implement caching of the Gradle and Maven files
+* Provided by @YunLemon via PR #1307
+* Fix CREATE TABLE AS SELECT ... UNION SELECT ...
+* Provided by @fanchuo via PR #1309
+* Fix #1316
+* Add more specific tests verifying the nature of the UpdateSets
+* Allow &quot;SELECT *&quot; (without FROM) to parse, its a valid SELECT statement
+* Add the enhancements since Release 4.1
+* Adjust the Coverage
+* Improve Test Coverage
+* Revert the Special Oracle Tests (accidentally set to FAILURE)
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [4797a](https://github.com/JSQLParser/JSqlParser/commit/4797a8d676625fc) manticore-projects *2021-09-07 08:56:12*
 
@@ -3004,38 +3004,38 @@ Changelog of JSqlParser.
 
 **Fixes #1325 (#1327)**
 
-* Removes redundant production Identifier() and uses RelObjectnameWithoutValue() instead for MS SQL Server Hints 
+* Removes redundant production Identifier() and uses RelObjectnameWithoutValue() instead for MS SQL Server Hints
 
 [cf0d7](https://github.com/JSQLParser/JSqlParser/commit/cf0d74f6572d6aa) manticore-projects *2021-09-06 12:09:01*
 
 **Implement Joins with multiple trailing ON Expressions (#1303)**
 
-* Implement Joins with multiple trailing ON Expressions 
-* Fixes #1302 
-* Fixes SpecialOracleTest JOIN17, now 190/273 tests pass 
-* Fixes #1229 
-* Merge MASTER 
-* Refactor the appendTo() method in favour of the traditional toString() 
-* Remove unused imports 
+* Implement Joins with multiple trailing ON Expressions
+* Fixes #1302
+* Fixes SpecialOracleTest JOIN17, now 190/273 tests pass
+* Fixes #1229
+* Merge MASTER
+* Refactor the appendTo() method in favour of the traditional toString()
+* Remove unused imports
 
 [d18c5](https://github.com/JSQLParser/JSqlParser/commit/d18c59bf845c57d) manticore-projects *2021-09-06 11:34:05*
 
 **Fix Gradle PMD and Checkstyle (#1318)**
 
-* Fixes #1306 
-* Nested Cases with Complex Expressions 
-* Reduce coverage for Java 8 
-* GROUP BY with Complex Expressions 
-* Fixes #1308 
-* Update Sets with Complex Expressions 
-* Fixes #1316 
-* Update Sets with Complex Expressions 
-* Fix existing tests 
-* Add tests for the new functionality 
-* Implement PMD/Codacy recommendations 
-* Add Checkstyle Configuration to Gradle 
-* Add Checkstyle Config files 
-* Fix additional exceptions in Test Sources 
+* Fixes #1306
+* Nested Cases with Complex Expressions
+* Reduce coverage for Java 8
+* GROUP BY with Complex Expressions
+* Fixes #1308
+* Update Sets with Complex Expressions
+* Fixes #1316
+* Update Sets with Complex Expressions
+* Fix existing tests
+* Add tests for the new functionality
+* Implement PMD/Codacy recommendations
+* Add Checkstyle Configuration to Gradle
+* Add Checkstyle Config files
+* Fix additional exceptions in Test Sources
 
 [2e876](https://github.com/JSQLParser/JSqlParser/commit/2e876130b46d087) manticore-projects *2021-09-01 22:01:40*
 
@@ -3046,27 +3046,27 @@ Changelog of JSqlParser.
 
 **Fixes #1306 (#1311)**
 
-* Fixes #1306 
-* Nested Cases with Complex Expressions 
-* Reduce coverage for Java 8 
-* GROUP BY with Complex Expressions 
-* Fixes #1308 
+* Fixes #1306
+* Nested Cases with Complex Expressions
+* Reduce coverage for Java 8
+* GROUP BY with Complex Expressions
+* Fixes #1308
 
 [8f632](https://github.com/JSQLParser/JSqlParser/commit/8f632b92e511b28) manticore-projects *2021-08-28 20:28:55*
 
 **Update sets (#1317)**
 
-* Fixes #1306 
-* Nested Cases with Complex Expressions 
-* Reduce coverage for Java 8 
-* GROUP BY with Complex Expressions 
-* Fixes #1308 
-* Update Sets with Complex Expressions 
-* Fixes #1316 
-* Update Sets with Complex Expressions 
-* Fix existing tests 
-* Add tests for the new functionality 
-* Implement PMD/Codacy recommendations 
+* Fixes #1306
+* Nested Cases with Complex Expressions
+* Reduce coverage for Java 8
+* GROUP BY with Complex Expressions
+* Fixes #1308
+* Update Sets with Complex Expressions
+* Fixes #1316
+* Update Sets with Complex Expressions
+* Fix existing tests
+* Add tests for the new functionality
+* Implement PMD/Codacy recommendations
 
 [21e5e](https://github.com/JSQLParser/JSqlParser/commit/21e5ebac02822e2) manticore-projects *2021-08-27 21:37:05*
 
@@ -3077,46 +3077,46 @@ Changelog of JSqlParser.
 
 **Special oracle tests (#1279)**
 
-* Allow keywords: LINK, GROUPING() 
-* Deparse ParenthesisFromItem&#x27;s Pivot and UnPivot correctly 
-* Write Test results to the SQL File 
-* Reduce the noise during the test 
-* Update/correct the list of expected passing files 
-* Get the benchmark from the list of expected passing files 
-* There are no Pivots or UnPivots yet, so we will return NULL. 
-* Record the expected Test Results on each SQL Source 
-* Fail the test when any expected success suddenly fails 
-* Improve Test Coverage 
-* Appease Codacy 
+* Allow keywords: LINK, GROUPING()
+* Deparse ParenthesisFromItem&#x27;s Pivot and UnPivot correctly
+* Write Test results to the SQL File
+* Reduce the noise during the test
+* Update/correct the list of expected passing files
+* Get the benchmark from the list of expected passing files
+* There are no Pivots or UnPivots yet, so we will return NULL.
+* Record the expected Test Results on each SQL Source
+* Fail the test when any expected success suddenly fails
+* Improve Test Coverage
+* Appease Codacy
 
 [346ee](https://github.com/JSQLParser/JSqlParser/commit/346eea5fbcf2461) manticore-projects *2021-08-09 21:55:00*
 
 **Implements Hierarchical CONNECT_BY_ROOT Operator (#1282)**
 
-* Implements Hierarchical CONNECT_BY_ROOT Operator 
-* Fixes Issue #1269 
-* Resolves some Special Oracle Tests 
-* Improve Test Coverage 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Implements Hierarchical CONNECT_BY_ROOT Operator
+* Fixes Issue #1269
+* Resolves some Special Oracle Tests
+* Improve Test Coverage
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [b6014](https://github.com/JSQLParser/JSqlParser/commit/b60140740aab93e) manticore-projects *2021-08-09 21:53:08*
 
 **Implement Transact-SQL IF ELSE Statement Control Flows. (#1275)**
 
-* Implement Transact-SQL IF ELSE Statement Control Flows. 
-* Fixes #1273 except for Blocks. 
-* Improce Test Coverage 
-* Adjust the required Test Coverage for JDK 8 
+* Implement Transact-SQL IF ELSE Statement Control Flows.
+* Fixes #1273 except for Blocks.
+* Improce Test Coverage
+* Adjust the required Test Coverage for JDK 8
 
 [750c3](https://github.com/JSQLParser/JSqlParser/commit/750c30aafe83957) manticore-projects *2021-08-09 21:43:50*
 
 **Add some flexibility to the Alter Statement (#1293)**
 
-* in order to allow: 
-* ALTER TABLE ... MOVE TABLESPACE ... 
-* ALTER TABLE ... COMPRESS NOLOGGING 
-* ALTER TABLE ... ROWFORMAT&#x3D;DYNAMIC 
-* Fixes #1033 
+* in order to allow:
+* ALTER TABLE ... MOVE TABLESPACE ...
+* ALTER TABLE ... COMPRESS NOLOGGING
+* ALTER TABLE ... ROWFORMAT&#x3D;DYNAMIC
+* Fixes #1033
 
 [a88e9](https://github.com/JSQLParser/JSqlParser/commit/a88e921970c57b8) manticore-projects *2021-08-02 20:51:19*
 
@@ -3127,18 +3127,18 @@ Changelog of JSqlParser.
 
 **Implement Oracle Named Function Parameters Func( param1 => arg1, ...) (#1283)**
 
-* Fixes #1270 
+* Fixes #1270
 
 [c8a5d](https://github.com/JSQLParser/JSqlParser/commit/c8a5d7c3dfc97f4) manticore-projects *2021-08-02 20:32:41*
 
 **Implement Gradle Buildsystem (#1271)**
 
-* Gradle build 
-* implement SpotBugs, PMD and JaCoCo 
-* implement RR diagrams 
-* Move Special Oracle Test resources into the correct package 
-* Implement a basic Gradle/Maven compatibility workaround for the Special Oracle Test 
-* Fix the Gradle Wrapper and add the folder to git 
+* Gradle build
+* implement SpotBugs, PMD and JaCoCo
+* implement RR diagrams
+* Move Special Oracle Test resources into the correct package
+* Implement a basic Gradle/Maven compatibility workaround for the Special Oracle Test
+* Fix the Gradle Wrapper and add the folder to git
 
 [6933d](https://github.com/JSQLParser/JSqlParser/commit/6933d86e0fa2d48) manticore-projects *2021-08-02 20:18:48*
 
@@ -3149,17 +3149,17 @@ Changelog of JSqlParser.
 
 **Allowes JdbcParameter or JdbcNamedParameter for MySQL FullTextSearch (#1278)**
 
-* Fixes issue #1223 
+* Fixes issue #1223
 
 [e6c91](https://github.com/JSQLParser/JSqlParser/commit/e6c91b6a813a1e0) manticore-projects *2021-07-26 21:06:38*
 
 **Fixes #1267 Cast into RowConstructor (#1274)**
 
-* Fixes #1267 Cast into RowConstructor 
-* Improve Test Coverage 
-* Improve Test Coverage 
-* Improve Test Coverage 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Fixes #1267 Cast into RowConstructor
+* Improve Test Coverage
+* Improve Test Coverage
+* Improve Test Coverage
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [c89cf](https://github.com/JSQLParser/JSqlParser/commit/c89cf21641d672b) manticore-projects *2021-07-26 21:02:19*
 
@@ -3170,20 +3170,20 @@ Changelog of JSqlParser.
 
 **Separate MySQL Special String Functions accepting Named Argument Separation as this could collide with ComplexExpressionList when InExpression is involved (#1285)**
 
-* Fixes #1284 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Fixes #1284
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [c074a](https://github.com/JSQLParser/JSqlParser/commit/c074a21ad70dd0e) manticore-projects *2021-07-26 20:34:06*
 
 **Implements Oracle RENAME oldTable TO newTable Statement (#1286)**
 
-* Implements Oracle RENAME oldTable TO newTable Statement 
-* Fixes #1253 
-* Implement MariaDB specific syntax 
-* Remove redundant License Headers 
-* Use LinkedHashMap to preserve the order of the Entries 
-* Increase Test Coverage 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Implements Oracle RENAME oldTable TO newTable Statement
+* Fixes #1253
+* Implement MariaDB specific syntax
+* Remove redundant License Headers
+* Use LinkedHashMap to preserve the order of the Entries
+* Increase Test Coverage
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [f7f7b](https://github.com/JSQLParser/JSqlParser/commit/f7f7bcd65be8f4c) manticore-projects *2021-07-26 20:26:47*
 
@@ -3204,17 +3204,17 @@ Changelog of JSqlParser.
 
 **Json functions (#1263)**
 
-* Implement Json Aggregate Functions JSON_OBJECTAGG() and JSON_ARRAYAGG() 
-* fix the returned type 
-* Implement JSON_OBJECT and JSON_ARRAY 
-* Solves #1260 and dbeaver/dbeaver/#13141 
-* Better workaround for NULL, NULL NULL ON NULL 
-* Remove the workaround for NULL ON NULL (without expression) 
-* Implement &quot;PMD.MissingBreakInSwitch&quot; in order to appease Codacy 
-* Improve Test Coverage 
-* Improve Test Coverage 
-* KEYs can be SQL Value Expressions 
-* Add another testcase 
+* Implement Json Aggregate Functions JSON_OBJECTAGG() and JSON_ARRAYAGG()
+* fix the returned type
+* Implement JSON_OBJECT and JSON_ARRAY
+* Solves #1260 and dbeaver/dbeaver/#13141
+* Better workaround for NULL, NULL NULL ON NULL
+* Remove the workaround for NULL ON NULL (without expression)
+* Implement &quot;PMD.MissingBreakInSwitch&quot; in order to appease Codacy
+* Improve Test Coverage
+* Improve Test Coverage
+* KEYs can be SQL Value Expressions
+* Add another testcase
 
 [59bf0](https://github.com/JSQLParser/JSqlParser/commit/59bf07f5425ecb4) manticore-projects *2021-07-16 21:24:44*
 
@@ -3225,20 +3225,20 @@ Changelog of JSqlParser.
 
 **Active JJDoc and let it create the Grammar BNF documentation (#1256)**
 
-* Clean-up the Site generation 
+* Clean-up the Site generation
 
 [1ecff](https://github.com/JSQLParser/JSqlParser/commit/1ecffd2c1a6e8d8) manticore-projects *2021-07-16 20:38:05*
 
 **Bump commons-io from 2.6 to 2.7 (#1265)**
 
-* Bumps commons-io from 2.6 to 2.7. 
-* --- 
-* updated-dependencies: 
-* - dependency-name: commons-io:commons-io 
-* dependency-type: direct:development 
-* ... 
-* Signed-off-by: dependabot[bot] &lt;support@github.com&gt; 
-* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt; 
+* Bumps commons-io from 2.6 to 2.7.
+* ---
+* updated-dependencies:
+* - dependency-name: commons-io:commons-io
+* dependency-type: direct:development
+* ...
+* Signed-off-by: dependabot[bot] &lt;support@github.com&gt;
+* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt;
 
 [09898](https://github.com/JSQLParser/JSqlParser/commit/09898107fe6d001) dependabot[bot] *2021-07-14 05:27:57*
 
@@ -3249,17 +3249,17 @@ Changelog of JSqlParser.
 
 **Implement DB2 Special Register Date Time CURRENT DATE and CURRENT TIME (#1252)**
 
-* Implement DB2 Special Register Date Time CURRENT DATE and CURRENT TIME 
-* Fixes issue #1249 
-* (Although there are more Special Registers which are not supported yet.) 
-* Make the spaces mandatory 
-* Add 2 more tests 
+* Implement DB2 Special Register Date Time CURRENT DATE and CURRENT TIME
+* Fixes issue #1249
+* (Although there are more Special Registers which are not supported yet.)
+* Make the spaces mandatory
+* Add 2 more tests
 
 [05157](https://github.com/JSQLParser/JSqlParser/commit/05157a841897033) manticore-projects *2021-07-13 05:32:38*
 
 **Rename the PMD ruleset configuration file hoping for automatic synchronization with Codacy (#1251)**
 
-* Solves Issue #1220 
+* Solves Issue #1220
 
 [930b7](https://github.com/JSQLParser/JSqlParser/commit/930b7a561876b7e) manticore-projects *2021-07-13 05:28:43*
 
@@ -3310,8 +3310,8 @@ Changelog of JSqlParser.
 
 **Savepoint rollback (#1236)**
 
-* Implement SAVEPOINT and ROLLBACK statements, fixes issue #1235 
-* Activate a test which is supported now. 
+* Implement SAVEPOINT and ROLLBACK statements, fixes issue #1235
+* Activate a test which is supported now.
 
 [2cae6](https://github.com/JSQLParser/JSqlParser/commit/2cae62dbf74a744) manticore-projects *2021-06-30 19:57:56*
 
@@ -3337,14 +3337,14 @@ Changelog of JSqlParser.
 
 **RESET statement, SET PostgreSQL compatibility (#1104)**
 
-* Support 
-* RESET statement  (https://www.postgresql.org/docs/current/sql-reset.html) 
-* SET [LOCAL|SESSION]  (https://www.postgresql.org/docs/current/sql-set.html) 
-* SET search_path&#x3D;my_schema, public ( https://www.postgresql.org/docs/current/sql-set.html 
-* value New value of parameter. Values can be specified as string constants, identifiers, numbers, or comma-separated lists of these) 
-* Update ResetStatementTest.java 
-* remove Tim Zone token 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Support
+* RESET statement  (https://www.postgresql.org/docs/current/sql-reset.html)
+* SET [LOCAL|SESSION]  (https://www.postgresql.org/docs/current/sql-set.html)
+* SET search_path&#x3D;my_schema, public ( https://www.postgresql.org/docs/current/sql-set.html
+* value New value of parameter. Values can be specified as string constants, identifiers, numbers, or comma-separated lists of these)
+* Update ResetStatementTest.java
+* remove Tim Zone token
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [13503](https://github.com/JSQLParser/JSqlParser/commit/13503edff30f06d) Роман Зотов *2021-06-26 22:44:33*
 
@@ -3355,9 +3355,9 @@ Changelog of JSqlParser.
 
 **Implement Oracle Alter Session Statements (#1234)**
 
-* Implement Oracle Alter Session Statements according to https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm 
-* Implement PMD Rule &quot;SwitchStmtsShouldHaveDefault&quot; 
-* Reorganize Test Case imports 
+* Implement Oracle Alter Session Statements according to https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_2012.htm
+* Implement PMD Rule &quot;SwitchStmtsShouldHaveDefault&quot;
+* Reorganize Test Case imports
 
 [3a46a](https://github.com/JSQLParser/JSqlParser/commit/3a46a29d6936611) manticore-projects *2021-06-26 22:38:19*
 
@@ -3368,16 +3368,16 @@ Changelog of JSqlParser.
 
 **Support DELETE FROM T1 USING T2 WHERE ... (#1228)**
 
-* Co-authored-by: Francois Secherre &lt;secherre.nospam@gmail.com&gt; 
+* Co-authored-by: Francois Secherre &lt;secherre.nospam@gmail.com&gt;
 
 [96cd4](https://github.com/JSQLParser/JSqlParser/commit/96cd483ab85783d) francois-secherre *2021-06-16 05:27:14*
 
 **Row access support (#1181)**
 
-* Row acess support 
-* Remove IN Left Expression List, replaced by RowConstructor Expression 
-* Remove IN Left Expression List, replaced by RowConstructor Expression 
-* Formatting 
+* Row acess support
+* Remove IN Left Expression List, replaced by RowConstructor Expression
+* Remove IN Left Expression List, replaced by RowConstructor Expression
+* Formatting
 
 [27e6a](https://github.com/JSQLParser/JSqlParser/commit/27e6a9f0e07320e) Роман Зотов *2021-06-16 05:15:47*
 
@@ -3388,67 +3388,67 @@ Changelog of JSqlParser.
 
 **Delete queries without from, with a schema identifier fails (#1224)**
 
-* Delete queries without from, with a schema identifier fails 
-* Better tests 
-* Fix style issue 
-* Deparse should match for DELETE WITHOUT FROM queries 
-* Co-authored-by: François Sécherre &lt;francois.secherre@ouicar.fr&gt; 
+* Delete queries without from, with a schema identifier fails
+* Better tests
+* Fix style issue
+* Deparse should match for DELETE WITHOUT FROM queries
+* Co-authored-by: François Sécherre &lt;francois.secherre@ouicar.fr&gt;
 
 [d70e1](https://github.com/JSQLParser/JSqlParser/commit/d70e151c0f22f22) François Sécherre *2021-06-14 05:15:15*
 
 **Create temporary table t(c1, c2) as select ... (#1225)**
 
-* Co-authored-by: Francois Secherre &lt;secherre.nospam@gmail.com&gt; 
+* Co-authored-by: Francois Secherre &lt;secherre.nospam@gmail.com&gt;
 
 [b62f1](https://github.com/JSQLParser/JSqlParser/commit/b62f19feb3b497c) francois-secherre *2021-06-14 05:13:13*
 
 **Nested with items (#1221)**
 
-* Nested WithItems, fixes issue #1186 
-* Remove redundant Test 
-* Avoid altering the nb-configuration 
-* Mention Nested WITH CTEs in the readme 
-* Eliminate dead/unused MultiExpression Code 
+* Nested WithItems, fixes issue #1186
+* Remove redundant Test
+* Avoid altering the nb-configuration
+* Mention Nested WITH CTEs in the readme
+* Eliminate dead/unused MultiExpression Code
 
 [8eb3d](https://github.com/JSQLParser/JSqlParser/commit/8eb3d9a586a182e) manticore-projects *2021-06-10 05:50:08*
 
 **Implement GROUP BY () without columns (#1218)**
 
-* Implement GROUP BY () without columns 
-* Migrate GroupByElement to ExpressionList 
-* Also solves issue #1210 automatically 
-* Solves issue #1168, add a test for it. 
+* Implement GROUP BY () without columns
+* Migrate GroupByElement to ExpressionList
+* Also solves issue #1210 automatically
+* Solves issue #1168, add a test for it.
 
 [999db](https://github.com/JSQLParser/JSqlParser/commit/999db01658c30f9) manticore-projects *2021-06-03 05:55:35*
 
 **TSQL Compliant NEXT VALUE FOR sequence_id (but keeping the spurious NEXTVAL FOR expression) (#1216)**
 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [7c212](https://github.com/JSQLParser/JSqlParser/commit/7c21242e893abcd) manticore-projects *2021-06-02 12:35:03*
 
 **Pmd clean up (#1215)**
 
-* Add PMD Annotations in order to avoid useless exceptions for the Deparsers 
-* Add Eclipse Formatter configuration 
-* Fix typo 
-* Replace Comments on empty methods with Class wide PMD Annotation 
-* Do not enforce checkstyle formatting 
+* Add PMD Annotations in order to avoid useless exceptions for the Deparsers
+* Add Eclipse Formatter configuration
+* Fix typo
+* Replace Comments on empty methods with Class wide PMD Annotation
+* Do not enforce checkstyle formatting
 
 [53764](https://github.com/JSQLParser/JSqlParser/commit/537649bf28f641b) manticore-projects *2021-06-02 12:19:32*
 
 **Add support for boolean 'XOR' operator (#1193)**
 
-* Add support for boolean &#x27;XOR&#x27; operator 
-* XorExpression added to the ReflectionModelTest 
-* XorExpression case added to the SelectTest 
-* XorExpression cases added for Validation 
-* Additional tests added for code coverage. 
-* Code style fixed. 
-* Separate test case for XOR added. 
-* Imports explicitly added to avoid namespace pollution. 
-* Additional tests cases for precedence and associativity. 
-* Co-authored-by: Szabó Miklós &lt;miklos.szabo@arh.hu&gt; 
+* Add support for boolean &#x27;XOR&#x27; operator
+* XorExpression added to the ReflectionModelTest
+* XorExpression case added to the SelectTest
+* XorExpression cases added for Validation
+* Additional tests added for code coverage.
+* Code style fixed.
+* Separate test case for XOR added.
+* Imports explicitly added to avoid namespace pollution.
+* Additional tests cases for precedence and associativity.
+* Co-authored-by: Szabó Miklós &lt;miklos.szabo@arh.hu&gt;
 
 [c7832](https://github.com/JSQLParser/JSqlParser/commit/c7832402dded4c0) Adaptive Recognition *2021-06-02 12:10:56*
 
@@ -3484,20 +3484,20 @@ Changelog of JSqlParser.
 
 **Allow Complex Parsing of Functions (#1200)**
 
-* Allow Complex Parsing of Functions 
-* Fixes issues #1190 #1103 
-* Apply Complex Parsing to PrimaryExpression() 
-* Fixes issue #1194 
-* Increase Test Timeout to 2 seconds for slow CI Servers. 
-* Appease Codazy 
+* Allow Complex Parsing of Functions
+* Fixes issues #1190 #1103
+* Apply Complex Parsing to PrimaryExpression()
+* Fixes issue #1194
+* Increase Test Timeout to 2 seconds for slow CI Servers.
+* Appease Codazy
 
 [3a5da](https://github.com/JSQLParser/JSqlParser/commit/3a5da445ea9cb85) manticore-projects *2021-05-26 20:35:10*
 
 **Add support for AT TIME ZONE expressions (#1196)**
 
-* Add support for AT TIME ZONE expressions 
-* adding tests 
-* Fixing imports 
+* Add support for AT TIME ZONE expressions
+* adding tests
+* Fixing imports
 
 [a5204](https://github.com/JSQLParser/JSqlParser/commit/a5204f63ccb1ea8) Tomer Shay (Shimshi) *2021-05-25 23:03:31*
 
@@ -3523,9 +3523,9 @@ Changelog of JSqlParser.
 
 **Fix Nested CASE WHEN performance, fixes issue #1162 (#1208)**
 
-* Fix Nested CASE WHEN performance, fixes issue #1162 
-* Apease Codazy 
-* Apease Codazy 
+* Fix Nested CASE WHEN performance, fixes issue #1162
+* Apease Codazy
+* Apease Codazy
 
 [42610](https://github.com/JSQLParser/JSqlParser/commit/426102e4cf272ca) manticore-projects *2021-05-25 19:26:30*
 
@@ -3551,70 +3551,70 @@ Changelog of JSqlParser.
 
 **supporting/fixing unique inside sql function such as count eg - SELECT count(UNIQUE col2) FROM mytable (#1184)**
 
-* Co-authored-by: Adhikesavan &lt;radhikesavan@paypal.com&gt; 
+* Co-authored-by: Adhikesavan &lt;radhikesavan@paypal.com&gt;
 
 [f18e9](https://github.com/JSQLParser/JSqlParser/commit/f18e92eaf4b3bc6) RajaSudharsan Adhikesavan *2021-05-01 19:28:05*
 
 **Oracle compliant ALTER TABLE ADD/MODIFY deparser (#1163)**
 
-* javadoc-fixes 
-* fix check-style error : assignment to parameter not allowed 
-* import for javadoc reference 
-* javadoc - add description to parameter &quot;fqn&quot; (fix warning) 
-* remove doclint&#x3D;none, but exclude package with exclude package with 
-* generated sources (javacc/jjtree) from javadoc 
-* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE 
-* Correct CreateIndex TailOptions 
-* Add a Test Case for CreateIndex TailOptions 
-* Add WHERE expression to MergeInsert 
-* Add test case for MergeInsert WHERE expression 
-* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference 
-* Add a specific test case 
-* Fix Issue #1157: Oracle does not accept COLUMN keyword in ALTER TABLE ADD/MODIFY 
-* Correct the test cases accepting a non existing COLUMN keyword 
-* Add a specific test cases 
-* Fix Issue #1164 UNIQUE after PRIMARY KEY 
-* Add test case for UNIQUE after PRIMARY KEY 
-* Switch of warnings for un-fixble method namings 
-* Switch of warnings for un-fixble method namings 
-* Activate PMD and define our own ruleset 
-* Execute PMD before building/testing in order to fail early 
-* Fix 63 PMD warnings 
-* Activate rule &quot;PMD.CyclomaticComplexity&quot; in order to simulate the Codazy checks 
-* Apply @SuppressWarnings({&quot;PMD.CyclomaticComplexity&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse()) 
-* Activate rule , &quot;PMD.ExcessiveMethodLength&quot; in order to simulate the Codazy checks 
-* Apply @SuppressWarnings({&quot;PMD.ExcessiveMethodLength&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse()) 
-* Refactor an ENUM name 
-* Refactor an ENUM name and reflect this also in the JavaCC Parser definition file 
-* Co-authored-by: gitmotte &lt;www@synbee.at&gt; 
+* javadoc-fixes
+* fix check-style error : assignment to parameter not allowed
+* import for javadoc reference
+* javadoc - add description to parameter &quot;fqn&quot; (fix warning)
+* remove doclint&#x3D;none, but exclude package with exclude package with
+* generated sources (javacc/jjtree) from javadoc
+* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE
+* Correct CreateIndex TailOptions
+* Add a Test Case for CreateIndex TailOptions
+* Add WHERE expression to MergeInsert
+* Add test case for MergeInsert WHERE expression
+* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference
+* Add a specific test case
+* Fix Issue #1157: Oracle does not accept COLUMN keyword in ALTER TABLE ADD/MODIFY
+* Correct the test cases accepting a non existing COLUMN keyword
+* Add a specific test cases
+* Fix Issue #1164 UNIQUE after PRIMARY KEY
+* Add test case for UNIQUE after PRIMARY KEY
+* Switch of warnings for un-fixble method namings
+* Switch of warnings for un-fixble method namings
+* Activate PMD and define our own ruleset
+* Execute PMD before building/testing in order to fail early
+* Fix 63 PMD warnings
+* Activate rule &quot;PMD.CyclomaticComplexity&quot; in order to simulate the Codazy checks
+* Apply @SuppressWarnings({&quot;PMD.CyclomaticComplexity&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse())
+* Activate rule , &quot;PMD.ExcessiveMethodLength&quot; in order to simulate the Codazy checks
+* Apply @SuppressWarnings({&quot;PMD.ExcessiveMethodLength&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse())
+* Refactor an ENUM name
+* Refactor an ENUM name and reflect this also in the JavaCC Parser definition file
+* Co-authored-by: gitmotte &lt;www@synbee.at&gt;
 
 [83837](https://github.com/JSQLParser/JSqlParser/commit/838379f21be0d32) manticore-projects *2021-04-21 07:55:17*
 
 **Pmd (#1165)**
 
-* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE 
-* Correct CreateIndex TailOptions 
-* Add a Test Case for CreateIndex TailOptions 
-* Add WHERE expression to MergeInsert 
-* Add test case for MergeInsert WHERE expression 
-* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference 
-* Add a specific test case 
-* Fix Issue #1157: Oracle does not accept COLUMN keyword in ALTER TABLE ADD/MODIFY 
-* Correct the test cases accepting a non existing COLUMN keyword 
-* Add a specific test cases 
-* Fix Issue #1164 UNIQUE after PRIMARY KEY 
-* Add test case for UNIQUE after PRIMARY KEY 
-* Switch of warnings for un-fixble method namings 
-* Switch of warnings for un-fixble method namings 
-* Activate PMD and define our own ruleset 
-* Execute PMD before building/testing in order to fail early 
-* Fix 63 PMD warnings 
-* Activate rule &quot;PMD.CyclomaticComplexity&quot; in order to simulate the Codazy checks 
-* Apply @SuppressWarnings({&quot;PMD.CyclomaticComplexity&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse()) 
-* Activate rule , &quot;PMD.ExcessiveMethodLength&quot; in order to simulate the Codazy checks 
-* Apply @SuppressWarnings({&quot;PMD.ExcessiveMethodLength&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse()) 
-* Refactor an ENUM name 
-* Refactor an ENUM name and reflect this also in the JavaCC Parser definition file 
+* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE
+* Correct CreateIndex TailOptions
+* Add a Test Case for CreateIndex TailOptions
+* Add WHERE expression to MergeInsert
+* Add test case for MergeInsert WHERE expression
+* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference
+* Add a specific test case
+* Fix Issue #1157: Oracle does not accept COLUMN keyword in ALTER TABLE ADD/MODIFY
+* Correct the test cases accepting a non existing COLUMN keyword
+* Add a specific test cases
+* Fix Issue #1164 UNIQUE after PRIMARY KEY
+* Add test case for UNIQUE after PRIMARY KEY
+* Switch of warnings for un-fixble method namings
+* Switch of warnings for un-fixble method namings
+* Activate PMD and define our own ruleset
+* Execute PMD before building/testing in order to fail early
+* Fix 63 PMD warnings
+* Activate rule &quot;PMD.CyclomaticComplexity&quot; in order to simulate the Codazy checks
+* Apply @SuppressWarnings({&quot;PMD.CyclomaticComplexity&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse())
+* Activate rule , &quot;PMD.ExcessiveMethodLength&quot; in order to simulate the Codazy checks
+* Apply @SuppressWarnings({&quot;PMD.ExcessiveMethodLength&quot;}) where this rule throws an unavoidable warning (especially for toString() and deparse())
+* Refactor an ENUM name
+* Refactor an ENUM name and reflect this also in the JavaCC Parser definition file
 
 [08cfd](https://github.com/JSQLParser/JSqlParser/commit/08cfd29459044c6) manticore-projects *2021-04-20 08:01:48*
 
@@ -3635,13 +3635,13 @@ Changelog of JSqlParser.
 
 **Assorted fixes to the Java CC Parser definition (#1153)**
 
-* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE 
-* Correct CreateIndex TailOptions 
-* Add a Test Case for CreateIndex TailOptions 
-* Add WHERE expression to MergeInsert 
-* Add test case for MergeInsert WHERE expression 
-* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference 
-* Add a specific test case 
+* Implement Oracle Hints for INSERT, UPDATE, MERGE, DELETE
+* Correct CreateIndex TailOptions
+* Add a Test Case for CreateIndex TailOptions
+* Add WHERE expression to MergeInsert
+* Add test case for MergeInsert WHERE expression
+* Fix Issue #1156: ALTER TABLE ADD FOREIGN KEY with schema reference
+* Add a specific test case
 
 [5ee6e](https://github.com/JSQLParser/JSqlParser/commit/5ee6ec9dd7a66bf) manticore-projects *2021-04-16 22:51:27*
 
@@ -3687,8 +3687,8 @@ Changelog of JSqlParser.
 
 **Add support for union without brackets and with limit (#1132)**
 
-* add support for union without brackets and with limit 
-* Fixing the last commit. 
+* add support for union without brackets and with limit
+* Fixing the last commit.
 
 [56c2d](https://github.com/JSQLParser/JSqlParser/commit/56c2dfe332b5ee8) Tomer Shay (Shimshi) *2021-03-14 20:09:12*
 
@@ -3719,7 +3719,7 @@ Changelog of JSqlParser.
 
 **bug fix (#769)**
 
-* Co-authored-by: Kunal Jha &lt;kjha@zalando-11116.corp.ad.zalando.net&gt; 
+* Co-authored-by: Kunal Jha &lt;kjha@zalando-11116.corp.ad.zalando.net&gt;
 
 [7234d](https://github.com/JSQLParser/JSqlParser/commit/7234de1d65ccf1b) Kunal jha *2021-02-05 17:46:15*
 
@@ -3730,12 +3730,12 @@ Changelog of JSqlParser.
 
 **Array contructor support (#1105)**
 
-* Array contructor support array[[1, 2], [id1, id2]] 
-* ARRAYLITERAL-&gt;ARRAY_LITERAL 
-* Fix empty array 
-* Support ARRAY as DEFAULT value in CREATE TABLE 
-* https://github.com/JSQLParser/JSqlParser/issues/970#issue-594819872 
-* fix empty Array 
+* Array contructor support array[[1, 2], [id1, id2]]
+* ARRAYLITERAL-&gt;ARRAY_LITERAL
+* Fix empty array
+* Support ARRAY as DEFAULT value in CREATE TABLE
+* https://github.com/JSQLParser/JSqlParser/issues/970#issue-594819872
+* fix empty Array
 
 [43c28](https://github.com/JSQLParser/JSqlParser/commit/43c282deaa05555) Роман Зотов *2021-02-04 19:28:49*
 
@@ -3746,13 +3746,13 @@ Changelog of JSqlParser.
 
 **Partial support construct tuple as simple expression (#1107)**
 
-* SELECT (1,2) 
+* SELECT (1,2)
 
 [2065f](https://github.com/JSQLParser/JSqlParser/commit/2065fedb5b4c318) Роман Зотов *2021-01-31 22:58:08*
 
 **support create table parameters without columns, parameter values any names (#1106)**
 
-* CREATE TEMPORARY TABLE t1 WITH (APPENDONLY&#x3D;true,ORIENTATION&#x3D;column,COMPRESSTYPE&#x3D;zlib,OIDS&#x3D;FALSE) ON COMMIT DROP AS SELECT column FROM t2 
+* CREATE TEMPORARY TABLE t1 WITH (APPENDONLY&#x3D;true,ORIENTATION&#x3D;column,COMPRESSTYPE&#x3D;zlib,OIDS&#x3D;FALSE) ON COMMIT DROP AS SELECT column FROM t2
 
 [f2e74](https://github.com/JSQLParser/JSqlParser/commit/f2e74f15cd63d87) Роман Зотов *2021-01-31 22:53:09*
 
@@ -3938,8 +3938,8 @@ Changelog of JSqlParser.
 
 **support IN with value (#1065)**
 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
-* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt; 
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
+* Co-authored-by: Tobias &lt;t.warneke@gmx.net&gt;
 
 [8c7ee](https://github.com/JSQLParser/JSqlParser/commit/8c7ee289e78d07d) Jan Monterrubio *2020-11-22 19:29:27*
 
@@ -3960,11 +3960,11 @@ Changelog of JSqlParser.
 
 **Support CreateSynonym statement (#1064)**
 
-* visual 
-* add synonym support 
-* add tests 
-* exclude keyword 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* visual
+* add synonym support
+* add tests
+* exclude keyword
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [17e26](https://github.com/JSQLParser/JSqlParser/commit/17e2633e46778c6) Jan Monterrubio *2020-11-06 21:45:14*
 
@@ -3975,352 +3975,352 @@ Changelog of JSqlParser.
 
 **Validation visitor framework (#1045)**
 
-* * add with prefix for fluent setters. 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* add getters 
-* * add with prefix for fluent setters. (revert to chaining setters, do 
-* not break current api) 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add with prefix for fluent setters. (revert to chaining setters, do 
-* not break current api) 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* remove create() methods - they do not add enough value to be justified 
-* * use new methods within testcases 
-* add some constructors 
-* fix and add &quot;with&quot; / &quot;add&quot; methods 
-* * use new methods within testcases 
-* * use new methods within testcases 
-* add some constructors 
-* * renamed constant 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* * use new methods within testcases 
-* add some with-methods 
-* add getter/setter named after the field without abbrivation 
-* * use new methods within testcases 
-* remove empty implicit constructor 
-* return the deparsed Statement - object 
-* compare object tree 
-* compare object tree 
-* * fix ObjectTreeToStringStyle 
-* compare object tree 
-* remove casts not needed 
-* * use new methods within testcases 
-* add some &quot;set&quot; &quot;with&quot; &quot;add&quot; methods missing 
-* * use new methods within testcases 
-* add empty constructors and override with-/add-methods returning concrete 
-* type 
-* * add ReflectionModelTest 
-* * use new methods within testcases 
-* fix checkstyle errors 
-* license header 
-* remove test-classes from ReflectionModelTest 
-* remove visitoradapter-classes from ReflectionModelTest 
-* * add SelectDeParser(StringBuilder) 
-* remove overriding setters/getters of buffer 
-* #1007 
-* push to synbee-contrib 
-* org.synbee.commons.contrib:jsqlparser:3.2-0.0.6-SNAPSHOT 
-* add ValidationUtil for simple validation of one or more statements 
-* remove overrides of 
-* getCause 
-* printStackTrace variants 
-* why add an additional cause ? 
-* set cause.getMessage() the message within constructor 
-* JSQLParserException(Throwable cause), othewise cause.toString() will be 
-* set as default. 
-* add ValidationVisitor showcase 
-* https://github.com/JSQLParser/JSqlParser/issues/1005 
-* add ValidationUtil for simple validation of one or more statements 
-* remove overrides of 
-* getCause 
-* printStackTrace variants 
-* why add an additional cause ? 
-* set cause.getMessage() the message within constructor 
-* JSQLParserException(Throwable cause), othewise cause.toString() will be 
-* set as default. 
-* visit(ShowTablesStatement) 
-* copyright/license 
-* add stubs (use deparsers as template) 
-* Merge branch &#x27;master.validate&#x27; of 
-* https://github.com/gitmotte/JSqlParser.git into master.validate 
-* add ValidationVisitor showcase 
-* https://github.com/JSQLParser/JSqlParser/issues/1005 
-* add ValidationUtil for simple validation of one or more statements 
-* remove overrides of 
-* getCause 
-* printStackTrace variants 
-* why add an additional cause ? 
-* set cause.getMessage() the message within constructor 
-* JSQLParserException(Throwable cause), othewise cause.toString() will be 
-* set as default. 
-* visit(ShowTablesStatement) 
-* add stubs (use deparsers as template) 
-* Merge branch &#x27;master.validate&#x27; of 
-* https://github.com/gitmotte/JSqlParser.git into master.validate 
-* add tests for ValidationUtil 
-* + implements OrderByVisitor 
-* split Expressionvalidator which implements both ItemsListVisitor and 
-* Expressionvisitor into Expressionvalidator and ItemListValidator 
-* Merge branch &#x27;github.validate&#x27; 
-* implement upsertvalidator 
-* add copyright 
-* validate through given ValidationCapability&#x27;s 
-* * switch to new method forced by 
-* ValidationCapability.validate(ValidationContext context, 
-* Consumer&lt;String&gt; errorMessageConsumer); 
-* add AllowedTypesValidation 
-* add FeatureConfiguration 
-* use FeatureConfiguration within parser 
-* repair pom.xml 
-* repair pom.xml 
-* repair pom.xml 
-* repair pom.xml 
-* * make FeatureConfiguration not a singleton any more 
-* CCJSqlParser extends AbstractJSqlParser&lt;CCJSqlParser&gt; 
-* add FeaturesAllowed for testing against features allowed 
-* implement some Validators 
-* basic implementation of DatabaseMetaDataValidation / 
-* JdbcDatabaseMetaDataCapability 
-* moving classes to sub-packages 
-* * moving classes to sub-packages 
-* fixing some bugs 
-* repair pom.xml 
-* add and fix validations 
-* add javadoc 
-* * force definition of &#x60;&#x60;&#x60;public String getMessage(Feature feature)&#x60;&#x60;&#x60; 
-* in FeatureSetValidation 
-* allow all objects as feature-value - this may be needed by the parser, 
-* if a none-boolean configuration is needed 
-* impl. 
-* SelectValidator.visit(PlainSelect) 
-* OrderByValidator 
-* add Version-enums 
-* impl. 
-* InsertValidator 
-* multiple implementations of visit(SubSelect) -&gt; forward to 
-* SelectValidator 
-* add some known features to SqlServerVersion 
-* refactoring enum-name should be upper case 
-* add ansi sql enum 
-* refactoring enum-name should be upper case 
-* implement limitvalidator 
-* + validateOffset 
-* + validateFetch 
-* + validate Pivot, UnPivot, PivotXml 
-* + implement DropValidator 
-* change testcase to image a more probably usecase 
-* * add javadoc and 
-* predefined sets for EXECUTE, ALTER, DROP 
-* allow to combine FeatureSets 
-* * implement executevalidator 
-* implement ExpressionValidator 
-* implement GrantValidator 
-* javadoc and complete SELECT constant 
-* use utility methods from AbstractValidator 
-* more user friendly names 
-* javadoc 
-* add subtypes for ValidationException 
-* ValidationParseException 
-* DatabaseException 
-* UnexpectedValidationException 
-* and change Set&lt;String&gt; errors to Set&lt;ValidationException&gt; for collect. 
-* javadoc &amp; rename exception 
-* rename method 
-* extract parsing task into package - private class for {@link 
-* ValidationUtil} to parse the statements 
-* within it&#x27;s own {@link ValidationCapability} 
-* add null-check for parsedStatement 
-* bugfix - do not collect duplicates 
-* implement toString() for 
-* ValidationError 
-* ValidationException 
-* add simple caching 
-* + validateOptionalFromItem(s) 
-* * implement GroupByValidator 
-* implement merge-validator 
-* renaming ItemListValidator -&gt; ItemsListValidator 
-* + validateOptionalItemsList 
-* + implement ReplaceValidator 
-* + use validateOptionalColumns, validateOptionalExpression where possible 
-* * remove validateOptionalColumns -&gt; switch to 
-* validateOptionalExpressions 
-* move validateOptionalOrderByElements to AbstractValidator 
-* add validateOptional in AbstractValidator 
-* add validateOptionalList in AbstractValidator 
-* + SetStatementValidator 
-* + ValuesStatementValidator 
-* + UseStatementValidator 
-* * implement UpdateValidator 
-* * implement ShowStatementValidator/ShowColumnsStatementValidator 
-* * implement UpdateValidator 
-* * add Feature.jdbcParameter, Feature.jdbcNamedParameter, to all 
-* featuresets 
-* + Version.getFeaturesClone 
-* add javadoc to Version-enum-constructors 
-* + validateOptionalFeature 
-* * implement DeleteValidator 
-* ... 
-* fix typo 
-* small optimization 
-* * move method getFeaturesClone to FeatureSet 
-* implement join - validation 
-* add copy(), add(Collection), remove(*) methods to FeaturesAllowed 
-* * add join - features to sqlserver, h2 
-* implementations 
-* bugfix - merging the errors 
-* copyright 
-* https://github.com/JSQLParser/JSqlParser/issues/1022 
-* add more fine granular control for setOperations 
-* fix nullpointerexception 
-* add more fine granular control for comments 
-* add Features supported 
-* * add javadoc 
-* add features to *Version-files 
-* extract methods isNotEmpty 
-* check for isNotEmpty 
-* * add features to *Version-files 
-* always parse net.sf.jsqlparser.statement.Statements and validate the 
-* list of included net.sf.jsqlparser.statement.Statement&#x27;s 
-* add known mariadb features 
-* new names-set for FeaturesAllowed 
-* new names-set for FeaturesAllowed 
-* new names-set for FeaturesAllowed 
-* add ature.withItem, Feature.withItemRecursive to H2 
-* Feature.setOperation, Feature.setOperationUnion, 
-* Feature.setOperationIntersect, Feature.setOperationExcept, 
-* for MariaDb 
-* add features to SQLServer 
-* Merge branch &#x27;master.orig&#x27; into github.validate 
-* @Override() -&gt; @Override 
-* fix typing error &quot;joinStaight&quot; &gt; joinStraight 
-* rename Feature &quot;insertValues&quot; -&gt; &quot;values&quot; and use &quot;insertValues&quot; for 
-* INSERT INTO ... VALUES 
-* add javadoc 
-* add Feature.selectGroupByGroupingSets to PostgresqlVersion 
-* implement basic OracleVersion 
-* add Feature.mySql* - also supported by mariadb 
-* add some more finegraned control over &quot;drop&quot; Feature. 
-* drop, 
-* dropTable, 
-* dropIndex, 
-* dropView, 
-* dropSchema, 
-* dropSequence, 
-* dropIfExists, 
-* complete FeaturesAllowed groups INSERT/UPDATE/DELETE/MERGE/DML 
-* add link to documentation 
-* fix - duplicate use of feature &quot;function&quot; - the use of functions in 
-* statements and &quot;createFunction&quot; as a ddl statement 
-* TODO this feature seams very close to a jsqlparser-user usecase 
-* * implement MySqlVersion 
-* replace feature Feature.dropIfExists by features dropTableIfExists, 
-* dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, 
-* dropSequenceIfExists 
-* add methods FeatureSet.getNotContained FeatureSet.retainAll 
-* remove HSQLDBVersion - do not support this variant 
-* remove HSQLDBVersion - do not support this variant 
-* add unit-test 
-* + add unittests for 
-* UpdateValidator 
-* DeleteValidator 
-* add stubs for all other Validator-classes 
-* + ModifyableFeatureSet 
-* add some utility-methods in ValidationTestAsserts 
-* complete unit-tests for InsertValidator 
-* remote Feature.insertReturningExpressionList for Oracle - 
-* returning_clause requires INTO clause (only PL/SQL) 
-* add some more select validation tests 
-* add DropValidatorTests 
-* add DropValidatorTests 
-* add CreateTableValidatorTests 
-* add CreateTableValidatorTests 
-* add ExpressionValidatorTests 
-* add OrderByValidatorTest 
-* use isNotEmpty 
-* implement GroupByValidatorTest 
-* implement CreateSequenceValidatorTest 
-* remove @Ignore - test is ok 
-* implement CreateIndexValidatorTest 
-* implement CreateViewValidatorTest 
-* enable validation of Feature.commentOnView (#1024 is merged already) 
-* change format of #toString() for better readability 
-* * implement MergeValidatorTest 
-* implement ReplaceValidatorTest 
-* implement StatementValidatorTest 
-* rename 
-* ValidationUtil -&gt; Validation 
-* ValidatorUtil -&gt; ValidationUtil 
-* add testcases for ValidationUtil 
-* add DatabaseMetaDataValidationTest 
-* checkstyle fix 
-* add copyright statement 
-* add unit-tests for show tables, show column, show statements 
-* * add ExecuteValidatorTest 
-* as there is a difference between execute &lt;procedure&gt; and execute 
-* [immediate] &lt;dynamic sql&gt; with USING expr, ... remove support for 
-* execute on MYSQL, MARIADB, ORACLE 
-* * add ExecuteValidatorTest for CALL fnName (mysql, mariadb, postgres) 
-* add upsertvalidatortest 
-* add GrantValidatorTest 
-* add AlterSequenceValidatorTest 
-* add AlterSequenceValidatorTest 
-* add AlterViewValidatorTest 
-* add AlterValidatorTest 
-* replace !&#x3D; null by isNotEmpty on collections 
-* fix formatting 
-* add validate commit 
-* add validate block 
-* add DeclareStatementValidatorTest 
-* let NamesLookup implement UnaryOperator&lt;String&gt; 
-* let NamesLookup implement UnaryOperator&lt;String&gt; 
-* add javadoc 
-* add more DatabaseMetaDataValidationTest&#x27;s 
-* extract JdbcDatabaseMetaDataCapability.splitAndValidateMinMax 
-* add pivot/unpivot/pivotxml validation testcases 
-* add testcase for Feature.tableFunction 
-* add test for lateral joins and subjoins 
-* add testValidationRowMovementOption 
-* add values validator test 
-* move tests to LimitValidatorTest 
-* move tests to UseStatementValidatorTest 
-* add tests for SET - statements 
-* fix checkstyle error 
-* new serialVersionUID 
-* add validation for NamedObject not existing 
-* need table/view reference to validate column names 
-* fix typo 
-* fix errormessage (Arrays.toString(types)) 
-* add trigger, alias 
-* return null, instead of throwing exception, if not found 
-* extract NamesLookup to own file (jdk-bug enum inner classes) 
-* fix name-check AlterOperation.ALTER 
-* fix error message 
-* remove methods not needed (they only delegate to ValidationContext) 
-* add tests - validate metadata 
-* fix compile error 
-* fix columnExists check - depending on the statement the prefix is an 
-* alias, a table/view or it has no prefix (need to lookup within all 
-* related tables/views) 
-* fix javadoc warnings 
+* * add with prefix for fluent setters.
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* add getters
+* * add with prefix for fluent setters. (revert to chaining setters, do
+* not break current api)
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add with prefix for fluent setters. (revert to chaining setters, do
+* not break current api)
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* remove create() methods - they do not add enough value to be justified
+* * use new methods within testcases
+* add some constructors
+* fix and add &quot;with&quot; / &quot;add&quot; methods
+* * use new methods within testcases
+* * use new methods within testcases
+* add some constructors
+* * renamed constant
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* * use new methods within testcases
+* add some with-methods
+* add getter/setter named after the field without abbrivation
+* * use new methods within testcases
+* remove empty implicit constructor
+* return the deparsed Statement - object
+* compare object tree
+* compare object tree
+* * fix ObjectTreeToStringStyle
+* compare object tree
+* remove casts not needed
+* * use new methods within testcases
+* add some &quot;set&quot; &quot;with&quot; &quot;add&quot; methods missing
+* * use new methods within testcases
+* add empty constructors and override with-/add-methods returning concrete
+* type
+* * add ReflectionModelTest
+* * use new methods within testcases
+* fix checkstyle errors
+* license header
+* remove test-classes from ReflectionModelTest
+* remove visitoradapter-classes from ReflectionModelTest
+* * add SelectDeParser(StringBuilder)
+* remove overriding setters/getters of buffer
+* #1007
+* push to synbee-contrib
+* org.synbee.commons.contrib:jsqlparser:3.2-0.0.6-SNAPSHOT
+* add ValidationUtil for simple validation of one or more statements
+* remove overrides of
+* getCause
+* printStackTrace variants
+* why add an additional cause ?
+* set cause.getMessage() the message within constructor
+* JSQLParserException(Throwable cause), othewise cause.toString() will be
+* set as default.
+* add ValidationVisitor showcase
+* https://github.com/JSQLParser/JSqlParser/issues/1005
+* add ValidationUtil for simple validation of one or more statements
+* remove overrides of
+* getCause
+* printStackTrace variants
+* why add an additional cause ?
+* set cause.getMessage() the message within constructor
+* JSQLParserException(Throwable cause), othewise cause.toString() will be
+* set as default.
+* visit(ShowTablesStatement)
+* copyright/license
+* add stubs (use deparsers as template)
+* Merge branch &#x27;master.validate&#x27; of
+* https://github.com/gitmotte/JSqlParser.git into master.validate
+* add ValidationVisitor showcase
+* https://github.com/JSQLParser/JSqlParser/issues/1005
+* add ValidationUtil for simple validation of one or more statements
+* remove overrides of
+* getCause
+* printStackTrace variants
+* why add an additional cause ?
+* set cause.getMessage() the message within constructor
+* JSQLParserException(Throwable cause), othewise cause.toString() will be
+* set as default.
+* visit(ShowTablesStatement)
+* add stubs (use deparsers as template)
+* Merge branch &#x27;master.validate&#x27; of
+* https://github.com/gitmotte/JSqlParser.git into master.validate
+* add tests for ValidationUtil
+* + implements OrderByVisitor
+* split Expressionvalidator which implements both ItemsListVisitor and
+* Expressionvisitor into Expressionvalidator and ItemListValidator
+* Merge branch &#x27;github.validate&#x27;
+* implement upsertvalidator
+* add copyright
+* validate through given ValidationCapability&#x27;s
+* * switch to new method forced by
+* ValidationCapability.validate(ValidationContext context,
+* Consumer&lt;String&gt; errorMessageConsumer);
+* add AllowedTypesValidation
+* add FeatureConfiguration
+* use FeatureConfiguration within parser
+* repair pom.xml
+* repair pom.xml
+* repair pom.xml
+* repair pom.xml
+* * make FeatureConfiguration not a singleton any more
+* CCJSqlParser extends AbstractJSqlParser&lt;CCJSqlParser&gt;
+* add FeaturesAllowed for testing against features allowed
+* implement some Validators
+* basic implementation of DatabaseMetaDataValidation /
+* JdbcDatabaseMetaDataCapability
+* moving classes to sub-packages
+* * moving classes to sub-packages
+* fixing some bugs
+* repair pom.xml
+* add and fix validations
+* add javadoc
+* * force definition of &#x60;&#x60;&#x60;public String getMessage(Feature feature)&#x60;&#x60;&#x60;
+* in FeatureSetValidation
+* allow all objects as feature-value - this may be needed by the parser,
+* if a none-boolean configuration is needed
+* impl.
+* SelectValidator.visit(PlainSelect)
+* OrderByValidator
+* add Version-enums
+* impl.
+* InsertValidator
+* multiple implementations of visit(SubSelect) -&gt; forward to
+* SelectValidator
+* add some known features to SqlServerVersion
+* refactoring enum-name should be upper case
+* add ansi sql enum
+* refactoring enum-name should be upper case
+* implement limitvalidator
+* + validateOffset
+* + validateFetch
+* + validate Pivot, UnPivot, PivotXml
+* + implement DropValidator
+* change testcase to image a more probably usecase
+* * add javadoc and
+* predefined sets for EXECUTE, ALTER, DROP
+* allow to combine FeatureSets
+* * implement executevalidator
+* implement ExpressionValidator
+* implement GrantValidator
+* javadoc and complete SELECT constant
+* use utility methods from AbstractValidator
+* more user friendly names
+* javadoc
+* add subtypes for ValidationException
+* ValidationParseException
+* DatabaseException
+* UnexpectedValidationException
+* and change Set&lt;String&gt; errors to Set&lt;ValidationException&gt; for collect.
+* javadoc &amp; rename exception
+* rename method
+* extract parsing task into package - private class for {@link
+* ValidationUtil} to parse the statements
+* within it&#x27;s own {@link ValidationCapability}
+* add null-check for parsedStatement
+* bugfix - do not collect duplicates
+* implement toString() for
+* ValidationError
+* ValidationException
+* add simple caching
+* + validateOptionalFromItem(s)
+* * implement GroupByValidator
+* implement merge-validator
+* renaming ItemListValidator -&gt; ItemsListValidator
+* + validateOptionalItemsList
+* + implement ReplaceValidator
+* + use validateOptionalColumns, validateOptionalExpression where possible
+* * remove validateOptionalColumns -&gt; switch to
+* validateOptionalExpressions
+* move validateOptionalOrderByElements to AbstractValidator
+* add validateOptional in AbstractValidator
+* add validateOptionalList in AbstractValidator
+* + SetStatementValidator
+* + ValuesStatementValidator
+* + UseStatementValidator
+* * implement UpdateValidator
+* * implement ShowStatementValidator/ShowColumnsStatementValidator
+* * implement UpdateValidator
+* * add Feature.jdbcParameter, Feature.jdbcNamedParameter, to all
+* featuresets
+* + Version.getFeaturesClone
+* add javadoc to Version-enum-constructors
+* + validateOptionalFeature
+* * implement DeleteValidator
+* ...
+* fix typo
+* small optimization
+* * move method getFeaturesClone to FeatureSet
+* implement join - validation
+* add copy(), add(Collection), remove(*) methods to FeaturesAllowed
+* * add join - features to sqlserver, h2
+* implementations
+* bugfix - merging the errors
+* copyright
+* https://github.com/JSQLParser/JSqlParser/issues/1022
+* add more fine granular control for setOperations
+* fix nullpointerexception
+* add more fine granular control for comments
+* add Features supported
+* * add javadoc
+* add features to *Version-files
+* extract methods isNotEmpty
+* check for isNotEmpty
+* * add features to *Version-files
+* always parse net.sf.jsqlparser.statement.Statements and validate the
+* list of included net.sf.jsqlparser.statement.Statement&#x27;s
+* add known mariadb features
+* new names-set for FeaturesAllowed
+* new names-set for FeaturesAllowed
+* new names-set for FeaturesAllowed
+* add ature.withItem, Feature.withItemRecursive to H2
+* Feature.setOperation, Feature.setOperationUnion,
+* Feature.setOperationIntersect, Feature.setOperationExcept,
+* for MariaDb
+* add features to SQLServer
+* Merge branch &#x27;master.orig&#x27; into github.validate
+* @Override() -&gt; @Override
+* fix typing error &quot;joinStaight&quot; &gt; joinStraight
+* rename Feature &quot;insertValues&quot; -&gt; &quot;values&quot; and use &quot;insertValues&quot; for
+* INSERT INTO ... VALUES
+* add javadoc
+* add Feature.selectGroupByGroupingSets to PostgresqlVersion
+* implement basic OracleVersion
+* add Feature.mySql* - also supported by mariadb
+* add some more finegraned control over &quot;drop&quot; Feature.
+* drop,
+* dropTable,
+* dropIndex,
+* dropView,
+* dropSchema,
+* dropSequence,
+* dropIfExists,
+* complete FeaturesAllowed groups INSERT/UPDATE/DELETE/MERGE/DML
+* add link to documentation
+* fix - duplicate use of feature &quot;function&quot; - the use of functions in
+* statements and &quot;createFunction&quot; as a ddl statement
+* TODO this feature seams very close to a jsqlparser-user usecase
+* * implement MySqlVersion
+* replace feature Feature.dropIfExists by features dropTableIfExists,
+* dropIndexIfExists, dropViewIfExists, dropSchemaIfExists,
+* dropSequenceIfExists
+* add methods FeatureSet.getNotContained FeatureSet.retainAll
+* remove HSQLDBVersion - do not support this variant
+* remove HSQLDBVersion - do not support this variant
+* add unit-test
+* + add unittests for
+* UpdateValidator
+* DeleteValidator
+* add stubs for all other Validator-classes
+* + ModifyableFeatureSet
+* add some utility-methods in ValidationTestAsserts
+* complete unit-tests for InsertValidator
+* remote Feature.insertReturningExpressionList for Oracle -
+* returning_clause requires INTO clause (only PL/SQL)
+* add some more select validation tests
+* add DropValidatorTests
+* add DropValidatorTests
+* add CreateTableValidatorTests
+* add CreateTableValidatorTests
+* add ExpressionValidatorTests
+* add OrderByValidatorTest
+* use isNotEmpty
+* implement GroupByValidatorTest
+* implement CreateSequenceValidatorTest
+* remove @Ignore - test is ok
+* implement CreateIndexValidatorTest
+* implement CreateViewValidatorTest
+* enable validation of Feature.commentOnView (#1024 is merged already)
+* change format of #toString() for better readability
+* * implement MergeValidatorTest
+* implement ReplaceValidatorTest
+* implement StatementValidatorTest
+* rename
+* ValidationUtil -&gt; Validation
+* ValidatorUtil -&gt; ValidationUtil
+* add testcases for ValidationUtil
+* add DatabaseMetaDataValidationTest
+* checkstyle fix
+* add copyright statement
+* add unit-tests for show tables, show column, show statements
+* * add ExecuteValidatorTest
+* as there is a difference between execute &lt;procedure&gt; and execute
+* [immediate] &lt;dynamic sql&gt; with USING expr, ... remove support for
+* execute on MYSQL, MARIADB, ORACLE
+* * add ExecuteValidatorTest for CALL fnName (mysql, mariadb, postgres)
+* add upsertvalidatortest
+* add GrantValidatorTest
+* add AlterSequenceValidatorTest
+* add AlterSequenceValidatorTest
+* add AlterViewValidatorTest
+* add AlterValidatorTest
+* replace !&#x3D; null by isNotEmpty on collections
+* fix formatting
+* add validate commit
+* add validate block
+* add DeclareStatementValidatorTest
+* let NamesLookup implement UnaryOperator&lt;String&gt;
+* let NamesLookup implement UnaryOperator&lt;String&gt;
+* add javadoc
+* add more DatabaseMetaDataValidationTest&#x27;s
+* extract JdbcDatabaseMetaDataCapability.splitAndValidateMinMax
+* add pivot/unpivot/pivotxml validation testcases
+* add testcase for Feature.tableFunction
+* add test for lateral joins and subjoins
+* add testValidationRowMovementOption
+* add values validator test
+* move tests to LimitValidatorTest
+* move tests to UseStatementValidatorTest
+* add tests for SET - statements
+* fix checkstyle error
+* new serialVersionUID
+* add validation for NamedObject not existing
+* need table/view reference to validate column names
+* fix typo
+* fix errormessage (Arrays.toString(types))
+* add trigger, alias
+* return null, instead of throwing exception, if not found
+* extract NamesLookup to own file (jdk-bug enum inner classes)
+* fix name-check AlterOperation.ALTER
+* fix error message
+* remove methods not needed (they only delegate to ValidationContext)
+* add tests - validate metadata
+* fix compile error
+* fix columnExists check - depending on the statement the prefix is an
+* alias, a table/view or it has no prefix (need to lookup within all
+* related tables/views)
+* fix javadoc warnings
 
 [8c735](https://github.com/JSQLParser/JSqlParser/commit/8c735be5b179e51) gitmotte *2020-11-06 21:12:25*
 
 **Support Create table LIKE (#1066)**
 
-* fixes #413 
-* add coverage 
-* Co-authored-by: chyun &lt;chyun_wu@163.com&gt; 
+* fixes #413
+* add coverage
+* Co-authored-by: chyun &lt;chyun_wu@163.com&gt;
 
 [ac746](https://github.com/JSQLParser/JSqlParser/commit/ac7462286ae15b9) Chyun *2020-11-06 21:05:09*
 
@@ -4331,12 +4331,12 @@ Changelog of JSqlParser.
 
 **Bump junit from 4.12 to 4.13.1 (#1063)**
 
-* Bumps [junit](https://github.com/junit-team/junit4) from 4.12 to 4.13.1. 
-* - [Release notes](https://github.com/junit-team/junit4/releases) 
-* - [Changelog](https://github.com/junit-team/junit4/blob/main/doc/ReleaseNotes4.12.md) 
-* - [Commits](https://github.com/junit-team/junit4/compare/r4.12...r4.13.1) 
-* Signed-off-by: dependabot[bot] &lt;support@github.com&gt; 
-* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt; 
+* Bumps [junit](https://github.com/junit-team/junit4) from 4.12 to 4.13.1.
+* - [Release notes](https://github.com/junit-team/junit4/releases)
+* - [Changelog](https://github.com/junit-team/junit4/blob/main/doc/ReleaseNotes4.12.md)
+* - [Commits](https://github.com/junit-team/junit4/compare/r4.12...r4.13.1)
+* Signed-off-by: dependabot[bot] &lt;support@github.com&gt;
+* Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.github.com&gt;
 
 [f9a11](https://github.com/JSQLParser/JSqlParser/commit/f9a115c582dd59b) dependabot[bot] *2020-10-13 12:26:17*
 
@@ -4352,8 +4352,8 @@ Changelog of JSqlParser.
 
 **support FILTER not only for window function (#1046)**
 
-* support FILTER not only for window function 
-* Fixed imports 
+* support FILTER not only for window function
+* Fixed imports
 
 [f32fa](https://github.com/JSQLParser/JSqlParser/commit/f32fa6137d6161b) Роман Зотов *2020-10-05 19:45:36*
 
@@ -4374,7 +4374,7 @@ Changelog of JSqlParser.
 
 **Retain original value in TimestampValue (#1057)**
 
-* Co-authored-by: Enrico Olivelli &lt;enrico.olivelli@diennea.com&gt; 
+* Co-authored-by: Enrico Olivelli &lt;enrico.olivelli@diennea.com&gt;
 
 [622f9](https://github.com/JSQLParser/JSqlParser/commit/622f9aebb3ebce7) Enrico Olivelli *2020-10-04 19:51:01*
 
@@ -4385,8 +4385,8 @@ Changelog of JSqlParser.
 
 **Addons/fixes for Fluent API  (#1049)**
 
-* fix unittests for setter/wither methods with primitive arguments 
-* add missing withAscDescPresent 
+* fix unittests for setter/wither methods with primitive arguments
+* add missing withAscDescPresent
 
 [8165e](https://github.com/JSQLParser/JSqlParser/commit/8165e29cb081080) gitmotte *2020-10-04 19:20:43*
 
@@ -4432,8 +4432,8 @@ Changelog of JSqlParser.
 
 **bugfix #720 #991: supporting SELECT "conditions" (#1032)**
 
-* bugfix issue #1020: JSON type in MySQL not supported in v3.2 
-* bugfix issue #720 #991: supporting SELECT &quot;CONDITIONS&quot; 
+* bugfix issue #1020: JSON type in MySQL not supported in v3.2
+* bugfix issue #720 #991: supporting SELECT &quot;CONDITIONS&quot;
 
 [9e26b](https://github.com/JSQLParser/JSqlParser/commit/9e26b76ddbc626f) suiwenbo *2020-08-25 22:29:41*
 
@@ -4449,101 +4449,101 @@ Changelog of JSqlParser.
 
 **Fluent builder api #1004 (#1014)**
 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* create(...) methods 
-* chaining - methods returning &quot;this&quot; 
-* overwrite chaining - methods of abstract parents/interfaces for 
-* returning concrete type 
-* add&lt;Name&gt; methods on collection-fields with varargs-parameter 
-* add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning an inner 
-* interface-type 
-* 1004 add chaining - methods returning &quot;this&quot; 
-* #1004 add chaining - methods returning &quot;this&quot; 
-* * add&lt;Name&gt; methods on collection-fields with varargs-parameter 
-* add&lt;Name&gt; methods on collection-fields with collection-parameter 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add chaining - methods returning &quot;this&quot; 
-* add&lt;Name&gt; methods on collection-fields with varargs-parameter 
-* add&lt;Name&gt; methods on collection-fields with collection-parameter 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning the concrete 
-* type 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning the concrete 
-* type (swap Class&lt;? extends E&gt; for Class&lt;E&gt;) 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * overwrite chaining - methods of abstract parents/interfaces for 
-* returning concrete type 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add with prefix for fluent setters. 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* add getters 
-* * add with prefix for fluent setters. (revert to chaining setters, do 
-* not break current api) 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* * add with prefix for fluent setters. (revert to chaining setters, do 
-* not break current api) 
-* https://github.com/JSQLParser/JSqlParser/issues/1004 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* remove create() methods - they do not add enough value to be justified 
-* * use new methods within testcases 
-* add some constructors 
-* fix and add &quot;with&quot; / &quot;add&quot; methods 
-* * use new methods within testcases 
-* * use new methods within testcases 
-* add some constructors 
-* * renamed constant 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* use new methods within testcases 
-* * use new methods within testcases 
-* add some with-methods 
-* add getter/setter named after the field without abbrivation 
-* * use new methods within testcases 
-* remove empty implicit constructor 
-* return the deparsed Statement - object 
-* compare object tree 
-* compare object tree 
-* * fix ObjectTreeToStringStyle 
-* compare object tree 
-* remove casts not needed 
-* * use new methods within testcases 
-* add some &quot;set&quot; &quot;with&quot; &quot;add&quot; methods missing 
-* * use new methods within testcases 
-* add empty constructors and override with-/add-methods returning concrete 
-* type 
-* * add ReflectionModelTest 
-* * use new methods within testcases 
-* fix checkstyle errors 
-* license header 
-* remove test-classes from ReflectionModelTest 
-* remove visitoradapter-classes from ReflectionModelTest 
-* remove duplicate import declaration (checkstyle error) 
-* * fix RandomUtils to support used java.sql.* types 
-* fix RandomUtils to support enums 
-* fix RandomUtils to map objects by its interfaces and super-classes 
-* filter method &quot;setASTNode&quot; - do not test setters (cannot randomly 
-* create a SimpleNode) 
-* add javadoc, stating that this is a marker interface 
-* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454761902 
-* revert formatting change 
-* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454762463 
-* change to EXEC_TYPE.EXECUTE just so the assertion didn&#x27;t change 
-* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454763565 
-* try to revert format changes 
-* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454800430 
-* try to revert format changes 
-* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454800430 
-* remove brackets on @Override() -&gt; @Override 
-* add with-methods to new fields 
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* create(...) methods
+* chaining - methods returning &quot;this&quot;
+* overwrite chaining - methods of abstract parents/interfaces for
+* returning concrete type
+* add&lt;Name&gt; methods on collection-fields with varargs-parameter
+* add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning an inner
+* interface-type
+* 1004 add chaining - methods returning &quot;this&quot;
+* #1004 add chaining - methods returning &quot;this&quot;
+* * add&lt;Name&gt; methods on collection-fields with varargs-parameter
+* add&lt;Name&gt; methods on collection-fields with collection-parameter
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add chaining - methods returning &quot;this&quot;
+* add&lt;Name&gt; methods on collection-fields with varargs-parameter
+* add&lt;Name&gt; methods on collection-fields with collection-parameter
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning the concrete
+* type
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add public T get&lt;Name&gt;(Class&lt;T&gt;) - casting and returning the concrete
+* type (swap Class&lt;? extends E&gt; for Class&lt;E&gt;)
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * overwrite chaining - methods of abstract parents/interfaces for
+* returning concrete type
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add with prefix for fluent setters.
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* add getters
+* * add with prefix for fluent setters. (revert to chaining setters, do
+* not break current api)
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* * add with prefix for fluent setters. (revert to chaining setters, do
+* not break current api)
+* https://github.com/JSQLParser/JSqlParser/issues/1004
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* remove create() methods - they do not add enough value to be justified
+* * use new methods within testcases
+* add some constructors
+* fix and add &quot;with&quot; / &quot;add&quot; methods
+* * use new methods within testcases
+* * use new methods within testcases
+* add some constructors
+* * renamed constant
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* use new methods within testcases
+* * use new methods within testcases
+* add some with-methods
+* add getter/setter named after the field without abbrivation
+* * use new methods within testcases
+* remove empty implicit constructor
+* return the deparsed Statement - object
+* compare object tree
+* compare object tree
+* * fix ObjectTreeToStringStyle
+* compare object tree
+* remove casts not needed
+* * use new methods within testcases
+* add some &quot;set&quot; &quot;with&quot; &quot;add&quot; methods missing
+* * use new methods within testcases
+* add empty constructors and override with-/add-methods returning concrete
+* type
+* * add ReflectionModelTest
+* * use new methods within testcases
+* fix checkstyle errors
+* license header
+* remove test-classes from ReflectionModelTest
+* remove visitoradapter-classes from ReflectionModelTest
+* remove duplicate import declaration (checkstyle error)
+* * fix RandomUtils to support used java.sql.* types
+* fix RandomUtils to support enums
+* fix RandomUtils to map objects by its interfaces and super-classes
+* filter method &quot;setASTNode&quot; - do not test setters (cannot randomly
+* create a SimpleNode)
+* add javadoc, stating that this is a marker interface
+* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454761902
+* revert formatting change
+* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454762463
+* change to EXEC_TYPE.EXECUTE just so the assertion didn&#x27;t change
+* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454763565
+* try to revert format changes
+* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454800430
+* try to revert format changes
+* https://github.com/JSQLParser/JSqlParser/pull/1014#discussion_r454800430
+* remove brackets on @Override() -&gt; @Override
+* add with-methods to new fields
 
 [6cff1](https://github.com/JSQLParser/JSqlParser/commit/6cff161dacc1e6f) gitmotte *2020-08-23 20:07:53*
 
@@ -4559,27 +4559,27 @@ Changelog of JSqlParser.
 
 **Support Foreign Key ON UPDATE CASCADE (#1025)**
 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* add 2 unit-tests for given statements 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* fix formating (line width) 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* * fix nullpointerexceptions 
-* add more unittest-assertions 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* change order to match the same order as in ForeignKeyIndex 
-* byAction should not throw an exception (is used by deprecated 
-* string-setters) 
-* add unit-tests for ReferentialAction within AlterExpression 
-* fix toString (added bug on refactoring) 
-* javadoc 
-* test set from get on null-values too 
-* refactoring: add and use ReferentialAction() to evaluate enum 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* refactoring: fix parser that order of referential actions does not 
-* matter 
-* https://github.com/JSQLParser/JSqlParser/issues/985 
-* add empty constructor 
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* add 2 unit-tests for given statements
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* fix formating (line width)
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* * fix nullpointerexceptions
+* add more unittest-assertions
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* change order to match the same order as in ForeignKeyIndex
+* byAction should not throw an exception (is used by deprecated
+* string-setters)
+* add unit-tests for ReferentialAction within AlterExpression
+* fix toString (added bug on refactoring)
+* javadoc
+* test set from get on null-values too
+* refactoring: add and use ReferentialAction() to evaluate enum
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* refactoring: fix parser that order of referential actions does not
+* matter
+* https://github.com/JSQLParser/JSqlParser/issues/985
+* add empty constructor
 
 [1e88d](https://github.com/JSQLParser/JSqlParser/commit/1e88dd57eb48ebf) gitmotte *2020-08-09 21:01:34*
 
@@ -4605,10 +4605,10 @@ Changelog of JSqlParser.
 
 **COMMENT ON VIEW (#1024)**
 
-* * implement COMMENT ON VIEW 
-* testcase &quot;testCommentOnView&quot; 
-* https://github.com/JSQLParser/JSqlParser/issues/1023 
-* add more asserts 
+* * implement COMMENT ON VIEW
+* testcase &quot;testCommentOnView&quot;
+* https://github.com/JSQLParser/JSqlParser/issues/1023
+* add more asserts
 
 [449f5](https://github.com/JSQLParser/JSqlParser/commit/449f55219fc39eb) gitmotte *2020-08-09 20:49:05*
 
@@ -4664,18 +4664,18 @@ Changelog of JSqlParser.
 
 **Add show tables support (#1015)**
 
-* visual 
-* implement show tables 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* visual
+* implement show tables
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [c0373](https://github.com/JSQLParser/JSqlParser/commit/c03733b3cfcb758) Jan Monterrubio *2020-07-11 16:43:42*
 
 **let all deparsers extend AbstractDeParser (#1007)**
 
-* let all deparsers extend AbstractDeParser 
-* * add SelectDeParser(StringBuilder) 
-* remove overriding setters/getters of buffer 
-* #1007 
+* let all deparsers extend AbstractDeParser
+* * add SelectDeParser(StringBuilder)
+* remove overriding setters/getters of buffer
+* #1007
 
 [2b790](https://github.com/JSQLParser/JSqlParser/commit/2b7909c3be31ca8) gitmotte *2020-07-11 16:40:11*
 
@@ -4711,13 +4711,13 @@ Changelog of JSqlParser.
 
 **Support options for Explain (#996)**
 
-* visual 
-* issue-995 
-* support verbose 
-* postgres explain 
-* tests 
-* no text 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* visual
+* issue-995
+* support verbose
+* postgres explain
+* tests
+* no text
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [13873](https://github.com/JSQLParser/JSqlParser/commit/1387354712285e4) Jan Monterrubio *2020-06-23 21:52:42*
 
@@ -4728,12 +4728,12 @@ Changelog of JSqlParser.
 
 **Support multiple lists for an IN clause (#997)**
 
-* visual 
-* wip 
-* cleanup n test 
-* polish 
-* lookahead 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* visual
+* wip
+* cleanup n test
+* polish
+* lookahead
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [5de4a](https://github.com/JSQLParser/JSqlParser/commit/5de4ae597fbeda3) Jan Monterrubio *2020-06-20 22:10:38*
 
@@ -4749,8 +4749,8 @@ Changelog of JSqlParser.
 
 **Support ALTER SEQUENCE  (#980)**
 
-* support alter sequence 
-* improve coverage 
+* support alter sequence
+* improve coverage
 
 [d34c8](https://github.com/JSQLParser/JSqlParser/commit/d34c885ba5a8c93) Jan Monterrubio *2020-05-23 10:16:07*
 
@@ -4796,21 +4796,21 @@ Changelog of JSqlParser.
 
 **Implement row movement clause for table creation (#974)**
 
-* visual 
-* implement row movement 
-* support row + AS 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* visual
+* implement row movement
+* support row + AS
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [79b5f](https://github.com/JSQLParser/JSqlParser/commit/79b5fe9c5681961) Jan Monterrubio *2020-04-28 07:02:51*
 
 **Support CREATE SEQUENCE (#977)**
 
-* wip 
-* wip, some parsing 
-* support sequence 
-* implement feature 
-* delete issue tests 
-* compile it 
+* wip
+* wip, some parsing
+* support sequence
+* implement feature
+* delete issue tests
+* compile it
 
 [a6a3c](https://github.com/JSQLParser/JSqlParser/commit/a6a3c616b8994f1) Jan Monterrubio *2020-04-28 07:01:10*
 
@@ -4826,7 +4826,7 @@ Changelog of JSqlParser.
 
 **implement feature (#972)**
 
-* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt; 
+* Co-authored-by: Jan Monterrubio &lt;Jan.Monterrubio@Cerner.com&gt;
 
 [aee39](https://github.com/JSQLParser/JSqlParser/commit/aee3947757eecf4) Jan Monterrubio *2020-04-17 21:01:22*
 
@@ -4942,7 +4942,7 @@ Changelog of JSqlParser.
 
 **fixes #936**
 
-* fixes #938 
+* fixes #938
 
 [39e92](https://github.com/JSQLParser/JSqlParser/commit/39e920df15fefd7) wumpz *2020-02-01 00:08:17*
 
@@ -5048,7 +5048,7 @@ Changelog of JSqlParser.
 
 **fixes #899**
 
-* switched to assertj from hamcrest 
+* switched to assertj from hamcrest
 
 [9707e](https://github.com/JSQLParser/JSqlParser/commit/9707e4f0aacff16) wumpz *2019-11-23 23:18:56*
 
@@ -5069,8 +5069,8 @@ Changelog of JSqlParser.
 
 **Adding support for STRAIGHT_JOIN in the select clause (#861)**
 
-* Adding support for straight_join in the select clause 
-* Renaming the field name to reflect that this is a MySQL hint 
+* Adding support for straight_join in the select clause
+* Renaming the field name to reflect that this is a MySQL hint
 
 [3cdea](https://github.com/JSQLParser/JSqlParser/commit/3cdea6bd3d9ce21) Tomer Shay (Shimshi) *2019-11-09 20:30:54*
 
@@ -5121,10 +5121,10 @@ Changelog of JSqlParser.
 
 **Added support for Oracle UNPIVOT keyword. (#882)**
 
-* Added support for Oracle UNPIVOT keyword. 
-* Back to original version number. 
-* Updated imports. 
-* Added missing import. 
+* Added support for Oracle UNPIVOT keyword.
+* Back to original version number.
+* Updated imports.
+* Added missing import.
 
 [bcc27](https://github.com/JSQLParser/JSqlParser/commit/bcc271870ad767f) Pascal Mulder *2019-10-26 20:35:43*
 
@@ -5285,7 +5285,7 @@ Changelog of JSqlParser.
 
 **fixes #648**
 
-* fixes #638 
+* fixes #638
 
 [74e02](https://github.com/JSQLParser/JSqlParser/commit/74e02267404da4e) wumpz *2019-08-13 19:19:12*
 
@@ -5631,7 +5631,7 @@ Changelog of JSqlParser.
 
 **Support KSQL's WINDOW**
 
-* Add support for KSQL&#x27;s WINDOW (HOPPING, TUMBLING and SESSION window) 
+* Add support for KSQL&#x27;s WINDOW (HOPPING, TUMBLING and SESSION window)
 
 [ef911](https://github.com/JSQLParser/JSqlParser/commit/ef9119806146f25) Suyash Garg *2019-06-21 12:00:06*
 
@@ -5757,7 +5757,7 @@ Changelog of JSqlParser.
 
 **tests #775**
 
-* removed some not flags from some classes 
+* removed some not flags from some classes
 
 [8dda4](https://github.com/JSQLParser/JSqlParser/commit/8dda4a60a8e558d) wumpz *2019-04-08 21:36:40*
 
@@ -5833,7 +5833,7 @@ Changelog of JSqlParser.
 
 **update README.md (#762)**
 
-* update latest version(1.4) 
+* update latest version(1.4)
 
 [13d6a](https://github.com/JSQLParser/JSqlParser/commit/13d6a9fe183a5ab) r548 *2019-03-14 12:19:58*
 
@@ -5889,7 +5889,7 @@ Changelog of JSqlParser.
 
 **fixes #649**
 
-* and implemented ! for not and extended not expression 
+* and implemented ! for not and extended not expression
 
 [10e8e](https://github.com/JSQLParser/JSqlParser/commit/10e8e2568eb7711) wumpz *2019-02-23 23:32:38*
 
@@ -5935,39 +5935,39 @@ Changelog of JSqlParser.
 
 **Added support for DROP INDEX, ADD UNIQUE INDEX, ALGORITHM and USING (#752)**
 
-* Merge recent changes in the master from the master (#1) 
-* changed license header to represent the projects dual license 
-* changed license header to represent the projects dual license 
-* changed license header to represent the projects dual license 
-* changed license header to represent the projects dual license 
-* Added support for comment(s) for column definitions in CREATE TABLE s… (#743) 
-* Added support for comment(s) for column definitions in CREATE TABLE statements 
-* Added support for comment(s) for column definitions in CREATE TABLE statements #2 
-* To increase code coverage 
-* To increase code coverage #2 
-* Added support for &#x27;ALTER TABLE CHANGE COLUMN&#x27; (#741) 
-* Added support for &#x27;ALTER TABLE CHANGE COLUMN oldName newName columnDefinition&#x27;. Please see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html for reference. 
-* Returned import ordering to avoid conflicts 
-* Improved the tests somewhat 
-* Now also test the getOptionalSpecifier() for both cases (null and not-null) 
-* Expanded tests for ALTER TABLE ... CHANGE 
-* implemented optimize for, fixes #348 
-* implemented optimize for, fixes #348 
-* Support for simple informix outer joins. (#745) 
-* added support for simple informix outer joins 
-* added some test code 
-* added support for simple informix outer joins 
-* added some test code 
-* more testing for better code coverage 
-* added support for simple informix outer joins 
-* added some test code 
-* more testing for better code coverage 
-* fixes #747 
-* fixes #733 
-* fixes #707 
-* Update README.md 
-* Update README.md 
-* Fix handles the following cases: 1) DROP INDEX 2) ADD UNIQUE INDEX 3) ALGORITHM 4) USING &lt;index type&gt; 
+* Merge recent changes in the master from the master (#1)
+* changed license header to represent the projects dual license
+* changed license header to represent the projects dual license
+* changed license header to represent the projects dual license
+* changed license header to represent the projects dual license
+* Added support for comment(s) for column definitions in CREATE TABLE s… (#743)
+* Added support for comment(s) for column definitions in CREATE TABLE statements
+* Added support for comment(s) for column definitions in CREATE TABLE statements #2
+* To increase code coverage
+* To increase code coverage #2
+* Added support for &#x27;ALTER TABLE CHANGE COLUMN&#x27; (#741)
+* Added support for &#x27;ALTER TABLE CHANGE COLUMN oldName newName columnDefinition&#x27;. Please see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html for reference.
+* Returned import ordering to avoid conflicts
+* Improved the tests somewhat
+* Now also test the getOptionalSpecifier() for both cases (null and not-null)
+* Expanded tests for ALTER TABLE ... CHANGE
+* implemented optimize for, fixes #348
+* implemented optimize for, fixes #348
+* Support for simple informix outer joins. (#745)
+* added support for simple informix outer joins
+* added some test code
+* added support for simple informix outer joins
+* added some test code
+* more testing for better code coverage
+* added support for simple informix outer joins
+* added some test code
+* more testing for better code coverage
+* fixes #747
+* fixes #733
+* fixes #707
+* Update README.md
+* Update README.md
+* Fix handles the following cases: 1) DROP INDEX 2) ADD UNIQUE INDEX 3) ALGORITHM 4) USING &lt;index type&gt;
 
 [2830c](https://github.com/JSQLParser/JSqlParser/commit/2830c17ea226635) Prateek Gupta *2019-02-19 00:44:35*
 
@@ -6033,14 +6033,14 @@ Changelog of JSqlParser.
 
 **Support for simple informix outer joins. (#745)**
 
-* added support for simple informix outer joins 
-* added some test code 
-* added support for simple informix outer joins 
-* added some test code 
-* more testing for better code coverage 
-* added support for simple informix outer joins 
-* added some test code 
-* more testing for better code coverage 
+* added support for simple informix outer joins
+* added some test code
+* added support for simple informix outer joins
+* added some test code
+* more testing for better code coverage
+* added support for simple informix outer joins
+* added some test code
+* more testing for better code coverage
 
 [53e24](https://github.com/JSQLParser/JSqlParser/commit/53e247bffdae557) Kurt Schwitters *2019-02-08 05:52:51*
 
@@ -6071,20 +6071,20 @@ Changelog of JSqlParser.
 
 **Added support for 'ALTER TABLE CHANGE COLUMN' (#741)**
 
-* Added support for &#x27;ALTER TABLE CHANGE COLUMN oldName newName columnDefinition&#x27;. Please see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html for reference. 
-* Returned import ordering to avoid conflicts 
-* Improved the tests somewhat 
-* Now also test the getOptionalSpecifier() for both cases (null and not-null) 
-* Expanded tests for ALTER TABLE ... CHANGE 
+* Added support for &#x27;ALTER TABLE CHANGE COLUMN oldName newName columnDefinition&#x27;. Please see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html for reference.
+* Returned import ordering to avoid conflicts
+* Improved the tests somewhat
+* Now also test the getOptionalSpecifier() for both cases (null and not-null)
+* Expanded tests for ALTER TABLE ... CHANGE
 
 [bfb80](https://github.com/JSQLParser/JSqlParser/commit/bfb8023318c31b2) Simon *2019-02-07 14:49:28*
 
 **Added support for comment(s) for column definitions in CREATE TABLE s… (#743)**
 
-* Added support for comment(s) for column definitions in CREATE TABLE statements 
-* Added support for comment(s) for column definitions in CREATE TABLE statements #2 
-* To increase code coverage 
-* To increase code coverage #2 
+* Added support for comment(s) for column definitions in CREATE TABLE statements
+* Added support for comment(s) for column definitions in CREATE TABLE statements #2
+* To increase code coverage
+* To increase code coverage #2
 
 [07b86](https://github.com/JSQLParser/JSqlParser/commit/07b86761d0b4aee) Prateek Gupta *2019-02-07 07:09:26*
 
@@ -6165,13 +6165,13 @@ Changelog of JSqlParser.
 
 **allow top keyword as column / table / alias name**
 
-* implemented tests 
+* implemented tests
 
 [9e81e](https://github.com/JSQLParser/JSqlParser/commit/9e81e1592200952) wumpz *2019-01-23 23:00:12*
 
 **allow top keyword as column / table / alias name**
 
-* implemented tests 
+* implemented tests
 
 [ed95e](https://github.com/JSQLParser/JSqlParser/commit/ed95e877802f46e) wumpz *2019-01-23 22:58:39*
 
@@ -6197,7 +6197,7 @@ Changelog of JSqlParser.
 
 **corrected stackoverflow while tables extraction**
 
-* updated readme 
+* updated readme
 
 [04db1](https://github.com/JSQLParser/JSqlParser/commit/04db124b85dea22) wumpz *2019-01-20 22:33:51*
 
@@ -6208,7 +6208,7 @@ Changelog of JSqlParser.
 
 **started describe**
 
-* some cleanup 
+* some cleanup
 
 [25fa3](https://github.com/JSQLParser/JSqlParser/commit/25fa31153a9a2d0) wumpz *2019-01-20 21:48:12*
 
@@ -6224,7 +6224,7 @@ Changelog of JSqlParser.
 
 **corrected some failing tests**
 
-* included a regression test for oracle files 
+* included a regression test for oracle files
 
 [aa932](https://github.com/JSQLParser/JSqlParser/commit/aa932c4a28d8021) wumpz *2018-12-30 23:06:59*
 
@@ -6235,8 +6235,8 @@ Changelog of JSqlParser.
 
 **Support Alter Table Drop Constraint If Exists (#709)**
 
-* Support Alter Table Drop Constraint If Exists 
-* #709 add constraintIfExists flag 
+* Support Alter Table Drop Constraint If Exists
+* #709 add constraintIfExists flag
 
 [08fed](https://github.com/JSQLParser/JSqlParser/commit/08fedf752a3f99d) Robert Scholte *2018-12-13 07:14:10*
 
@@ -6247,12 +6247,12 @@ Changelog of JSqlParser.
 
 **Support KSQL's WITHIN (#722)**
 
-* Implements WITHIN for KSQL windowed joins 
-* Clean up 
-* Improve test 
-* Implements WITHIN ( before TimeUnit, after TimeUnit ) for KSQL 
-* Also restricts TimeUnit to units accepted by KSQL 
-* WITHIN should come before ON 
+* Implements WITHIN for KSQL windowed joins
+* Clean up
+* Improve test
+* Implements WITHIN ( before TimeUnit, after TimeUnit ) for KSQL
+* Also restricts TimeUnit to units accepted by KSQL
+* WITHIN should come before ON
 
 [ae665](https://github.com/JSQLParser/JSqlParser/commit/ae665e60655f45f) Lionel Montrieux *2018-12-11 21:53:07*
 
@@ -6393,7 +6393,7 @@ Changelog of JSqlParser.
 
 **fixes #670**
 
-* added testcase, corrected deparser 
+* added testcase, corrected deparser
 
 [455c5](https://github.com/JSQLParser/JSqlParser/commit/455c5f50671eed9) wumpz *2018-09-10 15:38:54*
 
@@ -6429,7 +6429,7 @@ Changelog of JSqlParser.
 
 **Update README.md (#667)**
 
-* Fix a couple typos/grammar issues 
+* Fix a couple typos/grammar issues
 
 [a822f](https://github.com/JSQLParser/JSqlParser/commit/a822fead1b21793) Kai Presler-Marshall *2018-08-29 13:11:41*
 
@@ -6475,10 +6475,10 @@ Changelog of JSqlParser.
 
 **Parse Cloud Spanner raw string and byte prefixes (#659)**
 
-* #656 parse cloud spanner raw string and byte literals 
-* #656 fixed raw byte string prefix 
-* #656 fixed test case 
-* fixed reported codacy issue 
+* #656 parse cloud spanner raw string and byte literals
+* #656 fixed raw byte string prefix
+* #656 fixed test case
+* fixed reported codacy issue
 
 [a57db](https://github.com/JSQLParser/JSqlParser/commit/a57db5d031a5229) Knut Olav Løite *2018-08-14 08:12:26*
 
@@ -6704,13 +6704,13 @@ Changelog of JSqlParser.
 
 **- allow parenthesis around from item**
 
-* - allow whitespace between bars from concat 
+* - allow whitespace between bars from concat
 
 [2cea3](https://github.com/JSQLParser/JSqlParser/commit/2cea3ee94d83447) wumpz *2018-03-29 22:25:48*
 
 **- allow parenthesis around from item**
 
-* - allow whitespace between bars from concat 
+* - allow whitespace between bars from concat
 
 [dabb0](https://github.com/JSQLParser/JSqlParser/commit/dabb03f0094e4c7) wumpz *2018-03-29 22:24:33*
 
@@ -6731,8 +6731,8 @@ Changelog of JSqlParser.
 
 **JSQLPARSER-584: adds support for MySQL (a,b,...)OP(c,d,...) expression (#585)**
 
-* JSQLPARSER-584: adds support for MySQL (a,b,...)OP(c,d,...) expression 
-* JSQLPARSER-584: adds some tests and rename MySQLValueListExpression to ValueListExpression 
+* JSQLPARSER-584: adds support for MySQL (a,b,...)OP(c,d,...) expression
+* JSQLPARSER-584: adds some tests and rename MySQLValueListExpression to ValueListExpression
 
 [2c272](https://github.com/JSQLParser/JSqlParser/commit/2c272f440995b2c) Adrien Lesur *2018-03-05 23:08:55*
 
@@ -6778,14 +6778,14 @@ Changelog of JSqlParser.
 
 **Fix issue #563: subjoin allows only one inner join, this should be a … (#564)**
 
-* Fix issue #563: subjoin allows only one inner join, this should be a list 
-* Fix failing Oracle tests because of confusion between subjoin and subselect. 
+* Fix issue #563: subjoin allows only one inner join, this should be a list
+* Fix failing Oracle tests because of confusion between subjoin and subselect.
 
 [8456a](https://github.com/JSQLParser/JSqlParser/commit/8456acf7f228a46) Frits Jalvingh *2018-02-02 10:40:01*
 
 **fixes #320 (#576)**
 
-* fixes #320 
+* fixes #320
 
 [e6451](https://github.com/JSQLParser/JSqlParser/commit/e645193140f4271) Taner Mansur *2018-02-01 14:55:37*
 
@@ -6881,7 +6881,7 @@ Changelog of JSqlParser.
 
 **Added support for RLIKE expressions (#544)**
 
-* RLIKE is a synonym of REGEXP, therefore should be treated the same. 
+* RLIKE is a synonym of REGEXP, therefore should be treated the same.
 
 [8a950](https://github.com/JSQLParser/JSqlParser/commit/8a950b3e09dce06) sh-tomer *2017-11-16 22:10:51*
 
@@ -6912,12 +6912,12 @@ Changelog of JSqlParser.
 
 **Add ability to support "NOT LIKE ..." expressions (#539)**
 
-* The parser is able to parse expressions such as &quot;a NOT LIKE &#x27;%pattern%&#x27;&quot;, but is not able to parse expressions where the not is before the entire expression. For example: &quot;NOT a LIKE &#x27;%pattern%&#x27;. 
-* When parsing the latter, the error is: 
-* Caused by: net.sf.jsqlparser.parser.ParseException: Encountered &quot; &quot;LIKE&quot; &quot;LIKE &quot;&quot; at line 1, column 32. 
-* Was expecting one of: ... 
-* The reason this is important is both because these syntaxes are both valid, and also because the deparser uses the second method. 
-* Therefore, if you parse a query with the first type of expression, then deparse it and parse again, you&#x27;ll get the same error. 
+* The parser is able to parse expressions such as &quot;a NOT LIKE &#x27;%pattern%&#x27;&quot;, but is not able to parse expressions where the not is before the entire expression. For example: &quot;NOT a LIKE &#x27;%pattern%&#x27;.
+* When parsing the latter, the error is:
+* Caused by: net.sf.jsqlparser.parser.ParseException: Encountered &quot; &quot;LIKE&quot; &quot;LIKE &quot;&quot; at line 1, column 32.
+* Was expecting one of: ...
+* The reason this is important is both because these syntaxes are both valid, and also because the deparser uses the second method.
+* Therefore, if you parse a query with the first type of expression, then deparse it and parse again, you&#x27;ll get the same error.
 
 [daea3](https://github.com/JSQLParser/JSqlParser/commit/daea33e73aa05c6) sh-tomer *2017-10-31 20:27:50*
 
@@ -6938,23 +6938,23 @@ Changelog of JSqlParser.
 
 **Linking structures to their AST nodes to have access to their positions (#534)**
 
-* Linking several structures to their AST nodes to have access to their positions 
-* This far there were only 3 types of structures linked to their AST nodes. Now adding some more expressions and literals to their AST node to have access to their token&#x27;s position in the query. 
-* Added missing parts in JSQqlParserCC.jjt for AST linking to work 
-* Added missing parts in JSQqlParserCC.jjt to make sure all relevant code is created to generate and link AST nodes to the relevant structures. 
+* Linking several structures to their AST nodes to have access to their positions
+* This far there were only 3 types of structures linked to their AST nodes. Now adding some more expressions and literals to their AST node to have access to their token&#x27;s position in the query.
+* Added missing parts in JSQqlParserCC.jjt for AST linking to work
+* Added missing parts in JSQqlParserCC.jjt to make sure all relevant code is created to generate and link AST nodes to the relevant structures.
 
 [514f2](https://github.com/JSQLParser/JSqlParser/commit/514f2588af97345) sh-tomer *2017-10-29 12:39:56*
 
 **add debug note (#531)**
 
-* added a link to the visualize parsing section to have a visible debug mode (so users that create an issue can try to get us better output) 
+* added a link to the visualize parsing section to have a visible debug mode (so users that create an issue can try to get us better output)
 
 [b1abc](https://github.com/JSQLParser/JSqlParser/commit/b1abc6ff39e9c2a) Jan Monterrubio *2017-10-25 06:21:26*
 
 **fixes #525 (#530)**
 
-* fixes #525 
-* Simply unit test. 
+* fixes #525
+* Simply unit test.
 
 [1a1a1](https://github.com/JSQLParser/JSqlParser/commit/1a1a1aa53866787) Linyu Chen *2017-10-24 05:30:39*
 
@@ -6965,10 +6965,10 @@ Changelog of JSqlParser.
 
 **Implements #509 (#504)**
 
-* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. 
-* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - refactoring 
-* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - missing copyright.ˆ 
-* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - Modify field type to boolean for prevent memory consumption by creating object and try assertSqlCanBeParsedAndDeparsed on unit test. 
+* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count.
+* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - refactoring
+* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - missing copyright.ˆ
+* Supporting MySql hit SQL_CALC_FOUND_ROWS for selecting row count. - Modify field type to boolean for prevent memory consumption by creating object and try assertSqlCanBeParsedAndDeparsed on unit test.
 
 [3e163](https://github.com/JSQLParser/JSqlParser/commit/3e16345815e45b5) Yoon Kyong Sik *2017-10-20 07:27:48*
 
@@ -6999,7 +6999,7 @@ Changelog of JSqlParser.
 
 **fixes #519**
 
-* fixes #520 
+* fixes #520
 
 [27217](https://github.com/JSQLParser/JSqlParser/commit/272177a37b9ee81) wumpz *2017-10-06 08:24:04*
 
@@ -7160,11 +7160,11 @@ Changelog of JSqlParser.
 
 **fix issue #424 (INSERT with SET) (#481)**
 
-* update insert with set language 
-* update insert with set 
-* update insert with set 
-* update insert test 
-* add removed lines 
+* update insert with set language
+* update insert with set
+* update insert with set
+* update insert test
+* add removed lines
 
 [ca653](https://github.com/JSQLParser/JSqlParser/commit/ca6538a04dd7969) messfish *2017-07-28 06:23:33*
 
@@ -7210,21 +7210,21 @@ Changelog of JSqlParser.
 
 **Add Upsert Grammer (#460)**
 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add test for de parser 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
-* Add files via upload 
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add test for de parser
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
+* Add files via upload
 
 [aaeb8](https://github.com/JSQLParser/JSqlParser/commit/aaeb8dfeb0c2a4e) messfish *2017-06-11 18:48:53*
 
@@ -7250,25 +7250,25 @@ Changelog of JSqlParser.
 
 **Fix issue #442 (#451)**
 
-* Fix issue #442 for delete statements 
-* Fix issue #442 for insert statements 
-* Mock only when necessary 
-* E.g., interfaces, behavior needs to be verified, etc. 
-* Prefer the first style of testing 
-* As discussed in issue #442 
-* Fix issue #442 for replace statements 
-* Improve readability of issue #442 tests 
-* Inject SelectDeParser as well 
-* As discussed in issue #442. 
-* Fix issue #442 for select statements 
-* Fix issue #442 for update statements 
-* Fix issue #442 for execute statements 
-* Fix issue #442 for set statements 
-* Fix PR code review issue 
-* https://www.codacy.com/app/wumpz/JSqlParser/file/6682733346/issues/source?bid&#x3D;4162857&amp;fileBranchId&#x3D;4580866#l48 
-* Skip PMD check for asserts in tests using Mockito 
-* As agreed upon in the discussion in PR #451. 
-* Use correct PMD check name 
+* Fix issue #442 for delete statements
+* Fix issue #442 for insert statements
+* Mock only when necessary
+* E.g., interfaces, behavior needs to be verified, etc.
+* Prefer the first style of testing
+* As discussed in issue #442
+* Fix issue #442 for replace statements
+* Improve readability of issue #442 tests
+* Inject SelectDeParser as well
+* As discussed in issue #442.
+* Fix issue #442 for select statements
+* Fix issue #442 for update statements
+* Fix issue #442 for execute statements
+* Fix issue #442 for set statements
+* Fix PR code review issue
+* https://www.codacy.com/app/wumpz/JSqlParser/file/6682733346/issues/source?bid&#x3D;4162857&amp;fileBranchId&#x3D;4580866#l48
+* Skip PMD check for asserts in tests using Mockito
+* As agreed upon in the discussion in PR #451.
+* Use correct PMD check name
 
 [9d680](https://github.com/JSQLParser/JSqlParser/commit/9d680a6ec4b9f07) chrycheng *2017-05-22 07:13:41*
 
@@ -7279,8 +7279,8 @@ Changelog of JSqlParser.
 
 **Fix issue #446 (#447)**
 
-* Test current behavior of ExecuteDeParser 
-* Fix issue #446 
+* Test current behavior of ExecuteDeParser
+* Fix issue #446
 
 [275fb](https://github.com/JSQLParser/JSqlParser/commit/275fbbe87fa0ada) chrycheng *2017-05-16 20:46:29*
 
@@ -7316,45 +7316,45 @@ Changelog of JSqlParser.
 
 **conversion to CNF (#434)**
 
-* Add files via upload 
-* Create foo 
-* All the files needed for the CNF conversion 
-* Delete foo 
-* Create foo 
-* Test cases for the CNF conversion 
-* Delete foo 
-* Add files via upload 
-* Add files via upload 
-* change some public methods to private 
-* Delete CNFConverter.java 
-* Delete CloneHelper.java 
-* Delete MultiAndExpression.java 
-* Delete MultiOrExpression.java 
-* Delete MultipleExpression.java 
-* Create foo 
-* Add files via upload 
-* Delete CNFTest.java 
-* Delete StepLastHelper.java 
-* Create foo 
-* Add files via upload 
-* Delete foo 
-* Delete foo 
-* Add files via upload 
-* Add files via upload 
-* Delete CNFConverter.java 
-* Delete CloneHelper.java 
-* Delete MultiAndExpression.java 
-* Delete MultiOrExpression.java 
-* Delete MultipleExpression.java 
-* Create foo 
-* Add files via upload 
-* Delete foo 
-* Delete CNFTest.java 
-* Create foo 
-* Add files via upload 
-* Delete foo 
-* Add files via upload 
-* Add files via upload 
+* Add files via upload
+* Create foo
+* All the files needed for the CNF conversion
+* Delete foo
+* Create foo
+* Test cases for the CNF conversion
+* Delete foo
+* Add files via upload
+* Add files via upload
+* change some public methods to private
+* Delete CNFConverter.java
+* Delete CloneHelper.java
+* Delete MultiAndExpression.java
+* Delete MultiOrExpression.java
+* Delete MultipleExpression.java
+* Create foo
+* Add files via upload
+* Delete CNFTest.java
+* Delete StepLastHelper.java
+* Create foo
+* Add files via upload
+* Delete foo
+* Delete foo
+* Add files via upload
+* Add files via upload
+* Delete CNFConverter.java
+* Delete CloneHelper.java
+* Delete MultiAndExpression.java
+* Delete MultiOrExpression.java
+* Delete MultipleExpression.java
+* Create foo
+* Add files via upload
+* Delete foo
+* Delete CNFTest.java
+* Create foo
+* Add files via upload
+* Delete foo
+* Add files via upload
+* Add files via upload
 
 [afe10](https://github.com/JSQLParser/JSqlParser/commit/afe1011bdd64696) messfish *2017-05-07 20:21:00*
 
@@ -7385,10 +7385,10 @@ Changelog of JSqlParser.
 
 **Introduce support for mysql index hints (fixing issue #374) (#429)**
 
-* Introduce support for mysql index hints (fixing issue #374) 
-* Fix checkstyle errors 
-* -Converted indent tabs to spaces 
-* -Added missing {} on single-line if statement 
+* Introduce support for mysql index hints (fixing issue #374)
+* Fix checkstyle errors
+* -Converted indent tabs to spaces
+* -Added missing {} on single-line if statement
 
 [6db15](https://github.com/JSQLParser/JSqlParser/commit/6db15d2c6218d06) Joey Mart *2017-04-18 06:22:25*
 
@@ -7399,8 +7399,8 @@ Changelog of JSqlParser.
 
 **Addressing #427 (#428)**
 
-* updating readme with Maven requirements 
-* removing ticks 
+* updating readme with Maven requirements
+* removing ticks
 
 [0fddc](https://github.com/JSQLParser/JSqlParser/commit/0fddc73e2eee1b2) AnEmortalKid *2017-04-17 23:39:05*
 
@@ -7511,8 +7511,8 @@ Changelog of JSqlParser.
 
 **Fix #407 by enhancing grammar (#410)**
 
-* Fix #407 by enhancing grammar 
-* Change LF and tabs 
+* Fix #407 by enhancing grammar
+* Change LF and tabs
 
 [5d901](https://github.com/JSQLParser/JSqlParser/commit/5d9018657df6b22) Christophe Moine *2017-03-22 07:36:14*
 
@@ -7583,19 +7583,19 @@ Changelog of JSqlParser.
 
 **Support FOR UPDATE WAIT (#405)**
 
-* Adding FOR UPDATE WAIT support 
-* removing final peppered everywhere 
-* updating formatting, fixing codacy test names 
-* updating asserts to use static import 
-* reverting changes 
-* reverting line feeds 
-* adding tests and deparser code back without formatting 
+* Adding FOR UPDATE WAIT support
+* removing final peppered everywhere
+* updating formatting, fixing codacy test names
+* updating asserts to use static import
+* reverting changes
+* reverting line feeds
+* adding tests and deparser code back without formatting
 
 [45b39](https://github.com/JSQLParser/JSqlParser/commit/45b392f4b93714c) AnEmortalKid *2017-03-10 22:06:53*
 
 **add support for LIMIT with only one row count JDBC parameter (#404)**
 
-* small but powerfull change 👍 
+* small but powerfull change 👍
 
 [42318](https://github.com/JSQLParser/JSqlParser/commit/42318531bb72279) zhushaoping *2017-03-03 07:06:08*
 
@@ -7696,22 +7696,22 @@ Changelog of JSqlParser.
 
 **Increase test coverage on AlterExpression.java**
 
-* getOperation 
-* getFkColumns 
-* getFkSourceTable 
-* getFkSourceColumns 
-* getConstraintName 
-* tried getPkColumns but it does not behave as I expected. 
-* placed TODO in AlterTest.testAlterTablePK for this 
-* getIndex().getColumnNames 
+* getOperation
+* getFkColumns
+* getFkSourceTable
+* getFkSourceColumns
+* getConstraintName
+* tried getPkColumns but it does not behave as I expected.
+* placed TODO in AlterTest.testAlterTablePK for this
+* getIndex().getColumnNames
 
 [5a799](https://github.com/JSQLParser/JSqlParser/commit/5a79964714b13f7) jthomas *2017-01-19 19:43:24*
 
 **Enhance AlterExpression grammar:**
 
-* 1. optional &quot;COLUMN&quot; keyword in ADD alter operation 
-* 2. new alter operation: MODIFY 
-* 3. add column specs to alter table column definitions 
+* 1. optional &quot;COLUMN&quot; keyword in ADD alter operation
+* 2. new alter operation: MODIFY
+* 3. add column specs to alter table column definitions
 
 [24177](https://github.com/JSQLParser/JSqlParser/commit/241779b26973b47) jthomas *2017-01-19 17:32:21*
 
@@ -7742,7 +7742,7 @@ Changelog of JSqlParser.
 
 **fixes #375**
 
-* fixes #371 
+* fixes #371
 
 [957f3](https://github.com/JSQLParser/JSqlParser/commit/957f39c496a7fac) wumpz *2017-01-02 13:30:09*
 
@@ -7848,7 +7848,7 @@ Changelog of JSqlParser.
 
 **#modify net.sf.jsqlparser.statement.insert.Insert   Method:toString() if itemsList and useSelectBrackets together not null will error**
 
-* #modify PlainSelect.getStringList change sql append to StringBuilder 
+* #modify PlainSelect.getStringList change sql append to StringBuilder
 
 [471b9](https://github.com/JSQLParser/JSqlParser/commit/471b94495623ee2) zheng.liu@baifendian.com *2016-08-15 06:22:23*
 
@@ -7864,21 +7864,21 @@ Changelog of JSqlParser.
 
 **Update Alter and add AlterExpression class for multiple ADD/DROP expressions in a single ALTER statement**
 
-* Update .jjt file to break out the AlterExpression into its own class and for Alter to compose multiple AlterExpressions 
-* Update AlterTest for new AlterExpressions and test for multiple ADD/DROP statements in a single ALTER 
+* Update .jjt file to break out the AlterExpression into its own class and for Alter to compose multiple AlterExpressions
+* Update AlterTest for new AlterExpressions and test for multiple ADD/DROP statements in a single ALTER
 
 [e8d1c](https://github.com/JSQLParser/JSqlParser/commit/e8d1cf2cb1db16c) Rob Story *2016-08-11 19:24:41*
 
 **Support for parse delete from table using join to another table like:**
 
-* DELETE posts 
-* FROM posts 
-* INNER JOIN projects ON projects.project_id &#x3D; posts.project_id 
-* WHERE projects.client_id &#x3D; :client_id 
-* This necessitated some changes to the DeleteTest class, 
-* specifically: 
-* JSqlParserCC.jjt - changes on grammar of Delete statements. 
-* Delete toString and DeleteDeParser. 
+* DELETE posts
+* FROM posts
+* INNER JOIN projects ON projects.project_id &#x3D; posts.project_id
+* WHERE projects.client_id &#x3D; :client_id
+* This necessitated some changes to the DeleteTest class,
+* specifically:
+* JSqlParserCC.jjt - changes on grammar of Delete statements.
+* Delete toString and DeleteDeParser.
 
 [b6eb5](https://github.com/JSQLParser/JSqlParser/commit/b6eb57b61f7b205) Lucas Oliveira *2016-08-06 16:28:11*
 
@@ -7979,7 +7979,7 @@ Changelog of JSqlParser.
 
 **fixes #296**
 
-* refactored getTableList method of TableNamesFinder 
+* refactored getTableList method of TableNamesFinder
 
 [3ccca](https://github.com/JSQLParser/JSqlParser/commit/3ccca01bbc85778) wumpz *2016-06-28 12:16:39*
 
@@ -8045,12 +8045,12 @@ Changelog of JSqlParser.
 
 **Implemented table check constraint for named constraints.**
 
-* 1. Added named constraint to create table. 
-* 2. Added check constraint to alter table statement. 
-* 3. Added CheckConstraint type. 
-* Tests: 
-* 4. Added create table test. 
-* 5. Added alter table test. 
+* 1. Added named constraint to create table.
+* 2. Added check constraint to alter table statement.
+* 3. Added CheckConstraint type.
+* Tests:
+* 4. Added create table test.
+* 5. Added alter table test.
 
 [401d2](https://github.com/JSQLParser/JSqlParser/commit/401d279ef7e6ef9) Megan Woods *2016-06-16 14:56:01*
 
@@ -8066,13 +8066,13 @@ Changelog of JSqlParser.
 
 **Implemented:**
 
-* 1. UPDATE .. RETURNING col, col as Alias 
-* 2. UPDATE .. RETURNING * 
-* Tested: 
-* 3. UPDATE .. ORDER BY .. LIMIT .. RETURNING 
-* 4. UPDATE .. RETURNING 
-* Item 4 represents the PostgreSQL UPDATE .. RETURNING Syntax without ORDER BY and LIMIT. 
-* See: https://www.postgresql.org/docs/9.5/static/sql-update.html 
+* 1. UPDATE .. RETURNING col, col as Alias
+* 2. UPDATE .. RETURNING *
+* Tested:
+* 3. UPDATE .. ORDER BY .. LIMIT .. RETURNING
+* 4. UPDATE .. RETURNING
+* Item 4 represents the PostgreSQL UPDATE .. RETURNING Syntax without ORDER BY and LIMIT.
+* See: https://www.postgresql.org/docs/9.5/static/sql-update.html
 
 [f4526](https://github.com/JSQLParser/JSqlParser/commit/f452638f0f04f99) Megan Woods *2016-06-15 09:12:14*
 
@@ -8133,39 +8133,39 @@ Changelog of JSqlParser.
 
 **Added ability to have operators like '>=' or '<=' separated by a space.**
 
-* This includes: 
-* Modifying the JJT syntax to support the &#x27;space in the middle&#x27; versions 
-* of operators (any quantity of whitespace is supported). 
-* Modifying the various operators to inherit from a new 
-* &#x27;ComparisonOperator&#x27; class, which handles the (previously NotEqualsTo- 
-* only) logic for capturing the form of the operator. 
-* Giving each of the various operators a constructor that accepts the 
-* syntax used. 
-* Modifying TestUtils to strip comments out before comparing SQL text 
-* (necessary because condition07.sql is now passing, and has a comment). 
-* Updating SpecialOracleTest to indicate 130 tests passing now 
-* (condition7.sql now passes). 
-* Adding a new test specifically for operators into SpecialOracleTest. 
-* NOTE: Because the &quot;! &#x3D;&quot; form of the &#x27;not equals&#x27; operator means something 
-* different in PostgresSQL (factorial of previous argument + equals), we do 
-* NOT include that case. 
+* This includes:
+* Modifying the JJT syntax to support the &#x27;space in the middle&#x27; versions
+* of operators (any quantity of whitespace is supported).
+* Modifying the various operators to inherit from a new
+* &#x27;ComparisonOperator&#x27; class, which handles the (previously NotEqualsTo-
+* only) logic for capturing the form of the operator.
+* Giving each of the various operators a constructor that accepts the
+* syntax used.
+* Modifying TestUtils to strip comments out before comparing SQL text
+* (necessary because condition07.sql is now passing, and has a comment).
+* Updating SpecialOracleTest to indicate 130 tests passing now
+* (condition7.sql now passes).
+* Adding a new test specifically for operators into SpecialOracleTest.
+* NOTE: Because the &quot;! &#x3D;&quot; form of the &#x27;not equals&#x27; operator means something
+* different in PostgresSQL (factorial of previous argument + equals), we do
+* NOT include that case.
 
 [9886b](https://github.com/JSQLParser/JSqlParser/commit/9886b02975d1749) Dave Lindquist *2016-04-28 13:28:58*
 
 **Corrected "MERGE INTO" parsing for more complicated statements.**
 
-* Specifically: 
-* Changed &quot;Condition&quot; to &quot;Expression&quot; for the &quot;ON&quot; clause -- this is 
-* needed to handle &quot;ON&quot; clauses that have &quot;a &#x3D; y AND b &#x3D; z&quot; or other 
-* more complicated expressions (basically the same as the &quot;ON&quot; clause 
-* in a SELECT query). 
-* Also changed the &quot;WHERE&quot; and &quot;DELETE WHERE&quot; clauses in the same 
-* fashion (&#x27;Condition&#x27; becomes &#x27;Expression&#x27;), as they too support 
-* multiple conditions. 
-* Corrected the toString on the MergeUpdate clause, which was missing a 
-* comma between the fields. 
-* Added a new, more complicated MERGE INTO statement to the MergeTest 
-* class. 
+* Specifically:
+* Changed &quot;Condition&quot; to &quot;Expression&quot; for the &quot;ON&quot; clause -- this is
+* needed to handle &quot;ON&quot; clauses that have &quot;a &#x3D; y AND b &#x3D; z&quot; or other
+* more complicated expressions (basically the same as the &quot;ON&quot; clause
+* in a SELECT query).
+* Also changed the &quot;WHERE&quot; and &quot;DELETE WHERE&quot; clauses in the same
+* fashion (&#x27;Condition&#x27; becomes &#x27;Expression&#x27;), as they too support
+* multiple conditions.
+* Corrected the toString on the MergeUpdate clause, which was missing a
+* comma between the fields.
+* Added a new, more complicated MERGE INTO statement to the MergeTest
+* class.
 
 [7efd5](https://github.com/JSQLParser/JSqlParser/commit/7efd58f7704a0ff) Dave Lindquist *2016-04-28 13:19:34*
 
@@ -8196,7 +8196,7 @@ Changelog of JSqlParser.
 
 **fixes #240**
 
-* fixes #241 
+* fixes #241
 
 [7f8b5](https://github.com/JSQLParser/JSqlParser/commit/7f8b59b31e44521) wumpz *2016-04-05 06:25:57*
 
@@ -8372,7 +8372,7 @@ Changelog of JSqlParser.
 
 **added TableFunction alias suppurt**
 
-* added TableFunction unit tests 
+* added TableFunction unit tests
 
 [88edd](https://github.com/JSQLParser/JSqlParser/commit/88eddaf50dada22) tfedkiv *2015-12-07 15:27:02*
 
@@ -8423,8 +8423,8 @@ Changelog of JSqlParser.
 
 **Issue 195:**
 
-* Add support for ORDER BY and LIMIT in UPDATE and DELETE statements (as supported by MySQL). 
-* LimitDeparser and OrderByDeParser have been pulled out into separate classes to avoid code duplication from SelectDeParser. 
+* Add support for ORDER BY and LIMIT in UPDATE and DELETE statements (as supported by MySQL).
+* LimitDeparser and OrderByDeParser have been pulled out into separate classes to avoid code duplication from SelectDeParser.
 
 [a3133](https://github.com/JSQLParser/JSqlParser/commit/a31333a65141e27) James Heather *2015-11-24 14:57:04*
 
@@ -8490,7 +8490,7 @@ Changelog of JSqlParser.
 
 **Support for alter table drop column/constraint**
 
-* Fix for Issue #184 
+* Fix for Issue #184
 
 [58dd2](https://github.com/JSQLParser/JSqlParser/commit/58dd28aaf9b9273) schweighart *2015-10-20 21:34:51*
 
@@ -8661,13 +8661,13 @@ Changelog of JSqlParser.
 
 **Add support for variable support to "SELECT SKIP <ROWCOUNT> FIRST <ROWCOUNT>..." construct**
 
-* The grammar for the construct in informix [1] mentions the possibility, that &lt;ROWCOUNT&gt; can be either 
-* an integer or a host variable or local SPL variable storing the value of max. The case for plain integers and 
-* jdbc variables is covered by the first commit While this commit adds support for constructs using SPL 
-* variables. SPL variables must follow identifier rules [2][3]. 
-* [1] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm 
-* [2] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_1306.htm?lang&#x3D;de 
-* [3] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_1660.htm%23ids_sqs_1660?lang&#x3D;de 
+* The grammar for the construct in informix [1] mentions the possibility, that &lt;ROWCOUNT&gt; can be either
+* an integer or a host variable or local SPL variable storing the value of max. The case for plain integers and
+* jdbc variables is covered by the first commit While this commit adds support for constructs using SPL
+* variables. SPL variables must follow identifier rules [2][3].
+* [1] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_0156.htm
+* [2] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_1306.htm?lang&#x3D;de
+* [3] http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_1660.htm%23ids_sqs_1660?lang&#x3D;de
 
 [9e77b](https://github.com/JSQLParser/JSqlParser/commit/9e77b6bd55ce242) Matthias Bläsing *2015-08-02 14:03:23*
 
@@ -8813,13 +8813,13 @@ Changelog of JSqlParser.
 
 **fixes #143**
 
-* some refactorings done 
+* some refactorings done
 
 [4d2a0](https://github.com/JSQLParser/JSqlParser/commit/4d2a0a1151faff1) wumpz *2015-06-05 20:50:28*
 
 **fixes #143**
 
-* some refactorings done 
+* some refactorings done
 
 [f71c3](https://github.com/JSQLParser/JSqlParser/commit/f71c307f15c4cde) wumpz *2015-06-05 20:48:45*
 
@@ -9245,8 +9245,8 @@ Changelog of JSqlParser.
 
 **Manage OFFSET and FETCH clauses in dedicated classes and rules in**
 
-* jsqlparsercc.jj 
-* Manage also jdbc parameter in these clauses. 
+* jsqlparsercc.jj
+* Manage also jdbc parameter in these clauses.
 
 [26524](https://github.com/JSQLParser/JSqlParser/commit/26524ac850461cb) LionelNirva *2014-10-10 14:38:20*
 
@@ -9257,14 +9257,14 @@ Changelog of JSqlParser.
 
 **Add support for new SQL Server 2012 and Oracle 12c versions of LIMIT**
 
-* (equivalent to MySql and PostgreSQL LIMIT ... OFFSET ... clauses) for 
-* parsing and deparsing. 
+* (equivalent to MySql and PostgreSQL LIMIT ... OFFSET ... clauses) for
+* parsing and deparsing.
 
 [dc215](https://github.com/JSQLParser/JSqlParser/commit/dc215bb6b8cf70b) LionelNirva *2014-10-08 12:38:04*
 
 **Unit test for the fix Bug when Deparsing SQL Server request having TOP**
 
-* and DISTINCT clauses. 
+* and DISTINCT clauses.
 
 [c2ad9](https://github.com/JSQLParser/JSqlParser/commit/c2ad9d2b2c2ee9f) LionelNirva *2014-10-07 14:31:43*
 
@@ -9285,13 +9285,13 @@ Changelog of JSqlParser.
 
 **Fix Bug when Deparsing SQL Server request having TOP and DISTINCT**
 
-* clauses. SQL Server requires the DISTINCT clause to be the first. 
+* clauses. SQL Server requires the DISTINCT clause to be the first.
 
 [7ac70](https://github.com/JSQLParser/JSqlParser/commit/7ac7002d1276f01) LionelNirva *2014-10-03 16:34:49*
 
 **Update UpdateTest.java**
 
-* Add an SQL test for Update with Select 
+* Add an SQL test for Update with Select
 
 [aec82](https://github.com/JSQLParser/JSqlParser/commit/aec82516c9d0db6) CeeKayGit *2014-10-01 21:34:51*
 
@@ -9307,31 +9307,31 @@ Changelog of JSqlParser.
 
 **Update Update.java**
 
-* Add necessary Select import for Update with Select 
+* Add necessary Select import for Update with Select
 
 [8321a](https://github.com/JSQLParser/JSqlParser/commit/8321aae44a6adce) CeeKayGit *2014-10-01 20:37:42*
 
 **Update UpdateDeParser.java**
 
-* Extend the deparser to support DB2 Updates with Select clause 
+* Extend the deparser to support DB2 Updates with Select clause
 
 [3a7bf](https://github.com/JSQLParser/JSqlParser/commit/3a7bf9d520ead88) CeeKayGit *2014-10-01 20:12:14*
 
 **Update JSqlParserCC.jj**
 
-* For DB2 &quot;$&quot; is also a standard letter, so handle &quot;$&quot; as #LETTER. 
+* For DB2 &quot;$&quot; is also a standard letter, so handle &quot;$&quot; as #LETTER.
 
 [a6383](https://github.com/JSQLParser/JSqlParser/commit/a6383a52ccee448) CeeKayGit *2014-09-30 20:56:13*
 
 **Update Update.java**
 
-* Add support for DB2 Updates with Select clause 
+* Add support for DB2 Updates with Select clause
 
 [1bdb6](https://github.com/JSQLParser/JSqlParser/commit/1bdb69b8891ee26) CeeKayGit *2014-09-30 20:52:21*
 
 **Update JSqlParserCC.jj**
 
-* Add support for DB2 Updates with Select clause 
+* Add support for DB2 Updates with Select clause
 
 [17e3d](https://github.com/JSQLParser/JSqlParser/commit/17e3d539a4ce6bd) CeeKayGit *2014-09-30 20:47:54*
 
@@ -9422,7 +9422,7 @@ Changelog of JSqlParser.
 
 **Add support for 'UNLOGGED' tables**
 
-* Support the PostgreSQL 9.1+ ‘UNLOGGED’ table feature 
+* Support the PostgreSQL 9.1+ ‘UNLOGGED’ table feature
 
 [eb05c](https://github.com/JSQLParser/JSqlParser/commit/eb05ce30cb90b93) Michaël Cervera *2014-07-27 20:49:00*
 
@@ -9623,7 +9623,7 @@ Changelog of JSqlParser.
 
 **corrected some sql test scripts to be deparseable**
 
-* corrected pivot handling in SelectDeParser 
+* corrected pivot handling in SelectDeParser
 
 [8ac25](https://github.com/JSQLParser/JSqlParser/commit/8ac250d9f90144d) wumpz *2014-03-12 23:24:47*
 
@@ -9644,8 +9644,8 @@ Changelog of JSqlParser.
 
 **!= usage corrected**
 
-* deparser for oracle hierarchical expressions corrected 
-* order by asc/desc corrected 
+* deparser for oracle hierarchical expressions corrected
+* order by asc/desc corrected
 
 [d4f74](https://github.com/JSQLParser/JSqlParser/commit/d4f744c761fffe9) wumpz *2014-03-06 22:27:11*
 
@@ -9661,9 +9661,9 @@ Changelog of JSqlParser.
 
 **toString for windowing elements corrected**
 
-* lax equality test implemented 
-* included oracle test sqls 
-* included @ and # for identifiers 
+* lax equality test implemented
+* included oracle test sqls
+* included @ and # for identifiers
 
 [884dc](https://github.com/JSQLParser/JSqlParser/commit/884dcafa73ecfd2) wumpz *2014-03-05 23:01:03*
 
@@ -9844,8 +9844,8 @@ Changelog of JSqlParser.
 
 **Removed the leading and trailing whitespaces in the JavaCC parser file;**
 
-* Organized the declared imports in order to ease further changes in the file and to remove unused ones; 
-* Renamed the S_INTEGER token to S_LONG to be in sync with the S_DOUBLE token; 
+* Organized the declared imports in order to ease further changes in the file and to remove unused ones;
+* Renamed the S_INTEGER token to S_LONG to be in sync with the S_DOUBLE token;
 
 [5d151](https://github.com/JSQLParser/JSqlParser/commit/5d151c7bdbe08fd) Pap Lőrinc *2014-01-28 08:24:04*
 
@@ -10241,7 +10241,7 @@ Changelog of JSqlParser.
 
 **create table can now have foreign key definitions**
 
-* fixes #14 
+* fixes #14
 
 [0c41f](https://github.com/JSQLParser/JSqlParser/commit/0c41f27165a2f41) wumpz *2013-06-24 23:28:29*
 
@@ -10307,7 +10307,7 @@ Changelog of JSqlParser.
 
 **multi value IN expression introduced (a,b,c) in ...**
 
-* fixes #30 
+* fixes #30
 
 [3c443](https://github.com/JSQLParser/JSqlParser/commit/3c44391bf5f168f) wumpz *2013-05-26 22:19:03*
 
@@ -10358,8 +10358,8 @@ Changelog of JSqlParser.
 
 **- solved critical grammar bug regarding concat expressions and parenthesis parsing**
 
-* - introduced some tests to cover the above 
-* - corrected ExpressionDeparser to deliver same result as toString for substractions 
+* - introduced some tests to cover the above
+* - corrected ExpressionDeparser to deliver same result as toString for substractions
 
 [51365](https://github.com/JSQLParser/JSqlParser/commit/51365239ead790b) wumpz *2013-05-16 21:53:04*
 
@@ -10410,7 +10410,7 @@ Changelog of JSqlParser.
 
 **- insertet toString in Update**
 
-* - modified Update deparser to deliver better results 
+* - modified Update deparser to deliver better results
 
 [e2e4d](https://github.com/JSQLParser/JSqlParser/commit/e2e4d80675d525d) wumpz *2013-04-21 21:18:48*
 
@@ -10521,7 +10521,7 @@ Changelog of JSqlParser.
 
 **Added automatic license header generation. The link to the original project was moved to the poms description.**
 
-* Format of all sources done. 
+* Format of all sources done.
 
 [01f7a](https://github.com/JSQLParser/JSqlParser/commit/01f7a4c92670794) wumpz *2013-03-19 21:30:50*
 
@@ -10557,7 +10557,7 @@ Changelog of JSqlParser.
 
 **- additional test case for values**
 
-* - additional test cases for analytical expressions 
+* - additional test cases for analytical expressions
 
 [15fc8](https://github.com/JSQLParser/JSqlParser/commit/15fc834bf78ae91) wumpz *2013-03-18 23:59:07*
 
@@ -10793,8 +10793,8 @@ Changelog of JSqlParser.
 
 **- ExtractExpression integrated**
 
-* - Tests ExtractExpression started 
-* - Function problem found 
+* - Tests ExtractExpression started
+* - Function problem found
 
 [7ea63](https://github.com/JSQLParser/JSqlParser/commit/7ea63d17c1ef299) wumpz *2012-09-16 21:01:53*
 
@@ -10855,14 +10855,14 @@ Changelog of JSqlParser.
 
 **quoted columns in create table statement included**
 
-* CreateTableDeParser corrected (NPE with no indexes, toString delivers now same) 
-* CreateTableTest expanded 
+* CreateTableDeParser corrected (NPE with no indexes, toString delivers now same)
+* CreateTableTest expanded
 
 [69287](https://github.com/JSQLParser/JSqlParser/commit/69287d7b2e8b278) wumpz *2012-05-26 19:58:14*
 
 **complex with tests included**
 
-* exists formatting included from fork 
+* exists formatting included from fork
 
 [7e39e](https://github.com/JSQLParser/JSqlParser/commit/7e39e9ec4f48448) wumpz *2012-05-23 19:57:10*
 
@@ -10978,7 +10978,7 @@ Changelog of JSqlParser.
 
 **Removal of tests that are not able to pass**
 
-* - Functions do not accept conditions as arguments 
+* - Functions do not accept conditions as arguments
 
 [aa5f0](https://github.com/JSQLParser/JSqlParser/commit/aa5f044c5bebc78) Florent Bécart *2011-12-02 07:20:18*
 
@@ -11039,7 +11039,7 @@ Changelog of JSqlParser.
 
 **Added support for select without from-list ( SELECT 1 + 2 )**
 
-* Modified test cases for test resources in src/test/resources 
+* Modified test cases for test resources in src/test/resources
 
 [0e5d7](https://github.com/JSQLParser/JSqlParser/commit/0e5d732e65bf622) Christian Bockermann *2011-09-16 20:06:07*
 
@@ -11070,14 +11070,14 @@ Changelog of JSqlParser.
 
 **Use of generics**
 
-* - List of expressions in ItemsList 
-* - List of columns in Statement 
-* - List of joins in PlainSelect 
-* - List of withItems in Select 
-* - List of plainSelects in Union 
-* - List of orderByElements in Union 
-* - List of columns in Update 
-* - List of expressions in Update 
+* - List of expressions in ItemsList
+* - List of columns in Statement
+* - List of joins in PlainSelect
+* - List of withItems in Select
+* - List of plainSelects in Union
+* - List of orderByElements in Union
+* - List of columns in Update
+* - List of expressions in Update
 
 [8b0b8](https://github.com/JSQLParser/JSqlParser/commit/8b0b865780ee962) Florent Bécart *2011-06-22 20:00:44*
 
@@ -11103,18 +11103,18 @@ Changelog of JSqlParser.
 
 **Eclipse configuration files**
 
-* Makes development environment installation easier 
+* Makes development environment installation easier
 
 [b93af](https://github.com/JSQLParser/JSqlParser/commit/b93af3e4f333cdc) Florent Bécart *2011-06-20 22:33:30*
 
 **Add .gitignore file**
 
-* Auto-generated files that won&#x27;t be pushed to the repo are: 
-* - classes: compiled main code 
-* - docs: project javadoc 
-* - *.jar: distribution jar (sources and documentation) 
-* - lib: library jar (.class files) 
-* - testclasses: compiled unit tests 
+* Auto-generated files that won&#x27;t be pushed to the repo are:
+* - classes: compiled main code
+* - docs: project javadoc
+* - *.jar: distribution jar (sources and documentation)
+* - lib: library jar (.class files)
+* - testclasses: compiled unit tests
 
 [55197](https://github.com/JSQLParser/JSqlParser/commit/5519799ce41c45b) Florent Bécart *2011-06-20 22:08:46*
 
@@ -11135,8 +11135,6 @@ Changelog of JSqlParser.
 
 **Initial commit (base version: 0.7.0)**
 
-* Source: http://sourceforge.net/projects/jsqlparser/files/jsqlparser/jsqlparser-0.7.0.jar/download 
+* Source: http://sourceforge.net/projects/jsqlparser/files/jsqlparser/jsqlparser-0.7.0.jar/download
 
 [67c91](https://github.com/JSQLParser/JSqlParser/commit/67c9150f5d93ced) Florent Bécart *2011-06-20 21:44:37*
-
-
