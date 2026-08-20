@@ -39,6 +39,7 @@ import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
+import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
@@ -1047,6 +1048,14 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     public <S> Void visit(JsonTableFunction expression, S context) {
         for (Expression jsonExpression : expression.getAllExpressions()) {
             validateOptionalExpression(jsonExpression, this);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(XmlTableFunction expression, S context) {
+        for (Expression xmlExpression : expression.getAllExpressions()) {
+            validateOptionalExpression(xmlExpression, this);
         }
         return null;
     }

@@ -15,6 +15,7 @@ import java.io.Serializable;
 
 public class MergeDelete implements Serializable, MergeOperation {
     private Expression andPredicate;
+    private MergeSide side;
 
     public Expression getAndPredicate() {
         return andPredicate;
@@ -24,8 +25,22 @@ public class MergeDelete implements Serializable, MergeOperation {
         this.andPredicate = andPredicate;
     }
 
+    public MergeSide getSide() {
+        return side;
+    }
+
+    public MergeDelete setSide(MergeSide side) {
+        this.side = side;
+        return this;
+    }
+
     public MergeDelete withAndPredicate(Expression andPredicate) {
         this.setAndPredicate(andPredicate);
+        return this;
+    }
+
+    public MergeDelete withSide(MergeSide side) {
+        this.setSide(side);
         return this;
     }
 
@@ -37,7 +52,7 @@ public class MergeDelete implements Serializable, MergeOperation {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(" WHEN MATCHED");
+        b.append(side == MergeSide.SOURCE ? " WHEN NOT MATCHED BY SOURCE" : " WHEN MATCHED");
         if (andPredicate != null) {
             b.append(" AND ").append(andPredicate.toString());
         }

@@ -25,6 +25,4 @@ select
 ,interval :a day
 from dual
 
---@FAILURE: Encountered unexpected token: "second" <K_DATE_LITERAL> recorded first on Aug 3, 2021, 7:20:08 AM
---@FAILURE: Encountered: <K_DATE_LITERAL> / "second", at line 11, column 34, in lexical state DEFAULT. recorded first on 15 May 2025, 16:24:08
---@FAILURE: --- recorded first on 11 Apr 2026, 22:18:19
+--@SUCCESSFULLY_PARSED_AND_DEPARSED first on 2026年8月10日 上午11:23:23

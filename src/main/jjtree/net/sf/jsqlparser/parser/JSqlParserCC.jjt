@@ -1470,6 +1470,7 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_GLOBAL:"GLOBAL">
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
+|   <K_GROUPS:"GROUPS">
 |   <K_HAVING:"HAVING">
 |   <K_IF:"IF">
 |   <K_IIF:"IIF">
@@ -1628,8 +1629,9 @@ TOKEN : /* Numeric Constants */
             )>
   |     < S_LONG: ( <DIGIT> )+ >
   |     < #DIGIT: ["0" - "9"] >
-  |     < S_HEX: ("X" ("'" ( <HEX_VALUE> )* "'" (" ")*)+ | "0x" ( <HEX_VALUE> )+ ) >
+  |     < S_HEX: ("X" ("'" ( <HEX_VALUE> )* "'" (" ")*)+ | "0x" ( <HEX_DIGIT> )+ ) >
   |     < #HEX_VALUE: ["0"-"9","A"-"F", " "]  >
+  |     < #HEX_DIGIT: ["0"-"9","A"-"F"]  >
 }
 
 SPECIAL_TOKEN:
@@ -1765,7 +1767,7 @@ TOKEN:
  * Supported tokens:
  *  - <S_IDENTIFIER>: Standard unquoted SQL identifier
  *  - <S_QUOTED_IDENTIFIER>: Quoted identifier (e.g., `identifier` or "identifier")
- *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>, <K_DATA>: Specific keywords treated as identifiers
+ *  - <K_NAME>, <K_NEXT>, <K_VALUE>, <K_PUBLIC>, <K_STRING>, <K_DATA>, <K_TYPE>: Specific keywords treated as identifiers
  *
  * @return Token representing the identifier or keyword used as identifier
  */
@@ -1783,6 +1785,7 @@ Token KeywordOrIdentifier():
       | tk = <K_PUBLIC>
       | tk = <K_STRING>
       | tk = <K_DATA>
+      | tk = <K_TYPE>
     )
     { return tk; }
 }
@@ -4232,31 +4235,53 @@ MergeOperation MergeUpdateClause(Expression predicate) : {
     { return mu; }
 }
 
-MergeOperation MergeWhenNotMatched() : {
+MergeInsert MergeInsertClause(Expression predicate) : {
     MergeInsert mi = new MergeInsert();
-    Expression predicate;
     ExpressionList<Column> columns;
     ExpressionList expList;
     Expression condition;
 }
 {
-    <K_WHEN> <K_NOT> <K_MATCHED>
-    [ <K_AND> predicate = Expression() { mi.setAndPredicate(predicate); } ]
-    <K_THEN>
-        <K_INSERT>
-        [ "(" columns = ColumnList() ")"
-            {
-                mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
-            }
-        ]
-        <K_VALUES> "(" expList = SimpleExpressionList() ")"
+    <K_INSERT>
+    [ "(" columns = ColumnList() ")"
         {
-            mi.setValues( new ParenthesedExpressionList(expList) );
+            mi.setColumns( new ParenthesedExpressionList<Column>(columns) );
         }
+    ]
+    <K_VALUES> "(" expList = SimpleExpressionList() ")"
+    {
+        mi.setValues( new ParenthesedExpressionList(expList) );
+    }
 
-        [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); }]
+    [ <K_WHERE> condition = Expression() { mi.setWhereCondition(condition); } ]
 
-        { return mi; }
+    {
+        mi.setAndPredicate(predicate);
+        return mi;
+    }
+}
+
+MergeOperation MergeWhenNotMatched() : {
+    MergeOperation operation;
+    Expression predicate = null;
+    MergeSide side = null;
+    Token sideToken;
+}
+{
+    <K_WHEN> <K_NOT> <K_MATCHED>
+    [ <K_BY> sideToken = <S_IDENTIFIER> {
+        side = MergeSide.fromImage(sideToken.image);
+    } ]
+    [ <K_AND> predicate = Expression() ]
+    <K_THEN>
+    (
+        operation = MergeInsertClause(predicate) { ((MergeInsert) operation).setSide(side); }
+        |
+        operation = MergeUpdateClause(predicate) { ((MergeUpdate) operation).setSide(side); }
+        |
+        operation = MergeDeleteClause(predicate) { ((MergeDelete) operation).setSide(side); }
+    )
+    { return operation; }
 }
 
 // table names seem to allow ":" delimiters, e.g. for Informix see #1134
@@ -5061,6 +5086,9 @@ LateralView LateralView() #LateralView:
     [
         LOOKAHEAD(2) ","  { columnAlias.setName(null);  columnAlias.addAliasColumns( columnName); }
         columnName = RelObjectName() { columnAlias.addAliasColumns( columnName); }
+        (
+            LOOKAHEAD(2) "," columnName = RelObjectName() { columnAlias.addAliasColumns( columnName); }
+        )*
     ]
     {
         return new LateralView(
@@ -7867,22 +7895,22 @@ Expression PrimaryExpression() #PrimaryExpression:
             list=ParenthesedExpressionList()
              // Mutli-Variable Lambda Expression, e. g.
             // SELECT map_filter(my_column, (k,v) -> v.my_inner_column = 'some_value')
-            [ LOOKAHEAD(2) "->"
-                  retval = Expression()
-                  {
-                      retval = LambdaExpression.from(list, retval);
-                  }
-            ]
-
-
-            {
-                if (list.size() == 1) {
-                    retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
-                } else {
-                    retval = list;
+            // First-arg form (issue #2195): array_map((x,y,z) -> x + y, ...)
+            (
+                LOOKAHEAD(2) "->"
+                      retval = Expression()
+                      {
+                          retval = LambdaExpression.from(list, retval);
+                      }
+                |
+                {
+                    if (list.size() == 1) {
+                        retval = new ParenthesedExpressionList( (Expression) list.getExpressions().get(0));
+                    } else {
+                        retval = list;
+                    }
                 }
-            }
-
+            )
 
             // RowGet Expressions
             ( LOOKAHEAD(2) "." tmp=RelObjectName() { retval = new RowGetExpression(retval, tmp); } )*
@@ -9047,6 +9075,7 @@ IntervalExpression IntervalExpression() : {
     Token token = null;
     Expression expr = null;
     boolean signed = false;
+    IntervalQualifier qualifier = null;
 }
 {
 
@@ -9070,7 +9099,13 @@ IntervalExpression IntervalExpression() : {
             interval.setParameter((signed?"-":"") + token.image);
         }
     }
-    [ LOOKAHEAD(2) (token = <S_IDENTIFIER> | token = <K_DATE_LITERAL>) { interval.setIntervalType(token.image); } ]
+    [
+        // Standard qualifier (field [TO field] [(precision)]) such as DAY or DAY TO SECOND.
+        LOOKAHEAD(2, { getToken(1).kind == K_DATE_LITERAL }) qualifier = IntervalQualifier() { interval.setIntervalQualifier(qualifier); }
+        // Non-standard single identifier field (e.g. MySQL `INTERVAL 1 foo`), kept for
+        // backwards compatibility.
+        | LOOKAHEAD(2) (token = <S_IDENTIFIER>) { interval.setIntervalType(token.image); }
+    ]
     {
         return interval;
     }
@@ -9078,7 +9113,7 @@ IntervalExpression IntervalExpression() : {
 
 IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
     IntervalExpression interval;
-    Token token;
+    IntervalQualifier qualifier = null;
     boolean signed = false;
 }
 {
@@ -9086,10 +9121,55 @@ IntervalExpression IntervalExpressionWithoutInterval(Expression expr) : {
         interval = new IntervalExpression(false);
         interval.setExpression(expr);
     }
-    token = <K_DATE_LITERAL>
+    qualifier = IntervalQualifier()
     {
-        interval.setIntervalType(token.image);
+        interval.setIntervalQualifier(qualifier);
         return interval;
+    }
+}
+
+/**
+ * Parses an SQL interval qualifier, e.g. {@code DAY}, {@code DAY TO SECOND},
+ * {@code DAY(9) TO SECOND} or {@code SECOND(2, 4)}, as defined by the SQL standard.
+ * Shared by {@link IntervalExpression} (DML interval literals) and by {@code ColDataType}
+ * (DDL {@code INTERVAL} column / cast target types).
+ */
+IntervalQualifier IntervalQualifier() : {
+    Token field = null;
+    Token toField = null;
+    Token leadingPrecision = null;
+    Token fractionalPrecision = null;
+    Token trailingFractionalPrecision = null;
+}
+{
+    field = <K_DATE_LITERAL>
+    [
+        LOOKAHEAD(2) "(" leadingPrecision = <S_LONG>
+        [ "," fractionalPrecision = <S_LONG> ]
+        ")"
+    ]
+    [
+        LOOKAHEAD(2) <K_TO> toField = <K_DATE_LITERAL>
+        [ LOOKAHEAD(2) "(" trailingFractionalPrecision = <S_LONG> ")" ]
+    ]
+    {
+        // SECOND(2, 4) TO SECOND(3) specifies fractional seconds precision for both the leading
+        // and the trailing field. Reject such contradictory input instead of silently dropping one
+        // of the values. The rejection is placed last so the production does not complete normally
+        // and JavaCC does not append an unreachable "missing return" guard.
+        if (fractionalPrecision == null || trailingFractionalPrecision == null) {
+            return new IntervalQualifier(
+                    field != null ? field.image : null,
+                    leadingPrecision != null ? Integer.valueOf(leadingPrecision.image) : null,
+                    toField != null ? toField.image : null,
+                    trailingFractionalPrecision != null
+                            ? Integer.valueOf(trailingFractionalPrecision.image)
+                            : (fractionalPrecision != null
+                                    ? Integer.valueOf(fractionalPrecision.image) : null));
+        }
+        throw new ParseException(
+                "Invalid interval qualifier: fractional seconds precision is specified for both"
+                        + " the leading field and the trailing field");
     }
 }
 
@@ -9185,9 +9265,12 @@ WindowElement WindowElement():
     WindowElement windowElement = new WindowElement();
     WindowRange range = new WindowRange();
     WindowOffset offset = null;
+    WindowElement.Exclusion exclusion = null;
 }
 {
-    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }  |  <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); } )
+    (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }
+     | <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); }
+     | <K_GROUPS> { windowElement.setType(WindowElement.Type.GROUPS); })
     ( (
       <K_BETWEEN> { windowElement.setRange(range); }
       offset = WindowOffset() { range.setStart(offset); }
@@ -9196,10 +9279,42 @@ WindowElement WindowElement():
     |
       offset = WindowOffset() { windowElement.setOffset(offset); }
     )
+    [ exclusion = FrameExclusion() { windowElement.setExclusion(exclusion); } ]
 
     {
         return windowElement;
     }
+}
+
+WindowElement.Exclusion FrameExclusion():
+{
+    WindowElement.Exclusion exclusion = null;
+}
+{
+    <K_EXCLUDE>
+    (
+        <K_CURRENT> <K_ROW>
+        { exclusion = WindowElement.Exclusion.CURRENT_ROW; }
+        |
+        <K_GROUP>
+        { exclusion = WindowElement.Exclusion.GROUP; }
+        |
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("TIES")
+        })
+        <S_IDENTIFIER>
+        { exclusion = WindowElement.Exclusion.TIES; }
+        |
+        <K_NO>
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("OTHERS")
+        })
+        <S_IDENTIFIER>
+        { exclusion = WindowElement.Exclusion.NO_OTHERS; }
+    )
+    { return exclusion; }
 }
 
 WindowOffset WindowOffset():
@@ -9541,6 +9656,7 @@ Function InternalFunction(boolean escaped):
     Expression expr = null;
     Expression attributeExpression = null;
     Column attributeColumn = null;
+    Token attributeToken = null;
     Limit limit;
     List<Function.KeywordArgument> keywordArgs = null;
 }
@@ -9606,14 +9722,24 @@ Function InternalFunction(boolean escaped):
     ]
 
 
-    [ LOOKAHEAD(2) "." (
-            // tricky lookahead since we do need to support the following constructs
-            // schema.f1().f2() - Function with Function Column
-            // schema.f1().f2.f3 - Function with Attribute Column
-            LOOKAHEAD( 6 ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+    [
+        LOOKAHEAD(2)
+        (
+            LOOKAHEAD({ getToken(1).kind == S_DOUBLE
+                    && getToken(1).image.matches("\\.[0-9]+") })
+            attributeToken=<S_DOUBLE> {
+                retval.setAttribute(new LongValue(attributeToken.image.substring(1)));
+            }
             |
-            attributeColumn=Column() { retval.setAttribute(attributeColumn); }
-          )
+            "." (
+                    // tricky lookahead since we do need to support the following constructs
+                    // schema.f1().f2() - Function with Function Column
+                    // schema.f1().f2.f3 - Function with Attribute Column
+                    LOOKAHEAD( 6 ) attributeExpression=Function() { retval.setAttribute(attributeExpression); }
+                    |
+                    attributeColumn=Column() { retval.setAttribute(attributeColumn); }
+                )
+        )
     ]
 
     [ LOOKAHEAD(2) (
@@ -10163,6 +10289,71 @@ JsonTableFunction JsonTableBody() : {
     }
 }
 
+XmlTableFunction.XmlTablePassingClause XmlTablePassingClause() : {
+    XmlTableFunction.XmlTablePassingClause passingClause = new XmlTableFunction.XmlTablePassingClause();
+    Expression valueExpression;
+    String name = null;
+}
+{
+    valueExpression = Expression() { passingClause.setValueExpression(valueExpression); }
+    [ <K_AS> name = RelObjectName() { passingClause.setName(name); } ]
+    {
+        return passingClause;
+    }
+}
+
+XmlTableFunction.XmlTableColumnDefinition XmlTableColumnDefinition() : {
+    XmlTableFunction.XmlTableColumnDefinition columnDefinition = new XmlTableFunction.XmlTableColumnDefinition();
+    String columnName;
+    ColDataType dataType;
+    Expression expression;
+}
+{
+    columnName = RelObjectName() { columnDefinition.setColumnName(columnName); }
+    (
+        <K_FOR> <K_ORDINALITY> { columnDefinition.setForOrdinality(true); }
+        |
+        dataType = ColDataType() { columnDefinition.setDataType(dataType); }
+        [ <K_PATH> expression = Expression() { columnDefinition.setPathExpression(expression); } ]
+        [ <K_DEFAULT> expression = Expression() { columnDefinition.setDefaultExpression(expression); } ]
+    )
+    {
+        return columnDefinition;
+    }
+}
+
+XmlTableFunction XmlTableBody() : {
+    XmlTableFunction function = new XmlTableFunction();
+    Expression rowPath;
+    XmlTableFunction.XmlTablePassingClause passingClause;
+    XmlTableFunction.XmlTableColumnDefinition columnDefinition;
+}
+{
+    "("
+    rowPath = Expression() { function.setRowPathExpression(rowPath); }
+    [
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("PASSING") })
+        <S_IDENTIFIER>
+        passingClause = XmlTablePassingClause() { function.addPassingClause(passingClause); }
+        (
+            ","
+            passingClause = XmlTablePassingClause() { function.addPassingClause(passingClause); }
+        )*
+    ]
+    [
+        <K_COLUMNS>
+        columnDefinition = XmlTableColumnDefinition() { function.addColumnDefinition(columnDefinition); }
+        (
+            ","
+            columnDefinition = XmlTableColumnDefinition() { function.addColumnDefinition(columnDefinition); }
+        )*
+    ]
+    ")"
+    {
+        return function;
+    }
+}
+
 TableFunction TableFunction():
 {
     Token prefix = null;
@@ -10181,6 +10372,13 @@ TableFunction TableFunction():
         })
         JsonKeyword("JSON_TABLE")
         function = JsonTableBody()
+        |
+        LOOKAHEAD({
+            getToken(1).kind == S_IDENTIFIER
+                && getToken(1).image.equalsIgnoreCase("XMLTABLE")
+        })
+        <S_IDENTIFIER>
+        function = XmlTableBody()
         |
         function=Function()
     )
@@ -10460,14 +10658,15 @@ Index CreateTableConstraint():
 }
 {
     (
-        LOOKAHEAD(3) (
-            { idxSpec.clear(); }
+        LOOKAHEAD(4) (
+            { idxSpec.clear(); tk3=null; }
+            [ tk3=<K_UNIQUE> ]
             tk=<K_INDEX>
             sk3=RelObjectName()
             colNames = IndexColumnsWithParamsList()
             ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
             {
-                index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
+                index = new Index().withType((tk3!=null ? tk3.image + " " : "") + tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
             }
         )
         |
@@ -10715,6 +10914,8 @@ ColDataType ColDataType():
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
     ColDataType arrayType;
+    ColDataType nestedType = null;
+    IntervalQualifier intervalQualifier = null;
 
     int precision = -1;
     int scale = -1;
@@ -10756,6 +10957,15 @@ ColDataType ColDataType():
 			| tk=<K_NAME>
         ) { schema = tk.image; }
 
+        // Consume an optional INTERVAL qualifier such as `hour to minute` or
+        // `day(9) to second`. Only applicable when the matched type is an INTERVAL and
+        // is immediately followed by a field word, so other types (and the existing
+        // `interval (2)` precision form handled below) are unaffected.
+        [
+            LOOKAHEAD({ "interval".equalsIgnoreCase(schema)
+                    && getToken(1).kind == K_DATE_LITERAL })
+            intervalQualifier = IntervalQualifier() { colDataType.setIntervalQualifier(intervalQualifier); }
+        ]
         [ LOOKAHEAD(2) "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
         { colDataType.setDataType(schema); }
     )
@@ -10763,6 +10973,9 @@ ColDataType ColDataType():
     [
         LOOKAHEAD(2) "(" {tk2 =null;}
         (
+            (
+            LOOKAHEAD((<DATA_TYPE> | <S_IDENTIFIER>) "(") nestedType=ColDataType()
+            |
             (
                 (
                     ( tk=<S_LONG> | tk=<K_MAX> ) [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ]
@@ -10774,8 +10987,14 @@ ColDataType ColDataType():
                 |
                 tk=<K_CHAR>
             )
+            )
 		    {
-		        argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+            if (nestedType != null) {
+                argumentsStringList.add(nestedType.toString());
+                nestedType = null;
+            } else {
+                argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+            }
             }
 
             [ "," ]
@@ -11054,6 +11273,7 @@ List<String> CreateParameter():
             | tk=<K_DESC> | tk=<K_TRUE> | tk=<K_FALSE> | tk=<K_PARALLEL> | tk=<K_BINARY> | tk=<K_START> | tk=<K_ORDER>
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
             | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED> | tk=<K_SAMPLE> | tk=<K_ALWAYS>
+            | tk=<K_VISIBLE> | tk=<K_INVISIBLE>
             | tk="="
         )
         { param.add(tk.image); }

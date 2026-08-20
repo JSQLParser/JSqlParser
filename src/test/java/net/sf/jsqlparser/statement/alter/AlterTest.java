@@ -260,6 +260,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableDropColumnIssue2447() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE test DROP COLUMN type");
+    }
+
+    @Test
     public void testAlterTableDropConstraint() throws JSQLParserException {
         final String sql = "ALTER TABLE test DROP CONSTRAINT YYY";
         Statement stmt = CCJSqlParserUtil.parse(sql);
@@ -470,6 +475,11 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableChangeColumnIssue2447() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE tb_test CHANGE type INT (10)");
+    }
+
+    @Test
     public void testAlterTableAddColumnWithZone() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE mytable ADD COLUMN col1 timestamp with time zone");
@@ -666,6 +676,18 @@ public class AlterTest {
         assertEquals(expression.getOperation(), AlterOperation.RENAME);
         assertEquals(expression.getColOldName(), "name");
         assertEquals(expression.getColumnName(), "full_name");
+    }
+
+    @Test
+    public void testAlterTableRenameColumnIssue2447() throws JSQLParserException {
+        String sql = "ALTER TABLE test_table RENAME COLUMN type TO type2";
+        assertSqlCanBeParsedAndDeparsed(sql);
+
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+        assertEquals(expression.getOperation(), AlterOperation.RENAME);
+        assertEquals(expression.getColOldName(), "type");
+        assertEquals(expression.getColumnName(), "type2");
     }
 
     @Test

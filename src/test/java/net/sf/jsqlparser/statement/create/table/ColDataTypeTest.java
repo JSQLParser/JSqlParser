@@ -10,10 +10,13 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.IntervalQualifier;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ColDataTypeTest {
     @Test
@@ -56,5 +59,42 @@ class ColDataTypeTest {
                         "    name VARCHAR(255) NOT NULL\n" +
                         "  );\n";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    // ---- INTERVAL column type with qualifier (issue #1728 / SQL standard) ----
+
+    @Test
+    void testIntervalColumnFieldToFieldRoundTrip() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a interval hour to minute)", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a interval year to month)", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a interval day to second)", true);
+    }
+
+    @Test
+    void testIntervalColumnBarePrecisionUnaffected() throws JSQLParserException {
+        // the leading-field-less precision form must keep working
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a interval(2))", true);
+    }
+
+    @Test
+    void testIntervalQualifierStructurallyAttachedToColumnType() throws JSQLParserException {
+        CreateTable create = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE t (len interval hour to minute)", true);
+        ColumnDefinition len = create.getColumnDefinitions().stream()
+                .filter(c -> c.getColumnName().equalsIgnoreCase("len"))
+                .findFirst()
+                .orElseThrow();
+        // The qualifier must be a structured property of the column type, not a bare string.
+        IntervalQualifier qualifier = len.getColDataType().getIntervalQualifier();
+        assertNotNull(qualifier);
+        assertEquals("hour", qualifier.getLeadingField());
+        assertEquals("minute", qualifier.getTrailingField());
+    }
+
+    @Test
+    void testCastAsIntervalWithQualifierRoundTrip() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT CAST(col AS INTERVAL DAY TO SECOND)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(col AS INTERVAL HOUR)", true);
     }
 }

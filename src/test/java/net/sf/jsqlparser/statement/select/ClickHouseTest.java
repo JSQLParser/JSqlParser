@@ -79,6 +79,12 @@ public class ClickHouseTest {
     }
 
     @Test
+    public void testTuplePositionalAccessIssue2442() throws JSQLParserException {
+        String sql = "SELECT tuple(1, 2, 3).2 FROM tuple_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
     public void testGlobalIn() throws JSQLParserException {
         String sql =
                 "SELECT lo_linenumber,lo_orderkey from lo_linenumber where lo_linenumber global in (1,2,3)";
@@ -139,5 +145,17 @@ public class ClickHouseTest {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
         Assertions.assertNotNull(select.getSettings());
         Assertions.assertEquals(2, select.getSettings().size());
+    }
+
+    @Test
+    public void testCastToNestedParametricTypeIssue2441() throws JSQLParserException {
+        // ClickHouse allows parametric (constructor-style) data types as a CAST target,
+        // including nested ones such as Nullable(Decimal(p, s)).
+        String sql = "SELECT CAST(x AS Nullable(Decimal(10, 2))) FROM cast_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // The inner parametric type may itself be wrapped by another parametric type.
+        sql = "SELECT CAST(x AS LowCardinality(Decimal(10, 2))) FROM cast_demo";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 }

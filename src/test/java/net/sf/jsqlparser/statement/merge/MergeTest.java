@@ -272,6 +272,43 @@ public class MergeTest {
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 
+    @Test
+    void testBigQueryMergeNotMatchedByTargetAndSource() throws JSQLParserException {
+        // BigQuery/SQL Server allow "WHEN NOT MATCHED [BY TARGET|BY SOURCE]" (issue #2421)
+        String sql =
+                "MERGE INTO target_table AS tt USING (SELECT key, field FROM source_table) AS st"
+                        + " ON tt.key = st.key"
+                        + " WHEN NOT MATCHED BY TARGET THEN INSERT (key, field) VALUES (st.key, st.field)"
+                        + " WHEN NOT MATCHED BY SOURCE THEN DELETE";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        Merge merge = (Merge) CCJSqlParserUtil.parse(sql);
+        assertThat(merge.getOperations()).hasSize(2);
+        assertThat(merge.getOperations().get(0)).isInstanceOf(MergeInsert.class);
+        assertThat(((MergeInsert) merge.getOperations().get(0)).getSide())
+                .isEqualTo(MergeSide.TARGET);
+        assertThat(merge.getOperations().get(1)).isInstanceOf(MergeDelete.class);
+        assertThat(((MergeDelete) merge.getOperations().get(1)).getSide())
+                .isEqualTo(MergeSide.SOURCE);
+    }
+
+    @Test
+    void testBigQueryMergeNotMatchedBySourceUpdate() throws JSQLParserException {
+        // BY SOURCE allows UPDATE/DELETE with an AND search condition
+        String sql = "MERGE INTO t USING s ON t.id = s.id"
+                + " WHEN NOT MATCHED BY SOURCE AND s.id IS NULL THEN UPDATE SET t.v = 0";
+
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        Merge merge = (Merge) CCJSqlParserUtil.parse(sql);
+        assertThat(merge.getOperations()).hasSize(1);
+        assertThat(merge.getOperations().get(0)).isInstanceOf(MergeUpdate.class);
+        assertThat(((MergeUpdate) merge.getOperations().get(0)).getSide())
+                .isEqualTo(MergeSide.SOURCE);
+        assertThat(((MergeUpdate) merge.getOperations().get(0)).getAndPredicate()).isNotNull();
+    }
+
     @ParameterizedTest
     @MethodSource("deriveOperationsFromStandardClausesCases")
     void testDeriveOperationsFromStandardClauses(List<MergeOperation> expectedOperations,

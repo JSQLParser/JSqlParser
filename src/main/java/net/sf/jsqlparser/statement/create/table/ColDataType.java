@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
+import net.sf.jsqlparser.expression.IntervalQualifier;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
@@ -26,6 +27,7 @@ public class ColDataType implements Serializable {
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
+    private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
 
     public ColDataType() {
@@ -76,6 +78,14 @@ public class ColDataType implements Serializable {
         this.characterSet = characterSet;
     }
 
+    public IntervalQualifier getIntervalQualifier() {
+        return intervalQualifier;
+    }
+
+    public void setIntervalQualifier(IntervalQualifier intervalQualifier) {
+        this.intervalQualifier = intervalQualifier;
+    }
+
     public List<Integer> getArrayData() {
         return arrayData;
     }
@@ -95,6 +105,7 @@ public class ColDataType implements Serializable {
             arraySpec.append("]");
         }
         return dataType
+                + (intervalQualifier != null ? " " + intervalQualifier.toString() : "")
                 + (argumentsStringList != null
                         ? " " + PlainSelect.getStringList(argumentsStringList, true, true)
                         : "")
@@ -114,6 +125,11 @@ public class ColDataType implements Serializable {
 
     public ColDataType withCharacterSet(String characterSet) {
         this.setCharacterSet(characterSet);
+        return this;
+    }
+
+    public ColDataType withIntervalQualifier(IntervalQualifier intervalQualifier) {
+        this.setIntervalQualifier(intervalQualifier);
         return this;
     }
 
@@ -161,6 +177,7 @@ public class ColDataType implements Serializable {
         return dataType.equalsIgnoreCase(that.dataType)
                 && Objects.equals(argumentsStringList, that.argumentsStringList)
                 && Objects.equals(characterSet, that.characterSet)
+                && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData);
     }
 
@@ -169,6 +186,7 @@ public class ColDataType implements Serializable {
         int result = dataType.hashCode();
         result = 31 * result + Objects.hashCode(argumentsStringList);
         result = 31 * result + Objects.hashCode(characterSet);
+        result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
         return result;
     }

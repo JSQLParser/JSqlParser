@@ -45,6 +45,7 @@ import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
+import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
@@ -1310,6 +1311,10 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
+    // The deparser must round-trip both the canonical IntervalQualifier and the deprecated
+    // legacy interval type (non-standard form such as MySQL INTERVAL 1 foo), so it reads
+    // getIntervalType() intentionally.
     public <S> StringBuilder visit(IntervalExpression intervalExpression, S context) {
         if (intervalExpression.isUsingIntervalKeyword()) {
             builder.append("INTERVAL ");
@@ -1319,7 +1324,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         } else {
             builder.append(intervalExpression.getParameter());
         }
-        if (intervalExpression.getIntervalType() != null) {
+        if (intervalExpression.getIntervalQualifier() != null) {
+            builder.append(" ").append(intervalExpression.getIntervalQualifier().toString());
+        } else if (intervalExpression.getIntervalType() != null) {
             builder.append(" ").append(intervalExpression.getIntervalType());
         }
         return builder;
@@ -1655,6 +1662,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(JsonTableFunction expression, S context) {
+        builder.append(expression);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(XmlTableFunction expression, S context) {
         builder.append(expression);
         return builder;
     }

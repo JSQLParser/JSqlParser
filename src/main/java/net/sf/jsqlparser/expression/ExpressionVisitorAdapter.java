@@ -759,6 +759,11 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(XmlTableFunction xmlTableFunction, S context) {
+        return visitExpressions(xmlTableFunction, context, xmlTableFunction.getAllExpressions());
+    }
+
+    @Override
     public <S> T visit(ConnectByRootOperator connectByRootOperator, S context) {
         return connectByRootOperator.getColumn().accept(this, context);
     }
