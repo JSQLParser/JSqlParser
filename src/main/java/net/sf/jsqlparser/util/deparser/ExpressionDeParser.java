@@ -45,12 +45,12 @@ import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
-import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
+import net.sf.jsqlparser.expression.MapExpression;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -62,12 +62,12 @@ import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
-import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.StructType;
+import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -79,6 +79,7 @@ import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.XMLSerializeExpr;
+import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -1617,6 +1618,22 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             expression.accept(this, context);
         }
         builder.append("]");
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(MapExpression mapExpression, S context) {
+        builder.append("MAP {");
+        for (int i = 0; i < mapExpression.getEntries().size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            Map.Entry<Expression, Expression> entry = mapExpression.getEntries().get(i);
+            entry.getKey().accept(this, context);
+            builder.append(": ");
+            entry.getValue().accept(this, context);
+        }
+        builder.append("}");
         return builder;
     }
 

@@ -621,6 +621,14 @@ public interface ExpressionVisitor<T> {
         this.visit(arrayConstructor, null);
     }
 
+    default <S> T visit(MapExpression mapExpression, S context) {
+        return null;
+    }
+
+    default void visit(MapExpression mapExpression) {
+        this.visit(mapExpression, null);
+    }
+
     <S> T visit(VariableAssignment variableAssignment, S context);
 
     default void visit(VariableAssignment variableAssignment) {

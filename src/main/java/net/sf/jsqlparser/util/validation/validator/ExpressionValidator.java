@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Map;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -39,12 +40,12 @@ import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.JsonTableFunction;
-import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
+import net.sf.jsqlparser.expression.MapExpression;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -56,12 +57,12 @@ import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.OverlapsCondition;
 import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
-import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.StructType;
+import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
@@ -75,6 +76,7 @@ import net.sf.jsqlparser.expression.WindowElement;
 import net.sf.jsqlparser.expression.WindowOffset;
 import net.sf.jsqlparser.expression.WindowRange;
 import net.sf.jsqlparser.expression.XMLSerializeExpr;
+import net.sf.jsqlparser.expression.XmlTableFunction;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -1009,6 +1011,15 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(MapExpression mapExpression, S context) {
+        for (Map.Entry<Expression, Expression> entry : mapExpression.getEntries()) {
+            entry.getKey().accept(this, context);
+            entry.getValue().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public void validate(Expression expression) {
         expression.accept(this, null);
     }
@@ -1248,6 +1259,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(ArrayConstructor aThis) {
         visit(aThis, null);
+    }
+
+    public void visit(MapExpression mapExpression) {
+        visit(mapExpression, null);
     }
 
 
