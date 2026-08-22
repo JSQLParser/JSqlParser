@@ -68,6 +68,21 @@ public class CastExpressionTest {
         Assertions.assertTrue(select.getSelectItem(0).getExpression() instanceof CastExpression);
     }
 
+    @Test
+    void testCastCharWithCharacterSet() throws JSQLParserException {
+        String sqlStr = "SELECT CAST('abc' AS CHAR CHARACTER SET utf8mb4)";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        CastExpression castExpression = Assertions.assertInstanceOf(CastExpression.class,
+                select.getSelectItem(0).getExpression());
+
+        Assertions.assertEquals("CHAR", castExpression.getColDataType().getDataType());
+        Assertions.assertEquals("utf8mb4", castExpression.getColDataType().getCharacterSet());
+
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT CAST('abc' AS CHAR(10) CHARACTER SET utf8mb4)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST('abc' AS CHARACTER VARYING)", true);
+    }
+
 
     @Test
     public void testCastToSigned() throws JSQLParserException {

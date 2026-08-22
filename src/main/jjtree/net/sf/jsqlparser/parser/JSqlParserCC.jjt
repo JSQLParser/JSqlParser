@@ -11410,12 +11410,14 @@ ColDataType DataType():
             ( tk=<K_DATETIMELITERAL> | tk=<DT_ZONE> | tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
                 | tk=<K_CHARACTER>  |  tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
                 | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> ) { type = tk.image; }
-            [
-                // MySQL seems to allow: INT UNSIGNED
-                LOOKAHEAD(2) ( LOOKAHEAD(2) ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
-                                   | tk=<K_CHARACTER>  | tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
-                                   | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; } )+
-            ]
+            (
+                // MySQL seems to allow: INT UNSIGNED. Do not consume CHARACTER when it starts
+                // the trailing CHARACTER SET clause of a character type.
+                LOOKAHEAD(2, { getToken(1).kind != K_CHARACTER || getToken(2).kind != K_SET })
+                ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+                    | tk=<K_CHARACTER>  | tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
+                    | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; }
+            )*
             [
                 LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
                 [ <K_BYTE> | <K_CHAR> ]
