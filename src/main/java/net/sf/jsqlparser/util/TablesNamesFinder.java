@@ -375,36 +375,33 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PivotQuery pivotQuery, S context) {
-        List<WithItem<?>> withItemsList = pivotQuery.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(pivotQuery.getWithItemsList(), context);
+        visitFromItem(pivotQuery.getFromItem(), context);
+        visitExpressions(pivotQuery.getOnExpressions(), context);
+        visitSelectItems(pivotQuery.getUsingItems(), context);
+        visitExpressions(pivotQuery.getGroupByExpressions(), context);
+        visitOrderBy(pivotQuery.getOrderByElements(), context);
+        visitLimit(pivotQuery.getLimit(), context);
 
-        if (pivotQuery.getFromItem() != null) {
-            pivotQuery.getFromItem().accept(this, context);
-        }
-        if (pivotQuery.getOnExpressions() != null) {
-            pivotQuery.getOnExpressions().accept(this, context);
-        }
-        if (pivotQuery.getUsingItems() != null) {
-            for (SelectItem<?> item : pivotQuery.getUsingItems()) {
+        visitPivotPagination(pivotQuery, context);
+        return null;
+    }
+
+    private <S> void visitSelectItems(List<? extends SelectItem<?>> selectItems, S context) {
+        if (selectItems != null) {
+            for (SelectItem<?> item : selectItems) {
                 item.accept(this, context);
             }
         }
-        if (pivotQuery.getGroupByExpressions() != null) {
-            pivotQuery.getGroupByExpressions().accept(this, context);
-        }
-        visitOrderBy(pivotQuery.getOrderByElements(), context);
-        visitLimit(pivotQuery.getLimit(), context);
+    }
+
+    private <S> void visitPivotPagination(PivotQuery pivotQuery, S context) {
         if (pivotQuery.getOffset() != null) {
             pivotQuery.getOffset().getOffset().accept(this, context);
         }
         if (pivotQuery.getFetch() != null && pivotQuery.getFetch().getExpression() != null) {
             pivotQuery.getFetch().getExpression().accept(this, context);
         }
-        return null;
     }
 
     @Override
