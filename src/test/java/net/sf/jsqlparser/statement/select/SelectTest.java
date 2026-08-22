@@ -36,6 +36,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -4181,6 +4182,38 @@ public class SelectTest {
     @Test
     public void testEscaped() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("SELECT _utf8'testvalue'");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"_utf8mb4'testvalue'", "_utf8mb4 'testvalue'",
+            "_utf8 'testvalue'", "_latin1'testvalue'", "_binary'testvalue'",
+            "_ISO8859_1 'testvalue'"})
+    public void testCharacterSetIntroducedString(String expression) throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil.parse("SELECT " + expression);
+        SelectItem<?> selectItem = select.getPlainSelect().getSelectItem(0);
+        StringValue stringValue = assertInstanceOf(StringValue.class, selectItem.getExpression());
+
+        assertEquals(expression.substring(0, expression.indexOf('\'')).trim(),
+                stringValue.getPrefix());
+        assertEquals("testvalue", stringValue.getValue());
+        assertNull(selectItem.getAlias());
+    }
+
+    @Test
+    public void testCharacterSetIntroducedStringWithCollate() throws JSQLParserException {
+        String sql = "SELECT _utf8mb4'some text' COLLATE utf8mb4_unicode_ci AS custom_string";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        SelectItem<?> selectItem = select.getPlainSelect().getSelectItem(0);
+        CollateExpression collateExpression =
+                assertInstanceOf(CollateExpression.class, selectItem.getExpression());
+        StringValue stringValue = assertInstanceOf(StringValue.class,
+                collateExpression.getLeftExpression());
+
+        assertEquals("_utf8mb4", stringValue.getPrefix());
+        assertEquals("some text", stringValue.getValue());
+        assertEquals("utf8mb4_unicode_ci", collateExpression.getCollate());
+        assertEquals("custom_string", selectItem.getAlias().getName());
+        assertEquals(sql, select.toString());
     }
 
     @Test

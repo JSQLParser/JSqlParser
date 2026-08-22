@@ -301,6 +301,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Whether the next two tokens form a character-set-introduced string literal,
+     * for example {@code _utf8mb4'text'} or {@code _ISO8859_1 'text'}.
+     */
+    private boolean isCharacterSetIntroducedStringAhead() {
+        Token introducer = getToken(1);
+        Token literal = getToken(2);
+        return introducer.kind == S_IDENTIFIER
+                && introducer.image != null
+                && introducer.image.length() > 1
+                && introducer.image.charAt(0) == '_'
+                && literal.kind == S_CHAR_LITERAL;
+    }
 
     /**
      * Tokens that have dedicated branches in PrimaryExpression AFTER the Function branch.
@@ -8067,6 +8080,18 @@ Expression SimpleExpression():
     }
 }
 
+StringValue CharacterSetIntroducedString():
+{
+    Token introducer;
+    Token literal;
+}
+{
+    introducer=<S_IDENTIFIER> literal=<S_CHAR_LITERAL>
+    {
+        return new StringValue(literal.image).withPrefix(introducer.image);
+    }
+}
+
 /** Multiplicative/bitwise-shift — higher precedence */
 Expression MulChain():
 {
@@ -8242,6 +8267,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, { !interrupted && getToken(1).kind == K_KEY && getToken(2).kind != OPENING_BRACKET }) retval=KeyExpression()
 
         | LOOKAHEAD(2, {!interrupted}) <K_ALL> { retval = new AllValue(); }
+
+        | LOOKAHEAD({ !interrupted && isCharacterSetIntroducedStringAhead() })
+                  retval=CharacterSetIntroducedString()
 
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
             [
