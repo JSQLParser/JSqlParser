@@ -365,6 +365,9 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         if (plainSelect.getOffset() != null) {
             visit(plainSelect.getOffset());
         }
+        if (plainSelect.getMySqlProcedureAnalyse() != null) {
+            plainSelect.getMySqlProcedureAnalyse().appendTo(builder);
+        }
         if (plainSelect.getFetch() != null) {
             visit(plainSelect.getFetch());
         }

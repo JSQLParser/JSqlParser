@@ -200,6 +200,12 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         if (plainSelect.getOffset() != null) {
             expressionVisitor.visitExpression(plainSelect.getOffset().getOffset(), context);
         }
+        if (plainSelect.getMySqlProcedureAnalyse() != null) {
+            expressionVisitor.visitExpression(
+                    plainSelect.getMySqlProcedureAnalyse().getMaxElements(), context);
+            expressionVisitor.visitExpression(
+                    plainSelect.getMySqlProcedureAnalyse().getMaxMemory(), context);
+        }
         if (plainSelect.getFetch() != null) {
             expressionVisitor.visitExpression(plainSelect.getFetch().getExpression(), context);
         }

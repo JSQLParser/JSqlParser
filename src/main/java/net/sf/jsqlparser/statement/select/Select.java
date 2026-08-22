@@ -31,6 +31,7 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
     Offset offset;
     Fetch fetch;
     WithIsolation isolation;
+    MySqlProcedureAnalyse mySqlProcedureAnalyse;
     boolean oracleSiblings = false;
 
     ForClause forClause = null;
@@ -322,6 +323,19 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         return this;
     }
 
+    public MySqlProcedureAnalyse getMySqlProcedureAnalyse() {
+        return mySqlProcedureAnalyse;
+    }
+
+    public void setMySqlProcedureAnalyse(MySqlProcedureAnalyse mySqlProcedureAnalyse) {
+        this.mySqlProcedureAnalyse = mySqlProcedureAnalyse;
+    }
+
+    public Select withMySqlProcedureAnalyse(MySqlProcedureAnalyse mySqlProcedureAnalyse) {
+        setMySqlProcedureAnalyse(mySqlProcedureAnalyse);
+        return this;
+    }
+
     public ForMode getForMode() {
         return this.forMode;
     }
@@ -520,6 +534,9 @@ public abstract class Select extends ASTNodeAccessImpl implements Statement, Exp
         }
         if (offset != null) {
             builder.append(offset);
+        }
+        if (mySqlProcedureAnalyse != null) {
+            mySqlProcedureAnalyse.appendTo(builder);
         }
         if (fetch != null) {
             builder.append(fetch);

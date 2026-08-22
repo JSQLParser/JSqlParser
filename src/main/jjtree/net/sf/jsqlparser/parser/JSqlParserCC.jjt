@@ -819,11 +819,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         switch (kind) {
             // Safe as implicit identifiers (no clause collision)
-            case K_TABLES: case K_OPTIMIZE: case K_PROCEDURE: case K_PUBLIC:
+            case K_TABLES: case K_OPTIMIZE: case K_PUBLIC:
             case K_CASEWHEN: case K_IIF:
                 return true;
 
             // Safe when the follower doesn't form a clause
+            case K_PROCEDURE: return nextKind != K_ANALYSE;
             case K_GROUP:    return nextKind != K_BY;
             case K_ORDER:    return nextKind != K_BY && nextKind != K_SIBLINGS;
             case K_CONNECT:  return nextKind != K_BY;
@@ -1250,6 +1251,7 @@ String NonReservedWord() :
       | tk=<K_ALIGN:"ALIGN">
       | tk=<K_ALTER:"ALTER">
       | tk=<K_ALWAYS:"ALWAYS">
+      | tk=<K_ANALYSE:"ANALYSE">
       | tk=<K_ANALYZE:"ANALYZE">
       | tk=<K_APPEND_ONLY:"APPEND_ONLY">
       | tk=<K_APPLY:"APPLY">
@@ -5451,6 +5453,7 @@ PlainSelect PlainSelect() #PlainSelect:
     boolean partitionByBrackets = false;
     List<Table> intoTables = null;
     MySqlSelectIntoClause mySqlSelectIntoClause = null;
+    MySqlProcedureAnalyse mySqlProcedureAnalyse = null;
     Table updateTable = null;
     List<Table> updateTables = new ArrayList<Table>();
     Wait wait = null;
@@ -5580,6 +5583,10 @@ PlainSelect PlainSelect() #PlainSelect:
         } ]
     [ LOOKAHEAD(<K_OFFSET>) offset = Offset() { plainSelect.setOffset(offset);    } ]
 	[ LOOKAHEAD(<K_LIMIT>, { limit==null }) limit = LimitWithOffset() { plainSelect.setLimit(limit);    } ]
+    [ LOOKAHEAD(<K_PROCEDURE> <K_ANALYSE>)
+        mySqlProcedureAnalyse = MySqlProcedureAnalyse()
+        { plainSelect.setMySqlProcedureAnalyse(mySqlProcedureAnalyse); }
+    ]
     [ LOOKAHEAD(<K_FETCH>) fetch = Fetch() { plainSelect.setFetch(fetch);    } ]
     [ LOOKAHEAD(<K_WITH> <K_ISOLATION>) withIsolation = WithIsolation() { plainSelect.setIsolation(withIsolation); } ]
     [ LOOKAHEAD(2)
@@ -6223,6 +6230,30 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
     )
     {
         return intoClause;
+    }
+}
+
+MySqlProcedureAnalyse MySqlProcedureAnalyse():
+{
+    MySqlProcedureAnalyse procedureAnalyse = new MySqlProcedureAnalyse();
+    Token maxElements = null;
+    Token maxMemory = null;
+}
+{
+    <K_PROCEDURE> <K_ANALYSE> "("
+    [
+        maxElements=<S_LONG>
+        [ "," maxMemory=<S_LONG> ]
+    ]
+    ")"
+    {
+        if (maxElements != null) {
+            procedureAnalyse.setMaxElements(new LongValue(maxElements.image));
+        }
+        if (maxMemory != null) {
+            procedureAnalyse.setMaxMemory(new LongValue(maxMemory.image));
+        }
+        return procedureAnalyse;
     }
 }
 
