@@ -1192,6 +1192,36 @@ public class CreateTableTest {
     }
 
     @Test
+    void testOracleInlineConstraintState() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE DIAM.IAM_DENEME1 ("
+                        + "ID VARCHAR2(36 BYTE) NOT NULL ENABLE,"
+                        + "REQUEST_ID VARCHAR2(50 BYTE),"
+                        + "CREATE_DATE TIMESTAMP(9),"
+                        + "USER_ID VARCHAR2(50 BYTE),"
+                        + "CODE VARCHAR2(100 BYTE) NOT NULL ENABLE,"
+                        + "IS_OUTSOURCE_ENABLED CHAR(1 BYTE) DEFAULT 1 NOT NULL ENABLE,"
+                        + "IS_PASSWORD_NUMERIC CHAR(1 BYTE) DEFAULT 0 NOT NULL ENABLE"
+                        + ")";
+
+        CreateTable createTable = (CreateTable) CCJSqlParserUtil.parse(sqlStr);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE test ("
+                        + "a NUMBER NOT NULL ENABLE,"
+                        + "b NUMBER NOT NULL DISABLE,"
+                        + "c NUMBER NOT NULL ENABLE NOVALIDATE,"
+                        + "d NUMBER CONSTRAINT d_nn NOT NULL DEFERRABLE VALIDATE"
+                        + ")",
+                true);
+
+        assertEquals(Arrays.asList("NOT", "NULL", "ENABLE"),
+                createTable.getColumnDefinitions().get(0).getColumnSpecs());
+        assertEquals(Arrays.asList("DEFAULT", "1", "NOT", "NULL", "ENABLE"),
+                createTable.getColumnDefinitions().get(5).getColumnSpecs());
+    }
+
+    @Test
     void testCreateTableIndexVisibilityWithOtherIndexOptions() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE t1 (a int, KEY idx_a (a) INVISIBLE COMMENT 'retiring')", true);
