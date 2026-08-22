@@ -12661,7 +12661,14 @@ AlterExpression AlterExpressionAddAlterModify():
                     <K_COLUMNS> { alterExp.hasColumns(true); }
                 )
             )?
-            [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); } ]
+            [
+                LOOKAHEAD(2) <K_IF>
+                (
+                    <K_NOT> <K_EXISTS> { alterExp.setUseIfNotExists(true); }
+                    |
+                    <K_EXISTS> { alterExp.setUsingIfExists(true); }
+                )
+            ]
             (
                 LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
                 |

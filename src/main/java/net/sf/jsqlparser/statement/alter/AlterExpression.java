@@ -1118,8 +1118,9 @@ public class AlterExpression implements Serializable {
                 } else if (hasColumns) {
                     b.append("COLUMNS ");
                 }
-                if (useIfNotExists
-                        && operation == AlterOperation.ADD) {
+                if (usingIfExists) {
+                    b.append("IF EXISTS ");
+                } else if (useIfNotExists) {
                     b.append("IF NOT EXISTS ");
                 }
             }
