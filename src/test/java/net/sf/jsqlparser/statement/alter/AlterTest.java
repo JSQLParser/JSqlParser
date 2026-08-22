@@ -1109,6 +1109,25 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed(stmt);
     }
 
+    @ParameterizedTest
+    @MethodSource("provideModifyColumnExistenceClauses")
+    public void testModifyColumnExistenceClauses(String sql, boolean usingIfExists,
+            boolean useIfNotExists) throws JSQLParserException {
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql);
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+
+        assertEquals(usingIfExists, expression.isUsingIfExists());
+        assertEquals(useIfNotExists, expression.isUseIfNotExists());
+    }
+
+    private static Stream<Arguments> provideModifyColumnExistenceClauses() {
+        return Stream.of(
+                Arguments.of("ALTER TABLE t MODIFY COLUMN IF EXISTS c INT", true, false),
+                Arguments.of("ALTER TABLE t MODIFY IF EXISTS c INT", true, false),
+                Arguments.of("ALTER TABLE t MODIFY COLUMN IF NOT EXISTS c INT", false, true),
+                Arguments.of("ALTER TABLE t MODIFY IF NOT EXISTS c INT", false, true));
+    }
+
     @Test
     public void testIssue2027() throws JSQLParserException {
         String sql = "ALTER TABLE `foo_bar` ADD COLUMN `baz` text";
