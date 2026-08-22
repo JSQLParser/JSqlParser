@@ -10,9 +10,26 @@
 package net.sf.jsqlparser.schema;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 public class ServerTest {
+
+    @Test
+    public void testCraftedServerNameDoesNotBacktrack() throws Exception {
+        final StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < 40000; i++) {
+            sb.append("a\\");
+        }
+        final String crafted = sb.toString();
+
+        // an unterminated bracketed name full of backslashes used to backtrack quadratically
+        final Server server = assertTimeoutPreemptively(Duration.ofSeconds(2),
+                () -> new Server(crafted));
+        assertEquals(crafted, server.getFullyQualifiedName());
+    }
 
     @Test
     public void testServerNameParsing() throws Exception {
