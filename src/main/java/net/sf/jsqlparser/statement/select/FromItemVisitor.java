@@ -9,12 +9,11 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.Collection;
+import java.util.List;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
-
-import java.util.Collection;
-import java.util.List;
 
 public interface FromItemVisitor<T> {
 
@@ -83,6 +82,14 @@ public interface FromItemVisitor<T> {
 
     default void visit(PlainSelect plainSelect) {
         this.visit(plainSelect, null);
+    }
+
+    default <S> T visit(PivotQuery pivotQuery, S context) {
+        return null;
+    }
+
+    default void visit(PivotQuery pivotQuery) {
+        this.visit(pivotQuery, null);
     }
 
     <S> T visit(SetOperationList setOperationList, S context);

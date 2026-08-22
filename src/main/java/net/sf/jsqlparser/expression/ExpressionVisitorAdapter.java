@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
@@ -691,6 +692,16 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(ArrayConstructor arrayConstructor, S context) {
         return visitExpressions(arrayConstructor, context, arrayConstructor.getExpressions());
+    }
+
+    @Override
+    public <S> T visit(MapExpression mapExpression, S context) {
+        ArrayList<Expression> subExpressions = new ArrayList<>();
+        for (Map.Entry<Expression, Expression> entry : mapExpression.getEntries()) {
+            subExpressions.add(entry.getKey());
+            subExpressions.add(entry.getValue());
+        }
+        return visitExpressions(mapExpression, context, subExpressions);
     }
 
     @Override

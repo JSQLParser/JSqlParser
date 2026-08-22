@@ -106,6 +106,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // then-branch closes the ternary and must not be taken as the JSON path operator
     private int ternaryThenBranchDepth = 0;
 
+    // depth of DuckDB MAP keys: the following ":" separates a key from its value
+    // and must not be taken as the JSON path operator
+    private int mapKeyDepth = 0;
+
     private void linkAST(ASTNodeAccess access, Node node) {
         access.setASTNode(node);
         node.jjtSetValue(access);
@@ -536,10 +540,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         try {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             int k2 = getToken(2).kind;
-            // Direct subquery: ( SELECT/WITH ) → ParenthesedSelect handles it
+            // Direct subquery: ( SELECT/WITH/PIVOT ) → ParenthesedSelect handles it
             // ( VALUES ) can be ParenthesedFromItem(Values) or ParenthesedSelect;
             // ParenthesedFromItem is checked first so Values-as-FROM-item works
-            if (k2 == K_SELECT || k2 == K_WITH) return false;
+            if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT) return false;
             // ( ( SELECT ) UNION ( SELECT ) ) → isNestedSetOperationAhead handles it
             // Other (( patterns: ( (SELECT...) JOIN ... ) or ( (table) ) → ParenthesedFromItem
             if (k2 == K_LATERAL) return false; // handled by LateralSubSelect
@@ -4810,6 +4814,8 @@ Select Select() #Select:
         |
         (
             (
+                LOOKAHEAD(2) select = PivotQuery()
+                |
                 LOOKAHEAD(3) select = PlainSelect()
                 |
                 LOOKAHEAD(3) select = Values()
@@ -6101,8 +6107,37 @@ List<SelectItem<Function>> PivotFunctionItems():
 }
 {
     item = FunctionItem() {functionItems.add(item);}
-    ( "," item = FunctionItem() {functionItems.add(item);} )*
+    ( LOOKAHEAD(2) "," item = FunctionItem() {functionItems.add(item);} )*
     { return functionItems; }
+}
+
+PivotQuery PivotQuery():
+{
+    PivotQuery pivotQuery = new PivotQuery();
+    FromItem fromItem;
+    ExpressionList<Expression> onExpressions = null;
+    List<SelectItem<Function>> usingItems = null;
+    ExpressionList<Expression> groupByExpressions = null;
+}
+{
+    <K_PIVOT> fromItem = FromItem()
+    (
+        <K_ON> onExpressions = ExpressionList()
+        [ LOOKAHEAD(2) <K_USING> usingItems = PivotFunctionItems() ]
+        [ LOOKAHEAD(2) <K_GROUP> <K_BY> groupByExpressions = ExpressionList() ]
+        |
+        <K_USING> usingItems = PivotFunctionItems()
+        [ LOOKAHEAD(2) <K_GROUP> <K_BY> groupByExpressions = ExpressionList() ]
+        |
+        <K_GROUP> <K_BY> groupByExpressions = ExpressionList()
+    )
+    {
+        pivotQuery.setFromItem(fromItem);
+        pivotQuery.setOnExpressions(onExpressions);
+        pivotQuery.setUsingItems(usingItems);
+        pivotQuery.setGroupByExpressions(groupByExpressions);
+        return pivotQuery;
+    }
 }
 
 SelectItem<ExpressionList<?>> ExpressionListItem():
@@ -8203,6 +8238,10 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval=CharacterPrimary()
 
+        | LOOKAHEAD({ !interrupted && getToken(1).kind == DATA_TYPE
+                && "MAP".equalsIgnoreCase(getToken(1).image)
+                && getToken(2).kind == OPENING_CURLY_BRACKET }) retval=MapExpression()
+
         | LOOKAHEAD({!interrupted && isImplicitCastAhead()}) retval=ImplicitCast()
 
         | retval = JdbcParameter()
@@ -8352,7 +8391,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     // Check for JSON operands
     [
-        LOOKAHEAD(2, { ternaryThenBranchDepth == 0 || !":".equals(getToken(1).image) }) (
+        LOOKAHEAD(2, { (ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                || !":".equals(getToken(1).image) }) (
             LOOKAHEAD(2) (
                 token="->"
                 |
@@ -8576,6 +8616,43 @@ ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
     { return array; }
 }
 
+MapExpression MapExpression() #MapExpression:
+{
+    MapExpression mapExpression = new MapExpression();
+    Expression key;
+    Expression value;
+}
+{
+    <DATA_TYPE> <OPENING_CURLY_BRACKET>
+    [
+        key = MapKeyExpression() <DOUBLE_COLON> value = Expression()
+        { mapExpression.addEntry(key, value); }
+        (
+            "," key = MapKeyExpression() <DOUBLE_COLON> value = Expression()
+            { mapExpression.addEntry(key, value); }
+        )*
+    ]
+    <CLOSING_CURLY_BRACKET>
+    {
+        linkAST(mapExpression, jjtThis);
+        return mapExpression;
+    }
+}
+
+Expression MapKeyExpression():
+{
+    Expression key;
+}
+{
+    try {
+        { mapKeyDepth++; }
+        key = Expression()
+    } finally {
+        mapKeyDepth--;
+    }
+    { return key; }
+}
+
 List<Map.Entry<String, ColDataType>> StructParameters():
 {
     String parameterName = "";
@@ -8682,7 +8759,8 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
         }
 
         (
-            LOOKAHEAD(2, { ternaryThenBranchDepth == 0 || !":".equals(getToken(1).image) }) (
+            LOOKAHEAD(2, { (ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                    || !":".equals(getToken(1).image) }) (
                 token="->"
                 |
                 token=":"

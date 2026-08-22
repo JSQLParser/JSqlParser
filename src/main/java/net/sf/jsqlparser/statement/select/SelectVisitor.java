@@ -9,10 +9,9 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.List;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.piped.FromQuery;
-
-import java.util.List;
 
 public interface SelectVisitor<T> {
     default <S> T visitWithItems(List<WithItem<?>> withItemsList, S context) {
@@ -38,6 +37,14 @@ public interface SelectVisitor<T> {
 
     default void visit(PlainSelect plainSelect) {
         this.visit(plainSelect, null);
+    }
+
+    default <S> T visit(PivotQuery pivotQuery, S context) {
+        return null;
+    }
+
+    default void visit(PivotQuery pivotQuery) {
+        this.visit(pivotQuery, null);
     }
 
     <S> T visit(FromQuery fromQuery, S context);

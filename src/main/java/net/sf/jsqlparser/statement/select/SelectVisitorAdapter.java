@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
@@ -214,6 +215,32 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         // }
 
         fromItemVisitor.visitFromItem(plainSelect.getIntoTempTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(PivotQuery pivotQuery, S context) {
+        visitWithItems(pivotQuery.getWithItemsList(), context);
+
+        fromItemVisitor.visitFromItem(pivotQuery.getFromItem(), context);
+        expressionVisitor.visitExpressions(pivotQuery.getOnExpressions(), context);
+
+        if (pivotQuery.getUsingItems() != null) {
+            for (SelectItem<Function> item : pivotQuery.getUsingItems()) {
+                item.accept(selectItemVisitor, context);
+            }
+        }
+
+        expressionVisitor.visitExpressions(pivotQuery.getGroupByExpressions(), context);
+        expressionVisitor.visitOrderBy(pivotQuery.getOrderByElements(), context);
+        expressionVisitor.visitLimit(pivotQuery.getLimit(), context);
+
+        if (pivotQuery.getOffset() != null) {
+            expressionVisitor.visitExpression(pivotQuery.getOffset().getOffset(), context);
+        }
+        if (pivotQuery.getFetch() != null) {
+            expressionVisitor.visitExpression(pivotQuery.getFetch().getExpression(), context);
+        }
         return null;
     }
 

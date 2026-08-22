@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
@@ -16,9 +18,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.piped.FromQuery;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
@@ -123,6 +122,11 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     @Override
     public <S> T visit(PlainSelect plainSelect, S context) {
         return plainSelect.accept(selectVisitor, context);
+    }
+
+    @Override
+    public <S> T visit(PivotQuery pivotQuery, S context) {
+        return pivotQuery.accept(selectVisitor, context);
     }
 
     @Override

@@ -28,17 +28,18 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.MySqlSelectIntoClause;
 import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OptionClause;
+import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
-import net.sf.jsqlparser.statement.select.OptionClause;
-import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.TableStatement;
@@ -156,6 +157,36 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
         validateOptional(plainSelect.getPivot(), p -> p.accept(this, context));
 
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PivotQuery pivotQuery, S context) {
+        if (isNotEmpty(pivotQuery.getWithItemsList())) {
+            pivotQuery.getWithItemsList()
+                    .forEach(withItem -> withItem.accept((SelectVisitor<Void>) this, context));
+        }
+
+        validateFeature(Feature.pivot);
+        validateOptionalFromItem(pivotQuery.getFromItem());
+        validateOptionalExpressions(pivotQuery.getOnExpressions());
+        if (isNotEmpty(pivotQuery.getUsingItems())) {
+            pivotQuery.getUsingItems().forEach(item -> item.accept(this, context));
+        }
+        validateOptionalExpressions(pivotQuery.getGroupByExpressions());
+        validateOptionalOrderByElements(pivotQuery.getOrderByElements());
+        validateOptionalInterpolate(pivotQuery.getInterpolate());
+        validateOptionalOption(pivotQuery.getOption());
+
+        if (pivotQuery.getLimit() != null) {
+            getValidator(LimitValidator.class).validate(pivotQuery.getLimit());
+        }
+        if (pivotQuery.getOffset() != null) {
+            validateOffset(pivotQuery.getOffset());
+        }
+        if (pivotQuery.getFetch() != null) {
+            validateFetch(pivotQuery.getFetch());
+        }
         return null;
     }
 
@@ -418,6 +449,10 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     public void visit(PlainSelect plainSelect) {
         visit(plainSelect, null);
+    }
+
+    public void visit(PivotQuery pivotQuery) {
+        visit(pivotQuery, null);
     }
 
     public void visit(SelectItem<?> selectExpressionItem) {

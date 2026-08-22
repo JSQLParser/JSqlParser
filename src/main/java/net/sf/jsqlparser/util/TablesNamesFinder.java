@@ -73,6 +73,7 @@ import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
+import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
@@ -93,7 +94,6 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
-import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
@@ -156,6 +156,7 @@ import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.PivotQuery;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -373,8 +374,47 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(PivotQuery pivotQuery, S context) {
+        List<WithItem<?>> withItemsList = pivotQuery.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            for (WithItem<?> withItem : withItemsList) {
+                withItem.accept((SelectVisitor<?>) this, context);
+            }
+        }
+
+        if (pivotQuery.getFromItem() != null) {
+            pivotQuery.getFromItem().accept(this, context);
+        }
+        if (pivotQuery.getOnExpressions() != null) {
+            pivotQuery.getOnExpressions().accept(this, context);
+        }
+        if (pivotQuery.getUsingItems() != null) {
+            for (SelectItem<?> item : pivotQuery.getUsingItems()) {
+                item.accept(this, context);
+            }
+        }
+        if (pivotQuery.getGroupByExpressions() != null) {
+            pivotQuery.getGroupByExpressions().accept(this, context);
+        }
+        visitOrderBy(pivotQuery.getOrderByElements(), context);
+        visitLimit(pivotQuery.getLimit(), context);
+        if (pivotQuery.getOffset() != null) {
+            pivotQuery.getOffset().getOffset().accept(this, context);
+        }
+        if (pivotQuery.getFetch() != null && pivotQuery.getFetch().getExpression() != null) {
+            pivotQuery.getFetch().getExpression().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public void visit(PlainSelect plainSelect) {
         SelectVisitor.super.visit(plainSelect);
+    }
+
+    @Override
+    public void visit(PivotQuery pivotQuery) {
+        SelectVisitor.super.visit(pivotQuery);
     }
 
     /**
@@ -1844,6 +1884,15 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(ArrayConstructor array, S context) {
         for (Expression expression : array.getExpressions()) {
             expression.accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(MapExpression mapExpression, S context) {
+        for (Map.Entry<Expression, Expression> entry : mapExpression.getEntries()) {
+            entry.getKey().accept(this, context);
+            entry.getValue().accept(this, context);
         }
         return null;
     }
