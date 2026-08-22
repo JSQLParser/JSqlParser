@@ -11717,7 +11717,7 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
 }
 
 /**
- * Parses USING [INDEX] name clause in ALTER TABLE constraint tails.
+ * Parses USING [INDEX] [name] [TABLESPACE name] clause in ALTER TABLE constraint tails.
  */
 void AlterExpressionUsingIndex(AlterExpression alterExp):
 {
@@ -11726,7 +11726,14 @@ void AlterExpressionUsingIndex(AlterExpression alterExp):
 {
     <K_USING> { alterExp.addParameters("USING"); }
     [ LOOKAHEAD(2) <K_INDEX> { alterExp.addParameters("INDEX"); } ]
-    sk4=RelObjectName() { alterExp.addParameters(sk4); }
+    (
+        LOOKAHEAD(2, <K_TABLESPACE>) <K_TABLESPACE> sk4=RelObjectName()
+        { alterExp.addParameters("TABLESPACE"); alterExp.addParameters(sk4); }
+        |
+        sk4=RelObjectName() { alterExp.addParameters(sk4); }
+        [ LOOKAHEAD(2) <K_TABLESPACE> sk4=RelObjectName()
+          { alterExp.addParameters("TABLESPACE"); alterExp.addParameters(sk4); } ]
+    )
 }
 
 /**

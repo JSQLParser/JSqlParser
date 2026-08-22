@@ -2364,4 +2364,46 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddConstraintPrimaryKeyUsingIndexTablespace()
+            throws JSQLParserException {
+        String sql =
+                "ALTER TABLE bfmcs.your_table ADD CONSTRAINT your_table_pk PRIMARY KEY (ID) USING INDEX TABLESPACE your_tablespace";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals(Arrays.asList("USING", "INDEX", "TABLESPACE", "your_tablespace"),
+                alterExp.getParameters());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    @Test
+    public void testAlterTableAddConstraintPrimaryKeyUsingIndexNameAndTablespace()
+            throws JSQLParserException {
+        String sql =
+                "ALTER TABLE your_table ADD CONSTRAINT pk_test PRIMARY KEY (ID) USING INDEX idx_test TABLESPACE ts_test";
+        Statement stmt = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(Alter.class, stmt);
+
+        Alter alter = (Alter) stmt;
+        List<AlterExpression> alterExpressions = alter.getAlterExpressions();
+        assertNotNull(alterExpressions);
+        assertEquals(1, alterExpressions.size());
+
+        AlterExpression alterExp = alterExpressions.get(0);
+        assertEquals(AlterOperation.ADD, alterExp.getOperation());
+        assertEquals(Arrays.asList("USING", "INDEX", "idx_test", "TABLESPACE", "ts_test"),
+                alterExp.getParameters());
+
+        assertSqlCanBeParsedAndDeparsed(sql);
+    }
 }
