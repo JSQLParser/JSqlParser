@@ -10913,6 +10913,25 @@ CreateIndex CreateIndex():
     }
 }
 
+List<String> ColumnDefinitionParameter(): {
+    Token tk = null;
+    List<String> parameter = new ArrayList<String>();
+} {
+    (
+        parameter=CreateParameter()
+        |
+        (
+            tk=<K_DEFERRABLE>
+            | tk=<K_DISABLE>
+            | tk=<K_ENABLE>
+            | tk=<K_NOVALIDATE>
+            | tk=<K_VALIDATE>
+        )
+        { parameter.add(tk.image); }
+    )
+    { return parameter; }
+}
+
 ColumnDefinition ColumnDefinition(): {
     ColumnDefinition coldef;
     String columnName;
@@ -10922,7 +10941,7 @@ ColumnDefinition ColumnDefinition(): {
 } {
     columnName=RelObjectName()
     colDataType=ColDataType()
-    ( LOOKAHEAD(2) parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) parameter=ColumnDefinitionParameter() { columnSpecs.addAll(parameter); } )*
     {
         coldef = new ColumnDefinition();
         coldef.setColumnName(columnName);
