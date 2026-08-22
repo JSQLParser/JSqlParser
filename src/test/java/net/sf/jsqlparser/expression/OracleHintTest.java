@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.expression;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+
+import java.time.Duration;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,20 @@ class OracleHintTest {
         String sqlString =
                 "MERGE /*+parallel*/ INTO dual USING z ON (a=b) WHEN MATCHED THEN UPDATE SET a=b";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlString, true);
+    }
+
+    @Test
+    void testCraftedHintCommentDoesNotBacktrack() {
+        final StringBuilder sb = new StringBuilder("-- /*+ ");
+        for (int i = 0; i < 100000; i++) {
+            sb.append('*');
+        }
+        final String crafted = sb.toString();
+
+        // a line comment carrying an unterminated /*+ marker (no closing */) used to make the
+        // block hint pattern backtrack quadratically, and it is not an oracle hint anyway
+        assertTimeoutPreemptively(Duration.ofSeconds(2),
+                () -> assertFalse(OracleHint.isHintMatch(crafted)));
     }
 
 }
