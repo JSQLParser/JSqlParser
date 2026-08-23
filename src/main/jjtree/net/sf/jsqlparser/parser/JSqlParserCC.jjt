@@ -1845,7 +1845,11 @@ TOKEN : /* Numeric Constants */
 
 SPECIAL_TOKEN:
 {
-   < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*>
+   // The `#` comment requires a following blank: `#` without one stays an
+   // identifier start (SQL Server `#temp`, `##global`) and `#>` / `#>>`
+   // JSON operators must keep their usual lexing (issue #1197, #1695).
+   < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*
+       | "#" [" ", "\t"] (~["\r","\n"])*>
 }
 
 // Nested block comments:  /* ... /* ... */ ... */

@@ -222,6 +222,40 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    public void testLineCommentHashTrailing() throws Exception {
+        assertEquals("SELECT 1", CCJSqlParserUtil.parse("SELECT 1 # trailing comment").toString());
+    }
+
+    @Test
+    public void testLineCommentHashLeading() throws Exception {
+        assertEquals("SELECT 1", CCJSqlParserUtil.parse("# leading comment\nSELECT 1").toString());
+    }
+
+    @Test
+    public void testLineCommentHashWithinSelect() throws Exception {
+        assertEquals("SELECT 1 + 2, 3",
+                CCJSqlParserUtil.parse("SELECT 1 + 2 # note\n, 3").toString());
+    }
+
+    @Test
+    public void testHashWithoutBlankStaysIdentifier() throws Exception {
+        // without a following blank `#` is an identifier start, not a comment (#1197, #1695)
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM #temp");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM ##global");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab1#");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM $#tab1#");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT * FROM #$tab#tab1");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a#b FROM t");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 1 #note");
+    }
+
+    @Test
+    public void testHashJsonOperatorsStayOperators() throws Exception {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT js #> '{a}' FROM t");
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT js #>> '{a,b}' FROM t");
+    }
+
+    @Test
     public void testParseStatementsFail() throws Exception {
         String sqlStr = "select * from dual;WHATEVER!!";
 
