@@ -657,6 +657,38 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * XML constructor functions take a bare leading keyword before their first argument,
+     * e.g. XMLPARSE(CONTENT expr), XMLPARSE(DOCUMENT expr), XMLELEMENT(NAME ident, ...).
+     * Guarded by the function name so that CONTENT/DOCUMENT/NAME stay plain identifiers
+     * everywhere else, e.g. f(content).
+     */
+    private void consumeXmlLeadingKeyword(Function function) {
+        String name = function.getName();
+        if (name == null) {
+            return;
+        }
+        name = name.toUpperCase(java.util.Locale.ROOT);
+        if (!"XMLPARSE".equals(name) && !"XMLELEMENT".equals(name) && !"XMLFOREST".equals(name)) {
+            return;
+        }
+        Token token = getToken(1);
+        if (token.kind != S_IDENTIFIER && token.kind != K_NAME) {
+            return;
+        }
+        String keyword = token.image.toUpperCase(java.util.Locale.ROOT);
+        if (!"CONTENT".equals(keyword) && !"DOCUMENT".equals(keyword) && !"NAME".equals(keyword)) {
+            return;
+        }
+        // only a bare leading keyword: an expression must follow
+        Token next = getToken(2);
+        if (next.kind == EOF || ")".equals(next.image) || ",".equals(next.image)
+                || ".".equals(next.image) || "(".equals(next.image)) {
+            return;
+        }
+        function.setExtraKeyword(getNextToken().image);
+    }
+
     private boolean isKeywordArgumentAhead() {
         Token t = getToken(1);
         if (t.kind == EOF || t.image.equals(")")) return false;
@@ -10154,9 +10186,9 @@ Function InternalFunction(boolean escaped):
 }
 {
     [ LOOKAHEAD(2) prefixToken = <K_APPROXIMATE> ]
-    funcName = RelObjectNames() { if (prefixToken!=null) funcName.getNames().add(0, prefixToken.image ); }
+    funcName = RelObjectNames() { if (prefixToken!=null) funcName.getNames().add(0, prefixToken.image ); retval.setName(funcName.getNames()); }
 
-    "("
+    "(" { consumeXmlLeadingKeyword(retval); }
     [
         LOOKAHEAD(2) [
             LOOKAHEAD(2) (
