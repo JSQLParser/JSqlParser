@@ -43,6 +43,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
@@ -60,6 +61,7 @@ import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -1373,6 +1375,47 @@ public class SelectTest {
         assertEquals(3,
                 ((LongValue) plainSelect.getGroupBy().getGroupByExpressions().get(1)).getValue());
         assertStatementCanBeDeparsedAs(select, statement);
+    }
+
+    @Test
+    public void testIssue2485OracleParenthesizedFullyQualifiedGroupByColumn()
+            throws JSQLParserException {
+        String sql = "SELECT sys.dual.dummy, count(*)\n"
+                + "FROM sys.dual\n"
+                + "GROUP BY (sys.dual.dummy), (sys.dual.dummy)";
+
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+        Select select = assertInstanceOf(Select.class, statement);
+        PlainSelect plainSelect = select.getPlainSelect();
+        assertNotNull(plainSelect.getGroupBy());
+
+        ExpressionList<Expression> groupByExpressions = plainSelect.getGroupBy()
+                .getGroupByExpressionList();
+        assertEquals(2, groupByExpressions.size());
+        for (Expression groupByExpression : groupByExpressions) {
+            ParenthesedExpressionList<?> parenthesedExpression = assertInstanceOf(
+                    ParenthesedExpressionList.class, groupByExpression);
+            Column column = assertInstanceOf(Column.class, parenthesedExpression.get(0));
+            assertEquals("sys.dual.dummy", column.getFullyQualifiedName());
+        }
+    }
+
+    @Test
+    public void testIssue2485OracleParenthesizedFourPartGroupByColumn()
+            throws JSQLParserException {
+        String sql = "SELECT 1\n"
+                + "FROM sys.dual\n"
+                + "GROUP BY sys.dual.dummy, (catalog.sys.dual.dummy)";
+
+        Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true);
+        Select select = assertInstanceOf(Select.class, statement);
+        ExpressionList<Expression> groupByExpressions = select.getPlainSelect().getGroupBy()
+                .getGroupByExpressionList();
+        assertEquals(2, groupByExpressions.size());
+        ParenthesedExpressionList<?> parenthesedExpression = assertInstanceOf(
+                ParenthesedExpressionList.class, groupByExpressions.get(1));
+        Column column = assertInstanceOf(Column.class, parenthesedExpression.get(0));
+        assertEquals("catalog.sys.dual.dummy", column.getFullyQualifiedName());
     }
 
     @Test
@@ -3204,6 +3247,13 @@ public class SelectTest {
         assertSqlCanBeParsedAndDeparsed("SELECT sale->>'items' FROM sales");
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT json_typeof(sale->'items'), json_typeof(sale->'items'->'quantity') FROM sales");
+
+        Select jsonSelect = (Select) CCJSqlParserUtil.parse("SELECT data->'images' FROM instagram");
+        assertInstanceOf(JsonExpression.class,
+                jsonSelect.getPlainSelect().getSelectItem(0).getExpression());
+        jsonSelect = (Select) CCJSqlParserUtil.parse("SELECT data->>'images' FROM instagram");
+        assertInstanceOf(JsonExpression.class,
+                jsonSelect.getPlainSelect().getSelectItem(0).getExpression());
 
         // The following staments can be parsed but not deparsed
         for (String statement : new String[] {
