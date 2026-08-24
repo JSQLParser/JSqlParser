@@ -12,8 +12,10 @@ package net.sf.jsqlparser.statement.drop;
 import java.io.StringReader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 import static net.sf.jsqlparser.test.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
@@ -151,5 +153,20 @@ public class DropTest {
     void dropTemporaryTableTestIssue1712() throws JSQLParserException {
         String sqlStr = "drop temporary table if exists tmp_MwYT8N0z";
         assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    public void testDropIndexAlgorithmAndLockOptionsIssue2490() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX i15 ON t ALGORITHM = INPLACE LOCK = NONE");
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX i16 ON t ALGORITHM INPLACE");
+        assertSqlCanBeParsedAndDeparsed("DROP INDEX i17 ON t LOCK = NONE");
+    }
+
+    @Test
+    public void testDropTableFollowedByLockTableIssue2490() throws JSQLParserException {
+        // LOCK must not be swallowed as a DROP argument when it starts the next statement.
+        Statements statements = CCJSqlParserUtil.parseStatements(
+                "DROP TABLE t1; LOCK TABLE t2 IN SHARE MODE;");
+        assertEquals(2, statements.size());
     }
 }

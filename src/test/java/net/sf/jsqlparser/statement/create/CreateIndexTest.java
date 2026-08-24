@@ -179,4 +179,59 @@ public class CreateIndexTest {
     public void testCreateIndexIncludeIssue2459() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) INCLUDE (b, c)");
     }
+
+    @Test
+    public void testCreateIndexKeyPartWithPrefixLengthAndDirectionIssue2490()
+            throws JSQLParserException {
+        // MySQL writes the prefix length without a space, JSqlParser deparses it with one.
+        String statement = "CREATE INDEX i03 ON t (c1(20) DESC)";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+
+        List<String> params = createIndex.getIndex().getColumns().get(0).getParams();
+        assertEquals(2, params.size());
+        assertEquals("(20)", params.get(0));
+        assertEquals("DESC", params.get(1));
+
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i03 ON t (c1 (20) DESC)");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i04 ON t (c1 (20) ASC, c2 (10) DESC)");
+        assertSqlCanBeParsedAndDeparsed("CREATE UNIQUE INDEX i25 ON t (c1 (10) DESC)");
+    }
+
+    @Test
+    public void testCreateIndexKeyBlockSizeIssue2490() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i08 ON t (c1) KEY_BLOCK_SIZE = 8");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i09 ON t (c1) KEY_BLOCK_SIZE 8");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX i14 ON t (c1) USING BTREE KEY_BLOCK_SIZE = 8 COMMENT 'combo' INVISIBLE");
+    }
+
+    @Test
+    public void testCreateIndexAlgorithmAndLockOptionsIssue2490() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX i10 ON t (c1) ALGORITHM = INPLACE LOCK = NONE");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i11 ON t (c1) ALGORITHM INPLACE LOCK NONE");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i12 ON t (c1) ALGORITHM = INPLACE");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i13 ON t (c1) LOCK = NONE");
+
+        CreateIndex createIndex = (CreateIndex) parserManager
+                .parse(new StringReader("CREATE INDEX i10 ON t (c1) ALGORITHM=INPLACE LOCK=NONE"));
+        assertEquals(List.of("ALGORITHM", "=", "INPLACE", "LOCK", "=", "NONE"),
+                createIndex.getTailParameters());
+    }
+
+    @Test
+    public void testCreateFullTextAndSpatialIndexIssue2490() throws JSQLParserException {
+        // These used to fall back to UnsupportedStatement instead of producing a CreateIndex.
+        CreateIndex fullText = (CreateIndex) parserManager
+                .parse(new StringReader("CREATE FULLTEXT INDEX i17 ON t (body)"));
+        assertEquals("FULLTEXT", fullText.getIndex().getType());
+
+        CreateIndex spatial = (CreateIndex) parserManager
+                .parse(new StringReader("CREATE SPATIAL INDEX i19 ON t (g)"));
+        assertEquals("SPATIAL", spatial.getIndex().getType());
+
+        assertSqlCanBeParsedAndDeparsed("CREATE FULLTEXT INDEX i17 ON t (body)");
+        assertSqlCanBeParsedAndDeparsed("CREATE FULLTEXT INDEX i18 ON t (body) WITH PARSER ngram");
+        assertSqlCanBeParsedAndDeparsed("CREATE SPATIAL INDEX i19 ON t (g)");
+    }
 }

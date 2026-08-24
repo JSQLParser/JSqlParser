@@ -2406,4 +2406,12 @@ public class AlterTest {
 
         assertSqlCanBeParsedAndDeparsed(sql);
     }
+
+    @Test
+    public void testAlterTableAddIndexKeyPartWithPrefixLengthAndDirectionIssue2490()
+            throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD INDEX i05 (c1 (20) DESC)");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD INDEX i33 (c1 (20) ASC)");
+        assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD UNIQUE INDEX i34 (c1 (10) DESC)");
+    }
 }
