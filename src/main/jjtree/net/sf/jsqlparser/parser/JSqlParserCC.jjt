@@ -11863,6 +11863,11 @@ List<String> CreateParameter():
             | tk=<K_TIME_KEY_EXPR> | tk=<K_RAW> | tk=<K_HASH> | tk=<K_FIRST> | tk=<K_LAST> | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
             | tk=<K_ENGINE> | tk=<K_IDENTITY> | tk=<K_MATERIALIZED> | tk=<K_SAMPLE> | tk=<K_ALWAYS>
             | tk=<K_VISIBLE> | tk=<K_INVISIBLE>
+            // MySQL index_option / algorithm_option / lock_option keywords, e.g. the trailing
+            // "KEY_BLOCK_SIZE = 8 ALGORITHM = INPLACE LOCK = NONE" of CREATE INDEX, the
+            // "WITH PARSER" option, and the FULLTEXT / SPATIAL index types of CREATE INDEX.
+            | tk=<K_KEY_BLOCK_SIZE> | tk=<K_ALGORITHM> | tk=<K_LOCK> | tk=<K_NONE>
+            | tk=<K_PARSER> | tk=<K_FULLTEXT> | tk=<K_SPATIAL>
             | tk="="
         )
         { param.add(tk.image); }
@@ -12038,11 +12043,19 @@ Drop Drop():
     (
         (
             tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT>
+            // MySQL DROP INDEX accepts a trailing algorithm_option / lock_option,
+            // e.g. "DROP INDEX i ON t ALGORITHM = INPLACE LOCK = NONE".
+            | tk=<K_ALGORITHM> | tk=<K_NONE> | tk="="
         ) { dropArgs.add(tk.image); }
         |
         (
             <K_ON> name = Table() { dropArgs.add("ON"); dropArgs.add(name.toString()); }
         )
+        |
+        // The lock_option of DROP INDEX. LOCK also starts a LOCK TABLE statement, so it is only
+        // taken as a DROP argument when it cannot be the beginning of the next statement.
+        LOOKAHEAD({ getToken(1).kind == K_LOCK && getToken(2).kind != K_TABLE })
+        tk=<K_LOCK> { dropArgs.add(tk.image); }
     )*
     {
         if (dropArgs.size() > 0) {
