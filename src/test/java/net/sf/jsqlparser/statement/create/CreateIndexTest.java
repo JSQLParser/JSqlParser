@@ -179,4 +179,21 @@ public class CreateIndexTest {
     public void testCreateIndexIncludeIssue2459() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX idx_a ON t1 (a) INCLUDE (b, c)");
     }
+
+    @Test
+    public void testCreateIndexKeyPartWithPrefixLengthAndDirectionIssue2490()
+            throws JSQLParserException {
+        // MySQL writes the prefix length without a space, JSqlParser deparses it with one.
+        String statement = "CREATE INDEX i03 ON t (c1(20) DESC)";
+        CreateIndex createIndex = (CreateIndex) parserManager.parse(new StringReader(statement));
+
+        List<String> params = createIndex.getIndex().getColumns().get(0).getParams();
+        assertEquals(2, params.size());
+        assertEquals("(20)", params.get(0));
+        assertEquals("DESC", params.get(1));
+
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i03 ON t (c1 (20) DESC)");
+        assertSqlCanBeParsedAndDeparsed("CREATE INDEX i04 ON t (c1 (20) ASC, c2 (10) DESC)");
+        assertSqlCanBeParsedAndDeparsed("CREATE UNIQUE INDEX i25 ON t (c1 (10) DESC)");
+    }
 }

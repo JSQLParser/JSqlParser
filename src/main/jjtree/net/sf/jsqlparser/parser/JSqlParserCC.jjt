@@ -10980,6 +10980,7 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 Index.ColumnParams IndexColumnWithParams(): {
     String columnName = null;
     List<String> parameter = null;
+    List<String> param = null;
     Expression expression = null;
     Index.ColumnParams column = null;
 }
@@ -10987,14 +10988,30 @@ Index.ColumnParams IndexColumnWithParams(): {
     (
         columnName=RelObjectName()
         { parameter = null; }
-        [ parameter = CreateParameter() ]
+        // MySQL allows a key part to carry a prefix length and a direction, e.g. "c1(20) DESC",
+        // so more than one parameter has to be collected here.
+        ( LOOKAHEAD(2) param = CreateParameter()
+            {
+                if (parameter == null) {
+                    parameter = new ArrayList<String>();
+                }
+                parameter.addAll(param);
+            }
+        )*
         {
             column = new Index.ColumnParams(columnName, parameter);
         }
         |
         "(" expression=Expression() ")"
         { parameter = null; }
-        [ LOOKAHEAD(2) parameter = CreateParameter() ]
+        ( LOOKAHEAD(2) param = CreateParameter()
+            {
+                if (parameter == null) {
+                    parameter = new ArrayList<String>();
+                }
+                parameter.addAll(param);
+            }
+        )*
         {
             column = new Index.ColumnParams(expression, parameter);
         }
