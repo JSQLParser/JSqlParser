@@ -10979,41 +10979,30 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 
 Index.ColumnParams IndexColumnWithParams(): {
     String columnName = null;
+    // the options collected for this key part, and the result of a single CreateParameter()
+    List<String> columnParams = new ArrayList<String>();
     List<String> parameter = null;
-    List<String> param = null;
     Expression expression = null;
     Index.ColumnParams column = null;
 }
 {
     (
         columnName=RelObjectName()
-        { parameter = null; }
         // MySQL allows a key part to carry a prefix length and a direction, e.g. "c1(20) DESC",
         // so more than one parameter has to be collected here.
-        ( LOOKAHEAD(2) param = CreateParameter()
-            {
-                if (parameter == null) {
-                    parameter = new ArrayList<String>();
-                }
-                parameter.addAll(param);
-            }
-        )*
+        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
         {
-            column = new Index.ColumnParams(columnName, parameter);
+            // ColumnParams renders a separating space for a non-null list, so a key part
+            // without options has to be given null rather than an empty list.
+            column = new Index.ColumnParams(columnName,
+                    columnParams.isEmpty() ? null : columnParams);
         }
         |
         "(" expression=Expression() ")"
-        { parameter = null; }
-        ( LOOKAHEAD(2) param = CreateParameter()
-            {
-                if (parameter == null) {
-                    parameter = new ArrayList<String>();
-                }
-                parameter.addAll(param);
-            }
-        )*
+        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
         {
-            column = new Index.ColumnParams(expression, parameter);
+            column = new Index.ColumnParams(expression,
+                    columnParams.isEmpty() ? null : columnParams);
         }
     )
     {
