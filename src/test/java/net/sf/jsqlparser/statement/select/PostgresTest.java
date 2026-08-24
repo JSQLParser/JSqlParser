@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -137,5 +138,45 @@ public class PostgresTest {
         Assertions.assertEquals("This is a Test Table", table.getUnquotedName());
         Assertions.assertEquals("`This is a Test Table`", table.getName());
 
+    }
+
+    @Test
+    public void testPostgresHashBinaryOperator() throws JSQLParserException {
+        // PostgreSQL 18, Table 9.4 (Mathematical Operators):
+        // integral_type # integral_type -> bitwise exclusive OR
+        assertSqlCanBeParsedAndDeparsed("SELECT 17 # 5");
+        // PostgreSQL 18, Table 9.36 (Geometric Operators):
+        // geometric_type # geometric_type -> point of intersection
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed("SELECT lseg1 # lseg2");
+        Intersects intersects = Assertions.assertInstanceOf(Intersects.class,
+                select.getPlainSelect().getSelectItem(0).getExpression());
+        Assertions.assertEquals("#", intersects.getStringExpression());
+        Assertions.assertInstanceOf(Column.class, intersects.getLeftExpression());
+        Assertions.assertInstanceOf(Column.class, intersects.getRightExpression());
+
+        assertSqlCanBeParsedAndDeparsed("SELECT a # (b + 1) FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT a # b AS x FROM t");
+        // same tier as `&`: binds tighter than the comparison that follows
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM t WHERE a # b = 1");
+    }
+
+    @Test
+    public void testPostgresHashOperatorKeepsIdentifiersAndJsonOperators()
+            throws JSQLParserException {
+        // `#` stays an identifier character: SQL Server `#temp`, `##global`
+        // (#1197), Oracle `#$tab1#` and unquoted names containing `#`
+        assertSqlCanBeParsedAndDeparsed("SELECT #temp FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT ##global FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT #$tab1# FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT a#b FROM t");
+        // `#>` / `#>>` keep their JSON lexing (#1695)
+        assertSqlCanBeParsedAndDeparsed("SELECT data #> '{a,b}' FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT data #>> '{0,1}' FROM t");
+        // a lone `#` can no longer be an identifier (alias, column or table
+        // name), all such forms fail loudly now that `#` is an operator
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT 1 #"));
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT # FROM t"));
     }
 }

@@ -40,6 +40,7 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
+import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -723,6 +724,12 @@ public interface ExpressionVisitor<T> {
 
     default void visit(GeometryDistance geometryDistance) {
         this.visit(geometryDistance, null);
+    }
+
+    <S> T visit(Intersects intersects, S context);
+
+    default void visit(Intersects intersects) {
+        this.visit(intersects, null);
     }
 
     <S> T visit(Select select, S context);

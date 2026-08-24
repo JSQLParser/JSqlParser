@@ -107,6 +107,7 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
+import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -816,6 +817,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     }
 
     @Override
+    public <S> Void visit(Intersects intersects, S context) {
+        visitBinaryExpression(intersects, " # ");
+        return null;
+    }
+
+    @Override
     public <S> Void visit(UserVariable var, S context) {
         // nothing to validate
         return null;
@@ -914,6 +921,10 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     public void visit(JsonOperator jsonExpr) {
         visit(jsonExpr, null);
+    }
+
+    public void visit(Intersects intersects) {
+        visit(intersects, null);
     }
 
     public void visit(UserVariable var) {

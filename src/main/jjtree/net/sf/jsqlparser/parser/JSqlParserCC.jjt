@@ -487,9 +487,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             int prec;
 
             // Named tokens: OP_SLASH(/), OP_CARET(^), K_DIV, OP_CONCAT(||),
-            //               OP_PIPE(|), OP_LSHIFT(<<), OP_RSHIFT(>>)
+            //               OP_PIPE(|), OP_LSHIFT(<<), OP_RSHIFT(>>),
+            //               S_HASH_OPERATOR(#)
             // String-literal tokens: *, +, -, %, & (unnamed in JavaCC grammar)
             if (op == OP_SLASH || op == OP_CARET || op == K_DIV)              prec = 6;
+            else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
             else {
@@ -515,6 +517,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             Expression right = prattArithRest(PrimaryExpression(), prec + 1);
 
             if      (op == OP_SLASH)  { Division         r = new Division();         r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+            else if (op == S_HASH_OPERATOR) { Intersects r = new Intersects(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CARET)  { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == K_DIV)     { IntegerDivision  r = new IntegerDivision();  r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CONCAT) { Concat           r = new Concat();           r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -1929,6 +1932,12 @@ TOKEN:
         matchedToken.image = input_stream.GetImage();
         matchedToken.kind = charLiteralIndex;
     }
+|
+// Bare `#` as a binary operator (PostgreSQL bitwise XOR / geometric
+// intersection).  Declared before <S_IDENTIFIER> to win the length tie on a
+// lone `#`; `#temp`-style identifiers and `#>` / `#>>` keep their usual
+// lexing by longest match (#1197, #1695).
+<S_HASH_OPERATOR: "#">
 |
 <S_IDENTIFIER: (<LETTER> (<PART_LETTER>)*) | "$" | ("$" <PART_LETTER_NO_DOLLAR> (<PART_LETTER>)*)>
 |   <#LETTER: <UnicodeIdentifierStart>
