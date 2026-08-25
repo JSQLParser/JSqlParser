@@ -46,6 +46,7 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
+import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
@@ -1124,6 +1125,12 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(JsonOperator jsonExpr, S context) {
         visitBinaryExpression(jsonExpr);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Intersects intersects, S context) {
+        visitBinaryExpression(intersects);
         return null;
     }
 
