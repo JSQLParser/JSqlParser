@@ -91,10 +91,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     public CCJSqlParser withConfiguration(FeatureConfiguration configuration) {
         token_source.configuration = configuration;
+        jj_input_stream.featureConfiguration = configuration;
         return this;
     }
 
     public FeatureConfiguration getConfiguration() {
+        // wire the stream before parsing starts: every feature mutation goes
+        // through here (the consumers run pre-parse), default-off parsing
+        // never wires the stream and stays on the zero-cost path
+        if (jj_input_stream.featureConfiguration != token_source.configuration) {
+            jj_input_stream.featureConfiguration = token_source.configuration;
+        }
         return token_source.configuration;
     }
 
@@ -1883,6 +1890,19 @@ SPECIAL_TOKEN:
    < LINE_COMMENT: ("--" | "//") (~["\r","\n"])*>
 }
 
+// MySQL `#` line comment (#2499), flag-gated.  Under
+// Feature.allowHashLineComments the stream rewrites a token-start `#` to
+// SimpleCharStream.HASH_SUBSTITUTION, a character no other rule starts with,
+// so this production wins the match for every `#` form (`# c`, `#c`, `#>`,
+// ...) without touching the identifier and JSON-operator lexing of the
+// default mode.  The action restores the `#` in the token image; unquoted
+// identifiers end at their first `#` via the S_IDENTIFIER action, which
+// re-lexes the remainder as this comment.
+SPECIAL_TOKEN:
+{
+   < HASH_LINE_COMMENT: "\u0001" (~["\r","\n"])*>
+}
+
 // Nested block comments:  /* ... /* ... */ ... */
 //
 // Uses a nesting counter (commentNesting in TOKEN_MGR_DECLS) and
@@ -1940,12 +1960,46 @@ TOKEN:
 <S_HASH_OPERATOR: "#">
 |
 <S_IDENTIFIER: (<LETTER> (<PART_LETTER>)*) | "$" | ("$" <PART_LETTER_NO_DOLLAR> (<PART_LETTER>)*)>
+{
+    // MySQL `#` line comments (#2499): under the flag an unquoted identifier
+    // ends at its first `#`, the rest of the line becomes a comment via the
+    // stream-level substitution (real MySQL reads `42#24` as `42` plus
+    // comment too).  Quoted identifiers and strings keep their `#`.
+    // the wiring check keeps the flag lookup off the hot path of parses
+    // that never opted in (the stream is only wired through the feature
+    // consumers / withConfiguration); getValue avoids the String-based
+    // getAsBoolean roundtrip
+    if (input_stream.featureConfiguration != null
+            && Boolean.TRUE.equals(configuration.getValue(Feature.allowHashLineComments))) {
+        int hashIndex = matchedToken.image.indexOf('#');
+        if (hashIndex > 0) {
+            input_stream.backup(matchedToken.image.length() - hashIndex);
+            matchedToken.image = matchedToken.image.substring(0, hashIndex);
+        }
+    }
+}
 |   <#LETTER: <UnicodeIdentifierStart>
                 | <Nd> | [ "#", "_" ] // Not SQL:2016 compliant!
                 >
 |   <#PART_LETTER_NO_DOLLAR: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "#", "_" , "@"  ] >
 |   <#PART_LETTER: <UnicodeIdentifierStart> | <UnicodeIdentifierExtend> | [ "$" , "#", "_" , "@"  ] >
 | <S_AT_IDENTIFIER: <K_AT_SIGN> (<K_AT_SIGN>)? <S_IDENTIFIER> >
+{
+    // same truncation as S_IDENTIFIER: `@@#name` ends at the `#` under
+    // allowHashLineComments, the rest of the line becomes the comment
+    // the wiring check keeps the flag lookup off the hot path of parses
+    // that never opted in (the stream is only wired through the feature
+    // consumers / withConfiguration); getValue avoids the String-based
+    // getAsBoolean roundtrip
+    if (input_stream.featureConfiguration != null
+            && Boolean.TRUE.equals(configuration.getValue(Feature.allowHashLineComments))) {
+        int hashIndex = matchedToken.image.indexOf('#');
+        if (hashIndex > 0) {
+            input_stream.backup(matchedToken.image.length() - hashIndex);
+            matchedToken.image = matchedToken.image.substring(0, hashIndex);
+        }
+    }
+}
 
 // Unicode characters and categories are defined here: https://www.unicode.org/Public/UNIDATA/UnicodeData.txt
 // SQL:2016 states:

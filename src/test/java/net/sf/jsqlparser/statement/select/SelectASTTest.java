@@ -14,6 +14,7 @@ import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.parser.Token;
@@ -211,5 +212,22 @@ public class SelectASTTest {
 
         assertThat(root.jjtGetFirstToken().specialToken.image)
                 .isEqualTo("/* I want this comment */\n");
+    }
+
+    @Test
+    public void testSelectASTHashLineCommentImage() throws Exception {
+        // a `#` comment under allowHashLineComments is a normal special
+        // token carrying the original `# ...` text
+        CCJSqlParser parser = CCJSqlParserUtil.newParser("SELECT 1 # note\nFROM t");
+        parser.withHashLineComments(true);
+        parser.Statement();
+        List<Token> comments = new ArrayList<>();
+        for (Token t = parser.getASTRoot().jjtGetFirstToken(); t.next != null; t = t.next) {
+            for (Token sp = t.specialToken; sp != null; sp = sp.specialToken) {
+                comments.add(sp);
+            }
+        }
+
+        assertThat(comments).extracting(token -> token.image).containsExactly("# note");
     }
 }

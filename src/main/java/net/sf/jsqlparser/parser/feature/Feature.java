@@ -796,6 +796,12 @@ public enum Feature {
     allowBackslashEscapeCharacter(false),
 
     /**
+     * allows MySQL `#` line comments; disabled by default, where a lone `#` stays the binary
+     * operator (#2507: PostgreSQL bitwise XOR / geometric intersection)
+     */
+    allowHashLineComments(false),
+
+    /**
      * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`
      */
     allowUnparenthesizedSubSelects(false),
