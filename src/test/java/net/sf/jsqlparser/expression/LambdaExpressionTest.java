@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,10 @@ class LambdaExpressionTest {
     @Test
     void testLambdaFunctionSingleParameter() throws JSQLParserException {
         String sqlStr = "select list_transform( split('test', ''),  x -> unicode(x) )";
-        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Select select = assertInstanceOf(
+                Select.class, TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true));
+        Function function = select.getPlainSelect().getSelectItem(0).getExpression(Function.class);
+        assertInstanceOf(LambdaExpression.class, function.getParameters().get(1));
     }
 
     @Test
@@ -50,6 +54,17 @@ class LambdaExpressionTest {
     void testLambdaFirstArgumentIssue2195() throws JSQLParserException {
         String sqlStr = "select array_map((x,y,z) -> x + y, [1], [2], [4]) FROM table_name";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testLambdaFunctionFourParameters() throws JSQLParserException {
+        String sqlStr = "SELECT list_transform([1], (a, b, c, d) -> a)";
+        Select select = assertInstanceOf(
+                Select.class, TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true));
+        Function function = select.getPlainSelect().getSelectItem(0).getExpression(Function.class);
+        LambdaExpression lambda =
+                assertInstanceOf(LambdaExpression.class, function.getParameters().get(1));
+        assertEquals(4, lambda.getIdentifiers().size());
     }
 
 }

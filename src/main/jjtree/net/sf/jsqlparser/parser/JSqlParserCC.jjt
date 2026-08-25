@@ -7975,7 +7975,7 @@ ExpressionList SimpleExpressionList():
     (
         LOOKAHEAD(2, {!interrupted} ) ","
         (
-            LOOKAHEAD( 7 ) expr=LambdaExpression()
+            LOOKAHEAD( RelObjectName() "->" ) expr=LambdaExpression()
             |
             expr=SimpleExpression()
         )
@@ -8038,7 +8038,7 @@ ExpressionList ComplexExpressionList():
             |
             LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
             |
-            LOOKAHEAD(7) expr=LambdaExpression()
+            LOOKAHEAD( RelObjectName() "->" ) expr=LambdaExpression()
             |
             expr=Expression()
         ) { expressions.add(expr); }
