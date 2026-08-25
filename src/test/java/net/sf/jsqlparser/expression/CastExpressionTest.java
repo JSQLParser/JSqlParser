@@ -13,6 +13,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -154,5 +155,19 @@ public class CastExpressionTest {
                         infoAccess.getExpression());
         Assertions.assertEquals(1, parenthesedCast.size());
         Assertions.assertInstanceOf(CastExpression.class, parenthesedCast.get(0));
+    }
+
+    @Test
+    public void testCastToArrayIssue2490() throws JSQLParserException {
+        // MySQL casts to an array of the given type when a multi-valued index key part is
+        // defined, and accepts the same cast anywhere else an expression is allowed.
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(data -> '$.zips' AS UNSIGNED ARRAY) FROM t");
+        assertSqlCanBeParsedAndDeparsed("SELECT CAST(x AS CHAR (10) ARRAY) FROM t");
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT CAST(data -> '$.zips' AS UNSIGNED ARRAY) FROM t");
+        CastExpression cast = Assertions.assertInstanceOf(CastExpression.class,
+                select.getSelectItem(0).getExpression());
+        Assertions.assertEquals("UNSIGNED ARRAY", cast.getColDataType().getDataType());
     }
 }

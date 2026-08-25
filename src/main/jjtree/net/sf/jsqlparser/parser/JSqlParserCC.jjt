@@ -9946,7 +9946,13 @@ CastExpression CastExpression():
             ")"
         )
         |
-        type=ColDataType() { retval.setColDataType(type); }
+        (
+            type=ColDataType() { retval.setColDataType(type); }
+            // MySQL casts to an array of the given type when a multi-valued index key part is
+            // defined, e.g. CAST(data->'$.zips' AS UNSIGNED ARRAY). ARRAY reads as a further
+            // word of the type, the way INT UNSIGNED already does.
+            [ <K_ARRAY_LITERAL> { type.setDataType(type.getDataType() + " ARRAY"); } ]
+        )
     )
 
     // BigQuery FORMAT clause

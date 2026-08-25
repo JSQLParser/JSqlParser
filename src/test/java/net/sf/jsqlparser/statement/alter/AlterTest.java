@@ -2414,4 +2414,10 @@ public class AlterTest {
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD INDEX i33 (c1 (20) ASC)");
         assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ADD UNIQUE INDEX i34 (c1 (10) DESC)");
     }
+
+    @Test
+    public void testAlterTableAddMultiValuedIndexIssue2490() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE t ADD INDEX i31 ((CAST(data -> '$.zips' AS UNSIGNED ARRAY)))");
+    }
 }

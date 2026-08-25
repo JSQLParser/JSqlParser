@@ -234,4 +234,10 @@ public class CreateIndexTest {
         assertSqlCanBeParsedAndDeparsed("CREATE FULLTEXT INDEX i18 ON t (body) WITH PARSER ngram");
         assertSqlCanBeParsedAndDeparsed("CREATE SPATIAL INDEX i19 ON t (g)");
     }
+
+    @Test
+    public void testCreateMultiValuedIndexIssue2490() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE INDEX i20 ON t ((CAST(data -> '$.zips' AS UNSIGNED ARRAY)))");
+    }
 }
