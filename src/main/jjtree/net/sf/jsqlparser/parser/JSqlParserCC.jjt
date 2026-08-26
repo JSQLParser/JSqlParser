@@ -1110,7 +1110,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected boolean isAdjacentStringConcat() {
         String mode = getAsString(Feature.adjacentStringLiterals);
-        if (AdjacentStringLiterals.OFF.name().equals(mode)) {
+        if (mode == null || AdjacentStringLiterals.OFF.name().equals(mode)) {
             return false;
         }
         if (getToken(1).kind != S_CHAR_LITERAL) {
