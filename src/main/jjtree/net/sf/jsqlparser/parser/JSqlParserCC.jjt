@@ -2077,6 +2077,11 @@ TOKEN:
             matchedToken.kind = squaredBracketOpenIndex;
             input_stream.backup(image.length() - 1);
         }
+        if ( configuration.getAsBoolean(Feature.allowDoubleQuotedStrings)
+            && matchedToken.image.charAt(0) == '"' ) {
+            // `charLiteralIndex` defined in TokenManagerDeclaration above
+            matchedToken.kind = charLiteralIndex;
+        }
     }
 }
 

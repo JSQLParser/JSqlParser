@@ -12,6 +12,7 @@ package net.sf.jsqlparser.parser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
@@ -20,6 +21,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.test.MemoryLeakVerifier;
 import net.sf.jsqlparser.test.TestUtils;
@@ -44,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CCJSqlParserUtilTest {
 
@@ -610,5 +613,46 @@ public class CCJSqlParserUtilTest {
                         p -> p.withSquareBracketQuotation(true)
                                 .withDialect(AbstractJSqlParser.Dialect.MYSQL))
                         .toString());
+    }
+
+    @Test
+    public void testDoubleQuotedStringsFeature() throws Exception {
+        // default (flag off): double quotes are quoted identifiers, unchanged
+        PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil
+                .parse("SELECT \"not an identifier\"")).getSelectBody();
+        assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
+        // on: the BigQuery/Spark/MySQL-default reading, double quotes are
+        // string literals, the quote kept on round-trip
+        select = (PlainSelect) ((Select) CCJSqlParserUtil.parse("SELECT \"not an identifier\"",
+                p -> p.withDoubleQuotedStrings(true))).getSelectBody();
+        Expression expression = select.getSelectItems().get(0).getExpression();
+        assertTrue(expression instanceof StringValue);
+        assertEquals("not an identifier", ((StringValue) expression).getValue());
+        assertEquals("SELECT \"not an identifier\"", select.toString());
+        // empty string and doubled quotes take the single-quote treatment
+        assertEquals("SELECT \"\"", CCJSqlParserUtil
+                .parse("SELECT \"\"", p -> p.withDoubleQuotedStrings(true)).toString());
+        assertEquals("SELECT \"a\"\"b\"", CCJSqlParserUtil
+                .parse("SELECT \"a\"\"b\"", p -> p.withDoubleQuotedStrings(true)).toString());
+        // identifier positions: a `"..."` token follows the existing
+        // string-as-table branch (`FROM 'file.csv'`), the same leniency
+        // single quotes already have; MySQL itself would error here
+        assertEquals("SELECT * FROM \"t\"", CCJSqlParserUtil
+                .parse("SELECT * FROM \"t\"", p -> p.withDoubleQuotedStrings(true)).toString());
+    }
+
+    @Test
+    public void testDoubleQuotedStringsPreset() throws Exception {
+        // MYSQL and MARIADB presets carry the switch (default sql_mode reading)
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.MARIADB}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil
+                    .parse("SELECT \"abc\"", p -> p.withDialect(dialect))).getSelectBody();
+            assertTrue(select.getSelectItems().get(0).getExpression() instanceof StringValue);
+        }
+        // the identifier-default dialects keep the quoted identifier reading
+        PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse("SELECT \"abc\"",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.SQLSERVER))).getSelectBody();
+        assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
     }
 }
