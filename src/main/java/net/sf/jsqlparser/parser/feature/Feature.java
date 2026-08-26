@@ -802,6 +802,14 @@ public enum Feature {
     allowDoubleQuotedStrings(false),
 
     /**
+     * concatenates adjacent String Literals: NEWLINE when separated by whitespace with at least one
+     * newline (the SQL standard and PostgreSQL), WHITESPACE across any whitespace (GoogleSQL,
+     * Spark/Databricks); OFF by default, where the second literal stays an alias (MySQL, SQL
+     * Server) or fails (everywhere else)
+     */
+    adjacentStringLiterals("OFF"),
+
+    /**
      * allows MySQL `#` line comments; disabled by default, where a lone `#` stays the binary
      * operator (#2507: PostgreSQL bitwise XOR / geometric intersection)
      */

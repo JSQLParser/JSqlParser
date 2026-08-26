@@ -655,4 +655,67 @@ public class CCJSqlParserUtilTest {
                 p -> p.withDialect(AbstractJSqlParser.Dialect.SQLSERVER))).getSelectBody();
         assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
     }
+
+    @Test
+    public void testAdjacentStringLiteralsNewline() throws Exception {
+        // default (off): the MySQL / SQL Server alias reading, unchanged
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a' 'b'").toString());
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'").toString());
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT * FROM t WHERE x = 'a'\n'b'"));
+        // newline mode: the standard / Postgres reading, "Two string constants
+        // that are only separated by whitespace with at least one newline are
+        // concatenated"
+        PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                p -> p.withAdjacentStringLiterals(
+                        AbstractJSqlParser.AdjacentStringLiterals.NEWLINE)))
+                .getSelectBody();
+        Expression expression = select.getSelectItems().get(0).getExpression();
+        assertTrue(expression instanceof StringValue);
+        assertEquals("ab", ((StringValue) expression).getValue());
+        assertEquals("SELECT 'ab'", select.toString());
+        // same line keeps the alias reading under newline mode
+        assertEquals("SELECT 'a' 'b'",
+                CCJSqlParserUtil.parse("SELECT 'a' 'b'",
+                        p -> p.withAdjacentStringLiterals(
+                                AbstractJSqlParser.AdjacentStringLiterals.NEWLINE))
+                        .toString());
+        // expression positions concatenate too
+        assertEquals("SELECT * FROM t WHERE x = 'ab'",
+                CCJSqlParserUtil.parse("SELECT * FROM t WHERE x = 'a'\n'b'",
+                        p -> p.withAdjacentStringLiterals(
+                                AbstractJSqlParser.AdjacentStringLiterals.NEWLINE))
+                        .toString());
+        // three parts merge into one literal
+        assertEquals("SELECT 'abc'",
+                CCJSqlParserUtil.parse("SELECT 'a'\n'b'\n'c'",
+                        p -> p.withAdjacentStringLiterals(
+                                AbstractJSqlParser.AdjacentStringLiterals.NEWLINE))
+                        .toString());
+        // the ANSI SQL and Postgres presets carry it, the MySQL preset does not
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.ANSI_SQL, AbstractJSqlParser.Dialect.POSTGRESQL}) {
+            assertEquals("SELECT 'ab'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                    p -> p.withDialect(dialect)).toString());
+        }
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL)).toString());
+    }
+
+    @Test
+    public void testAdjacentStringLiteralsWhitespace() throws Exception {
+        // whitespace mode: the GoogleSQL / Spark reading, same line
+        // concatenates (their literal chunking)
+        assertEquals("SELECT 'ab'",
+                CCJSqlParserUtil.parse("SELECT 'a' 'b'",
+                        p -> p.withAdjacentStringLiterals(
+                                AbstractJSqlParser.AdjacentStringLiterals.WHITESPACE))
+                        .toString());
+        // combined with allowDoubleQuotedStrings: the BigQuery chunking shape
+        assertEquals("SELECT \"12\"",
+                CCJSqlParserUtil.parse("SELECT \"1\" \"2\"",
+                        p -> p.withDoubleQuotedStrings(true).withAdjacentStringLiterals(
+                                AbstractJSqlParser.AdjacentStringLiterals.WHITESPACE))
+                        .toString());
+    }
 }
