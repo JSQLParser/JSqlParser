@@ -514,4 +514,54 @@ public class CCJSqlParserUtilTest {
                 + "def'\n"
                 + "where id=?", true);
     }
+
+    @Test
+    public void testHashLineCommentsFeature() throws Exception {
+        // with the flag: MySQL line comments, `#` to end of line,
+        // unconditional like MySQL itself (no blank needed, `42#24` is a
+        // comment there too); the statement continues on the next line
+        assertEquals("SELECT 42", CCJSqlParserUtil
+                .parse("SELECT 42 # 24", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("SELECT 1 # comment, 2", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("SELECT 1 #comment", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("SELECT 1 #!bang", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 42", CCJSqlParserUtil
+                .parse("SELECT 42#24", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT a", CCJSqlParserUtil
+                .parse("SELECT a#b FROM t", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1 FROM t", CCJSqlParserUtil
+                .parse("SELECT 1 # c\nFROM t", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("# leading\nSELECT 1", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("SELECT 1 #", p -> p.withHashLineComments(true)).toString());
+        assertEquals("SELECT 1", CCJSqlParserUtil
+                .parse("SELECT 1 #\n", p -> p.withHashLineComments(true)).toString());
+        // the `#>` family has no meaning in MySQL and comments out like any
+        // other `#`; quoted forms keep their `#`
+        assertEquals("SELECT data", CCJSqlParserUtil
+                .parse("SELECT data #> '{a}' FROM t", p -> p.withHashLineComments(true))
+                .toString());
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT '#' FROM t", true,
+                p -> p.withHashLineComments(true));
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT \"a#b\" FROM t", true,
+                p -> p.withHashLineComments(true));
+        // default (flag off): the #2507 binary operator, unchanged
+        assertEquals("SELECT 42 # 24", CCJSqlParserUtil.parse("SELECT 42 # 24").toString());
+        assertEquals("SELECT 42#24", CCJSqlParserUtil.parse("SELECT 42#24").toString());
+    }
+
+    @Test
+    public void testHashLineCommentsMySQLStatementSemantics() throws Exception {
+        // `#temp` is a comment under the flag, so `SELECT #temp FROM t`
+        // loses the rest of the line and fails, exactly like MySQL; with the
+        // flag off the same input parses as the #2507 operator expression
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                .parse("SELECT #temp FROM t", p -> p.withHashLineComments(true)));
+        assertEquals("SELECT 1 # comment",
+                CCJSqlParserUtil.parse("SELECT 1 # comment").toString());
+    }
 }

@@ -77,6 +77,14 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
     }
 
+    public P withHashLineComments() {
+        return withFeature(Feature.allowHashLineComments, true);
+    }
+
+    public P withHashLineComments(boolean allowHashLineComments) {
+        return withFeature(Feature.allowHashLineComments, allowHashLineComments);
+    }
+
     public P withUnparenthesizedSubSelects() {
         return withFeature(Feature.allowUnparenthesizedSubSelects, true);
     }
