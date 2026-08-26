@@ -36,6 +36,12 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
                 && escapedValue.endsWith("'")) {
             value = escapedValue.substring(1, escapedValue.length() - 1);
             return;
+        } else if (escapedValue.length() >= 2 && escapedValue.startsWith("\"")
+                && escapedValue.endsWith("\"")) {
+            // double quoted String Literals (Feature.allowDoubleQuotedStrings)
+            value = escapedValue.substring(1, escapedValue.length() - 1);
+            quoteStr = "\"";
+            return;
         } else if (escapedValue.length() >= 4 && escapedValue.startsWith("$$")
                 && escapedValue.endsWith("$$")) {
             value = escapedValue.substring(2, escapedValue.length() - 2);

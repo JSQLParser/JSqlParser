@@ -796,6 +796,12 @@ public enum Feature {
     allowBackslashEscapeCharacter(false),
 
     /**
+     * allows double quoted String Literals (BigQuery, Spark/Databricks, MySQL default sql_mode);
+     * disabled by default, where double quotes stay quoted identifiers (ANSI SQL)
+     */
+    allowDoubleQuotedStrings(false),
+
+    /**
      * allows MySQL `#` line comments; disabled by default, where a lone `#` stays the binary
      * operator (#2507: PostgreSQL bitwise XOR / geometric intersection)
      */

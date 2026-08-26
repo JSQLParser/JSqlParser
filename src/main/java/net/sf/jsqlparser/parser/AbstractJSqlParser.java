@@ -26,8 +26,10 @@ public abstract class AbstractJSqlParser<P> {
 
     public enum Dialect {
         ANSI_SQL, ORACLE, MYSQL(Feature.allowBackslashEscapeCharacter,
-                Feature.allowHashLineComments), MARIADB(Feature.allowBackslashEscapeCharacter,
-                        Feature.allowHashLineComments), SQLSERVER(
+                Feature.allowHashLineComments,
+                Feature.allowDoubleQuotedStrings), MARIADB(Feature.allowBackslashEscapeCharacter,
+                        Feature.allowHashLineComments,
+                        Feature.allowDoubleQuotedStrings), SQLSERVER(
                                 Feature.allowSquareBracketQuotation), POSTGRESQL, H2, EXASOL;
 
         private final Set<Feature> lexerFeatures;
@@ -96,6 +98,14 @@ public abstract class AbstractJSqlParser<P> {
 
     public P withBackslashEscapeCharacter(boolean allowBackslashEscapeCharacter) {
         return withFeature(Feature.allowBackslashEscapeCharacter, allowBackslashEscapeCharacter);
+    }
+
+    public P withDoubleQuotedStrings() {
+        return withFeature(Feature.allowDoubleQuotedStrings, true);
+    }
+
+    public P withDoubleQuotedStrings(boolean allowDoubleQuotedStrings) {
+        return withFeature(Feature.allowDoubleQuotedStrings, allowDoubleQuotedStrings);
     }
 
     public P withHashLineComments() {
