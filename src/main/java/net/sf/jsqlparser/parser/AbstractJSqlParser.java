@@ -13,7 +13,10 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractJSqlParser<P> {
 
@@ -22,7 +25,21 @@ public abstract class AbstractJSqlParser<P> {
     protected List<ParseException> parseErrors = new ArrayList<>();
 
     public enum Dialect {
-        ORACLE, EXASOL
+        ANSI_SQL, ORACLE, MYSQL(Feature.allowBackslashEscapeCharacter,
+                Feature.allowHashLineComments), MARIADB(Feature.allowBackslashEscapeCharacter,
+                        Feature.allowHashLineComments), SQLSERVER(
+                                Feature.allowSquareBracketQuotation), POSTGRESQL, H2, EXASOL;
+
+        private final Set<Feature> lexerFeatures;
+
+        Dialect(Feature... lexerFeatures) {
+            this.lexerFeatures = lexerFeatures.length == 0 ? EnumSet.noneOf(Feature.class)
+                    : EnumSet.copyOf(Arrays.asList(lexerFeatures));
+        }
+
+        public Set<Feature> getLexerFeatures() {
+            return lexerFeatures;
+        }
     }
 
     public P withSquareBracketQuotation() {
@@ -62,7 +79,11 @@ public abstract class AbstractJSqlParser<P> {
     }
 
     public P withDialect(Dialect dialect) {
-        return withFeature(Feature.dialect, dialect.name());
+        withFeature(Feature.dialect, dialect.name());
+        for (Feature lexerFeature : dialect.getLexerFeatures()) {
+            withFeature(lexerFeature, true);
+        }
+        return me();
     }
 
     public P withAllowedNestingDepth(int allowedNestingDepth) {

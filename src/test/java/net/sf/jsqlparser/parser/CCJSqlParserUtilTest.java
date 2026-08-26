@@ -564,4 +564,51 @@ public class CCJSqlParserUtilTest {
         assertEquals("SELECT 1 # comment",
                 CCJSqlParserUtil.parse("SELECT 1 # comment").toString());
     }
+
+    @Test
+    public void testDialectPresets() throws Exception {
+        // MYSQL and MARIADB: backslash escapes and # line comments (MySQL 8
+        // manual "Comments" and "String Literals", MariaDB KB "Comment Syntax"
+        // and "String Literals"); backticks are always on, brackets are not
+        // MySQL syntax
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.MARIADB}) {
+            assertEquals("SELECT `col` FROM t WHERE a = 'x\\'yz' AND b = 42", CCJSqlParserUtil
+                    .parse("SELECT `col` FROM t WHERE a = 'x\\'yz' AND b = 42#24",
+                            p -> p.withDialect(dialect))
+                    .toString());
+        }
+        // SQLSERVER: bracket quotation only (Microsoft Learn "Database
+        // Identifiers"), `#` stays available for identifiers (temp tables)
+        assertEquals("SELECT [my column] FROM t",
+                CCJSqlParserUtil.parse("SELECT [my column] FROM t",
+                        p -> p.withDialect(AbstractJSqlParser.Dialect.SQLSERVER)).toString());
+        // empty presets keep the defaults: the #2507 operator, no backslash
+        // escapes
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.ANSI_SQL, AbstractJSqlParser.Dialect.ORACLE,
+                AbstractJSqlParser.Dialect.POSTGRESQL, AbstractJSqlParser.Dialect.H2,
+                AbstractJSqlParser.Dialect.EXASOL}) {
+            assertEquals("SELECT 42 # 24",
+                    CCJSqlParserUtil.parse("SELECT 42 # 24", p -> p.withDialect(dialect))
+                            .toString());
+            assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                    .parse("SELECT 'a\\'b'", p -> p.withDialect(dialect)));
+        }
+    }
+
+    @Test
+    public void testDialectPresetSwitchOverrides() throws Exception {
+        // an explicit switch after the preset wins: `#` is the #2507
+        // operator again
+        assertEquals("SELECT 1 # comment", CCJSqlParserUtil.parse("SELECT 1 # comment",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL).withHashLineComments(false))
+                .toString());
+        // the preset never turns a previously enabled switch off
+        assertEquals("SELECT [my column] FROM mytable",
+                CCJSqlParserUtil.parse("SELECT [my column] FROM mytable",
+                        p -> p.withSquareBracketQuotation(true)
+                                .withDialect(AbstractJSqlParser.Dialect.MYSQL))
+                        .toString());
+    }
 }

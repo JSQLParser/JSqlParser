@@ -318,3 +318,15 @@ Additionally there are Features to control the Parser's effort at the cost of th
             , parser -> parser
                 .withBackslashEscapeCharacter(true)
     );
+
+Instead of turning the individual Parser Features on one by one, a ``Dialect`` preset selects the features of that database dialect: ``withDialect(Dialect.MYSQL)`` turns on ``withBackslashEscapeCharacter`` and ``withHashLineComments`` (both MySQL and MariaDB syntax), ``withDialect(Dialect.SQLSERVER)`` turns on ``withSquareBracketQuotation``. Features set explicitly after the dialect preset win over the preset.
+
+.. code-block:: java
+
+    // Select the Database Dialect: turns on that dialect's parser features
+    sqlStr="SELECT `col` FROM t WHERE a = 'x\\'yz' AND b = 42#24";
+    Statement stmt3 = CCJSqlParserUtil.parse(
+            sqlStr
+            , parser -> parser
+                .withDialect(Dialect.MYSQL)
+    );
