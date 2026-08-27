@@ -642,18 +642,50 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    public void testDialectPresetsWarehouses() throws Exception {
+        // BIGQUERY: double quoted strings, # line comments and backslash
+        // escapes (GoogleSQL "Lexical structure and syntax", identifiers are
+        // backticked), backticks stay unconditional
+        assertEquals("SELECT `col` FROM t WHERE a = 'x\\'yz' AND b = 42", CCJSqlParserUtil
+                .parse("SELECT `col` FROM t WHERE a = 'x\\'yz' AND b = 42#24",
+                        p -> p.withDialect(AbstractJSqlParser.Dialect.BIGQUERY))
+                .toString());
+        // DATABRICKS: double quoted strings and backslash escapes (Spark
+        // "Literals"), `#` stays the #2507 operator
+        assertEquals("SELECT \"a\" FROM t WHERE x = 'it\\'s'", CCJSqlParserUtil
+                .parse("SELECT \"a\" FROM t WHERE x = 'it\\'s'",
+                        p -> p.withDialect(AbstractJSqlParser.Dialect.DATABRICKS))
+                .toString());
+        assertEquals("SELECT 42 # 24", CCJSqlParserUtil.parse("SELECT 42 # 24",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.DATABRICKS)).toString());
+        // SNOWFLAKE: backslash escape sequences ("String & binary data
+        // types"), `#` stays the operator
+        assertEquals("SELECT col FROM t WHERE a = 'x\\'yz'", CCJSqlParserUtil
+                .parse("SELECT col FROM t WHERE a = 'x\\'yz'",
+                        p -> p.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE))
+                .toString());
+        assertEquals("SELECT 42 # 24", CCJSqlParserUtil.parse("SELECT 42 # 24",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE)).toString());
+    }
+
+    @Test
     public void testDoubleQuotedStringsPreset() throws Exception {
-        // MYSQL and MARIADB presets carry the switch (default sql_mode reading)
+        // the string-default dialects: MYSQL and MARIADB (default sql_mode),
+        // BIGQUERY and DATABRICKS (string literals, identifiers are backticked)
         for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
-                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.MARIADB}) {
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.MARIADB,
+                AbstractJSqlParser.Dialect.BIGQUERY, AbstractJSqlParser.Dialect.DATABRICKS}) {
             PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil
                     .parse("SELECT \"abc\"", p -> p.withDialect(dialect))).getSelectBody();
             assertTrue(select.getSelectItems().get(0).getExpression() instanceof StringValue);
         }
         // the identifier-default dialects keep the quoted identifier reading
-        PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse("SELECT \"abc\"",
-                p -> p.withDialect(AbstractJSqlParser.Dialect.SQLSERVER))).getSelectBody();
-        assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.SQLSERVER, AbstractJSqlParser.Dialect.SNOWFLAKE}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse("SELECT \"abc\"",
+                    p -> p.withDialect(dialect))).getSelectBody();
+            assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
+        }
     }
 
     @Test
@@ -717,6 +749,15 @@ public class CCJSqlParserUtilTest {
                         p -> p.withDoubleQuotedStrings(true).withAdjacentStringLiterals(
                                 AbstractJSqlParser.AdjacentStringLiterals.WHITESPACE))
                         .toString());
+        // the BigQuery and Databricks presets carry it, the Snowflake preset
+        // does not (no adjacent-literal concatenation documented)
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.BIGQUERY, AbstractJSqlParser.Dialect.DATABRICKS}) {
+            assertEquals("SELECT 'ab'", CCJSqlParserUtil.parse("SELECT 'a' 'b'",
+                    p -> p.withDialect(dialect)).toString());
+        }
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a' 'b'",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.SNOWFLAKE)).toString());
     }
 
     @Test
