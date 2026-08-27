@@ -279,7 +279,7 @@ Define the Parser Features
 
 JSQLParser interprets Squared Brackets ``[..]`` as Arrays, which does not work with MS SQL Server and T-SQL. Please use the Parser Features to instruct JSQLParser to read Squared Brackets as Quotes instead.
 
-JSQLParser allows for standard compliant Single Quote ``'..`` Escaping. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature. JSQLParser reads Double Quotes ``".."`` as quoted identifiers (ANSI SQL); reading them as String Literals (BigQuery, Spark/Databricks, MySQL default sql_mode) needs the ``DoubleQuotedStrings`` parser feature. Adjacent String Literals concatenate optionally: only across a newline (``NEWLINE``, the SQL standard and PostgreSQL) or across any whitespace (``WHITESPACE``, GoogleSQL and Spark/Databricks).
+JSQLParser allows for standard compliant Single Quote ``'..`` Escaping. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature. JSQLParser reads Double Quotes ``".."`` as quoted identifiers (ANSI SQL); reading them as String Literals (BigQuery, Spark/Databricks, MySQL default sql_mode) needs the ``DoubleQuotedStrings`` parser feature. Adjacent String Literals concatenate optionally: only across a newline (``NEWLINE``, the SQL standard and PostgreSQL) or across any whitespace (``WHITESPACE``, GoogleSQL and Spark/Databricks); ``withAdjacentStringLiterals(true)`` selects the standard ``NEWLINE`` mode, ``false`` switches it off.
 
 Additionally there are Features to control the Parser's effort at the cost of the performance.
 

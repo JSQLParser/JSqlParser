@@ -718,4 +718,19 @@ public class CCJSqlParserUtilTest {
                                 AbstractJSqlParser.AdjacentStringLiterals.WHITESPACE))
                         .toString());
     }
+
+    @Test
+    public void testAdjacentStringLiteralsBoolean() throws Exception {
+        // true: the standard (newline) mode, the same line keeps the alias reading
+        assertEquals("SELECT 'ab'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                p -> p.withAdjacentStringLiterals(true)).toString());
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a' 'b'",
+                p -> p.withAdjacentStringLiterals(true)).toString());
+        // false: off, the alias reading also across newlines
+        assertEquals("SELECT 'a' 'b'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                p -> p.withAdjacentStringLiterals(false)).toString());
+        // the no-arg variant enables the standard mode
+        assertEquals("SELECT 'ab'", CCJSqlParserUtil.parse("SELECT 'a'\n'b'",
+                p -> p.withAdjacentStringLiterals()).toString());
+    }
 }

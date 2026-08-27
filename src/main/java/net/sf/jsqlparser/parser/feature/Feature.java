@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
+import net.sf.jsqlparser.parser.AbstractJSqlParser;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -807,7 +808,7 @@ public enum Feature {
      * Spark/Databricks); OFF by default, where the second literal stays an alias (MySQL, SQL
      * Server) or fails (everywhere else)
      */
-    adjacentStringLiterals("OFF"),
+    adjacentStringLiterals(AbstractJSqlParser.AdjacentStringLiterals.OFF),
 
     /**
      * allows MySQL `#` line comments; disabled by default, where a lone `#` stays the binary

@@ -100,7 +100,7 @@ public abstract class AbstractJSqlParser<P> {
     public P withDialect(Dialect dialect) {
         withFeature(Feature.dialect, dialect.name());
         if (dialect.getAdjacentStringLiterals() != AdjacentStringLiterals.OFF) {
-            withFeature(Feature.adjacentStringLiterals, dialect.getAdjacentStringLiterals().name());
+            withAdjacentStringLiterals(dialect.getAdjacentStringLiterals());
         }
         for (Feature lexerFeature : dialect.getLexerFeatures()) {
             withFeature(lexerFeature, true);
@@ -108,8 +108,19 @@ public abstract class AbstractJSqlParser<P> {
         return me();
     }
 
+    public P withAdjacentStringLiterals() {
+        return withAdjacentStringLiterals(AdjacentStringLiterals.NEWLINE);
+    }
+
+    public P withAdjacentStringLiterals(boolean adjacentStringLiterals) {
+        return withAdjacentStringLiterals(
+                adjacentStringLiterals ? AdjacentStringLiterals.NEWLINE
+                        : AdjacentStringLiterals.OFF);
+    }
+
     public P withAdjacentStringLiterals(AdjacentStringLiterals adjacentStringLiterals) {
-        return withFeature(Feature.adjacentStringLiterals, adjacentStringLiterals.name());
+        getConfiguration().setValue(Feature.adjacentStringLiterals, adjacentStringLiterals);
+        return me();
     }
 
     public P withAllowedNestingDepth(int allowedNestingDepth) {
