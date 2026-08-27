@@ -1102,24 +1102,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * This replaces an expensive syntactic LOOKAHEAD(NamedExpressionListExprFirst())
      * that caused exponential backtracking with deeply nested expressions.
      */
-    /**
-     * Semantic lookahead for the adjacent string literal concatenation in PrimaryExpression:
-     * true when Feature.adjacentStringLiterals is on and the next token is a string literal
-     * meeting the mode's separation rule (WHITESPACE: any, NEWLINE: a newline between the
-     * tokens, detected through the token line numbers).
-     */
-    protected boolean isAdjacentStringConcat() {
-        String mode = getAsString(Feature.adjacentStringLiterals);
-        if (mode == null || AdjacentStringLiterals.OFF.name().equals(mode)) {
-            return false;
-        }
-        if (getToken(1).kind != S_CHAR_LITERAL) {
-            return false;
-        }
-        return AdjacentStringLiterals.WHITESPACE.name().equals(mode)
-                || getToken(1).beginLine > getToken(0).endLine;
-    }
-
     protected boolean isNamedExprListAhead() {
         int depth = 0;
         for (int i = 1; ; i++) {
@@ -1143,6 +1125,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 }
             }
         }
+    }
+
+    /**
+     * Semantic lookahead for the adjacent string literal concatenation in PrimaryExpression:
+     * true when Feature.adjacentStringLiterals is on and the next token is a string literal
+     * meeting the mode's separation rule (WHITESPACE: any, NEWLINE: a newline between the
+     * tokens, detected through the token line numbers).
+     */
+    protected boolean isAdjacentStringConcat() {
+        String mode = getAsString(Feature.adjacentStringLiterals);
+        if (mode == null || AdjacentStringLiterals.OFF.name().equals(mode)) {
+            return false;
+        }
+        if (getToken(1).kind != S_CHAR_LITERAL) {
+            return false;
+        }
+        return AdjacentStringLiterals.WHITESPACE.name().equals(mode)
+                || getToken(1).beginLine > getToken(0).endLine;
     }
 
     /**
