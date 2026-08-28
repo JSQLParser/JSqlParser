@@ -200,7 +200,7 @@ public class SelectASTTest {
             }
         }, null);
 
-        assertThat(comments).extracting(token -> token.image).containsExactly("/* testcomment */ ",
+        assertThat(comments).extracting(token -> token.image).containsExactly("/* testcomment */",
                 "-- testcomment2 ");
     }
 
@@ -211,7 +211,7 @@ public class SelectASTTest {
         Node root = (Node) CCJSqlParserUtil.parseAST(sql);
 
         assertThat(root.jjtGetFirstToken().specialToken.image)
-                .isEqualTo("/* I want this comment */\n");
+                .isEqualTo("/* I want this comment */");
     }
 
     @Test
