@@ -24,23 +24,40 @@ public abstract class AbstractJSqlParser<P> {
     protected boolean errorRecovery = false;
     protected List<ParseException> parseErrors = new ArrayList<>();
 
+    public enum AdjacentStringLiterals {
+        OFF, NEWLINE, WHITESPACE
+    }
+
     public enum Dialect {
-        ANSI_SQL, ORACLE, MYSQL(Feature.allowBackslashEscapeCharacter,
+        ANSI_SQL(AdjacentStringLiterals.NEWLINE), ORACLE, MYSQL(AdjacentStringLiterals.OFF,
+                Feature.allowBackslashEscapeCharacter,
                 Feature.allowHashLineComments,
-                Feature.allowDoubleQuotedStrings), MARIADB(Feature.allowBackslashEscapeCharacter,
+                Feature.allowDoubleQuotedStrings), MARIADB(AdjacentStringLiterals.OFF,
+                        Feature.allowBackslashEscapeCharacter,
                         Feature.allowHashLineComments,
-                        Feature.allowDoubleQuotedStrings), SQLSERVER(
-                                Feature.allowSquareBracketQuotation), POSTGRESQL, H2, EXASOL;
+                        Feature.allowDoubleQuotedStrings), SQLSERVER(AdjacentStringLiterals.OFF,
+                                Feature.allowSquareBracketQuotation), POSTGRESQL(
+                                        AdjacentStringLiterals.NEWLINE), H2, EXASOL;
 
         private final Set<Feature> lexerFeatures;
+        private final AdjacentStringLiterals adjacentStringLiterals;
 
-        Dialect(Feature... lexerFeatures) {
+        Dialect(AdjacentStringLiterals adjacentStringLiterals, Feature... lexerFeatures) {
+            this.adjacentStringLiterals = adjacentStringLiterals;
             this.lexerFeatures = lexerFeatures.length == 0 ? EnumSet.noneOf(Feature.class)
                     : EnumSet.copyOf(Arrays.asList(lexerFeatures));
         }
 
+        Dialect(Feature... lexerFeatures) {
+            this(AdjacentStringLiterals.OFF, lexerFeatures);
+        }
+
         public Set<Feature> getLexerFeatures() {
             return lexerFeatures;
+        }
+
+        public AdjacentStringLiterals getAdjacentStringLiterals() {
+            return adjacentStringLiterals;
         }
     }
 
@@ -82,9 +99,27 @@ public abstract class AbstractJSqlParser<P> {
 
     public P withDialect(Dialect dialect) {
         withFeature(Feature.dialect, dialect.name());
+        if (dialect.getAdjacentStringLiterals() != AdjacentStringLiterals.OFF) {
+            withAdjacentStringLiterals(dialect.getAdjacentStringLiterals());
+        }
         for (Feature lexerFeature : dialect.getLexerFeatures()) {
             withFeature(lexerFeature, true);
         }
+        return me();
+    }
+
+    public P withAdjacentStringLiterals() {
+        return withAdjacentStringLiterals(AdjacentStringLiterals.NEWLINE);
+    }
+
+    public P withAdjacentStringLiterals(boolean adjacentStringLiterals) {
+        return withAdjacentStringLiterals(
+                adjacentStringLiterals ? AdjacentStringLiterals.NEWLINE
+                        : AdjacentStringLiterals.OFF);
+    }
+
+    public P withAdjacentStringLiterals(AdjacentStringLiterals adjacentStringLiterals) {
+        getConfiguration().setValue(Feature.adjacentStringLiterals, adjacentStringLiterals);
         return me();
     }
 

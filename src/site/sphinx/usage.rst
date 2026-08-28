@@ -279,7 +279,7 @@ Define the Parser Features
 
 JSQLParser interprets Squared Brackets ``[..]`` as Arrays, which does not work with MS SQL Server and T-SQL. Please use the Parser Features to instruct JSQLParser to read Squared Brackets as Quotes instead.
 
-JSQLParser allows for standard compliant Single Quote ``'..`` Escaping. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature. JSQLParser reads Double Quotes ``".."`` as quoted identifiers (ANSI SQL); reading them as String Literals (BigQuery, Spark/Databricks, MySQL default sql_mode) needs the ``DoubleQuotedStrings`` parser feature.
+JSQLParser allows for standard compliant Single Quote ``'..`` Escaping. Additional Back-slash ``\..`` Escaping needs to be activated by setting the ``BackSlashEscapeCharacter`` parser feature. JSQLParser reads Double Quotes ``".."`` as quoted identifiers (ANSI SQL); reading them as String Literals (BigQuery, Spark/Databricks, MySQL default sql_mode) needs the ``DoubleQuotedStrings`` parser feature. Adjacent String Literals concatenate optionally: only across a newline (``NEWLINE``, the SQL standard and PostgreSQL) or across any whitespace (``WHITESPACE``, GoogleSQL and Spark/Databricks); ``withAdjacentStringLiterals(true)`` selects the standard ``NEWLINE`` mode, ``false`` switches it off.
 
 Additionally there are Features to control the Parser's effort at the cost of the performance.
 
@@ -319,7 +319,7 @@ Additionally there are Features to control the Parser's effort at the cost of th
                 .withBackslashEscapeCharacter(true)
     );
 
-Instead of turning the individual Parser Features on one by one, a ``Dialect`` preset selects the features of that database dialect: ``withDialect(Dialect.MYSQL)`` turns on ``withBackslashEscapeCharacter``, ``withHashLineComments`` and ``withDoubleQuotedStrings`` (MySQL and MariaDB syntax, the latter for the default sql_mode), ``withDialect(Dialect.SQLSERVER)`` turns on ``withSquareBracketQuotation``. Features set explicitly after the dialect preset win over the preset.
+Instead of turning the individual Parser Features on one by one, a ``Dialect`` preset selects the features of that database dialect: ``withDialect(Dialect.MYSQL)`` turns on ``withBackslashEscapeCharacter``, ``withHashLineComments`` and ``withDoubleQuotedStrings`` (MySQL and MariaDB syntax, the latter for the default sql_mode), ``withDialect(Dialect.SQLSERVER)`` turns on ``withSquareBracketQuotation``. ``withDialect(Dialect.POSTGRESQL)`` and ``withDialect(Dialect.ANSI_SQL)`` turn on the newline rule for adjacent String Literals. Features set explicitly after the dialect preset win over the preset.
 
 .. code-block:: java
 

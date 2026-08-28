@@ -1128,6 +1128,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Semantic lookahead for the adjacent string literal concatenation in PrimaryExpression:
+     * true when Feature.adjacentStringLiterals is on and the next token is a string literal
+     * meeting the mode's separation rule (WHITESPACE: any, NEWLINE: a newline between the
+     * tokens, detected through the token line numbers).
+     */
+    protected boolean isAdjacentStringConcat() {
+        String mode = getAsString(Feature.adjacentStringLiterals);
+        if (mode == null || AdjacentStringLiterals.OFF.name().equals(mode)) {
+            return false;
+        }
+        if (getToken(1).kind != S_CHAR_LITERAL) {
+            return false;
+        }
+        return AdjacentStringLiterals.WHITESPACE.name().equals(mode)
+                || getToken(1).beginLine > getToken(0).endLine;
+    }
+
+    /**
      * Checks if the next token can start a condition suffix
      * (comparison, IN, BETWEEN, LIKE, IS NULL, etc.)
      *
@@ -8319,6 +8337,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     Expression timezoneRightExpr = null;
     Token token = null;
     Token sign = null;
+    Token adjacentToken = null;
     String tmp = "";
     ColDataType type = null;
     boolean not = false;
@@ -8419,6 +8438,13 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
         | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
+        ( LOOKAHEAD({ isAdjacentStringConcat() })
+            adjacentToken=<S_CHAR_LITERAL>
+            {
+                ((StringValue) retval)
+                        .setValue(((StringValue) retval).getValue() + new StringValue(adjacentToken.image).getValue());
+            }
+        )*
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 

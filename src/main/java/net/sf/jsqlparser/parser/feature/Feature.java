@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.JdbcParameter;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
+import net.sf.jsqlparser.parser.AbstractJSqlParser;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -800,6 +801,14 @@ public enum Feature {
      * disabled by default, where double quotes stay quoted identifiers (ANSI SQL)
      */
     allowDoubleQuotedStrings(false),
+
+    /**
+     * concatenates adjacent String Literals: NEWLINE when separated by whitespace with at least one
+     * newline (the SQL standard and PostgreSQL), WHITESPACE across any whitespace (GoogleSQL,
+     * Spark/Databricks); OFF by default, where the second literal stays an alias (MySQL, SQL
+     * Server) or fails (everywhere else)
+     */
+    adjacentStringLiterals(AbstractJSqlParser.AdjacentStringLiterals.OFF),
 
     /**
      * allows MySQL `#` line comments; disabled by default, where a lone `#` stays the binary
