@@ -165,13 +165,13 @@ dependencies {
     xmlDoclet ('com.manticore-projects.tools:xml-doclet:+'){ changing = true }
 
     // enforce latest version of JavaCC
-    testImplementation('com.manticore-projects.jsqlformatter:javacc-core:+')
-    testImplementation('com.manticore-projects.jsqlformatter:javacc-java:+')
+    testImplementation('com.manticore-projects.jsqlformatter:javacc-core:[8.1.2.1941,)')
+    testImplementation('com.manticore-projects.jsqlformatter:javacc-java:[8.1.2.1941,)')
 
     jmh 'org.openjdk.jmh:jmh-core:+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:+'
-    javacc('com.manticore-projects.jsqlformatter:javacc-core:+')
-    javacc('com.manticore-projects.jsqlformatter:javacc-java:+')
+    javacc('com.manticore-projects.jsqlformatter:javacc-core:[8.1.2.1941,)')
+    javacc('com.manticore-projects.jsqlformatter:javacc-java:[8.1.2.1941,)')
 }
 
 compileJavacc {
@@ -447,7 +447,9 @@ tasks.register('renderRR') {
         def ebnfFile = new File(rrDir, "JSqlParserCC.ebnf")
         def jjFile = layout.buildDirectory.dir("generated/jjtree/net/sf/jsqlparser/parser/JSqlParserCC.jj").get().asFile.absolutePath
 
-        def convertProc = new ProcessBuilder('java', '-jar',
+        def convertProc = new ProcessBuilder('java',
+                '-Djdk.xml.maxElementDepth=0',
+                '-jar',
                 new File(rrDir, "convert.war").absolutePath,
                 jjFile)
                 .redirectOutput(ebnfFile)

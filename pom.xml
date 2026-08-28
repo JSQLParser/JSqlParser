@@ -120,7 +120,7 @@
             is expected to track the newest fork build. Pin it (e.g. 8.1.1.1939) before cutting a
             release so the release is reproducible.
         -->
-        <javacc.version>[8.1.1.1939,)</javacc.version>
+        <javacc.version>[8.1.2.1941,)</javacc.version>
         <junit.version>5.14.4</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <assertj.version>3.27.7</assertj.version>
