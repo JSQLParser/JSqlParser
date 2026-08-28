@@ -2070,18 +2070,18 @@ TOKEN:
                 if (!allowEscape) {
                     pos = indexOfSequence(img, "\\'");
                     if (pos > 0) {
-                        matchedToken.image = "'" + image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
+                        matchedToken.image = image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
                         // `charLiteralIndex` defined in TokenManagerDeclaration above
                         matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() + 1 - matchedToken.image.length());
+                        input_stream.backup(image.length() - matchedToken.image.length());
                     }
                 } else {
                     pos = lastIndexOfSequence(img, "\\''");
                     if (pos > 0) {
-                        matchedToken.image = "'" + image.substring( 0, image.lastIndexOf("\\'") + 3);
+                        matchedToken.image = image.substring( 0, image.lastIndexOf("\\'") + 3);
                         // `charLiteralIndex` defined in TokenManagerDeclaration above
                         matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() + 1 - matchedToken.image.length() );
+                        input_stream.backup(image.length() - matchedToken.image.length() );
                     }
                 }
     }
@@ -7132,7 +7132,7 @@ List<InterpolateElement> InterpolateClause():
 }
 {
     <K_INTERPOLATE>
-    [ "("
+    [ LOOKAHEAD(2) "("
         [ interpolateElement = InterpolateElement() { interpolateElements.add(interpolateElement); }
           ( "," interpolateElement = InterpolateElement() { interpolateElements.add(interpolateElement); } )*
         ]
@@ -9718,11 +9718,18 @@ IntervalExpression IntervalExpression() : {
         }
     }
     [
-        // Standard qualifier (field [TO field] [(precision)]) such as DAY or DAY TO SECOND.
-        LOOKAHEAD(2, { getToken(1).kind == K_DATE_LITERAL }) qualifier = IntervalQualifier() { interval.setIntervalQualifier(qualifier); }
-        // Non-standard single identifier field (e.g. MySQL `INTERVAL 1 foo`), kept for
-        // backwards compatibility.
-        | LOOKAHEAD(2) (token = <S_IDENTIFIER>) { interval.setIntervalType(token.image); }
+        // The entry decision for this optional block has to be stated explicitly: <S_IDENTIFIER>
+        // also starts whatever follows IntervalExpression() at its call sites (an alias, for
+        // instance), so one token of lookahead cannot decide whether to enter.
+        LOOKAHEAD({ getToken(1).kind == K_DATE_LITERAL || getToken(1).kind == S_IDENTIFIER })
+        (
+            // Standard qualifier (field [TO field] [(precision)]) such as DAY or DAY TO SECOND.
+            LOOKAHEAD({ getToken(1).kind == K_DATE_LITERAL }) qualifier = IntervalQualifier() { interval.setIntervalQualifier(qualifier); }
+            |
+            // Non-standard single identifier field (e.g. MySQL `INTERVAL 1 foo`), kept for
+            // backwards compatibility.
+            token = <S_IDENTIFIER> { interval.setIntervalType(token.image); }
+        )
     ]
     {
         return interval;
