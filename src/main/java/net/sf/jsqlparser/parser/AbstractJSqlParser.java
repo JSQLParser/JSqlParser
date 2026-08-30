@@ -37,7 +37,15 @@ public abstract class AbstractJSqlParser<P> {
                         Feature.allowHashLineComments,
                         Feature.allowDoubleQuotedStrings), SQLSERVER(AdjacentStringLiterals.OFF,
                                 Feature.allowSquareBracketQuotation), POSTGRESQL(
-                                        AdjacentStringLiterals.NEWLINE), H2, EXASOL;
+                                        AdjacentStringLiterals.NEWLINE), H2, EXASOL, BIGQUERY(
+                                                AdjacentStringLiterals.WHITESPACE,
+                                                Feature.allowDoubleQuotedStrings,
+                                                Feature.allowHashLineComments,
+                                                Feature.allowBackslashEscapeCharacter), DATABRICKS(
+                                                        AdjacentStringLiterals.WHITESPACE,
+                                                        Feature.allowDoubleQuotedStrings,
+                                                        Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
+                                                                Feature.allowBackslashEscapeCharacter);
 
         private final Set<Feature> lexerFeatures;
         private final AdjacentStringLiterals adjacentStringLiterals;

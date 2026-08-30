@@ -319,7 +319,7 @@ Additionally there are Features to control the Parser's effort at the cost of th
                 .withBackslashEscapeCharacter(true)
     );
 
-Instead of turning the individual Parser Features on one by one, a ``Dialect`` preset selects the features of that database dialect: ``withDialect(Dialect.MYSQL)`` turns on ``withBackslashEscapeCharacter``, ``withHashLineComments`` and ``withDoubleQuotedStrings`` (MySQL and MariaDB syntax, the latter for the default sql_mode), ``withDialect(Dialect.SQLSERVER)`` turns on ``withSquareBracketQuotation``. ``withDialect(Dialect.POSTGRESQL)`` and ``withDialect(Dialect.ANSI_SQL)`` turn on the newline rule for adjacent String Literals. Features set explicitly after the dialect preset win over the preset.
+Instead of turning the individual Parser Features on one by one, a ``Dialect`` preset selects the features of that database dialect: ``withDialect(Dialect.MYSQL)`` turns on ``withBackslashEscapeCharacter``, ``withHashLineComments`` and ``withDoubleQuotedStrings`` (MySQL and MariaDB syntax, the latter for the default sql_mode), ``withDialect(Dialect.SQLSERVER)`` turns on ``withSquareBracketQuotation``. ``withDialect(Dialect.POSTGRESQL)`` and ``withDialect(Dialect.ANSI_SQL)`` turn on the newline rule for adjacent String Literals. ``withDialect(Dialect.BIGQUERY)`` and ``withDialect(Dialect.DATABRICKS)`` turn on ``withDoubleQuotedStrings`` and ``withBackslashEscapeCharacter`` plus the any-whitespace rule for adjacent String Literals, the BigQuery preset additionally ``withHashLineComments``; ``withDialect(Dialect.SNOWFLAKE)`` turns on ``withBackslashEscapeCharacter`` only, keeping double quotes as quoted identifiers. Features set explicitly after the dialect preset win over the preset.
 
 .. code-block:: java
 
