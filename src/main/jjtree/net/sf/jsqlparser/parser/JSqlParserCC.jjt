@@ -616,6 +616,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // DT_ZONE (TIMESTAMP WITH TIME ZONE / WITHOUT TIME ZONE) is also a valid
             // implicit cast type prefix handled by DataType(), but distinct from DATA_TYPE.
             if (k1 == DT_ZONE) return true;
+            // BigQuery JSON 'literal' - JSON lexes as K_JSON, but DataType() accepts it
+            if (k1 == K_JSON) return getToken(2).kind == S_CHAR_LITERAL;
             if (k1 != DATA_TYPE) return false;
             int k2 = getToken(2).kind;
             if (k2 != OPENING_BRACKET) return true; // DATA_TYPE literal - simple cast
@@ -1204,10 +1206,6 @@ PARSER_END(CCJSqlParser)
 TOKEN_MGR_DECLS : {
     public FeatureConfiguration configuration = new FeatureConfiguration();
 
-    // Nesting depth for block comments: /* /* ... */ */
-    int commentNesting = 0;
-    // Stores the comment image up to and including the outermost */
-    String storedCommentImage = null;
 
     // Identify the index of the quoting/escaping tokens
     public int charLiteralIndex = -1;
@@ -1293,6 +1291,35 @@ TOKEN_MGR_DECLS : {
             }
         } catch (java.io.IOException e) {
             reportError(Math.max(closingQuote.length(), input_stream.GetImage().length()));
+        }
+    }
+
+    /**
+     * Consumes the body of a block comment after the opening delimiter has been matched,
+     * honouring nesting, up to and including the outermost closing delimiter. Then backs
+     * up 2 characters so the MULTI_LINE_COMMENT rule matches the closing delimiter and
+     * terminates the MORE chain.
+     */
+    void consumeBlockCommentBody() {
+        int nesting = 1;
+        char prev = 0;
+        try {
+            while (nesting > 0) {
+                char c = input_stream.readChar();
+                if (prev == '/' && c == '*') {
+                    nesting++;
+                    prev = 0;
+                } else if (prev == '*' && c == '/') {
+                    nesting--;
+                    prev = 0;
+                } else {
+                    prev = c;
+                }
+            }
+            input_stream.backup(2);
+        } catch (java.io.IOException e) {
+            // Unterminated comment: leave the stream at EOF and let the token
+            // manager raise the lexical error from IN_BLOCK_COMMENT.
         }
     }
 }
@@ -1923,41 +1950,23 @@ SPECIAL_TOKEN:
 
 // Nested block comments:  /* ... /* ... */ ... */
 //
-// Uses a nesting counter (commentNesting in TOKEN_MGR_DECLS) and
-// lexer states DEFAULT -> IN_BLOCK_COMMENT -> BLOCK_COMMENT_END.
+// The body is consumed manually in the MORE action below because JavaCC 8
+// discards actions attached to SPECIAL_TOKEN and SKIP rules: it emits
+// SkipLexicalActions() with an empty switch. Only TOKEN and MORE actions
+// survive code generation. Do not move this action onto the rule below.
 //
-// The */ rule has NO `: STATE` suffix — this is critical because
-// JavaCC's `: STATE` always overrides SwitchTo().  Without it,
-// SwitchTo(BLOCK_COMMENT_END) only fires when nesting reaches 0.
-//
-// In BLOCK_COMMENT_END, we match one real char with ~[], then
-// backup(1) to put it back.  This avoids the empty-string-at-EOF
-// problem while cleanly emitting the accumulated comment image.
+// consumeBlockCommentBody() scans past the whole comment, honouring nesting,
+// then backs up 2 chars so <MULTI_LINE_COMMENT> re-matches the outermost "*/"
+// and closes the MORE chain. No character past the comment is ever consumed,
+// so there is nothing to push back and no dependency on what follows.
 MORE:
 {
-    "/*" { commentNesting = 0; } : IN_BLOCK_COMMENT
+    "/*" { consumeBlockCommentBody(); } : IN_BLOCK_COMMENT
 }
 
-<IN_BLOCK_COMMENT> MORE:
+<IN_BLOCK_COMMENT> SPECIAL_TOKEN:
 {
-    "/*" { commentNesting++; }
-|   "*/" {
-        if (commentNesting > 0) {
-            commentNesting--;
-        } else {
-            storedCommentImage = image.toString();
-            SwitchTo(BLOCK_COMMENT_END);
-        }
-    }
-|   < ~[] >
-}
-
-<BLOCK_COMMENT_END> SPECIAL_TOKEN:
-{
-    <MULTI_LINE_COMMENT: ~[] > {
-        input_stream.backup(1);
-        matchedToken.image = storedCommentImage;
-    } : DEFAULT
+    <MULTI_LINE_COMMENT: "*/" > : DEFAULT
 }
 
 TOKEN:
