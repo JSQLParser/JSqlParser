@@ -39,8 +39,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#       os: [ ubuntu-latest, windows-latest, macos-latest ]
-       os: [ ubuntu-latest, macos-latest ]
+        #       os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest ]
     steps:
       - uses: actions/checkout@main
         with:
@@ -75,10 +75,20 @@ jobs:
         uses: gradle/actions/setup-gradle@main
 
       - name: Publish with Gradle
-        run: ./gradlew publish
+        # Gradle only picks up a secret as a project property when it is exported with the
+        # ORG_GRADLE_PROJECT_ prefix. Plain `ossrhUsername: ...` was an ordinary environment
+        # variable that nothing ever read.
+        #
+        # No RELEASE variable here on purpose: getVersion() then produces a -SNAPSHOT version and
+        # the plugin routes it to the Central Portal snapshot repository. Set RELEASE=true only
+        # when you actually intend to cut a release.
+        run: ./gradlew publishToMavenCentral
         env:
-          ossrhUsername: ${{ secrets.OSSRHUSERNAME }}
-          ossrhPassword: ${{ secrets.OSSRHPASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.mavenCentralUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.mavenCentralPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.signingInMemoryKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.signingInMemoryKeyId }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.signingInMemoryKeyPassword }}
 
       - uses: actions/setup-python@main
 

@@ -589,7 +589,9 @@ tasks.register('sphinx', Exec) {
     }
 }
 
-publish {
+// `publish` is Gradle's own task; the Central Portal upload runs under `publishToMavenCentral`.
+// Both need the same prerequisites, or a CI job invoking the latter silently skips check and docs.
+tasks.matching { it.name in ['publish', 'publishToMavenCentral'] }.configureEach {
     dependsOn(check, gitChangelogTask, renderRR, xslt, xmldoc)
 }
 
@@ -636,14 +638,9 @@ mavenPublishing {
     }
 }
 
-// Fix signing task dependencies
-tasks.withType(AbstractPublishToMaven).configureEach {
-    dependsOn(tasks.withType(Sign))
-}
-
-signing {
-    required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish") }
-}
+// Signing and its task wiring are handled by mavenPublishing.signAllPublications() above.
+// The manual `signing { required { ... hasTask("publish") } }` block that used to live here
+// never matched the `publishToMavenCentral` task, so the two disagreed about whether to sign.
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
