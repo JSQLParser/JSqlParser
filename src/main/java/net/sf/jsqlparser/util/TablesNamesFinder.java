@@ -154,10 +154,14 @@ import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.LateralView;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.PivotVisitor;
+import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -165,6 +169,7 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -187,7 +192,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 public class TablesNamesFinder<Void>
         implements SelectVisitor<Void>, FromItemVisitor<Void>, ExpressionVisitor<Void>,
         SelectItemVisitor<Void>, StatementVisitor<Void>, MergeOperationVisitor<Void>,
-        PipeOperatorVisitor<Void, Void> {
+        PipeOperatorVisitor<Void, Void>, PivotVisitor<Void> {
 
     private Set<String> tables;
     private boolean allowColumnProcessing = false;
@@ -330,6 +335,20 @@ public class TablesNamesFinder<Void>
             }
         }
         select.getSelect().accept((SelectVisitor<?>) this, context);
+        visitOrderBy(select.getOrderByElements(), context);
+        if (select.getPivot() != null) {
+            select.getPivot().accept(this, context);
+        }
+        if (select.getUnPivot() != null) {
+            select.getUnPivot().accept(this, context);
+        }
+        visitLimit(select.getLimit(), context);
+        if (select.getOffset() != null) {
+            select.getOffset().getOffset().accept(this, context);
+        }
+        if (select.getFetch() != null) {
+            select.getFetch().getExpression().accept(this, context);
+        }
         return null;
     }
 
@@ -346,6 +365,11 @@ public class TablesNamesFinder<Void>
                 withItem.accept((SelectVisitor<?>) this, context);
             }
         }
+        if (plainSelect.getDistinct() != null) {
+            visitSelectItems(plainSelect.getDistinct().getOnSelectItems(), context);
+        }
+        visitTables(plainSelect.getIntoTables(), context);
+
         if (plainSelect.getSelectItems() != null) {
             for (SelectItem<?> item : plainSelect.getSelectItems()) {
                 item.accept(this, context);
@@ -356,6 +380,12 @@ public class TablesNamesFinder<Void>
             plainSelect.getFromItem().accept(this, context);
         }
 
+        if (plainSelect.getLateralViews() != null) {
+            for (LateralView lateralView : plainSelect.getLateralViews()) {
+                lateralView.getGeneratorFunction().accept(this, context);
+            }
+        }
+
         visitJoins(plainSelect.getJoins(), context);
         if (plainSelect.getPreWhere() != null) {
             plainSelect.getPreWhere().accept(this, context);
@@ -364,13 +394,46 @@ public class TablesNamesFinder<Void>
             plainSelect.getWhere().accept(this, context);
         }
 
+        visitPreferringClause(plainSelect.getPreferringClause(), context);
+        visit(plainSelect.getGroupBy(), context);
+
         if (plainSelect.getHaving() != null) {
             plainSelect.getHaving().accept(this, context);
+        }
+
+        if (plainSelect.getQualify() != null) {
+            plainSelect.getQualify().accept(this, context);
         }
 
         if (plainSelect.getOracleHierarchical() != null) {
             plainSelect.getOracleHierarchical().accept(this, context);
         }
+
+        if (plainSelect.getWindowDefinitions() != null) {
+            for (WindowDefinition windowDefinition : plainSelect.getWindowDefinitions()) {
+                visitExpressions(windowDefinition.getPartitionExpressionList(), context);
+                visitOrderBy(windowDefinition.getOrderByElements(), context);
+            }
+        }
+
+        if (plainSelect.getPivot() != null) {
+            plainSelect.getPivot().accept(this, context);
+        }
+        if (plainSelect.getUnPivot() != null) {
+            plainSelect.getUnPivot().accept(this, context);
+        }
+
+        visitOrderBy(plainSelect.getOrderByElements(), context);
+        visitLimit(plainSelect.getLimit(), context);
+        visitLimit(plainSelect.getLimitBy(), context);
+        if (plainSelect.getOffset() != null) {
+            plainSelect.getOffset().getOffset().accept(this, context);
+        }
+        if (plainSelect.getFetch() != null) {
+            plainSelect.getFetch().getExpression().accept(this, context);
+        }
+        visitUpdateSets(plainSelect.getSettings(), context);
+        visitFromItem(plainSelect.getIntoTempTable(), context);
         return null;
     }
 
@@ -430,6 +493,12 @@ public class TablesNamesFinder<Void>
         String tableWholeName = extractTableName(table);
         if (!otherItemNames.contains(tableWholeName)) {
             tables.add(tableWholeName);
+        }
+        if (table.getPivot() != null) {
+            table.getPivot().accept(this, context);
+        }
+        if (table.getUnPivot() != null) {
+            table.getUnPivot().accept(this, context);
         }
         return null;
     }
@@ -883,6 +952,14 @@ public class TablesNamesFinder<Void>
         for (Select selectBody : list.getSelects()) {
             selectBody.accept((SelectVisitor<?>) this, context);
         }
+        visitOrderBy(list.getOrderByElements(), context);
+        visitLimit(list.getLimit(), context);
+        if (list.getOffset() != null) {
+            list.getOffset().getOffset().accept(this, context);
+        }
+        if (list.getFetch() != null) {
+            list.getFetch().getExpression().accept(this, context);
+        }
         return null;
     }
 
@@ -938,6 +1015,36 @@ public class TablesNamesFinder<Void>
         for (PipeOperator pipeOperator : fromQuery.getPipeOperators()) {
             pipeOperator.accept(this, null);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Pivot pivot, S context) {
+        visitSelectItems(pivot.getFunctionItems(), context);
+        visitExpressions(pivot.getForColumns(), context);
+        visitSelectItems(pivot.getSingleInItems(), context);
+        visitSelectItems(pivot.getMultiInItems(), context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PivotXml pivotXml, S context) {
+        visit((Pivot) pivotXml, context);
+        if (pivotXml.getInSelect() != null) {
+            pivotXml.getInSelect().accept((SelectVisitor<?>) this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(UnPivot unpivot, S context) {
+        for (Column column : unpivot.getUnPivotClause()) {
+            column.accept(this, context);
+        }
+        for (Column column : unpivot.getUnPivotForClause()) {
+            column.accept(this, context);
+        }
+        visitSelectItems(unpivot.getUnPivotInClause(), context);
         return null;
     }
 
@@ -1220,6 +1327,8 @@ public class TablesNamesFinder<Void>
         if (delete.getWhere() != null) {
             delete.getWhere().accept(this, context);
         }
+        visitOrderBy(delete.getOrderByElements(), context);
+        visitLimit(delete.getLimit(), context);
         visitOutputClause(delete.getOutputClause(), context);
         visitReturningClause(delete.getReturningClause(), context);
         return null;
@@ -1279,6 +1388,8 @@ public class TablesNamesFinder<Void>
         if (update.getWhere() != null) {
             update.getWhere().accept(this, context);
         }
+        visitOrderBy(update.getOrderByElements(), context);
+        visitLimit(update.getLimit(), context);
         visitOutputClause(update.getOutputClause(), context);
         visitReturningClause(update.getReturningClause(), context);
         return null;
@@ -1790,6 +1901,14 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(Values values, S context) {
         values.getExpressions().accept(this, context);
+        visitOrderBy(values.getOrderByElements(), context);
+        visitLimit(values.getLimit(), context);
+        if (values.getOffset() != null) {
+            values.getOffset().getOffset().accept(this, context);
+        }
+        if (values.getFetch() != null) {
+            values.getFetch().getExpression().accept(this, context);
+        }
         return null;
     }
 

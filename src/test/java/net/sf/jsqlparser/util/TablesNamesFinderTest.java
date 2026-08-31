@@ -907,4 +907,163 @@ public class TablesNamesFinderTest {
                 "MY_TABLE2");
     }
 
+    @Test
+    void testSelectIntoTables() throws JSQLParserException {
+        String sqlStr = "SELECT * INTO MY_TABLE1 FROM MY_TABLE2";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectIntoTempTable() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM MY_TABLE2 INTO TEMP MY_TABLE1";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testGroupBySubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 GROUP BY A, (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testGroupByGroupingSetsSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 GROUP BY GROUPING SETS ((A, (SELECT B FROM MY_TABLE2)), (C))";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectQualifySubquery() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM MY_TABLE1 QUALIFY (SELECT B FROM MY_TABLE2) = 1";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testWindowDefinitionSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * FROM MY_TABLE1 WINDOW W AS (PARTITION BY (SELECT B FROM MY_TABLE2))";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectOrderBySubquery() throws JSQLParserException {
+        String sqlStr = "SELECT A FROM MY_TABLE1 ORDER BY A, (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectLimitSubquery() throws JSQLParserException {
+        String sqlStr = "SELECT A FROM MY_TABLE1 LIMIT (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectLimitBySubquery() throws JSQLParserException {
+        String sqlStr = "SELECT A FROM MY_TABLE1 LIMIT 2 BY (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectOffsetSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 LIMIT 1 OFFSET (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectFetchSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 OFFSET 1 ROWS FETCH NEXT (SELECT B FROM MY_TABLE2) ROWS ONLY";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testSelectDistinctOnSubquery() throws JSQLParserException {
+        String sqlStr = "SELECT DISTINCT ON ((SELECT B FROM MY_TABLE2)) A FROM MY_TABLE1";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testLateralViewSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * FROM MY_TABLE1 LATERAL VIEW EXPLODE(ARRAY((SELECT B FROM MY_TABLE2))) V AS X";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testTablePivotXmlSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT * FROM MY_TABLE1 PIVOT XML (SUM(X) FOR Y IN (SELECT Z FROM MY_TABLE2))";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testTablePivotSimple() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM MY_TABLE1 PIVOT (SUM(X) FOR Y IN ('a', 'b'))";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1");
+    }
+
+    @Test
+    void testParenthesedOrderByLimitSubquery() throws JSQLParserException {
+        String sqlStr =
+                "(SELECT A FROM MY_TABLE1) ORDER BY (SELECT B FROM MY_TABLE2) LIMIT (SELECT C FROM MY_TABLE3)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "MY_TABLE3");
+    }
+
+    @Test
+    void testSetOperationOrderByLimitSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 UNION SELECT B FROM MY_TABLE2 ORDER BY (SELECT C FROM MY_TABLE3) LIMIT (SELECT D FROM MY_TABLE4)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2", "MY_TABLE3", "MY_TABLE4");
+    }
+
+    @Test
+    void testSelectSettingsSubquery() throws JSQLParserException {
+        String sqlStr =
+                "SELECT A FROM MY_TABLE1 SETTINGS X = (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testValuesOrderByLimitSubquery() throws JSQLParserException {
+        String sqlStr =
+                "VALUES (1), (2) ORDER BY (SELECT A FROM MY_TABLE1) LIMIT (SELECT B FROM MY_TABLE2)";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testDeleteOrderByLimitSubquery() throws JSQLParserException {
+        String sqlStr =
+                "DELETE FROM MY_TABLE1 WHERE A = 1 ORDER BY (SELECT B FROM MY_TABLE2) LIMIT 2";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
+    @Test
+    void testUpdateOrderByLimitSubquery() throws JSQLParserException {
+        String sqlStr =
+                "UPDATE MY_TABLE1 SET A = 1 ORDER BY (SELECT B FROM MY_TABLE2) LIMIT 2";
+        assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
+                "MY_TABLE2");
+    }
+
 }
