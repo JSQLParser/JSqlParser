@@ -4065,7 +4065,7 @@ List<Partition> Partitions():
     (
         LOOKAHEAD(2) (
             ","
-            tableColumn=Column() [ "=" valueExpression=Expression() ]
+            tableColumn=Column() { valueExpression = null; } [ "=" valueExpression=Expression() ]
             { partitions.add( new Partition (tableColumn, valueExpression)); }
         )
     )*

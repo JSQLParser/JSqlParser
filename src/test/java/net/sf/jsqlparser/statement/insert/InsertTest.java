@@ -966,6 +966,58 @@ public class InsertTest {
         assertFalse(insert.isOverwrite());
     }
 
+    @Test
+    // a dynamic partition column without a value must not inherit the value of a
+    // preceding static partition column (#2500)
+    void testInsertMixedStaticAndDynamicPartitions() throws JSQLParserException {
+        String sqlStr =
+                "INSERT OVERWRITE TABLE t PARTITION (dtime = '2024-04-03', region) SELECT * FROM a";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("dtime", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertEquals("'2024-04-03'", insert.getPartitions().get(0).getValue().toString());
+        assertEquals("region", insert.getPartitions().get(1).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(1).getValue());
+
+        sqlStr =
+                "INSERT OVERWRITE TABLE t PARTITION (region, dtime = '2024-04-03') SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("region", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(0).getValue());
+        assertEquals("dtime", insert.getPartitions().get(1).getColumn().getColumnName());
+        assertEquals("'2024-04-03'", insert.getPartitions().get(1).getValue().toString());
+
+        sqlStr = "INSERT OVERWRITE TABLE t PARTITION"
+                + " (dtime = '2024-04-03', region, dept) SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals(3, insert.getPartitions().size());
+        assertEquals("dtime", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertEquals("'2024-04-03'", insert.getPartitions().get(0).getValue().toString());
+        assertEquals("region", insert.getPartitions().get(1).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(1).getValue());
+        assertEquals("dept", insert.getPartitions().get(2).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(2).getValue());
+
+        sqlStr = "INSERT OVERWRITE TABLE t PARTITION (a, b = '1', c) SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals(3, insert.getPartitions().size());
+        assertEquals("a", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(0).getValue());
+        assertEquals("b", insert.getPartitions().get(1).getColumn().getColumnName());
+        assertEquals("'1'", insert.getPartitions().get(1).getValue().toString());
+        assertEquals("c", insert.getPartitions().get(2).getColumn().getColumnName());
+        assertNull(insert.getPartitions().get(2).getValue());
+
+        sqlStr = "INSERT INTO TABLE t PARTITION (dtime = 20240403, region) SELECT * FROM a";
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr);
+        assertEquals(2, insert.getPartitions().size());
+        assertEquals("dtime", insert.getPartitions().get(0).getColumn().getColumnName());
+        assertEquals("20240403", insert.getPartitions().get(0).getValue().toString());
+        assertNull(insert.getPartitions().get(1).getValue());
+        assertFalse(insert.isOverwrite());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
             "INSERT INTO mytable (foo) OVERRIDING SYSTEM VALUE VALUES (1)",
