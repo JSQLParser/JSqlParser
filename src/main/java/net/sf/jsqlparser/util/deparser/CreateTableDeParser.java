@@ -96,6 +96,9 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
         if (!"".equals(params)) {
             builder.append(' ').append(params);
         }
+        if (createTable.getPartitioning() != null) {
+            builder.append(' ').append(createTable.getPartitioning());
+        }
 
         if (createTable.getRowMovement() != null) {
             builder.append(' ').append(createTable.getRowMovement().getMode().toString())

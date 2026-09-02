@@ -36,6 +36,7 @@ public class CreateTable implements Statement {
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
     private boolean orReplace = false;
+    private TablePartitioning partitioning;
 
     private RowMovement rowMovement;
 
@@ -148,6 +149,14 @@ public class CreateTable implements Statement {
         this.orReplace = orReplace;
     }
 
+    public TablePartitioning getPartitioning() {
+        return partitioning;
+    }
+
+    public void setPartitioning(TablePartitioning partitioning) {
+        this.partitioning = partitioning;
+    }
+
     public boolean isSelectParenthesis() {
         return selectParenthesis;
     }
@@ -216,6 +225,9 @@ public class CreateTable implements Statement {
         if (options != null && options.length() > 0) {
             b.append(" ").append(options);
         }
+        if (partitioning != null) {
+            b.append(" ").append(partitioning);
+        }
     }
 
     private void appendTableProperties(StringBuilder b) {
@@ -269,6 +281,11 @@ public class CreateTable implements Statement {
 
     public CreateTable withIfNotExists(boolean ifNotExists) {
         this.setIfNotExists(ifNotExists);
+        return this;
+    }
+
+    public CreateTable withPartitioning(TablePartitioning partitioning) {
+        this.setPartitioning(partitioning);
         return this;
     }
 
