@@ -21,6 +21,8 @@ public class CheckConstraint extends NamedConstraint {
 
     private Expression expression;
 
+    private Boolean enforced;
+
     public Table getTable() {
         return table;
     }
@@ -37,6 +39,14 @@ public class CheckConstraint extends NamedConstraint {
         this.expression = expression;
     }
 
+    public Boolean getEnforced() {
+        return enforced;
+    }
+
+    public void setEnforced(Boolean enforced) {
+        this.enforced = enforced;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -44,6 +54,9 @@ public class CheckConstraint extends NamedConstraint {
             b.append("CONSTRAINT ").append(getName()).append(" ");
         }
         b.append("CHECK (").append(expression).append(")");
+        if (enforced != null) {
+            b.append(enforced ? " ENFORCED" : " NOT ENFORCED");
+        }
         return b.toString();
     }
 
@@ -54,6 +67,11 @@ public class CheckConstraint extends NamedConstraint {
 
     public CheckConstraint withExpression(Expression expression) {
         this.setExpression(expression);
+        return this;
+    }
+
+    public CheckConstraint withEnforced(Boolean enforced) {
+        setEnforced(enforced);
         return this;
     }
 
