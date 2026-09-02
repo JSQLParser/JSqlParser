@@ -32,18 +32,25 @@ public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
         }
 
         builder.append("INDEX ");
+        if (createIndex.isConcurrently()) {
+            builder.append("CONCURRENTLY ");
+        }
         if (createIndex.isUsingIfNotExists()) {
             builder.append("IF NOT EXISTS ");
         }
-        builder.append(index.getName());
+        if (index.getName() != null) {
+            builder.append(index.getName()).append(" ");
+        }
 
         String using = index.getUsing();
         if (using != null && createIndex.isIndexTypeBeforeOn()) {
-            builder.append(" USING ");
-            builder.append(using);
+            builder.append("USING ").append(using).append(" ");
         }
 
-        builder.append(" ON ");
+        builder.append("ON ");
+        if (createIndex.isOnly()) {
+            builder.append("ONLY ");
+        }
         builder.append(createIndex.getTable().getFullyQualifiedName());
 
         if (using != null && !createIndex.isIndexTypeBeforeOn()) {
