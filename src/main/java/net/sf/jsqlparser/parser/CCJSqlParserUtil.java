@@ -30,6 +30,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 /**
  * Toolfunctions to start and use JSqlParser.
@@ -197,6 +198,61 @@ public final class CCJSqlParserUtil {
 
         return parseExpression(expression, allowPartialParse, p -> {
         });
+    }
+
+    /**
+     * Parses a column data type fragment. The complete input must represent the data type; trailing
+     * tokens are rejected.
+     *
+     * @param columnDataType the column data type fragment to parse
+     * @return the parsed column data type, or {@code null} for a null or empty input
+     * @throws JSQLParserException when the input cannot be parsed completely
+     * @see #parseColDataType(String, Consumer)
+     */
+    public static ColDataType parseColDataType(String columnDataType) throws JSQLParserException {
+        return parseColDataType(columnDataType, null);
+    }
+
+    /**
+     * Parses a column data type fragment while allowing the parser to be configured. The complete
+     * input must represent the data type; trailing tokens are rejected.
+     *
+     * @param columnDataType the column data type fragment to parse
+     * @param consumer parser configuration callback, or {@code null}
+     * @return the parsed column data type, or {@code null} for a null or empty input
+     * @throws JSQLParserException when the input cannot be parsed completely
+     */
+    public static ColDataType parseColDataType(String columnDataType,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        if (columnDataType == null || columnDataType.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return parseColDataType(columnDataType, false, consumer);
+        } catch (JSQLParserException ex) {
+            return parseColDataType(columnDataType, true, consumer);
+        }
+    }
+
+    private static ColDataType parseColDataType(String columnDataType, boolean allowComplexParsing,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        CCJSqlParser parser = newParser(columnDataType)
+                .withAllowComplexParsing(allowComplexParsing);
+        if (consumer != null) {
+            consumer.accept(parser);
+        }
+
+        try {
+            ColDataType result = parser.ColDataType();
+            if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
+                throw new JSQLParserException(
+                        "could only parse partial column data type " + result);
+            }
+            return result;
+        } catch (ParseException ex) {
+            throw new JSQLParserException(columnDataType, ex);
+        }
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
