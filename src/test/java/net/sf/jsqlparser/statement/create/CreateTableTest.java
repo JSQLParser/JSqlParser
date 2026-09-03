@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
@@ -1261,7 +1262,7 @@ public class CreateTableTest {
 
         assertEquals(TablePartitioning.Type.RANGE, partitioning.getType());
         assertEquals(List.of("tenant_id", "happened_at"), partitioning.getExpressionList()
-                .stream().map(Object::toString).toList());
+                .stream().map(Object::toString).collect(Collectors.toList()));
 
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE pg_list_parent (region text) PARTITION BY LIST (region)",
@@ -1280,9 +1281,9 @@ public class CreateTableTest {
         assertEquals("pg_range_parent", range.getPartitionOf().getName());
         assertEquals(PartitionBound.Type.RANGE, range.getPartitionBound().getType());
         assertEquals(List.of("1", "MINVALUE"), range.getPartitionBound().getFromExpressions()
-                .stream().map(Object::toString).toList());
+                .stream().map(Object::toString).collect(Collectors.toList()));
         assertEquals(List.of("2", "MAXVALUE"), range.getPartitionBound().getToExpressions()
-                .stream().map(Object::toString).toList());
+                .stream().map(Object::toString).collect(Collectors.toList()));
 
         String listSql = "CREATE TABLE pg_list_eu_us PARTITION OF pg_list_parent "
                 + "FOR VALUES IN ('eu', 'us')";
