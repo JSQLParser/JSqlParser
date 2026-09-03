@@ -347,15 +347,55 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * from column references like col, schema.col, a.b.c.col.
      *
      * Replaces LOOKAHEAD(16) on Function() with a targeted O(chain-length) check.
+     * Long chains are memoized per start token: the phase-2 lookahead routines
+     * re-evaluate the same walk many times per position and each chain part
+     * would walk the very same suffix again, which makes long chains parse in
+     * quadratic time. Chains up to CHAIN_CACHE_THRESHOLD parts skip the cache
+     * entirely, keeping the normal short-name path allocation- and map-free.
      */
+    private static final int CHAIN_CACHE_THRESHOLD = 8;
+
+    // Sentinel returned by the chain walks when the non-filling pass ran past
+    // CHAIN_CACHE_THRESHOLD delimiter/part pairs and the caller must retry
+    // through the per-token cache.
+    private static final int LONG_CHAIN = -1;
+
+    private final Map<Token, Boolean> isFunctionAheadCache = new HashMap<Token, Boolean>();
+
     protected boolean isFunctionAhead() {
+        int r = isFunctionAheadWalk(false);
+        if (r != LONG_CHAIN) {
+            return r == 1;
+        }
+        Token key = getToken(1);
+        Boolean cached = isFunctionAheadCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        boolean result = isFunctionAheadWalk(true) == 1;
+        isFunctionAheadCache.put(key, result);
+        return result;
+    }
+
+    // True when a fresh evaluation started at this token would pass all
+    // first-token guards and run the same chain walk.
+    private boolean isFunctionAheadChainStartEligible(Token t) {
+        return !t.image.equals("{") && t.kind != K_APPROXIMATE && !isNonFunctionKeyword(t)
+                && t.kind != S_LONG && t.kind != S_DOUBLE && t.kind != S_HEX
+                && t.kind != S_CHAR_LITERAL && t.kind != OPENING_BRACKET
+                && t.kind != CLOSING_BRACKET && t.kind != EOF;
+    }
+
+    // Returns 1 for true, 0 for false, or LONG_CHAIN when the walk exceeded
+    // CHAIN_CACHE_THRESHOLD delimiter/part pairs (only in the non-filling pass).
+    private int isFunctionAheadWalk(boolean fill) {
       try {
         int i = 1;
         Token t = getToken(i);
 
         // JDBC escape function: {fn ...} — must check for FN keyword
         if (t.image.equals("{")) {
-            return getToken(2).kind == K_FN;
+            return getToken(2).kind == K_FN ? 1 : 0;
         }
 
         // Optional APPROXIMATE keyword
@@ -367,22 +407,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // Exclude tokens that have their own dedicated branches
         // after Function() in PrimaryExpression
         if (isNonFunctionKeyword(t)) {
-            return false;
+            return 0;
         }
 
         // First token must not be a literal, bracket, or EOF
         if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
                 || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
                 || t.kind == CLOSING_BRACKET || t.kind == EOF) {
-            return false;
+            return 0;
         }
         i++;
 
         // Walk through dotted name chain
+        int delimiters = 0;
+        List<Token> chainParts = fill ? new ArrayList<Token>() : null;
         while (true) {
             t = getToken(i);
             if (t.image.equals(".") || t.image.equals("..")
                     || t.image.equals("...") || t.image.equals(":")) {
+                if (!fill && ++delimiters > CHAIN_CACHE_THRESHOLD) {
+                    return LONG_CHAIN;
+                }
+                if (fill) {
+                    chainParts.add(getToken(i + 1));
+                }
                 i++;  // skip delimiter
                 i++;  // skip next name part
             } else {
@@ -390,20 +438,23 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
         }
 
-        // Must be followed by (
-        if (getToken(i).kind != OPENING_BRACKET) {
-            return false;
-        }
+        // Must be followed by (, and not by the Oracle join syntax column(+)
+        boolean result = getToken(i).kind == OPENING_BRACKET
+                && !(getToken(i + 1).image.equals("+")
+                        && getToken(i + 2).kind == CLOSING_BRACKET);
 
-        // Exclude Oracle join syntax: column(+)
-        if (getToken(i + 1).image.equals("+")
-                && getToken(i + 2).kind == CLOSING_BRACKET) {
-            return false;
+        // Each eligible chain part would walk the same remaining suffix and
+        // obtain the same answer, so memoize them all in one pass.
+        if (fill) {
+            for (Token part : chainParts) {
+                if (isFunctionAheadChainStartEligible(part)) {
+                    isFunctionAheadCache.put(part, result);
+                }
+            }
         }
-
-        return true;
+        return result ? 1 : 0;
       } catch (TokenMgrException e) {
-        return false;
+        return 0;
       }
     }
 
@@ -736,8 +787,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     /**
      * Scans ahead through a dotted identifier chain and checks if '*' follows.
      * Identifies table.* patterns for AllTableColumns.
+     * Long chains are memoized per start token like {@link #isFunctionAhead()}
+     * (one walk fills every eligible chain part); short chains skip the cache.
      */
+    private final Map<Token, Boolean> isAllTableColumnsAheadCache =
+            new HashMap<Token, Boolean>();
+
     protected boolean isAllTableColumnsAhead() {
+        int r = isAllTableColumnsWalk(false);
+        if (r != LONG_CHAIN) {
+            return r == 1;
+        }
+        Token key = getToken(1);
+        Boolean cached = isAllTableColumnsAheadCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        boolean result = isAllTableColumnsWalk(true) == 1;
+        isAllTableColumnsAheadCache.put(key, result);
+        return result;
+    }
+
+    // Returns 1 for true, 0 for false, or LONG_CHAIN when the walk exceeded
+    // CHAIN_CACHE_THRESHOLD delimiter/part pairs (only in the non-filling pass).
+    private int isAllTableColumnsWalk(boolean fill) {
         int i = 1;
         Token t = getToken(i);
 
@@ -745,15 +818,23 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
                 || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
                 || t.kind == CLOSING_BRACKET || t.kind == EOF) {
-            return false;
+            return 0;
         }
         i++;
 
         // Walk through dotted name chain
+        int delimiters = 0;
+        List<Token> chainParts = fill ? new ArrayList<Token>() : null;
         while (true) {
             t = getToken(i);
             if (t.image.equals(".") || t.image.equals("..")
                     || t.image.equals("...")) {
+                if (!fill && ++delimiters > CHAIN_CACHE_THRESHOLD) {
+                    return LONG_CHAIN;
+                }
+                if (fill) {
+                    chainParts.add(getToken(i + 1));
+                }
                 i++;  // skip delimiter
                 i++;  // skip next part (could be "*")
             } else {
@@ -764,7 +845,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // It's AllTableColumns if the chain ended on "*"
         // i.e., the last name part we skipped over was "*"
         // Back up: the last token consumed was at (i-1)
-        return getToken(i - 1).image.equals("*");
+        boolean result = getToken(i - 1).image.equals("*");
+
+        // Each chain part that would pass the name-like guard walks the same
+        // remaining suffix and obtains the same answer.
+        if (fill) {
+            for (Token part : chainParts) {
+                if (part.kind == S_LONG || part.kind == S_DOUBLE || part.kind == S_HEX
+                        || part.kind == S_CHAR_LITERAL || part.kind == OPENING_BRACKET
+                        || part.kind == CLOSING_BRACKET || part.kind == EOF) {
+                    continue;
+                }
+                isAllTableColumnsAheadCache.put(part, result);
+            }
+        }
+        return result ? 1 : 0;
     }
 
     /**
