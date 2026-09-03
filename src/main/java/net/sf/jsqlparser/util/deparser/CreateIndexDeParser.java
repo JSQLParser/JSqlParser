@@ -13,6 +13,7 @@ import static java.util.stream.Collectors.joining;
 
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
 
@@ -64,6 +65,25 @@ public class CreateIndexDeParser extends AbstractDeParser<CreateIndex> {
                     .map(Index.ColumnParams::toString)
                     .collect(joining(", ")));
             builder.append(")");
+        }
+
+        if (createIndex.getIncludeColumns() != null) {
+            builder.append(" INCLUDE (")
+                    .append(String.join(", ", createIndex.getIncludeColumns())).append(")");
+        }
+        if (createIndex.getNullsDistinct() != null) {
+            builder.append(" NULLS ")
+                    .append(createIndex.getNullsDistinct() ? "DISTINCT" : "NOT DISTINCT");
+        }
+        if (createIndex.getStorageParameters() != null) {
+            builder.append(" WITH ").append(PlainSelect.getStringList(
+                    createIndex.getStorageParameters(), true, true));
+        }
+        if (createIndex.getTableSpace() != null) {
+            builder.append(" TABLESPACE ").append(createIndex.getTableSpace());
+        }
+        if (createIndex.getWhere() != null) {
+            builder.append(" WHERE ").append(createIndex.getWhere());
         }
 
         if (createIndex.getTailParameters() != null) {

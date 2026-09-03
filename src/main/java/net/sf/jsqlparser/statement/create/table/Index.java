@@ -200,9 +200,22 @@ public class Index implements Serializable {
     }
 
     public static class ColumnParams implements Serializable {
+        public enum SortOrder {
+            ASC, DESC
+        }
+
+        public enum NullOrdering {
+            FIRST, LAST
+        }
+
         public final String columnName;
         public final List<String> params;
         private final Expression expression;
+        private String collation;
+        private String operatorClass;
+        private List<Option> operatorClassParameters;
+        private SortOrder sortOrder;
+        private NullOrdering nullOrdering;
 
         public ColumnParams(String columnName) {
             this.columnName = columnName;
@@ -244,10 +257,159 @@ public class Index implements Serializable {
             return expression != null;
         }
 
+        public String getCollation() {
+            return collation;
+        }
+
+        public void setCollation(String collation) {
+            this.collation = collation;
+        }
+
+        public String getOperatorClass() {
+            return operatorClass;
+        }
+
+        public void setOperatorClass(String operatorClass) {
+            this.operatorClass = operatorClass;
+        }
+
+        public List<Option> getOperatorClassParameters() {
+            return operatorClassParameters;
+        }
+
+        public void setOperatorClassParameters(List<Option> operatorClassParameters) {
+            this.operatorClassParameters = operatorClassParameters;
+        }
+
+        public SortOrder getSortOrder() {
+            return sortOrder;
+        }
+
+        public void setSortOrder(SortOrder sortOrder) {
+            this.sortOrder = sortOrder;
+        }
+
+        public NullOrdering getNullOrdering() {
+            return nullOrdering;
+        }
+
+        public void setNullOrdering(NullOrdering nullOrdering) {
+            this.nullOrdering = nullOrdering;
+        }
+
+        public ColumnParams withCollation(String collation) {
+            setCollation(collation);
+            return this;
+        }
+
+        public ColumnParams withOperatorClass(String operatorClass) {
+            setOperatorClass(operatorClass);
+            return this;
+        }
+
+        public ColumnParams withOperatorClassParameters(List<Option> operatorClassParameters) {
+            setOperatorClassParameters(operatorClassParameters);
+            return this;
+        }
+
+        public ColumnParams withSortOrder(SortOrder sortOrder) {
+            setSortOrder(sortOrder);
+            return this;
+        }
+
+        public ColumnParams withNullOrdering(NullOrdering nullOrdering) {
+            setNullOrdering(nullOrdering);
+            return this;
+        }
+
         @Override
         public String toString() {
-            String head = expression != null ? "(" + expression + ")" : columnName;
-            return head + (params != null ? " " + String.join(" ", params) : "");
+            StringBuilder builder = new StringBuilder(
+                    expression != null ? "(" + expression + ")" : columnName);
+            if (params != null) {
+                builder.append(" ").append(String.join(" ", params));
+            }
+            if (collation != null && !hasParam("COLLATE")) {
+                builder.append(" COLLATE ").append(collation);
+            }
+            if (operatorClass != null && !hasParam(operatorClass)) {
+                builder.append(" ").append(operatorClass);
+                if (operatorClassParameters != null && !operatorClassParameters.isEmpty()) {
+                    builder.append(" ")
+                            .append(PlainSelect.getStringList(
+                                    operatorClassParameters, true, true));
+                }
+            }
+            if (sortOrder != null && !hasParam(sortOrder.name())) {
+                builder.append(" ").append(sortOrder);
+            }
+            if (nullOrdering != null && !hasParam("NULLS")) {
+                builder.append(" NULLS ").append(nullOrdering);
+            }
+            return builder.toString();
+        }
+
+        private boolean hasParam(String expected) {
+            return params != null && params.stream().anyMatch(expected::equalsIgnoreCase);
+        }
+    }
+
+    /** A named PostgreSQL index option with an optional value. */
+    public static class Option implements Serializable {
+        private String name;
+        private Expression value;
+        private boolean useEquals;
+
+        public Option() {}
+
+        public Option(String name, Expression value, boolean useEquals) {
+            this.name = name;
+            this.value = value;
+            this.useEquals = useEquals;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Expression getValue() {
+            return value;
+        }
+
+        public void setValue(Expression value) {
+            this.value = value;
+        }
+
+        public boolean isUseEquals() {
+            return useEquals;
+        }
+
+        public void setUseEquals(boolean useEquals) {
+            this.useEquals = useEquals;
+        }
+
+        public Option withName(String name) {
+            setName(name);
+            return this;
+        }
+
+        public Option withValue(Expression value) {
+            setValue(value);
+            return this;
+        }
+
+        public Option withUseEquals(boolean useEquals) {
+            setUseEquals(useEquals);
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return value == null ? name : name + (useEquals ? " = " : " ") + value;
         }
     }
 }

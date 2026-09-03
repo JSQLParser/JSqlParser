@@ -19,7 +19,9 @@ import java.io.StringReader;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.table.Index;
 import org.junit.jupiter.api.Test;
 
 public class CreateIndexTest {
@@ -191,6 +193,8 @@ public class CreateIndexTest {
         assertEquals(2, params.size());
         assertEquals("(20)", params.get(0));
         assertEquals("DESC", params.get(1));
+        assertEquals(Index.ColumnParams.SortOrder.DESC,
+                createIndex.getIndex().getColumns().get(0).getSortOrder());
 
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX i03 ON t (c1 (20) DESC)");
         assertSqlCanBeParsedAndDeparsed("CREATE INDEX i04 ON t (c1 (20) ASC, c2 (10) DESC)");
@@ -239,5 +243,56 @@ public class CreateIndexTest {
     public void testCreateMultiValuedIndexIssue2490() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "CREATE INDEX i20 ON t ((CAST(data -> '$.zips' AS UNSIGNED ARRAY)))");
+    }
+
+    @Test
+    public void testPostgreSqlIndexKeyAttributesIssue2525() throws JSQLParserException {
+        String orderSql = "CREATE INDEX pg_idx_sort ON pg_index_test "
+                + "(id DESC NULLS FIRST)";
+        CreateIndex ordered = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                orderSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        Index.ColumnParams orderedKey = ordered.getIndex().getColumns().get(0);
+        assertEquals(Index.ColumnParams.SortOrder.DESC, orderedKey.getSortOrder());
+        assertEquals(Index.ColumnParams.NullOrdering.FIRST, orderedKey.getNullOrdering());
+
+        String operatorClassSql = "CREATE INDEX pg_idx_collate ON pg_index_test "
+                + "(email COLLATE \"C\" text_pattern_ops)";
+        CreateIndex operatorClassIndex = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                operatorClassSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        Index.ColumnParams operatorClassKey =
+                operatorClassIndex.getIndex().getColumns().get(0);
+        assertEquals("\"C\"", operatorClassKey.getCollation());
+        assertEquals("text_pattern_ops", operatorClassKey.getOperatorClass());
+
+        String optionSql = "CREATE INDEX pg_idx_opclass ON pg_index_test "
+                + "(email text_pattern_ops (example = 1))";
+        CreateIndex optionIndex = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                optionSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        Index.Option option = optionIndex.getIndex().getColumns().get(0)
+                .getOperatorClassParameters().get(0);
+        assertEquals("example", option.getName());
+        assertEquals("1", option.getValue().toString());
+        assertTrue(option.isUseEquals());
+    }
+
+    @Test
+    public void testPostgreSqlIndexTrailingClausesIssue2525() throws JSQLParserException {
+        String includeSql = "CREATE UNIQUE INDEX pg_idx_nulls ON pg_index_test (email) "
+                + "INCLUDE (payload) NULLS NOT DISTINCT";
+        CreateIndex include = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                includeSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals(List.of("payload"), include.getIncludeColumns());
+        assertEquals(Boolean.FALSE, include.getNullsDistinct());
+
+        String trailingSql = "CREATE INDEX pg_idx_with ON pg_index_test (id) "
+                + "WITH (fillfactor = 80) TABLESPACE pg_default WHERE active";
+        CreateIndex trailing = (CreateIndex) assertSqlCanBeParsedAndDeparsed(
+                trailingSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        Index.Option fillfactor = trailing.getStorageParameters().get(0);
+        assertEquals("fillfactor", fillfactor.getName());
+        assertEquals("80", fillfactor.getValue().toString());
+        assertTrue(fillfactor.isUseEquals());
+        assertEquals("pg_default", trailing.getTableSpace());
+        assertEquals("active", trailing.getWhere().toString());
     }
 }

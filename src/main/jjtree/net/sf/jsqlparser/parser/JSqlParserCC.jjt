@@ -11200,35 +11200,84 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 
 Index.ColumnParams IndexColumnWithParams(): {
     String columnName = null;
-    // the options collected for this key part, and the result of a single CreateParameter()
     List<String> columnParams = new ArrayList<String>();
     List<String> parameter = null;
     Expression expression = null;
+    String collation = null;
+    Token operatorClass = null;
+    List<Index.Option> operatorClassParameters = null;
+    Token sortOrder = null;
+    Token nullOrdering = null;
     Index.ColumnParams column = null;
 }
 {
     (
         columnName=RelObjectName()
-        // MySQL allows a key part to carry a prefix length and a direction, e.g. "c1(20) DESC",
-        // so more than one parameter has to be collected here.
-        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
-        {
-            // ColumnParams renders a separating space for a non-null list, so a key part
-            // without options has to be given null rather than an empty list.
-            column = new Index.ColumnParams(columnName,
-                    columnParams.isEmpty() ? null : columnParams);
-        }
         |
         "(" expression=Expression() ")"
-        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
-        {
-            column = new Index.ColumnParams(expression,
-                    columnParams.isEmpty() ? null : columnParams);
-        }
     )
+    // MySQL prefix lengths precede all PostgreSQL key attributes.
+    [ LOOKAHEAD("(") parameter=CreateParameter() { columnParams.addAll(parameter); } ]
+    [ LOOKAHEAD(2) <K_COLLATE> collation=RelObjectName()
+        { columnParams.add("COLLATE"); columnParams.add(collation); } ]
+    [ LOOKAHEAD(2) (operatorClass=<S_IDENTIFIER> | operatorClass=<S_QUOTED_IDENTIFIER>)
+        [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlIndexOptions() ]
+        {
+            columnParams.add(operatorClass.image);
+            if (operatorClassParameters != null) {
+                columnParams.add(PlainSelect.getStringList(
+                        operatorClassParameters, true, true));
+            }
+        }
+    ]
+    [ LOOKAHEAD(2) (sortOrder=<K_ASC> | sortOrder=<K_DESC>)
+        { columnParams.add(sortOrder.image); } ]
+    [ LOOKAHEAD(2) <K_NULLS> (nullOrdering=<K_FIRST> | nullOrdering=<K_LAST>)
+        { columnParams.add("NULLS"); columnParams.add(nullOrdering.image); } ]
+    ( LOOKAHEAD(2) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
     {
+        column = expression != null
+                ? new Index.ColumnParams(expression,
+                        columnParams.isEmpty() ? null : columnParams)
+                : new Index.ColumnParams(columnName,
+                        columnParams.isEmpty() ? null : columnParams);
+        column.setCollation(collation);
+        if (operatorClass != null) {
+            column.setOperatorClass(operatorClass.image);
+            column.setOperatorClassParameters(operatorClassParameters);
+        }
+        if (sortOrder != null) {
+            column.setSortOrder(Index.ColumnParams.SortOrder.valueOf(
+                    sortOrder.image.toUpperCase(Locale.ROOT)));
+        }
+        if (nullOrdering != null) {
+            column.setNullOrdering(Index.ColumnParams.NullOrdering.valueOf(
+                    nullOrdering.image.toUpperCase(Locale.ROOT)));
+        }
         return column;
     }
+}
+
+Index.Option PostgreSqlIndexOption():
+{
+    String name = null;
+    Expression value = null;
+    boolean useEquals = false;
+}
+{
+    name=RelObjectName() [ "=" { useEquals = true; } ] value=Expression()
+    { return new Index.Option(name, value, useEquals); }
+}
+
+List<Index.Option> PostgreSqlIndexOptions():
+{
+    List<Index.Option> options = new ArrayList<Index.Option>();
+    Index.Option option = null;
+}
+{
+    "(" option=PostgreSqlIndexOption() { options.add(option); }
+    ( "," option=PostgreSqlIndexOption() { options.add(option); } )* ")"
+    { return options; }
 }
 
 List<Index.ColumnParams> IndexColumnsWithParamsList() : {
@@ -11268,6 +11317,10 @@ CreateIndex CreateIndex():
     Table table = null;
     List<Index.ColumnParams> colNames;
     List<String> includeColumns;
+    Boolean nullsDistinct = null;
+    List<Index.Option> storageParameters = null;
+    String tableSpace = null;
+    Expression where = null;
     String indexType;
     Index index = null;
     List<String> parameter = new ArrayList<String>();
@@ -11306,8 +11359,21 @@ CreateIndex CreateIndex():
     )
     colNames = IndexColumnsWithParamsList()
     [ <K_INCLUDE> includeColumns=ColumnsNamesList()
-        { tailParameters.add("INCLUDE (" + String.join(", ", includeColumns) + ")"); }
+        { createIndex.setIncludeColumns(includeColumns); }
     ]
+    [ LOOKAHEAD(3) <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT>
+        {
+            if (nullsDistinct == null) {
+                nullsDistinct = true;
+            }
+            createIndex.setNullsDistinct(nullsDistinct);
+        }
+    ]
+    [ LOOKAHEAD(2) <K_WITH> storageParameters=PostgreSqlIndexOptions()
+        { createIndex.setStorageParameters(storageParameters); } ]
+    [ LOOKAHEAD(2) <K_TABLESPACE> tableSpace=RelObjectName()
+        { createIndex.setTableSpace(tableSpace); } ]
+    [ LOOKAHEAD(2) <K_WHERE> where=Expression() { createIndex.setWhere(where); } ]
     ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);
