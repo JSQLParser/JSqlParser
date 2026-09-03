@@ -13306,20 +13306,30 @@ AlterExpression AlterExpressionAddAlterModify():
         LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
         |
         (
-            <K_UNIQUE>
+            <K_UNIQUE> { index = new Index().withType("UNIQUE"); }
             (
                 (
-                    <K_KEY> { alterExp.setUk(true); }
-                    | <K_INDEX> { alterExp.setUk(false); }
+                    tk2=<K_KEY> { alterExp.setUk(true); }
+                    | tk2=<K_INDEX> { alterExp.setUk(false); }
                 )
-                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
+                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                    sk3 = tk.image;
+                    alterExp.setUkName(sk3);
+                } ]
                 |
                 (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                    sk3 = tk.image;
                     alterExp.setUkTypeSpecified(false);
-                    alterExp.setUkName(tk.image);
+                    alterExp.setUkName(sk3);
                 }
             )?
-            columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
+            columnNames=ColumnsNamesList() {
+                alterExp.setUkColumns(columnNames);
+                index.withIndexKeyword(tk2 != null ? tk2.image : null)
+                        .withName(sk3)
+                        .withColumnsNames(columnNames);
+                alterExp.setIndex(index);
+            }
             [
                 AlterExpressionUsingIndex(alterExp)
             ]

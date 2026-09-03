@@ -599,6 +599,28 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableAddUniqueIndexWithCommentIssue2503() throws Exception {
+        String sql = "ALTER TABLE `wxp_dm`.`xqgl_req_report` "
+                + "ADD UNIQUE INDEX `index2` (`report_name` ASC) USING BTREE COMMENT '唯一索引'";
+
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql);
+        AlterExpression alterExpression = alter.getAlterExpressions().get(0);
+        Index index = alterExpression.getIndex();
+
+        assertNotNull(index);
+        assertEquals("UNIQUE", index.getType());
+        assertEquals("INDEX", index.getIndexKeyword());
+        assertEquals("`index2`", index.getName());
+        assertEquals(List.of("`report_name` ASC"), index.getColumnsNames());
+        assertEquals("'唯一索引'", index.getCommentText());
+
+        // Keep the legacy fields populated for existing consumers.
+        assertEquals("`index2`", alterExpression.getUkName());
+        assertEquals(List.of("`report_name` ASC"), alterExpression.getUkColumns());
+        assertEquals(List.of("USING", "BTREE"), alterExpression.getParameters());
+    }
+
+    @Test
     public void testIssue259() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE feature_v2 ADD COLUMN third_user_id int (10) unsigned DEFAULT '0' COMMENT '第三方用户id' after kdt_id");
