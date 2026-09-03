@@ -11277,11 +11277,20 @@ CreateIndex CreateIndex():
     [ parameter=CreateParameter() ]
 
     <K_INDEX>
+    [ LOOKAHEAD({ getToken(1).kind == K_CONCURRENTLY })
+        <K_CONCURRENTLY> { createIndex.setConcurrently(true); } ]
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createIndex.setUsingIfNotExists(true);} ]
-    index = Index() { index.setType(parameter.isEmpty() ? null : parameter.get(0)); }
+    [ LOOKAHEAD({ getToken(1).kind != K_ON && getToken(1).kind != K_USING })
+        index = Index() ]
+    {
+        if (index == null) {
+            index = new Index();
+        }
+        index.setType(parameter.isEmpty() ? null : parameter.get(0));
+    }
     (
         LOOKAHEAD(3)(
-            <K_ON> table=Table()
+            <K_ON> [ <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
             [ indexType=UsingIndexType() { index.setUsing(indexType); } ]
         )
         |
@@ -11291,7 +11300,7 @@ CreateIndex CreateIndex():
                     createIndex.setIndexTypeBeforeOn(true);
                 }
             ]
-            <K_ON> table=Table()
+            <K_ON> [ <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
         )
     )
     colNames = IndexColumnsWithParamsList()

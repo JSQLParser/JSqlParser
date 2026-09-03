@@ -23,6 +23,8 @@ public class CreateIndex implements Statement {
     private List<String> tailParameters;
     private boolean indexTypeBeforeOn = false;
     private boolean usingIfNotExists = false;
+    private boolean concurrently;
+    private boolean only;
 
     public boolean isIndexTypeBeforeOn() {
         return indexTypeBeforeOn;
@@ -39,6 +41,22 @@ public class CreateIndex implements Statement {
     public CreateIndex setUsingIfNotExists(boolean usingIfNotExists) {
         this.usingIfNotExists = usingIfNotExists;
         return this;
+    }
+
+    public boolean isConcurrently() {
+        return concurrently;
+    }
+
+    public void setConcurrently(boolean concurrently) {
+        this.concurrently = concurrently;
+    }
+
+    public boolean isOnly() {
+        return only;
+    }
+
+    public void setOnly(boolean only) {
+        this.only = only;
     }
 
     @Override
@@ -82,17 +100,24 @@ public class CreateIndex implements Statement {
         }
 
         buffer.append("INDEX ");
+        if (concurrently) {
+            buffer.append("CONCURRENTLY ");
+        }
         if (usingIfNotExists) {
             buffer.append("IF NOT EXISTS ");
         }
-        buffer.append(index.getName());
-
-        if (index.getUsing() != null && isIndexTypeBeforeOn()) {
-            buffer.append(" USING ");
-            buffer.append(index.getUsing());
+        if (index.getName() != null) {
+            buffer.append(index.getName()).append(" ");
         }
 
-        buffer.append(" ON ");
+        if (index.getUsing() != null && isIndexTypeBeforeOn()) {
+            buffer.append("USING ").append(index.getUsing()).append(" ");
+        }
+
+        buffer.append("ON ");
+        if (only) {
+            buffer.append("ONLY ");
+        }
         buffer.append(table.getFullyQualifiedName());
 
         if (index.getUsing() != null && !isIndexTypeBeforeOn()) {
@@ -132,6 +157,16 @@ public class CreateIndex implements Statement {
 
     public CreateIndex withTailParameters(List<String> tailParameters) {
         this.setTailParameters(tailParameters);
+        return this;
+    }
+
+    public CreateIndex withConcurrently(boolean concurrently) {
+        setConcurrently(concurrently);
+        return this;
+    }
+
+    public CreateIndex withOnly(boolean only) {
+        setOnly(only);
         return this;
     }
 }
