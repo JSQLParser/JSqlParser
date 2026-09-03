@@ -326,12 +326,27 @@ public class Index implements Serializable {
         public String toString() {
             StringBuilder builder = new StringBuilder(
                     expression != null ? "(" + expression + ")" : columnName);
+            appendParams(builder);
+            appendCollation(builder);
+            appendOperatorClass(builder);
+            appendSortOrder(builder);
+            appendNullOrdering(builder);
+            return builder.toString();
+        }
+
+        private void appendParams(StringBuilder builder) {
             if (params != null) {
                 builder.append(" ").append(String.join(" ", params));
             }
+        }
+
+        private void appendCollation(StringBuilder builder) {
             if (collation != null && !hasParam("COLLATE")) {
                 builder.append(" COLLATE ").append(collation);
             }
+        }
+
+        private void appendOperatorClass(StringBuilder builder) {
             if (operatorClass != null && !hasParam(operatorClass)) {
                 builder.append(" ").append(operatorClass);
                 if (operatorClassParameters != null && !operatorClassParameters.isEmpty()) {
@@ -340,13 +355,18 @@ public class Index implements Serializable {
                                     operatorClassParameters, true, true));
                 }
             }
+        }
+
+        private void appendSortOrder(StringBuilder builder) {
             if (sortOrder != null && !hasParam(sortOrder.name())) {
                 builder.append(" ").append(sortOrder);
             }
+        }
+
+        private void appendNullOrdering(StringBuilder builder) {
             if (nullOrdering != null && !hasParam("NULLS")) {
                 builder.append(" NULLS ").append(nullOrdering);
             }
-            return builder.toString();
         }
 
         private boolean hasParam(String expected) {
