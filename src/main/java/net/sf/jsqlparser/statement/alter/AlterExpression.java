@@ -41,6 +41,7 @@ public class AlterExpression implements Serializable {
     private String columnOldName;
     private List<ColumnDataType> colDataTypeList;
     private List<ColumnDropNotNull> columnDropNotNullList;
+    private List<ColumnSetNotNull> columnSetNotNullList;
     private List<ColumnDropDefault> columnDropDefaultList;
     private List<ColumnSetDefault> columnSetDefaultList;
     private List<ColumnSetVisibility> columnSetVisibilityList;
@@ -382,6 +383,13 @@ public class AlterExpression implements Serializable {
         columnDropNotNullList.add(columnDropNotNull);
     }
 
+    public void addColSetNotNull(ColumnSetNotNull columnSetNotNull) {
+        if (columnSetNotNullList == null) {
+            columnSetNotNullList = new ArrayList<>();
+        }
+        columnSetNotNullList.add(columnSetNotNull);
+    }
+
     public List<ColumnDropDefault> getColumnDropDefaultList() {
         return columnDropDefaultList;
     }
@@ -525,6 +533,10 @@ public class AlterExpression implements Serializable {
 
     public List<ColumnDropNotNull> getColumnDropNotNullList() {
         return columnDropNotNullList;
+    }
+
+    public List<ColumnSetNotNull> getColumnSetNotNullList() {
+        return columnSetNotNullList;
     }
 
     public void addParameters(String... params) {
@@ -1134,6 +1146,9 @@ public class AlterExpression implements Serializable {
             if (colDataTypeList.size() > 1) {
                 b.append(")");
             }
+        } else if (getColumnSetNotNullList() != null) {
+            b.append("COLUMN ");
+            b.append(PlainSelect.getStringList(columnSetNotNullList));
         } else if (getColumnDropNotNullList() != null) {
             b.append("COLUMN ");
             b.append(PlainSelect.getStringList(columnDropNotNullList));
@@ -1464,6 +1479,24 @@ public class AlterExpression implements Serializable {
         @Override
         public String toString() {
             return columnName + " DROP" + (withNot ? " NOT " : " ") + "NULL";
+        }
+    }
+
+    public static final class ColumnSetNotNull implements Serializable {
+
+        private final String columnName;
+
+        public ColumnSetNotNull(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        @Override
+        public String toString() {
+            return columnName + " SET NOT NULL";
         }
     }
 

@@ -151,4 +151,10 @@ public class AlterValidatorTest extends ValidationTestAsserts {
                 DatabaseType.DATABASES);
     }
 
+    @Test
+    public void testAlterTableAlterColumnSetNotNull() throws JSQLParserException {
+        validateNoErrors("ALTER TABLE user_table ALTER COLUMN name SET NOT NULL", 1,
+                DatabaseType.DATABASES);
+    }
+
 }
