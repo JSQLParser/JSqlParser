@@ -1524,6 +1524,7 @@ String NonReservedWord() :
       | tk=<K_DISABLE : "DISABLE">
       | tk=<K_DISCARD : "DISCARD">
       | tk=<K_DISCONNECT:"DISCONNECT">
+      | tk=<K_DIRECTORY:"DIRECTORY">
       | tk=<K_DIV:"DIV">
       | tk=<K_DDL:"DDL">
       | tk=<K_DML:"DML">
@@ -1610,7 +1611,9 @@ String NonReservedWord() :
       | tk=<K_LEADING:"LEADING">
       | tk=<K_LESS:"LESS">
       | tk=<K_LEVEL:"LEVEL">
+      | tk=<K_LINEAR:"LINEAR">
       | tk=<K_LINES:"LINES">
+      | tk=<K_LIST:"LIST">
       | tk=<K_LOCAL:"LOCAL">
       | tk=<K_LOCK:"LOCK">
       | tk=<K_LOCKED:"LOCKED">
@@ -1629,10 +1632,12 @@ String NonReservedWord() :
       | tk=<K_MATCHED: "MATCHED">
       | tk=<K_MATERIALIZED:"MATERIALIZED">
       | tk=<K_MAX: "MAX">
+      | tk=<K_MAX_ROWS: "MAX_ROWS">
       | tk=<K_MAXVALUE: "MAXVALUE">
       | tk=<K_MEMBER: "MEMBER">
       | tk=<K_MERGE: "MERGE">
       | tk=<K_MIN:"MIN">
+      | tk=<K_MIN_ROWS:"MIN_ROWS">
       | tk=<K_MINVALUE:"MINVALUE">
       | tk=<K_MODE: "MODE">
       | tk=<K_MODIFY: "MODIFY">
@@ -1674,6 +1679,7 @@ String NonReservedWord() :
       | tk=<K_PARSER: "PARSER">
       | tk=<K_PARTITION:"PARTITION">
       | tk=<K_PARTITIONING:"PARTITIONING">
+      | tk=<K_PARTITIONS:"PARTITIONS">
       | tk=<K_PATH:"PATH">
       | tk=<K_PERCENT:"PERCENT">
       | tk=<K_PLACING:"PLACING">
@@ -1744,11 +1750,14 @@ String NonReservedWord() :
       | tk=<K_STARTING:"STARTING">
       | tk=<K_STEP: "STEP">
       | tk=<K_STORED: "STORED">
+      | tk=<K_STORAGE: "STORAGE">
       | tk=<K_STREAM: "STREAM">
       | tk=<K_STRICT: "STRICT">
       | tk=<K_STRING: "STRING">
       | tk=<K_STRUCT: "STRUCT">
       | tk=<K_SUMMARIZE: "SUMMARIZE">
+      | tk=<K_SUBPARTITION: "SUBPARTITION">
+      | tk=<K_SUBPARTITIONS: "SUBPARTITIONS">
       | tk=<K_SUSPEND:"SUSPEND">
       | tk=<K_SWITCH: "SWITCH">
       | tk=<K_SYMMETRIC:"SYMMETRIC">
@@ -11538,6 +11547,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     RowMovement rowMovement = null;
     String tableColumn = null;
     List<String> columns = new ArrayList<String>();
+    TablePartitioning partitioning = null;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -11579,7 +11589,10 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             )
         )
     ]
-    ( LOOKAHEAD(2, { getToken(1).kind != K_AS }) parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+    ( LOOKAHEAD(2, { getToken(1).kind != K_AS
+            && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
+        parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+    [ partitioning=CreateTablePartitioning() { createTable.setPartitioning(partitioning); } ]
 
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
@@ -12068,6 +12081,9 @@ List<String> CreateParameter():
             // "WITH PARSER" option, and the FULLTEXT / SPATIAL index types of CREATE INDEX.
             | tk=<K_KEY_BLOCK_SIZE> | tk=<K_ALGORITHM> | tk=<K_LOCK> | tk=<K_NONE>
             | tk=<K_PARSER> | tk=<K_FULLTEXT> | tk=<K_SPATIAL>
+            | tk=<K_DIRECTORY> | tk=<K_LINEAR> | tk=<K_LIST> | tk=<K_MAX_ROWS>
+            | tk=<K_MIN_ROWS> | tk=<K_PARTITIONS> | tk=<K_STORAGE>
+            | tk=<K_SUBPARTITION> | tk=<K_SUBPARTITIONS>
             | tk="="
         )
         { param.add(tk.image); }
@@ -12532,47 +12548,271 @@ void IndexOption(List<String> list) :
     )
 }
 
-List<PartitionDefinition> PartitionDefinitions():
+TablePartitioning CreateTablePartitioning():
 {
-    Token tk;
-    List<PartitionDefinition> partitionDefinitions = new ArrayList<PartitionDefinition>();
-    PartitionDefinition partitionDef = null;
-    String partitionName = null;
-    String partitionOperation = null;
-    String storageEngine = null;
-    Expression exp = null;
+    TablePartitioning partitioning = null;
+    TablePartitioning subPartitioning = null;
+    Expression expression = null;
+    ExpressionList<Column> columns = null;
+    List<PartitionDefinition> partitionDefinitions = null;
+    List<String> parameter = null;
+    List<String> partitionOptions = new ArrayList<String>();
+    Token tk = null;
 }
 {
-    "("
+    <K_PARTITION> <K_BY>
+    (
+        partitioning=HashOrKeyPartitioning()
+        |
+        <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
-            <K_PARTITION>
-            partitionName=RelObjectName()
+            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            |
+            <K_COLUMNS> "(" columns=ColumnList() ")"
             {
-                List<String> values = new ArrayList<String>();
+                partitioning.setColumnsSyntax(true);
+                partitioning.setColumns(columns);
             }
-            <K_VALUES>
+        )
+        |
+        <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
+        (
+            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            |
+            <K_COLUMNS> "(" columns=ColumnList() ")"
+            {
+                partitioning.setColumnsSyntax(true);
+                partitioning.setColumns(columns);
+            }
+        )
+    )
+    [ LOOKAHEAD({ getToken(1).kind == K_PARTITIONS })
+        <K_PARTITIONS> tk=<S_LONG> { partitioning.setPartitions(Long.valueOf(tk.image)); } ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_SUBPARTITION })
+        <K_SUBPARTITION> <K_BY> subPartitioning=HashOrKeyPartitioning()
+        [ LOOKAHEAD({ getToken(1).kind == K_SUBPARTITIONS })
+            <K_SUBPARTITIONS> tk=<S_LONG>
+            { subPartitioning.setPartitions(Long.valueOf(tk.image)); } ]
+        { partitioning.setSubPartitioning(subPartitioning); }
+    ]
+    [ LOOKAHEAD(2) partitionDefinitions=PartitionDefinitions()
+        { partitioning.setPartitionDefinitions(partitionDefinitions); } ]
+    ( LOOKAHEAD(2, { getToken(1).kind != K_AS })
+        parameter=CreateParameter() { partitionOptions.addAll(parameter); } )*
+    {
+        if (!partitionOptions.isEmpty()) {
+            partitioning.setPartitionOptions(partitionOptions);
+        }
+        return partitioning;
+    }
+}
+
+TablePartitioning HashOrKeyPartitioning():
+{
+    TablePartitioning partitioning = new TablePartitioning();
+    Expression expression = null;
+    ExpressionList<Column> columns = null;
+    Token tk = null;
+    boolean useEquals = false;
+}
+{
+    [ <K_LINEAR> { partitioning.setLinear(true); } ]
+    (
+        <K_HASH> "(" expression=Expression() ")"
+        {
+            partitioning.setType(TablePartitioning.Type.HASH);
+            partitioning.setExpression(expression);
+        }
+        |
+        <K_KEY>
+        [ <K_ALGORITHM> [ "=" { useEquals = true; } ] tk=<S_LONG>
+            {
+                partitioning.setAlgorithm(Integer.valueOf(tk.image));
+                partitioning.setAlgorithmUseEquals(useEquals);
+            }
+        ]
+        "(" [ columns=ColumnList() ] ")"
+        {
+            partitioning.setType(TablePartitioning.Type.KEY);
+            if (columns == null) {
+                columns = new ExpressionList<Column>();
+            }
+            partitioning.setColumns(columns);
+        }
+    )
+    {
+        return partitioning;
+    }
+}
+
+List<String> PartitionValues():
+{
+    List<String> values = new ArrayList<String>();
+    Expression expression = null;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == K_MAXVALUE })
+        <K_MAXVALUE> { values.add("MAXVALUE"); }
+        | expression=Expression() { values.add(expression.toString()); }
+    )
+    (
+        ","
+        (
+            LOOKAHEAD({ getToken(1).kind == K_MAXVALUE })
+            <K_MAXVALUE> { values.add("MAXVALUE"); }
+            | expression=Expression() { values.add(expression.toString()); }
+        )
+    )*
+    {
+        return values;
+    }
+}
+
+PartitionDefinition PartitionDefinition():
+{
+    PartitionDefinition partitionDefinition = new PartitionDefinition();
+    List<String> values = null;
+    List<PartitionDefinition> subPartitionDefinitions = null;
+    String partitionName = null;
+}
+{
+    <K_PARTITION> partitionName=RelObjectName()
+    { partitionDefinition.setPartitionName(partitionName); }
+    [
+        <K_VALUES>
+        (
+            <K_LESS> <K_THAN>
+            {
+                partitionDefinition.setValueOperator(
+                        PartitionDefinition.ValueOperator.LESS_THAN);
+            }
             (
-                <K_LESS> <K_THAN>
-                (
-                    "(" exp = Expression() ")"{
-                        values.add(exp.toString());
-                    }
-                    | <K_MAXVALUE> { values.add("MAXVALUE"); }
-                ) {
-                    partitionOperation = "VALUES LESS THAN";
+                <K_MAXVALUE>
+                {
+                    partitionDefinition.setMaxValue(true);
+                    partitionDefinition.setValues(Collections.singletonList("MAXVALUE"));
                 }
+                |
+                "(" values=PartitionValues() ")" { partitionDefinition.setValues(values); }
             )
-            [ "ENGINE" "=" tk=<S_IDENTIFIER> { storageEngine = tk.image; } ]
+            |
+            <K_IN>
             {
-                partitionDef = new PartitionDefinition(partitionName, partitionOperation, values, storageEngine);
-                partitionDefinitions.add(partitionDef);
+                partitionDefinition.setValueOperator(PartitionDefinition.ValueOperator.IN);
             }
-            [ "," ]
-        )*
+            "(" values=PartitionValues() ")" { partitionDefinition.setValues(values); }
+        )
+    ]
+    ( PartitionDefinitionOption(partitionDefinition) )*
+    [ subPartitionDefinitions=SubpartitionDefinitions()
+        { partitionDefinition.setSubPartitionDefinitions(subPartitionDefinitions); } ]
+    {
+        return partitionDefinition;
+    }
+}
+
+List<PartitionDefinition> PartitionDefinitions():
+{
+    List<PartitionDefinition> partitionDefinitions = new ArrayList<PartitionDefinition>();
+    PartitionDefinition partitionDefinition = null;
+}
+{
+    "(" partitionDefinition=PartitionDefinition()
+        { partitionDefinitions.add(partitionDefinition); }
+        ( "," partitionDefinition=PartitionDefinition()
+            { partitionDefinitions.add(partitionDefinition); } )*
     ")"
     {
         return partitionDefinitions;
     }
+}
+
+PartitionDefinition SubpartitionDefinition():
+{
+    PartitionDefinition partitionDefinition = new PartitionDefinition();
+    String partitionName = null;
+}
+{
+    <K_SUBPARTITION> partitionName=RelObjectName()
+    {
+        partitionDefinition.setPartitionName(partitionName);
+        partitionDefinition.setSubPartition(true);
+    }
+    ( PartitionDefinitionOption(partitionDefinition) )*
+    {
+        return partitionDefinition;
+    }
+}
+
+List<PartitionDefinition> SubpartitionDefinitions():
+{
+    List<PartitionDefinition> partitionDefinitions = new ArrayList<PartitionDefinition>();
+    PartitionDefinition partitionDefinition = null;
+}
+{
+    "(" partitionDefinition=SubpartitionDefinition()
+        { partitionDefinitions.add(partitionDefinition); }
+        ( "," partitionDefinition=SubpartitionDefinition()
+            { partitionDefinitions.add(partitionDefinition); } )*
+    ")"
+    {
+        return partitionDefinitions;
+    }
+}
+
+void PartitionDefinitionOption(PartitionDefinition partitionDefinition):
+{
+    Token tk = null;
+    String value = null;
+    boolean useEquals = false;
+}
+{
+    (
+        [ <K_STORAGE> { partitionDefinition.setStorageKeyword(true); } ]
+        <K_ENGINE> [ "=" { useEquals = true; } ] value=RelObjectName()
+        {
+            partitionDefinition.setStorageEngine(value);
+            partitionDefinition.setStorageEngineUseEquals(useEquals);
+        }
+        |
+        <K_COMMENT> [ "=" { useEquals = true; } ] tk=<S_CHAR_LITERAL>
+        {
+            partitionDefinition.setComment(tk.image);
+            partitionDefinition.setCommentUseEquals(useEquals);
+        }
+        |
+        <K_DATA> <K_DIRECTORY> [ "=" { useEquals = true; } ] tk=<S_CHAR_LITERAL>
+        {
+            partitionDefinition.setDataDirectory(tk.image);
+            partitionDefinition.setDataDirectoryUseEquals(useEquals);
+        }
+        |
+        <K_INDEX> <K_DIRECTORY> [ "=" { useEquals = true; } ] tk=<S_CHAR_LITERAL>
+        {
+            partitionDefinition.setIndexDirectory(tk.image);
+            partitionDefinition.setIndexDirectoryUseEquals(useEquals);
+        }
+        |
+        <K_MAX_ROWS> [ "=" { useEquals = true; } ] tk=<S_LONG>
+        {
+            partitionDefinition.setMaxRows(tk.image);
+            partitionDefinition.setMaxRowsUseEquals(useEquals);
+        }
+        |
+        <K_MIN_ROWS> [ "=" { useEquals = true; } ] tk=<S_LONG>
+        {
+            partitionDefinition.setMinRows(tk.image);
+            partitionDefinition.setMinRowsUseEquals(useEquals);
+        }
+        |
+        <K_TABLESPACE> [ "=" { useEquals = true; } ] value=RelObjectName()
+        {
+            partitionDefinition.setTablespace(value);
+            partitionDefinition.setTablespaceUseEquals(useEquals);
+        }
+    )
 }
 
 List<String> PartitionNamesList() :
