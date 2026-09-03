@@ -141,6 +141,7 @@ public class ReflectionModelTest {
             new net.sf.jsqlparser.statement.alter.AlterExpression(),
             new net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType(false),
             new net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull("name"),
+            new net.sf.jsqlparser.statement.alter.AlterExpression.ColumnSetNotNull("name"),
             new net.sf.jsqlparser.statement.merge.MergeInsert(),
             new net.sf.jsqlparser.statement.alter.DeferrableConstraint(),
             new net.sf.jsqlparser.statement.alter.EnableConstraint(),

@@ -17,6 +17,7 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
+import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnSetNotNull;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -45,6 +46,11 @@ public class AlterValidator extends AbstractValidator<Alter> {
             if (e.getColumnDropNotNullList() != null) {
                 validateOptionalColumnNames(c, ValidationUtil.map(e.getColumnDropNotNullList(),
                         ColumnDropNotNull::getColumnName));
+            }
+
+            if (e.getColumnSetNotNullList() != null) {
+                validateOptionalColumnNames(c, ValidationUtil.map(e.getColumnSetNotNullList(),
+                        ColumnSetNotNull::getColumnName));
             }
 
             if (e.getColDataTypeList() != null) {

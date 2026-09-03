@@ -12213,13 +12213,15 @@ Truncate Truncate():
 
 /**
  * Parses common column-level changes shared between the COLUMN-prefixed and bare forms:
- * DROP DEFAULT, SET DEFAULT, SET VISIBLE/INVISIBLE, and bracketed multi-column definitions.
+ * DROP DEFAULT, SET DEFAULT, SET NOT NULL, SET VISIBLE/INVISIBLE, and bracketed multi-column
+ * definitions.
  */
 void AlterExpressionColumnChanges(AlterExpression alterExp):
 {
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropDefault alterExpressionColumnDropDefault = null;
     AlterExpression.ColumnSetDefault alterExpressionColumnSetDefault = null;
+    AlterExpression.ColumnSetNotNull alterExpressionColumnSetNotNull = null;
     AlterExpression.ColumnSetVisibility alterExpressionColumnSetVisibility = null;
 }
 {
@@ -12229,6 +12231,9 @@ void AlterExpressionColumnChanges(AlterExpression alterExp):
         |
         LOOKAHEAD(3) alterExpressionColumnSetDefault = AlterExpressionColumnSetDefault()
             { alterExp.addColSetDefault(alterExpressionColumnSetDefault); }
+        |
+        LOOKAHEAD(4) alterExpressionColumnSetNotNull = AlterExpressionColumnSetNotNull()
+            { alterExp.addColSetNotNull(alterExpressionColumnSetNotNull); }
         |
         LOOKAHEAD(3) alterExpressionColumnSetVisibility = AlterExpressionColumnSetVisibility()
             { alterExp.addColSetVisibility(alterExpressionColumnSetVisibility); }
@@ -12284,6 +12289,19 @@ AlterExpression.ColumnDropNotNull AlterExpressionColumnDropNotNull():
     <K_NULL>
     {
         return new AlterExpression.ColumnDropNotNull(columnName, withNot);
+    }
+}
+
+AlterExpression.ColumnSetNotNull AlterExpressionColumnSetNotNull():
+{
+    String columnName = null;
+}
+{
+    columnName = RelObjectName()
+    <K_SET>
+    <K_NOT> <K_NULL>
+    {
+        return new AlterExpression.ColumnSetNotNull(columnName);
     }
 }
 
@@ -12926,11 +12944,11 @@ AlterExpression AlterExpressionAddAlterModify():
             (
                 LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
                 |
-                LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
-                    { alterExp.addColDataType(alterExpressionColumnDataType); }
-                |
                 LOOKAHEAD(3) alterExpressionColumnDropNotNull = AlterExpressionColumnDropNotNull()
                     { alterExp.addColDropNotNull( alterExpressionColumnDropNotNull);}
+                |
+                LOOKAHEAD(2) alterExpressionColumnDataType = AlterExpressionColumnDataType()
+                    { alterExp.addColDataType(alterExpressionColumnDataType); }
             )
         )
         |

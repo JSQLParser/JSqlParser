@@ -644,8 +644,23 @@ public class AlterTest {
 
     @Test
     public void testAlterTableAlterColumnDropNotNullIssue918() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed(
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE \"user_table_t\" ALTER COLUMN name DROP NOT NULL");
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+
+        assertNull(expression.getColDataTypeList());
+        assertEquals("name", expression.getColumnDropNotNullList().get(0).getColumnName());
+        assertTrue(expression.getColumnDropNotNullList().get(0).isWithNot());
+    }
+
+    @Test
+    public void testAlterTableAlterColumnSetNotNull() throws JSQLParserException {
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE user_table ALTER COLUMN name SET NOT NULL");
+        AlterExpression expression = alter.getAlterExpressions().get(0);
+
+        assertNull(expression.getColDataTypeList());
+        assertEquals("name", expression.getColumnSetNotNullList().get(0).getColumnName());
     }
 
     @Test
