@@ -11950,11 +11950,17 @@ void ReferentialActionsOnIndex(ForeignKeyIndex fkIndex):
 CheckConstraint CheckConstraintSpec(String constraintName):
 {
     Expression exp = null;
+    Boolean enforced = null;
 }
 {
     <K_CHECK> ( LOOKAHEAD(2) "(" exp = Expression() ")" )*
+    [
+        [ <K_NOT> { enforced = false; } ]
+        <K_ENFORCED> { if (enforced == null) { enforced = true; } }
+    ]
     {
-        return new CheckConstraint().withName(constraintName).withExpression(exp);
+        return new CheckConstraint().withName(constraintName).withExpression(exp)
+                .withEnforced(enforced);
     }
 }
 
