@@ -649,6 +649,15 @@ public class AlterTest {
     }
 
     @Test
+    public void testAlterTableVersionColumn() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE test_table DROP COLUMN version, DROP COLUMN other_column");
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE test_table ALTER COLUMN version TYPE VARCHAR(32) "
+                        + "USING version::VARCHAR(32)");
+    }
+
+    @Test
     public void testAlterTableRenameColumn() throws JSQLParserException {
         // With Column Keyword
         String sql = "ALTER TABLE \"test_table\" RENAME COLUMN \"test_column\" TO \"test_c\"";

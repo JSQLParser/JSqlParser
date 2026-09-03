@@ -2140,6 +2140,7 @@ Token KeywordOrIdentifier():
       | tk = <K_STRING>
       | tk = <K_DATA>
       | tk = <K_TYPE>
+      | tk = <K_VERSION>
     )
     { return tk; }
 }
@@ -11942,7 +11943,7 @@ List<String> CreateParameter():
         |
         (
             //@todo: implement a proper identifier
-            (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_NAME>)
+            (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER> | tk=<K_NAME> | tk=<K_VERSION>)
             { retval+=tk.image; }
 
             [
