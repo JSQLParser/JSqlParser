@@ -170,6 +170,16 @@ public class ForeignKeyIndex extends NamedConstraint {
     }
 
     @Override
+    public ForeignKeyIndex withIndexName(String indexName) {
+        return (ForeignKeyIndex) super.withIndexName(indexName);
+    }
+
+    @Override
+    public ForeignKeyIndex withUseConstraintKeyword(boolean useConstraintKeyword) {
+        return (ForeignKeyIndex) super.withUseConstraintKeyword(useConstraintKeyword);
+    }
+
+    @Override
     public ForeignKeyIndex withName(List<String> name) {
         return (ForeignKeyIndex) super.withName(name);
     }

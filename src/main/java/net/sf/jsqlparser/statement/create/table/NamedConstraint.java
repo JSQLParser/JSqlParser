@@ -16,13 +16,53 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class NamedConstraint extends Index {
 
+    private String indexName;
+    private boolean useConstraintKeyword;
+
+    /**
+     * Returns the optional index name declared after the constraint type. This is distinct from
+     * {@link #getName()}, which represents the optional constraint symbol.
+     *
+     * @return the index name, or {@code null} when it was omitted
+     */
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
+    public boolean isUseConstraintKeyword() {
+        return useConstraintKeyword;
+    }
+
+    public void setUseConstraintKeyword(boolean useConstraintKeyword) {
+        this.useConstraintKeyword = useConstraintKeyword;
+    }
+
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(getIndexSpec(), false, false);
-        String head = getName() != null ? "CONSTRAINT " + getName() + " " : "";
-        String tail = getType() + " " + PlainSelect.getStringList(getColumnsNames(), true, true) +
+        String head = useConstraintKeyword || getName() != null
+                ? "CONSTRAINT" + (getName() != null ? " " + getName() : "") + " "
+                : "";
+        String tail = getType()
+                + (indexName != null ? " " + indexName : "")
+                + (getUsing() != null ? " USING " + getUsing() : "")
+                + " " + PlainSelect.getStringList(getColumnsNames(), true, true) +
                 (!"".equals(idxSpecText) ? " " + idxSpecText : "");
         return head + tail;
+    }
+
+    public NamedConstraint withIndexName(String indexName) {
+        setIndexName(indexName);
+        return this;
+    }
+
+    public NamedConstraint withUseConstraintKeyword(boolean useConstraintKeyword) {
+        setUseConstraintKeyword(useConstraintKeyword);
+        return this;
     }
 
     @Override
