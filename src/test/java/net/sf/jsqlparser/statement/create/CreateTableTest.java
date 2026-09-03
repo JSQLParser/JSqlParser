@@ -32,6 +32,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColDataType.Signedness;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
@@ -1246,5 +1247,27 @@ public class CreateTableTest {
                 true);
         // A plain INDEX must still parse unchanged.
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a int, INDEX idx (a))", true);
+    }
+
+    @Test
+    void testMySqlColumnTypeModifiers() throws JSQLParserException {
+        String sql = "CREATE TABLE t (a INT UNSIGNED, b INT (11) UNSIGNED ZEROFILL, "
+                + "c DECIMAL (10, 2) SIGNED NOT NULL)";
+        CreateTable createTable =
+                (CreateTable) assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        ColDataType first = createTable.getColumnDefinitions().get(0).getColDataType();
+        assertEquals("INT", first.getDataType());
+        assertEquals(Signedness.UNSIGNED, first.getSignedness());
+        assertFalse(first.isZerofill());
+
+        ColDataType second = createTable.getColumnDefinitions().get(1).getColDataType();
+        assertEquals(Signedness.UNSIGNED, second.getSignedness());
+        assertTrue(second.isZerofill());
+
+        ColDataType third = createTable.getColumnDefinitions().get(2).getColDataType();
+        assertEquals(Signedness.SIGNED, third.getSignedness());
+        assertEquals(List.of("NOT", "NULL"),
+                createTable.getColumnDefinitions().get(2).getColumnSpecs());
     }
 }
