@@ -28,6 +28,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
@@ -42,6 +43,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
+import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -2443,5 +2445,45 @@ public class AlterTest {
     public void testAlterTableAddMultiValuedIndexIssue2490() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE t ADD INDEX i31 ((CAST(data -> '$.zips' AS UNSIGNED ARRAY)))");
+    }
+
+    @Test
+    public void testPostgreSqlAttachPartitionIssue2523() throws JSQLParserException {
+        String sql = "ALTER TABLE measurement ATTACH PARTITION measurement_y2026m01 "
+                + "FOR VALUES FROM ('2026-01-01') TO ('2026-02-01')";
+        Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                sql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        AlterExpressionPartition expression =
+                (AlterExpressionPartition) alter.getAlterExpressions().get(0);
+
+        assertEquals(AlterOperation.ATTACH_PARTITION, expression.getOperation());
+        assertEquals("measurement_y2026m01", expression.getPartitionTable().getName());
+        assertEquals(PartitionBound.Type.RANGE, expression.getPartitionBound().getType());
+    }
+
+    @Test
+    public void testPostgreSqlDetachPartitionModesIssue2523() throws JSQLParserException {
+        String concurrently = "ALTER TABLE measurement DETACH PARTITION "
+                + "measurement_y2026m01 CONCURRENTLY";
+        Alter concurrentAlter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                concurrently, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        AlterExpressionPartition concurrentExpression =
+                (AlterExpressionPartition) concurrentAlter.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.DETACH_PARTITION, concurrentExpression.getOperation());
+        assertEquals(AlterExpressionPartition.DetachMode.CONCURRENTLY,
+                concurrentExpression.getDetachMode());
+
+        String finalizeSql =
+                "ALTER TABLE measurement DETACH PARTITION measurement_y2026m01 FINALIZE";
+        Alter finalizeAlter = (Alter) assertSqlCanBeParsedAndDeparsed(
+                finalizeSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        AlterExpressionPartition finalizeExpression =
+                (AlterExpressionPartition) finalizeAlter.getAlterExpressions().get(0);
+        assertEquals(AlterExpressionPartition.DetachMode.FINALIZE,
+                finalizeExpression.getDetachMode());
+
+        assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE measurement DETACH PARTITION measurement_y2026m01",
+                true, parser -> parser.withDialect(Dialect.POSTGRESQL));
     }
 }

@@ -29,6 +29,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -36,7 +37,9 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.RowMovementMode;
+import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -1246,5 +1249,59 @@ public class CreateTableTest {
                 true);
         // A plain INDEX must still parse unchanged.
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a int, INDEX idx (a))", true);
+    }
+
+    @Test
+    void testPostgreSqlDeclarativePartitionParentsIssue2522() throws JSQLParserException {
+        String sql = "CREATE TABLE pg_range_parent (tenant_id int, "
+                + "happened_at timestamptz) PARTITION BY RANGE (tenant_id, happened_at)";
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                sql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        TablePartitioning partitioning = createTable.getPartitioning();
+
+        assertEquals(TablePartitioning.Type.RANGE, partitioning.getType());
+        assertEquals(List.of("tenant_id", "happened_at"), partitioning.getExpressionList()
+                .stream().map(Object::toString).toList());
+
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE pg_list_parent (region text) PARTITION BY LIST (region)",
+                true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE pg_hash_parent (tenant_id int) PARTITION BY HASH (tenant_id)",
+                true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+    }
+
+    @Test
+    void testPostgreSqlDeclarativePartitionChildrenIssue2522() throws JSQLParserException {
+        String rangeSql = "CREATE TABLE pg_range_p1 PARTITION OF pg_range_parent "
+                + "FOR VALUES FROM (1, MINVALUE) TO (2, MAXVALUE)";
+        CreateTable range = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                rangeSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals("pg_range_parent", range.getPartitionOf().getName());
+        assertEquals(PartitionBound.Type.RANGE, range.getPartitionBound().getType());
+        assertEquals(List.of("1", "MINVALUE"), range.getPartitionBound().getFromExpressions()
+                .stream().map(Object::toString).toList());
+        assertEquals(List.of("2", "MAXVALUE"), range.getPartitionBound().getToExpressions()
+                .stream().map(Object::toString).toList());
+
+        String listSql = "CREATE TABLE pg_list_eu_us PARTITION OF pg_list_parent "
+                + "FOR VALUES IN ('eu', 'us')";
+        CreateTable list = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                listSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals(PartitionBound.Type.LIST, list.getPartitionBound().getType());
+
+        String hashSql = "CREATE TABLE pg_hash_p0 PARTITION OF pg_hash_parent "
+                + "FOR VALUES WITH (MODULUS 4, REMAINDER 0)";
+        CreateTable hash = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                hashSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals(PartitionBound.Type.HASH, hash.getPartitionBound().getType());
+        assertEquals("4", hash.getPartitionBound().getModulus().toString());
+        assertEquals("0", hash.getPartitionBound().getRemainder().toString());
+
+        String defaultSql =
+                "CREATE TABLE pg_list_default PARTITION OF pg_list_parent DEFAULT";
+        CreateTable defaultPartition = (CreateTable) assertSqlCanBeParsedAndDeparsed(
+                defaultSql, true, parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals(PartitionBound.Type.DEFAULT, defaultPartition.getPartitionBound().getType());
     }
 }

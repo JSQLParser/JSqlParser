@@ -37,6 +37,8 @@ public class CreateTable implements Statement {
     private boolean ifNotExists = false;
     private boolean orReplace = false;
     private TablePartitioning partitioning;
+    private Table partitionOf;
+    private PartitionBound partitionBound;
 
     private RowMovement rowMovement;
 
@@ -157,6 +159,22 @@ public class CreateTable implements Statement {
         this.partitioning = partitioning;
     }
 
+    public Table getPartitionOf() {
+        return partitionOf;
+    }
+
+    public void setPartitionOf(Table partitionOf) {
+        this.partitionOf = partitionOf;
+    }
+
+    public PartitionBound getPartitionBound() {
+        return partitionBound;
+    }
+
+    public void setPartitionBound(PartitionBound partitionBound) {
+        this.partitionBound = partitionBound;
+    }
+
     public boolean isSelectParenthesis() {
         return selectParenthesis;
     }
@@ -179,6 +197,9 @@ public class CreateTable implements Statement {
         StringBuilder b = new StringBuilder();
         appendCreateClause(b);
         appendColumnDefinitions(b);
+        if (partitionBound != null) {
+            b.append(" ").append(partitionBound);
+        }
         appendTableOptions(b);
         appendTableProperties(b);
         return b.toString();
@@ -202,6 +223,9 @@ public class CreateTable implements Statement {
             b.append("IF NOT EXISTS ");
         }
         b.append(table);
+        if (partitionOf != null) {
+            b.append(" PARTITION OF ").append(partitionOf);
+        }
     }
 
     private void appendColumnDefinitions(StringBuilder b) {
@@ -286,6 +310,16 @@ public class CreateTable implements Statement {
 
     public CreateTable withPartitioning(TablePartitioning partitioning) {
         this.setPartitioning(partitioning);
+        return this;
+    }
+
+    public CreateTable withPartitionOf(Table partitionOf) {
+        setPartitionOf(partitionOf);
+        return this;
+    }
+
+    public CreateTable withPartitionBound(PartitionBound partitionBound) {
+        setPartitionBound(partitionBound);
         return this;
     }
 

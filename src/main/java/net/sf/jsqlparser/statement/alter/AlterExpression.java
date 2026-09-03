@@ -830,6 +830,8 @@ public class AlterExpression implements Serializable {
         switch (operation) {
             case DISCARD_PARTITION:
             case IMPORT_PARTITION:
+            case ATTACH_PARTITION:
+            case DETACH_PARTITION:
             case TRUNCATE_PARTITION:
             case COALESCE_PARTITION:
             case REORGANIZE_PARTITION:
