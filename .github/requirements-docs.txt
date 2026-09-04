@@ -1,0 +1,14 @@
+# Python dependencies for the Sphinx documentation build (.github/workflows/ci.yml).
+# Kept in the repository so actions/setup-python can key its pip cache on it.
+#
+# Deliberately NOT installed from apt: sphinx-common pulls python3-pil / python3-docutils
+# from the runner's stale apt index and shadows this install on PATH.
+
+sphinx>=7,<9
+manticore_sphinx_theme
+sphinx_javadoc_xml
+myst_parser
+sphinx_substitution_extensions
+sphinx_issues
+sphinx_inline_tabs
+pygments
