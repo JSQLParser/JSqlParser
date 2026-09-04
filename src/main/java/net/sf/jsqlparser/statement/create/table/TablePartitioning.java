@@ -21,7 +21,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /**
- * MySQL table partitioning options used by {@code CREATE TABLE}.
+ * MySQL table partitioning options used by {@code CREATE TABLE} and {@code ALTER TABLE}.
  */
 public class TablePartitioning implements Serializable {
 

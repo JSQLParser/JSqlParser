@@ -13046,24 +13046,18 @@ void PartitionDefinitionOption(PartitionDefinition partitionDefinition):
 
 List<String> PartitionNamesList() :
 {
-    Token tk;
+    String partitionName = null;
     List<String> partitionNames = new ArrayList<String>();
 }
 {
+    partitionName = RelObjectName() {
+        partitionNames.add(partitionName);
+    }
     (
-        tk = <K_ALL> {
-            partitionNames.add(tk.image);
+        LOOKAHEAD(2) "," partitionName = RelObjectName() {
+            partitionNames.add(partitionName);
         }
-        |
-        tk = <S_IDENTIFIER> {
-            partitionNames.add(tk.image);
-        }
-        (
-            LOOKAHEAD(2) "," tk = <S_IDENTIFIER> {
-                partitionNames.add(tk.image);
-            }
-        )*
-    )
+    )*
     {
         return partitionNames;
     }
@@ -13230,6 +13224,7 @@ AlterExpression AlterExpressionDrop():
     (
         (
             <K_PARTITION> {
+                alterExp = new AlterExpressionPartition();
                 alterExp.setOperation(AlterOperation.DROP_PARTITION);
             }
             partitions=PartitionNamesList() {
@@ -13299,12 +13294,12 @@ AlterExpression AlterExpressionDrop():
  */
 AlterExpression AlterExpressionPartitionOp():
 {
-    AlterExpression alterExp = new AlterExpressionPartition();
+    AlterExpressionPartition alterExp = new AlterExpressionPartition();
     Token tk;
     List<String> partitions = null;
     List<PartitionDefinition> partitionDefinition = null;
-    List<String> columnNames = null;
-    Expression exp = null;
+    Table exchangeTable = null;
+    TablePartitioning partitioning = null;
 }
 {
     (
@@ -13313,7 +13308,7 @@ AlterExpression AlterExpressionPartitionOp():
     |
         LOOKAHEAD(2) <K_COALESCE> <K_PARTITION> tk=<S_LONG> {
             alterExp.setOperation(AlterOperation.COALESCE_PARTITION);
-            alterExp.setCoalescePartitionNumber(Integer.valueOf(tk.image));
+            alterExp.setCoalescePartitionCount(Integer.valueOf(tk.image));
         }
     |
         LOOKAHEAD(2) <K_REORGANIZE> <K_PARTITION>
@@ -13324,18 +13319,22 @@ AlterExpression AlterExpressionPartitionOp():
         }
     |
         LOOKAHEAD(2) <K_EXCHANGE> <K_PARTITION> partitions=PartitionNamesList()
-        <K_WITH> <K_TABLE> tk=<S_IDENTIFIER>
+        <K_WITH> <K_TABLE> exchangeTable=Table()
         [
             LOOKAHEAD(2) (
-                <K_WITH> <K_VALIDATION> { alterExp.setExchangePartitionWithValidation(true); }
+                <K_WITH> <K_VALIDATION> {
+                    alterExp.setExchangeValidationMode(AlterExpressionPartition.ExchangeValidationMode.WITH);
+                }
                 |
-                <K_WITHOUT> <K_VALIDATION> { alterExp.setExchangePartitionWithoutValidation(false); }
+                <K_WITHOUT> <K_VALIDATION> {
+                    alterExp.setExchangeValidationMode(AlterExpressionPartition.ExchangeValidationMode.WITHOUT);
+                }
             )
         ]
         {
             alterExp.setOperation(AlterOperation.EXCHANGE_PARTITION);
             alterExp.setPartitions(partitions);
-            alterExp.setExchangePartitionTableName(tk.image);
+            alterExp.setExchangeTable(exchangeTable);
         }
     |
         LOOKAHEAD(2) <K_ANALYZE> <K_PARTITION> { alterExp.setOperation(AlterOperation.ANALYZE_PARTITION); }
@@ -13355,14 +13354,10 @@ AlterExpression AlterExpressionPartitionOp():
     |
         LOOKAHEAD(2) <K_REMOVE> <K_PARTITIONING> { alterExp.setOperation(AlterOperation.REMOVE_PARTITIONING); }
     |
-        LOOKAHEAD(2) <K_PARTITION> <K_BY> { alterExp.setOperation(AlterOperation.PARTITION_BY); }
-        <K_RANGE> { alterExp.setPartitionType("RANGE"); }
-        (
-            "(" exp=Expression() ")" { alterExp.setPartitionExpression(exp); }
-            |
-            <K_COLUMNS> columnNames=ColumnsNamesList() { alterExp.setPartitionColumns(columnNames); }
-        )
-        partitionDefinition=PartitionDefinitions() { alterExp.setPartitionDefinitions(partitionDefinition); }
+        LOOKAHEAD(2) partitioning=CreateTablePartitioning() {
+            alterExp.setOperation(AlterOperation.PARTITION_BY);
+            alterExp.setPartitioning(partitioning);
+        }
     )
     { return alterExp; }
 }
@@ -13464,6 +13459,7 @@ AlterExpression AlterExpressionAddAlterModify():
         |
         LOOKAHEAD(3) (
             <K_PARTITION> {
+                alterExp = new AlterExpressionPartition();
                 alterExp.setOperation(AlterOperation.ADD_PARTITION);
             }
             partitionDefinition=PartitionDefinitions() {
