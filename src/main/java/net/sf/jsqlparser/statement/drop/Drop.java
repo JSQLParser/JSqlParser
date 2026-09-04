@@ -14,8 +14,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -24,8 +26,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Drop implements Statement {
 
+    public enum ObjectType {
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, OTHER
+    }
+
     private String type;
-    private Table name;
+    private ObjectType objectType = ObjectType.OTHER;
+    private final List<Table> names = new ArrayList<>();
     private List<String> parameters;
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
@@ -46,11 +53,25 @@ public class Drop implements Statement {
     }
 
     public Table getName() {
-        return name;
+        return names.isEmpty() ? null : names.get(0);
     }
 
-    public void setName(Table string) {
-        name = string;
+    public void setName(Table name) {
+        names.clear();
+        if (name != null) {
+            names.add(name);
+        }
+    }
+
+    public List<Table> getNames() {
+        return Collections.unmodifiableList(names);
+    }
+
+    public void setNames(Collection<? extends Table> names) {
+        this.names.clear();
+        if (names != null) {
+            this.names.addAll(names);
+        }
     }
 
     public List<String> getParameters() {
@@ -67,6 +88,22 @@ public class Drop implements Statement {
 
     public void setType(String string) {
         type = string;
+        try {
+            objectType = ObjectType.valueOf(string.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException | NullPointerException ignored) {
+            objectType = ObjectType.OTHER;
+        }
+    }
+
+    public ObjectType getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(ObjectType objectType) {
+        this.objectType = objectType == null ? ObjectType.OTHER : objectType;
+        if (this.objectType != ObjectType.OTHER) {
+            this.type = this.objectType.name();
+        }
     }
 
     public boolean isIfExists() {
@@ -112,7 +149,8 @@ public class Drop implements Statement {
                 + (isUsingTemporary ? "TEMPORARY " : "")
                 + (materialized ? "MATERIALIZED " : "")
                 + type + " "
-                + (ifExists ? "IF EXISTS " : "") + name.toString();
+                + (ifExists ? "IF EXISTS " : "") + names.stream().map(Table::toString)
+                        .collect(Collectors.joining(", "));
 
         if (type.equals("FUNCTION")) {
             sql += formatFuncParams(getParamsByType("FUNCTION"));
@@ -146,6 +184,21 @@ public class Drop implements Statement {
 
     public Drop withName(Table name) {
         this.setName(name);
+        return this;
+    }
+
+    public Drop withNames(Collection<? extends Table> names) {
+        setNames(names);
+        return this;
+    }
+
+    public Drop addNames(Table... names) {
+        Collections.addAll(this.names, names);
+        return this;
+    }
+
+    public Drop withObjectType(ObjectType objectType) {
+        setObjectType(objectType);
         return this;
     }
 

@@ -47,7 +47,7 @@ public class DropValidator extends AbstractValidator<Drop> {
 
         NamedObject named = NamedObject.forName(type);
         if (Arrays.asList(NamedObject.table, NamedObject.view).contains(named)) {
-            validateName(named, drop.getName().getFullyQualifiedName());
+            drop.getNames().forEach(name -> validateName(named, name.getFullyQualifiedName()));
         }
     }
 
