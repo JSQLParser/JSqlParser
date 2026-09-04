@@ -2,77 +2,106 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "**" ]        # Run on every commit to any branch
+    branches: [ "**" ]
   pull_request:
-    branches: [ "**" ]        # Run for PRs from any branch
+    branches: [ "**" ]
   workflow_dispatch:
 
-permissions: write-all
+# Least privilege by default; each job widens only what it needs.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same branch/PR to save runner minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
   gradle_check:
-    name: Gradle Check
+    name: Gradle Check (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false          # one platform failing should not hide the others
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0        # required by the git-changelog / version derivation
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@main
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@main
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
       - name: Run Gradle Check
-        run: ./gradlew check
+        run: ./gradlew check --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: |
+            build/reports/
+            build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
   maven_verify:
-    name: Maven Verify
-    needs: gradle_check              # ✅ Run only after Gradle check succeeds
+    name: Maven Verify (${{ matrix.os }})
+    needs: gradle_check
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        #       os: [ ubuntu-latest, windows-latest, macos-latest ]
+        # windows-latest disabled: see #<issue> — record the reason, not just the comment
         os: [ ubuntu-latest, macos-latest ]
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@main
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: 'maven'
 
       - name: Run Maven Verify
-        run: mvn --batch-mode verify
+        run: mvn --batch-mode --no-transfer-progress verify
 
   gradle_publish:
-    name: Gradle Publish
-    needs: [ gradle_check, maven_verify ]  # ✅ Run only after both succeed
-    if: github.ref == 'refs/heads/master' && github.repository == 'JSQLParser/JSqlParser'  # ✅ Only for master branch of main repo
+    name: Gradle Publish (Maven Central)
+    needs: [ gradle_check, maven_verify ]
+    if: github.ref == 'refs/heads/master' && github.repository == 'JSQLParser/JSqlParser'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@main
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-      - name: Build with Gradle
-        uses: gradle/actions/setup-gradle@main
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Publish with Gradle
         # Gradle only picks up a secret as a project property when it is exported with the
@@ -82,7 +111,7 @@ jobs:
         # No RELEASE variable here on purpose: getVersion() then produces a -SNAPSHOT version and
         # the plugin routes it to the Central Portal snapshot repository. Set RELEASE=true only
         # when you actually intend to cut a release.
-        run: ./gradlew publishToMavenCentral
+        run: ./gradlew publishToMavenCentral --no-daemon
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.mavenCentralUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.mavenCentralPassword }}
@@ -90,25 +119,73 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.signingInMemoryKeyId }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.signingInMemoryKeyPassword }}
 
-      - uses: actions/setup-python@main
+  deploy_docs:
+    name: Build & Deploy Sphinx Docs
+    needs: [ gradle_check, maven_verify ]
+    if: github.ref == 'refs/heads/master' && github.repository == 'JSQLParser/JSqlParser'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # gitChangelogTask needs full history
 
-      - name: Install XSLT Processor
-        run: sudo apt-get install -y xsltproc sphinx-common
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # Only xsltproc comes from apt. `sphinx-common` used to be installed here as well; it
+      # pulled in python3-sphinx / python3-docutils / python3-pil from the runner's stale apt
+      # index (hence the 404 on python3-pil 10.2.0-1ubuntu1.2) and shadowed the pip-installed
+      # Sphinx that actually knows about manticore_sphinx_theme. `apt-get update` first, because
+      # the pre-baked index on the runner image is regularly older than the mirror.
+      - name: Install XSLT processor
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xsltproc
 
       - name: Install Python dependencies
-        run: pip install manticore_sphinx_theme sphinx_javadoc_xml myst_parser sphinx_substitution_extensions sphinx_issues sphinx_inline_tabs pygments
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            'sphinx>=7,<9' \
+            manticore_sphinx_theme \
+            sphinx_javadoc_xml \
+            myst_parser \
+            sphinx_substitution_extensions \
+            sphinx_issues \
+            sphinx_inline_tabs \
+            pygments
 
       - name: Build Sphinx documentation with Gradle
-        run: FLOATING_TOC=false ./gradlew -DFLOATING_TOC=false gitChangelogTask renderRR xslt xmldoc sphinx
+        env:
+          FLOATING_TOC: 'false'
+        run: ./gradlew -DFLOATING_TOC=false --no-daemon gitChangelogTask renderRR xslt xmldoc sphinx
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@main
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@main
+        uses: actions/upload-pages-artifact@v3
         with:
           path: 'build/sphinx'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@main
+        uses: actions/deploy-pages@v4
