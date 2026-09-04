@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -123,6 +124,12 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateDatabase createDatabase) {
         this.visit(createDatabase, null);
+    }
+
+    <S> T visit(CreateUser createUser, S context);
+
+    default void visit(CreateUser createUser) {
+        this.visit(createUser, null);
     }
 
     <S> T visit(CreateTable createTable, S context);
