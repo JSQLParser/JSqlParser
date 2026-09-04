@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
@@ -46,7 +47,7 @@ public class AnalyzeTest {
         Analyze analyze = (Analyze) parserManager.parse(new StringReader(sql));
 
         assertEquals(List.of("t2", "t3"), analyze.getTables().stream()
-                .map(Table::getFullyQualifiedName).toList());
+                .map(Table::getFullyQualifiedName).collect(Collectors.toList()));
         assertEquals("t2", analyze.getTable().getFullyQualifiedName());
         assertEquals(sql, analyze.toString());
 
@@ -61,7 +62,7 @@ public class AnalyzeTest {
 
         assertEquals(Analyze.HistogramAction.UPDATE, analyze.getHistogramAction());
         assertEquals(List.of("c1", "c2"), analyze.getHistogramColumns().stream()
-                .map(Column::getFullyQualifiedName).toList());
+                .map(Column::getFullyQualifiedName).collect(Collectors.toList()));
         assertEquals(64, analyze.getHistogramBucketCount());
     }
 
