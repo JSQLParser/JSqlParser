@@ -12,9 +12,11 @@ package net.sf.jsqlparser.statement.create.index;
 import static java.util.stream.Collectors.joining;
 
 import java.util.*;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class CreateIndex implements Statement {
 
@@ -25,6 +27,11 @@ public class CreateIndex implements Statement {
     private boolean usingIfNotExists = false;
     private boolean concurrently;
     private boolean only;
+    private List<String> includeColumns;
+    private Boolean nullsDistinct;
+    private List<Index.Option> storageParameters;
+    private String tableSpace;
+    private Expression where;
 
     public boolean isIndexTypeBeforeOn() {
         return indexTypeBeforeOn;
@@ -57,6 +64,46 @@ public class CreateIndex implements Statement {
 
     public void setOnly(boolean only) {
         this.only = only;
+    }
+
+    public List<String> getIncludeColumns() {
+        return includeColumns;
+    }
+
+    public void setIncludeColumns(List<String> includeColumns) {
+        this.includeColumns = includeColumns;
+    }
+
+    public Boolean getNullsDistinct() {
+        return nullsDistinct;
+    }
+
+    public void setNullsDistinct(Boolean nullsDistinct) {
+        this.nullsDistinct = nullsDistinct;
+    }
+
+    public List<Index.Option> getStorageParameters() {
+        return storageParameters;
+    }
+
+    public void setStorageParameters(List<Index.Option> storageParameters) {
+        this.storageParameters = storageParameters;
+    }
+
+    public String getTableSpace() {
+        return tableSpace;
+    }
+
+    public void setTableSpace(String tableSpace) {
+        this.tableSpace = tableSpace;
+    }
+
+    public Expression getWhere() {
+        return where;
+    }
+
+    public void setWhere(Expression where) {
+        this.where = where;
     }
 
     @Override
@@ -135,6 +182,8 @@ public class CreateIndex implements Statement {
 
             buffer.append(")");
 
+            appendPostgreSqlTail(buffer);
+
             if (tailParameters != null) {
                 for (String param : tailParameters) {
                     buffer.append(" ").append(param);
@@ -143,6 +192,25 @@ public class CreateIndex implements Statement {
         }
 
         return buffer.toString();
+    }
+
+    private void appendPostgreSqlTail(StringBuilder buffer) {
+        if (includeColumns != null) {
+            buffer.append(" INCLUDE (").append(String.join(", ", includeColumns)).append(")");
+        }
+        if (nullsDistinct != null) {
+            buffer.append(" NULLS ").append(nullsDistinct ? "DISTINCT" : "NOT DISTINCT");
+        }
+        if (storageParameters != null) {
+            buffer.append(" WITH ")
+                    .append(PlainSelect.getStringList(storageParameters, true, true));
+        }
+        if (tableSpace != null) {
+            buffer.append(" TABLESPACE ").append(tableSpace);
+        }
+        if (where != null) {
+            buffer.append(" WHERE ").append(where);
+        }
     }
 
     public CreateIndex withTable(Table table) {
@@ -167,6 +235,31 @@ public class CreateIndex implements Statement {
 
     public CreateIndex withOnly(boolean only) {
         setOnly(only);
+        return this;
+    }
+
+    public CreateIndex withIncludeColumns(List<String> includeColumns) {
+        setIncludeColumns(includeColumns);
+        return this;
+    }
+
+    public CreateIndex withNullsDistinct(Boolean nullsDistinct) {
+        setNullsDistinct(nullsDistinct);
+        return this;
+    }
+
+    public CreateIndex withStorageParameters(List<Index.Option> storageParameters) {
+        setStorageParameters(storageParameters);
+        return this;
+    }
+
+    public CreateIndex withTableSpace(String tableSpace) {
+        setTableSpace(tableSpace);
+        return this;
+    }
+
+    public CreateIndex withWhere(Expression where) {
+        setWhere(where);
         return this;
     }
 }
