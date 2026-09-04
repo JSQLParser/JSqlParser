@@ -14,6 +14,7 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
@@ -37,7 +38,9 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
@@ -1250,6 +1253,46 @@ public class CreateTableTest {
                 true);
         // A plain INDEX must still parse unchanged.
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a int, INDEX idx (a))", true);
+    }
+
+    @Test
+    void testMySqlConstraintSymbolAndIndexNameIssue1570() throws JSQLParserException {
+        String uniqueSql = "CREATE TABLE table1 (col1 INT, col2 INT UNIQUE, "
+                + "CONSTRAINT my_constraint UNIQUE KEY index_name (col1))";
+        CreateTable uniqueTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(uniqueSql, true);
+        NamedConstraint unique = (NamedConstraint) uniqueTable.getIndexes().get(0);
+
+        assertEquals("my_constraint", unique.getName());
+        assertEquals("index_name", unique.getIndexName());
+        assertEquals("UNIQUE KEY", unique.getType());
+
+        String foreignKeySql = "CREATE TABLE table2 (id INT, parent_id INT, "
+                + "CONSTRAINT fk_parent FOREIGN KEY fk_parent_idx (parent_id) "
+                + "REFERENCES parent (id))";
+        CreateTable foreignKeyTable =
+                (CreateTable) assertSqlCanBeParsedAndDeparsed(foreignKeySql, true);
+        ForeignKeyIndex foreignKey = (ForeignKeyIndex) foreignKeyTable.getIndexes().get(0);
+
+        assertEquals("fk_parent", foreignKey.getName());
+        assertEquals("fk_parent_idx", foreignKey.getIndexName());
+    }
+
+    @Test
+    void testMySqlUnnamedConstraintAndUniqueIndexOptionsIssues1570And538()
+            throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE TABLE table1 (col1 INT, CONSTRAINT UNIQUE KEY (col1))", true);
+
+        String sql = "CREATE TABLE g_platform_payway (id INT, platform_code VARCHAR (45), "
+                + "pay_way VARCHAR (32), UNIQUE uniq_platform_payway USING BTREE "
+                + "(platform_code, pay_way) COMMENT 'should be unique')";
+        CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sql, true);
+        NamedConstraint unique = (NamedConstraint) createTable.getIndexes().get(0);
+
+        assertNull(unique.getName());
+        assertEquals("uniq_platform_payway", unique.getIndexName());
+        assertEquals("BTREE", unique.getUsing());
+        assertEquals(List.of("COMMENT", "'should be unique'"), unique.getIndexSpec());
     }
 
     @Test
