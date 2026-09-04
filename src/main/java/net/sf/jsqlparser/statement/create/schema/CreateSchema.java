@@ -14,9 +14,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.create.database.DatabaseOption;
 
 public class CreateSchema implements Statement {
 
@@ -25,6 +27,7 @@ public class CreateSchema implements Statement {
     private String schemaName;
     private List<String> schemaPath;
     private List<Statement> statements = new ArrayList<>();
+    private List<DatabaseOption> databaseOptions;
     private boolean hasIfNotExists = false;
 
     @Override
@@ -114,6 +117,19 @@ public class CreateSchema implements Statement {
         return statements;
     }
 
+    public List<DatabaseOption> getDatabaseOptions() {
+        return databaseOptions;
+    }
+
+    public void setDatabaseOptions(List<DatabaseOption> databaseOptions) {
+        this.databaseOptions = databaseOptions;
+    }
+
+    public Optional<DatabaseOption> getDatabaseOption(DatabaseOption.Kind kind) {
+        return Optional.ofNullable(databaseOptions).orElseGet(Collections::emptyList).stream()
+                .filter(option -> option.getKind() == kind).findFirst();
+    }
+
     public boolean hasIfNotExists() {
         return hasIfNotExists;
     }
@@ -131,10 +147,14 @@ public class CreateSchema implements Statement {
         if (schemaName != null) {
             sql += " ";
 
-            if (catalogName!=null) {
+            if (catalogName != null) {
                 sql += catalogName + ".";
             }
             sql += schemaName;
+        }
+        if (databaseOptions != null && !databaseOptions.isEmpty()) {
+            sql += " " + databaseOptions.stream().map(Object::toString)
+                    .collect(Collectors.joining(" "));
         }
         if (authorization != null) {
             sql += " AUTHORIZATION " + authorization;
@@ -155,6 +175,18 @@ public class CreateSchema implements Statement {
     public CreateSchema withSchemaPath(List<String> schemaPath) {
         this.setSchemaPath(schemaPath);
         return this;
+    }
+
+    public CreateSchema withDatabaseOptions(List<DatabaseOption> databaseOptions) {
+        setDatabaseOptions(databaseOptions);
+        return this;
+    }
+
+    public CreateSchema addDatabaseOptions(DatabaseOption... databaseOptions) {
+        List<DatabaseOption> collection =
+                Optional.ofNullable(getDatabaseOptions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, databaseOptions);
+        return withDatabaseOptions(collection);
     }
 
     public CreateSchema addSchemaPath(String... schemaPath) {

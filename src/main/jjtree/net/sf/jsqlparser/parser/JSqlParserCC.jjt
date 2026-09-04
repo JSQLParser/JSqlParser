@@ -126,6 +126,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return jjtree.rootNode();
     }
 
+    private boolean isMySqlDatabaseOptionAhead() {
+        int offset = getToken(1).kind == K_DEFAULT ? 2 : 1;
+        int kind = getToken(offset).kind;
+        return kind == K_CHARACTER || kind == K_COLLATE || kind == K_ENCRYPTION;
+    }
+
     private static class ObjectNames {
 
         private final List<String> names;
@@ -11448,6 +11454,7 @@ CreateSchema CreateSchema():
     CreateSchema schema = new CreateSchema();
     List<String> schemaPath = null;
     List<Statement> statements = new ArrayList<Statement>();
+    DatabaseOption databaseOption = null;
 }
 {
     <K_SCHEMA>
@@ -11460,6 +11467,11 @@ CreateSchema CreateSchema():
             ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); }
         )?
     ]
+
+    (
+        LOOKAHEAD({ isMySqlDatabaseOptionAhead() })
+        databaseOption=MySqlDatabaseOption() { schema.addDatabaseOptions(databaseOption); }
+    )*
 
     [ <K_AUTHORIZATION>
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setAuthorization(tk.image); }
@@ -11489,6 +11501,38 @@ CreateSchema CreateSchema():
     }
 }
 
+DatabaseOption MySqlDatabaseOption():
+{
+    boolean useDefault = false;
+    boolean useEquals = false;
+    DatabaseOption.Kind kind = DatabaseOption.Kind.OTHER;
+    String name = null;
+    String value = null;
+    Token valueToken = null;
+}
+{
+    [ <K_DEFAULT> { useDefault = true; } ]
+    (
+        <K_CHARACTER> <K_SET> {
+            kind = DatabaseOption.Kind.CHARACTER_SET;
+            name = "CHARACTER SET";
+        }
+        |
+        <K_COLLATE> {
+            kind = DatabaseOption.Kind.COLLATE;
+            name = "COLLATE";
+        }
+        |
+        <K_ENCRYPTION> {
+            kind = DatabaseOption.Kind.ENCRYPTION;
+            name = "ENCRYPTION";
+        }
+    )
+    [ "=" { useEquals = true; } ]
+    ( value=RelObjectName() | valueToken=<S_CHAR_LITERAL> { value = valueToken.image; } )
+    { return new DatabaseOption(kind, name, value, useDefault, useEquals); }
+}
+
 List<String> PathSpecification():
 {
     Token tk;
@@ -11507,12 +11551,19 @@ CreateDatabase CreateDatabase():
     CreateDatabase createDatabase = new CreateDatabase();
     String databaseName = null;
     List<String> databaseOptions = null;
+    DatabaseOption databaseOption = null;
 }
 {
     <K_DATABASE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createDatabase.setIfNotExists(true); } ]
     databaseName = RelObjectName() { createDatabase.setDatabaseName(databaseName); }
-    [ databaseOptions = captureRest() { createDatabase.setDatabaseOptions(databaseOptions); } ]
+    (
+        LOOKAHEAD({ isMySqlDatabaseOptionAhead() })
+        databaseOption=MySqlDatabaseOption() { createDatabase.addOptions(databaseOption); }
+    )*
+    [ databaseOptions = captureRest() {
+        createDatabase.addOptions(DatabaseOption.raw(databaseOptions));
+    } ]
     {
         return createDatabase;
     }
