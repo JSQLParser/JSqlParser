@@ -35,6 +35,8 @@ public class ColDataType implements Serializable {
     private List<Integer> arrayData = new ArrayList<Integer>();
     private Signedness signedness;
     private boolean zerofill;
+    private Integer precision;
+    private Integer scale;
 
     public ColDataType() {
         // empty constructor
@@ -44,8 +46,10 @@ public class ColDataType implements Serializable {
         this.dataType = dataType;
 
         if (precision >= 0) {
+            this.precision = precision;
             this.dataType += " (" + (precision == Integer.MAX_VALUE ? "MAX" : precision);
             if (scale >= 0) {
+                this.scale = scale;
                 this.dataType += ", " + scale;
             }
             this.dataType += ")";
@@ -116,6 +120,32 @@ public class ColDataType implements Serializable {
         this.zerofill = zerofill;
     }
 
+    /**
+     * The first numeric type parameter, e.g. {@code 255} for {@code VARCHAR(255)} or {@code 10} for
+     * {@code DECIMAL(10, 2)}. {@code MAX} is reported as {@link Integer#MAX_VALUE}. Returns
+     * {@code null} when the type carries no numeric parameters, e.g. {@code INT} or
+     * {@code ENUM('a', 'b')}.
+     */
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(Integer precision) {
+        this.precision = precision;
+    }
+
+    /**
+     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)}. Returns
+     * {@code null} when absent.
+     */
+    public Integer getScale() {
+        return scale;
+    }
+
+    public void setScale(Integer scale) {
+        this.scale = scale;
+    }
+
     @Override
     public String toString() {
         StringBuilder arraySpec = new StringBuilder();
@@ -169,6 +199,16 @@ public class ColDataType implements Serializable {
 
     public ColDataType withZerofill(boolean zerofill) {
         setZerofill(zerofill);
+        return this;
+    }
+
+    public ColDataType withPrecision(Integer precision) {
+        this.setPrecision(precision);
+        return this;
+    }
+
+    public ColDataType withScale(Integer scale) {
+        this.setScale(scale);
         return this;
     }
 

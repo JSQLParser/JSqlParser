@@ -1293,6 +1293,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Extracts the numeric precision embedded in a DT_ZONE token image such as
+     * "TIMESTAMP(3) WITH TIME ZONE", or null when the image carries no parameter.
+     */
+    private static Integer zonedTypePrecision(String image) {
+        int open = image.indexOf('(');
+        if (open < 0) {
+            return null;
+        }
+        return Integer.valueOf(image.substring(open + 1, image.indexOf(')', open)).trim());
+    }
 
 }
 
@@ -1460,6 +1471,7 @@ String NonReservedWord() :
       | tk=<K_ASYMMETRIC: "ASYMMETRIC">
       | tk=<K_AT: "AT">
       | tk=<K_ASC:"ASC">
+      | tk=<K_ATTACH:"ATTACH">
       | tk=<K_AUTHORIZATION:"AUTHORIZATION">
       | tk=<K_AUTO:"AUTO">
       | tk=<K_AUTO_INCREMENT:"AUTO_INCREMENT">
@@ -1521,6 +1533,7 @@ String NonReservedWord() :
       | tk=<K_DELIMITER : "DELIMITER">
       | tk=<K_DESC:"DESC">
       | tk=<K_DESCRIBE:"DESCRIBE">
+      | tk=<K_DETACH:"DETACH">
       | tk=<K_DISABLE : "DISABLE">
       | tk=<K_DISCARD : "DISCARD">
       | tk=<K_DISCONNECT:"DISCONNECT">
@@ -1564,6 +1577,7 @@ String NonReservedWord() :
       | tk=<K_FILTER: "FILTER">
       | tk=<K_FIELDS: "FIELDS">
       | tk=<K_FILL: "FILL">
+      | tk=<K_FINALIZE: "FINALIZE">
       | tk=<K_FIRST: "FIRST">
       | tk=<K_FLUSH: "FLUSH">
       | tk=<K_FOLLOWING: "FOLLOWING">
@@ -1640,6 +1654,7 @@ String NonReservedWord() :
       | tk=<K_MIN_ROWS:"MIN_ROWS">
       | tk=<K_MINVALUE:"MINVALUE">
       | tk=<K_MODE: "MODE">
+      | tk=<K_MODULUS: "MODULUS">
       | tk=<K_MODIFY: "MODIFY">
       | tk=<K_MOVEMENT: "MOVEMENT">
       | tk=<K_NAMES:"NAMES">
@@ -1708,6 +1723,7 @@ String NonReservedWord() :
       | tk=<K_REGISTER: "REGISTER">
       | tk=<K_REMOTE: "REMOTE">
       | tk=<K_REMOVE: "REMOVE">
+      | tk=<K_REMAINDER: "REMAINDER">
       | tk=<K_RENAME:"RENAME">
       | tk=<K_REORGANIZE: "REORGANIZE">
       | tk=<K_REPAIR: "REPAIR">
@@ -11201,35 +11217,84 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
 
 Index.ColumnParams IndexColumnWithParams(): {
     String columnName = null;
-    // the options collected for this key part, and the result of a single CreateParameter()
     List<String> columnParams = new ArrayList<String>();
     List<String> parameter = null;
     Expression expression = null;
+    String collation = null;
+    Token operatorClass = null;
+    List<Index.Option> operatorClassParameters = null;
+    Token sortOrder = null;
+    Token nullOrdering = null;
     Index.ColumnParams column = null;
 }
 {
     (
         columnName=RelObjectName()
-        // MySQL allows a key part to carry a prefix length and a direction, e.g. "c1(20) DESC",
-        // so more than one parameter has to be collected here.
-        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
-        {
-            // ColumnParams renders a separating space for a non-null list, so a key part
-            // without options has to be given null rather than an empty list.
-            column = new Index.ColumnParams(columnName,
-                    columnParams.isEmpty() ? null : columnParams);
-        }
         |
         "(" expression=Expression() ")"
-        ( LOOKAHEAD(2) parameter = CreateParameter() { columnParams.addAll(parameter); } )*
-        {
-            column = new Index.ColumnParams(expression,
-                    columnParams.isEmpty() ? null : columnParams);
-        }
     )
+    // MySQL prefix lengths precede all PostgreSQL key attributes.
+    [ LOOKAHEAD("(") parameter=CreateParameter() { columnParams.addAll(parameter); } ]
+    [ LOOKAHEAD(2) <K_COLLATE> collation=RelObjectName()
+        { columnParams.add("COLLATE"); columnParams.add(collation); } ]
+    [ LOOKAHEAD(2) (operatorClass=<S_IDENTIFIER> | operatorClass=<S_QUOTED_IDENTIFIER>)
+        [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlIndexOptions() ]
+        {
+            columnParams.add(operatorClass.image);
+            if (operatorClassParameters != null) {
+                columnParams.add(PlainSelect.getStringList(
+                        operatorClassParameters, true, true));
+            }
+        }
+    ]
+    [ LOOKAHEAD(2) (sortOrder=<K_ASC> | sortOrder=<K_DESC>)
+        { columnParams.add(sortOrder.image); } ]
+    [ LOOKAHEAD(2) <K_NULLS> (nullOrdering=<K_FIRST> | nullOrdering=<K_LAST>)
+        { columnParams.add("NULLS"); columnParams.add(nullOrdering.image); } ]
+    ( LOOKAHEAD(2) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
     {
+        column = expression != null
+                ? new Index.ColumnParams(expression,
+                        columnParams.isEmpty() ? null : columnParams)
+                : new Index.ColumnParams(columnName,
+                        columnParams.isEmpty() ? null : columnParams);
+        column.setCollation(collation);
+        if (operatorClass != null) {
+            column.setOperatorClass(operatorClass.image);
+            column.setOperatorClassParameters(operatorClassParameters);
+        }
+        if (sortOrder != null) {
+            column.setSortOrder(Index.ColumnParams.SortOrder.valueOf(
+                    sortOrder.image.toUpperCase(Locale.ROOT)));
+        }
+        if (nullOrdering != null) {
+            column.setNullOrdering(Index.ColumnParams.NullOrdering.valueOf(
+                    nullOrdering.image.toUpperCase(Locale.ROOT)));
+        }
         return column;
     }
+}
+
+Index.Option PostgreSqlIndexOption():
+{
+    String name = null;
+    Expression value = null;
+    boolean useEquals = false;
+}
+{
+    name=RelObjectName() [ "=" { useEquals = true; } ] value=Expression()
+    { return new Index.Option(name, value, useEquals); }
+}
+
+List<Index.Option> PostgreSqlIndexOptions():
+{
+    List<Index.Option> options = new ArrayList<Index.Option>();
+    Index.Option option = null;
+}
+{
+    "(" option=PostgreSqlIndexOption() { options.add(option); }
+    ( "," option=PostgreSqlIndexOption() { options.add(option); } )* ")"
+    { return options; }
 }
 
 List<Index.ColumnParams> IndexColumnsWithParamsList() : {
@@ -11269,6 +11334,10 @@ CreateIndex CreateIndex():
     Table table = null;
     List<Index.ColumnParams> colNames;
     List<String> includeColumns;
+    Boolean nullsDistinct = null;
+    List<Index.Option> storageParameters = null;
+    String tableSpace = null;
+    Expression where = null;
     String indexType;
     Index index = null;
     List<String> parameter = new ArrayList<String>();
@@ -11307,8 +11376,21 @@ CreateIndex CreateIndex():
     )
     colNames = IndexColumnsWithParamsList()
     [ <K_INCLUDE> includeColumns=ColumnsNamesList()
-        { tailParameters.add("INCLUDE (" + String.join(", ", includeColumns) + ")"); }
+        { createIndex.setIncludeColumns(includeColumns); }
     ]
+    [ LOOKAHEAD(3) <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT>
+        {
+            if (nullsDistinct == null) {
+                nullsDistinct = true;
+            }
+            createIndex.setNullsDistinct(nullsDistinct);
+        }
+    ]
+    [ LOOKAHEAD(2) <K_WITH> storageParameters=PostgreSqlIndexOptions()
+        { createIndex.setStorageParameters(storageParameters); } ]
+    [ LOOKAHEAD(2) <K_TABLESPACE> tableSpace=RelObjectName()
+        { createIndex.setTableSpace(tableSpace); } ]
+    [ LOOKAHEAD(2) <K_WHERE> where=Expression() { createIndex.setWhere(where); } ]
     ( LOOKAHEAD(2)  parameter=CreateParameter() { tailParameters.addAll(parameter); } )*
     {
         index.setColumns(colNames);
@@ -11559,6 +11641,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     String tableColumn = null;
     List<String> columns = new ArrayList<String>();
     TablePartitioning partitioning = null;
+    Table partitionOfTable = null;
+    PartitionBound partitionBound = null;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -11572,6 +11656,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
+    [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
+        { createTable.setPartitionOf(partitionOfTable); } ]
     [ LOOKAHEAD(2) (
         LOOKAHEAD(3) (
             "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")"
@@ -11600,6 +11686,9 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             )
         )
     ]
+    [ LOOKAHEAD({ partitionOfTable != null })
+        partitionBound=PostgreSqlPartitionBound()
+        { createTable.setPartitionBound(partitionBound); } ]
     ( LOOKAHEAD(2, { getToken(1).kind != K_AS
             && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
         parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
@@ -11662,6 +11751,7 @@ ColDataType DataType():
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
     ColDataType arrayType;
+    Integer zonePrecision = null;
 
     int precision = -1;
     int scale = -1;
@@ -11682,7 +11772,12 @@ ColDataType DataType():
         (
             ( tk=<K_DATETIMELITERAL> | tk=<DT_ZONE> | tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
                 | tk=<K_CHARACTER>  |  tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
-                | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> ) { type = tk.image; }
+                | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> )
+            {
+                type = tk.image;
+                // A DT_ZONE image already contains its parameter, e.g. "TIMESTAMP(3) WITH TIME ZONE".
+                zonePrecision = tk.kind == DT_ZONE ? zonedTypePrecision(tk.image) : null;
+            }
             (
                 // Signedness is parsed by ColDataType after optional precision/scale. Do not
                 // consume CHARACTER when it starts the trailing CHARACTER SET clause.
@@ -11699,6 +11794,9 @@ ColDataType DataType():
             ]
             {
                 colDataType = new ColDataType(type, precision, scale);
+                if (zonePrecision != null) {
+                    colDataType.setPrecision(zonePrecision);
+                }
             }
         )
     )
@@ -11722,6 +11820,7 @@ ColDataType ColDataType():
     ColDataType arrayType;
     ColDataType nestedType = null;
     IntervalQualifier intervalQualifier = null;
+    Integer zonePrecision = null;
 
     int precision = -1;
     int scale = -1;
@@ -11761,7 +11860,12 @@ ColDataType ColDataType():
 			| tk=<K_PUBLIC>
 			| tk=<K_DATA>
 			| tk=<K_NAME>
-        ) { schema = tk.image; }
+        )
+        {
+            schema = tk.image;
+            // A DT_ZONE image already contains its parameter, e.g. "TIMESTAMP(3) WITH TIME ZONE".
+            zonePrecision = tk.kind == DT_ZONE ? zonedTypePrecision(tk.image) : null;
+        }
 
         // Consume an optional INTERVAL qualifier such as `hour to minute` or
         // `day(9) to second`. Only applicable when the matched type is an INTERVAL and
@@ -11816,8 +11920,20 @@ ColDataType ColDataType():
     [ LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
     {
-        if (argumentsStringList.size() > 0)
+        if (argumentsStringList.size() > 0) {
             colDataType.setArgumentsStringList(argumentsStringList);
+            // Digits-only arguments are the type's numeric parameters, e.g. mediumint(9).
+            if (argumentsStringList.size() == 1 && argumentsStringList.get(0).matches("\\d+")) {
+                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+            } else if (argumentsStringList.size() == 2 && argumentsStringList.get(0).matches("\\d+")
+                    && argumentsStringList.get(1).matches("\\d+")) {
+                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+                colDataType.setScale(Integer.valueOf(argumentsStringList.get(1)));
+            }
+        }
+        if (zonePrecision != null) {
+            colDataType.setPrecision(zonePrecision);
+        }
         return colDataType;
     }
 }
@@ -12592,7 +12708,7 @@ TablePartitioning CreateTablePartitioning():
 {
     TablePartitioning partitioning = null;
     TablePartitioning subPartitioning = null;
-    Expression expression = null;
+    ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     List<PartitionDefinition> partitionDefinitions = null;
     List<String> parameter = null;
@@ -12606,7 +12722,13 @@ TablePartitioning CreateTablePartitioning():
         |
         <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
-            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            "(" expressionList=SimpleExpressionList() ")" {
+                if (expressionList.size() == 1) {
+                    partitioning.setExpression(expressionList.get(0));
+                } else {
+                    partitioning.setExpressionList(expressionList);
+                }
+            }
             |
             <K_COLUMNS> "(" columns=ColumnList() ")"
             {
@@ -12617,7 +12739,13 @@ TablePartitioning CreateTablePartitioning():
         |
         <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
         (
-            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            "(" expressionList=SimpleExpressionList() ")" {
+                if (expressionList.size() == 1) {
+                    partitioning.setExpression(expressionList.get(0));
+                } else {
+                    partitioning.setExpressionList(expressionList);
+                }
+            }
             |
             <K_COLUMNS> "(" columns=ColumnList() ")"
             {
@@ -12648,10 +12776,49 @@ TablePartitioning CreateTablePartitioning():
     }
 }
 
+PartitionBound PostgreSqlPartitionBound():
+{
+    PartitionBound bound = null;
+    ExpressionList<Expression> expressions = null;
+    Expression modulus = null;
+    Expression remainder = null;
+}
+{
+    (
+        <K_DEFAULT> { bound = new PartitionBound(PartitionBound.Type.DEFAULT); }
+        |
+        <K_FOR> <K_VALUES>
+        (
+            <K_FROM> "(" expressions=SimpleExpressionList() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.RANGE);
+                bound.setFromExpressions(expressions);
+            }
+            <K_TO> "(" expressions=SimpleExpressionList() ")"
+            { bound.setToExpressions(expressions); }
+            |
+            <K_IN> "(" expressions=SimpleExpressionList() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.LIST);
+                bound.setInExpressions(expressions);
+            }
+            |
+            <K_WITH> "(" <K_MODULUS> modulus=Expression() ","
+                <K_REMAINDER> remainder=Expression() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.HASH);
+                bound.setModulus(modulus);
+                bound.setRemainder(remainder);
+            }
+        )
+    )
+    { return bound; }
+}
+
 TablePartitioning HashOrKeyPartitioning():
 {
     TablePartitioning partitioning = new TablePartitioning();
-    Expression expression = null;
+    ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     Token tk = null;
     boolean useEquals = false;
@@ -12659,10 +12826,14 @@ TablePartitioning HashOrKeyPartitioning():
 {
     [ <K_LINEAR> { partitioning.setLinear(true); } ]
     (
-        <K_HASH> "(" expression=Expression() ")"
+        <K_HASH> "(" expressionList=SimpleExpressionList() ")"
         {
             partitioning.setType(TablePartitioning.Type.HASH);
-            partitioning.setExpression(expression);
+            if (expressionList.size() == 1) {
+                partitioning.setExpression(expressionList.get(0));
+            } else {
+                partitioning.setExpressionList(expressionList);
+            }
         }
         |
         <K_KEY>
@@ -13418,6 +13589,40 @@ AlterExpression AlterExpressionRenameOp():
     { return alterExp; }
 }
 
+AlterExpressionPartition AlterExpressionPostgreSqlPartitionOp():
+{
+    AlterExpressionPartition alterExp = new AlterExpressionPartition();
+    Table partitionTable = null;
+    PartitionBound partitionBound = null;
+}
+{
+    (
+        <K_ATTACH> <K_PARTITION> partitionTable=Table()
+        partitionBound=PostgreSqlPartitionBound()
+        {
+            alterExp.setOperation(AlterOperation.ATTACH_PARTITION);
+            alterExp.setPartitionTable(partitionTable);
+            alterExp.setPartitionBound(partitionBound);
+        }
+        |
+        <K_DETACH> <K_PARTITION> partitionTable=Table()
+        {
+            alterExp.setOperation(AlterOperation.DETACH_PARTITION);
+            alterExp.setPartitionTable(partitionTable);
+        }
+        [
+            <K_CONCURRENTLY> {
+                alterExp.setDetachMode(AlterExpressionPartition.DetachMode.CONCURRENTLY);
+            }
+            |
+            <K_FINALIZE> {
+                alterExp.setDetachMode(AlterExpressionPartition.DetachMode.FINALIZE);
+            }
+        ]
+    )
+    { return alterExp; }
+}
+
 /**
 * Dispatcher production for all ALTER TABLE expression types.
 * Delegates to focused sub-productions for each operation category.
@@ -13568,6 +13773,8 @@ AlterExpression AlterExpression():
         )
       |
         alterExp = AlterExpressionDiscardOrImport()
+      |
+        alterExp = AlterExpressionPostgreSqlPartitionOp()
       |
         LOOKAHEAD(4) (
             { alterExp = new AlterExpression(); }

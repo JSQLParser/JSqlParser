@@ -37,7 +37,8 @@ public class DeclareStatementTest {
         DeclareStatement created = new DeclareStatement()
                 .addTypeDefExprList(
                         new TypeDefExpr(new UserVariable().withName("find"),
-                                new ColDataType().withDataType("nvarchar (30)"), null))
+                                new ColDataType().withDataType("nvarchar (30)").withPrecision(30),
+                                null))
                 .withDeclareType(DeclareType.TYPE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
@@ -49,7 +50,7 @@ public class DeclareStatementTest {
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
         DeclareStatement created = new DeclareStatement()
                 .addTypeDefExprList(new TypeDefExpr(new UserVariable().withName("find"),
-                        new ColDataType().withDataType("varchar (30)"),
+                        new ColDataType().withDataType("varchar (30)").withPrecision(30),
                         new StringValue().withValue("Man%")))
                 .withDeclareType(DeclareType.TYPE);
         assertDeparse(created, statement);
@@ -63,7 +64,7 @@ public class DeclareStatementTest {
         DeclareStatement created = new DeclareStatement().addTypeDefExprList(asList( //
                 new TypeDefExpr(
                         new UserVariable().withName("group"),
-                        new ColDataType().withDataType("nvarchar (50)"),
+                        new ColDataType().withDataType("nvarchar (50)").withPrecision(50),
                         null),
                 new TypeDefExpr(new UserVariable().withName("sales"),
                         new ColDataType().withDataType("money"), null)))

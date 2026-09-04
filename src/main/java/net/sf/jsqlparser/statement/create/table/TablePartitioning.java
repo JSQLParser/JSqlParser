@@ -33,6 +33,7 @@ public class TablePartitioning implements Serializable {
     private boolean linear;
     private boolean columnsSyntax;
     private Expression expression;
+    private ExpressionList<Expression> expressionList;
     private ExpressionList<Column> columns;
     private Integer algorithm;
     private boolean algorithmUseEquals;
@@ -77,6 +78,19 @@ public class TablePartitioning implements Serializable {
 
     public void setExpression(Expression expression) {
         this.expression = expression;
+    }
+
+    /**
+     * Returns the ordered partition key expressions when more than one key was declared.
+     *
+     * @return partition key expressions, or {@code null} for the legacy single-expression form
+     */
+    public ExpressionList<Expression> getExpressionList() {
+        return expressionList;
+    }
+
+    public void setExpressionList(ExpressionList<Expression> expressionList) {
+        this.expressionList = expressionList;
     }
 
     public ExpressionList<Column> getColumns() {
@@ -152,6 +166,11 @@ public class TablePartitioning implements Serializable {
 
     public TablePartitioning withExpression(Expression expression) {
         setExpression(expression);
+        return this;
+    }
+
+    public TablePartitioning withExpressionList(ExpressionList<Expression> expressionList) {
+        setExpressionList(expressionList);
         return this;
     }
 
@@ -273,6 +292,8 @@ public class TablePartitioning implements Serializable {
         }
         if (expression != null) {
             builder.append(" (").append(expression).append(")");
+        } else if (expressionList != null) {
+            builder.append(" (").append(expressionList).append(")");
         } else if (columns != null) {
             builder.append(" ").append(PlainSelect.getStringList(columns, true, true));
         }
