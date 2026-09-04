@@ -28,6 +28,14 @@ public class ColDataType implements Serializable {
         SIGNED, UNSIGNED
     }
 
+    public enum TypeModifier {
+        SIGNED, UNSIGNED, ZEROFILL
+    }
+
+    public enum NationalCharacterType {
+        CHAR, VARCHAR
+    }
+
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
@@ -37,6 +45,8 @@ public class ColDataType implements Serializable {
     private boolean zerofill;
     private Integer precision;
     private Integer scale;
+    private List<TypeModifier> typeModifiers;
+    private NationalCharacterType nationalCharacterType;
 
     public ColDataType() {
         // empty constructor
@@ -120,6 +130,58 @@ public class ColDataType implements Serializable {
         this.zerofill = zerofill;
     }
 
+    /** Returns MySQL numeric modifiers in their original order, including repetitions. */
+    public List<TypeModifier> getTypeModifiers() {
+        return typeModifiers;
+    }
+
+    public void setTypeModifiers(List<TypeModifier> typeModifiers) {
+        this.typeModifiers = typeModifiers;
+        signedness = null;
+        zerofill = false;
+        if (typeModifiers != null) {
+            for (TypeModifier modifier : typeModifiers) {
+                updateEffectiveModifier(modifier);
+            }
+        }
+    }
+
+    public void addTypeModifier(TypeModifier typeModifier) {
+        if (typeModifiers == null) {
+            typeModifiers = new ArrayList<>();
+        }
+        typeModifiers.add(typeModifier);
+        updateEffectiveModifier(typeModifier);
+    }
+
+    private void updateEffectiveModifier(TypeModifier modifier) {
+        switch (modifier) {
+            case SIGNED:
+                signedness = Signedness.SIGNED;
+                break;
+            case UNSIGNED:
+                signedness = Signedness.UNSIGNED;
+                break;
+            case ZEROFILL:
+                zerofill = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    public NationalCharacterType getNationalCharacterType() {
+        return nationalCharacterType;
+    }
+
+    public void setNationalCharacterType(NationalCharacterType nationalCharacterType) {
+        this.nationalCharacterType = nationalCharacterType;
+    }
+
+    public boolean isNational() {
+        return nationalCharacterType != null;
+    }
+
     /**
      * The first numeric type parameter, e.g. {@code 255} for {@code VARCHAR(255)} or {@code 10} for
      * {@code DECIMAL(10, 2)}. {@code MAX} is reported as {@link Integer#MAX_VALUE}. Returns
@@ -161,8 +223,10 @@ public class ColDataType implements Serializable {
                 + (argumentsStringList != null
                         ? " " + PlainSelect.getStringList(argumentsStringList, true, true)
                         : "")
-                + (signedness != null ? " " + signedness : "")
-                + (zerofill ? " ZEROFILL" : "")
+                + (typeModifiers != null && !typeModifiers.isEmpty()
+                        ? " " + PlainSelect.getStringList(typeModifiers, false, false)
+                        : (signedness != null ? " " + signedness : "")
+                                + (zerofill ? " ZEROFILL" : ""))
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
@@ -199,6 +263,16 @@ public class ColDataType implements Serializable {
 
     public ColDataType withZerofill(boolean zerofill) {
         setZerofill(zerofill);
+        return this;
+    }
+
+    public ColDataType withTypeModifiers(List<TypeModifier> typeModifiers) {
+        setTypeModifiers(typeModifiers);
+        return this;
+    }
+
+    public ColDataType withNationalCharacterType(NationalCharacterType nationalCharacterType) {
+        setNationalCharacterType(nationalCharacterType);
         return this;
     }
 
@@ -254,7 +328,9 @@ public class ColDataType implements Serializable {
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData)
                 && signedness == that.signedness
-                && zerofill == that.zerofill;
+                && zerofill == that.zerofill
+                && Objects.equals(typeModifiers, that.typeModifiers)
+                && nationalCharacterType == that.nationalCharacterType;
     }
 
     @Override
@@ -266,6 +342,8 @@ public class ColDataType implements Serializable {
         result = 31 * result + Objects.hashCode(arrayData);
         result = 31 * result + Objects.hashCode(signedness);
         result = 31 * result + Boolean.hashCode(zerofill);
+        result = 31 * result + Objects.hashCode(typeModifiers);
+        result = 31 * result + Objects.hashCode(nationalCharacterType);
         return result;
     }
 }

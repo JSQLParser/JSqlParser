@@ -28,9 +28,11 @@ public class CreateTable implements Statement {
     private boolean unlogged = false;
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
+    private List<TableOption> tableOptions;
     private List<ColumnDefinition> columnDefinitions;
     private List<String> columns;
     private List<Index> indexes;
+    private List<TableElement> tableElements;
     private Select select;
     private Table likeTable;
     private boolean selectParenthesis;
@@ -74,6 +76,7 @@ public class CreateTable implements Statement {
 
     public void setColumnDefinitions(List<ColumnDefinition> list) {
         columnDefinitions = list;
+        tableElements = null;
     }
 
     public List<String> getColumns() {
@@ -94,6 +97,31 @@ public class CreateTable implements Statement {
 
     public void setTableOptionsStrings(List<String> tableOptionsStrings) {
         this.tableOptionsStrings = tableOptionsStrings;
+        tableOptions = null;
+    }
+
+    /** Returns typed table options in source order. */
+    public List<TableOption> getTableOptions() {
+        return tableOptions;
+    }
+
+    public void setTableOptions(List<TableOption> tableOptions) {
+        this.tableOptions = tableOptions;
+        if (tableOptions == null) {
+            tableOptionsStrings = null;
+            return;
+        }
+        tableOptionsStrings = new ArrayList<>();
+        for (TableOption option : tableOptions) {
+            tableOptionsStrings.addAll(option.getTokens());
+        }
+    }
+
+    /** Returns the first option of the requested kind, if present. */
+    public Optional<TableOption> getTableOption(TableOption.Kind kind) {
+        return Optional.ofNullable(tableOptions).orElseGet(Collections::emptyList).stream()
+                .filter(option -> option.getKind() == kind)
+                .findFirst();
     }
 
     public List<String> getCreateOptionsStrings() {
@@ -115,6 +143,46 @@ public class CreateTable implements Statement {
 
     public void setIndexes(List<Index> list) {
         indexes = list;
+        tableElements = null;
+    }
+
+    /**
+     * Returns columns, constraints, and indexes in the order in which they were declared.
+     */
+    public List<TableElement> getTableElements() {
+        return tableElements;
+    }
+
+    public void setTableElements(List<TableElement> tableElements) {
+        this.tableElements = tableElements;
+        if (tableElements == null) {
+            columnDefinitions = null;
+            indexes = null;
+            return;
+        }
+        columnDefinitions = new ArrayList<>();
+        indexes = new ArrayList<>();
+        for (TableElement element : tableElements) {
+            if (element instanceof ColumnDefinition) {
+                columnDefinitions.add((ColumnDefinition) element);
+            } else if (element instanceof Index) {
+                indexes.add((Index) element);
+            }
+        }
+    }
+
+    /** Returns table elements of a requested AST type while preserving their declaration order. */
+    public <E extends TableElement> List<E> getTableElements(Class<E> type) {
+        if (tableElements == null) {
+            return Collections.emptyList();
+        }
+        List<E> result = new ArrayList<>();
+        for (TableElement element : tableElements) {
+            if (type.isInstance(element)) {
+                result.add(type.cast(element));
+            }
+        }
+        return result;
     }
 
     public Select getSelect() {
@@ -233,7 +301,11 @@ public class CreateTable implements Statement {
             b.append(" ");
             b.append(PlainSelect.getStringList(columns, true, true));
         }
-        if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
+        if (tableElements != null && !tableElements.isEmpty()) {
+            b.append(" (");
+            b.append(PlainSelect.getStringList(tableElements, true, false));
+            b.append(")");
+        } else if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
             b.append(" (");
             b.append(PlainSelect.getStringList(columnDefinitions, true, false));
             if (indexes != null && !indexes.isEmpty()) {
@@ -245,7 +317,9 @@ public class CreateTable implements Statement {
     }
 
     private void appendTableOptions(StringBuilder b) {
-        String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+        String options = tableOptions != null
+                ? PlainSelect.getStringList(tableOptions, false, false)
+                : PlainSelect.getStringList(tableOptionsStrings, false, false);
         if (options != null && options.length() > 0) {
             b.append(" ").append(options);
         }
@@ -333,6 +407,11 @@ public class CreateTable implements Statement {
         return this;
     }
 
+    public CreateTable withTableOptions(List<TableOption> tableOptions) {
+        this.setTableOptions(tableOptions);
+        return this;
+    }
+
     public CreateTable withColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
         this.setColumnDefinitions(columnDefinitions);
         return this;
@@ -345,6 +424,11 @@ public class CreateTable implements Statement {
 
     public CreateTable withIndexes(List<Index> indexes) {
         this.setIndexes(indexes);
+        return this;
+    }
+
+    public CreateTable withTableElements(List<TableElement> tableElements) {
+        this.setTableElements(tableElements);
         return this;
     }
 

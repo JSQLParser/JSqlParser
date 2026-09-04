@@ -1163,6 +1163,10 @@ public class AlterExpression implements Serializable {
                 b.append("IF EXISTS ");
             }
             b.append(constraintName);
+        } else if (index != null) {
+            // The structured index is canonical. Legacy PK/UK/FK fields may also be populated for
+            // source compatibility, but cannot represent names, expressions, or index options.
+            b.append(index);
         } else if (pkColumns != null) {
             b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
         } else if (ukColumns != null) {
@@ -1195,8 +1199,6 @@ public class AlterExpression implements Serializable {
                     .append(PlainSelect.getStringList(fkSourceColumns))
                     .append(")");
             referentialActions.forEach(b::append);
-        } else if (index != null) {
-            b.append(index);
         }
 
         if (getConstraints() != null && !getConstraints().isEmpty()) {
