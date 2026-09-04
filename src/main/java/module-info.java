@@ -34,6 +34,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.statement.create.sequence;
     exports net.sf.jsqlparser.statement.create.synonym;
     exports net.sf.jsqlparser.statement.create.table;
+    exports net.sf.jsqlparser.statement.create.trigger;
     exports net.sf.jsqlparser.statement.create.user;
     exports net.sf.jsqlparser.statement.create.view;
     exports net.sf.jsqlparser.statement.delete;

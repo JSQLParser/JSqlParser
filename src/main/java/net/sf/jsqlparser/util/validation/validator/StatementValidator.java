@@ -48,6 +48,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -88,6 +89,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(CreateTable createTable, S context) {
         getValidator(CreateTableValidator.class).validate(createTable);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTrigger createTrigger, S context) {
+        if (createTrigger.getBody() != null) {
+            createTrigger.getBody().accept(this, context);
+        }
         return null;
     }
 
@@ -445,6 +454,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateTable createTable) {
         visit(createTable, null);
+    }
+
+    public void visit(CreateTrigger createTrigger) {
+        visit(createTrigger, null);
     }
 
     public void visit(CreateView createView) {
