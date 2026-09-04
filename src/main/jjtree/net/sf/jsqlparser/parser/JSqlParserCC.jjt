@@ -1191,6 +1191,60 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return false;
     }
 
+    private boolean isKeywordAhead(String keyword) {
+        Token token = getToken(1);
+        return token.image != null && keyword.equalsIgnoreCase(token.image);
+    }
+
+    private boolean isMySqlTableOptionAhead() {
+        int kind = getToken(1).kind;
+        if (kind == K_ENGINE) {
+            return true;
+        }
+        if (kind == K_CHARACTER && getToken(2).kind == K_SET
+                || kind == K_CHAR && getToken(2).kind == K_SET) {
+            return true;
+        }
+        if (kind == S_IDENTIFIER && "CHARSET".equalsIgnoreCase(getToken(1).image)) {
+            return true;
+        }
+        if (kind != K_DEFAULT) {
+            return false;
+        }
+        int secondKind = getToken(2).kind;
+        return secondKind == K_CHARACTER || secondKind == K_CHAR
+                || secondKind == S_IDENTIFIER
+                        && "CHARSET".equalsIgnoreCase(getToken(2).image);
+    }
+
+    private boolean isTableIndexAhead() {
+        switch (getToken(1).kind) {
+            case K_PRIMARY:
+            case K_UNIQUE:
+            case K_INDEX:
+            case K_KEY:
+            case K_FULLTEXT:
+            case K_SPATIAL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isMySqlDialect() {
+        String dialect = getAsString(Feature.dialect);
+        return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
+    }
+
+    private static boolean hasStructuredColumnOption(List<ColumnOption> options) {
+        for (ColumnOption option : options) {
+            if (option.getKind() != ColumnOption.Kind.OTHER) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Lightweight lookahead for SpecialStringFunctionWithNamedParameters:
      * scans forward from the current position (just past the opening '(')
@@ -2215,7 +2269,7 @@ TOKEN:
                     }
                 }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | ("`" (~["\n","\r","`"])+ "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
             && matchedToken.image.charAt(0) == '[' ) {
@@ -4876,7 +4930,7 @@ String RelObjectName() :
           | tk=<K_IIF> | tk=<K_IGNORE> | tk=<K_IN> | tk=<K_INTERVAL>
           | tk=<K_LEFT> | tk=<K_LIMIT> | tk=<K_NEXTVAL> | tk=<K_OFFSET>
           | tk=<K_ON> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
-          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT>
+          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT> | tk=<K_FILE>
           | tk=<K_SET> | tk=<K_SOME> | tk=<K_START> | tk=<K_TABLES>
           | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
     )
@@ -11425,19 +11479,46 @@ ColumnDefinition ColumnDefinition(): {
     String columnName;
     ColDataType colDataType;
     List<String> columnSpecs = new ArrayList<String>();
-    List<String> parameter;
+    List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
+    ColumnOption option;
 } {
     columnName=RelObjectName()
     colDataType=ColDataType()
-    ( LOOKAHEAD(2) parameter=ColumnDefinitionParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) option=ColumnDefinitionOption() {
+        columnOptions.add(option);
+        columnSpecs.addAll(option.getTokens());
+    } )*
     {
         coldef = new ColumnDefinition();
         coldef.setColumnName(columnName);
         coldef.setColDataType(colDataType);
         if (columnSpecs.size() > 0)
             coldef.setColumnSpecs(columnSpecs);
+        if (hasStructuredColumnOption(columnOptions))
+            coldef.setColumnOptions(columnOptions);
         return coldef;
     }
+}
+
+ColumnOption ColumnDefinitionOption(): {
+    Token tk;
+    List<String> parameter;
+    ForeignKeyReference reference;
+    ColumnOption option;
+} {
+    (
+        LOOKAHEAD({ isKeywordAhead("SERIAL")
+                && getToken(2).kind == K_DEFAULT && getToken(3).kind == K_VALUE })
+        tk=<S_IDENTIFIER> <K_DEFAULT> <K_VALUE>
+        { option = ColumnOption.serialDefaultValue(); }
+        |
+        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec()
+        { option = ColumnOption.reference(reference); }
+        |
+        parameter=ColumnDefinitionParameter()
+        { option = ColumnOption.raw(parameter); }
+    )
+    { return option; }
 }
 
 CreateSchema CreateSchema():
@@ -11518,123 +11599,162 @@ CreateDatabase CreateDatabase():
     }
 }
 
+/** Parses PRIMARY, UNIQUE, plain, FULLTEXT, and SPATIAL indexes for CREATE and ALTER. */
+Index TableIndexSpec(boolean createContext):
+{
+    Token typeToken = null;
+    Token keywordToken = null;
+    String indexName = null;
+    String using = null;
+    List<Index.ColumnParams> columns;
+    List<String> indexOptions = new ArrayList<String>();
+    Index index;
+}
+{
+    (
+        typeToken=<K_PRIMARY> keywordToken=<K_KEY>
+        [ LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET }) indexName=RelObjectName() ]
+        columns=IndexColumnsWithParamsList()
+        TableIndexOptions(createContext, indexOptions)
+        {
+            index = new NamedConstraint()
+                    .withIndexName(indexName)
+                    .withType(typeToken.image + " " + keywordToken.image)
+                    .withColumns(columns)
+                    .withIndexSpec(indexOptions);
+        }
+        |
+        typeToken=<K_UNIQUE>
+        [ LOOKAHEAD(2) (keywordToken=<K_KEY> | keywordToken=<K_INDEX>) ]
+        [ LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
+        [ using=UsingIndexType() ]
+        columns=IndexColumnsWithParamsList()
+        TableIndexOptions(createContext, indexOptions)
+        {
+            if (createContext) {
+                index = new NamedConstraint()
+                        .withIndexName(indexName)
+                        .withType(typeToken.image
+                                + (keywordToken != null ? " " + keywordToken.image : ""))
+                        .withUsing(using).withColumns(columns).withIndexSpec(indexOptions);
+            } else {
+                index = new Index().withType(typeToken.image)
+                        .withIndexKeyword(keywordToken != null ? keywordToken.image : null)
+                        .withName(indexName).withUsing(using).withColumns(columns)
+                        .withIndexSpec(indexOptions);
+            }
+        }
+        |
+        typeToken=<K_INDEX>
+        [ LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
+        [ using=UsingIndexType() ]
+        columns=IndexColumnsWithParamsList()
+        TableIndexOptions(createContext, indexOptions)
+        {
+            index = new Index().withType(createContext ? typeToken.image : null)
+                    .withIndexKeyword(typeToken.image).withKind(Index.Kind.INDEX)
+                    .withName(indexName).withUsing(using).withColumns(columns)
+                    .withIndexSpec(indexOptions);
+        }
+        |
+        typeToken=<K_KEY>
+        [ LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET
+                && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
+        [ using=UsingIndexType() ]
+        columns=IndexColumnsWithParamsList()
+        TableIndexOptions(createContext, indexOptions)
+        {
+            index = new Index().withType(createContext ? typeToken.image : null)
+                    .withIndexKeyword(typeToken.image).withKind(Index.Kind.INDEX)
+                    .withName(indexName).withUsing(using).withColumns(columns)
+                    .withIndexSpec(indexOptions);
+        }
+        |
+        (typeToken=<K_FULLTEXT> | typeToken=<K_SPATIAL>)
+        [ LOOKAHEAD(2) (keywordToken=<K_INDEX> | keywordToken=<K_KEY>) ]
+        [ LOOKAHEAD({ getToken(1).kind != OPENING_BRACKET }) indexName=RelObjectName() ]
+        columns=IndexColumnsWithParamsList()
+        TableIndexOptions(createContext, indexOptions)
+        {
+            index = new Index().withType(typeToken.image
+                            + (createContext && keywordToken != null
+                                    ? " " + keywordToken.image : ""))
+                    .withIndexKeyword(!createContext && keywordToken != null
+                            ? keywordToken.image : null)
+                    .withName(indexName).withColumns(columns).withIndexSpec(indexOptions);
+        }
+    )
+    { return index; }
+}
+
+void TableIndexOptions(boolean createContext, List<String> options):
+{
+    List<String> parameter;
+}
+{
+    (
+        LOOKAHEAD({ createContext })
+        ( LOOKAHEAD(2) parameter=CreateParameter() { options.addAll(parameter); } )*
+        |
+        LOOKAHEAD({ !createContext }) IndexOptionList(options)
+    )
+}
+
 /**
- * Parses a single table-level constraint inside CREATE TABLE (...).
- * Handles INDEX, PRIMARY KEY, UNIQUE, KEY, FOREIGN KEY, CHECK, EXCLUDE.
- * Returns an Index (which may be NamedConstraint, ForeignKeyIndex, CheckConstraint, ExcludeConstraint).
+ * Parses a single table-level constraint inside {@code CREATE TABLE (...)}. Index forms delegate
+ * to {@link #TableIndexSpec(boolean)} so CREATE and ALTER expose the same structured AST.
  */
 Index CreateTableConstraint():
 {
     Token tk = null;
     Token tk2 = null;
-    Token tk3 = null;
-    String sk3 = null;
-    String indexName = null;
-    String using = null;
-    boolean useConstraintKeyword = false;
-    List<Index.ColumnParams> colNames = null;
-    List<String> parameter = new ArrayList<String>();
-    List<String> idxSpec = new ArrayList<String>();
+    String constraintName = null;
     Index index = null;
     ForeignKeyIndex fkIndex = null;
-    CheckConstraint checkCs = null;
-    ExcludeConstraint excludeC = null;
-    Expression exp = null;
+    CheckConstraint checkConstraint = null;
+    ExcludeConstraint excludeConstraint = null;
+    Expression expression = null;
 }
 {
     (
-        LOOKAHEAD(4) (
-            { idxSpec.clear(); tk3=null; }
-            [ tk3=<K_UNIQUE> ]
-            tk=<K_INDEX>
-            sk3=RelObjectName()
-            colNames = IndexColumnsWithParamsList()
-            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-            {
-                index = new Index().withType((tk3!=null ? tk3.image + " " : "") + tk.image).withName(sk3).withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
+        LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(true)
+        |
+        <K_CONSTRAINT>
+        [ LOOKAHEAD({ !isTableIndexAhead() && getToken(1).kind != K_FOREIGN
+                && getToken(1).kind != K_CHECK }) constraintName=RelObjectName() ]
+        (
+            LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(true) {
+                if (index instanceof NamedConstraint) {
+                    ((NamedConstraint) index).setUseConstraintKeyword(true);
+                    index.setName(constraintName);
+                }
+            }
+            |
+            fkIndex=ForeignKeySpec(constraintName) {
+                fkIndex.setUseConstraintKeyword(true);
+                index = fkIndex;
+            }
+            |
+            checkConstraint=CheckConstraintSpec(constraintName) {
+                checkConstraint.setUseConstraintKeyword(true);
+                index = checkConstraint;
             }
         )
         |
-        LOOKAHEAD(3) (
-            {
-                index = new NamedConstraint();
-                tk2=null;
-                indexName=null;
-                using=null;
-                idxSpec.clear();
-            }
-            [ <K_CONSTRAINT> { ((NamedConstraint) index).setUseConstraintKeyword(true); }
-                [ LOOKAHEAD({ getToken(1).kind != K_PRIMARY && getToken(1).kind != K_UNIQUE })
-                    sk3=RelObjectName() {index.setName(sk3);} ]
-            ]
-            (
-                tk=<K_PRIMARY> tk2=<K_KEY>
-                |
-                tk=<K_UNIQUE> [ LOOKAHEAD(2) (tk2=<K_KEY> | tk2=<K_INDEX>) ]
-                [ LOOKAHEAD(2, { getToken(1).kind != K_USING }) indexName=RelObjectName() ]
-                [ LOOKAHEAD(2) using=UsingIndexType() ]
-            )
-            {
-                index.setType( tk.image + ( tk2!=null ? " " + tk2.image : "" ));
-                ((NamedConstraint) index).setIndexName(indexName);
-                index.setUsing(using);
-                tk2=null;
-            }
-            colNames = ColumnNamesWithParamsList()
-            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-            {
-                index.withColumns(colNames).withIndexSpec(new ArrayList<String>(idxSpec));
-            }
-        )
+        fkIndex=ForeignKeySpec(null) { index = fkIndex; }
         |
-        LOOKAHEAD(3) (
-            {
-                tk=null;
-                tk3=null;
-                idxSpec.clear();
-            }
-            [ tk=<K_UNIQUE> ]
-            [ tk3=<K_FULLTEXT> | tk3=<K_SPATIAL> ] tk2=<K_KEY>
-            sk3=RelObjectName()
-            colNames = IndexColumnsWithParamsList()
-            ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
-            {
-                index = new Index()
-                    .withType( ( tk!=null ? tk.image + " " : "") + ( tk3!=null ? tk3.image + " ":"" ) + tk2.image)
-                    .withName(sk3)
-                    .withColumns(colNames)
-                    .withIndexSpec(new ArrayList<String>(idxSpec));
-            }
-        )
+        checkConstraint=CheckConstraintSpec(null) { index = checkConstraint; }
         |
-        LOOKAHEAD(3) (
-            { sk3=null; useConstraintKeyword=false; }
-            [ <K_CONSTRAINT> { useConstraintKeyword=true; }
-                [ LOOKAHEAD({ getToken(1).kind != K_FOREIGN }) sk3=RelObjectName() ]
-            ]
-            fkIndex = ForeignKeySpec(sk3)
-            { fkIndex.setUseConstraintKeyword(useConstraintKeyword); index = fkIndex; }
-        )
-        |
-        LOOKAHEAD(3) (
-            { sk3 = null; useConstraintKeyword=false; }
-            [ <K_CONSTRAINT> { useConstraintKeyword=true; }
-                [ LOOKAHEAD({ getToken(1).kind != K_CHECK }) sk3 = RelObjectName() ]
-            ]
-            checkCs = CheckConstraintSpec(sk3)
-            { checkCs.setUseConstraintKeyword(useConstraintKeyword); index = checkCs; }
-        )
-        |
-        LOOKAHEAD(2) (
-            tk=<K_EXCLUDE> { excludeC = new ExcludeConstraint(); }
-            (tk2=<K_WHERE>
-                ("(" exp = Expression() ")")* {excludeC.setExpression(exp);})
-            { index = excludeC; }
-        )
+        tk=<K_EXCLUDE> { excludeConstraint = new ExcludeConstraint(); }
+        (tk2=<K_WHERE> ("(" expression=Expression() ")")*) {
+            excludeConstraint.setExpression(expression);
+            excludeConstraint.setKind(Index.Kind.EXCLUDE);
+            index = excludeConstraint;
+        }
     )
-    {
-        return index;
-    }
+    { return index; }
 }
 
 
@@ -11643,13 +11763,16 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     CreateTable createTable = new CreateTable();
     Table table = null;
     List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    List<TableElement> tableElements = new ArrayList<TableElement>();
     List<String> tableOptions = new ArrayList<String>();
+    List<TableOption> typedTableOptions = new ArrayList<TableOption>();
     List<String> createOptions = new ArrayList<String>();
     Token tk = null;
     ColumnDefinition coldef = null;
     List<Index> indexes = new ArrayList<Index>();
     Index index = null;
     List<String> parameter = new ArrayList<String>();
+    TableOption tableOption = null;
     SpannerInterleaveIn interleaveIn = null;
     Select select = null;
     Table likeTable = null;
@@ -11681,19 +11804,25 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         |
             (
                 "("
-                coldef = ColumnDefinition() { columnDefinitions.add(coldef); }
+                (
+                    LOOKAHEAD(3) index = CreateTableConstraint()
+                        { indexes.add(index); tableElements.add(index); }
+                    |
+                    coldef = ColumnDefinition()
+                        { columnDefinitions.add(coldef); tableElements.add(coldef); }
+                )
 
                 (
                     ","
                     (
                         LOOKAHEAD(3) (
                             index = CreateTableConstraint()
-                            { indexes.add(index); }
+                            { indexes.add(index); tableElements.add(index); }
                         )
                         |
                         (
                             coldef = ColumnDefinition()
-                            { columnDefinitions.add(coldef); }
+                            { columnDefinitions.add(coldef); tableElements.add(coldef); }
                         )
                     )
                 )*
@@ -11707,7 +11836,19 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         { createTable.setPartitionBound(partitionBound); } ]
     ( LOOKAHEAD(2, { getToken(1).kind != K_AS
             && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
-        parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
+        (
+            LOOKAHEAD({ isMySqlTableOptionAhead() })
+            tableOption=MySqlTableOption() {
+                typedTableOptions.add(tableOption);
+                tableOptions.addAll(tableOption.getTokens());
+            }
+            |
+            parameter=CreateParameter() {
+                typedTableOptions.add(TableOption.raw(parameter));
+                tableOptions.addAll(parameter);
+            }
+        )
+    )*
     [ partitioning=CreateTablePartitioning() { createTable.setPartitioning(partitioning); } ]
 
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
@@ -11721,18 +11862,67 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ <K_COMMA> interleaveIn = SpannerInterleaveIn( ) { createTable.setSpannerInterleaveIn(interleaveIn); } ]
     {
         createTable.setTable(table);
-        if (indexes.size() > 0)
-            createTable.setIndexes(indexes);
+        if (tableElements.size() > 0)
+            createTable.setTableElements(tableElements);
         if (createOptions.size() > 0)
             createTable.setCreateOptionsStrings(createOptions);
-        if (tableOptions.size() > 0)
-            createTable.setTableOptionsStrings(tableOptions);
-        if (columnDefinitions.size() > 0)
-            createTable.setColumnDefinitions(columnDefinitions);
+        if (typedTableOptions.size() > 0)
+            createTable.setTableOptions(typedTableOptions);
         if (columns.size() > 0)
             createTable.setColumns(columns);
         return createTable;
     }
+}
+
+TableOption MySqlTableOption(): {
+    Token tk;
+    Token tk2 = null;
+    String value;
+    boolean useEquals = false;
+    String name = "";
+    TableOption.Kind kind;
+    TableOption option;
+} {
+    (
+        tk=<K_ENGINE> {
+            name = tk.image;
+            kind = TableOption.Kind.ENGINE;
+        }
+        [ "=" { useEquals = true; } ]
+        value=MySqlTableOptionValue()
+        |
+        [ tk=<K_DEFAULT> { name = tk.image + " "; } ]
+        (
+            tk=<K_CHARACTER> tk2=<K_SET> {
+                name += tk.image + " " + tk2.image;
+            }
+            |
+            tk=<K_CHAR> tk2=<K_SET> {
+                name += tk.image + " " + tk2.image;
+            }
+            |
+            tk=<S_IDENTIFIER> { name += tk.image; }
+        )
+        { kind = TableOption.Kind.CHARACTER_SET; }
+        [ "=" { useEquals = true; } ]
+        value=MySqlTableOptionValue()
+    )
+    {
+        option = new TableOption(kind, name, value, useEquals);
+        return option;
+    }
+}
+
+String MySqlTableOptionValue(): {
+    Token token;
+    String value = null;
+} {
+    (
+        value=RelObjectName()
+        | token=<K_CSV> { value = token.image; }
+        | token=<K_BINARY> { value = token.image; }
+    )
+    { return value; }
 }
 
 SpannerInterleaveIn SpannerInterleaveIn():
@@ -11840,6 +12030,10 @@ ColDataType ColDataType():
 
     int precision = -1;
     int scale = -1;
+    Token national = null;
+    Token nationalType = null;
+    Token varying = null;
+    ColDataType.TypeModifier typeModifier = null;
 }
 {
     (
@@ -11856,8 +12050,35 @@ ColDataType ColDataType():
             ")" { colDataType = new ColDataType("STRUCT"); }
         )
 		|
+		LOOKAHEAD({ isKeywordAhead("NATIONAL") }) (
+            national=<S_IDENTIFIER>
+            (nationalType=<DATA_TYPE> | nationalType=<K_CHARACTER> | nationalType=<K_CHAR>)
+            [ LOOKAHEAD({ isKeywordAhead("VARYING") }) varying=<DATA_TYPE> ]
+            {
+                type = national.image + " " + nationalType.image
+                        + (varying != null ? " " + varying.image : "");
+                colDataType.setDataType(type);
+                colDataType.setNationalCharacterType(
+                        nationalType.image.equalsIgnoreCase("VARCHAR") || varying != null
+                                ? ColDataType.NationalCharacterType.VARCHAR
+                                : ColDataType.NationalCharacterType.CHAR);
+            }
+        )
+        |
 		LOOKAHEAD(2) (
             colDataType = DataType()
+            {
+                if (isMySqlDialect()
+                        && colDataType.getDataType().toUpperCase(Locale.ROOT).startsWith("NCHAR")) {
+                    colDataType.setNationalCharacterType(
+                            colDataType.getDataType().toUpperCase(Locale.ROOT).contains("VARCHAR")
+                                    ? ColDataType.NationalCharacterType.VARCHAR
+                                    : ColDataType.NationalCharacterType.CHAR);
+                } else if (isMySqlDialect() && colDataType.getDataType().toUpperCase(Locale.ROOT)
+                        .startsWith("NVARCHAR")) {
+                    colDataType.setNationalCharacterType(ColDataType.NationalCharacterType.VARCHAR);
+                }
+            }
         )
         |
 		(
@@ -11927,11 +12148,8 @@ ColDataType ColDataType():
         )*
         ")"
     ]
-    [ LOOKAHEAD(2)
-        ( tk=<K_SIGNED> { colDataType.setSignedness(ColDataType.Signedness.SIGNED); }
-        | tk=<K_UNSIGNED> { colDataType.setSignedness(ColDataType.Signedness.UNSIGNED); } )
-    ]
-    [ LOOKAHEAD(2) <K_ZEROFILL> { colDataType.setZerofill(true); } ]
+    ( LOOKAHEAD(1) typeModifier=MySqlTypeModifier()
+        { colDataType.addTypeModifier(typeModifier); } )*
     [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [ LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
@@ -11952,6 +12170,19 @@ ColDataType ColDataType():
         }
         return colDataType;
     }
+}
+
+ColDataType.TypeModifier MySqlTypeModifier():
+{
+    ColDataType.TypeModifier modifier;
+}
+{
+    (
+        <K_SIGNED> { modifier = ColDataType.TypeModifier.SIGNED; }
+        | <K_UNSIGNED> { modifier = ColDataType.TypeModifier.UNSIGNED; }
+        | <K_ZEROFILL> { modifier = ColDataType.TypeModifier.ZEROFILL; }
+    )
+    { return modifier; }
 }
 
 Analyze Analyze():
@@ -12064,7 +12295,7 @@ ReferentialAction.Action Action():
  * Parses optional referential actions: [ON DELETE|UPDATE action] [ON DELETE|UPDATE action]
  * Shared between CREATE TABLE FK and ALTER TABLE FK definitions.
  */
-void ReferentialActionsOnIndex(ForeignKeyIndex fkIndex):
+void ReferentialActions(ForeignKeyReference reference):
 {
     Token tk;
     ReferentialAction.Action action = null;
@@ -12073,13 +12304,44 @@ void ReferentialActionsOnIndex(ForeignKeyIndex fkIndex):
     [ LOOKAHEAD(2) (
         <K_ON>
         ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
     )]
     [ LOOKAHEAD(2) (
         <K_ON>
         ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { fkIndex.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
+        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
     )]
+}
+
+ForeignKeyReference ForeignKeyReferenceSpec():
+{
+    ForeignKeyReference reference = new ForeignKeyReference();
+    ForeignKeyReference.MatchType matchType;
+    Token matchToken;
+    List<String> refColNames = null;
+    Table fkTable;
+}
+{
+    <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) refColNames=ColumnsNamesList() ]
+    {
+        reference.setTable(fkTable);
+        reference.setReferencedColumnNames(refColNames);
+    }
+    [
+        <K_MATCH>
+        (
+            <K_FULL> { matchType = ForeignKeyReference.MatchType.FULL; }
+            | matchToken=<S_IDENTIFIER> {
+                matchType = ForeignKeyReference.MatchType.valueOf(
+                        matchToken.image.toUpperCase(Locale.ROOT));
+            }
+        )
+        { reference.setMatchType(matchType); }
+    ]
+    ReferentialActions(reference)
+    {
+        return reference;
+    }
 }
 
 /**
@@ -12113,9 +12375,8 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
     String indexName = null;
     Token tk;
     Token tk2;
-    List<String> refColNames = null;
     List<Index.ColumnParams> colNames;
-    Table fkTable;
+    ForeignKeyReference reference;
 }
 {
     tk=<K_FOREIGN> tk2=<K_KEY>
@@ -12125,12 +12386,7 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
         if (constraintName != null) { fkIndex.setName(constraintName); }
         fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
     }
-    <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) refColNames=ColumnsNamesList() ]
-    {
-        fkIndex.setTable(fkTable);
-        fkIndex.setReferencedColumnNames(refColNames);
-    }
-    ReferentialActionsOnIndex(fkIndex)
+    reference=ForeignKeyReferenceSpec() { fkIndex.setReference(reference); }
     {
         return fkIndex;
     }
@@ -12528,16 +12784,25 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     String columnName = null;
     boolean withType = false;
     ColDataType dataType = null;
-    List<String> columnSpecs = null;
-    List<String> parameter = null;
+    List<String> columnSpecs = new ArrayList<String>();
+    List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
+    ColumnOption option = null;
+    AlterExpression.ColumnDataType result;
 }
 {
-    columnName = RelObjectName() { columnSpecs = new ArrayList<String>(); }
+    columnName = RelObjectName()
     ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
     ( LOOKAHEAD(2) dataType = ColDataType() )?
-    ( LOOKAHEAD(2) parameter = CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( LOOKAHEAD(2) option = ColumnDefinitionOption() {
+        columnOptions.add(option);
+        columnSpecs.addAll(option.getTokens());
+    } )*
     {
-        return new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
+        result = new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
+        if (hasStructuredColumnOption(columnOptions)) {
+            result.setColumnOptions(columnOptions);
+        }
+        return result;
     }
 }
 
@@ -13138,21 +13403,8 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
         |
         sk3=RelObjectName()
         (
-             ( tk=<K_FOREIGN> tk2=<K_KEY>
-                columnNames=ColumnsNamesList()
-                {
-                    fkIndex = new ForeignKeyIndex()
-                        .withName(sk3)
-                        .withType(tk.image + " " + tk2.image)
-                        .withColumnsNames(columnNames);
-                    columnNames = null;
-                }
-                <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) columnNames=ColumnsNamesList() ]
-                {
-                    fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
-                    alterExp.setIndex(fkIndex);
-                }
-                ReferentialActionsOnIndex(fkIndex)
+             ( fkIndex=ForeignKeySpec(sk3)
+                { alterExp.setIndex(fkIndex); }
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
             |
@@ -13398,65 +13650,38 @@ AlterExpression AlterExpressionAddAlterModify():
     )
 
     (
-        LOOKAHEAD(2) (<K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); })
-
-        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-        [
-            AlterExpressionUsingIndex(alterExp)
-        ]
-        |
-        LOOKAHEAD(2) (
-          (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
-          (
-              LOOKAHEAD(3)
-              sk3 = RelObjectName()
-              [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-              [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
-              |
-              [ LOOKAHEAD(2) sk4 = UsingIndexType() ]
-              [ LOOKAHEAD(2) indexColumnNames = IndexColumnsWithParamsList() ]
-          )
-          IndexOptionList(indexSpec = new ArrayList<String>())
-          {
-            index = new Index()
-                    .withIndexKeyword(tk.image)
-                    .withName(sk3)
-                    .withUsing(sk4)
-                    .withColumns(indexColumnNames)
-                    .withIndexSpec(indexSpec);
-
+        LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ALTER
+                && getToken(1).kind == K_INDEX })
+        tk=<K_INDEX> sk3=RelObjectName() IndexOptionList(indexSpec) {
+            index = new Index().withIndexKeyword(tk.image).withName(sk3)
+                    .withKind(Index.Kind.INDEX).withIndexSpec(indexSpec);
             alterExp.setIndex(index);
-          }
-          constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-        )
+        }
         |
-        LOOKAHEAD(4)
-        (
-          ( tk=<K_SPATIAL> | tk=<K_FULLTEXT> )
-          [ LOOKAHEAD(2) ( tk2=<K_INDEX> | tk2=<K_KEY> ) ]
-          (
-              sk3 = RelObjectName()
-              columnNames = ColumnsNamesList()
-              |
-              columnNames = ColumnsNamesList()
-          )
-          IndexOptionList(indexSpec = new ArrayList<String>())
-          {
-              String type = tk.image;
-              String keyword = tk2 != null ? tk2.image : null;
-              index = new Index()
-                  .withType(type)
-                  .withIndexKeyword(keyword)
-                  .withColumnsNames(columnNames)
-                  .withIndexSpec(indexSpec);
-
-              if (sk3 != null) {
-                  index.setName(sk3);
-              }
-
-              alterExp.setIndex(index);
-          }
-        )
+        LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(false) {
+            alterExp.setIndex(index);
+            if (index.getKind() == Index.Kind.PRIMARY_KEY) {
+                alterExp.setPkColumns(index.getColumnsNames());
+            } else if (index.getKind() == Index.Kind.UNIQUE) {
+                alterExp.setUkColumns(index.getColumnsNames());
+                alterExp.setUkName(index instanceof NamedConstraint
+                        ? ((NamedConstraint) index).getIndexName() : index.getName());
+                alterExp.setUk(index.getType().toUpperCase(Locale.ROOT).contains("KEY"));
+                alterExp.setUkTypeSpecified(index.getIndexKeyword() != null);
+                for (String option : new ArrayList<String>(index.getIndexSpec())) {
+                    if (option.toUpperCase(Locale.ROOT).startsWith("USING ")) {
+                        alterExp.addParameters("USING");
+                        alterExp.addParameters(option.substring("USING ".length()));
+                        index.getIndexSpec().remove(option);
+                    } else if (option.toUpperCase(Locale.ROOT).startsWith("COMMENT ")) {
+                        index.setCommentText(option.substring("COMMENT ".length()));
+                        index.getIndexSpec().remove(option);
+                    }
+                }
+            }
+        }
+        constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
+        [ AlterExpressionUsingIndex(alterExp) ]
         |
         LOOKAHEAD(2) (
           sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
@@ -13499,37 +13724,6 @@ AlterExpression AlterExpressionAddAlterModify():
         )
         |
         LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
-        |
-        (
-            <K_UNIQUE> { index = new Index().withType("UNIQUE"); }
-            (
-                (
-                    tk2=<K_KEY> { alterExp.setUk(true); }
-                    | tk2=<K_INDEX> { alterExp.setUk(false); }
-                )
-                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
-                    sk3 = tk.image;
-                    alterExp.setUkName(sk3);
-                } ]
-                |
-                (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
-                    sk3 = tk.image;
-                    alterExp.setUkTypeSpecified(false);
-                    alterExp.setUkName(sk3);
-                }
-            )?
-            columnNames=ColumnsNamesList() {
-                alterExp.setUkColumns(columnNames);
-                index.withIndexKeyword(tk2 != null ? tk2.image : null)
-                        .withName(sk3)
-                        .withColumnsNames(columnNames);
-                alterExp.setIndex(index);
-            }
-            [
-                AlterExpressionUsingIndex(alterExp)
-            ]
-            [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
-        )
         |
         // Standalone FK now uses ForeignKeyIndex, same as CONSTRAINT FK
         (
