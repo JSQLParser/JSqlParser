@@ -11529,6 +11529,9 @@ Index CreateTableConstraint():
     Token tk2 = null;
     Token tk3 = null;
     String sk3 = null;
+    String indexName = null;
+    String using = null;
+    boolean useConstraintKeyword = false;
     List<Index.ColumnParams> colNames = null;
     List<String> parameter = new ArrayList<String>();
     List<String> idxSpec = new ArrayList<String>();
@@ -11556,16 +11559,25 @@ Index CreateTableConstraint():
             {
                 index = new NamedConstraint();
                 tk2=null;
+                indexName=null;
+                using=null;
                 idxSpec.clear();
             }
-            [ <K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
+            [ <K_CONSTRAINT> { ((NamedConstraint) index).setUseConstraintKeyword(true); }
+                [ LOOKAHEAD({ getToken(1).kind != K_PRIMARY && getToken(1).kind != K_UNIQUE })
+                    sk3=RelObjectName() {index.setName(sk3);} ]
+            ]
             (
                 tk=<K_PRIMARY> tk2=<K_KEY>
                 |
-                tk=<K_UNIQUE> [ tk2=<K_KEY> ]
+                tk=<K_UNIQUE> [ LOOKAHEAD(2) (tk2=<K_KEY> | tk2=<K_INDEX>) ]
+                [ LOOKAHEAD(2, { getToken(1).kind != K_USING }) indexName=RelObjectName() ]
+                [ LOOKAHEAD(2) using=UsingIndexType() ]
             )
             {
                 index.setType( tk.image + ( tk2!=null ? " " + tk2.image : "" ));
+                ((NamedConstraint) index).setIndexName(indexName);
+                index.setUsing(using);
                 tk2=null;
             }
             colNames = ColumnNamesWithParamsList()
@@ -11596,17 +11608,21 @@ Index CreateTableConstraint():
         )
         |
         LOOKAHEAD(3) (
-            { sk3=null; }
-            [ <K_CONSTRAINT> sk3=RelObjectName() ]
+            { sk3=null; useConstraintKeyword=false; }
+            [ <K_CONSTRAINT> { useConstraintKeyword=true; }
+                [ LOOKAHEAD({ getToken(1).kind != K_FOREIGN }) sk3=RelObjectName() ]
+            ]
             fkIndex = ForeignKeySpec(sk3)
-            { index = fkIndex; }
+            { fkIndex.setUseConstraintKeyword(useConstraintKeyword); index = fkIndex; }
         )
         |
         LOOKAHEAD(3) (
-            { sk3 = null; }
-            [ <K_CONSTRAINT> sk3 = RelObjectName() ]
+            { sk3 = null; useConstraintKeyword=false; }
+            [ <K_CONSTRAINT> { useConstraintKeyword=true; }
+                [ LOOKAHEAD({ getToken(1).kind != K_CHECK }) sk3 = RelObjectName() ]
+            ]
             checkCs = CheckConstraintSpec(sk3)
-            { index = checkCs; }
+            { checkCs.setUseConstraintKeyword(useConstraintKeyword); index = checkCs; }
         )
         |
         LOOKAHEAD(2) (
@@ -12094,6 +12110,7 @@ CheckConstraint CheckConstraintSpec(String constraintName):
 ForeignKeyIndex ForeignKeySpec(String constraintName):
 {
     ForeignKeyIndex fkIndex = new ForeignKeyIndex();
+    String indexName = null;
     Token tk;
     Token tk2;
     List<String> refColNames = null;
@@ -12102,6 +12119,7 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
 }
 {
     tk=<K_FOREIGN> tk2=<K_KEY>
+    [ LOOKAHEAD(2) indexName=RelObjectName() { fkIndex.setIndexName(indexName); } ]
     colNames = ColumnNamesWithParamsList()
     {
         if (constraintName != null) { fkIndex.setName(constraintName); }
@@ -13483,20 +13501,30 @@ AlterExpression AlterExpressionAddAlterModify():
         LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
         |
         (
-            <K_UNIQUE>
+            <K_UNIQUE> { index = new Index().withType("UNIQUE"); }
             (
                 (
-                    <K_KEY> { alterExp.setUk(true); }
-                    | <K_INDEX> { alterExp.setUk(false); }
+                    tk2=<K_KEY> { alterExp.setUk(true); }
+                    | tk2=<K_INDEX> { alterExp.setUk(false); }
                 )
-                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } ]
+                [ (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                    sk3 = tk.image;
+                    alterExp.setUkName(sk3);
+                } ]
                 |
                 (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
+                    sk3 = tk.image;
                     alterExp.setUkTypeSpecified(false);
-                    alterExp.setUkName(tk.image);
+                    alterExp.setUkName(sk3);
                 }
             )?
-            columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
+            columnNames=ColumnsNamesList() {
+                alterExp.setUkColumns(columnNames);
+                index.withIndexKeyword(tk2 != null ? tk2.image : null)
+                        .withName(sk3)
+                        .withColumnsNames(columnNames);
+                alterExp.setIndex(index);
+            }
             [
                 AlterExpressionUsingIndex(alterExp)
             ]

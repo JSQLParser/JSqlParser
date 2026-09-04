@@ -50,8 +50,12 @@ public class CheckConstraint extends NamedConstraint {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        if (getName() != null) {
-            b.append("CONSTRAINT ").append(getName()).append(" ");
+        if (isUseConstraintKeyword() || getName() != null) {
+            b.append("CONSTRAINT");
+            if (getName() != null) {
+                b.append(" ").append(getName());
+            }
+            b.append(" ");
         }
         b.append("CHECK (").append(expression).append(")");
         if (enforced != null) {
@@ -87,6 +91,11 @@ public class CheckConstraint extends NamedConstraint {
     @Override
     public CheckConstraint withUsing(String using) {
         return (CheckConstraint) super.withUsing(using);
+    }
+
+    @Override
+    public CheckConstraint withUseConstraintKeyword(boolean useConstraintKeyword) {
+        return (CheckConstraint) super.withUseConstraintKeyword(useConstraintKeyword);
     }
 
     @Override
