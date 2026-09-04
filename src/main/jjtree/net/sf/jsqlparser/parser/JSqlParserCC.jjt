@@ -1831,6 +1831,7 @@ String NonReservedWord() :
       | tk=<K_XSINIL:"XSINIL">
       | tk=<K_YAML:"YAML">
       | tk=<K_YES:"YES">
+      | tk=<K_ZEROFILL:"ZEROFILL">
       | tk=<K_ZONE:"ZONE">
     )
     { return tk.image; }
@@ -11794,10 +11795,10 @@ ColDataType DataType():
                 zonePrecision = tk.kind == DT_ZONE ? zonedTypePrecision(tk.image) : null;
             }
             (
-                // MySQL seems to allow: INT UNSIGNED. Do not consume CHARACTER when it starts
-                // the trailing CHARACTER SET clause of a character type.
+                // Signedness is parsed by ColDataType after optional precision/scale. Do not
+                // consume CHARACTER when it starts the trailing CHARACTER SET clause.
                 LOOKAHEAD(2, { getToken(1).kind != K_CHARACTER || getToken(2).kind != K_SET })
-                ( tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
+                ( tk = <DATA_TYPE>
                     | tk=<K_CHARACTER>  | tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
                     | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; }
             )*
@@ -11926,6 +11927,11 @@ ColDataType ColDataType():
         )*
         ")"
     ]
+    [ LOOKAHEAD(2)
+        ( tk=<K_SIGNED> { colDataType.setSignedness(ColDataType.Signedness.SIGNED); }
+        | tk=<K_UNSIGNED> { colDataType.setSignedness(ColDataType.Signedness.UNSIGNED); } )
+    ]
+    [ LOOKAHEAD(2) <K_ZEROFILL> { colDataType.setZerofill(true); } ]
     [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
     [ LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 

@@ -24,11 +24,17 @@ import static java.util.stream.Collectors.joining;
 
 public class ColDataType implements Serializable {
 
+    public enum Signedness {
+        SIGNED, UNSIGNED
+    }
+
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
     private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
+    private Signedness signedness;
+    private boolean zerofill;
     private Integer precision;
     private Integer scale;
 
@@ -98,6 +104,22 @@ public class ColDataType implements Serializable {
         this.arrayData = arrayData;
     }
 
+    public Signedness getSignedness() {
+        return signedness;
+    }
+
+    public void setSignedness(Signedness signedness) {
+        this.signedness = signedness;
+    }
+
+    public boolean isZerofill() {
+        return zerofill;
+    }
+
+    public void setZerofill(boolean zerofill) {
+        this.zerofill = zerofill;
+    }
+
     /**
      * The first numeric type parameter, e.g. {@code 255} for {@code VARCHAR(255)} or {@code 10} for
      * {@code DECIMAL(10, 2)}. {@code MAX} is reported as {@link Integer#MAX_VALUE}. Returns
@@ -139,6 +161,8 @@ public class ColDataType implements Serializable {
                 + (argumentsStringList != null
                         ? " " + PlainSelect.getStringList(argumentsStringList, true, true)
                         : "")
+                + (signedness != null ? " " + signedness : "")
+                + (zerofill ? " ZEROFILL" : "")
                 + arraySpec.toString()
                 + (characterSet != null ? " CHARACTER SET " + characterSet : "");
     }
@@ -165,6 +189,16 @@ public class ColDataType implements Serializable {
 
     public ColDataType withArrayData(List<Integer> arrayData) {
         this.setArrayData(arrayData);
+        return this;
+    }
+
+    public ColDataType withSignedness(Signedness signedness) {
+        setSignedness(signedness);
+        return this;
+    }
+
+    public ColDataType withZerofill(boolean zerofill) {
+        setZerofill(zerofill);
         return this;
     }
 
@@ -218,7 +252,9 @@ public class ColDataType implements Serializable {
                 && Objects.equals(argumentsStringList, that.argumentsStringList)
                 && Objects.equals(characterSet, that.characterSet)
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
-                && Objects.equals(arrayData, that.arrayData);
+                && Objects.equals(arrayData, that.arrayData)
+                && signedness == that.signedness
+                && zerofill == that.zerofill;
     }
 
     @Override
@@ -228,6 +264,8 @@ public class ColDataType implements Serializable {
         result = 31 * result + Objects.hashCode(characterSet);
         result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
+        result = 31 * result + Objects.hashCode(signedness);
+        result = 31 * result + Boolean.hashCode(zerofill);
         return result;
     }
 }
