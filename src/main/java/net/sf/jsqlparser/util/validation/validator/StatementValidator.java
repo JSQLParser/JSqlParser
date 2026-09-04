@@ -38,6 +38,8 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -171,6 +173,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(Alter alter, S context) {
         getValidator(AlterValidator.class).validate(alter);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEvent alterEvent, S context) {
+        if (alterEvent.getBody() != null) {
+            alterEvent.getBody().accept(this, context);
+        }
         return null;
     }
 
@@ -310,6 +320,14 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateEvent createEvent, S context) {
+        if (createEvent.getBody() != null) {
+            createEvent.getBody().accept(this, context);
+        }
         return null;
     }
 
@@ -469,6 +487,10 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(alter, null);
     }
 
+    public void visit(AlterEvent alterEvent) {
+        visit(alterEvent, null);
+    }
+
     public void visit(Statements statements) {
         visit(statements, null);
     }
@@ -547,6 +569,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateUser createUser) {
         visit(createUser, null);
+    }
+
+    public void visit(CreateEvent createEvent) {
+        visit(createEvent, null);
     }
 
     public void visit(CreateSequence createSequence) {
