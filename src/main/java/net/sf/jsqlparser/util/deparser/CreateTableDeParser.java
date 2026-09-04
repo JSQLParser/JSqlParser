@@ -52,6 +52,10 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             builder.append("IF NOT EXISTS ");
         }
         builder.append(createTable.getTable().getFullyQualifiedName());
+        if (createTable.getPartitionOf() != null) {
+            builder.append(" PARTITION OF ")
+                    .append(createTable.getPartitionOf().getFullyQualifiedName());
+        }
 
         if (createTable.getColumns() != null && !createTable.getColumns().isEmpty()) {
             builder.append(" (");
@@ -90,6 +94,10 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             }
 
             builder.append(")");
+        }
+
+        if (createTable.getPartitionBound() != null) {
+            builder.append(' ').append(createTable.getPartitionBound());
         }
 
         params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);

@@ -20,6 +20,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.TableStatement;
@@ -39,6 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,6 +107,34 @@ public class CCJSqlParserUtilTest {
         Multiplication mult = (Multiplication) result;
         assertInstanceOf(LongValue.class, mult.getLeftExpression());
         assertInstanceOf(ParenthesedExpressionList.class, mult.getRightExpression());
+    }
+
+    @Test
+    public void testParseColDataType() throws Exception {
+        assertNull(CCJSqlParserUtil.parseColDataType(null));
+        assertNull(CCJSqlParserUtil.parseColDataType(""));
+
+        ColDataType arrayType = CCJSqlParserUtil.parseColDataType("integer[][]");
+        assertEquals("integer", arrayType.getDataType());
+        assertEquals(2, arrayType.getArrayData().size());
+        assertNull(arrayType.getArrayData().get(0));
+        assertNull(arrayType.getArrayData().get(1));
+
+        AtomicBoolean configured = new AtomicBoolean();
+        ColDataType enumType =
+                CCJSqlParserUtil.parseColDataType("enum('small','medium')", parser -> {
+                    configured.set(true);
+                    parser.withDialect(AbstractJSqlParser.Dialect.MYSQL);
+                });
+        assertTrue(configured.get());
+        assertEquals("enum", enumType.getDataType());
+        assertEquals(List.of("'small'", "'medium'"), enumType.getArgumentsStringList());
+    }
+
+    @Test
+    public void testParseColDataTypeRejectsTrailingTokens() {
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parseColDataType("varchar(255) NOT NULL"));
     }
 
     @Test
