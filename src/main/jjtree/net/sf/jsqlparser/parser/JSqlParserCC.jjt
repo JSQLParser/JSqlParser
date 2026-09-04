@@ -1293,6 +1293,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * Extracts the numeric precision embedded in a DT_ZONE token image such as
+     * "TIMESTAMP(3) WITH TIME ZONE", or null when the image carries no parameter.
+     */
+    private static Integer zonedTypePrecision(String image) {
+        int open = image.indexOf('(');
+        if (open < 0) {
+            return null;
+        }
+        return Integer.valueOf(image.substring(open + 1, image.indexOf(')', open)).trim());
+    }
 
 }
 
@@ -11661,6 +11672,7 @@ ColDataType DataType():
     List<Integer> array = new ArrayList<Integer>();
     List<String> name;
     ColDataType arrayType;
+    Integer zonePrecision = null;
 
     int precision = -1;
     int scale = -1;
@@ -11681,7 +11693,12 @@ ColDataType DataType():
         (
             ( tk=<K_DATETIMELITERAL> | tk=<DT_ZONE> | tk = <DATA_TYPE>  | tk = <K_SIGNED>  | tk = <K_UNSIGNED>
                 | tk=<K_CHARACTER>  |  tk=<K_BIT> | tk=<K_BYTES> | tk=<K_BINARY> | tk=<K_BOOLEAN>
-                | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> ) { type = tk.image; }
+                | tk=<K_CHAR> | tk=<K_JSON> | tk=<K_STRING> )
+            {
+                type = tk.image;
+                // A DT_ZONE image already contains its parameter, e.g. "TIMESTAMP(3) WITH TIME ZONE".
+                zonePrecision = tk.kind == DT_ZONE ? zonedTypePrecision(tk.image) : null;
+            }
             (
                 // MySQL seems to allow: INT UNSIGNED. Do not consume CHARACTER when it starts
                 // the trailing CHARACTER SET clause of a character type.
@@ -11698,6 +11715,9 @@ ColDataType DataType():
             ]
             {
                 colDataType = new ColDataType(type, precision, scale);
+                if (zonePrecision != null) {
+                    colDataType.setPrecision(zonePrecision);
+                }
             }
         )
     )
@@ -11721,6 +11741,7 @@ ColDataType ColDataType():
     ColDataType arrayType;
     ColDataType nestedType = null;
     IntervalQualifier intervalQualifier = null;
+    Integer zonePrecision = null;
 
     int precision = -1;
     int scale = -1;
@@ -11760,7 +11781,12 @@ ColDataType ColDataType():
 			| tk=<K_PUBLIC>
 			| tk=<K_DATA>
 			| tk=<K_NAME>
-        ) { schema = tk.image; }
+        )
+        {
+            schema = tk.image;
+            // A DT_ZONE image already contains its parameter, e.g. "TIMESTAMP(3) WITH TIME ZONE".
+            zonePrecision = tk.kind == DT_ZONE ? zonedTypePrecision(tk.image) : null;
+        }
 
         // Consume an optional INTERVAL qualifier such as `hour to minute` or
         // `day(9) to second`. Only applicable when the matched type is an INTERVAL and
@@ -11810,8 +11836,20 @@ ColDataType ColDataType():
     [ LOOKAHEAD(2) <K_CHARACTER> <K_SET> (tk=<S_IDENTIFIER> | tk=<K_BINARY>) { colDataType.setCharacterSet(tk.image); } ]
 
     {
-        if (argumentsStringList.size() > 0)
+        if (argumentsStringList.size() > 0) {
             colDataType.setArgumentsStringList(argumentsStringList);
+            // Digits-only arguments are the type's numeric parameters, e.g. mediumint(9).
+            if (argumentsStringList.size() == 1 && argumentsStringList.get(0).matches("\\d+")) {
+                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+            } else if (argumentsStringList.size() == 2 && argumentsStringList.get(0).matches("\\d+")
+                    && argumentsStringList.get(1).matches("\\d+")) {
+                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+                colDataType.setScale(Integer.valueOf(argumentsStringList.get(1)));
+            }
+        }
+        if (zonePrecision != null) {
+            colDataType.setPrecision(zonePrecision);
+        }
         return colDataType;
     }
 }

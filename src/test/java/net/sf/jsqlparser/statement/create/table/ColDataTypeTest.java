@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ColDataTypeTest {
     @Test
@@ -96,5 +97,58 @@ class ColDataTypeTest {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT CAST(col AS INTERVAL DAY TO SECOND)", true);
         assertSqlCanBeParsedAndDeparsed("SELECT CAST(col AS INTERVAL HOUR)", true);
+    }
+
+    @Test
+    void testStructuredPrecisionForKeywordTypes() throws JSQLParserException {
+        ColDataType varchar = parseColumnType("CREATE TABLE t (a VARCHAR(255))");
+        assertEquals(255, varchar.getPrecision());
+        assertNull(varchar.getScale());
+        // the rendered string keeps its historical shape
+        assertEquals("VARCHAR (255)", varchar.getDataType());
+
+        ColDataType decimal = parseColumnType("CREATE TABLE t (a DECIMAL(10, 2))");
+        assertEquals(10, decimal.getPrecision());
+        assertEquals(2, decimal.getScale());
+        assertEquals("DECIMAL (10, 2)", decimal.getDataType());
+
+        ColDataType max = parseColumnType("CREATE TABLE t (a VARCHAR(MAX))");
+        assertEquals(Integer.MAX_VALUE, max.getPrecision());
+
+        ColDataType plain = parseColumnType("CREATE TABLE t (a INT)");
+        assertNull(plain.getPrecision());
+        assertNull(plain.getScale());
+    }
+
+    @Test
+    void testStructuredPrecisionForIdentifierTypes() throws JSQLParserException {
+        ColDataType mediumInt = parseColumnType("CREATE TABLE t (a mediumint(9))");
+        assertEquals(9, mediumInt.getPrecision());
+        assertNull(mediumInt.getScale());
+        // the string arguments stay available as before
+        assertEquals(java.util.List.of("9"), mediumInt.getArgumentsStringList());
+
+        // non-numeric arguments are not numeric parameters
+        ColDataType enumType = parseColumnType("CREATE TABLE t (a ENUM('small', 'medium'))");
+        assertNull(enumType.getPrecision());
+        assertNull(enumType.getScale());
+    }
+
+    @Test
+    void testStructuredPrecisionForZonedTypes() throws JSQLParserException {
+        ColDataType zoned = parseColumnType("CREATE TABLE t (a TIMESTAMP(3) WITH TIME ZONE)");
+        assertEquals(3, zoned.getPrecision());
+        assertNull(zoned.getScale());
+        // the token image keeps its historical shape
+        assertEquals("TIMESTAMP(3) WITH TIME ZONE", zoned.getDataType());
+
+        ColDataType unparameterized =
+                parseColumnType("CREATE TABLE t (a TIMESTAMP WITH TIME ZONE)");
+        assertNull(unparameterized.getPrecision());
+    }
+
+    private ColDataType parseColumnType(String sqlStr) throws JSQLParserException {
+        CreateTable create = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        return create.getColumnDefinitions().get(0).getColDataType();
     }
 }
