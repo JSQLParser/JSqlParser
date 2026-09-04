@@ -1460,6 +1460,7 @@ String NonReservedWord() :
       | tk=<K_ASYMMETRIC: "ASYMMETRIC">
       | tk=<K_AT: "AT">
       | tk=<K_ASC:"ASC">
+      | tk=<K_ATTACH:"ATTACH">
       | tk=<K_AUTHORIZATION:"AUTHORIZATION">
       | tk=<K_AUTO:"AUTO">
       | tk=<K_AUTO_INCREMENT:"AUTO_INCREMENT">
@@ -1521,6 +1522,7 @@ String NonReservedWord() :
       | tk=<K_DELIMITER : "DELIMITER">
       | tk=<K_DESC:"DESC">
       | tk=<K_DESCRIBE:"DESCRIBE">
+      | tk=<K_DETACH:"DETACH">
       | tk=<K_DISABLE : "DISABLE">
       | tk=<K_DISCARD : "DISCARD">
       | tk=<K_DISCONNECT:"DISCONNECT">
@@ -1564,6 +1566,7 @@ String NonReservedWord() :
       | tk=<K_FILTER: "FILTER">
       | tk=<K_FIELDS: "FIELDS">
       | tk=<K_FILL: "FILL">
+      | tk=<K_FINALIZE: "FINALIZE">
       | tk=<K_FIRST: "FIRST">
       | tk=<K_FLUSH: "FLUSH">
       | tk=<K_FOLLOWING: "FOLLOWING">
@@ -1640,6 +1643,7 @@ String NonReservedWord() :
       | tk=<K_MIN_ROWS:"MIN_ROWS">
       | tk=<K_MINVALUE:"MINVALUE">
       | tk=<K_MODE: "MODE">
+      | tk=<K_MODULUS: "MODULUS">
       | tk=<K_MODIFY: "MODIFY">
       | tk=<K_MOVEMENT: "MOVEMENT">
       | tk=<K_NAMES:"NAMES">
@@ -1708,6 +1712,7 @@ String NonReservedWord() :
       | tk=<K_REGISTER: "REGISTER">
       | tk=<K_REMOTE: "REMOTE">
       | tk=<K_REMOVE: "REMOVE">
+      | tk=<K_REMAINDER: "REMAINDER">
       | tk=<K_RENAME:"RENAME">
       | tk=<K_REORGANIZE: "REORGANIZE">
       | tk=<K_REPAIR: "REPAIR">
@@ -11558,6 +11563,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     String tableColumn = null;
     List<String> columns = new ArrayList<String>();
     TablePartitioning partitioning = null;
+    Table partitionOfTable = null;
+    PartitionBound partitionBound = null;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -11571,6 +11578,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
+    [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
+        { createTable.setPartitionOf(partitionOfTable); } ]
     [ LOOKAHEAD(2) (
         LOOKAHEAD(3) (
             "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")"
@@ -11599,6 +11608,9 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             )
         )
     ]
+    [ LOOKAHEAD({ partitionOfTable != null })
+        partitionBound=PostgreSqlPartitionBound()
+        { createTable.setPartitionBound(partitionBound); } ]
     ( LOOKAHEAD(2, { getToken(1).kind != K_AS
             && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
         parameter=CreateParameter() { tableOptions.addAll(parameter); } )*
@@ -12586,7 +12598,7 @@ TablePartitioning CreateTablePartitioning():
 {
     TablePartitioning partitioning = null;
     TablePartitioning subPartitioning = null;
-    Expression expression = null;
+    ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     List<PartitionDefinition> partitionDefinitions = null;
     List<String> parameter = null;
@@ -12600,7 +12612,13 @@ TablePartitioning CreateTablePartitioning():
         |
         <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
-            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            "(" expressionList=SimpleExpressionList() ")" {
+                if (expressionList.size() == 1) {
+                    partitioning.setExpression(expressionList.get(0));
+                } else {
+                    partitioning.setExpressionList(expressionList);
+                }
+            }
             |
             <K_COLUMNS> "(" columns=ColumnList() ")"
             {
@@ -12611,7 +12629,13 @@ TablePartitioning CreateTablePartitioning():
         |
         <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
         (
-            "(" expression=Expression() ")" { partitioning.setExpression(expression); }
+            "(" expressionList=SimpleExpressionList() ")" {
+                if (expressionList.size() == 1) {
+                    partitioning.setExpression(expressionList.get(0));
+                } else {
+                    partitioning.setExpressionList(expressionList);
+                }
+            }
             |
             <K_COLUMNS> "(" columns=ColumnList() ")"
             {
@@ -12642,10 +12666,49 @@ TablePartitioning CreateTablePartitioning():
     }
 }
 
+PartitionBound PostgreSqlPartitionBound():
+{
+    PartitionBound bound = null;
+    ExpressionList<Expression> expressions = null;
+    Expression modulus = null;
+    Expression remainder = null;
+}
+{
+    (
+        <K_DEFAULT> { bound = new PartitionBound(PartitionBound.Type.DEFAULT); }
+        |
+        <K_FOR> <K_VALUES>
+        (
+            <K_FROM> "(" expressions=SimpleExpressionList() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.RANGE);
+                bound.setFromExpressions(expressions);
+            }
+            <K_TO> "(" expressions=SimpleExpressionList() ")"
+            { bound.setToExpressions(expressions); }
+            |
+            <K_IN> "(" expressions=SimpleExpressionList() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.LIST);
+                bound.setInExpressions(expressions);
+            }
+            |
+            <K_WITH> "(" <K_MODULUS> modulus=Expression() ","
+                <K_REMAINDER> remainder=Expression() ")"
+            {
+                bound = new PartitionBound(PartitionBound.Type.HASH);
+                bound.setModulus(modulus);
+                bound.setRemainder(remainder);
+            }
+        )
+    )
+    { return bound; }
+}
+
 TablePartitioning HashOrKeyPartitioning():
 {
     TablePartitioning partitioning = new TablePartitioning();
-    Expression expression = null;
+    ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     Token tk = null;
     boolean useEquals = false;
@@ -12653,10 +12716,14 @@ TablePartitioning HashOrKeyPartitioning():
 {
     [ <K_LINEAR> { partitioning.setLinear(true); } ]
     (
-        <K_HASH> "(" expression=Expression() ")"
+        <K_HASH> "(" expressionList=SimpleExpressionList() ")"
         {
             partitioning.setType(TablePartitioning.Type.HASH);
-            partitioning.setExpression(expression);
+            if (expressionList.size() == 1) {
+                partitioning.setExpression(expressionList.get(0));
+            } else {
+                partitioning.setExpressionList(expressionList);
+            }
         }
         |
         <K_KEY>
@@ -13412,6 +13479,40 @@ AlterExpression AlterExpressionRenameOp():
     { return alterExp; }
 }
 
+AlterExpressionPartition AlterExpressionPostgreSqlPartitionOp():
+{
+    AlterExpressionPartition alterExp = new AlterExpressionPartition();
+    Table partitionTable = null;
+    PartitionBound partitionBound = null;
+}
+{
+    (
+        <K_ATTACH> <K_PARTITION> partitionTable=Table()
+        partitionBound=PostgreSqlPartitionBound()
+        {
+            alterExp.setOperation(AlterOperation.ATTACH_PARTITION);
+            alterExp.setPartitionTable(partitionTable);
+            alterExp.setPartitionBound(partitionBound);
+        }
+        |
+        <K_DETACH> <K_PARTITION> partitionTable=Table()
+        {
+            alterExp.setOperation(AlterOperation.DETACH_PARTITION);
+            alterExp.setPartitionTable(partitionTable);
+        }
+        [
+            <K_CONCURRENTLY> {
+                alterExp.setDetachMode(AlterExpressionPartition.DetachMode.CONCURRENTLY);
+            }
+            |
+            <K_FINALIZE> {
+                alterExp.setDetachMode(AlterExpressionPartition.DetachMode.FINALIZE);
+            }
+        ]
+    )
+    { return alterExp; }
+}
+
 /**
 * Dispatcher production for all ALTER TABLE expression types.
 * Delegates to focused sub-productions for each operation category.
@@ -13562,6 +13663,8 @@ AlterExpression AlterExpression():
         )
       |
         alterExp = AlterExpressionDiscardOrImport()
+      |
+        alterExp = AlterExpressionPostgreSqlPartitionOp()
       |
         LOOKAHEAD(4) (
             { alterExp = new AlterExpression(); }
