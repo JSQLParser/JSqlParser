@@ -32,10 +32,15 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class AlterExpression implements Serializable {
 
+    public enum TableRenameKeyword {
+        NONE, TO, AS
+    }
+
     private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
     private AlterOperation operation;
     private String optionalSpecifier;
     private String newTableName;
+    private TableRenameKeyword tableRenameKeyword = TableRenameKeyword.TO;
     private String columnName;
     // private ColDataType dataType;
     private String columnOldName;
@@ -447,6 +452,14 @@ public class AlterExpression implements Serializable {
 
     public void setNewTableName(String newTableName) {
         this.newTableName = newTableName;
+    }
+
+    public TableRenameKeyword getTableRenameKeyword() {
+        return tableRenameKeyword;
+    }
+
+    public void setTableRenameKeyword(TableRenameKeyword tableRenameKeyword) {
+        this.tableRenameKeyword = tableRenameKeyword;
     }
 
     public String getColumnName() {
@@ -1214,6 +1227,16 @@ public class AlterExpression implements Serializable {
 
     public AlterExpression withOptionalSpecifier(String optionalSpecifier) {
         this.setOptionalSpecifier(optionalSpecifier);
+        return this;
+    }
+
+    public AlterExpression withNewTableName(String newTableName) {
+        setNewTableName(newTableName);
+        return this;
+    }
+
+    public AlterExpression withTableRenameKeyword(TableRenameKeyword tableRenameKeyword) {
+        setTableRenameKeyword(tableRenameKeyword);
         return this;
     }
 

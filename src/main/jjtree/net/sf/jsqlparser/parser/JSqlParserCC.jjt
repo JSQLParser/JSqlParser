@@ -13571,7 +13571,7 @@ AlterExpression AlterExpressionAddAlterModify():
 
 /**
  * Parses all RENAME variants within ALTER TABLE.
- * Handles: RENAME [COLUMN] old TO new, RENAME TO tablename,
+ * Handles: RENAME [COLUMN] old TO new, RENAME [TO|AS] tablename, RENAME tablename,
  * RENAME INDEX/KEY/CONSTRAINT old TO new.
  */
 AlterExpression AlterExpressionRenameOp():
@@ -13602,16 +13602,29 @@ AlterExpression AlterExpressionRenameOp():
         }
         |
         LOOKAHEAD(2) (
-            <K_TO> { alterExp.setOperation(AlterOperation.RENAME_TABLE); }
-            (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk2.image); }
+            (tk=<K_TO> | tk=<K_AS>) {
+                alterExp.setOperation(AlterOperation.RENAME_TABLE);
+                alterExp.setTableRenameKeyword(AlterExpression.TableRenameKeyword.valueOf(
+                        tk.image.toUpperCase(Locale.ROOT)));
+            }
+            tk2=KeywordOrIdentifier() { alterExp.setNewTableName(tk2.image); }
         )
         |
+        LOOKAHEAD(3)
         (
             { alterExp.setOperation(AlterOperation.RENAME); }
             [ <K_COLUMN> { alterExp.hasColumn(true); } ]
             (tk=KeywordOrIdentifier()) { alterExp.setColOldName(tk.image); }
             <K_TO>
             (tk2=KeywordOrIdentifier()) { alterExp.setColumnName(tk2.image); }
+        )
+        |
+        (
+            {
+                alterExp.setOperation(AlterOperation.RENAME_TABLE);
+                alterExp.setTableRenameKeyword(AlterExpression.TableRenameKeyword.NONE);
+            }
+            tk2=KeywordOrIdentifier() { alterExp.setNewTableName(tk2.image); }
         )
     )
     { return alterExp; }

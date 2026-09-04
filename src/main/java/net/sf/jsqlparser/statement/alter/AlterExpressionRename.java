@@ -26,7 +26,11 @@ public class AlterExpressionRename extends AlterExpression {
                 b.append(getColumnOldName()).append(" TO ").append(getColumnName());
                 break;
             case RENAME_TABLE:
-                b.append("RENAME TO ").append(getNewTableName());
+                b.append("RENAME");
+                if (getTableRenameKeyword() != TableRenameKeyword.NONE) {
+                    b.append(" ").append(getTableRenameKeyword());
+                }
+                b.append(" ").append(getNewTableName());
                 break;
             case RENAME_INDEX:
             case RENAME_KEY:
