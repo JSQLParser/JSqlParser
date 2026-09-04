@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.drop;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -193,7 +194,7 @@ public class DropTest {
         Drop drop = (Drop) assertSqlCanBeParsedAndDeparsed(sql);
 
         assertEquals(List.of("table_1", "table_2", "table_3"), drop.getNames().stream()
-                .map(Table::getFullyQualifiedName).toList());
+                .map(Table::getFullyQualifiedName).collect(Collectors.toList()));
         assertEquals("table_1", drop.getName().getFullyQualifiedName());
         assertEquals(List.of("RESTRICT"), drop.getParameters());
 
@@ -210,7 +211,7 @@ public class DropTest {
 
         assertEquals(Drop.ObjectType.VIEW, drop.getObjectType());
         assertEquals(List.of("view_1", "view_2"), drop.getNames().stream()
-                .map(Table::getFullyQualifiedName).toList());
+                .map(Table::getFullyQualifiedName).collect(Collectors.toList()));
         assertEquals(List.of("CASCADE"), drop.getParameters());
     }
 }
