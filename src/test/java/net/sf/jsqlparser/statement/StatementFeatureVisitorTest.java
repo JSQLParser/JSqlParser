@@ -1,4 +1,13 @@
 /*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2026 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
+/*-
  * Copyright (C) 2004 - 2026 JSQLParser
  * Licensed under the Apache License, Version 2.0.
  */
