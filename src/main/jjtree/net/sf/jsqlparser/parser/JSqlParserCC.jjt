@@ -1198,7 +1198,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     private boolean isMySqlTableOptionAhead() {
         int kind = getToken(1).kind;
-        if (kind == K_ENGINE) {
+        if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
+                || kind == K_AUTO_INCREMENT) {
             return true;
         }
         if (kind == K_CHARACTER && getToken(2).kind == K_SET
@@ -1212,7 +1213,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return false;
         }
         int secondKind = getToken(2).kind;
-        return secondKind == K_CHARACTER || secondKind == K_CHAR
+        return secondKind == K_CHARACTER || secondKind == K_CHAR || secondKind == K_COLLATE
                 || secondKind == S_IDENTIFIER
                         && "CHARSET".equalsIgnoreCase(getToken(2).image);
     }
@@ -11880,7 +11881,7 @@ TableOption MySqlTableOption(): {
     String value;
     boolean useEquals = false;
     String name = "";
-    TableOption.Kind kind;
+    TableOption.Kind kind = null;
     TableOption option;
 } {
     (
@@ -11902,8 +11903,27 @@ TableOption MySqlTableOption(): {
             }
             |
             tk=<S_IDENTIFIER> { name += tk.image; }
+            |
+            tk=<K_COLLATE> {
+                name += tk.image;
+                kind = TableOption.Kind.COLLATE;
+            }
         )
-        { kind = TableOption.Kind.CHARACTER_SET; }
+        { if (kind == null) { kind = TableOption.Kind.CHARACTER_SET; } }
+        [ "=" { useEquals = true; } ]
+        value=MySqlTableOptionValue()
+        |
+        tk=<K_COMMENT> {
+            name = tk.image;
+            kind = TableOption.Kind.COMMENT;
+        }
+        [ "=" { useEquals = true; } ]
+        value=MySqlTableOptionValue()
+        |
+        tk=<K_AUTO_INCREMENT> {
+            name = tk.image;
+            kind = TableOption.Kind.AUTO_INCREMENT;
+        }
         [ "=" { useEquals = true; } ]
         value=MySqlTableOptionValue()
     )
@@ -11921,6 +11941,9 @@ String MySqlTableOptionValue(): {
         value=RelObjectName()
         | token=<K_CSV> { value = token.image; }
         | token=<K_BINARY> { value = token.image; }
+        | token=<S_CHAR_LITERAL> { value = token.image; }
+        | token=<S_LONG> { value = token.image; }
+        | token=<S_DOUBLE> { value = token.image; }
     )
     { return value; }
 }
@@ -12352,6 +12375,7 @@ CheckConstraint CheckConstraintSpec(String constraintName):
 {
     Expression exp = null;
     Boolean enforced = null;
+    CheckConstraint checkConstraint;
 }
 {
     <K_CHECK> ( LOOKAHEAD(2) "(" exp = Expression() ")" )*
@@ -12360,8 +12384,10 @@ CheckConstraint CheckConstraintSpec(String constraintName):
         <K_ENFORCED> { if (enforced == null) { enforced = true; } }
     ]
     {
-        return new CheckConstraint().withName(constraintName).withExpression(exp)
+        checkConstraint = new CheckConstraint().withName(constraintName).withExpression(exp)
                 .withEnforced(enforced);
+        checkConstraint.setKind(Index.Kind.CHECK);
+        return checkConstraint;
     }
 }
 

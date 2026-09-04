@@ -133,6 +133,24 @@ public class MySqlTableDefinitionTest {
         assertEquals(TableOption.Kind.CHARACTER_SET, table.getTableOptions().get(1).getKind());
         assertEquals("utf8mb4", table.getTableOptions().get(1).getValue());
         assertReparse(table);
+
+        CreateTable quotedEngine = parseMySql("CREATE TABLE archive_entry (id INT) "
+                + "ENGINE='InnoDB'");
+        assertEquals("'InnoDB'", quotedEngine.getTableOption(TableOption.Kind.ENGINE)
+                .orElseThrow().getValue());
+        assertReparse(quotedEngine);
+
+        CreateTable commonOptions = parseMySql("CREATE TABLE table_options "
+                + "(id BIGINT AUTO_INCREMENT PRIMARY KEY) ENGINE=InnoDB "
+                + "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=7 "
+                + "COMMENT='archive'");
+        assertEquals("utf8mb4_bin", commonOptions.getTableOption(TableOption.Kind.COLLATE)
+                .orElseThrow().getValue());
+        assertEquals("7", commonOptions.getTableOption(TableOption.Kind.AUTO_INCREMENT)
+                .orElseThrow().getValue());
+        assertEquals("'archive'", commonOptions.getTableOption(TableOption.Kind.COMMENT)
+                .orElseThrow().getValue());
+        assertReparse(commonOptions);
     }
 
     @Test
