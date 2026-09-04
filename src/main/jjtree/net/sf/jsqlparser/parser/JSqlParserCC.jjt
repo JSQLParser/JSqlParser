@@ -1488,6 +1488,7 @@ String NonReservedWord() :
       | tk=<K_BREADTH:"BREADTH">
       | tk=<K_BRANCH:"BRANCH">
       | tk=<K_BROWSE:"BROWSE">
+      | tk=<K_BUCKETS:"BUCKETS">
       | tk=<K_BY:"BY">
       | tk=<K_BYTES: "BYTES">
       | tk=<K_CACHE: "CACHE">
@@ -1592,6 +1593,7 @@ String NonReservedWord() :
       | tk=<K_HIGH : "HIGH">
       | tk=<K_HIGH_PRIORITY : "HIGH_PRIORITY">
       | tk=<K_HISTORY : "HISTORY">
+      | tk=<K_HISTOGRAM: "HISTOGRAM">
       | tk=<K_HOPPING:"HOPPING">
       | tk=<K_IDENTIFIED:"IDENTIFIED">
       | tk=<K_IDENTITY:"IDENTITY">
@@ -1666,6 +1668,7 @@ String NonReservedWord() :
       | tk=<K_NOCACHE:"NOCACHE">
       | tk=<K_NOKEEP:"NOKEEP">
       | tk=<K_NOLOCK:"NOLOCK">
+      | tk=<K_NO_WRITE_TO_BINLOG:"NO_WRITE_TO_BINLOG">
       | tk=<K_NOMAXVALUE:"NOMAXVALUE">
       | tk=<K_NOMINVALUE:"NOMINVALUE">
       | tk=<K_NONE:"NONE">
@@ -11958,14 +11961,40 @@ Analyze Analyze():
 {
     Analyze analyze = new Analyze();
     Table table = null;
+    Column column = null;
+    Token modifier = null;
+    Token histogramAction = null;
+    Token bucketCount = null;
 }
 {
     <K_ANALYZE>
-    table=Table()
+    [
+        LOOKAHEAD(2)
+        (modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL>)
+        { analyze.setModifier(Analyze.Modifier.valueOf(modifier.image.toUpperCase(Locale.ROOT))); }
+    ]
+    [ LOOKAHEAD(2) <K_TABLE> { analyze.setTableKeyword(true); } ]
+    table=Table() { analyze.addTables(table); }
+    ( "," table=Table() { analyze.addTables(table); } )*
+    [
+        LOOKAHEAD(2)
+        (histogramAction=<K_UPDATE> | histogramAction=<K_DROP>)
+        {
+            analyze.setHistogramAction(Analyze.HistogramAction.valueOf(
+                    histogramAction.image.toUpperCase(Locale.ROOT)));
+        }
+        <K_HISTOGRAM> <K_ON>
+        column=Column() { analyze.addHistogramColumns(column); }
+        ( "," column=Column() { analyze.addHistogramColumns(column); } )*
+        [
+            LOOKAHEAD(3)
+            <K_WITH> bucketCount=<S_LONG> <K_BUCKETS>
+            { analyze.setHistogramBucketCount(Integer.valueOf(bucketCount.image)); }
+        ]
+    ]
 
     {
-    	analyze.setTable(table);
-    	return analyze;
+        return analyze;
     }
 }
 

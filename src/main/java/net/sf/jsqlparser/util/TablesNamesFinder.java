@@ -1491,7 +1491,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Analyze analyze, S context) {
-        visit(analyze.getTable(), context);
+        analyze.getTables().forEach(table -> visit(table, context));
         return null;
     }
 
