@@ -20,7 +20,11 @@ import java.util.Optional;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
-public class Index implements Serializable {
+public class Index implements TableElement, Serializable {
+
+    public enum Kind {
+        PRIMARY_KEY, UNIQUE, INDEX, FULLTEXT, SPATIAL, FOREIGN_KEY, CHECK, EXCLUDE, OTHER
+    }
 
     private final List<String> name = new ArrayList<>();
     private String type;
@@ -29,10 +33,11 @@ public class Index implements Serializable {
     private List<String> idxSpec;
     private String commentText;
     private String indexKeyword;
+    private Kind kind = Kind.OTHER;
 
     public List<String> getColumnsNames() {
         return columns.stream()
-                .map(ColumnParams::getColumnName)
+                .map(ColumnParams::toString)
                 .collect(toList());
     }
 
@@ -105,6 +110,34 @@ public class Index implements Serializable {
 
     public void setType(String string) {
         type = string;
+        if (kind == Kind.OTHER && string != null) {
+            String normalized = string.toUpperCase(java.util.Locale.ROOT);
+            if (normalized.startsWith("PRIMARY")) {
+                kind = Kind.PRIMARY_KEY;
+            } else if (normalized.startsWith("UNIQUE")) {
+                kind = Kind.UNIQUE;
+            } else if (normalized.startsWith("FULLTEXT")) {
+                kind = Kind.FULLTEXT;
+            } else if (normalized.startsWith("SPATIAL")) {
+                kind = Kind.SPATIAL;
+            } else if (normalized.startsWith("FOREIGN")) {
+                kind = Kind.FOREIGN_KEY;
+            } else if (normalized.startsWith("CHECK")) {
+                kind = Kind.CHECK;
+            } else if (normalized.startsWith("EXCLUDE")) {
+                kind = Kind.EXCLUDE;
+            } else if (normalized.contains("INDEX") || normalized.contains("KEY")) {
+                kind = Kind.INDEX;
+            }
+        }
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    public void setKind(Kind kind) {
+        this.kind = kind;
     }
 
     public Index withColumnsNames(List<String> list) {
@@ -156,7 +189,11 @@ public class Index implements Serializable {
     @Override
     public String toString() {
         String idxSpecText = PlainSelect.getStringList(idxSpec, false, false);
-        String keyword = (indexKeyword != null) ? " " + indexKeyword : "";
+        String keyword = indexKeyword != null
+                && (type == null || !type.toUpperCase(java.util.Locale.ROOT)
+                        .endsWith(indexKeyword.toUpperCase(java.util.Locale.ROOT)))
+                                ? " " + indexKeyword
+                                : "";
         String head =
                 (type != null ? type : "") +
                         keyword +
@@ -173,6 +210,11 @@ public class Index implements Serializable {
 
     public Index withType(String type) {
         this.setType(type);
+        return this;
+    }
+
+    public Index withKind(Kind kind) {
+        setKind(kind);
         return this;
     }
 

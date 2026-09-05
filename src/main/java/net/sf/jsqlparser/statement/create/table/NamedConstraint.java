@@ -47,7 +47,13 @@ public class NamedConstraint extends Index {
         String head = useConstraintKeyword || getName() != null
                 ? "CONSTRAINT" + (getName() != null ? " " + getName() : "") + " "
                 : "";
+        String keyword = getIndexKeyword() != null
+                && !getType().toUpperCase(java.util.Locale.ROOT)
+                        .endsWith(getIndexKeyword().toUpperCase(java.util.Locale.ROOT))
+                                ? " " + getIndexKeyword()
+                                : "";
         String tail = getType()
+                + keyword
                 + (indexName != null ? " " + indexName : "")
                 + (getUsing() != null ? " USING " + getUsing() : "")
                 + " " + PlainSelect.getStringList(getColumnsNames(), true, true) +

@@ -28,21 +28,58 @@ public class ForeignKeyIndex extends NamedConstraint {
     private Table table;
     private List<String> referencedColumnNames;
     private Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
+    private ForeignKeyReference reference;
+
+    public ForeignKeyReference getReference() {
+        if (reference == null) {
+            reference = new ForeignKeyReference();
+            reference.setTable(table);
+            reference.setReferencedColumnNames(referencedColumnNames);
+            for (ReferentialAction action : referentialActions) {
+                reference.setReferentialAction(action.getType(), action.getAction());
+            }
+        }
+        return reference;
+    }
+
+    public void setReference(ForeignKeyReference reference) {
+        this.reference = reference;
+        if (reference != null) {
+            table = reference.getTable();
+            referencedColumnNames = reference.getReferencedColumnNames();
+            referentialActions.clear();
+            referentialActions.addAll(reference.getReferentialActions());
+        }
+    }
+
+    public ForeignKeyReference.MatchType getMatchType() {
+        return reference != null ? reference.getMatchType() : null;
+    }
+
+    public void setMatchType(ForeignKeyReference.MatchType matchType) {
+        getReference().setMatchType(matchType);
+    }
 
     public Table getTable() {
-        return table;
+        return reference != null ? reference.getTable() : table;
     }
 
     public void setTable(Table table) {
         this.table = table;
+        if (reference != null) {
+            reference.setTable(table);
+        }
     }
 
     public List<String> getReferencedColumnNames() {
-        return referencedColumnNames;
+        return reference != null ? reference.getReferencedColumnNames() : referencedColumnNames;
     }
 
     public void setReferencedColumnNames(List<String> referencedColumnNames) {
         this.referencedColumnNames = referencedColumnNames;
+        if (reference != null) {
+            reference.setReferencedColumnNames(referencedColumnNames);
+        }
     }
 
     /**
@@ -70,6 +107,9 @@ public class ForeignKeyIndex extends NamedConstraint {
      * @return
      */
     public ReferentialAction getReferentialAction(Type type) {
+        if (reference != null) {
+            return reference.getReferentialAction(type);
+        }
         return referentialActions.stream().filter(ra -> type.equals(ra.getType())).findFirst()
                 .orElse(null);
     }
@@ -77,6 +117,10 @@ public class ForeignKeyIndex extends NamedConstraint {
     private void setReferentialAction(Type type, Action action, boolean set) {
         ReferentialAction found = getReferentialAction(type);
         if (set) {
+            if (reference != null) {
+                reference.setReferentialAction(type, action);
+                return;
+            }
             if (found == null) {
                 referentialActions.add(new ReferentialAction(type, action));
             } else {
@@ -84,6 +128,9 @@ public class ForeignKeyIndex extends NamedConstraint {
             }
         } else if (found != null) {
             referentialActions.remove(found);
+            if (reference != null) {
+                reference.removeReferentialAction(type);
+            }
         }
     }
 
@@ -119,9 +166,14 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder(super.toString()).append(" REFERENCES ").append(table)
-                .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
-        referentialActions.forEach(b::append);
+        StringBuilder b = new StringBuilder(super.toString()).append(" ");
+        if (reference != null) {
+            b.append(reference);
+        } else {
+            b.append("REFERENCES ").append(table)
+                    .append(PlainSelect.getStringList(getReferencedColumnNames(), true, true));
+            referentialActions.forEach(b::append);
+        }
         return b.toString();
     }
 
@@ -132,6 +184,16 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     public ForeignKeyIndex withReferencedColumnNames(List<String> referencedColumnNames) {
         this.setReferencedColumnNames(referencedColumnNames);
+        return this;
+    }
+
+    public ForeignKeyIndex withReference(ForeignKeyReference reference) {
+        setReference(reference);
+        return this;
+    }
+
+    public ForeignKeyIndex withMatchType(ForeignKeyReference.MatchType matchType) {
+        setMatchType(matchType);
         return this;
     }
 

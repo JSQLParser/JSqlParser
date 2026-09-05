@@ -23,6 +23,10 @@ public class CheckConstraint extends NamedConstraint {
 
     private Boolean enforced;
 
+    public CheckConstraint() {
+        setKind(Kind.CHECK);
+    }
+
     public Table getTable() {
         return table;
     }

@@ -22,11 +22,12 @@ import java.util.Optional;
 /**
  * Globally used definition class for columns.
  */
-public class ColumnDefinition implements ImportColumn, Serializable {
+public class ColumnDefinition implements ImportColumn, TableElement, Serializable {
 
     private String columnName;
     private ColDataType colDataType;
     private List<String> columnSpecs;
+    private List<ColumnOption> columnOptions;
 
     public ColumnDefinition() {}
 
@@ -46,6 +47,47 @@ public class ColumnDefinition implements ImportColumn, Serializable {
 
     public void setColumnSpecs(List<String> list) {
         columnSpecs = list;
+        columnOptions = null;
+    }
+
+    /**
+     * Returns column options in source order, including structured references and MySQL
+     * {@code SERIAL DEFAULT VALUE}.
+     */
+    public List<ColumnOption> getColumnOptions() {
+        return columnOptions;
+    }
+
+    public void setColumnOptions(List<ColumnOption> columnOptions) {
+        this.columnOptions = columnOptions;
+    }
+
+    public boolean isSerialDefaultValue() {
+        return columnOptions != null && columnOptions.stream()
+                .anyMatch(option -> option.getKind() == ColumnOption.Kind.SERIAL_DEFAULT_VALUE);
+    }
+
+    public ForeignKeyReference getForeignKeyReference() {
+        if (columnOptions == null) {
+            return null;
+        }
+        return columnOptions.stream()
+                .filter(option -> option.getKind() == ColumnOption.Kind.REFERENCE)
+                .map(ColumnOption::getForeignKeyReference)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public ColumnDefinition withColumnOptions(List<ColumnOption> columnOptions) {
+        setColumnOptions(columnOptions);
+        return this;
+    }
+
+    public ColumnDefinition addColumnOptions(ColumnOption... columnOptions) {
+        List<ColumnOption> collection =
+                Optional.ofNullable(getColumnOptions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, columnOptions);
+        return withColumnOptions(collection);
     }
 
     public ColDataType getColDataType() {
@@ -71,9 +113,11 @@ public class ColumnDefinition implements ImportColumn, Serializable {
 
     public String toStringDataTypeAndSpec() {
         return (colDataType == null ? "" : colDataType)
-                + (columnSpecs != null && !columnSpecs.isEmpty()
-                        ? " " + PlainSelect.getStringList(columnSpecs, false, false)
-                        : "");
+                + (columnOptions != null && !columnOptions.isEmpty()
+                        ? " " + PlainSelect.getStringList(columnOptions, false, false)
+                        : columnSpecs != null && !columnSpecs.isEmpty()
+                                ? " " + PlainSelect.getStringList(columnSpecs, false, false)
+                                : "");
     }
 
     public ColumnDefinition withColumnName(String columnName) {
