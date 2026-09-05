@@ -13,6 +13,9 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.statement.OutputClause;
+import net.sf.jsqlparser.statement.ParenthesedStatement;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
@@ -21,6 +24,14 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
     private final PivotVisitor<T> pivotVisitor;
     private final SelectItemVisitor<T> selectItemVisitor;
     private final FromItemVisitor<T> fromItemVisitor;
+
+    /**
+     * Optional, and only needed for data-modifying CTEs - see {@link #visit(WithItem, Object)}. A
+     * plain SelectVisitor cannot accept an INSERT/UPDATE/DELETE body; without this the CTE is
+     * skipped rather than traversed. {@link net.sf.jsqlparser.statement.StatementVisitorAdapter}
+     * sets it automatically.
+     */
+    private StatementVisitor<T> statementVisitor;
 
     public SelectVisitorAdapter() {
         this.expressionVisitor = new ExpressionVisitorAdapter<>(this);
@@ -89,6 +100,15 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     public FromItemVisitor<T> getFromItemVisitor() {
         return fromItemVisitor;
+    }
+
+    public StatementVisitor<T> getStatementVisitor() {
+        return statementVisitor;
+    }
+
+    public SelectVisitorAdapter<T> setStatementVisitor(StatementVisitor<T> statementVisitor) {
+        this.statementVisitor = statementVisitor;
+        return this;
     }
 
     @Override
@@ -257,9 +277,33 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         return null;
     }
 
+    /**
+     * A CTE body is a {@link ParenthesedStatement}, which is not necessarily a SELECT: PostgreSQL
+     * and others allow {@code WITH c AS (DELETE FROM t RETURNING *) SELECT * FROM c}.
+     *
+     * <p>
+     * The previous implementation called {@code withItem.getSelect()}, an unchecked cast to
+     * {@link ParenthesedSelect}, and threw {@link ClassCastException} on every data-modifying CTE
+     * reached through the select path - which {@code ExpressionVisitorAdapter#visit(Select)} does
+     * for any sub-select. {@code WithItem#accept(StatementVisitor)} has always dispatched correctly
+     * through {@code getParenthesedStatement()}; only this path did not.
+     */
     @Override
     public <S> T visit(WithItem<?> withItem, S context) {
-        return withItem.getSelect().accept(this, context);
+        ParenthesedStatement body = withItem.getParenthesedStatement();
+
+        // ParenthesedSelect is a Select and stays on the select path
+        if (body instanceof Select) {
+            return ((Select) body).accept(this, context);
+        }
+
+        // ParenthesedInsert / ParenthesedUpdate / ParenthesedDelete need a StatementVisitor
+        if (statementVisitor != null && body instanceof Statement) {
+            return ((Statement) body).accept(statementVisitor, context);
+        }
+
+        // no statement visitor available: skip the body rather than fail
+        return null;
     }
 
     @Override

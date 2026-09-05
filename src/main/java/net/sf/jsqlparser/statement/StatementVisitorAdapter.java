@@ -72,14 +72,46 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     private final SelectVisitor<T> selectVisitor;
     private final MergeOperationVisitor<T> mergeOperationVisitor;
 
+    /**
+     * Builds a fully connected visitor graph.
+     *
+     * <p>
+     * The sub-visitors are mutually recursive, so none of them can be handed its collaborators at
+     * construction time; the cycle has to be closed afterwards through the setters. The previous
+     * version skipped that step and the graph was not actually connected:
+     *
+     * <ul>
+     * <li>{@code new ExpressionVisitorAdapter<>()} leaves its {@code selectVisitor} null, and
+     * {@code ExpressionVisitorAdapter#visit(Select)} is a no-op when it is null - so every
+     * sub-select in an expression ({@code WHERE id IN (SELECT ..)}, scalar subqueries, EXISTS) was
+     * silently dropped;</li>
+     * <li>{@code new FromItemVisitorAdapter<>()} builds its own throwaway SelectVisitorAdapter and
+     * ExpressionVisitorAdapter, so subqueries in FROM were traversed by a detached chain that no
+     * subclass of this adapter could observe.</li>
+     * </ul>
+     *
+     * <p>
+     * Both meant a subclass overriding a visit method never saw the nested nodes. The three setter
+     * calls below fix that; {@code setStatementVisitor} additionally lets the select visitor hand a
+     * data-modifying CTE body back here.
+     */
     public StatementVisitorAdapter() {
-        this.expressionVisitor = new ExpressionVisitorAdapter<>();
-        this.pivotVisitor = new PivotVisitorAdapter<>(this.expressionVisitor);
-        this.selectItemVisitor = new SelectItemVisitorAdapter<>(this.expressionVisitor);
-        this.fromItemVisitor = new FromItemVisitorAdapter<>();
+        ExpressionVisitorAdapter<T> expressions = new ExpressionVisitorAdapter<>();
+        FromItemVisitorAdapter<T> fromItems = new FromItemVisitorAdapter<>();
 
-        this.selectVisitor = new SelectVisitorAdapter<>(this.expressionVisitor, this.pivotVisitor,
-                this.selectItemVisitor, this.fromItemVisitor);
+        this.expressionVisitor = expressions;
+        this.pivotVisitor = new PivotVisitorAdapter<>(expressions);
+        this.selectItemVisitor = new SelectItemVisitorAdapter<>(expressions);
+        this.fromItemVisitor = fromItems;
+
+        SelectVisitorAdapter<T> selects = new SelectVisitorAdapter<>(expressions, this.pivotVisitor,
+                this.selectItemVisitor, fromItems);
+
+        expressions.setSelectVisitor(selects);
+        fromItems.setSelectVisitor((SelectVisitor<T>) selects).setExpressionVisitor(expressions);
+        selects.setStatementVisitor(this);
+
+        this.selectVisitor = selects;
         this.mergeOperationVisitor = new MergeOperationVisitorAdapter<>();
     }
 
@@ -93,15 +125,34 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         this.fromItemVisitor = fromItemVisitor;
         this.selectVisitor = selectVisitor;
         this.mergeOperationVisitor = mergeOperationVisitor;
+        adoptAsStatementVisitor(selectVisitor);
     }
 
     public StatementVisitorAdapter(SelectVisitorAdapter<T> selectVisitor) {
         this.selectVisitor = selectVisitor;
+        adoptAsStatementVisitor(selectVisitor);
         this.expressionVisitor = selectVisitor.getExpressionVisitor();
         this.pivotVisitor = selectVisitor.getPivotVisitor();
         this.selectItemVisitor = selectVisitor.getSelectItemVisitor();
         this.fromItemVisitor = selectVisitor.getFromItemVisitor();
         this.mergeOperationVisitor = new MergeOperationVisitorAdapter<>();
+    }
+
+    /**
+     * Lets the select visitor hand a data-modifying CTE body back to this statement visitor.
+     * Without it, {@code SelectVisitorAdapter#visit(WithItem)} has no way to traverse
+     * {@code WITH c AS (DELETE FROM t RETURNING *) ..} and silently skips it.
+     *
+     * <p>
+     * An explicitly configured statement visitor is never overwritten.
+     */
+    private void adoptAsStatementVisitor(SelectVisitor<T> visitor) {
+        if (visitor instanceof SelectVisitorAdapter) {
+            SelectVisitorAdapter<T> adapter = (SelectVisitorAdapter<T>) visitor;
+            if (adapter.getStatementVisitor() == null) {
+                adapter.setStatementVisitor(this);
+            }
+        }
     }
 
     @Override
@@ -136,6 +187,10 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         expressionVisitor.visitOrderBy(delete.getOrderByElements(), context);
 
         expressionVisitor.visitLimit(delete.getLimit(), context);
+
+        // was missing, unlike visit(Insert) and visit(Update):
+        // DELETE FROM t RETURNING f(x) left f(x) untraversed
+        visitReturningClause(delete.getReturningClause(), context);
 
         return null;
     }
