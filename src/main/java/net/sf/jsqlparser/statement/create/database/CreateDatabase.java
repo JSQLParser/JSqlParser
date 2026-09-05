@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,6 +28,7 @@ public class CreateDatabase implements Statement {
     private String databaseName;
     private boolean hasIfNotExists = false;
     private List<String> databaseOptions = null;
+    private List<DatabaseOption> options;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -67,7 +69,25 @@ public class CreateDatabase implements Statement {
 
     public CreateDatabase setDatabaseOptions(List<String> databaseOptions) {
         this.databaseOptions = databaseOptions;
+        this.options = null;
         return this;
+    }
+
+    public List<DatabaseOption> getOptions() {
+        return options;
+    }
+
+    public CreateDatabase setOptions(List<DatabaseOption> options) {
+        this.options = options;
+        this.databaseOptions = options == null ? null
+                : options.stream().flatMap(option -> option.getTokens().stream())
+                        .collect(Collectors.toList());
+        return this;
+    }
+
+    public Optional<DatabaseOption> getOption(DatabaseOption.Kind kind) {
+        return Optional.ofNullable(options).orElseGet(Collections::emptyList).stream()
+                .filter(option -> option.getKind() == kind).findFirst();
     }
 
     public CreateDatabase withDatabaseName(String databaseName) {
@@ -80,6 +100,17 @@ public class CreateDatabase implements Statement {
 
     public CreateDatabase withDatabaseOptions(List<String> databaseOptions) {
         return this.setDatabaseOptions(databaseOptions);
+    }
+
+    public CreateDatabase withOptions(List<DatabaseOption> options) {
+        return setOptions(options);
+    }
+
+    public CreateDatabase addOptions(DatabaseOption... options) {
+        List<DatabaseOption> collection =
+                Optional.ofNullable(getOptions()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, options);
+        return withOptions(collection);
     }
 
     public CreateDatabase addDatabaseOptions(String... databaseOptions) {
@@ -105,7 +136,9 @@ public class CreateDatabase implements Statement {
         if (databaseName != null) {
             sql += " " + databaseName;
         }
-        if (databaseOptions != null && !databaseOptions.isEmpty()) {
+        if (options != null && !options.isEmpty()) {
+            sql += " " + options.stream().map(Object::toString).collect(Collectors.joining(" "));
+        } else if (databaseOptions != null && !databaseOptions.isEmpty()) {
             sql += " " + String.join(" ", databaseOptions);
         }
         return sql;

@@ -59,6 +59,12 @@ public class CreateDatabaseTest {
                 Arrays.asList("DEFAULT", "CHARACTER", "SET", "utf8mb4", "COLLATE",
                         "utf8mb4_unicode_ci"),
                 createDatabase.getDatabaseOptions());
+        DatabaseOption characterSet =
+                createDatabase.getOption(DatabaseOption.Kind.CHARACTER_SET).orElseThrow();
+        assertEquals("utf8mb4", characterSet.getValue());
+        assertTrue(characterSet.isUseDefault());
+        assertEquals("utf8mb4_unicode_ci",
+                createDatabase.getOption(DatabaseOption.Kind.COLLATE).orElseThrow().getValue());
     }
 
     @Test
