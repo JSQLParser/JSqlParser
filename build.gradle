@@ -644,6 +644,21 @@ mavenPublishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+
+    // javac's parser is recursive descent: one stack frame per level of nesting. The generated
+    // CCJSqlParser is nested deeply enough to exhaust the default thread stack, which surfaces as
+    // "An exception has occurred in the compiler ... java.lang.StackOverflowError" - a compiler
+    // crash, not a compile error, and not a bug worth reporting to Oracle.
+    //
+    // -Xss only takes effect at JVM launch, so the compiler has to run in its own process:
+    // setting forkOptions without options.fork = true silently does nothing.
+    options.fork = true
+    options.forkOptions.jvmArgs = (options.forkOptions.jvmArgs ?: []) + ['-Xss16m']
+}
+
+// javadoc parses the same sources in a forked process and hits the same wall
+tasks.withType(Javadoc).configureEach {
+    options.setJFlags((options.getJFlags() ?: []) + ['-Xss16m'])
 }
 
 remotes {
