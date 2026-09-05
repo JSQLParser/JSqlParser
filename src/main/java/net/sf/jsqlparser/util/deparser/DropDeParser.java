@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -32,7 +33,8 @@ public class DropDeParser extends AbstractDeParser<Drop> {
             builder.append(" IF EXISTS");
         }
 
-        builder.append(" ").append(drop.getName());
+        builder.append(" ").append(drop.getNames().stream().map(Object::toString)
+                .collect(Collectors.joining(", ")));
 
         if (drop.getType().equals("FUNCTION")) {
             builder.append(Drop.formatFuncParams(drop.getParamsByType("FUNCTION")));

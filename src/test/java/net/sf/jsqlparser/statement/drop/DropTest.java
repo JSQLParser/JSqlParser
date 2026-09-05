@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.statement.drop;
 
 import java.io.StringReader;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -168,5 +170,48 @@ public class DropTest {
         Statements statements = CCJSqlParserUtil.parseStatements(
                 "DROP TABLE t1; LOCK TABLE t2 IN SHARE MODE;");
         assertEquals(2, statements.size());
+    }
+
+    @Test
+    public void testMySqlDropObjectTypes() throws JSQLParserException {
+        Drop database = (Drop) assertSqlCanBeParsedAndDeparsed(
+                "DROP DATABASE IF EXISTS database_1");
+        assertEquals(Drop.ObjectType.DATABASE, database.getObjectType());
+
+        Drop procedure = (Drop) assertSqlCanBeParsedAndDeparsed(
+                "DROP PROCEDURE IF EXISTS procedure_1");
+        assertEquals(Drop.ObjectType.PROCEDURE, procedure.getObjectType());
+
+        Drop trigger = (Drop) assertSqlCanBeParsedAndDeparsed(
+                "DROP TRIGGER IF EXISTS schema_1.trigger_1");
+        assertEquals(Drop.ObjectType.TRIGGER, trigger.getObjectType());
+        assertEquals("schema_1.trigger_1", trigger.getName().getFullyQualifiedName());
+    }
+
+    @Test
+    public void testMySqlDropMultipleTables() throws JSQLParserException {
+        String sql = "DROP TABLE IF EXISTS table_1, table_2, table_3 RESTRICT";
+        Drop drop = (Drop) assertSqlCanBeParsedAndDeparsed(sql);
+
+        assertEquals(List.of("table_1", "table_2", "table_3"), drop.getNames().stream()
+                .map(Table::getFullyQualifiedName).collect(Collectors.toList()));
+        assertEquals("table_1", drop.getName().getFullyQualifiedName());
+        assertEquals(List.of("RESTRICT"), drop.getParameters());
+
+        assertDeparse(new Drop().withObjectType(Drop.ObjectType.TABLE).withIfExists(true)
+                .withNames(List.of(new Table("table_1"), new Table("table_2"),
+                        new Table("table_3")))
+                .addParameters("RESTRICT"), sql);
+    }
+
+    @Test
+    public void testMySqlDropMultipleViews() throws JSQLParserException {
+        Drop drop = (Drop) assertSqlCanBeParsedAndDeparsed(
+                "DROP VIEW IF EXISTS view_1, view_2 CASCADE");
+
+        assertEquals(Drop.ObjectType.VIEW, drop.getObjectType());
+        assertEquals(List.of("view_1", "view_2"), drop.getNames().stream()
+                .map(Table::getFullyQualifiedName).collect(Collectors.toList()));
+        assertEquals(List.of("CASCADE"), drop.getParameters());
     }
 }

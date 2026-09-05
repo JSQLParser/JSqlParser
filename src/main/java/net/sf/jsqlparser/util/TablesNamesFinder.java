@@ -1502,7 +1502,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Drop drop, S context) {
-        visit(drop.getName(), context);
+        drop.getNames().forEach(name -> visit(name, context));
         return null;
     }
 

@@ -12762,9 +12762,15 @@ Drop Drop():
         |
         tk=<K_VIEW>
         |
+        tk=<K_DATABASE>
+        |
+        tk=<K_PROCEDURE>
+        |
         tk=<K_SCHEMA>
         |
         tk=<K_SEQUENCE>
+        |
+        tk=<K_TRIGGER>
         |
         tk=<K_FUNCTION>
     )
@@ -12773,6 +12779,7 @@ Drop Drop():
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
     name = Table() { drop.setName(name); }
+    ( "," name = Table() { drop.addNames(name); } )*
     [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
     (
         (
