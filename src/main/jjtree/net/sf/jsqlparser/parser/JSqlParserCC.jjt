@@ -48,6 +48,7 @@ import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.database.*;
+import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.policy.*;
@@ -1575,6 +1576,7 @@ String NonReservedWord() :
       | tk=<K_COMMIT:"COMMIT">
       | tk=<K_COMMENT:"COMMENT">
       | tk=<K_COMMENTS:"COMMENTS">
+      | tk=<K_COMPLETION:"COMPLETION">
       | tk=<K_CONFLICT:"CONFLICT">
       | tk=<K_CONSTRAINTS:"CONSTRAINTS">
       | tk=<K_CONVERT:"CONVERT">
@@ -1619,11 +1621,14 @@ String NonReservedWord() :
       | tk=<K_ENCODING: "ENCODING">
       | tk=<K_ENCRYPTION: "ENCRYPTION">
       | tk=<K_END: "END">
+      | tk=<K_ENDS: "ENDS">
       | tk=<K_ESCAPED: "ESCAPED">
       | tk=<K_ENFORCED: "ENFORCED">
       | tk=<K_ENGINE: "ENGINE">
       | tk=<K_ERROR: "ERROR">
       | tk=<K_ESCAPE: "ESCAPE">
+      | tk=<K_EVENT: "EVENT">
+      | tk=<K_EVERY: "EVERY">
       | tk=<K_EXA: "EXA">
       | tk=<K_EXCHANGE: "EXCHANGE">
       | tk=<K_EXCLUDE: "EXCLUDE">
@@ -1812,6 +1817,7 @@ String NonReservedWord() :
       | tk=<K_SAFE_CAST: "SAFE_CAST">
       | tk=<K_SAFE_CONVERT: "SAFE_CONVERT">
       | tk=<K_SAVEPOINT: "SAVEPOINT">
+      | tk=<K_SCHEDULE: "SCHEDULE">
       | tk=<K_SCHEMA: "SCHEMA">
       | tk=<K_SEARCH:"SEARCH">
       | tk=<K_SECURE: "SECURE">
@@ -1828,8 +1834,10 @@ String NonReservedWord() :
       | tk=<K_SIMILAR:"SIMILAR">
       | tk=<K_SIZE:"SIZE">
       | tk=<K_SKIP: "SKIP">
+      | tk=<K_SLAVE: "SLAVE">
       | tk=<K_SPATIAL:"SPATIAL">
       | tk=<K_STALENESS: "STALENESS">
+      | tk=<K_STARTS: "STARTS">
       | tk=<K_STARTING:"STARTING">
       | tk=<K_STEP: "STEP">
       | tk=<K_STORED: "STORED">
@@ -11624,6 +11632,131 @@ CreateUser CreateUser():
     { return createUser; }
 }
 
+EventSchedule MySqlEventSchedule():
+{
+    EventSchedule schedule = new EventSchedule();
+    Expression expression = null;
+    Token unitToken = null;
+    String unit = null;
+}
+{
+    <K_ON> <K_SCHEDULE>
+    (
+        <K_AT> expression=Expression() {
+            schedule.setType(EventSchedule.Type.AT);
+            schedule.setExecuteAt(expression);
+        }
+        |
+        <K_EVERY> expression=MySqlEventIntervalValue() {
+            schedule.setType(EventSchedule.Type.EVERY);
+            schedule.setInterval(expression);
+        }
+        ( LOOKAHEAD({ getToken(1).kind == K_DATE_LITERAL })
+          unitToken=<K_DATE_LITERAL> { schedule.setIntervalUnit(unitToken.image); }
+          | unit=RelObjectName() { schedule.setIntervalUnit(unit); } )
+        [ <K_STARTS> expression=Expression() { schedule.setStarts(expression); } ]
+        [ <K_ENDS> expression=Expression() { schedule.setEnds(expression); } ]
+    )
+    { return schedule; }
+}
+
+Expression MySqlEventIntervalValue():
+{
+    Token value = null;
+    Expression expression = null;
+}
+{
+    (
+        value=<S_LONG> { expression = new LongValue(value.image); }
+        |
+        value=<S_DOUBLE> { expression = new DoubleValue(value.image); }
+        |
+        value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+    )
+    { return expression; }
+}
+
+Boolean MySqlEventCompletion():
+{
+    boolean preserve = true;
+}
+{
+    <K_ON> <K_COMPLETION> [ <K_NOT> { preserve = false; } ]
+    LOOKAHEAD({ "PRESERVE".equalsIgnoreCase(getToken(1).image) })
+    <S_IDENTIFIER>
+    { return preserve; }
+}
+
+EventStatus MySqlEventStatus():
+{
+    EventStatus status = null;
+}
+{
+    (
+        <K_ENABLE> { status = EventStatus.ENABLE; }
+        |
+        <K_DISABLE> { status = EventStatus.DISABLE; }
+        [ LOOKAHEAD(2) <K_ON> <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; } ]
+    )
+    { return status; }
+}
+
+CreateEvent CreateEvent():
+{
+    CreateEvent createEvent = new CreateEvent();
+    Table event = null;
+    EventSchedule schedule = null;
+    Boolean preserve = null;
+    EventStatus status = null;
+    Token comment = null;
+    Statement body = null;
+}
+{
+    <K_EVENT>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createEvent.setIfNotExists(true); } ]
+    event=Table() { createEvent.setEvent(event); }
+    schedule=MySqlEventSchedule() { createEvent.setSchedule(schedule); }
+    [ LOOKAHEAD(2) preserve=MySqlEventCompletion() {
+        createEvent.setOnCompletionPreserve(preserve);
+    } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
+      status=MySqlEventStatus() { createEvent.setStatus(status); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
+        createEvent.setComment(new StringValue(comment.image));
+    } ]
+    <K_DO> body=SingleStatement() { createEvent.setBody(body); }
+    { return createEvent; }
+}
+
+AlterEvent AlterEvent():
+{
+    AlterEvent alterEvent = new AlterEvent();
+    Table event = null;
+    Table renameTo = null;
+    EventSchedule schedule = null;
+    Boolean preserve = null;
+    EventStatus status = null;
+    Token comment = null;
+    Statement body = null;
+}
+{
+    <K_EVENT> event=Table() { alterEvent.setEvent(event); }
+    [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_SCHEDULE })
+      schedule=MySqlEventSchedule() { alterEvent.setSchedule(schedule); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_COMPLETION })
+      preserve=MySqlEventCompletion() { alterEvent.setOnCompletionPreserve(preserve); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_RENAME })
+      <K_RENAME> <K_TO> renameTo=Table() { alterEvent.setRenameTo(renameTo); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
+      status=MySqlEventStatus() { alterEvent.setStatus(status); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
+        alterEvent.setComment(new StringValue(comment.image));
+    } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_DO })
+      <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
+    { return alterEvent; }
+}
+
 CreateSchema CreateSchema():
 {
     Token tk = null;
@@ -14287,6 +14420,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                statement = AlterEvent()
+                |
                 statement = AlterTable()
                 |
                 statement = AlterSession()
@@ -14813,6 +14948,8 @@ Statement Create():
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
         statement = CreateUser()
+        |
+        statement = CreateEvent()
         |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |

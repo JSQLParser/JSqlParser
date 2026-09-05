@@ -98,6 +98,8 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -1567,6 +1569,19 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(CreateEvent createEvent, S context) {
+        if (createEvent.getBody() != null) {
+            createEvent.getBody().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CreateEvent createEvent) {
+        StatementVisitor.super.visit(createEvent);
+    }
+
+    @Override
     public <S> Void visit(CreateTable create, S context) {
         visit(create.getTable(), null);
         if (create.getSelect() != null) {
@@ -1602,6 +1617,19 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(Alter alter) {
         alter.getTable().accept(this, null);
+    }
+
+    @Override
+    public <S> Void visit(AlterEvent alterEvent, S context) {
+        if (alterEvent.getBody() != null) {
+            alterEvent.getBody().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(AlterEvent alterEvent) {
+        StatementVisitor.super.visit(alterEvent);
     }
 
     @Override

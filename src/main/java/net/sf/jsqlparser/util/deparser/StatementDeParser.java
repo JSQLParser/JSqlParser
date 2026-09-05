@@ -42,6 +42,8 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
@@ -276,6 +278,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(AlterEvent alterEvent, S context) {
+        builder.append(alterEvent);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(Statements statements, S context) {
         statements.accept(this, context);
         return builder;
@@ -441,6 +449,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(CreateUser createUser, S context) {
         builder.append(createUser);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateEvent createEvent, S context) {
+        builder.append(createEvent);
         return builder;
     }
 
