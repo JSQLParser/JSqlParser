@@ -558,7 +558,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CreatePolicy createPolicy, S context) {
-        builder.append(createPolicy.toString());
+        new CreatePolicyDeParser(expressionDeParser, builder).deParse(createPolicy);
         return builder;
     }
 }

@@ -329,6 +329,9 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreatePolicy createPolicy, S context) {
+        fromItemVisitor.visitFromItem(createPolicy.getTable(), context);
+        expressionVisitor.visitExpression(createPolicy.getUsingExpression(), context);
+        expressionVisitor.visitExpression(createPolicy.getWithCheckExpression(), context);
 
         return null;
     }

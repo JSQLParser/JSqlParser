@@ -650,7 +650,9 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
-        // TODO: not yet implemented
+        validateOptionalFromItem(createPolicy.getTable());
+        validateOptionalExpression(createPolicy.getUsingExpression());
+        validateOptionalExpression(createPolicy.getWithCheckExpression());
         return null;
     }
 

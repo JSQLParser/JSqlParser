@@ -15131,6 +15131,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     CreatePolicy createPolicy = new CreatePolicy();
     String policyName;
     Table table;
+    String policyMode = null;
     Token commandToken = null;
     String roleName;
     Expression usingExpr = null;
@@ -15140,6 +15141,12 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     <K_POLICY> policyName=RelObjectName() { createPolicy.setPolicyName(policyName); }
     <K_ON> table=Table() { createPolicy.setTable(table); }
 
+    [ <K_AS>
+      LOOKAHEAD({ isKeywordAhead("PERMISSIVE") || isKeywordAhead("RESTRICTIVE") })
+      policyMode=RelObjectName()
+      { createPolicy.setPolicyMode(PolicyMode.from(policyMode)); }
+    ]
+
     [ <K_FOR>
       ( commandToken=<K_ALL>
       | commandToken=<K_SELECT>
@@ -15147,7 +15154,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
       | commandToken=<K_UPDATE>
       | commandToken=<K_DELETE>
       )
-      { createPolicy.setCommand(commandToken.image); }
+      { createPolicy.setPolicyCommand(PolicyCommand.from(commandToken.image)); }
     ]
 
     [ <K_TO>
