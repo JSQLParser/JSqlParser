@@ -678,6 +678,118 @@ public class InsertTest {
     }
 
     @Test
+    public void testInsertOnConflictAfterJoinIssue2358() throws JSQLParserException {
+        String sqlStr = "INSERT INTO conf.supply_info (id, deal_id)\n"
+                + "SELECT uuid_generate_v4(), rep.deal_id\n"
+                + "FROM conf.reports rep\n"
+                + "JOIN conf.orders o ON rep.id = o.report_id\n"
+                + "ON CONFLICT DO NOTHING";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        PlainSelect plainSelect = insert.getSelect().getPlainSelect();
+        assertEquals(1, plainSelect.getJoins().size());
+        assertEquals(1, plainSelect.getJoins().get(0).getOnExpressions().size());
+        assertEquals(ConflictActionType.DO_NOTHING,
+                insert.getConflictAction().getConflictActionType());
+        assertNull(insert.getConflictTarget());
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO conf.supply_info (id, deal_id)\n"
+                        + "SELECT uuid_generate_v4(), rep.deal_id\n"
+                        + "FROM conf.reports rep\n"
+                        + "JOIN conf.orders o ON rep.id = o.report_id\n"
+                        + "ON CONFLICT (id) DO NOTHING",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO distributors (did, dname)\n"
+                        + "SELECT did, dname FROM staging\n"
+                        + "JOIN suppliers s ON staging.did = s.did\n"
+                        + "ON CONFLICT ON CONSTRAINT distributors_pkey DO NOTHING",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO distributors (did, dname)\n"
+                        + "SELECT did, dname FROM staging\n"
+                        + "JOIN suppliers s ON staging.did = s.did\n"
+                        + "ON CONFLICT (did) DO UPDATE SET dname = EXCLUDED.dname",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO distributors (did, dname)\n"
+                        + "SELECT did, dname FROM staging\n"
+                        + "JOIN suppliers s ON staging.did = s.did\n"
+                        + "ON CONFLICT (did) WHERE is_active DO NOTHING",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO conf.supply_info (id, deal_id)\n"
+                        + "SELECT uuid_generate_v4(), rep.deal_id\n"
+                        + "FROM conf.reports rep\n"
+                        + "JOIN conf.orders o ON rep.id = o.report_id\n"
+                        + "ON CONFLICT DO UPDATE SET deal_id = excluded.deal_id",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO conf.supply_info (id, deal_id)\n"
+                        + "SELECT uuid_generate_v4(), rep.deal_id\n"
+                        + "FROM conf.reports rep\n"
+                        + "JOIN conf.orders o ON rep.id = o.report_id\n"
+                        + "ON CONFLICT (id, deal_id) DO NOTHING",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO supply_info (id, deal_id)\n"
+                        + "SELECT rep.deal_id, o.total\n"
+                        + "FROM reports rep\n"
+                        + "JOIN orders o ON rep.id = o.report_id\n"
+                        + "JOIN regions r ON o.region = r.id\n"
+                        + "ON CONFLICT DO NOTHING",
+                true);
+
+        assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO conf.supply_info (id, deal_id)\n"
+                        + "SELECT uuid_generate_v4(), rep.deal_id\n"
+                        + "FROM conf.reports rep\n"
+                        + "JOIN conf.orders o ON rep.id = o.report_id\n"
+                        + "ON CONFLICT (id) WHERE (deal_id IN (1, 2)) DO NOTHING",
+                true);
+    }
+
+    @Test
+    public void testInsertSelectWithTrailingOnExpressionsIssue2358() throws JSQLParserException {
+        String sqlStr = "INSERT INTO supply_info (id, deal_id)\n"
+                + "SELECT rep.deal_id, o.total\n"
+                + "FROM reports rep\n"
+                + "JOIN orders o ON rep.id = o.report_id\n"
+                + "ON o.total > 100";
+        Insert insert = (Insert) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        PlainSelect plainSelect = insert.getSelect().getPlainSelect();
+        assertEquals(1, plainSelect.getJoins().size());
+        assertEquals(2, plainSelect.getJoins().get(0).getOnExpressions().size());
+        assertNull(insert.getConflictAction());
+        assertNull(insert.getConflictTarget());
+
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO supply_info (id, deal_id)\n"
+                        + "SELECT rep.deal_id, o.total\n"
+                        + "FROM reports rep\n"
+                        + "JOIN orders o ON rep.id = o.report_id\n"
+                        + "ON conflict",
+                true);
+        assertEquals(2,
+                insert.getSelect().getPlainSelect().getJoins().get(0).getOnExpressions().size());
+
+        insert = (Insert) assertSqlCanBeParsedAndDeparsed(
+                "INSERT INTO t (a)\n"
+                        + "SELECT x FROM u\n"
+                        + "JOIN v USING (id)\n"
+                        + "ON CONFLICT DO NOTHING",
+                true);
+        assertEquals(ConflictActionType.DO_NOTHING,
+                insert.getConflictAction().getConflictActionType());
+    }
+
+    @Test
     public void insertOnConflictObjectsTest() throws JSQLParserException {
         String sqlStr = "WITH a ( a, b , c ) \n" + "AS (SELECT  1 , 2 , 3 )\n"
                 + "insert into test\n" + "select * from a";
