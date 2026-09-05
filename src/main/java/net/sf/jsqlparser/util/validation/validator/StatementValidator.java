@@ -46,6 +46,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -308,6 +309,11 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateSequence createSequence, S context) {
         getValidator(CreateSequenceValidator.class).validate(createSequence);
         return null;
@@ -537,6 +543,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateSchema aThis) {
         visit(aThis, null);
+    }
+
+    public void visit(CreateUser createUser) {
+        visit(createUser, null);
     }
 
     public void visit(CreateSequence createSequence) {

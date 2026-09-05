@@ -56,6 +56,7 @@ import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.synonym.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.create.user.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
@@ -1760,6 +1761,7 @@ String NonReservedWord() :
       | tk=<K_PARTITIONING:"PARTITIONING">
       | tk=<K_PARTITIONS:"PARTITIONS">
       | tk=<K_PATH:"PATH">
+      | tk=<K_PASSWORD:"PASSWORD">
       | tk=<K_PERCENT:"PERCENT">
       | tk=<K_PLACING:"PLACING">
       | tk=<K_PLAN:"PLAN">
@@ -1772,6 +1774,7 @@ String NonReservedWord() :
       | tk=<K_QUICK : "QUICK">
       | tk=<K_QUIESCE: "QUIESCE">
       | tk=<K_RANGE: "RANGE">
+      | tk=<K_RANDOM: "RANDOM">
       | tk=<K_RAW: "RAW">
       | tk=<K_READ: "READ" >
       | tk=<K_REBUILD: "REBUILD">
@@ -11531,6 +11534,96 @@ ColumnOption ColumnDefinitionOption(): {
     { return option; }
 }
 
+StringValue MySqlAccountNamePart():
+{
+    Token token = null;
+    String name = null;
+    StringValue value = null;
+}
+{
+    (
+        token=<S_CHAR_LITERAL> { value = new StringValue(token.image); }
+        |
+        name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
+    )
+    { return value; }
+}
+
+UserAuthentication MySqlUserAuthentication():
+{
+    UserAuthentication authentication = new UserAuthentication();
+    String plugin = null;
+    Token credential = null;
+}
+{
+    <K_IDENTIFIED>
+    (
+        <K_BY>
+        (
+            credential=<S_CHAR_LITERAL> {
+                authentication.setMode(UserAuthentication.Mode.BY_PASSWORD);
+                authentication.setCredential(new StringValue(credential.image));
+            }
+            |
+            <K_RANDOM> <K_PASSWORD> {
+                authentication.setMode(UserAuthentication.Mode.BY_RANDOM_PASSWORD);
+            }
+        )
+        |
+        <K_WITH> plugin=RelObjectName() {
+            authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN);
+            authentication.setPlugin(plugin);
+        }
+        [
+            <K_BY>
+            (
+                credential=<S_CHAR_LITERAL> {
+                    authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_BY_PASSWORD);
+                    authentication.setCredential(new StringValue(credential.image));
+                }
+                |
+                <K_RANDOM> <K_PASSWORD> {
+                    authentication.setMode(
+                            UserAuthentication.Mode.WITH_PLUGIN_BY_RANDOM_PASSWORD);
+                }
+            )
+            |
+            <K_AS> credential=<S_CHAR_LITERAL> {
+                authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING);
+                authentication.setCredential(new StringValue(credential.image));
+            }
+        ]
+    )
+    { return authentication; }
+}
+
+UserAccount MySqlUserAccount():
+{
+    UserAccount account = new UserAccount();
+    StringValue user = null;
+    StringValue host = null;
+    UserAuthentication authentication = null;
+}
+{
+    user=MySqlAccountNamePart() { account.setUser(user); }
+    [ <K_AT_SIGN> host=MySqlAccountNamePart() { account.setHost(host); } ]
+    [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
+    { return account; }
+}
+
+CreateUser CreateUser():
+{
+    CreateUser createUser = new CreateUser();
+    UserAccount account = null;
+}
+{
+    <K_USER>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createUser.setIfNotExists(true); } ]
+    account=MySqlUserAccount() { createUser.addAccounts(account); }
+    ( "," account=MySqlUserAccount() { createUser.addAccounts(account); } )*
+    { return createUser; }
+}
+
 CreateSchema CreateSchema():
 {
     Token tk = null;
@@ -14719,6 +14812,8 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        statement = CreateUser()
+        |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()

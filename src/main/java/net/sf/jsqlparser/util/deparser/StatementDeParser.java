@@ -48,6 +48,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -434,6 +435,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(CreateDatabase aThis, S context) {
         builder.append(aThis.toString());
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateUser createUser, S context) {
+        builder.append(createUser);
         return builder;
     }
 
