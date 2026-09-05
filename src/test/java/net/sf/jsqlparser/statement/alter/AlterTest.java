@@ -739,6 +739,24 @@ public class AlterTest {
     }
 
     @Test
+    public void testMySqlAlterTableRenameVariants() throws JSQLParserException {
+        Alter withoutKeyword = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE t1 RENAME t2");
+        AlterExpression rename = withoutKeyword.getAlterExpressions().get(0);
+        assertEquals(AlterOperation.RENAME_TABLE, rename.getOperation());
+        assertEquals("t2", rename.getNewTableName());
+        assertEquals(AlterExpression.TableRenameKeyword.NONE, rename.getTableRenameKeyword());
+
+        Alter withAs = (Alter) assertSqlCanBeParsedAndDeparsed("ALTER TABLE t1 RENAME AS t2");
+        assertEquals(AlterExpression.TableRenameKeyword.AS,
+                withAs.getAlterExpressions().get(0).getTableRenameKeyword());
+
+        Alter withTo = (Alter) assertSqlCanBeParsedAndDeparsed("ALTER TABLE t1 RENAME TO t2");
+        assertEquals(AlterExpression.TableRenameKeyword.TO,
+                withTo.getAlterExpressions().get(0).getTableRenameKeyword());
+    }
+
+    @Test
     public void testAlterTableForeignKeyIssue981() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE atconfigpro "
