@@ -263,8 +263,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     public <S> StringBuilder visit(Analyze analyzer, S context) {
-        builder.append("ANALYZE ");
-        builder.append(analyzer.getTable());
+        builder.append(analyzer);
         return builder;
     }
 

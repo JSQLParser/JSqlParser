@@ -19,7 +19,8 @@ public class AnalyzeValidator extends AbstractValidator<Analyze> {
     public void validate(Analyze analyze) {
         for (ValidationCapability c : getCapabilities()) {
             validateFeature(c, Feature.analyze);
-            validateName(c, NamedObject.table, analyze.getTable().getFullyQualifiedName(), true);
+            analyze.getTables().forEach(table -> validateName(c, NamedObject.table,
+                    table.getFullyQualifiedName(), true));
         }
     }
 }
