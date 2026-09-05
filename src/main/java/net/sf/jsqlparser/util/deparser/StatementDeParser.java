@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -134,6 +135,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(CreateTable createTable, S context) {
         CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, builder);
         createTableDeParser.deParse(createTable);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTrigger createTrigger, S context) {
+        builder.append(createTrigger);
         return builder;
     }
 

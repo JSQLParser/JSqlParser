@@ -106,6 +106,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -1593,6 +1594,20 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateTable createTable) {
         StatementVisitor.super.visit(createTable);
+    }
+
+    @Override
+    public <S> Void visit(CreateTrigger createTrigger, S context) {
+        createTrigger.getTable().accept(this, context);
+        if (createTrigger.getBody() != null) {
+            createTrigger.getBody().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CreateTrigger createTrigger) {
+        StatementVisitor.super.visit(createTrigger);
     }
 
     @Override

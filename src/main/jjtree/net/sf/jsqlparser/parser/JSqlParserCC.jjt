@@ -57,6 +57,7 @@ import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.synonym.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.create.trigger.*;
 import net.sf.jsqlparser.statement.create.user.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
@@ -11757,6 +11758,80 @@ AlterEvent AlterEvent():
     { return alterEvent; }
 }
 
+TriggerDefiner MySqlTriggerDefiner():
+{
+    TriggerDefiner definer = new TriggerDefiner();
+    StringValue user = null;
+    StringValue host = null;
+}
+{
+    LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
+    <S_IDENTIFIER> "=" user=MySqlAccountNamePart() { definer.setUser(user); }
+    [ LOOKAHEAD({ getToken(1).kind == K_AT_SIGN })
+      <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+    { return definer; }
+}
+
+CreateTrigger.Timing MySqlTriggerTiming():
+{
+    CreateTrigger.Timing timing = null;
+}
+{
+    (
+        <K_BEFORE> { timing = CreateTrigger.Timing.BEFORE; }
+        |
+        LOOKAHEAD({ "AFTER".equalsIgnoreCase(getToken(1).image) })
+        <S_IDENTIFIER> { timing = CreateTrigger.Timing.AFTER; }
+    )
+    { return timing; }
+}
+
+CreateTrigger.Order MySqlTriggerOrder():
+{
+    CreateTrigger.Order order = null;
+    Token token = null;
+}
+{
+    LOOKAHEAD({ "FOLLOWS".equalsIgnoreCase(getToken(1).image)
+            || "PRECEDES".equalsIgnoreCase(getToken(1).image) })
+    token=<S_IDENTIFIER> {
+        order = "FOLLOWS".equalsIgnoreCase(token.image)
+                ? CreateTrigger.Order.FOLLOWS : CreateTrigger.Order.PRECEDES;
+    }
+    { return order; }
+}
+
+CreateTrigger CreateTrigger():
+{
+    CreateTrigger createTrigger = new CreateTrigger();
+    TriggerDefiner definer = null;
+    Table trigger = null;
+    CreateTrigger.Timing timing = null;
+    Token event = null;
+    Table table = null;
+    CreateTrigger.Order order = null;
+    Table otherTrigger = null;
+    Statement body = null;
+}
+{
+    [ LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
+      definer=MySqlTriggerDefiner() { createTrigger.setDefiner(definer); } ]
+    <K_TRIGGER> trigger=Table() { createTrigger.setTrigger(trigger); }
+    timing=MySqlTriggerTiming() { createTrigger.setTiming(timing); }
+    ( event=<K_INSERT> { createTrigger.setEvent(CreateTrigger.Event.INSERT); }
+      | event=<K_UPDATE> { createTrigger.setEvent(CreateTrigger.Event.UPDATE); }
+      | event=<K_DELETE> { createTrigger.setEvent(CreateTrigger.Event.DELETE); } )
+    <K_ON> table=Table() { createTrigger.setTable(table); }
+    <K_FOR>
+    LOOKAHEAD({ "EACH".equalsIgnoreCase(getToken(1).image) }) <S_IDENTIFIER> <K_ROW>
+    [ order=MySqlTriggerOrder() otherTrigger=Table() {
+        createTrigger.setOrder(order);
+        createTrigger.setOtherTrigger(otherTrigger);
+    } ]
+    ( body=SingleStatement() | body=Block() ) { createTrigger.setBody(body); }
+    { return createTrigger; }
+}
+
 CreateSchema CreateSchema():
 {
     Token tk = null;
@@ -14951,6 +15026,10 @@ Statement Create():
         |
         statement = CreateEvent()
         |
+        LOOKAHEAD({ getToken(1).kind == K_TRIGGER
+                || "DEFINER".equalsIgnoreCase(getToken(1).image) })
+        statement = CreateTrigger()
+        |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
@@ -14967,8 +15046,8 @@ Statement Create():
         |
         statement = CreatePolicy()
         |
-        // @fixme: must appear with TRIGGER before INDEX or it will collide with INDEX's CreateParameter() production
-        ( tk=<K_TRIGGER> | tk=<K_DOMAIN> ) captureRest = captureRest()
+        // @fixme: must appear before INDEX or it will collide with INDEX's CreateParameter() production
+        tk=<K_DOMAIN> captureRest = captureRest()
         {
             statement = new UnsupportedStatement("CREATE " + tk.image, captureRest);
         }
