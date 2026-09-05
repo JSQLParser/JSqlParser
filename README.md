@@ -62,7 +62,7 @@ EqualsTo equalsTo = (EqualsTo) select.getWhere();
 Column a = (Column) equalsTo.getLeftExpression();
 Column b = (Column) equalsTo.getRightExpression();
 Assertions.assertEquals("a", a.getColumnName());
-Assertions.assertEquals("b", b.getColumnName());
+        Assertions.assertEquals("b", b.getColumnName());
 ```
 
 The tree is traversable with the Visitor pattern, and the same object model works in reverse:
@@ -147,6 +147,40 @@ Beyond statement shapes, the grammar handles nested sub-selects, bind parameters
 `:name`), window and analytic functions, Oracle hints, and the T-SQL square-bracket versus
 array-literal ambiguity. The complete reference is on the
 [syntax page](https://jsqlparser.github.io/JSqlParser/syntax.html).
+
+## Statement classification
+
+Any parsed statement can say what it actually does — no second parse, no visitor to write:
+
+```java
+StatementFeatures features = CCJSqlParserUtil.parse(sqlStr).getFeatures();
+
+// safeguard a read-only client before anything reaches the database
+if (connection.isReadOnly() && features.mayModifyData()) {
+    throw new SQLException("rejected: " + features.getUnresolvedReferences());
+}
+
+// dispatch correctly
+if (features.returnsResultSet()) { statement.executeQuery(sqlStr);  }
+else                             { statement.executeUpdate(sqlStr); }
+```
+
+This is not `sqlStr.startsWith("SELECT")` with extra steps. `RETURNING` turns DML into a row
+source, a data-modifying CTE hides a `DELETE` inside a `SELECT`, and `INSERT INTO x SELECT ..`
+contains a query but returns nothing:
+
+| SQL | returns rows | modifies data |
+|---|---|---|
+| `SELECT * FROM t` | yes | no |
+| `INSERT INTO x SELECT * FROM t` | no | yes |
+| `DELETE FROM t RETURNING *` | yes | yes |
+| `WITH c AS (DELETE FROM t RETURNING *) SELECT * FROM c` | yes | yes |
+| `SELECT nextval('s')` | yes | *unproven* |
+
+Features are not mutually exclusive, and each is three-valued: proven, not excludable, or ruled
+out. `is()` answers "did the grammar prove it", `may()` answers "could it be ruled out" — so a
+guard uses `may()` and a dispatcher uses `is()`. Function volatility is not a syntactic property,
+so anything the caller has not declared pure stays unproven and is listed by name.
 
 ## Piped SQL
 

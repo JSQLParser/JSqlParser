@@ -17314,29 +17314,6 @@ HASH_LINE_COMMENT
 
         
 ======================================================================================================================
-MULTI_LINE_COMMENT
-======================================================================================================================
-
-
-.. raw:: html
-
-        <svg xmlns="http://www.w3.org/2000/svg" width="69" height="21">
-         <polygon points="9 10 1 6 1 14"/>
-         <polygon points="17 10 9 6 9 14"/>
-         <polygon points="23 10 26 1 42 1 45 10 42 19 26 19" class="regexp"/>
-         <text class="regexp" x="34" y="13">.</text>
-         <path class="line" d="m17 10 h2 m0 0 h4 m22 0 h4 m3 0 h-3"/>
-         <polygon points="59 10 67 6 67 14"/>
-         <polygon points="59 10 51 6 51 14"/></svg><table style="width:100%"><tbody><tr><td style="width:67%" valign="top"><xhtml:p xmlns="http://www.w3.org/1999/xhtml" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-         <xhtml:div class="ebnf"><xhtml:code>
-               <div><a href="#multi-line-comment" title="MULTI_LINE_COMMENT" shape="rect">MULTI_LINE_COMMENT</a></div>
-               <div>         ::= <a href="#." title="." shape="rect">.</a></div></xhtml:code></xhtml:div>
-      </xhtml:p></td><td style="width:33%" valign="top"><div class="ebnf">
-                                    Not referenced by any.
-                                </div></td></tr></tbody></table>
-
-        
-======================================================================================================================
 S_PARAMETER
 ======================================================================================================================
 
