@@ -1241,6 +1241,65 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /**
+     * True when the pending {@code ON} opens the ON CONFLICT clause of the enclosing
+     * INSERT rather than another trailing join condition: after a join, the trailing
+     * ON expressions of Issue #1302 and the INSERT clause claim the same ON token.
+     * The clause shapes are ON CONFLICT DO, ON CONFLICT ON CONSTRAINT and
+     * ON CONFLICT ( target ) [ WHERE ] DO, so the parenthesized target has to be
+     * separated from an expression by scanning past its balanced brackets.
+     */
+    private boolean isInsertOnConflictAhead() {
+        if (getToken(1).kind != K_ON || getToken(2).kind != K_CONFLICT) {
+            return false;
+        }
+        Token t = getToken(3);
+        if (t.kind == K_DO) {
+            return true;
+        }
+        if (t.kind == K_ON) {
+            return getToken(4).kind == K_CONSTRAINT;
+        }
+        if (!"(".equals(t.image)) {
+            return false;
+        }
+        int depth = 1;
+        int i = 4;
+        while (depth > 0) {
+            t = getToken(i++);
+            if (t == null || t.kind == EOF) {
+                return false;
+            }
+            if ("(".equals(t.image)) {
+                depth++;
+            } else if (")".equals(t.image)) {
+                depth--;
+            }
+        }
+        t = getToken(i);
+        if (t.kind == K_DO) {
+            return true;
+        }
+        if (t.kind != K_WHERE) {
+            return false;
+        }
+        // the index predicate ends where the conflict action's DO begins
+        depth = 0;
+        for (i++; ; i++) {
+            t = getToken(i);
+            if (t == null || t.kind == EOF) {
+                return false;
+            }
+            if ("(".equals(t.image)) {
+                depth++;
+            } else if (")".equals(t.image)) {
+                depth--;
+            } else if (t.kind == K_DO && depth == 0) {
+                return true;
+            }
+        }
+    }
+
     private boolean isMySqlDialect() {
         String dialect = getAsString(Feature.dialect);
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
@@ -6925,7 +6984,7 @@ Join JoinerExpression() #JoinerExpression:
         LOOKAHEAD(2) (
                         [ <K_WITHIN> "(" joinWindow = JoinWindow() ")" {join.setJoinWindow(joinWindow);} ]
                         ( <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); }
-                          ( LOOKAHEAD(2)  <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); } )*
+                          ( LOOKAHEAD({ getToken(1).kind == K_ON && !isInsertOnConflictAhead() })  <K_ON> onExpression=Expression()  { join.addOnExpression(onExpression); } )*
                         )
                         |
                         (
