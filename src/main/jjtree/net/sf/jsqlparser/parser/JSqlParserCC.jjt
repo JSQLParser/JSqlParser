@@ -48,6 +48,7 @@ import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.database.*;
+import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.policy.*;
@@ -56,6 +57,8 @@ import net.sf.jsqlparser.statement.create.schema.*;
 import net.sf.jsqlparser.statement.create.synonym.*;
 import net.sf.jsqlparser.statement.create.sequence.*;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.create.trigger.*;
+import net.sf.jsqlparser.statement.create.user.*;
 import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
@@ -1574,6 +1577,7 @@ String NonReservedWord() :
       | tk=<K_COMMIT:"COMMIT">
       | tk=<K_COMMENT:"COMMENT">
       | tk=<K_COMMENTS:"COMMENTS">
+      | tk=<K_COMPLETION:"COMPLETION">
       | tk=<K_CONFLICT:"CONFLICT">
       | tk=<K_CONSTRAINTS:"CONSTRAINTS">
       | tk=<K_CONVERT:"CONVERT">
@@ -1618,11 +1622,14 @@ String NonReservedWord() :
       | tk=<K_ENCODING: "ENCODING">
       | tk=<K_ENCRYPTION: "ENCRYPTION">
       | tk=<K_END: "END">
+      | tk=<K_ENDS: "ENDS">
       | tk=<K_ESCAPED: "ESCAPED">
       | tk=<K_ENFORCED: "ENFORCED">
       | tk=<K_ENGINE: "ENGINE">
       | tk=<K_ERROR: "ERROR">
       | tk=<K_ESCAPE: "ESCAPE">
+      | tk=<K_EVENT: "EVENT">
+      | tk=<K_EVERY: "EVERY">
       | tk=<K_EXA: "EXA">
       | tk=<K_EXCHANGE: "EXCHANGE">
       | tk=<K_EXCLUDE: "EXCLUDE">
@@ -1760,6 +1767,7 @@ String NonReservedWord() :
       | tk=<K_PARTITIONING:"PARTITIONING">
       | tk=<K_PARTITIONS:"PARTITIONS">
       | tk=<K_PATH:"PATH">
+      | tk=<K_PASSWORD:"PASSWORD">
       | tk=<K_PERCENT:"PERCENT">
       | tk=<K_PLACING:"PLACING">
       | tk=<K_PLAN:"PLAN">
@@ -1772,6 +1780,7 @@ String NonReservedWord() :
       | tk=<K_QUICK : "QUICK">
       | tk=<K_QUIESCE: "QUIESCE">
       | tk=<K_RANGE: "RANGE">
+      | tk=<K_RANDOM: "RANDOM">
       | tk=<K_RAW: "RAW">
       | tk=<K_READ: "READ" >
       | tk=<K_REBUILD: "REBUILD">
@@ -1809,6 +1818,7 @@ String NonReservedWord() :
       | tk=<K_SAFE_CAST: "SAFE_CAST">
       | tk=<K_SAFE_CONVERT: "SAFE_CONVERT">
       | tk=<K_SAVEPOINT: "SAVEPOINT">
+      | tk=<K_SCHEDULE: "SCHEDULE">
       | tk=<K_SCHEMA: "SCHEMA">
       | tk=<K_SEARCH:"SEARCH">
       | tk=<K_SECURE: "SECURE">
@@ -1825,8 +1835,10 @@ String NonReservedWord() :
       | tk=<K_SIMILAR:"SIMILAR">
       | tk=<K_SIZE:"SIZE">
       | tk=<K_SKIP: "SKIP">
+      | tk=<K_SLAVE: "SLAVE">
       | tk=<K_SPATIAL:"SPATIAL">
       | tk=<K_STALENESS: "STALENESS">
+      | tk=<K_STARTS: "STARTS">
       | tk=<K_STARTING:"STARTING">
       | tk=<K_STEP: "STEP">
       | tk=<K_STORED: "STORED">
@@ -11531,6 +11543,295 @@ ColumnOption ColumnDefinitionOption(): {
     { return option; }
 }
 
+StringValue MySqlAccountNamePart():
+{
+    Token token = null;
+    String name = null;
+    StringValue value = null;
+}
+{
+    (
+        token=<S_CHAR_LITERAL> { value = new StringValue(token.image); }
+        |
+        name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
+    )
+    { return value; }
+}
+
+UserAuthentication MySqlUserAuthentication():
+{
+    UserAuthentication authentication = new UserAuthentication();
+    String plugin = null;
+    Token credential = null;
+}
+{
+    <K_IDENTIFIED>
+    (
+        <K_BY>
+        (
+            credential=<S_CHAR_LITERAL> {
+                authentication.setMode(UserAuthentication.Mode.BY_PASSWORD);
+                authentication.setCredential(new StringValue(credential.image));
+            }
+            |
+            <K_RANDOM> <K_PASSWORD> {
+                authentication.setMode(UserAuthentication.Mode.BY_RANDOM_PASSWORD);
+            }
+        )
+        |
+        <K_WITH> plugin=RelObjectName() {
+            authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN);
+            authentication.setPlugin(plugin);
+        }
+        [
+            <K_BY>
+            (
+                credential=<S_CHAR_LITERAL> {
+                    authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_BY_PASSWORD);
+                    authentication.setCredential(new StringValue(credential.image));
+                }
+                |
+                <K_RANDOM> <K_PASSWORD> {
+                    authentication.setMode(
+                            UserAuthentication.Mode.WITH_PLUGIN_BY_RANDOM_PASSWORD);
+                }
+            )
+            |
+            <K_AS> credential=<S_CHAR_LITERAL> {
+                authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING);
+                authentication.setCredential(new StringValue(credential.image));
+            }
+        ]
+    )
+    { return authentication; }
+}
+
+UserAccount MySqlUserAccount():
+{
+    UserAccount account = new UserAccount();
+    StringValue user = null;
+    StringValue host = null;
+    UserAuthentication authentication = null;
+}
+{
+    user=MySqlAccountNamePart() { account.setUser(user); }
+    [ <K_AT_SIGN> host=MySqlAccountNamePart() { account.setHost(host); } ]
+    [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
+    { return account; }
+}
+
+CreateUser CreateUser():
+{
+    CreateUser createUser = new CreateUser();
+    UserAccount account = null;
+}
+{
+    <K_USER>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createUser.setIfNotExists(true); } ]
+    account=MySqlUserAccount() { createUser.addAccounts(account); }
+    ( "," account=MySqlUserAccount() { createUser.addAccounts(account); } )*
+    { return createUser; }
+}
+
+EventSchedule MySqlEventSchedule():
+{
+    EventSchedule schedule = new EventSchedule();
+    Expression expression = null;
+    Token unitToken = null;
+    String unit = null;
+}
+{
+    <K_ON> <K_SCHEDULE>
+    (
+        <K_AT> expression=Expression() {
+            schedule.setType(EventSchedule.Type.AT);
+            schedule.setExecuteAt(expression);
+        }
+        |
+        <K_EVERY> expression=MySqlEventIntervalValue() {
+            schedule.setType(EventSchedule.Type.EVERY);
+            schedule.setInterval(expression);
+        }
+        ( LOOKAHEAD({ getToken(1).kind == K_DATE_LITERAL })
+          unitToken=<K_DATE_LITERAL> { schedule.setIntervalUnit(unitToken.image); }
+          | unit=RelObjectName() { schedule.setIntervalUnit(unit); } )
+        [ <K_STARTS> expression=Expression() { schedule.setStarts(expression); } ]
+        [ <K_ENDS> expression=Expression() { schedule.setEnds(expression); } ]
+    )
+    { return schedule; }
+}
+
+Expression MySqlEventIntervalValue():
+{
+    Token value = null;
+    Expression expression = null;
+}
+{
+    (
+        value=<S_LONG> { expression = new LongValue(value.image); }
+        |
+        value=<S_DOUBLE> { expression = new DoubleValue(value.image); }
+        |
+        value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+    )
+    { return expression; }
+}
+
+Boolean MySqlEventCompletion():
+{
+    boolean preserve = true;
+}
+{
+    <K_ON> <K_COMPLETION> [ <K_NOT> { preserve = false; } ]
+    LOOKAHEAD({ "PRESERVE".equalsIgnoreCase(getToken(1).image) })
+    <S_IDENTIFIER>
+    { return preserve; }
+}
+
+EventStatus MySqlEventStatus():
+{
+    EventStatus status = null;
+}
+{
+    (
+        <K_ENABLE> { status = EventStatus.ENABLE; }
+        |
+        <K_DISABLE> { status = EventStatus.DISABLE; }
+        [ LOOKAHEAD(2) <K_ON> <K_SLAVE> { status = EventStatus.DISABLE_ON_SLAVE; } ]
+    )
+    { return status; }
+}
+
+CreateEvent CreateEvent():
+{
+    CreateEvent createEvent = new CreateEvent();
+    Table event = null;
+    EventSchedule schedule = null;
+    Boolean preserve = null;
+    EventStatus status = null;
+    Token comment = null;
+    Statement body = null;
+}
+{
+    <K_EVENT>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createEvent.setIfNotExists(true); } ]
+    event=Table() { createEvent.setEvent(event); }
+    schedule=MySqlEventSchedule() { createEvent.setSchedule(schedule); }
+    [ LOOKAHEAD(2) preserve=MySqlEventCompletion() {
+        createEvent.setOnCompletionPreserve(preserve);
+    } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
+      status=MySqlEventStatus() { createEvent.setStatus(status); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
+        createEvent.setComment(new StringValue(comment.image));
+    } ]
+    <K_DO> body=SingleStatement() { createEvent.setBody(body); }
+    { return createEvent; }
+}
+
+AlterEvent AlterEvent():
+{
+    AlterEvent alterEvent = new AlterEvent();
+    Table event = null;
+    Table renameTo = null;
+    EventSchedule schedule = null;
+    Boolean preserve = null;
+    EventStatus status = null;
+    Token comment = null;
+    Statement body = null;
+}
+{
+    <K_EVENT> event=Table() { alterEvent.setEvent(event); }
+    [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_SCHEDULE })
+      schedule=MySqlEventSchedule() { alterEvent.setSchedule(schedule); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ON && getToken(2).kind == K_COMPLETION })
+      preserve=MySqlEventCompletion() { alterEvent.setOnCompletionPreserve(preserve); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_RENAME })
+      <K_RENAME> <K_TO> renameTo=Table() { alterEvent.setRenameTo(renameTo); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
+      status=MySqlEventStatus() { alterEvent.setStatus(status); } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
+        alterEvent.setComment(new StringValue(comment.image));
+    } ]
+    [ LOOKAHEAD({ getToken(1).kind == K_DO })
+      <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
+    { return alterEvent; }
+}
+
+TriggerDefiner MySqlTriggerDefiner():
+{
+    TriggerDefiner definer = new TriggerDefiner();
+    StringValue user = null;
+    StringValue host = null;
+}
+{
+    LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
+    <S_IDENTIFIER> "=" user=MySqlAccountNamePart() { definer.setUser(user); }
+    [ LOOKAHEAD({ getToken(1).kind == K_AT_SIGN })
+      <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+    { return definer; }
+}
+
+CreateTrigger.Timing MySqlTriggerTiming():
+{
+    CreateTrigger.Timing timing = null;
+}
+{
+    (
+        <K_BEFORE> { timing = CreateTrigger.Timing.BEFORE; }
+        |
+        LOOKAHEAD({ "AFTER".equalsIgnoreCase(getToken(1).image) })
+        <S_IDENTIFIER> { timing = CreateTrigger.Timing.AFTER; }
+    )
+    { return timing; }
+}
+
+CreateTrigger.Order MySqlTriggerOrder():
+{
+    CreateTrigger.Order order = null;
+    Token token = null;
+}
+{
+    LOOKAHEAD({ "FOLLOWS".equalsIgnoreCase(getToken(1).image)
+            || "PRECEDES".equalsIgnoreCase(getToken(1).image) })
+    token=<S_IDENTIFIER> {
+        order = "FOLLOWS".equalsIgnoreCase(token.image)
+                ? CreateTrigger.Order.FOLLOWS : CreateTrigger.Order.PRECEDES;
+    }
+    { return order; }
+}
+
+CreateTrigger CreateTrigger():
+{
+    CreateTrigger createTrigger = new CreateTrigger();
+    TriggerDefiner definer = null;
+    Table trigger = null;
+    CreateTrigger.Timing timing = null;
+    Token event = null;
+    Table table = null;
+    CreateTrigger.Order order = null;
+    Table otherTrigger = null;
+    Statement body = null;
+}
+{
+    [ LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
+      definer=MySqlTriggerDefiner() { createTrigger.setDefiner(definer); } ]
+    <K_TRIGGER> trigger=Table() { createTrigger.setTrigger(trigger); }
+    timing=MySqlTriggerTiming() { createTrigger.setTiming(timing); }
+    ( event=<K_INSERT> { createTrigger.setEvent(CreateTrigger.Event.INSERT); }
+      | event=<K_UPDATE> { createTrigger.setEvent(CreateTrigger.Event.UPDATE); }
+      | event=<K_DELETE> { createTrigger.setEvent(CreateTrigger.Event.DELETE); } )
+    <K_ON> table=Table() { createTrigger.setTable(table); }
+    <K_FOR>
+    LOOKAHEAD({ "EACH".equalsIgnoreCase(getToken(1).image) }) <S_IDENTIFIER> <K_ROW>
+    [ order=MySqlTriggerOrder() otherTrigger=Table() {
+        createTrigger.setOrder(order);
+        createTrigger.setOtherTrigger(otherTrigger);
+    } ]
+    ( body=SingleStatement() | body=Block() ) { createTrigger.setBody(body); }
+    { return createTrigger; }
+}
+
 CreateSchema CreateSchema():
 {
     Token tk = null;
@@ -14194,6 +14495,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                statement = AlterEvent()
+                |
                 statement = AlterTable()
                 |
                 statement = AlterSession()
@@ -14719,6 +15022,14 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        statement = CreateUser()
+        |
+        statement = CreateEvent()
+        |
+        LOOKAHEAD({ getToken(1).kind == K_TRIGGER
+                || "DEFINER".equalsIgnoreCase(getToken(1).image) })
+        statement = CreateTrigger()
+        |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
@@ -14735,8 +15046,8 @@ Statement Create():
         |
         statement = CreatePolicy()
         |
-        // @fixme: must appear with TRIGGER before INDEX or it will collide with INDEX's CreateParameter() production
-        ( tk=<K_TRIGGER> | tk=<K_DOMAIN> ) captureRest = captureRest()
+        // @fixme: must appear before INDEX or it will collide with INDEX's CreateParameter() production
+        tk=<K_DOMAIN> captureRest = captureRest()
         {
             statement = new UnsupportedStatement("CREATE " + tk.image, captureRest);
         }
@@ -14820,6 +15131,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     CreatePolicy createPolicy = new CreatePolicy();
     String policyName;
     Table table;
+    String policyMode = null;
     Token commandToken = null;
     String roleName;
     Expression usingExpr = null;
@@ -14829,6 +15141,12 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     <K_POLICY> policyName=RelObjectName() { createPolicy.setPolicyName(policyName); }
     <K_ON> table=Table() { createPolicy.setTable(table); }
 
+    [ <K_AS>
+      LOOKAHEAD({ isKeywordAhead("PERMISSIVE") || isKeywordAhead("RESTRICTIVE") })
+      policyMode=RelObjectName()
+      { createPolicy.setPolicyMode(PolicyMode.from(policyMode)); }
+    ]
+
     [ <K_FOR>
       ( commandToken=<K_ALL>
       | commandToken=<K_SELECT>
@@ -14836,7 +15154,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
       | commandToken=<K_UPDATE>
       | commandToken=<K_DELETE>
       )
-      { createPolicy.setCommand(commandToken.image); }
+      { createPolicy.setPolicyCommand(PolicyCommand.from(commandToken.image)); }
     ]
 
     [ <K_TO>

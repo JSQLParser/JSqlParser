@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -134,7 +135,7 @@ public class UnsupportedStatementTest {
         String sqlStr =
                 "create trigger stud_marks before INSERT on Student for each row set Student.total = Student.subj1 + Student.subj2, Student.per = Student.total * 60 / 100";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        assertTrue(statement instanceof UnsupportedStatement);
+        assertInstanceOf(CreateTrigger.class, statement);
 
         sqlStr =
                 "create domain TNOTIFICATION_ACTION as ENUM ('ADD', 'CHANGE', 'DEL')";

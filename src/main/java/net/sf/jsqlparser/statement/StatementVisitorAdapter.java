@@ -21,12 +21,16 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -323,8 +327,23 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateEvent createEvent, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(CreateTable createTable, S context) {
         return createTable.getTable().accept(fromItemVisitor, context);
+    }
+
+    @Override
+    public <S> T visit(CreateTrigger createTrigger, S context) {
+        return null;
     }
 
     @Override
@@ -335,6 +354,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(Alter alter, S context) {
 
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterEvent alterEvent, S context) {
         return null;
     }
 
@@ -360,6 +384,9 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreatePolicy createPolicy, S context) {
+        fromItemVisitor.visitFromItem(createPolicy.getTable(), context);
+        expressionVisitor.visitExpression(createPolicy.getUsingExpression(), context);
+        expressionVisitor.visitExpression(createPolicy.getWithCheckExpression(), context);
 
         return null;
     }

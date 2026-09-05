@@ -42,12 +42,16 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -131,6 +135,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(CreateTable createTable, S context) {
         CreateTableDeParser createTableDeParser = new CreateTableDeParser(this, builder);
         createTableDeParser.deParse(createTable);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTrigger createTrigger, S context) {
+        builder.append(createTrigger);
         return builder;
     }
 
@@ -271,6 +281,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(Alter alter, S context) {
         AlterDeParser alterDeParser = new AlterDeParser(builder);
         alterDeParser.deParse(alter);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterEvent alterEvent, S context) {
+        builder.append(alterEvent);
         return builder;
     }
 
@@ -438,6 +454,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(CreateUser createUser, S context) {
+        builder.append(createUser);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateEvent createEvent, S context) {
+        builder.append(createEvent);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(CreateSequence createSequence, S context) {
         new CreateSequenceDeParser(builder).deParse(createSequence);
         return builder;
@@ -530,7 +558,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CreatePolicy createPolicy, S context) {
-        builder.append(createPolicy.toString());
+        new CreatePolicyDeParser(expressionDeParser, builder).deParse(createPolicy);
         return builder;
     }
 }

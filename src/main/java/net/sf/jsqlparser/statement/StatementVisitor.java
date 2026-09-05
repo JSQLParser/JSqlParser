@@ -17,12 +17,16 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -125,10 +129,28 @@ public interface StatementVisitor<T> {
         this.visit(createDatabase, null);
     }
 
+    <S> T visit(CreateUser createUser, S context);
+
+    default void visit(CreateUser createUser) {
+        this.visit(createUser, null);
+    }
+
+    <S> T visit(CreateEvent createEvent, S context);
+
+    default void visit(CreateEvent createEvent) {
+        this.visit(createEvent, null);
+    }
+
     <S> T visit(CreateTable createTable, S context);
 
     default void visit(CreateTable createTable) {
         this.visit(createTable, null);
+    }
+
+    <S> T visit(CreateTrigger createTrigger, S context);
+
+    default void visit(CreateTrigger createTrigger) {
+        this.visit(createTrigger, null);
     }
 
     <S> T visit(CreateView createView, S context);
@@ -153,6 +175,12 @@ public interface StatementVisitor<T> {
 
     default void visit(Alter alter) {
         this.visit(alter, null);
+    }
+
+    <S> T visit(AlterEvent alterEvent, S context);
+
+    default void visit(AlterEvent alterEvent) {
+        this.visit(alterEvent, null);
     }
 
     <S> T visit(Statements statements, S context);

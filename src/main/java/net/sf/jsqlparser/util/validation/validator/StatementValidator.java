@@ -38,6 +38,8 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.event.AlterEvent;
+import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -46,6 +48,8 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -85,6 +89,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(CreateTable createTable, S context) {
         getValidator(CreateTableValidator.class).validate(createTable);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTrigger createTrigger, S context) {
+        if (createTrigger.getBody() != null) {
+            createTrigger.getBody().accept(this, context);
+        }
         return null;
     }
 
@@ -170,6 +182,14 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(Alter alter, S context) {
         getValidator(AlterValidator.class).validate(alter);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEvent alterEvent, S context) {
+        if (alterEvent.getBody() != null) {
+            alterEvent.getBody().accept(this, context);
+        }
         return null;
     }
 
@@ -308,6 +328,19 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(CreateUser createUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateEvent createEvent, S context) {
+        if (createEvent.getBody() != null) {
+            createEvent.getBody().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(CreateSequence createSequence, S context) {
         getValidator(CreateSequenceValidator.class).validate(createSequence);
         return null;
@@ -423,6 +456,10 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(createTable, null);
     }
 
+    public void visit(CreateTrigger createTrigger) {
+        visit(createTrigger, null);
+    }
+
     public void visit(CreateView createView) {
         visit(createView, null);
     }
@@ -461,6 +498,10 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(Alter alter) {
         visit(alter, null);
+    }
+
+    public void visit(AlterEvent alterEvent) {
+        visit(alterEvent, null);
     }
 
     public void visit(Statements statements) {
@@ -539,6 +580,14 @@ public class StatementValidator extends AbstractValidator<Statement>
         visit(aThis, null);
     }
 
+    public void visit(CreateUser createUser) {
+        visit(createUser, null);
+    }
+
+    public void visit(CreateEvent createEvent) {
+        visit(createEvent, null);
+    }
+
     public void visit(CreateSequence createSequence) {
         visit(createSequence, null);
     }
@@ -601,7 +650,9 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreatePolicy createPolicy, S context) {
-        // TODO: not yet implemented
+        validateOptionalFromItem(createPolicy.getTable());
+        validateOptionalExpression(createPolicy.getUsingExpression());
+        validateOptionalExpression(createPolicy.getWithCheckExpression());
         return null;
     }
 
