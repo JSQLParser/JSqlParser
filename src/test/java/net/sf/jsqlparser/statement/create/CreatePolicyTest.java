@@ -13,6 +13,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
+import net.sf.jsqlparser.statement.create.policy.PolicyCommand;
+import net.sf.jsqlparser.statement.create.policy.PolicyMode;
 import org.junit.jupiter.api.Test;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
@@ -33,6 +35,10 @@ public class CreatePolicyTest {
         CreatePolicy policy = (CreatePolicy) stmt;
         assertEquals("policy_name", policy.getPolicyName());
         assertEquals("table_name", policy.getTable().getName());
+        assertNull(policy.getPolicyMode());
+        assertEquals(PolicyMode.PERMISSIVE, policy.getEffectivePolicyMode());
+        assertNull(policy.getPolicyCommand());
+        assertEquals(PolicyCommand.ALL, policy.getEffectivePolicyCommand());
     }
 
     @Test
@@ -55,6 +61,7 @@ public class CreatePolicyTest {
 
         CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
         assertEquals("SELECT", policy.getCommand());
+        assertEquals(PolicyCommand.SELECT, policy.getPolicyCommand());
     }
 
     @Test
@@ -65,7 +72,38 @@ public class CreatePolicyTest {
             assertSqlCanBeParsedAndDeparsed(sql, true);
             CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
             assertEquals(cmd, policy.getCommand());
+            assertEquals(PolicyCommand.from(cmd), policy.getPolicyCommand());
         }
+    }
+
+    @Test
+    public void testCreateRestrictivePolicy() throws JSQLParserException {
+        String sql = "CREATE POLICY tenant_policy ON users AS RESTRICTIVE FOR SELECT TO app "
+                + "USING (tenant_id = current_user)";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
+        assertEquals(PolicyMode.RESTRICTIVE, policy.getPolicyMode());
+        assertEquals(PolicyMode.RESTRICTIVE, policy.getEffectivePolicyMode());
+        assertEquals(PolicyCommand.SELECT, policy.getPolicyCommand());
+        assertEquals("app", policy.getRoles().get(0));
+        assertNotNull(policy.getUsingExpression());
+    }
+
+    @Test
+    public void testCreateExplicitPermissivePolicy() throws JSQLParserException {
+        String sql = "CREATE POLICY tenant_policy ON users AS PERMISSIVE";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        CreatePolicy policy = (CreatePolicy) CCJSqlParserUtil.parse(sql);
+        assertEquals(PolicyMode.PERMISSIVE, policy.getPolicyMode());
+        assertEquals(PolicyMode.PERMISSIVE, policy.getEffectivePolicyMode());
+    }
+
+    @Test
+    public void testCreatePolicyRejectsUnknownMode() {
+        assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("CREATE POLICY p ON t AS UNKNOWN"));
     }
 
     @Test
