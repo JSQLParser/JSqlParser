@@ -8535,9 +8535,24 @@ Expression ArrayExpression(Expression obj): {
     { return expr; }
 }
 
+Expression NavigationStep(Expression base):
+{
+    Expression step = null;
+    String nm = null;
+}
+{
+    (
+        "." nm=RelObjectNameExt() { step = new RowGetExpression(base, nm); }
+        |
+        step = ArrayExpression(base)
+    )
+    { return step; }
+}
+
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
+    Expression nxt = null;
     Expression expression = null;
     CastExpression castExpr = null;
     TimezoneExpression timezoneExpr = null;
@@ -8712,6 +8727,12 @@ Expression PrimaryExpression() #PrimaryExpression:
     ]
 
     [ LOOKAHEAD(2) retval = ArrayExpression(retval) ]
+
+    // navigation chains, e.g. Redshift SUPER col[0].field[1].sub: field accesses
+    // and subscripts may alternate freely after the primary expression
+    (
+        LOOKAHEAD(2) nxt = NavigationStep(retval) { retval = nxt; }
+    )*
 
     (  LOOKAHEAD(2) "::" type=ColDataType() {
             castExpr = new CastExpression();
