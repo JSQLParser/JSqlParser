@@ -15157,9 +15157,12 @@ Comment Comment():
             <K_VIEW> view = Table() { result.setView(view); }
         )
     )
-    <K_IS> comment=<S_CHAR_LITERAL>
+    <K_IS>
+    (
+        comment=<S_CHAR_LITERAL> { result.setComment(new StringValue(comment.image)); }
+        | <K_NULL>
+    )
     {
-        result.setComment(new StringValue(comment.image));
         return result;
     }
 }

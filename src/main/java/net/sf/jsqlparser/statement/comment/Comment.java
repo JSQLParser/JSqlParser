@@ -69,7 +69,8 @@ public class Comment implements Statement {
         } else if (view != null) {
             sql += "VIEW " + view + " ";
         }
-        sql += "IS " + comment;
+        // a null comment stands for PostgreSQL's COMMENT ON ... IS NULL, which removes the comment
+        sql += "IS " + (comment != null ? comment : "NULL");
         return sql;
     }
 
