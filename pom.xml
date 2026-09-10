@@ -426,6 +426,11 @@
                         <goals>
                             <goal>jjtree-javacc</goal>
                         </goals>
+                        <!--
+                            GRAMMAR_ENCODING governs reading only: JJTree writes the intermediate
+                            .jj with the JVM default charset, which mangles the grammar's non-ASCII
+                            character classes unless file.encoding is UTF-8 (see .mvn/jvm.config).
+                        -->
                         <configuration>
                             <javaccCmdLineArgs>
                                 <arg>-CODE_GENERATOR:"Java"</arg>
