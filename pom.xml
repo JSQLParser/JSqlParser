@@ -569,11 +569,13 @@
                         @{jacocoArgLine} is resolved late, after jacoco:prepare-agent has run.
                         Without it the JaCoCo agent would be dropped and coverage reports empty.
                     -->
+                    <!-- Forked test JVMs do not inherit .mvn/jvm.config, so pin the encoding here too. -->
                     <argLine>
                         @{jacocoArgLine}
                         --add-opens=java.base/java.lang=ALL-UNNAMED
                         --add-opens=java.base/java.util=ALL-UNNAMED
                         -Xmx2G -Xms800m -Xss4m
+                        -Dfile.encoding=UTF-8
                     </argLine>
                 </configuration>
             </plugin>
