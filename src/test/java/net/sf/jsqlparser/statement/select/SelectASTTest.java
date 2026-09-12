@@ -12,6 +12,9 @@ package net.sf.jsqlparser.statement.select;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.parser.ASTNodeAccess;
 import net.sf.jsqlparser.parser.CCJSqlParserDefaultVisitor;
 import net.sf.jsqlparser.parser.CCJSqlParserTreeConstants;
 import net.sf.jsqlparser.parser.CCJSqlParser;
@@ -176,8 +179,28 @@ public class SelectASTTest {
 
         assertNotNull(subSelectStart);
         assertNotNull(subSelectEnd);
-        assertEquals(32, subSelectStart.beginColumn);
+        // the node spans the whole IN expression, so it starts at the left operand
+        assertEquals(30, subSelectStart.beginColumn);
         assertEquals(49, subSelectEnd.endColumn);
+    }
+
+    @Test
+    public void testBinaryConditionNodeStartsAtItsLeftOperand() throws JSQLParserException {
+        String[][] cases = {
+                {"SELECT * FROM t WHERE z = 0 AND a = 1", "a = 1"},
+                {"SELECT * FROM t WHERE z = 0 AND a IN (1, 2)", "a IN (1, 2)"},
+                {"SELECT * FROM t WHERE z = 0 AND a LIKE 'p'", "a LIKE 'p'"},
+                {"SELECT * FROM t WHERE z = 0 AND a SIMILAR TO 'p'", "a SIMILAR TO 'p'"},
+                {"SELECT * FROM t WHERE z = 0 AND a IS DISTINCT FROM 1", "a IS DISTINCT FROM 1"}};
+
+        for (String[] testCase : cases) {
+            String sql = testCase[0];
+            Expression condition = ((AndExpression) ((PlainSelect) CCJSqlParserUtil.parse(sql))
+                    .getWhere()).getRightExpression();
+            Node node = ((ASTNodeAccess) condition).getASTNode();
+            assertEquals(testCase[1], sql.substring(node.jjtGetFirstToken().absoluteBegin - 1,
+                    node.jjtGetLastToken().absoluteEnd - 1), sql);
+        }
     }
 
     @Test
