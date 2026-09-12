@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,6 +49,72 @@ public class SetOperationModifierTest {
     })
     void testSetOperationModifierRoundTrip(String sql) throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(sql);
+    }
+
+    /**
+     * The grammar records the modifier verbatim from the source, so the quantifier survives in
+     * whatever case it was written. Every case spells the same set operation.
+     *
+     * @see <a href="https://github.com/JSQLParser/JSqlParser/issues/2419">#2419</a>
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ALL", "all", "All", "aLL"})
+    void testAllModifierRecognisedInAnyCase(String quantifier) throws JSQLParserException {
+        SetOperation operation = firstOperation(
+                "SELECT a FROM t1 UNION " + quantifier + " SELECT a FROM t2");
+        assertTrue(operation.isAll(), "UNION " + quantifier + " should be an ALL union");
+        assertFalse(operation.isDistinct(), "UNION " + quantifier + " is not DISTINCT");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DISTINCT", "distinct", "Distinct"})
+    void testDistinctModifierRecognisedInAnyCase(String quantifier) throws JSQLParserException {
+        SetOperation operation = firstOperation(
+                "SELECT a FROM t1 UNION " + quantifier + " SELECT a FROM t2");
+        assertTrue(operation.isDistinct(), "UNION " + quantifier + " should be a DISTINCT union");
+        assertFalse(operation.isAll(), "UNION " + quantifier + " is not ALL");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"EXCEPT", "INTERSECT", "MINUS"})
+    void testAllModifierRecognisedInAnyCaseForEverySetOperation(String setOperation)
+            throws JSQLParserException {
+        assertTrue(firstOperation("SELECT a FROM t1 " + setOperation + " all SELECT a FROM t2")
+                .isAll(), setOperation + " all should be an ALL operation");
+    }
+
+    /**
+     * A plain set operation carries no quantifier, and neither predicate may claim one.
+     */
+    @Test
+    void testUnqualifiedSetOperationIsNeitherAllNorDistinct() throws JSQLParserException {
+        SetOperation operation = firstOperation("SELECT a FROM t1 UNION SELECT a FROM t2");
+        assertFalse(operation.isAll());
+        assertFalse(operation.isDistinct());
+    }
+
+    /**
+     * The setters record what they are told rather than the keyword they are named after.
+     */
+    @Test
+    void testSettersHonourTheirArgument() {
+        UnionOp union = new UnionOp();
+
+        union.setAll(true);
+        assertTrue(union.isAll());
+        union.setAll(false);
+        assertFalse(union.isAll(), "setAll(false) must not leave an ALL modifier behind");
+
+        union.setDistinct(true);
+        assertTrue(union.isDistinct());
+        union.setDistinct(false);
+        assertFalse(union.isDistinct(), "setDistinct(false) must not leave a DISTINCT modifier");
+    }
+
+    private static SetOperation firstOperation(String sql) throws JSQLParserException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        assertInstanceOf(SetOperationList.class, statement);
+        return ((SetOperationList) statement).getOperations().get(0);
     }
 
     @ParameterizedTest
