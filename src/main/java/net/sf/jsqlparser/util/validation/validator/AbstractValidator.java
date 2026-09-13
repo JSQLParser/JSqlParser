@@ -11,6 +11,9 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.update.UpdateSet;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -145,6 +148,25 @@ public abstract class AbstractValidator<S> implements Validator<S> {
 
     protected void validateOptionalExpression(Expression expression, ExpressionValidator v) {
         validateOptional(expression, e -> e.accept(v, null));
+    }
+
+    protected void validateOptionalUpdateSets(List<UpdateSet> updateSets) {
+        if (updateSets != null) {
+            for (UpdateSet updateSet : updateSets) {
+                validateOptionalExpressions(updateSet.getColumns());
+                if (updateSet.getValues() != null) {
+                    for (Expression value : updateSet.getValues()) {
+                        if (value instanceof Select) {
+                            ((Select) value).accept(
+                                    (SelectVisitor<Void>) getValidator(SelectValidator.class),
+                                    null);
+                        } else {
+                            validateOptionalExpression(value);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     protected void validateOptionalExpressions(List<? extends Expression> expressions) {

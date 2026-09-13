@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.parser.feature.Feature;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.OptionHint;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -27,7 +26,6 @@ public class UpdateValidator extends AbstractValidator<Update> {
             validateFeature(c, Feature.update);
             validateOptionalFeature(c, update.getFromItem(), Feature.updateFrom);
             validateOptionalFeature(c, update.getStartJoins(), Feature.updateJoins);
-            validateFeature(c, update.isUseSelect(), Feature.updateUseSelect);
             validateOptionalFeature(c, update.getOrderByElements(), Feature.updateOrderBy);
             validateOptionalFeature(c, update.getLimit(), Feature.updateLimit);
             validateOptionalFeature(c, update.getReturningClause(),
@@ -41,14 +39,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
         validateOptional(update.getStartJoins(),
                 j -> getValidator(SelectValidator.class).validateOptionalJoins(j));
 
-        if (update.isUseSelect()) {
-            validateOptionalExpressions(update.getColumns());
-            validateOptional(update.getSelect(),
-                    e -> e.accept((SelectVisitor<Void>) getValidator(SelectValidator.class), null));
-        } else {
-            validateOptionalExpressions(update.getColumns());
-            validateOptionalExpressions(update.getExpressions());
-        }
+        validateOptionalUpdateSets(update.getUpdateSets());
 
         if (update.getFromItem() != null) {
             validateOptionalFromItem(update.getFromItem());
