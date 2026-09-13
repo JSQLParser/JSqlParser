@@ -29,6 +29,7 @@ public enum OracleVersion implements Version {
                     Feature.jdbcNamedParameter, // expressions
                     Feature.exprLike, // common features
                     // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/SELECT.html
+                    Feature.matchRecognize,
                     Feature.select, // https://www.oracletutorial.com/oracle-basics/oracle-group-by/
                     Feature.selectGroupBy, Feature.function, // https://www.oracletutorial.com/oracle-basics/oracle-grouping-sets/
                     Feature.selectGroupByGroupingSets, // https://www.oracletutorial.com/oracle-basics/oracle-having/

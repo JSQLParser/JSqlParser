@@ -510,6 +510,14 @@ public interface ExpressionVisitor<T> {
         this.visit(extractExpression, null);
     }
 
+    default <S> T visit(RowPatternFunction function, S context) {
+        return function.getFunction().accept(this, context);
+    }
+
+    default void visit(RowPatternFunction function) {
+        visit(function, null);
+    }
+
     <S> T visit(IntervalExpression intervalExpression, S context);
 
     default void visit(IntervalExpression intervalExpression) {

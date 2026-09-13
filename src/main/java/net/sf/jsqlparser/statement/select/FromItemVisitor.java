@@ -42,6 +42,18 @@ public interface FromItemVisitor<T> {
         return null;
     }
 
+    /**
+     * Existing visitors continue through the input relation; adapters also visit clause
+     * expressions.
+     */
+    default <S> T visit(MatchRecognize matchRecognize, S context) {
+        return matchRecognize.getInput().accept(this, context);
+    }
+
+    default void visit(MatchRecognize matchRecognize) {
+        visit(matchRecognize, null);
+    }
+
     <S> T visit(Table tableName, S context);
 
     default void visit(Table tableName) {

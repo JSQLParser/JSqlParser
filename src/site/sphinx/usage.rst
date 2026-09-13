@@ -856,6 +856,69 @@ Informix's constraint form requires an explicit dialect selection:
                     + "REFERENCES parent(id) CONSTRAINT fk_child",
             parser -> parser.withDialect(Dialect.INFORMIX));
 
+Row pattern matching (MATCH_RECOGNIZE)
+--------------------------------------
+
+``MatchRecognize`` is a ``FromItem`` wrapping the input relation. Its input
+alias and output alias are independent. ``getMeasures()`` and
+``getDefinitions()`` expose ordinary SQL expressions; ``getPattern()`` exposes
+an editable ``RowPattern`` tree with variables, groups, ordered alternatives,
+sequences, anchors and quantifiers. Oracle and Snowflake additionally support
+``PERMUTE`` and exclusion nodes. Permutations remain compact in the AST.
+
+.. code-block:: java
+
+    PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+        "SELECT * FROM events MATCH_RECOGNIZE ("
+            + "ORDER BY seq MEASURES SUM(A.price) AS total "
+            + "PATTERN (A+) DEFINE A AS price > 0 "
+            + "OPTIONS (use_longest_match = TRUE))",
+        parser -> parser.withDialect(Dialect.BIGQUERY));
+    MatchRecognize match = (MatchRecognize) select.getFromItem();
+    RowPattern.Quantified repetition = (RowPattern.Quantified) match.getPattern();
+    repetition.setReluctant(true);
+    System.out.println(select); // PATTERN (A+?)
+
+``FromItemVisitorAdapter`` traverses the input and clause expressions.
+``RowPatternVisitorAdapter`` traverses pattern nodes and optionally visits
+expressions in quantifier bounds. ``RowPatternFunction`` represents an explicit
+``RUNNING`` or ``FINAL`` prefix while exposing the underlying ``Function`` to
+existing expression visitors. Both ``toString()`` and the deparsers render the
+current AST, including edited nested ``STRUCT`` arguments.
+
+Select the source dialect explicitly:
+
+* ``BIGQUERY`` requires ``ORDER BY``, ``MEASURES``, ``PATTERN`` and ``DEFINE``.
+  It supports empty alternatives, literal or query-parameter bounds, adjacent
+  anchors such as ``^A+$``, and ``OPTIONS (use_longest_match = TRUE/FALSE)``.
+* ``ORACLE`` supports optional ordering/measures, row output modes, targeted
+  ``AFTER MATCH SKIP``, ``SUBSET``, permutations, exclusions and function modes.
+* ``SNOWFLAKE`` supports the corresponding documented forms except ``SUBSET``
+  and BigQuery options. Its documented alternation-before-concatenation
+  precedence is used for the pattern AST. Other presets use
+  concatenation-before-alternation. Rendering adds explicit parentheses at
+  mixed operator boundaries; it does not translate expression syntax between DBs.
+
+Validation checks the ``matchRecognize`` and ``matchRecognizeOptions`` features.
+With an explicit dialect, it also checks selected static rules: pattern variable
+names, bounds, subset/skip targets and incompatible clause options. Table
+finding does not treat pattern qualifiers such as ``A.price`` as table names.
+Metadata validation does not bind these columns to the input relation.
+Function eligibility, aggregation/type rules, data-dependent skip failures and
+query execution remain the database's responsibility.
+
+The test fixtures were compared before and after deparsing using GoogleSQL's
+reference evaluator and Oracle 26ai Free. The reference evaluator is not the
+BigQuery service. Snowflake coverage follows its documentation and parser
+round-trip tests; it has not been executed against a Snowflake account.
+
+See the official `BigQuery MATCH_RECOGNIZE syntax
+<https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#match_recognize_clause>`_,
+`Oracle row pattern matching guide
+<https://docs.oracle.com/en/database/oracle/oracle-database/26/dwhsg/sql-pattern-matching-data-warehouses.html>`_
+and `Snowflake MATCH_RECOGNIZE reference
+<https://docs.snowflake.com/en/sql-reference/constructs/match_recognize>`_.
+
 The individual features
 ------------------------------
 
