@@ -84,6 +84,8 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
             case REPLACE:
                 builder.append("REPLACE(").append(Select.getStringList(replaceItems)).append(")");
                 break;
+            default:
+                throw new IllegalStateException("Unhandled ColumnsTransformerType: " + type);
         }
         return builder;
     }
