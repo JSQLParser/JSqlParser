@@ -153,9 +153,7 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             insert.getConflictAction().appendTo(builder);
         }
 
-        if (insert.getReturningClause() != null) {
-            insert.getReturningClause().appendTo(builder);
-        }
+        deparseReturningClause(insert.getReturningClause(), expressionVisitor);
     }
 
     public ExpressionVisitor<StringBuilder> getExpressionVisitor() {

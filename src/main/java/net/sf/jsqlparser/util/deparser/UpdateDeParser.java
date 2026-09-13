@@ -102,9 +102,7 @@ public class UpdateDeParser extends AbstractDeParser<Update>
             builder.append(update.getOption());
         }
 
-        if (update.getReturningClause() != null) {
-            update.getReturningClause().appendTo(builder);
-        }
+        deparseReturningClause(update.getReturningClause(), expressionVisitor);
     }
 
     protected void deparseWhereClause(Update update) {

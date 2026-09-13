@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.ForPortionClause;
@@ -25,6 +26,14 @@ abstract class AbstractDeParser<S> {
 
     protected AbstractDeParser(StringBuilder builder) {
         this.builder = builder;
+    }
+
+    protected void deparseReturningClause(ReturningClause clause,
+            ExpressionVisitor<StringBuilder> visitor) {
+        if (clause != null) {
+            SelectDeParser selectItems = new SelectDeParser(visitor, builder);
+            clause.appendTo(builder, item -> item.accept(selectItems, null));
+        }
     }
 
     public static void deparseUpdateSets(List<UpdateSet> updateSets, StringBuilder buffer,
