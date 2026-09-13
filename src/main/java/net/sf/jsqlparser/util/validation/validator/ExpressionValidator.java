@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Set;
+import java.util.Collections;
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+
 import java.util.Map;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -533,13 +537,32 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         return null;
     }
 
+    private Set<String> rowPatternVariables = Collections.emptySet();
+
+    void validateMatchRecognizeExpressions(MatchRecognize matchRecognize) {
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = matchRecognize.getPatternVariableNames();
+            matchRecognize
+                    .forEachPatternExpression(
+                            expression -> validateOptionalExpression(expression, this));
+        } finally {
+            rowPatternVariables = previous;
+        }
+    }
+
     @Override
     public <S> Void visit(Column tableColumn, S context) {
         if (tableColumn
                 .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
             validateFeature(Feature.oracleOldJoinSyntax);
         }
-        validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
+        // A pattern qualifier is not a schema/table name. Resolving its columns
+        // requires binding the input relation, which metadata validation does not do.
+        if (tableColumn.getTable() == null || !rowPatternVariables.contains(
+                MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
+            validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
+        }
         return null;
     }
 
@@ -1153,7 +1176,8 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(Select select, S context) {
-        return null;
+        return select.accept((net.sf.jsqlparser.statement.select.SelectVisitor<Void>) getValidator(
+                SelectValidator.class), context);
     }
 
     @Override

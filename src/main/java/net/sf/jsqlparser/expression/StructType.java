@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /*
  * STRUCT<T>
@@ -113,6 +114,11 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, expression -> builder.append(expression));
+    }
+
+    /** Renders current argument expressions through the caller's visitor. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressions) {
         if (dialect != Dialect.DUCKDB && keyword != null) {
             builder.append(keyword);
         }
@@ -148,7 +154,7 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
                     }
                     builder.append(e.getAlias().getName());
                     builder.append(":");
-                    builder.append(e.getExpression());
+                    expressions.accept(e.getExpression());
                 }
                 builder.append(" }");
             } else {
@@ -158,7 +164,10 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
                     if (0 < i++) {
                         builder.append(",");
                     }
-                    e.appendTo(builder);
+                    expressions.accept(e.getExpression());
+                    if (e.getAlias() != null) {
+                        builder.append(e.getAlias());
+                    }
                 }
 
                 builder.append(")");

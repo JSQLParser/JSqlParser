@@ -1237,6 +1237,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * Instead it goes directly to follower-based disambiguation for
      * reserved keywords.
      */
+    private boolean isMatchRecognizeAhead() {
+        return isKeywordAhead("MATCH_RECOGNIZE") && getToken(2).kind == OPENING_BRACKET;
+    }
+
+    private boolean isRowPatternPrimaryAhead() {
+        Token next = getToken(1);
+        return next.kind == OPENING_BRACKET || next.kind == OP_CARET
+                || next.kind == OPENING_CURLY_BRACKET && "-".equals(getToken(2).image)
+                || next.kind == S_IDENTIFIER || next.kind == S_QUOTED_IDENTIFIER
+                || next.kind == DATA_TYPE
+                || next.kind >= MIN_NON_RESERVED_WORD && next.kind <= MAX_NON_RESERVED_WORD;
+    }
+
     private boolean isAliasAhead() {
         if (isAsOfJoinAhead()) {
             return false;
@@ -1807,10 +1820,23 @@ TOKEN_MGR_DECLS : {
         return -1;
     }
 
+    private RowPatternTokenContext rowPatternContext;
+
     public void CommonTokenAction(Token t)
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
 		t.absoluteEnd = t.absoluteBegin + t.image.length();
+        // Track the lexical region independently of parser lookahead: nested SELECT
+        // disambiguation can fetch PATTERN tokens before its production is entered.
+        if (rowPatternContext == null && t.kind == S_IDENTIFIER
+                && "MATCH_RECOGNIZE".equalsIgnoreCase(t.image)
+                && AbstractJSqlParser.Dialect.BIGQUERY.name().equals(configuration.getValue(Feature.dialect))) {
+            rowPatternContext = new RowPatternTokenContext();
+        }
+        if (rowPatternContext != null) {
+            rowPatternContext.accept(t);
+            if (rowPatternContext.isIdle()) { rowPatternContext = null; }
+        }
 	}
 
 	public int getCurrentTokenAbsolutePosition()
@@ -2577,7 +2603,12 @@ TOKEN:
 |
 <S_DOLLAR_QUOTED_STRING: "$$">
     {
-        consumeDollarQuotedToken(matchedToken, matchedToken.image);
+        if (rowPatternContext != null && rowPatternContext.isInPattern()) {
+            truncateIdentifierToken(matchedToken, 1);
+            matchedToken.kind = S_IDENTIFIER;
+        } else {
+            consumeDollarQuotedToken(matchedToken, matchedToken.image);
+        }
     }
 |
 // Bare `#` as a binary operator (PostgreSQL bitwise XOR / geometric
@@ -2588,6 +2619,10 @@ TOKEN:
 |
 <S_IDENTIFIER: (<LETTER> (<PART_LETTER>)*) | "$" | ("$" <PART_LETTER_NO_DOLLAR> (<PART_LETTER>)*)>
 {
+    if (rowPatternContext != null && rowPatternContext.isInPattern()) {
+        int dollar = matchedToken.image.indexOf('$');
+        if (dollar >= 0) { truncateIdentifierToken(matchedToken, Math.max(1, dollar)); }
+    }
     if (matchedToken.image.charAt(0) == '$'
             && Boolean.TRUE.equals(configuration.getValue(Feature.allowDollarQuotedStringTags))) {
         String delimiter = StringValue.getDollarQuoteDelimiter(matchedToken.image);
@@ -7641,14 +7676,22 @@ FromItem FromItem() #FromItem:
         LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
 
-    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
+    [ LOOKAHEAD({ !isMatchRecognizeAhead() && isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
     [
         LOOKAHEAD(2, {fromItem instanceof Table }) timeTravelStr = TimeTravelAfterAlias()
         { ((Table) fromItem).setTimeTravelStrAfterAlias(timeTravelStr); }
     ]
-    [ LOOKAHEAD(2) sampleClause = SampleClause() { fromItem.setSampleClause(sampleClause); } ]
-    [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-    [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+    (
+        LOOKAHEAD({ isMatchRecognizeAhead() }) fromItem=MatchRecognize(fromItem)
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
+        [ LOOKAHEAD(2) sampleClause=SampleClause() { fromItem.setSampleClause(sampleClause); } ]
+        |
+        [ LOOKAHEAD(2) sampleClause = SampleClause() { fromItem.setSampleClause(sampleClause); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+    )
     [
         LOOKAHEAD(2)
         (
@@ -7667,6 +7710,265 @@ FromItem FromItem() #FromItem:
         linkAST(fromItem,jjtThis);
         return fromItem;
     }
+}
+
+
+MatchRecognize MatchRecognize(FromItem input) #MatchRecognize:
+{
+    MatchRecognize result = new MatchRecognize(input);
+    ExpressionList<Expression> partition;
+    List<OrderByElement> ordering;
+    List<SelectItem<?>> measures;
+    MatchRecognize.Definition definition;
+    MatchRecognize.Subset subset;
+    RowPattern pattern;
+    MatchRecognize.Options options = null;
+    String variable;
+    Token value;
+}
+{
+    ContextualKeyword("MATCH_RECOGNIZE") "("
+    [ <K_PARTITION> <K_BY> partition=SimpleExpressionList() { result.setPartitionBy(partition); } ]
+    [ LOOKAHEAD(2) ordering=OrderByElements() { result.setOrderByElements(ordering); } ]
+    [ LOOKAHEAD({ isKeywordAhead("MEASURES") }) ContextualKeyword("MEASURES") measures=SelectItemsList()
+        {
+            for (SelectItem<?> measure : measures) {
+                if (measure.getAlias() == null) { throw new ParseException("MATCH_RECOGNIZE measures require an alias"); }
+            }
+            result.setMeasures(measures);
+        }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("ONE") || getToken(1).kind == K_ALL })
+        ( LOOKAHEAD({ isKeywordAhead("ONE") }) ContextualKeyword("ONE") <K_ROW> ContextualKeyword("PER") <K_MATCH>
+            { result.setRowsPerMatch(MatchRecognize.RowsPerMatch.ONE); }
+          | <K_ALL> <K_ROWS> ContextualKeyword("PER") <K_MATCH>
+            { result.setRowsPerMatch(MatchRecognize.RowsPerMatch.ALL); }
+            [
+                <K_SHOW> <K_EMPTY> ContextualKeyword("MATCHES")
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.SHOW); }
+                | LOOKAHEAD({ isKeywordAhead("OMIT") }) ContextualKeyword("OMIT") <K_EMPTY> ContextualKeyword("MATCHES")
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.OMIT); }
+                | <K_WITH> ContextualKeyword("UNMATCHED") <K_ROWS>
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.WITH_UNMATCHED); }
+            ]
+        )
+    ]
+    [ LOOKAHEAD({ isKeywordAhead("AFTER") }) ContextualKeyword("AFTER") <K_MATCH> <K_SKIP>
+        ( LOOKAHEAD({ isKeywordAhead("PAST") }) ContextualKeyword("PAST") <K_LAST> <K_ROW>
+            { result.setSkipMode(MatchRecognize.SkipMode.PAST_LAST_ROW); }
+          | <K_TO>
+            ( LOOKAHEAD(2) <K_NEXT> <K_ROW> { result.setSkipMode(MatchRecognize.SkipMode.TO_NEXT_ROW); }
+              | { result.setSkipMode(MatchRecognize.SkipMode.TO_VARIABLE); }
+                [ LOOKAHEAD({ (getToken(1).kind == K_FIRST || getToken(1).kind == K_LAST)
+                        && !("PATTERN".equalsIgnoreCase(getToken(2).image) && getToken(3).kind == OPENING_BRACKET) })
+                  ( <K_FIRST> { result.setSkipMode(MatchRecognize.SkipMode.TO_FIRST); }
+                  | <K_LAST> { result.setSkipMode(MatchRecognize.SkipMode.TO_LAST); } ) ]
+                variable=RelObjectName() { result.setSkipVariable(variable); }
+            )
+        )
+    ]
+    ContextualKeyword("PATTERN") "(" pattern=RowPattern(0) ")" { result.setPattern(pattern); }
+    [ LOOKAHEAD({ isKeywordAhead("SUBSET") }) ContextualKeyword("SUBSET") subset=MatchRecognizeSubset()
+        { result.getSubsets().add(subset); }
+        ( LOOKAHEAD(2) "," subset=MatchRecognizeSubset() { result.getSubsets().add(subset); } )*
+    ]
+    ContextualKeyword("DEFINE") definition=MatchRecognizeDefinition() { result.getDefinitions().add(definition); }
+    ( LOOKAHEAD(2) "," definition=MatchRecognizeDefinition() { result.getDefinitions().add(definition); } )*
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) ContextualKeyword("OPTIONS") "("
+        { options = new MatchRecognize.Options(); }
+        [ LOOKAHEAD({ isKeywordAhead("use_longest_match") }) ContextualKeyword("use_longest_match") "="
+            ( value=<K_TRUE> | value=<K_FALSE> ) { options.setUseLongestMatch(value.kind == K_TRUE); }
+        ]
+        ")" { result.setOptions(options); }
+    ]
+    ")"
+    {
+        if (Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))) {
+            if (result.getOrderByElements().isEmpty() || result.getMeasures().isEmpty()) {
+                throw new ParseException("BigQuery MATCH_RECOGNIZE requires ORDER BY and MEASURES");
+            }
+            if (result.getRowsPerMatch() != null || result.getSkipVariable() != null || !result.getSubsets().isEmpty()) {
+                throw new ParseException("BigQuery does not support ROWS PER MATCH, SKIP TO a variable or SUBSET");
+            }
+        }
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+MatchRecognize.Subset MatchRecognizeSubset() #MatchRecognizeSubset:
+{
+    String name;
+    String variable;
+    List<String> variables = new ArrayList<String>();
+}
+{
+    name=RelObjectName() "=" "(" variable=RelObjectName() { variables.add(variable); }
+    ( "," variable=RelObjectName() { variables.add(variable); } )* ")"
+    {
+        MatchRecognize.Subset result = new MatchRecognize.Subset(name, variables);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+MatchRecognize.Definition MatchRecognizeDefinition() #MatchRecognizeDefinition:
+{
+    String name;
+    Expression expression;
+}
+{
+    name=RelObjectName() <K_AS> expression=Expression()
+    {
+        MatchRecognize.Definition result = new MatchRecognize.Definition(name, expression);
+        linkAST(result, jjtThis);
+        return result;
+    }
+}
+
+RowPattern RowPattern(int depth) #RowPattern:
+{
+    List<RowPattern> alternatives = new ArrayList<RowPattern>();
+    RowPattern pattern;
+    Token separator;
+}
+{
+    {
+        if (depth > getAsLong(Feature.allowedNestingDepth)) {
+            throw new ParseException("Row pattern exceeds the allowed nesting depth");
+        }
+    }
+    (
+        LOOKAHEAD({ Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect)) })
+        pattern=SnowflakeRowPatternSequence(depth) { alternatives.add(pattern); }
+        |
+        pattern=RowPatternSequence(depth) { alternatives.add(pattern); }
+        ( ( separator=<OP_PIPE> | separator=<OP_CONCAT> )
+            { if (separator.kind == OP_CONCAT) { alternatives.add(new RowPattern.Empty()); } }
+            pattern=RowPatternSequence(depth) { alternatives.add(pattern); }
+        )*
+    )
+    {
+        RowPattern result = alternatives.size() == 1 ? alternatives.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.ALTERNATION, alternatives);
+        linkAST(result, jjtThis);
+        return result;
+    }
+}
+
+RowPattern SnowflakeRowPatternSequence(int depth) #SnowflakeRowPatternSequence:
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    ( LOOKAHEAD({ isRowPatternPrimaryAhead() }) pattern=SnowflakeRowPatternAlternative(depth) { patterns.add(pattern); } )*
+    {
+        RowPattern result = patterns.isEmpty() ? new RowPattern.Empty()
+            : patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+RowPattern SnowflakeRowPatternAlternative(int depth) #SnowflakeRowPatternAlternative:
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    pattern=RowPatternFactor(depth) { patterns.add(pattern); }
+    ( <OP_PIPE> pattern=RowPatternFactor(depth) { patterns.add(pattern); } )*
+    {
+        RowPattern result = patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.ALTERNATION, patterns);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+RowPattern RowPatternSequence(int depth):
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    ( LOOKAHEAD({ isRowPatternPrimaryAhead() }) pattern=RowPatternFactor(depth) { patterns.add(pattern); } )*
+    {
+        if (patterns.isEmpty()) { return new RowPattern.Empty(); }
+        return patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+    }
+}
+
+RowPattern RowPatternFactor(int depth) #RowPatternFactor:
+{
+    RowPattern pattern;
+    String name;
+    List<RowPattern> permutations = new ArrayList<RowPattern>();
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("PERMUTE") && getToken(2).kind == OPENING_BRACKET })
+            ContextualKeyword("PERMUTE") "("
+            pattern=RowPattern(depth + 1) { permutations.add(pattern); }
+            ( "," pattern=RowPattern(depth + 1) { permutations.add(pattern); } )* ")"
+            { pattern = new RowPattern.Permute(permutations); }
+        | "{" "-" pattern=RowPattern(depth + 1) "-" "}" { pattern = new RowPattern.Exclusion(pattern); }
+        | <OP_CARET> { pattern = new RowPattern.Anchor(RowPattern.Anchor.Type.START); }
+        | LOOKAHEAD({ "$".equals(getToken(1).image) }) <S_IDENTIFIER>
+            { pattern = new RowPattern.Anchor(RowPattern.Anchor.Type.END); }
+        | "(" pattern=RowPattern(depth + 1) ")" { pattern = new RowPattern.Group(pattern); }
+        | name=RelObjectName() { pattern = new RowPattern.Variable(name); }
+    )
+    {
+        if (Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))
+                && (pattern instanceof RowPattern.Permute || pattern instanceof RowPattern.Exclusion)) {
+            throw new ParseException("BigQuery does not support PERMUTE or row pattern exclusion");
+        }
+    }
+    [ LOOKAHEAD({ !(pattern instanceof RowPattern.Anchor)
+            && ("?".equals(getToken(1).image) || "*".equals(getToken(1).image)
+                || "+".equals(getToken(1).image) || getToken(1).kind == OPENING_CURLY_BRACKET) })
+        pattern=RowPatternQuantifier(pattern)
+    ]
+    { linkAST(pattern, jjtThis); return pattern; }
+}
+
+RowPattern RowPatternQuantifier(RowPattern pattern) #RowPatternQuantifier:
+{
+    RowPattern.Quantified result;
+    Expression lower = null;
+    Expression upper = null;
+    boolean range = false;
+}
+{
+    (
+        "*" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.ZERO_OR_MORE); }
+        | "+" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.ONE_OR_MORE); }
+        | "?" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.OPTIONAL); }
+        | "{" [ LOOKAHEAD({ !",".equals(getToken(1).image) }) lower=RowPatternBound() ]
+            [ "," { range = true; } [ LOOKAHEAD({ getToken(1).kind != CLOSING_CURLY_BRACKET }) upper=RowPatternBound() ] ] "}"
+            {
+                if (lower == null && upper == null) { throw new ParseException("Row pattern quantifier requires a bound"); }
+                result = new RowPattern.Quantified(pattern, range ? RowPattern.Quantified.Type.RANGE : RowPattern.Quantified.Type.EXACT)
+                        .setLowerBound(lower).setUpperBound(upper);
+            }
+    )
+    [ LOOKAHEAD({ (result.getType() != RowPattern.Quantified.Type.EXACT
+            || !Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))) && "?".equals(getToken(1).image) }) "?" { result.setReluctant(true); } ]
+    { linkAST(result, jjtThis); return result; }
+}
+
+Expression RowPatternBound():
+{
+    Token value;
+    Expression result;
+}
+{
+    ( value=<S_LONG> { result = new LongValue(value.image); }
+      | "?" { result = new JdbcParameter(++jdbcParameterIndex, false, "?"); }
+      | result=UserVariable()
+    )
+    { return result; }
 }
 
 List<Join> JoinsList():
@@ -9555,6 +9857,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
 
+        | LOOKAHEAD({ !interrupted && (isKeywordAhead("RUNNING") || getToken(1).kind == K_FINAL)
+                && getToken(3).kind == OPENING_BRACKET }) retval=RowPatternFunction()
+
         | LOOKAHEAD({ !interrupted && isFunctionAhead() })
                   retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
 
@@ -11413,6 +11718,23 @@ LambdaExpression LambdaExpression() #LambdaExpression:
         lambdaExpression = LambdaExpression.from(columns, expression);
         linkAST(lambdaExpression,jjtThis);
         return lambdaExpression;
+    }
+}
+
+RowPatternFunction RowPatternFunction() #RowPatternFunction:
+{
+    RowPatternFunction.EvaluationMode mode;
+    Function function;
+}
+{
+    ( LOOKAHEAD({ isKeywordAhead("RUNNING") }) ContextualKeyword("RUNNING")
+        { mode = RowPatternFunction.EvaluationMode.RUNNING; }
+      | <K_FINAL> { mode = RowPatternFunction.EvaluationMode.FINAL; }
+    )
+    function=Function()
+    {
+        RowPatternFunction result = new RowPatternFunction(mode, function);
+        linkAST(result, jjtThis); return result;
     }
 }
 

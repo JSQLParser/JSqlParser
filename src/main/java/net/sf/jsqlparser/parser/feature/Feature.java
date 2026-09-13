@@ -71,6 +71,10 @@ public enum Feature {
      * "SELECT"
      */
     select,
+    /** Structured FROM row pattern recognition. */
+    matchRecognize,
+    /** BigQuery longest-match option. */
+    matchRecognizeOptions,
     /**
      * "GROUP BY"
      */

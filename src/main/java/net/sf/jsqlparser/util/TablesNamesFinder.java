@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+import net.sf.jsqlparser.expression.RowPatternFunction;
+
 import net.sf.jsqlparser.expression.AliasedExpression;
 
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -225,6 +228,7 @@ public class TablesNamesFinder<Void>
 
     private Set<String> tables;
     private boolean allowColumnProcessing = false;
+    private Set<String> rowPatternVariables = java.util.Collections.emptySet();
 
     private List<String> otherItemNames;
 
@@ -391,6 +395,16 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PlainSelect plainSelect, S context) {
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = java.util.Collections.emptySet();
+            return visitPlainSelectBody(plainSelect, context);
+        } finally {
+            rowPatternVariables = previous;
+        }
+    }
+
+    private <S> Void visitPlainSelectBody(PlainSelect plainSelect, S context) {
         List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
         if (withItemsList != null && !withItemsList.isEmpty()) {
             for (WithItem<?> withItem : withItemsList) {
@@ -521,6 +535,33 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(RowPatternFunction function, S context) {
+        return function.getFunction().accept(this, context);
+    }
+
+    @Override
+    public <S> Void visit(MatchRecognize matchRecognize, S context) {
+        matchRecognize.getInput().accept(this, context);
+        if (matchRecognize.getPivot() != null) {
+            matchRecognize.getPivot().accept(this, context);
+        }
+        if (matchRecognize.getUnPivot() != null) {
+            matchRecognize.getUnPivot().accept(this, context);
+        }
+        matchRecognize.getPartitionBy().forEach(expression -> expression.accept(this, context));
+        matchRecognize.getOrderByElements()
+                .forEach(order -> order.getExpression().accept(this, context));
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = matchRecognize.getPatternVariableNames();
+            matchRecognize.forEachPatternExpression(expression -> expression.accept(this, context));
+        } finally {
+            rowPatternVariables = previous;
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Table table, S context) {
         String tableWholeName = extractTableName(table);
         if (table.isTableVariable()) {
@@ -572,7 +613,9 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(Column tableColumn, S context) {
         if (allowColumnProcessing && tableColumn.getTable() != null
-                && tableColumn.getTable().getName() != null) {
+                && tableColumn.getTable().getName() != null
+                && !rowPatternVariables.contains(
+                        MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
             visit(tableColumn.getTable(), context);
         }
         return null;
@@ -1221,6 +1264,7 @@ public class TablesNamesFinder<Void>
         otherItemNames = new ArrayList<String>();
         tables = new HashSet<>();
         this.allowColumnProcessing = allowColumnProcessing;
+        this.rowPatternVariables = java.util.Collections.emptySet();
     }
 
     @Override

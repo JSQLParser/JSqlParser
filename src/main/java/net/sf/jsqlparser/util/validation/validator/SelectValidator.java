@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.MySQLIndexHint;
@@ -59,6 +61,22 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         PivotVisitor<Void> {
 
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @Override
+    public <S> Void visit(MatchRecognize matchRecognize, S context) {
+        validateFeature(Feature.matchRecognize);
+        if (matchRecognize.getOptions() != null) {
+            validateFeature(Feature.matchRecognizeOptions);
+        }
+        validateOptionalFromItem(matchRecognize.getInput());
+        validateOptional(matchRecognize.getPivot(), p -> p.accept(this, context));
+        validateOptional(matchRecognize.getUnPivot(), p -> p.accept(this, context));
+        validateOptionalExpressions(matchRecognize.getPartitionBy());
+        validateOptionalOrderByElements(matchRecognize.getOrderByElements());
+        getValidator(MatchRecognizeValidator.class).validate(matchRecognize);
+        getValidator(ExpressionValidator.class).validateMatchRecognizeExpressions(matchRecognize);
+        return null;
+    }
+
     @Override
     public <S> Void visit(PlainSelect plainSelect, S context) {
         if (isNotEmpty(plainSelect.getWithItemsList())) {

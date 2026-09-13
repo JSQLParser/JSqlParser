@@ -40,6 +40,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.RowPatternFunction;
 import net.sf.jsqlparser.expression.Inverse;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -143,7 +144,6 @@ import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
 
@@ -1843,76 +1843,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(RowPatternFunction function, S context) {
+        return function.appendTo(builder, expression -> expression.accept(this, context));
+    }
+
+    @Override
     public <S> StringBuilder visit(StructType structType, S context) {
-        if (structType.getDialect() != StructType.Dialect.DUCKDB
-                && structType.getKeyword() != null) {
-            builder.append(structType.getKeyword());
-        }
-
-        if (structType.getDialect() != StructType.Dialect.DUCKDB
-                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
-            builder.append("<");
-            int i = 0;
-            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                // optional name
-                if (e.getKey() != null && !e.getKey().isEmpty()) {
-                    builder.append(e.getKey()).append(" ");
-                }
-
-                // mandatory type
-                builder.append(e.getValue());
-            }
-
-            builder.append(">");
-        }
-
-        if (structType.getArguments() != null && !structType.getArguments().isEmpty()) {
-            if (structType.getDialect() == StructType.Dialect.DUCKDB) {
-                builder.append("{ ");
-                int i = 0;
-                for (SelectItem<?> e : structType.getArguments()) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    builder.append(e.getAlias().getName());
-                    builder.append(" : ");
-                    e.getExpression().accept(this, context);
-                }
-                builder.append(" }");
-            } else {
-                builder.append("(");
-                int i = 0;
-                for (SelectItem<?> e : structType.getArguments()) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    e.getExpression().accept(this, context);
-                    if (e.getAlias() != null) {
-                        builder.append(" as ");
-                        builder.append(e.getAlias().getName());
-                    }
-                }
-                builder.append(")");
-            }
-        }
-
-        if (structType.getDialect() == StructType.Dialect.DUCKDB
-                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
-            builder.append("::STRUCT( ");
-            int i = 0;
-            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                builder.append(e.getKey()).append(" ");
-                builder.append(e.getValue());
-            }
-            builder.append(")");
-        }
-        return builder;
+        return structType.appendTo(builder, expression -> expression.accept(this, context));
     }
 
     @Override
