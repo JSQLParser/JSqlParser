@@ -62,6 +62,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.joinInner,
             Feature.joinStraight,
             Feature.joinApply,
+            Feature.joinAsOf,
             Feature.joinWindow,
             Feature.joinUsingColumns,
 

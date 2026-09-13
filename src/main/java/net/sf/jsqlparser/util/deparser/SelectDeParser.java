@@ -732,39 +732,8 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(", ");
         } else {
 
-            if (join.isNatural()) {
-                builder.append(" NATURAL");
-            }
-
-            if (join.isAny()) {
-                builder.append(" ANY");
-            } else if (join.isAll()) {
-                builder.append(" ALL");
-            }
-
-            if (join.isRight()) {
-                builder.append(" RIGHT");
-            } else if (join.isFull()) {
-                builder.append(" FULL");
-            } else if (join.isLeft()) {
-                builder.append(" LEFT");
-            } else if (join.isCross()) {
-                builder.append(" CROSS");
-            }
-
-            if (join.isOuter()) {
-                builder.append(" OUTER");
-            } else if (join.isInner()) {
-                builder.append(" INNER");
-            } else if (join.isSemi()) {
-                builder.append(" SEMI");
-            }
-
-            if (join.isArray()) {
-                builder.append(" ARRAY");
-            }
-
             builder.append(' ');
+            join.appendJoinTypeTo(builder);
             join.appendJoinKeywordTo(builder);
 
         }

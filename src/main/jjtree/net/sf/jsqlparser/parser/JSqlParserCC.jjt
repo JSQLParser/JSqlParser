@@ -1209,6 +1209,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /** ASOF stays a contextual identifier outside a join prefix. */
+    private boolean isAsOfJoinAhead() {
+        if (!isKeywordAhead("ASOF")) {
+            return false;
+        }
+        int offset = 2;
+        int kind = getToken(offset).kind;
+        if (kind == K_LEFT || kind == K_RIGHT || kind == K_FULL) {
+            offset++;
+            if (getToken(offset).kind == K_OUTER) {
+                offset++;
+            }
+        } else if (kind == K_INNER) {
+            offset++;
+        }
+        return getToken(offset).kind == K_JOIN;
+    }
+
     /**
      * Checks whether the next token(s) can plausibly start an {@code Alias}.
      *
@@ -1220,6 +1238,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * reserved keywords.
      */
     private boolean isAliasAhead() {
+        if (isAsOfJoinAhead()) {
+            return false;
+        }
         Token t = getToken(1);
         int kind = t.kind;
 
@@ -7684,6 +7705,7 @@ Join JoinerExpression() #JoinerExpression:
     JoinHint joinHint = null;
 }
 {
+    [ LOOKAHEAD({ isAsOfJoinAhead() }) <S_IDENTIFIER> { join.setAsOf(true); } ]
     [ <K_GLOBAL> { join.setGlobal(true); } ]
     [ <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
     [ <K_NATURAL> { join.setNatural(true); } ]

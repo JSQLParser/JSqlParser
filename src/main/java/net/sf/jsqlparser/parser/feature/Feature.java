@@ -195,6 +195,9 @@ public enum Feature {
      */
     joinApply,
 
+    /** Nearest-match ASOF join. */
+    joinAsOf,
+
     joinWindow, joinUsingColumns,
 
     /**

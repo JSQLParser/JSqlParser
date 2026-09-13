@@ -25,6 +25,7 @@ public class Join extends ASTNodeAccessImpl {
 
     private final LinkedList<Expression> onExpressions = new LinkedList<>();
     private final LinkedList<Column> usingColumns = new LinkedList<>();
+    private boolean asOf = false;
     private boolean outer = false;
     private boolean right = false;
     private boolean left = false;
@@ -45,6 +46,20 @@ public class Join extends ASTNodeAccessImpl {
     private KSQLJoinWindow joinWindow;
 
     private JoinHint joinHint = null;
+
+    /** Whether the join uses nearest-match ASOF semantics. */
+    public boolean isAsOf() {
+        return asOf;
+    }
+
+    public void setAsOf(boolean asOf) {
+        this.asOf = asOf;
+    }
+
+    public Join withAsOf(boolean asOf) {
+        setAsOf(asOf);
+        return this;
+    }
 
     public boolean isSimple() {
         return simple;
@@ -464,6 +479,47 @@ public class Join extends ASTNodeAccessImpl {
         return this;
     }
 
+    /** Appends the join modifiers shared by model rendering and expression deparsers. */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendJoinTypeTo(StringBuilder builder) {
+        if (isAsOf()) {
+            builder.append("ASOF ");
+        }
+        if (isNatural()) {
+            builder.append("NATURAL ");
+        }
+
+        if (isAny()) {
+            builder.append("ANY ");
+        } else if (isAll()) {
+            builder.append("ALL ");
+        }
+
+        if (isRight()) {
+            builder.append("RIGHT ");
+        } else if (isFull()) {
+            builder.append("FULL ");
+        } else if (isLeft()) {
+            builder.append("LEFT ");
+        } else if (isCross()) {
+            builder.append("CROSS ");
+        }
+
+        if (isOuter()) {
+            builder.append("OUTER ");
+        } else if (isInner()) {
+            builder.append("INNER ");
+        } else if (isSemi()) {
+            builder.append("SEMI ");
+        }
+
+        if (isArray()) {
+            builder.append("ARRAY ");
+        }
+
+        return builder;
+    }
+
     /** Appends the join keyword, hint and FETCH modifier, followed by a space. */
     public StringBuilder appendJoinKeywordTo(StringBuilder builder) {
         if (isStraight()) {
@@ -499,38 +555,7 @@ public class Join extends ASTNodeAccessImpl {
         } else if (isSimple()) {
             builder.append(fromItem);
         } else {
-            if (isNatural()) {
-                builder.append("NATURAL ");
-            }
-
-            if (isAny()) {
-                builder.append("ANY ");
-            } else if (isAll()) {
-                builder.append("ALL ");
-            }
-
-            if (isRight()) {
-                builder.append("RIGHT ");
-            } else if (isFull()) {
-                builder.append("FULL ");
-            } else if (isLeft()) {
-                builder.append("LEFT ");
-            } else if (isCross()) {
-                builder.append("CROSS ");
-            }
-
-            if (isOuter()) {
-                builder.append("OUTER ");
-            } else if (isInner()) {
-                builder.append("INNER ");
-            } else if (isSemi()) {
-                builder.append("SEMI ");
-            }
-
-            if (isArray()) {
-                builder.append("ARRAY ");
-            }
-
+            appendJoinTypeTo(builder);
             appendJoinKeywordTo(builder);
 
             builder.append(fromItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
