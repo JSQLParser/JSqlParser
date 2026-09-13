@@ -40,6 +40,7 @@ public class DeleteValidator extends AbstractValidator<Delete> {
             delete.getTables().forEach(t -> t.accept(v, null));
         }
 
+        validateOptionalForPortionClause(delete.getForPortionClause());
         validateOptionalExpression(delete.getWhere());
         validateOptionalOrderByElements(delete.getOrderByElements());
 

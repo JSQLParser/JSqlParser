@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
@@ -39,6 +40,7 @@ public class Delete implements Statement {
 
     private List<WithItem<?>> withItemsList;
     private Table table;
+    private ForPortionClause forPortionClause;
     private OracleHint oracleHint = null;
     private List<Table> tables;
     private List<FromItem> usingFromItemList;
@@ -111,6 +113,19 @@ public class Delete implements Statement {
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
+    }
+
+    public ForPortionClause getForPortionClause() {
+        return forPortionClause;
+    }
+
+    public void setForPortionClause(ForPortionClause forPortionClause) {
+        this.forPortionClause = forPortionClause;
+    }
+
+    public Delete withForPortionClause(ForPortionClause forPortionClause) {
+        setForPortionClause(forPortionClause);
+        return this;
     }
 
     public Table getTable() {
@@ -261,6 +276,9 @@ public class Delete implements Statement {
             b.append(" FROM");
         }
         b.append(" ").append(table);
+        if (forPortionClause != null) {
+            b.append(' ').append(forPortionClause);
+        }
 
         if (usingFromItemList != null && !usingFromItemList.isEmpty()) {
             b.append(" USING ");

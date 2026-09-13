@@ -26,10 +26,8 @@ public enum MariaDbVersion implements Version {
     V10_5_4("10.5.4",
             EnumSet.of(// supported if used with jdbc
                     Feature.jdbcParameter,
-                    Feature.jdbcNamedParameter,
-                    // expressions
-                    Feature.exprLike,
-                    // https://mariadb.com/kb/en/select/
+                    Feature.jdbcNamedParameter, // expressions
+                    Feature.exprLike, // https://mariadb.com/kb/en/select/
                     Feature.select,
                     Feature.selectGroupBy, Feature.function,
                     Feature.selectHaving,
@@ -49,12 +47,9 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/select/#distinct
                     Feature.distinct,
 
-                    Feature.setOperation,
-                    // https://mariadb.com/kb/en/union/
-                    Feature.setOperationUnion,
-                    // https://mariadb.com/kb/en/intersect/
-                    Feature.setOperationIntersect,
-                    // https://mariadb.com/kb/en/except/
+                    Feature.setOperation, // https://mariadb.com/kb/en/union/
+                    Feature.setOperationUnion, // https://mariadb.com/kb/en/intersect/
+                    Feature.setOperationIntersect, // https://mariadb.com/kb/en/except/
                     Feature.setOperationExcept,
 
                     // https://mariadb.com/kb/en/common-table-expressions/
@@ -71,7 +66,8 @@ public enum MariaDbVersion implements Version {
                     Feature.insertReturningExpressionList,
 
                     // https://mariadb.com/kb/en/update/
-                    Feature.update,
+                    Feature.update, // https://mariadb.com/kb/en/application-time-periods/
+                    Feature.forPortion,
                     Feature.updateJoins,
                     Feature.updateOrderBy, Feature.updateLimit,
 
@@ -87,17 +83,12 @@ public enum MariaDbVersion implements Version {
                     Feature.execute, Feature.executeCall,
 
                     // https://mariadb.com/kb/en/drop/
-                    Feature.drop,
-                    // https://mariadb.com/kb/en/drop-index/
-                    Feature.dropIndex,
-                    // https://mariadb.com/kb/en/drop-table/
-                    Feature.dropTable,
-                    // https://mariadb.com/kb/en/drop-database/
+                    Feature.drop, // https://mariadb.com/kb/en/drop-index/
+                    Feature.dropIndex, // https://mariadb.com/kb/en/drop-table/
+                    Feature.dropTable, // https://mariadb.com/kb/en/drop-database/
                     // SCHEMA = DATABASE
-                    Feature.dropSchema,
-                    // https://mariadb.com/kb/en/drop-view/
-                    Feature.dropView,
-                    // https://mariadb.com/kb/en/drop-sequence/
+                    Feature.dropSchema, // https://mariadb.com/kb/en/drop-view/
+                    Feature.dropView, // https://mariadb.com/kb/en/drop-sequence/
                     Feature.dropSequence, Feature.dropTableIfExists, Feature.dropIndexIfExists,
                     Feature.dropViewIfExists, Feature.dropSchemaIfExists,
                     Feature.dropSequenceIfExists,
@@ -106,12 +97,9 @@ public enum MariaDbVersion implements Version {
                     Feature.upsert,
 
                     // https://mariadb.com/kb/en/alter/
-                    Feature.alterTable,
-                    // https://mariadb.com/kb/en/alter-sequence/
-                    Feature.alterSequence,
-                    // https://mariadb.com/kb/en/alter-view/
-                    Feature.alterView,
-                    // https://mariadb.com/kb/en/create-view/
+                    Feature.alterTable, // https://mariadb.com/kb/en/alter-sequence/
+                    Feature.alterSequence, // https://mariadb.com/kb/en/alter-view/
+                    Feature.alterView, // https://mariadb.com/kb/en/create-view/
                     Feature.createView,
                     Feature.createOrReplaceView,
                     Feature.createViewWithComment,
@@ -119,35 +107,22 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/create-table/
                     Feature.createTable, Feature.createTableCreateOptionStrings,
                     Feature.createTableTableOptionStrings,
-                    Feature.createTableFromSelect, Feature.createTableIfNotExists,
-                    // https://mariadb.com/kb/en/create-index/
-                    Feature.createIndex,
-                    // https://mariadb.com/kb/en/create-sequence/
-                    Feature.createSequence,
-                    // https://mariadb.com/kb/en/create-database/
-                    Feature.createSchema,
-                    // https://mariadb.com/kb/en/create-trigger/
+                    Feature.createTableFromSelect, Feature.createTableIfNotExists, // https://mariadb.com/kb/en/create-index/
+                    Feature.createIndex, // https://mariadb.com/kb/en/create-sequence/
+                    Feature.createSequence, // https://mariadb.com/kb/en/create-database/
+                    Feature.createSchema, // https://mariadb.com/kb/en/create-trigger/
                     Feature.createTrigger,
 
                     // https://mariadb.com/kb/en/describe/
-                    Feature.describe,
-                    // https://mariadb.com/kb/en/explain/
-                    Feature.explain,
-                    // https://mariadb.com/kb/en/show/
-                    Feature.show,
-                    // https://mariadb.com/kb/en/show-tables/
-                    Feature.showTables,
-                    // https://mariadb.com/kb/en/show-columns/
-                    Feature.showColumns,
-                    // https://mariadb.com/kb/en/show-index/
-                    Feature.showIndex,
-                    // https://mariadb.com/kb/en/use/
-                    Feature.use,
-                    // https://mariadb.com/kb/en/grant/
-                    Feature.grant,
-                    // https://mariadb.com/kb/en/commit/
-                    Feature.commit,
-                    // https://mariadb.com/kb/en/optimizer-hints/
+                    Feature.describe, // https://mariadb.com/kb/en/explain/
+                    Feature.explain, // https://mariadb.com/kb/en/show/
+                    Feature.show, // https://mariadb.com/kb/en/show-tables/
+                    Feature.showTables, // https://mariadb.com/kb/en/show-columns/
+                    Feature.showColumns, // https://mariadb.com/kb/en/show-index/
+                    Feature.showIndex, // https://mariadb.com/kb/en/use/
+                    Feature.use, // https://mariadb.com/kb/en/grant/
+                    Feature.grant, // https://mariadb.com/kb/en/commit/
+                    Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),

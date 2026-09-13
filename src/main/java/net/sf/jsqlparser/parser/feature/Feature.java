@@ -340,6 +340,9 @@ public enum Feature {
      * @see Update
      */
     update,
+
+    /** Application-time FOR PORTION OF in UPDATE and DELETE. */
+    forPortion,
     /**
      * "UPDATE table1 SET ... FROM table2
      */

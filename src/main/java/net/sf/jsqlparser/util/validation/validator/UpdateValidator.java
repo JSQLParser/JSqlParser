@@ -56,6 +56,7 @@ public class UpdateValidator extends AbstractValidator<Update> {
                     j -> getValidator(SelectValidator.class).validateOptionalJoins(j));
         }
 
+        validateOptionalForPortionClause(update.getForPortionClause());
         validateOptionalExpression(update.getWhere());
         validateOptionalOrderByElements(update.getOrderByElements());
 

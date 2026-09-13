@@ -61,6 +61,7 @@ public class UpdateDeParser extends AbstractDeParser<Update>
             builder.append("IGNORE ");
         }
         builder.append(update.getTable());
+        deparseForPortionClause(update.getForPortionClause(), expressionVisitor);
         if (update.getStartJoins() != null) {
             for (Join join : update.getStartJoins()) {
                 if (join.isSimple()) {

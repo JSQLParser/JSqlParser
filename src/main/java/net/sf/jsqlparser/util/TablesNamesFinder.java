@@ -1358,6 +1358,9 @@ public class TablesNamesFinder<Void>
 
         visitJoins(delete.getJoins(), context);
 
+        if (delete.getForPortionClause() != null) {
+            delete.getForPortionClause().accept(this, context);
+        }
         if (delete.getWhere() != null) {
             delete.getWhere().accept(this, context);
         }
@@ -1421,6 +1424,9 @@ public class TablesNamesFinder<Void>
             }
         }
 
+        if (update.getForPortionClause() != null) {
+            update.getForPortionClause().accept(this, context);
+        }
         if (update.getWhere() != null) {
             update.getWhere().accept(this, context);
         }

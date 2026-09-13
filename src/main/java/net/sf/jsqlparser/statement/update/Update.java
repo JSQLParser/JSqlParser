@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.expression.PreferringClause;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.statement.OutputClause;
 import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.Statement;
@@ -40,6 +41,7 @@ public class Update implements Statement {
 
     private List<WithItem<?>> withItemsList;
     private Table table;
+    private ForPortionClause forPortionClause;
     private Expression where;
     private PreferringClause preferringClause;
     private List<UpdateSet> updateSets;
@@ -112,6 +114,19 @@ public class Update implements Statement {
                 Optional.ofNullable(getWithItemsList()).orElseGet(ArrayList::new);
         collection.addAll(withItemsList);
         return this.withWithItemsList(collection);
+    }
+
+    public ForPortionClause getForPortionClause() {
+        return forPortionClause;
+    }
+
+    public void setForPortionClause(ForPortionClause forPortionClause) {
+        this.forPortionClause = forPortionClause;
+    }
+
+    public Update withForPortionClause(ForPortionClause forPortionClause) {
+        setForPortionClause(forPortionClause);
+        return this;
     }
 
     public Table getTable() {
@@ -372,6 +387,9 @@ public class Update implements Statement {
             b.append("IGNORE ");
         }
         b.append(table);
+        if (forPortionClause != null) {
+            b.append(' ').append(forPortionClause);
+        }
         if (startJoins != null) {
             for (Join join : startJoins) {
                 if (join.isSimple()) {

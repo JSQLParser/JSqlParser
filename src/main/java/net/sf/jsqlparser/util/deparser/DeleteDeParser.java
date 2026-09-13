@@ -77,6 +77,7 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
             builder.append(" FROM");
         }
         builder.append(" ").append(delete.getTable().toString());
+        deparseForPortionClause(delete.getForPortionClause(), expressionVisitor);
 
         if (delete.getUsingFromItemList() != null && !delete.getUsingFromItemList().isEmpty()) {
             builder.append(" USING").append(

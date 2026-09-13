@@ -4769,6 +4769,7 @@ Update Update():
 {
     Update update = new Update();
     Table table = null;
+    ForPortionClause forPortionClause;
     List<Join> startJoins = null;
     List<WithItem<?>> with = null;
     List<UpdateSet> updateSets;
@@ -4789,7 +4790,9 @@ Update Update():
    <K_UPDATE> { update.setOracleHint(getOracleHint()); }
     [ LOOKAHEAD(2) <K_LOW_PRIORITY> { modifierPriority = UpdateModifierPriority.LOW_PRIORITY; }]
     [ LOOKAHEAD(2) <K_IGNORE> { modifierIgnore = true; }]
-    table=TableWithAliasAndMysqlIndexHint() [ startJoins=JoinsList() ]
+    table=TableWithAliasAndMysqlIndexHint()
+    [ forPortionClause=ForPortionClause() { update.setForPortionClause(forPortionClause); } ]
+    [ startJoins=JoinsList() ]
     [ LOOKAHEAD(<K_FROM>, { Dialect.TERADATA.name().equals(getAsString(Feature.dialect)) })
         UpdateFromClause(update) { update.setFromBeforeSet(true); } ]
     <K_SET> updateSets = UpdateSets() { update.setUpdateSets(updateSets); }
@@ -4813,6 +4816,24 @@ Update Update():
               .withStartJoins(startJoins)
               .withModifierPriority(modifierPriority)
               .withModifierIgnore(modifierIgnore);
+    }
+}
+
+/** Shared structured interval for application-time UPDATE and DELETE. */
+ForPortionClause ForPortionClause() #ForPortionClause:
+{
+    String periodName;
+    Expression fromExpression;
+    Expression toExpression;
+    ForPortionClause clause;
+}
+{
+    <K_FOR> AccessKeyword("PORTION") <K_OF> periodName=RelObjectName()
+    <K_FROM> fromExpression=Expression() <K_TO> toExpression=Expression()
+    {
+        clause = new ForPortionClause(periodName, fromExpression, toExpression);
+        linkAST(clause, jjtThis);
+        return clause;
     }
 }
 
@@ -5399,6 +5420,7 @@ Delete Delete():
 {
     Delete delete = new Delete();
     Table table = null;
+    ForPortionClause forPortionClause;
     List<Table> tables = new ArrayList<Table>();
     List<WithItem<?>> with = null;
     FromItem usingFromItem = null;
@@ -5428,7 +5450,9 @@ Delete Delete():
     [ outputClause = OutputClause() {delete.setOutputClause(outputClause); } ]
     <K_FROM> | <K_FROM>) { hasFrom = true; }]
 
-    [ LOOKAHEAD(3) table=TableWithAlias() [ LOOKAHEAD(2)  joins=JoinsList() ] ]
+    [ LOOKAHEAD(3) table=TableWithAlias()
+        [ forPortionClause=ForPortionClause() { delete.setForPortionClause(forPortionClause); } ]
+        [ LOOKAHEAD(2) joins=JoinsList() ] ]
     [ <K_USING> usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); }
           ("," usingFromItem=FromItem() { usingFromItemList.add(usingFromItem); } )*]
     [where=WhereClause() { delete.setWhere(where); } ]

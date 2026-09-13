@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.ForPortionClause;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -126,6 +127,15 @@ public abstract class AbstractValidator<S> implements Validator<S> {
         if (isNotEmpty(elementList)) {
             V validator = validatorSupplier.get();
             elementList.forEach(e -> elementConsumer.accept(e, validator));
+        }
+    }
+
+    protected void validateOptionalForPortionClause(ForPortionClause clause) {
+        if (clause != null) {
+            for (ValidationCapability capability : getCapabilities()) {
+                validateFeature(capability, Feature.forPortion);
+            }
+            clause.accept(getValidator(ExpressionValidator.class), null);
         }
     }
 

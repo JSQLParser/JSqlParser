@@ -138,6 +138,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
      */
     public static final FeaturesAllowed UPDATE = new FeaturesAllowed("UPDATE", Feature.update,
+            Feature.forPortion,
             Feature.updateJoins,
             Feature.updateFrom, Feature.updateLimit, Feature.updateOrderBy, Feature.updateReturning,
             Feature.updateUseSelect)
@@ -146,7 +147,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all {@link Feature}' for SQL UPDATE including {@link #SELECT}
      */
     public static final FeaturesAllowed DELETE =
-            new FeaturesAllowed("DELETE", Feature.delete, Feature.deleteJoin,
+            new FeaturesAllowed("DELETE", Feature.delete, Feature.forPortion, Feature.deleteJoin,
                     Feature.deleteLimit, Feature.deleteOrderBy, Feature.deleteTables,
                     Feature.deleteReturningExpressionList,
                     Feature.truncate)

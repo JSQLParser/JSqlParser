@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.update.UpdateSet;
+import net.sf.jsqlparser.statement.ForPortionClause;
 
 import java.util.List;
 
@@ -40,6 +41,14 @@ abstract class AbstractDeParser<S> {
                 buffer.append(" = ");
                 expressionListDeParser.deParse(updateSet.getValues());
             }
+        }
+    }
+
+    protected void deparseForPortionClause(ForPortionClause clause,
+            ExpressionVisitor<StringBuilder> visitor) {
+        if (clause != null) {
+            builder.append(' ');
+            clause.appendTo(builder, expression -> expression.accept(visitor, null));
         }
     }
 
