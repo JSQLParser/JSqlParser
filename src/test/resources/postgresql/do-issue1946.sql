@@ -1,3 +1,12 @@
+---
+-- #%L
+-- JSQLParser library
+-- %%
+-- Copyright (C) 2004 - 2026 JSQLParser
+-- %%
+-- Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+-- #L%
+---
 DO $$
 BEGIN
 	IF NOT EXISTS( select 1 from comm.permission_operation where permission_operation_code = 'ecg_report_time_modify') and EXISTS( select 1 from comm.permission where permission_code = 'data_modify')

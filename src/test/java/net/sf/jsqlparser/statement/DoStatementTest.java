@@ -79,7 +79,7 @@ class DoStatementTest {
             statement.accept(new StatementDeParser(output), null);
             output.append(";\n");
         }
-        assertEquals("SELECT 0;\n" + sql + "\nSELECT 1;\n", output.toString());
+        assertEquals("SELECT 0;\nDO " + body + ";\nSELECT 1;\n", output.toString());
         Statements reparsed = CCJSqlParserUtil.parseStatements(output.toString(),
                 p -> p.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(false));
         assertEquals(3, reparsed.size());
