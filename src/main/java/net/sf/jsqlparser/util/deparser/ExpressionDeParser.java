@@ -25,6 +25,7 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -1924,6 +1925,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         builder.append(" -> ");
         lambdaExpression.getExpression().accept(this, context);
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ColumnsExpression columnsExpression, S context) {
+        return columnsExpression.appendTo(builder);
     }
 
     @Override

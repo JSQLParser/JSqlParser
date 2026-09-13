@@ -876,6 +876,26 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(ColumnsExpression columnsExpression, S context) {
+        if (columnsExpression.getColumns() != null) {
+            columnsExpression.getColumns().accept(this, context);
+        }
+        for (ColumnsTransformer transformer : columnsExpression.getTransformers()) {
+            if (transformer.getApplyExpression() != null) {
+                transformer.getApplyExpression().accept(this, context);
+            }
+            if (transformer.getReplaceItems() != null) {
+                for (SelectItem<?> selectItem : transformer.getReplaceItems()) {
+                    if (selectItem.getExpression() != null) {
+                        selectItem.getExpression().accept(this, context);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public <S> T visit(HighExpression highExpression, S context) {
         return highExpression.getExpression().accept(this, context);
     }

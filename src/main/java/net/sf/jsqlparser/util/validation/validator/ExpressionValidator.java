@@ -20,6 +20,8 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ColumnsExpression;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -1215,6 +1217,26 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ColumnsExpression columnsExpression, S context) {
+        if (columnsExpression.getColumns() != null) {
+            columnsExpression.getColumns().accept(this, context);
+        }
+        for (ColumnsTransformer transformer : columnsExpression.getTransformers()) {
+            if (transformer.getApplyExpression() != null) {
+                transformer.getApplyExpression().accept(this, context);
+            }
+            if (transformer.getReplaceItems() != null) {
+                for (SelectItem<?> selectItem : transformer.getReplaceItems()) {
+                    if (selectItem.getExpression() != null) {
+                        selectItem.getExpression().accept(this, context);
+                    }
+                }
+            }
+        }
         return null;
     }
 

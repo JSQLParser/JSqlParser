@@ -2228,6 +2228,26 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(ColumnsExpression columnsExpression, S context) {
+        if (columnsExpression.getColumns() != null) {
+            columnsExpression.getColumns().accept(this, context);
+        }
+        for (ColumnsTransformer transformer : columnsExpression.getTransformers()) {
+            if (transformer.getApplyExpression() != null) {
+                transformer.getApplyExpression().accept(this, context);
+            }
+            if (transformer.getReplaceItems() != null) {
+                for (SelectItem<?> selectItem : transformer.getReplaceItems()) {
+                    if (selectItem.getExpression() != null) {
+                        selectItem.getExpression().accept(this, context);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(HighExpression highExpression, S context) {
         highExpression.getExpression().accept(this, context);
         return null;

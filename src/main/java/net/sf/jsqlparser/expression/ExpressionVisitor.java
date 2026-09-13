@@ -796,6 +796,12 @@ public interface ExpressionVisitor<T> {
         this.visit(lambdaExpression, null);
     }
 
+    <S> T visit(ColumnsExpression columnsExpression, S context);
+
+    default void visit(ColumnsExpression columnsExpression) {
+        this.visit(columnsExpression, null);
+    }
+
     <S> T visit(HighExpression highExpression, S context);
 
     default void visit(HighExpression highExpression) {

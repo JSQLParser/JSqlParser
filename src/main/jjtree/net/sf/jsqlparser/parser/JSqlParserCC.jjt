@@ -1274,6 +1274,125 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return false;
     }
 
+    /**
+     * Upper bound for the token scans of {@link #isColumnsExpressionAhead()}; content
+     * beyond the budget cannot come from the alias-columns grammar, and the inputs it
+     * belongs to are rejected by the baseline parser anyway, so declining to commit
+     * keeps the scan linear on pathological content.
+     */
+    private static final int CONTENT_SCAN_BUDGET = 4096;
+
+    /**
+     * True when a COLUMNS(...) function is followed by at least one ClickHouse transformer
+     * (APPLY, EXCEPT, REPLACE). Scans the balanced parentheses of the function call and
+     * checks the token after the closing bracket. A plain COLUMNS('regexp') without a
+     * transformer stays on the regular expression path and keeps parsing as a Function.
+     *
+     * For APPLY and REPLACE the follower's own parameter content is also checked: when
+     * it is shaped like the alias-columns grammar T(name[type], ...) that the regular
+     * alias path reads (a depth-1 comma for APPLY, or two adjacent identifier-kind
+     * tokens at depth 1 for both), this predicate returns false so the input keeps its
+     * exact baseline parse instead of committing to a transformer body that cannot
+     * parse it. The scan is bounded and exception-safe: on pathological content it
+     * returns false, which hands the input to the baseline paths.
+     */
+    protected boolean isColumnsExpressionAhead() {
+        Token columnsToken = getToken(1);
+        if (columnsToken.kind != K_COLUMNS || getToken(2).kind != OPENING_BRACKET) {
+            return false;
+        }
+        try {
+            int depth = 1;
+            int index = 3;
+            while (true) {
+                Token token = getToken(index++);
+                if (token.kind == EOF) {
+                    return false;
+                }
+                if (token.kind == OPENING_BRACKET) {
+                    depth++;
+                } else if (token.kind == CLOSING_BRACKET) {
+                    if (--depth == 0) {
+                        int followerKind = getToken(index).kind;
+                        if (followerKind != K_APPLY && followerKind != K_REPLACE) {
+                            return followerKind == K_EXCEPT;
+                        }
+                        return !isAliasColumnsContent(index + 2, followerKind == K_APPLY);
+                    }
+                }
+                if (index > CONTENT_SCAN_BUDGET) {
+                    return false;
+                }
+            }
+        } catch (TokenMgrException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Walks the balanced parentheses of a follower's parameter list and reports whether
+     * its depth-1 content is shaped like the alias-columns grammar T(name[type], ...)
+     * rather than like a transformer body: a depth-1 comma (which a single expression or
+     * lambda body can never have, checked for APPLY only), or two adjacent
+     * identifier-kind tokens at depth 1 (the name/type adjacency of a typed alias
+     * column, e.g. T(a INT); expression grammar never places two such tokens side by
+     * side, which keeps predicate keywords like AS, IS or AND out of the rule). When
+     * this returns true the input belongs to the regular alias path, whose parse is
+     * identical to the baseline parser's.
+     */
+    protected boolean isAliasColumnsContent(int startIndex, boolean commaDisqualifies) {
+        int depth = 1;
+        int index = startIndex;
+        int previousKind = -1;
+        while (true) {
+            Token token = getToken(index++);
+            if (token.kind == EOF) {
+                return false;
+            }
+            if (token.kind == OPENING_BRACKET) {
+                depth++;
+            } else if (token.kind == CLOSING_BRACKET) {
+                if (--depth == 0) {
+                    return false;
+                }
+            } else if (depth == 1) {
+                if (token.kind == K_COMMA && commaDisqualifies) {
+                    return true;
+                }
+                if (isIdentifierKind(previousKind) && isIdentifierKind(token.kind)) {
+                    return true;
+                }
+            }
+            if (index - startIndex > CONTENT_SCAN_BUDGET) {
+                return false;
+            }
+            previousKind = token.kind;
+        }
+    }
+
+    /**
+     * The token kinds that RelObjectName and ColDataType are built from, plus the
+     * reserved keywords usable as identifiers in their context-guarded positions.
+     * DT_ZONE (a compound "TIMESTAMP WITH TIME ZONE" style type lexed as one token)
+     * belongs here because ColDataType accepts it as a type name.
+     */
+    private static boolean isIdentifierKind(int kind) {
+        switch (kind) {
+            case S_IDENTIFIER: case S_QUOTED_IDENTIFIER: case DATA_TYPE:
+            case K_DATETIMELITERAL: case K_DATE_LITERAL: case DT_ZONE:
+            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT: case K_CREATE:
+            case K_DEFAULT: case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
+            case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL: case K_LEFT:
+            case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_OPTIMIZE:
+            case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
+            case K_FILE: case K_SET: case K_SOME: case K_START: case K_TABLES: case K_TOP:
+            case K_VALUE: case K_VALUES:
+                return true;
+            default:
+                return kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD;
+        }
+    }
+
     private static void requireTypeDdlSyntax(boolean valid, String message) throws ParseException {
         if (!valid) { throw new ParseException(message); }
     }
@@ -7010,11 +7129,15 @@ SelectItem<?> SelectItem() #SelectItem:
 {
     Expression expression;
     Alias alias = null;
+    Expression columnsItemExpression;
 }
 {
     // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
     // @todo: parse a proper SEQUENCE instead of a COLUMN
     (
+        LOOKAHEAD( { isColumnsExpressionAhead() } ) columnsItemExpression = ColumnsExpression()
+        { expression = columnsItemExpression; }
+        |
         LOOKAHEAD( 3 ) expression = ConnectByPriorOperator()
         |
         ( expression=Condition() { expression = prattExpressionRest(expression, 2); } )
@@ -7025,6 +7148,73 @@ SelectItem<?> SelectItem() #SelectItem:
         linkAST(selectItem,jjtThis);
         return selectItem;
     }
+}
+
+/**
+ * Parses a ClickHouse COLUMNS('regexp') matcher followed by zero or more transformers,
+ * for example COLUMNS('^m') APPLY(x -> round(x, 2)). Each transformer branch carries a
+ * syntactic lookahead, and when no transformer materializes the plain Function is
+ * returned, so the committed select-item branch degrades to the exact regular parse
+ * instead of failing: EXCEPT stays a set operation and bare APPLY/REPLACE stay aliases,
+ * exactly as without this production.
+ */
+Expression ColumnsExpression() #ColumnsExpression:
+{
+    Expression columns;
+    ColumnsTransformer transformer;
+    List<ColumnsTransformer> transformers = new ArrayList<ColumnsTransformer>();
+}
+{
+    columns = Function()
+    (
+        LOOKAHEAD( <K_APPLY> <OPENING_BRACKET> | <K_REPLACE> <OPENING_BRACKET> | <K_EXCEPT> ParenthesedColumnList() )
+        transformer = ColumnsTransformer()
+        { transformers.add(transformer); }
+    )*
+    {
+        if (transformers.isEmpty()) {
+            linkAST(columns, jjtThis);
+            return columns;
+        }
+        ColumnsExpression columnsExpression = new ColumnsExpression(columns, transformers);
+        linkAST(columnsExpression, jjtThis);
+        return columnsExpression;
+    }
+}
+
+/**
+ * Parses a single ClickHouse transformer: APPLY(expression), EXCEPT (columns) or
+ * REPLACE (selectItems). ClickHouse parses these in a loop, so they may repeat
+ * and combine in any order.
+ */
+ColumnsTransformer ColumnsTransformer():
+{
+    Expression applyExpression;
+    ParenthesedExpressionList<Column> exceptColumns;
+    List<SelectItem<?>> replaceItems;
+    ColumnsTransformer transformer;
+}
+{
+    (
+          <K_APPLY> "("
+          (
+              LOOKAHEAD( RelObjectName() "->" ) applyExpression = LambdaExpression()
+              |
+              applyExpression = Expression()
+          )
+          ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.APPLY)
+                  .setApplyExpression(applyExpression); }
+
+        | <K_EXCEPT> exceptColumns = ParenthesedColumnList()
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+                  .setExceptColumns(exceptColumns); }
+
+        | <K_REPLACE> "(" replaceItems = SelectItemsList() ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
+                  .setReplaceItems(replaceItems); }
+    )
+    { return transformer; }
 }
 
 /**
