@@ -42,6 +42,18 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
         if (!bigQuery && !oracle && !snowflake) {
             return;
         }
+        validateDialectOptions(match, bigQuery, oracle);
+        validateRowOutput(match, oracle);
+        Set<String> used = validateVariables(match, bigQuery, oracle);
+        validateTargets(match, used, bigQuery);
+        validatePattern(match, bigQuery, oracle);
+        match.getMeasures()
+                .forEach(measure -> checkFunctions(measure.getExpression(), bigQuery, false));
+        match.getDefinitions()
+                .forEach(definition -> checkFunctions(definition.getExpression(), bigQuery, true));
+    }
+
+    private void validateDialectOptions(MatchRecognize match, boolean bigQuery, boolean oracle) {
         if (bigQuery) {
             if (match.getOrderByElements().isEmpty() || match.getMeasures().isEmpty()) {
                 error("BigQuery MATCH_RECOGNIZE requires ORDER BY and MEASURES");
@@ -55,6 +67,9 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
         if (!oracle && !match.getSubsets().isEmpty()) {
             error("SUBSET is specific to Oracle");
         }
+    }
+
+    private void validateRowOutput(MatchRecognize match, boolean oracle) {
         if (match.getEmptyMatchMode() != null
                 && match.getRowsPerMatch() != MatchRecognize.RowsPerMatch.ALL) {
             error("Empty match options require ALL ROWS PER MATCH");
@@ -65,6 +80,9 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
             }
         });
 
+    }
+
+    private Set<String> validateVariables(MatchRecognize match, boolean bigQuery, boolean oracle) {
         Set<String> used = new HashSet<>();
         match.getPattern().accept(new RowPatternVisitorAdapter<Void>() {
             @Override
@@ -90,6 +108,10 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
                 }
             }
         }
+        return used;
+    }
+
+    private void validateTargets(MatchRecognize match, Set<String> used, boolean bigQuery) {
         Set<String> subsetNames = new HashSet<>();
         for (MatchRecognize.Subset subset : match.getSubsets()) {
             String name = normalize(subset.getName(), false);
@@ -107,6 +129,9 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
                 && !subsetNames.contains(normalize(match.getSkipVariable(), false))) {
             error("Unknown AFTER MATCH SKIP variable: " + match.getSkipVariable());
         }
+    }
+
+    private void validatePattern(MatchRecognize match, boolean bigQuery, boolean oracle) {
         match.getPattern().accept(new RowPatternVisitorAdapter<Void>() {
             @Override
             public <S> Void visit(RowPattern.Quantified quantified, S context) {
@@ -164,10 +189,6 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
                 return super.visit(permute, context);
             }
         }, null);
-        match.getMeasures()
-                .forEach(measure -> checkFunctions(measure.getExpression(), bigQuery, false));
-        match.getDefinitions()
-                .forEach(definition -> checkFunctions(definition.getExpression(), bigQuery, true));
     }
 
     private void checkFunctions(Expression expression, boolean bigQuery, boolean definition) {

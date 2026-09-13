@@ -405,26 +405,14 @@ public class TablesNamesFinder<Void>
     }
 
     private <S> Void visitPlainSelectBody(PlainSelect plainSelect, S context) {
-        List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
-        }
+        visitWithItems(plainSelect.getWithItemsList(), context);
         if (plainSelect.getDistinct() != null) {
             visitSelectItems(plainSelect.getDistinct().getOnSelectItems(), context);
         }
         visitTables(plainSelect.getIntoTables(), context);
 
-        if (plainSelect.getSelectItems() != null) {
-            for (SelectItem<?> item : plainSelect.getSelectItems()) {
-                item.accept(this, context);
-            }
-        }
-
-        if (plainSelect.getFromItem() != null) {
-            plainSelect.getFromItem().accept(this, context);
-        }
+        visitSelectItems(plainSelect.getSelectItems(), context);
+        visitFromItem(plainSelect.getFromItem(), context);
 
         if (plainSelect.getLateralViews() != null) {
             for (LateralView lateralView : plainSelect.getLateralViews()) {
@@ -433,27 +421,17 @@ public class TablesNamesFinder<Void>
         }
 
         visitJoins(plainSelect.getJoins(), context);
-        if (plainSelect.getPreWhere() != null) {
-            plainSelect.getPreWhere().accept(this, context);
-        }
-        if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(this, context);
-        }
+        visitExpression(plainSelect.getPreWhere(), context);
+        visitExpression(plainSelect.getWhere(), context);
 
         visitPreferringClause(plainSelect.getPreferringClause(), context);
         visit(plainSelect.getGroupBy(), context);
 
-        if (plainSelect.getHaving() != null) {
-            plainSelect.getHaving().accept(this, context);
-        }
+        visitExpression(plainSelect.getHaving(), context);
 
-        if (plainSelect.getQualify() != null) {
-            plainSelect.getQualify().accept(this, context);
-        }
+        visitExpression(plainSelect.getQualify(), context);
 
-        if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(this, context);
-        }
+        visitExpression(plainSelect.getOracleHierarchical(), context);
 
         if (plainSelect.getWindowDefinitions() != null) {
             for (WindowDefinition windowDefinition : plainSelect.getWindowDefinitions()) {
@@ -472,12 +450,7 @@ public class TablesNamesFinder<Void>
         visitOrderBy(plainSelect.getOrderByElements(), context);
         visitLimit(plainSelect.getLimit(), context);
         visitLimit(plainSelect.getLimitBy(), context);
-        if (plainSelect.getOffset() != null) {
-            plainSelect.getOffset().getOffset().accept(this, context);
-        }
-        if (plainSelect.getFetch() != null) {
-            plainSelect.getFetch().getExpression().accept(this, context);
-        }
+        visitSelectPagination(plainSelect, context);
         visitUpdateSets(plainSelect.getSettings(), context);
         visitFromItem(plainSelect.getIntoTempTable(), context);
         return null;
@@ -493,7 +466,7 @@ public class TablesNamesFinder<Void>
         visitOrderBy(pivotQuery.getOrderByElements(), context);
         visitLimit(pivotQuery.getLimit(), context);
 
-        visitPivotPagination(pivotQuery, context);
+        visitSelectPagination(pivotQuery, context);
         return null;
     }
 
@@ -505,12 +478,12 @@ public class TablesNamesFinder<Void>
         }
     }
 
-    private <S> void visitPivotPagination(PivotQuery pivotQuery, S context) {
-        if (pivotQuery.getOffset() != null) {
-            pivotQuery.getOffset().getOffset().accept(this, context);
+    private <S> void visitSelectPagination(Select select, S context) {
+        if (select.getOffset() != null) {
+            select.getOffset().getOffset().accept(this, context);
         }
-        if (pivotQuery.getFetch() != null && pivotQuery.getFetch().getExpression() != null) {
-            pivotQuery.getFetch().getExpression().accept(this, context);
+        if (select.getFetch() != null && select.getFetch().getExpression() != null) {
+            select.getFetch().getExpression().accept(this, context);
         }
     }
 

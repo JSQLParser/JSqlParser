@@ -204,6 +204,26 @@ public class MatchRecognize extends AbstractFromitem {
             Consumer<Pivot> pivots, Consumer<UnPivot> unpivots) {
         sources.accept(input);
         builder.append(" MATCH_RECOGNIZE (");
+        appendInputExpressions(builder, expressions, ordering);
+        appendRowOutput(builder);
+        appendSkip(builder);
+        builder.append("PATTERN (");
+        pattern.appendTo(builder, expressions);
+        builder.append(')');
+        appendSubsets(builder);
+        builder.append(" DEFINE ");
+        appendList(builder, definitions, definition -> {
+            builder.append(definition.getName()).append(" AS ");
+            expressions.accept(definition.getExpression());
+        });
+        appendOptions(builder);
+        builder.append(')');
+        appendResultModifiers(builder, pivots, unpivots);
+        return builder;
+    }
+
+    private void appendInputExpressions(StringBuilder builder, Consumer<Expression> expressions,
+            Consumer<OrderByElement> ordering) {
         if (!partitionBy.isEmpty()) {
             builder.append("PARTITION BY ");
             appendList(builder, partitionBy, expressions);
@@ -224,6 +244,9 @@ public class MatchRecognize extends AbstractFromitem {
             });
             builder.append(' ');
         }
+    }
+
+    private void appendRowOutput(StringBuilder builder) {
         if (rowsPerMatch != null) {
             builder.append(rowsPerMatch == RowsPerMatch.ONE ? "ONE ROW PER MATCH "
                     : "ALL ROWS PER MATCH ");
@@ -240,6 +263,9 @@ public class MatchRecognize extends AbstractFromitem {
                     builder.append("WITH UNMATCHED ROWS ");
             }
         }
+    }
+
+    private void appendSkip(StringBuilder builder) {
         if (skipMode != null) {
             builder.append("AFTER MATCH SKIP ");
             switch (skipMode) {
@@ -260,9 +286,9 @@ public class MatchRecognize extends AbstractFromitem {
             }
             builder.append(' ');
         }
-        builder.append("PATTERN (");
-        pattern.appendTo(builder, expressions);
-        builder.append(')');
+    }
+
+    private void appendSubsets(StringBuilder builder) {
         if (!subsets.isEmpty()) {
             builder.append(" SUBSET ");
             appendList(builder, subsets, subset -> {
@@ -271,11 +297,9 @@ public class MatchRecognize extends AbstractFromitem {
                 builder.append(')');
             });
         }
-        builder.append(" DEFINE ");
-        appendList(builder, definitions, definition -> {
-            builder.append(definition.getName()).append(" AS ");
-            expressions.accept(definition.getExpression());
-        });
+    }
+
+    private void appendOptions(StringBuilder builder) {
         if (options != null) {
             builder.append(" OPTIONS (");
             if (options.getUseLongestMatch() != null) {
@@ -284,7 +308,10 @@ public class MatchRecognize extends AbstractFromitem {
             }
             builder.append(')');
         }
-        builder.append(')');
+    }
+
+    private void appendResultModifiers(StringBuilder builder, Consumer<Pivot> pivots,
+            Consumer<UnPivot> unpivots) {
         if (getPivot() != null) {
             pivots.accept(getPivot());
         }
@@ -297,7 +324,6 @@ public class MatchRecognize extends AbstractFromitem {
         if (getSampleClause() != null) {
             builder.append(getSampleClause());
         }
-        return builder;
     }
 
     private static <E> void appendList(StringBuilder builder, List<E> elements,

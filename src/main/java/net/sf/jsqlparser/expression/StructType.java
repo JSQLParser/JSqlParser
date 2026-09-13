@@ -119,76 +119,57 @@ public class StructType extends ASTNodeAccessImpl implements Expression {
 
     /** Renders current argument expressions through the caller's visitor. */
     public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressions) {
-        if (dialect != Dialect.DUCKDB && keyword != null) {
-            builder.append(keyword);
-        }
-
-        if (dialect != Dialect.DUCKDB && parameters != null && !parameters.isEmpty()) {
-            builder.append("<");
-            int i = 0;
-
-            for (Map.Entry<String, ColDataType> e : parameters) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                // optional name
-                if (e.getKey() != null && !e.getKey().isEmpty()) {
-                    builder.append(e.getKey()).append(" ");
-                }
-
-                // mandatory type
-                builder.append(e.getValue());
+        if (dialect == Dialect.DUCKDB) {
+            appendArguments(builder, expressions);
+            appendTypeParameters(builder, true);
+        } else {
+            if (keyword != null) {
+                builder.append(keyword);
             }
-
-            builder.append(">");
+            appendTypeParameters(builder, false);
+            appendArguments(builder, expressions);
         }
-
-        if (arguments != null && !arguments.isEmpty()) {
-
-            if (dialect == Dialect.DUCKDB) {
-                builder.append("{ ");
-                int i = 0;
-                for (SelectItem<?> e : arguments) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    builder.append(e.getAlias().getName());
-                    builder.append(":");
-                    expressions.accept(e.getExpression());
-                }
-                builder.append(" }");
-            } else {
-                builder.append("(");
-                int i = 0;
-                for (SelectItem<?> e : arguments) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    expressions.accept(e.getExpression());
-                    if (e.getAlias() != null) {
-                        builder.append(e.getAlias());
-                    }
-                }
-
-                builder.append(")");
-            }
-        }
-
-        if (dialect == Dialect.DUCKDB && parameters != null && !parameters.isEmpty()) {
-            builder.append("::STRUCT( ");
-            int i = 0;
-
-            for (Map.Entry<String, ColDataType> e : parameters) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                builder.append(e.getKey()).append(" ");
-                builder.append(e.getValue());
-            }
-            builder.append(")");
-        }
-
         return builder;
+    }
+
+    private void appendTypeParameters(StringBuilder builder, boolean cast) {
+        if (parameters == null || parameters.isEmpty()) {
+            return;
+        }
+        builder.append(cast ? "::STRUCT( " : "<");
+        int i = 0;
+        for (Map.Entry<String, ColDataType> parameter : parameters) {
+            if (i++ > 0) {
+                builder.append(',');
+            }
+            if (cast || parameter.getKey() != null && !parameter.getKey().isEmpty()) {
+                builder.append(parameter.getKey()).append(' ');
+            }
+            builder.append(parameter.getValue());
+        }
+        builder.append(cast ? ')' : '>');
+    }
+
+    private void appendArguments(StringBuilder builder, Consumer<Expression> expressions) {
+        if (arguments == null || arguments.isEmpty()) {
+            return;
+        }
+        boolean structLiteral = dialect == Dialect.DUCKDB;
+        builder.append(structLiteral ? "{ " : "(");
+        int i = 0;
+        for (SelectItem<?> argument : arguments) {
+            if (i++ > 0) {
+                builder.append(',');
+            }
+            if (structLiteral) {
+                builder.append(argument.getAlias().getName()).append(':');
+            }
+            expressions.accept(argument.getExpression());
+            if (!structLiteral && argument.getAlias() != null) {
+                builder.append(argument.getAlias());
+            }
+        }
+        builder.append(structLiteral ? " }" : ")");
     }
 
     @Override

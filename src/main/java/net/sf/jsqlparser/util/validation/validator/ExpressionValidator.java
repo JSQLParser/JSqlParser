@@ -150,6 +150,8 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression>
         implements ExpressionVisitor<Void> {
+    private Set<String> rowPatternVariables = Collections.emptySet();
+
     @Override
     public <S> Void visit(Addition addition, S context) {
         visitBinaryExpression(addition, " + ");
@@ -536,8 +538,6 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         validateOptionalFromItem(selectBody);
         return null;
     }
-
-    private Set<String> rowPatternVariables = Collections.emptySet();
 
     void validateMatchRecognizeExpressions(MatchRecognize matchRecognize) {
         Set<String> previous = rowPatternVariables;

@@ -80,8 +80,8 @@ class MatchRecognizeValidatorTest {
         return new Validation(configuration, List.of(FeaturesAllowed.SELECT), sql).validate();
     }
 
-    @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.ValueSource(
+    @ParameterizedTest
+    @ValueSource(
             strings = {"A{0}", "A{0,0}", "A{3,1}", "A{@lo}", "| A", "A |"})
     void oracleRejectsInvalidBoundsAndEmptyAlternatives(String pattern) {
         List<ValidationError> errors = validate("ORACLE", SQL.replace("A+", pattern));
