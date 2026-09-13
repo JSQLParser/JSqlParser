@@ -13,6 +13,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -61,8 +62,9 @@ public abstract class AbstractJSqlParser<P> {
             this(AdjacentStringLiterals.OFF, lexerFeatures);
         }
 
+        /** Returns the immutable lexer defaults shared by this dialect preset. */
         public Set<Feature> getLexerFeatures() {
-            return lexerFeatures;
+            return Collections.unmodifiableSet(lexerFeatures);
         }
 
         public AdjacentStringLiterals getAdjacentStringLiterals() {
@@ -111,6 +113,10 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.timeOut, timeOutMillSeconds);
     }
 
+    /**
+     * Applies this dialect's enabled lexer defaults to the current configuration. Existing options
+     * remain set; apply explicit overrides after this call, or use a new parser for a fresh preset.
+     */
     public P withDialect(Dialect dialect) {
         withFeature(Feature.dialect, dialect.name());
         if (dialect.getAdjacentStringLiterals() != AdjacentStringLiterals.OFF) {
