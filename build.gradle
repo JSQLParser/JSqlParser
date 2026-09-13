@@ -710,7 +710,8 @@ jmh {
             , "-XX:+DebugNonSafepoints"
     ]
 
-    profilers = ['async:libPath=/opt/async-profiler/lib/libasyncProfiler.so;output=tree;dir=build/reports/jmh']
+    // Profiling is opt-in because the native library path depends on the host.
+    profilers = providers.gradleProperty('jmhProfiler').map { [it] }.getOrElse([])
 
     includes = ['.*JSQLParserBenchmark.*']
     warmupIterations = 2

@@ -9,8 +9,6 @@
  */
 package net.sf.jsqlparser.benchmark;
 
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.statement.Statements;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -21,7 +19,6 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -44,13 +41,33 @@ public class JSQLParserBenchmark {
         } else {
             Path jarPath = downloadJsqlparserJar(version);
             URLClassLoader loader = new URLClassLoader(new URL[] {jarPath.toUri().toURL()}, null);
-            runner = new DynamicParserRunner(loader);
+            try {
+                runner = new DynamicParserRunner(loader);
+            } catch (Exception ex) {
+                loader.close();
+                throw ex;
+            }
         }
 
-        // Adjust path as necessary based on where source root is during test execution
-        Path path = Paths.get("src/test/resources/net/sf/jsqlparser/performance.sql");
-        sqlContent = Files.readString(path, StandardCharsets.UTF_8);
-        executorService = Executors.newSingleThreadExecutor();
+        // Reject incompatible SQL/configurations before collecting measurements.
+        try {
+            Path path = Paths.get("src/test/resources/net/sf/jsqlparser/performance.sql");
+            sqlContent = Files.readString(path, StandardCharsets.UTF_8);
+            executorService = Executors.newSingleThreadExecutor();
+            Object statements = runner.parseStatements(sqlContent, executorService,
+                    SqlParserRunner.Configuration.SIMPLE);
+            if (statements == null) {
+                throw new IllegalStateException("Parser " + version
+                        + " returned no statements for the benchmark corpus with SIMPLE configuration");
+            }
+        } catch (Exception ex) {
+            try {
+                tearDown();
+            } catch (Exception cleanup) {
+                ex.addSuppressed(cleanup);
+            }
+            throw ex;
+        }
     }
 
     private Path downloadJsqlparserJar(String version) throws IOException {
@@ -74,10 +91,10 @@ public class JSQLParserBenchmark {
 
     @Benchmark
     public void parseSQLStatements(Blackhole blackhole) throws Exception {
-        final Statements statements = runner.parseStatements(
+        final Object statements = runner.parseStatements(
                 sqlContent,
                 executorService,
-                (Consumer<CCJSqlParser>) parser -> parser.withAllowComplexParsing(false));
+                SqlParserRunner.Configuration.SIMPLE);
         blackhole.consume(statements);
     }
 
@@ -87,15 +104,23 @@ public class JSQLParserBenchmark {
                 + "INSERT INTO recycle_record (a,f) VALUES ('\\'anything', 'abc');\n"
                 + "INSERT INTO recycle_record (a,f) VALUES ('\\'','83653692186728700711687663398101');\n";
 
-        final Statements statements = runner.parseStatements(
+        final Object statements = runner.parseStatements(
                 sqlStr,
                 executorService,
-                (Consumer<CCJSqlParser>) parser -> parser.withBackslashEscapeCharacter(true));
+                SqlParserRunner.Configuration.BACKSLASH_ESCAPES);
         blackhole.consume(statements);
     }
 
     @TearDown(Level.Trial)
-    public void tearDown() {
-        executorService.shutdown();
+    public void tearDown() throws Exception {
+        try {
+            if (executorService != null) {
+                executorService.shutdownNow();
+            }
+        } finally {
+            if (runner != null) {
+                runner.close();
+            }
+        }
     }
 }
