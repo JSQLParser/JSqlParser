@@ -85,6 +85,14 @@ final class DmlDeParserSupport {
         if (item.getWithFunctionDeclaration() != null) {
             return builder.append(item.getWithFunctionDeclaration());
         }
+        if (item.getExpression() != null) {
+            item.getExpression().accept(expressions, context);
+            if (item.getAlias() != null) {
+                builder.append(" AS ").append(item.getAlias().getName());
+            }
+            return item.appendRecursiveClausesTo(builder,
+                    expression -> expression.accept(expressions, context));
+        }
         if (item.isRecursive()) {
             builder.append("RECURSIVE ");
         }

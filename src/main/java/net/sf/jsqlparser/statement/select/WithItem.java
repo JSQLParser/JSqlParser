@@ -30,6 +30,7 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
     private Alias alias;
     private List<SelectItem<?>> withItemList;
     private WithFunctionDeclaration withFunctionDeclaration;
+    private Expression expression;
     private WithSearchClause searchClause;
     private WithCycleClause cycleClause;
     private boolean recursive = false;
@@ -43,6 +44,25 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
 
     public WithItem() {
         this(null, (Alias) null);
+    }
+
+    /**
+     * The aliased expression of a WITH item like ClickHouse's
+     * {@code WITH <expression> AS <identifier>}, where the item does not hold a statement.
+     *
+     * @return the expression of this WITH item, or null for statement-based (CTE) items
+     */
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    public WithItem<K> withExpression(Expression expression) {
+        this.setExpression(expression);
+        return this;
     }
 
     public K getParenthesedStatement() {
@@ -184,6 +204,12 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         StringBuilder builder = new StringBuilder();
         if (withFunctionDeclaration != null) {
             builder.append(withFunctionDeclaration);
+        } else if (expression != null) {
+            builder.append(expression);
+            if (alias != null) {
+                builder.append(" AS ").append(alias.getName());
+            }
+            appendRecursiveClausesTo(builder, expr -> builder.append(expr));
         } else {
             builder.append(recursive ? "RECURSIVE " : "");
             if (alias != null) {
