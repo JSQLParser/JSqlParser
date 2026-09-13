@@ -72,6 +72,15 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
 public interface ExpressionVisitor<T> {
+    /** Visits the value of an aliased expression by default, preserving existing visitors. */
+    default <S> T visit(AliasedExpression expression, S context) {
+        return expression.getExpression().accept(this, context);
+    }
+
+    default void visit(AliasedExpression expression) {
+        visit(expression, null);
+    }
+
 
     default <S> T visit(ExecuteArgument argument, S context) {
         return argument.getExpression().accept(this, context);

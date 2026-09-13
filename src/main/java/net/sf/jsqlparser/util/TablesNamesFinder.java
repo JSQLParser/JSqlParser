@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.expression.AliasedExpression;
+
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
@@ -2433,6 +2435,11 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(IfElseStatement ifElseStatement) {
         StatementVisitor.super.visit(ifElseStatement);
+    }
+
+    @Override
+    public <S> Void visit(AliasedExpression expression, S context) {
+        return expression.getExpression().accept(this, context);
     }
 
     @Override

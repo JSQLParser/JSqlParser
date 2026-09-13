@@ -794,7 +794,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         // only a bare leading keyword: an expression must follow
         Token next = getToken(2);
-        if (next.kind == EOF || ")".equals(next.image) || ",".equals(next.image)
+        if (next.kind == EOF || next.kind == K_AS || ")".equals(next.image) || ",".equals(next.image)
                 || ".".equals(next.image) || "(".equals(next.image)) {
             return;
         }
@@ -11575,6 +11575,7 @@ ExpressionList FunctionArgumentList(Function retval):
     Token extraKeywordToken;
 }
 {
+    { if ("XMLFOREST".equalsIgnoreCase(retval.getName())) { return XmlForestArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
     [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
@@ -11591,6 +11592,29 @@ ExpressionList FunctionArgumentList(Function retval):
     {
         return expressionList;
     }
+}
+
+/** XMLFOREST keeps expressions in the ordinary function parameter list. */
+ExpressionList<Expression> XmlForestArguments():
+{
+    ExpressionList<Expression> arguments = new ExpressionList<Expression>();
+    Expression expression;
+}
+{
+    expression=XmlForestArgument() { arguments.add(expression); }
+    ( "," expression=XmlForestArgument() { arguments.add(expression); } )*
+    { return arguments; }
+}
+
+Expression XmlForestArgument():
+{
+    Expression expression;
+    String name;
+}
+{
+    expression=Expression()
+    [ <K_AS> name=RelObjectName() { expression = new AliasedExpression(expression, new Alias(name, true)); } ]
+    { return expression; }
 }
 
 XMLSerializeExpr XMLSerializeExpr(): {

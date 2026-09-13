@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.expression.AliasedExpression;
+
 import static java.util.stream.Collectors.joining;
 
 import java.util.Iterator;
@@ -167,6 +169,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         super(buffer);
         this.selectVisitor = selectVisitor;
         this.orderByDeParser = orderByDeParser;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AliasedExpression expression, S context) {
+        return expression.appendTo(builder, value -> value.accept(this, context));
     }
 
     @Override
