@@ -46,7 +46,7 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
         validateRowOutput(match, oracle);
         Set<String> used = validateVariables(match, bigQuery, oracle);
         validateTargets(match, used, bigQuery);
-        validatePattern(match, bigQuery, oracle);
+        match.getPattern().accept(new PatternValidator(match, bigQuery, oracle), null);
         match.getMeasures()
                 .forEach(measure -> checkFunctions(measure.getExpression(), bigQuery, false));
         match.getDefinitions()
@@ -131,64 +131,72 @@ public class MatchRecognizeValidator extends AbstractValidator<MatchRecognize> {
         }
     }
 
-    private void validatePattern(MatchRecognize match, boolean bigQuery, boolean oracle) {
-        match.getPattern().accept(new RowPatternVisitorAdapter<Void>() {
-            @Override
-            public <S> Void visit(RowPattern.Quantified quantified, S context) {
-                checkBound(quantified.getLowerBound(), bigQuery);
-                checkBound(quantified.getUpperBound(), bigQuery);
-                if (quantified.getLowerBound() instanceof LongValue
-                        && quantified.getUpperBound() instanceof LongValue
-                        && ((LongValue) quantified.getLowerBound()).getBigIntegerValue()
-                                .compareTo(((LongValue) quantified.getUpperBound())
-                                        .getBigIntegerValue()) > 0) {
-                    error("Row pattern upper bound is smaller than its lower bound");
-                }
-                if (bigQuery && quantified.getType() == RowPattern.Quantified.Type.EXACT
-                        && quantified.isReluctant()) {
-                    error("BigQuery does not support reluctant fixed quantifiers");
-                }
-                if (oracle) {
-                    Expression maximum = quantified.getType() == RowPattern.Quantified.Type.EXACT
-                            ? quantified.getLowerBound()
-                            : quantified.getUpperBound();
-                    if (maximum instanceof LongValue
-                            && ((LongValue) maximum).getBigIntegerValue().signum() == 0) {
-                        error("Oracle row pattern quantifier maximum must be positive");
-                    }
-                }
-                return super.visit(quantified, context);
-            }
+    private class PatternValidator extends RowPatternVisitorAdapter<Void> {
+        private final MatchRecognize match;
+        private final boolean bigQuery;
+        private final boolean oracle;
 
-            @Override
-            public <S> Void visit(RowPattern.Operation operation, S context) {
-                if (oracle && operation.getType() == RowPattern.Operation.Type.ALTERNATION
-                        && operation.getPatterns().stream()
-                                .anyMatch(RowPattern.Empty.class::isInstance)) {
-                    error("Oracle requires a pattern on each side of an alternative");
-                }
-                return super.visit(operation, context);
-            }
+        private PatternValidator(MatchRecognize match, boolean bigQuery, boolean oracle) {
+            this.match = match;
+            this.bigQuery = bigQuery;
+            this.oracle = oracle;
+        }
 
-            @Override
-            public <S> Void visit(RowPattern.Exclusion exclusion, S context) {
-                if (bigQuery) {
-                    error("BigQuery does not support row pattern exclusion");
-                }
-                if (match.getEmptyMatchMode() == MatchRecognize.EmptyMatchMode.WITH_UNMATCHED) {
-                    error("Row pattern exclusion cannot be combined with WITH UNMATCHED ROWS");
-                }
-                return super.visit(exclusion, context);
+        @Override
+        public <S> Void visit(RowPattern.Quantified quantified, S context) {
+            checkBound(quantified.getLowerBound(), bigQuery);
+            checkBound(quantified.getUpperBound(), bigQuery);
+            if (quantified.getLowerBound() instanceof LongValue
+                    && quantified.getUpperBound() instanceof LongValue
+                    && ((LongValue) quantified.getLowerBound()).getBigIntegerValue()
+                            .compareTo(((LongValue) quantified.getUpperBound())
+                                    .getBigIntegerValue()) > 0) {
+                error("Row pattern upper bound is smaller than its lower bound");
             }
+            if (bigQuery && quantified.getType() == RowPattern.Quantified.Type.EXACT
+                    && quantified.isReluctant()) {
+                error("BigQuery does not support reluctant fixed quantifiers");
+            }
+            if (oracle) {
+                Expression maximum = quantified.getType() == RowPattern.Quantified.Type.EXACT
+                        ? quantified.getLowerBound()
+                        : quantified.getUpperBound();
+                if (maximum instanceof LongValue
+                        && ((LongValue) maximum).getBigIntegerValue().signum() == 0) {
+                    error("Oracle row pattern quantifier maximum must be positive");
+                }
+            }
+            return super.visit(quantified, context);
+        }
 
-            @Override
-            public <S> Void visit(RowPattern.Permute permute, S context) {
-                if (bigQuery) {
-                    error("BigQuery does not support PERMUTE");
-                }
-                return super.visit(permute, context);
+        @Override
+        public <S> Void visit(RowPattern.Operation operation, S context) {
+            if (oracle && operation.getType() == RowPattern.Operation.Type.ALTERNATION
+                    && operation.getPatterns().stream()
+                            .anyMatch(RowPattern.Empty.class::isInstance)) {
+                error("Oracle requires a pattern on each side of an alternative");
             }
-        }, null);
+            return super.visit(operation, context);
+        }
+
+        @Override
+        public <S> Void visit(RowPattern.Exclusion exclusion, S context) {
+            if (bigQuery) {
+                error("BigQuery does not support row pattern exclusion");
+            }
+            if (match.getEmptyMatchMode() == MatchRecognize.EmptyMatchMode.WITH_UNMATCHED) {
+                error("Row pattern exclusion cannot be combined with WITH UNMATCHED ROWS");
+            }
+            return super.visit(exclusion, context);
+        }
+
+        @Override
+        public <S> Void visit(RowPattern.Permute permute, S context) {
+            if (bigQuery) {
+                error("BigQuery does not support PERMUTE");
+            }
+            return super.visit(permute, context);
+        }
     }
 
     private void checkFunctions(Expression expression, boolean bigQuery, boolean definition) {
