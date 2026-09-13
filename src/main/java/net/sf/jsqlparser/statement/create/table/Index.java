@@ -134,12 +134,22 @@ public class Index implements TableElement, Serializable {
         }
     }
 
+    /**
+     * Returns a mutable snapshot of the rendered key elements, including their options. An index
+     * without columns returns an empty snapshot. Use {@link #getColumns()} for structured edits.
+     */
     public List<String> getColumnsNames() {
-        return columns.stream()
-                .map(ColumnParams::toString)
-                .collect(toList());
+        return columns == null ? new ArrayList<>()
+                : columns.stream()
+                        .map(ColumnParams::toString)
+                        .collect(toList());
     }
 
+    /**
+     * Replaces all key elements with plain {@link ColumnParams} wrapping the supplied strings, or
+     * clears them for null. The strings are not parsed and existing expressions and element options
+     * are not retained. Use {@link #setColumns(List)} to preserve structured elements.
+     */
     public void setColumnsNames(List<String> list) {
         if (list == null) {
             this.columns = Collections.emptyList();

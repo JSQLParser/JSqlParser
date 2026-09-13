@@ -11,7 +11,6 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -506,28 +505,49 @@ public class AlterExpression implements Serializable {
         this.usingIfExists = usingIfExists;
     }
 
-    /** Returns a live view when this action has a structured PRIMARY_KEY definition. */
+    /**
+     * Returns a snapshot of the rendered key elements for a structured PRIMARY_KEY, or the legacy
+     * list otherwise. Changing the snapshot does not change the index; use
+     * {@link #setPkColumns(List)} to replace its keys, or {@link Index#getColumns()} for structured
+     * edits.
+     */
     public List<String> getPkColumns() {
-        return hasKeyIndex(Index.Kind.PRIMARY_KEY) ? new KeyColumnNames(index) : pkColumns;
+        return hasKeyIndex(Index.Kind.PRIMARY_KEY) ? index.getColumnsNames() : pkColumns;
     }
 
+    /**
+     * Replaces a structured PRIMARY_KEY's elements using {@link Index#setColumnsNames(List)}. The
+     * strings are not parsed and existing element attributes are not retained, even when the
+     * rendered SQL is unchanged. Use {@link Index#setColumns(List)} to preserve structured
+     * elements. Without a matching index, stores the legacy list.
+     */
     public void setPkColumns(List<String> pkColumns) {
         if (hasKeyIndex(Index.Kind.PRIMARY_KEY)) {
-            replaceKeyColumns(pkColumns);
+            index.setColumnsNames(pkColumns);
             this.pkColumns = null;
         } else {
             this.pkColumns = pkColumns;
         }
     }
 
-    /** Returns a live view when this action has a structured UNIQUE definition. */
+    /**
+     * Returns a snapshot of the rendered key elements for a structured UNIQUE, or the legacy list
+     * otherwise. Changing the snapshot does not change the index; use {@link #setUkColumns(List)}
+     * to replace its keys, or {@link Index#getColumns()} for structured edits.
+     */
     public List<String> getUkColumns() {
-        return hasKeyIndex(Index.Kind.UNIQUE) ? new KeyColumnNames(index) : ukColumns;
+        return hasKeyIndex(Index.Kind.UNIQUE) ? index.getColumnsNames() : ukColumns;
     }
 
+    /**
+     * Replaces a structured UNIQUE's elements using {@link Index#setColumnsNames(List)}. The
+     * strings are not parsed and existing element attributes are not retained, even when the
+     * rendered SQL is unchanged. Use {@link Index#setColumns(List)} to preserve structured
+     * elements. Without a matching index, stores the legacy list.
+     */
     public void setUkColumns(List<String> ukColumns) {
         if (hasKeyIndex(Index.Kind.UNIQUE)) {
-            replaceKeyColumns(ukColumns);
+            index.setColumnsNames(ukColumns);
             this.ukColumns = null;
         } else {
             this.ukColumns = ukColumns;
@@ -536,75 +556,6 @@ public class AlterExpression implements Serializable {
 
     private boolean hasKeyIndex(Index.Kind kind) {
         return index != null && index.getKind() == kind;
-    }
-
-    private void replaceKeyColumns(List<String> names) {
-        List<Index.ColumnParams> replacement = new ArrayList<>();
-        if (names != null) {
-            List<Index.ColumnParams> previous = index.getColumns();
-            for (int i = 0; i < names.size(); i++) {
-                String name = names.get(i);
-                if (previous != null && i < previous.size()) {
-                    Index.ColumnParams previousColumn = previous.get(i);
-                    if (previousColumn.toString().equals(name)) {
-                        replacement.add(previousColumn);
-                        continue;
-                    }
-                }
-                replacement.add(new Index.ColumnParams(name));
-            }
-        }
-        index.setColumns(replacement);
-    }
-
-    /** Adapts the legacy mutable name list without copying structured expressions to strings. */
-    private static class KeyColumnNames extends AbstractList<String> {
-        private final Index index;
-
-        KeyColumnNames(Index index) {
-            this.index = index;
-        }
-
-        @Override
-        public String get(int position) {
-            Index.ColumnParams column = index.getColumns().get(position);
-            return column.toString();
-        }
-
-        @Override
-        public int size() {
-            return index.getColumns() == null ? 0 : index.getColumns().size();
-        }
-
-        @Override
-        public String set(int position, String name) {
-            String previous = get(position);
-            if (!previous.equals(name)) {
-                List<Index.ColumnParams> columns = new ArrayList<>(index.getColumns());
-                columns.set(position, new Index.ColumnParams(name));
-                index.setColumns(columns);
-            }
-            return previous;
-        }
-
-        @Override
-        public void add(int position, String name) {
-            List<Index.ColumnParams> columns = index.getColumns() == null ? new ArrayList<>()
-                    : new ArrayList<>(index.getColumns());
-            columns.add(position, new Index.ColumnParams(name));
-            index.setColumns(columns);
-            modCount++;
-        }
-
-        @Override
-        public String remove(int position) {
-            List<Index.ColumnParams> columns = new ArrayList<>(index.getColumns());
-            Index.ColumnParams removedColumn = columns.remove(position);
-            String previous = removedColumn.toString();
-            index.setColumns(columns);
-            modCount++;
-            return previous;
-        }
     }
 
     public String getUkName() {
@@ -1443,24 +1394,28 @@ public class AlterExpression implements Serializable {
         return this;
     }
 
+    /** Adds strings using the replacement semantics of {@link #setPkColumns(List)}. */
     public AlterExpression addPkColumns(String... pkColumns) {
         List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, pkColumns);
         return this.withPkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setPkColumns(List)}. */
     public AlterExpression addPkColumns(Collection<String> pkColumns) {
         List<String> collection = Optional.ofNullable(getPkColumns()).orElseGet(ArrayList::new);
         collection.addAll(pkColumns);
         return this.withPkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setUkColumns(List)}. */
     public AlterExpression addUkColumns(String... ukColumns) {
         List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
         Collections.addAll(collection, ukColumns);
         return this.withUkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setUkColumns(List)}. */
     public AlterExpression addUkColumns(Collection<String> ukColumns) {
         List<String> collection = Optional.ofNullable(getUkColumns()).orElseGet(ArrayList::new);
         collection.addAll(ukColumns);
