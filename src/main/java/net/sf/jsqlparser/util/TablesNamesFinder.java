@@ -1398,11 +1398,7 @@ public class TablesNamesFinder<Void>
             visit(update.getTable(), context);
         }
 
-        if (update.getStartJoins() != null) {
-            for (Join join : update.getStartJoins()) {
-                join.getRightItem().accept(this, context);
-            }
-        }
+        visitJoins(update.getStartJoins(), context);
 
         if (update.getUpdateSets() != null) {
             for (UpdateSet updateSet : update.getUpdateSets()) {
@@ -1415,14 +1411,7 @@ public class TablesNamesFinder<Void>
             update.getFromItem().accept(this, context);
         }
 
-        if (update.getJoins() != null) {
-            for (Join join : update.getJoins()) {
-                join.getRightItem().accept(this, context);
-                for (Expression expression : join.getOnExpressions()) {
-                    expression.accept(this, context);
-                }
-            }
-        }
+        visitJoins(update.getJoins(), context);
 
         if (update.getForPortionClause() != null) {
             update.getForPortionClause().accept(this, context);
