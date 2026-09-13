@@ -783,6 +783,22 @@ Expression visitors can inspect or replace the body literal. Feature analysis
 reports ``OPAQUE``; table discovery rejects this statement because the body's
 table accesses are unknown. Validation checks the ``doStatement`` capability,
 without validating the procedural language inside the literal.
+
+Enable the PostgreSQL dialect when parsing a script containing a ``DO`` block:
+
+.. code-block:: java
+
+    Statements statements = CCJSqlParserUtil.parseStatements(
+            "DO $$BEGIN RAISE NOTICE 'hello'; END$$; SELECT 1;",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    DoStatement block = (DoStatement) statements.get(0);
+    String body = block.getCode().getValue();
+    // body: BEGIN RAISE NOTICE 'hello'; END
+    // statements.get(1) is the following SELECT.
+
+Semicolons and SQL statements inside the body remain part of its string literal;
+they do not split the surrounding script into additional statements.
+
 With ``Dialect.POSTGRESQL``, ``#`` terminates an unquoted identifier, so JSON
 operators such as ``js#>>'{a}'`` and ``js#>'{a}'`` work without surrounding
 spaces. Quote identifiers containing ``#``, for example ``"js#"``. Other
