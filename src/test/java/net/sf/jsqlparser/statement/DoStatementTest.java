@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
@@ -56,14 +58,35 @@ class DoStatementTest {
 
     @Test
     void preservesProceduralBodyAndFollowingStatementsIssue1946() throws Exception {
-        String body = "$$\nBEGIN\n IF NOT EXISTS (SELECT 1 FROM comm.permission_operation) THEN\n"
-                + " INSERT INTO comm.permission_operation (permission_operation_id) VALUES (1) "
-                + "ON CONFLICT (permission_operation_id) DO NOTHING;\n END IF;\nEND $$";
-        Statements statements = CCJSqlParserUtil.parseStatements("DO " + body + "; SELECT 1;",
-                p -> p.withDialect(Dialect.POSTGRESQL));
-        assertEquals(2, statements.size());
-        assertEquals(body, ((DoStatement) statements.get(0)).getCode().toString());
-        assertEquals("SELECT 1", statements.get(1).toString());
+        String sql;
+        try (InputStream input = getClass().getResourceAsStream("/postgresql/do-issue1946.sql")) {
+            assertNotNull(input);
+            sql = new String(input.readAllBytes(), StandardCharsets.UTF_8).strip();
+        }
+        String body = sql.substring(sql.indexOf("$$"), sql.lastIndexOf("$$") + 2);
+        Statements statements =
+                CCJSqlParserUtil.parseStatements("SELECT 0;\n" + sql + "\nSELECT 1;",
+                        p -> p.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(false));
+        assertEquals(3, statements.size());
+        assertEquals("SELECT 0", statements.get(0).toString());
+        DoStatement block = assertInstanceOf(DoStatement.class, statements.get(1));
+        assertEquals(body, block.getCode().toString());
+        assertEquals(body.substring(2, body.length() - 2), block.getCode().getValue());
+        assertEquals("SELECT 1", statements.get(2).toString());
+
+        StringBuilder output = new StringBuilder();
+        for (Statement statement : statements) {
+            statement.accept(new StatementDeParser(output), null);
+            output.append(";\n");
+        }
+        assertEquals("SELECT 0;\n" + sql + "\nSELECT 1;\n", output.toString());
+        Statements reparsed = CCJSqlParserUtil.parseStatements(output.toString(),
+                p -> p.withDialect(Dialect.POSTGRESQL).withUnsupportedStatements(false));
+        assertEquals(3, reparsed.size());
+        assertEquals(body,
+                assertInstanceOf(DoStatement.class, reparsed.get(1)).getCode().toString());
+        assertEquals("SELECT 0", reparsed.get(0).toString());
+        assertEquals("SELECT 1", reparsed.get(2).toString());
     }
 
     @Test

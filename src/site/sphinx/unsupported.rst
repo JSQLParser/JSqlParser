@@ -11,10 +11,10 @@ Missing syntax is added on demand — please `open an issue <https://github.com/
 Procedural SQL
 =======================================
 
-This is the one substantial gap. JSQLParser parses **statements**, not stored programs. Anonymous blocks with declarations, cursors, exception handlers and loops are outside its scope:
+Procedural-language support is partial. Accepting a block or routine definition does not necessarily mean that its body is parsed into a statement tree. Select the relevant dialect as described in :ref:`Choose a Dialect`.
 
 .. code-block:: sql
-    :caption: Oracle PL/SQL — not supported
+    :caption: Oracle anonymous block — supported with Dialect.ORACLE
 
     DECLARE
         num NUMBER;
@@ -23,8 +23,8 @@ This is the one substantial gap. JSQLParser parses **statements**, not stored pr
         dbms_output.put_line('The number is ' || num);
     END;
 
-.. code-block:: sql
-    :caption: PostgreSQL anonymous block — not supported
+.. code-block:: postgresql
+    :caption: PostgreSQL DO — supported with Dialect.POSTGRESQL; body remains opaque
 
     DO $$
     BEGIN
@@ -32,12 +32,16 @@ This is the one substantial gap. JSQLParser parses **statements**, not stored pr
     END
     $$;
 
-Specifically not parsed: typed local variable declarations, ``CURSOR`` declarations and ``OPEN`` / ``FETCH`` / ``CLOSE``, ``EXCEPTION`` handlers, ``WHILE`` and ``FOR`` loops, ``ELSIF``, and assignment (``:=``).
+The PostgreSQL example produces a ``DoStatement`` whose ``getCode()`` is a ``StringValue``. The body, quotes and dollar tag are preserved, and statements following the block are parsed separately. PL/pgSQL declarations, conditions and statements inside that literal are not exposed as child AST nodes. Table discovery therefore rejects the opaque body rather than reporting an incomplete table list.
+
+Full procedural-language coverage, including cursors, loops and ``ELSIF``, remains outside the supported subset.
 
 What *is* supported:
 
 - ``BEGIN .. END`` blocks and ``IF .. ELSE`` around ordinary statements (``Block``, ``IfElseStatement``)
 - ``DECLARE @variable`` in the T-SQL sense (``DeclareStatement``)
+- PostgreSQL ``DO`` wrappers with the body preserved as a string literal (``DoStatement``)
+- Selected Oracle anonymous blocks, including variable declarations, assignments and exception handlers (``OracleBlock``); see :ref:`Oracle anonymous blocks`
 
 Routine and trigger definitions
 ---------------------------------------
