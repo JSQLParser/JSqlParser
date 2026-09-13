@@ -202,7 +202,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Delete delete, S context) {
-        DeleteDeParser deleteDeParser = new DeleteDeParser(expressionDeParser, builder);
+        DeleteDeParser deleteDeParser =
+                new DeleteDeParser(expressionDeParser, selectDeParser, builder);
         deleteDeParser.deParse(delete);
         return builder;
     }
@@ -301,7 +302,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Update update, S context) {
-        UpdateDeParser updateDeParser = new UpdateDeParser(expressionDeParser, builder);
+        UpdateDeParser updateDeParser =
+                new UpdateDeParser(expressionDeParser, selectDeParser, builder);
         updateDeParser.deParse(update);
 
         return builder;

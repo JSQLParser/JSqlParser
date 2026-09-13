@@ -13,10 +13,6 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.WithItem;
-
-import java.util.Iterator;
 
 import static java.util.stream.Collectors.joining;
 
@@ -25,31 +21,30 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
     private ExpressionVisitor<StringBuilder> expressionVisitor =
             new ExpressionVisitorAdapter<StringBuilder>();
 
+    private SelectDeParser selectDeParser;
+
     public DeleteDeParser() {
         super(new StringBuilder());
     }
 
     public DeleteDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
             StringBuilder buffer) {
+        this(expressionVisitor, null, buffer);
+    }
+
+    public DeleteDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            SelectDeParser selectDeParser, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
+        this.selectDeParser = selectDeParser;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void deParse(Delete delete) {
-        if (delete.getWithItemsList() != null && !delete.getWithItemsList().isEmpty()) {
-            builder.append("WITH ");
-            for (Iterator<WithItem<?>> iter = delete.getWithItemsList().iterator(); iter
-                    .hasNext();) {
-                WithItem<?> withItem = iter.next();
-                builder.append(withItem);
-                if (iter.hasNext()) {
-                    builder.append(",");
-                }
-                builder.append(" ");
-            }
-        }
+        DmlDeParserSupport sources =
+                new DmlDeParserSupport(expressionVisitor, selectDeParser, builder);
+        sources.deparseWithItems(delete.getWithItemsList(), null);
         builder.append("DELETE");
         if (delete.getOracleHint() != null) {
             builder.append(delete.getOracleHint()).append(" ");
@@ -79,20 +74,8 @@ public class DeleteDeParser extends AbstractDeParser<Delete> {
         builder.append(" ").append(delete.getTable().toString());
         deparseForPortionClause(delete.getForPortionClause(), expressionVisitor);
 
-        if (delete.getUsingFromItemList() != null && !delete.getUsingFromItemList().isEmpty()) {
-            builder.append(" USING").append(
-                    delete.getUsingFromItemList().stream().map(Object::toString)
-                            .collect(joining(", ", " ", "")));
-        }
-        if (delete.getJoins() != null) {
-            for (Join join : delete.getJoins()) {
-                if (join.isSimple()) {
-                    builder.append(", ").append(join);
-                } else {
-                    builder.append(" ").append(join);
-                }
-            }
-        }
+        sources.deparseUsing(delete.getUsingFromItemList());
+        sources.deparseJoins(delete.getJoins());
 
         deparseWhereClause(delete);
 

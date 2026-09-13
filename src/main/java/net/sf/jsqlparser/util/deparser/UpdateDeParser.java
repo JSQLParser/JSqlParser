@@ -11,18 +11,16 @@ package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
-import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.OrderByVisitor;
-import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.update.Update;
-
-import java.util.Iterator;
 
 public class UpdateDeParser extends AbstractDeParser<Update>
         implements OrderByVisitor<StringBuilder> {
 
     private ExpressionVisitor<StringBuilder> expressionVisitor = new ExpressionVisitorAdapter<>();
+
+    private SelectDeParser selectDeParser;
 
     public UpdateDeParser() {
         super(new StringBuilder());
@@ -30,26 +28,23 @@ public class UpdateDeParser extends AbstractDeParser<Update>
 
     public UpdateDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
             StringBuilder buffer) {
+        this(expressionVisitor, null, buffer);
+    }
+
+    public UpdateDeParser(ExpressionVisitor<StringBuilder> expressionVisitor,
+            SelectDeParser selectDeParser, StringBuilder buffer) {
         super(buffer);
         this.expressionVisitor = expressionVisitor;
+        this.selectDeParser = selectDeParser;
     }
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity",
             "PMD.ExcessiveMethodLength"})
     public void deParse(Update update) {
-        if (update.getWithItemsList() != null && !update.getWithItemsList().isEmpty()) {
-            builder.append("WITH ");
-            for (Iterator<WithItem<?>> iter = update.getWithItemsList().iterator(); iter
-                    .hasNext();) {
-                WithItem<?> withItem = iter.next();
-                builder.append(withItem);
-                if (iter.hasNext()) {
-                    builder.append(",");
-                }
-                builder.append(" ");
-            }
-        }
+        DmlDeParserSupport sources =
+                new DmlDeParserSupport(expressionVisitor, selectDeParser, builder);
+        sources.deparseWithItems(update.getWithItemsList(), null);
         builder.append("UPDATE ");
         if (update.getOracleHint() != null) {
             builder.append(update.getOracleHint()).append(" ");
@@ -63,16 +58,10 @@ public class UpdateDeParser extends AbstractDeParser<Update>
         builder.append(update.getTable());
         deparseForPortionClause(update.getForPortionClause(), expressionVisitor);
         if (update.getStartJoins() != null) {
-            for (Join join : update.getStartJoins()) {
-                if (join.isSimple()) {
-                    builder.append(", ").append(join);
-                } else {
-                    builder.append(" ").append(join);
-                }
-            }
+            sources.deparseJoins(update.getStartJoins());
         }
         if (update.isFromBeforeSet()) {
-            update.appendFromTo(builder);
+            sources.deparseFrom(update.getFromItem(), update.getJoins());
         }
         builder.append(" SET ");
 
@@ -83,7 +72,7 @@ public class UpdateDeParser extends AbstractDeParser<Update>
         }
 
         if (!update.isFromBeforeSet()) {
-            update.appendFromTo(builder);
+            sources.deparseFrom(update.getFromItem(), update.getJoins());
         }
 
         deparseWhereClause(update);
@@ -115,7 +104,6 @@ public class UpdateDeParser extends AbstractDeParser<Update>
     protected void deparseUpdateSetsClause(Update update) {
         deparseUpdateSets(update.getUpdateSets(), builder, expressionVisitor);
     }
-
 
     public ExpressionVisitor<StringBuilder> getExpressionVisitor() {
         return expressionVisitor;
