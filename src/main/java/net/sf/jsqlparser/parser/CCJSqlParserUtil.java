@@ -14,6 +14,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.Stack;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -129,6 +131,9 @@ public final class CCJSqlParserUtil {
             LOGGER.info("Trying SIMPLE parsing " + (allowComplex ? "first" : "only"));
             statement = parseStatement(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
+            if (wasExecutionStopped(ex)) {
+                throw ex;
+            }
             LOGGER.info("Nesting Depth" + getNestingDepth(sql));
             if (allowComplex
                     && (allowedNestingDepth < 0 || getNestingDepth(sql) <= allowedNestingDepth)) {
@@ -407,24 +412,7 @@ public final class CCJSqlParserUtil {
 
     public static Statement parseStatement(CCJSqlParser parser, ExecutorService executorService)
             throws JSQLParserException {
-        Statement statement;
-        Future<Statement> future = executorService.submit(new Callable<Statement>() {
-            @Override
-            public Statement call() throws ParseException {
-                return parser.Statement();
-            }
-        });
-        try {
-            statement = future.get(parser.getAsLong(Feature.timeOut),
-                    TimeUnit.MILLISECONDS);
-        } catch (TimeoutException ex) {
-            parser.interrupted = true;
-            future.cancel(true);
-            throw new JSQLParserException("Time out occurred.", ex);
-        } catch (Exception ex) {
-            throw new JSQLParserException(ex);
-        }
-        return statement;
+        return executeParser(parser, executorService, parser::Statement);
     }
 
     /**
@@ -478,6 +466,9 @@ public final class CCJSqlParserUtil {
         try {
             return parseStatements(parser.withAllowComplexParsing(false), executorService);
         } catch (JSQLParserException ex) {
+            if (wasExecutionStopped(ex)) {
+                throw ex;
+            }
             // when fast simple parsing fails, try complex parsing but only if it has a chance to
             // succeed
             if (allowComplex
@@ -502,24 +493,35 @@ public final class CCJSqlParserUtil {
      */
     public static Statements parseStatements(CCJSqlParser parser, ExecutorService executorService)
             throws JSQLParserException {
-        Statements statements = null;
-        Future<Statements> future = executorService.submit(new Callable<Statements>() {
-            @Override
-            public Statements call() throws ParseException {
-                return parser.Statements();
-            }
-        });
+        return executeParser(parser, executorService, parser::Statements);
+    }
+
+    private static <T> T executeParser(CCJSqlParser parser, ExecutorService executorService,
+            Callable<T> operation) throws JSQLParserException {
+        Future<T> future = executorService.submit(operation);
         try {
-            statements = future.get(parser.getAsLong(Feature.timeOut),
-                    TimeUnit.MILLISECONDS);
+            return future.get(parser.getAsLong(Feature.timeOut), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            parser.interrupted = true;
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new JSQLParserException(ex);
         } catch (TimeoutException ex) {
             parser.interrupted = true;
             future.cancel(true);
             throw new JSQLParserException("Time out occurred.", ex);
-        } catch (Exception ex) {
+        } catch (CancellationException ex) {
+            parser.interrupted = true;
+            throw new JSQLParserException(ex);
+        } catch (ExecutionException ex) {
             throw new JSQLParserException(ex);
         }
-        return statements;
+    }
+
+    private static boolean wasExecutionStopped(JSQLParserException exception) {
+        Throwable cause = exception.getCause();
+        return cause instanceof InterruptedException || cause instanceof TimeoutException
+                || cause instanceof CancellationException;
     }
 
     public static void streamStatements(StatementListener listener, InputStream is, String encoding)

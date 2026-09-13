@@ -100,7 +100,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     public final static Logger LOGGER = Logger.getLogger(CCJSqlParser.class.getName());
     public int bracketsCounter = 0;
     public int caseCounter = 0;
-    public boolean interrupted = false;
+    public volatile boolean interrupted = false;
 
     public CCJSqlParser withConfiguration(FeatureConfiguration configuration) {
         token_source.configuration = configuration;
