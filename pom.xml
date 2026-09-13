@@ -4,7 +4,7 @@
 
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
-    <version>5.4-SNAPSHOT</version>
+    <version>5.4</version>
     <packaging>bundle</packaging>
 
     <name>JSQLParser library</name>
@@ -41,7 +41,7 @@
         <connection>scm:git:https://github.com/JSQLParser/JSqlParser.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:JSQLParser/JSqlParser.git</developerConnection>
         <url>https://github.com/JSQLParser/JSqlParser.git</url>
-        <tag>HEAD</tag>
+        <tag>jsqlparser-5.4</tag>
     </scm>
 
     <issueManagement>
@@ -78,7 +78,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Reproducible builds; maven-release-plugin updates this on release:prepare. -->
-        <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-09-13T21:06:40Z</project.build.outputTimestamp>
 
         <jacocoArgLine> </jacocoArgLine>
 
@@ -289,7 +289,7 @@
                                 <requireMavenVersion>
                                     <version>[3.9.0,)</version>
                                 </requireMavenVersion>
-                                <banDuplicatePomDependencyVersions/>
+                                <banDuplicatePomDependencyVersions />
                             </rules>
                         </configuration>
                     </execution>
@@ -619,8 +619,8 @@
                                 <include>*.md</include>
                                 <include>.gitignore</include>
                             </includes>
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
+                            <trimTrailingWhitespace />
+                            <endWithNewline />
                             <indent>
                                 <tabs>true</tabs>
                                 <spacesPerTab>4</spacesPerTab>
@@ -632,13 +632,13 @@
                             <include>src/main/java/**/*.java</include>
                             <include>src/test/java/**/*.java</include>
                         </includes>
-                        <importOrder/>
-                        <removeUnusedImports/>
+                        <importOrder />
+                        <removeUnusedImports />
                         <!-- Google Java Style, https://google.github.io/styleguide/javaguide.html -->
                         <eclipse>
                             <file>config/formatter/eclipse-java-google-style.xml</file>
                         </eclipse>
-                        <formatAnnotations/>
+                        <formatAnnotations />
                     </java>
                 </configuration>
             </plugin>
@@ -766,28 +766,28 @@
                             <excludes>**/module-info.java,**/net/sf/jsqlparser/parser/SimpleCharStream.java</excludes>
                             <checkstyleRules>
                                 <module name="Checker">
-                                    <module name="SuppressWarningsFilter"/>
-                                    <module name="FileTabCharacter"/>
+                                    <module name="SuppressWarningsFilter" />
+                                    <module name="FileTabCharacter" />
                                     <module name="TreeWalker">
-                                        <module name="AvoidNestedBlocks"/>
-                                        <module name="ConstantName"/>
-                                        <module name="EmptyCatchBlock"/>
-                                        <module name="EmptyStatement"/>
-                                        <module name="MissingOverride"/>
-                                        <module name="MultipleVariableDeclarations"/>
-                                        <module name="ParameterAssignment"/>
-                                        <module name="StringLiteralEquality"/>
-                                        <module name="RedundantImport"/>
-                                        <module name="UnusedImports"/>
+                                        <module name="AvoidNestedBlocks" />
+                                        <module name="ConstantName" />
+                                        <module name="EmptyCatchBlock" />
+                                        <module name="EmptyStatement" />
+                                        <module name="MissingOverride" />
+                                        <module name="MultipleVariableDeclarations" />
+                                        <module name="ParameterAssignment" />
+                                        <module name="StringLiteralEquality" />
+                                        <module name="RedundantImport" />
+                                        <module name="UnusedImports" />
 
-                                        <module name="WhitespaceAfter"/>
+                                        <module name="WhitespaceAfter" />
 
-                                        <module name="NeedBraces"/>
-                                        <module name="UnnecessaryParentheses"/>
-                                        <module name="LeftCurly"/>
-                                        <module name="RightCurly"/>
+                                        <module name="NeedBraces" />
+                                        <module name="UnnecessaryParentheses" />
+                                        <module name="LeftCurly" />
+                                        <module name="RightCurly" />
 
-                                        <module name="SuppressWarningsHolder"/>
+                                        <module name="SuppressWarningsHolder" />
                                     </module>
                                 </module>
                             </checkstyleRules>
