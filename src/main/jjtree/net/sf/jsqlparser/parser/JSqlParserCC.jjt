@@ -1583,13 +1583,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return false;
     }
 
-    /** Keeps legacy ALTER key accessors populated from the common structured definition. */
+    /** Attaches the structured index and populates the remaining legacy constraint metadata. */
     private static void setAlterTableIndex(AlterExpression alterExp, Index index) {
         alterExp.setIndex(index);
-        if (index.getKind() == Index.Kind.PRIMARY_KEY) {
-            alterExp.setPkColumns(index.getColumnsNames());
-        } else if (index.getKind() == Index.Kind.UNIQUE) {
-            alterExp.setUkColumns(index.getColumnsNames());
+        if (index.getKind() == Index.Kind.UNIQUE) {
             alterExp.setUkName(index instanceof NamedConstraint
                     ? ((NamedConstraint) index).getIndexName() : index.getName());
             alterExp.setUk(index.getType().toUpperCase(Locale.ROOT).contains("KEY"));
