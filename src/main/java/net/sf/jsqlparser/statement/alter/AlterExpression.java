@@ -544,9 +544,14 @@ public class AlterExpression implements Serializable {
             List<Index.ColumnParams> previous = index.getColumns();
             for (int i = 0; i < names.size(); i++) {
                 String name = names.get(i);
-                replacement.add(previous != null && i < previous.size()
-                        && previous.get(i).toString().equals(name) ? previous.get(i)
-                                : new Index.ColumnParams(name));
+                if (previous != null && i < previous.size()) {
+                    Index.ColumnParams previousColumn = previous.get(i);
+                    if (previousColumn.toString().equals(name)) {
+                        replacement.add(previousColumn);
+                        continue;
+                    }
+                }
+                replacement.add(new Index.ColumnParams(name));
             }
         }
         index.setColumns(replacement);
@@ -594,7 +599,8 @@ public class AlterExpression implements Serializable {
         @Override
         public String remove(int position) {
             List<Index.ColumnParams> columns = new ArrayList<>(index.getColumns());
-            String previous = columns.remove(position).toString();
+            Index.ColumnParams removedColumn = columns.remove(position);
+            String previous = removedColumn.toString();
             index.setColumns(columns);
             modCount++;
             return previous;
