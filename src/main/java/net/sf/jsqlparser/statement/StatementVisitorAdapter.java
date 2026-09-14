@@ -184,7 +184,8 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Comment comment, S context) {
-
+        comment.visitRelations(table -> table.accept(fromItemVisitor, context));
+        expressionVisitor.visitExpression(comment.getComment(), context);
         return null;
     }
 

@@ -436,8 +436,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Comment comment, S context) {
-        builder.append(comment.toString());
-        return builder;
+        return comment.appendTo(builder,
+                table -> table.accept(selectDeParser, context),
+                column -> column.accept(expressionDeParser, context),
+                literal -> literal.accept(expressionDeParser, context));
     }
 
     @Override

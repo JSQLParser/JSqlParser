@@ -2006,15 +2006,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Comment comment, S context) {
-        if (comment.getTable() != null) {
-            visit(comment.getTable(), context);
-        }
-        if (comment.getColumn() != null) {
-            Table table = comment.getColumn().getTable();
-            if (table != null) {
-                visit(table, context);
-            }
-        }
+        comment.visitRelations(table -> visit(table, context));
         return null;
     }
 

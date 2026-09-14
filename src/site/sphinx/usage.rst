@@ -1063,3 +1063,37 @@ The option is disabled by default and does not enable this syntax in other diale
 returns each explicit direction, or null when omitted. Directions follow list positions;
 replacing the expression list clears them. Validators report the separate
 ``selectGroupByOrdering`` feature, which is not enabled in the MySQL 8.0 capability.
+
+PostgreSQL COMMENT targets
+=========================
+
+``COMMENT ON`` supports ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``,
+``MATERIALIZED VIEW``, ``FUNCTION`` and ``CONSTRAINT`` in addition to the existing
+``TABLE``, ``COLUMN`` and ``VIEW`` forms. These unambiguous target forms also parse
+without a dialect preset. Tagged dollar strings still require
+``Dialect.POSTGRESQL`` or ``withDollarQuotedStringTags(true)``.
+
+The additional targets are exposed through ``Comment.getTarget()`` as a
+``CommentTarget``. Its ``Kind`` identifies the object, and ``getName()`` preserves
+the individual identifier components. ``Table`` is used as the name container;
+an index or type name does not thereby represent a table dependency.
+The original ``Comment.getTable()``, ``getColumn()`` and ``getView()`` accessors
+continue to describe their respective existing forms.
+
+``COMMENT ON FUNCTION app.f(IN value integer) IS 'description'`` uses the shared
+``RoutineReference`` in ``getTarget().getRoutine()``. Argument mode, optional name
+and ``ColDataType`` are preserved. An omitted signature has null arguments;
+``f()`` has an empty argument list. The signature identifies a function and is not
+a function call.
+
+For ``COMMENT ON CONSTRAINT ck ON app.t IS NULL``, ``getName()`` is the constraint
+name and ``getRelation()`` is its owning table. ``ON DOMAIN app.d`` sets
+``isOnDomain()`` and stores the domain as the owner instead. ``NULL`` removes the
+comment and remains represented by a null ``Comment.getComment()``.
+
+Table discovery visits tables, column owners, views, materialized views and
+table-owned constraints. It does not infer an index's table or treat domains,
+sequences, types or functions as tables. Statement visitors visit comment
+literals, and custom SQL deparsers can replace the explicit relation or literal.
+Feature analysis reports a schema modification. Validation exposes a separate
+``commentOn...`` capability for each additional target kind.
