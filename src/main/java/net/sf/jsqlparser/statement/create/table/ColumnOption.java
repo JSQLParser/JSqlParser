@@ -16,13 +16,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** A structured option following a column data type. */
 public class ColumnOption implements Serializable {
 
     public enum Kind {
-        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, OTHER
+        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, OTHER
     }
 
     private Kind kind = Kind.OTHER;
@@ -31,6 +32,122 @@ public class ColumnOption implements Serializable {
     private IdentityDefinition identityDefinition;
     private Index constraint;
     private Expression defaultExpression;
+    private Boolean nullable;
+    private Boolean visible;
+    private String collation;
+    private StringValue comment;
+    private Expression onUpdateExpression;
+    private GeneratedColumnDefinition generatedDefinition;
+
+    public static ColumnOption nullability(boolean nullable) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.NULLABILITY;
+        option.nullable = nullable;
+        return option;
+    }
+
+    public Boolean getNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    public static ColumnOption visibility(boolean visible) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.VISIBILITY;
+        option.visible = visible;
+        return option;
+    }
+
+    public Boolean getVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public static ColumnOption autoIncrement() {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.AUTO_INCREMENT;
+        return option;
+    }
+
+    public static ColumnOption collate(String collation) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.COLLATE;
+        option.setCollation(collation);
+        return option;
+    }
+
+    public String getCollation() {
+        return collation;
+    }
+
+    public void setCollation(String collation) {
+        this.collation = Objects.requireNonNull(collation, "collation");
+    }
+
+    public static ColumnOption comment(StringValue comment) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.COMMENT;
+        option.setComment(comment);
+        return option;
+    }
+
+    public StringValue getComment() {
+        return comment;
+    }
+
+    public void setComment(StringValue comment) {
+        this.comment = Objects.requireNonNull(comment, "comment");
+    }
+
+    public static ColumnOption onUpdate(Expression expression) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.ON_UPDATE;
+        option.setOnUpdateExpression(expression);
+        return option;
+    }
+
+    public Expression getOnUpdateExpression() {
+        return onUpdateExpression;
+    }
+
+    public void setOnUpdateExpression(Expression expression) {
+        onUpdateExpression = Objects.requireNonNull(expression, "expression");
+    }
+
+    public static ColumnOption generated(GeneratedColumnDefinition definition) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.GENERATED;
+        option.setGeneratedDefinition(definition);
+        return option;
+    }
+
+    public GeneratedColumnDefinition getGeneratedDefinition() {
+        return generatedDefinition;
+    }
+
+    public void setGeneratedDefinition(GeneratedColumnDefinition definition) {
+        generatedDefinition = Objects.requireNonNull(definition, "definition");
+    }
+
+    /** Visits expressions of the selected option kind, including comment literals. */
+    public void visitExpressions(Consumer<Expression> visitor) {
+        if (kind == Kind.DEFAULT) {
+            visitor.accept(defaultExpression);
+        } else if (kind == Kind.COMMENT) {
+            visitor.accept(comment);
+        } else if (kind == Kind.ON_UPDATE) {
+            visitor.accept(onUpdateExpression);
+        } else if (kind == Kind.GENERATED) {
+            visitor.accept(generatedDefinition.getExpression());
+        }
+    }
+
 
     /** Creates a DEFAULT option. Use a NullValue expression for SQL NULL. */
     public static ColumnOption defaultValue(Expression expression) {
@@ -99,11 +216,30 @@ public class ColumnOption implements Serializable {
     }
 
     public List<String> getTokens() {
-        if (kind == Kind.DEFAULT) {
-            return Arrays.asList("DEFAULT", String.valueOf(defaultExpression));
+        switch (kind) {
+            case DEFAULT:
+                return Arrays.asList("DEFAULT", String.valueOf(defaultExpression));
+            case NULLABILITY:
+                return nullable ? Collections.singletonList("NULL") : Arrays.asList("NOT", "NULL");
+            case COLLATE:
+                return Arrays.asList("COLLATE", collation);
+            case COMMENT:
+                return Arrays.asList("COMMENT", comment.toString());
+            case ON_UPDATE:
+                return Arrays.asList("ON", "UPDATE", onUpdateExpression.toString());
+            case GENERATED:
+                return generatedDefinition.getTokens();
+            case CONSTRAINT:
+                if ("PRIMARY KEY".equals(constraint.toString())) {
+                    return Arrays.asList("PRIMARY", "KEY");
+                }
+                return Collections.singletonList(toString());
+            case OTHER:
+            case SERIAL_DEFAULT_VALUE:
+                return tokens;
+            default:
+                return Collections.singletonList(toString());
         }
-        return kind == Kind.OTHER || kind == Kind.SERIAL_DEFAULT_VALUE ? tokens
-                : Collections.singletonList(toString());
     }
 
     public ForeignKeyReference getForeignKeyReference() {
@@ -123,6 +259,29 @@ public class ColumnOption implements Serializable {
             case DEFAULT:
                 builder.append("DEFAULT ");
                 expressionPrinter.accept(defaultExpression);
+                break;
+            case NULLABILITY:
+                builder.append(nullable ? "NULL" : "NOT NULL");
+                break;
+            case VISIBILITY:
+                builder.append(visible ? "VISIBLE" : "INVISIBLE");
+                break;
+            case AUTO_INCREMENT:
+                builder.append("AUTO_INCREMENT");
+                break;
+            case COLLATE:
+                builder.append("COLLATE ").append(collation);
+                break;
+            case COMMENT:
+                builder.append("COMMENT ");
+                expressionPrinter.accept(comment);
+                break;
+            case ON_UPDATE:
+                builder.append("ON UPDATE ");
+                expressionPrinter.accept(onUpdateExpression);
+                break;
+            case GENERATED:
+                generatedDefinition.appendTo(builder, expressionPrinter);
                 break;
             case REFERENCE:
                 builder.append(foreignKeyReference);

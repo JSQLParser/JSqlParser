@@ -75,8 +75,9 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
     }
 
     /**
-     * Returns column options in source order, including structured defaults, references and MySQL
-     * {@code SERIAL DEFAULT VALUE}.
+     * Returns column options in source order, including defaults, references, generated columns,
+     * nullability, collation, comments, visibility and MySQL attributes. Unrecognized options
+     * remain raw. Structured option keywords use canonical capitalization when rendered.
      */
     public List<ColumnOption> getColumnOptions() {
         return columnOptions;
