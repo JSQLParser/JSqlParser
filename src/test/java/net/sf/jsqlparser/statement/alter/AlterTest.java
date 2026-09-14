@@ -370,12 +370,12 @@ public class AlterTest {
     public void testAlterTableAddColumn6() throws JSQLParserException {
         final String sql = "ALTER TABLE mytable ADD COLUMN col1 timestamp (3) not null";
         Statement stmt = CCJSqlParserUtil.parse(sql);
-        assertStatementCanBeDeparsedAs(stmt, sql);
+        assertStatementCanBeDeparsedAs(stmt, sql.replace("not null", "NOT NULL"));
         Alter alter = (Alter) stmt;
         List<AlterExpression> alterExps = alter.getAlterExpressions();
         AlterExpression col1Exp = alterExps.get(0);
-        assertEquals("not", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
-        assertEquals("null", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
+        assertEquals("NOT", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(0));
+        assertEquals("NULL", col1Exp.getColDataTypeList().get(0).getColumnSpecs().get(1));
 
         assertTrue(col1Exp.hasColumn());
     }
