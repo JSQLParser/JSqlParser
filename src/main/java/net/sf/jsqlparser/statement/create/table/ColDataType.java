@@ -54,12 +54,27 @@ public class ColDataType implements Serializable {
     }
 
     public ColDataType(String dataType, int precision, int scale) {
-        this.dataType = dataType;
+        this(dataType);
+        setNumericParameters(precision < 0 ? null : Integer.valueOf(precision),
+                scale < 0 ? null : Integer.valueOf(scale));
+    }
 
-        if (precision >= 0) {
+    /**
+     * Creates a parameterized type, using {@code null} for an omitted parameter. Unlike the legacy
+     * primitive constructor, this accepts negative scales, including {@code -1}.
+     */
+    public static ColDataType fromNumericParameters(String dataType, Integer precision,
+            Integer scale) {
+        ColDataType type = new ColDataType(dataType);
+        type.setNumericParameters(precision, scale);
+        return type;
+    }
+
+    private void setNumericParameters(Integer precision, Integer scale) {
+        if (precision != null) {
             this.precision = precision;
             this.dataType += " (" + (precision == Integer.MAX_VALUE ? "MAX" : precision);
-            if (scale >= 0) {
+            if (scale != null) {
                 this.scale = scale;
                 this.dataType += ", " + scale;
             }
@@ -211,8 +226,8 @@ public class ColDataType implements Serializable {
     }
 
     /**
-     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)}. Returns
-     * {@code null} when absent.
+     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)} or {@code -3}
+     * for PostgreSQL {@code NUMERIC(2, -3)}. Returns {@code null} when absent.
      */
     public Integer getScale() {
         return scale;

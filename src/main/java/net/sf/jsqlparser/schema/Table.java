@@ -529,7 +529,7 @@ public class Table extends ASTNodeAccessImpl
     public Table setResolvedTable(Table resolvedTable) {
         // clone, not reference
         if (resolvedTable != null) {
-            this.resolvedTable = new Table(resolvedTable.getFullyQualifiedName());
+            this.resolvedTable = resolvedTable.copyName();
         }
         return this;
     }
@@ -579,9 +579,16 @@ public class Table extends ASTNodeAccessImpl
 
     @Override
     public Table clone() {
-        Table clone = new Table(this.getFullyQualifiedName());
+        Table clone = copyName();
         clone.setTableVariable(tableVariable);
         clone.setResolvedTable(this.resolvedTable != null ? this.resolvedTable.clone() : null);
         return clone;
+    }
+
+    private Table copyName() {
+        Table copy = new Table();
+        copy.partItems = new ArrayList<>(partItems);
+        copy.partDelimiters = new ArrayList<>(partDelimiters);
+        return copy;
     }
 }

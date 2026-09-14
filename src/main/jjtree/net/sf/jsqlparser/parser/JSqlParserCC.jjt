@@ -1628,6 +1628,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return false;
     }
 
+    /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
+    protected Table createTable(List<String> names) {
+        return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && names.size() == 1
+                ? new Table(names.get(0), false) : new Table(names);
+    }
+
+    protected Column createColumn(List<String> names, List<String> delimiters) {
+        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+            return new Column(names, delimiters);
+        }
+        Column column = new Column();
+        column.setName(names.get(names.size() - 1), false);
+        if (names.size() > 1) {
+            column.setTable(createTable(names.subList(0, names.size() - 1)));
+        }
+        column.setTableDelimiter(delimiters.isEmpty() ? "." : delimiters.get(delimiters.size() - 1));
+        return column;
+    }
+
+    protected Column createColumn(String name) {
+        return createColumn(Collections.singletonList(name), Collections.emptyList());
+    }
+
     /**
      * Lightweight lookahead for SpecialStringFunctionWithNamedParameters:
      * scans forward from the current position (just past the opening '(')
@@ -1673,6 +1696,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return false;
         }
         if (getToken(1).kind != S_CHAR_LITERAL) {
+            return false;
+        }
+        if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && (StringValue.getDollarQuoteDelimiter(getToken(0).image) != null
+                    || !getToken(1).image.startsWith("'"))) {
             return false;
         }
         return AdjacentStringLiterals.WHITESPACE.name().equals(mode)
@@ -2690,7 +2718,9 @@ TOKEN:
         // which contains the <SPECIAL_ESC>, then we will need to
         // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
         // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
-        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter);
+        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+                || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
+                    && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
                 String img = matchedToken.image;
                 int pos;
                 if (!allowEscape) {
@@ -5277,8 +5307,8 @@ Index.ColumnParams InsertConflictIndexElement():
         | "(" expression=Expression() ")" { element = new Index.ColumnParams(expression); }
     )
     [ LOOKAHEAD(2) <K_COLLATE> collation=RelObjectNames()
-        { element.setCollation(new Table(collation.getNames()).getFullyQualifiedName()); } ]
-    [ LOOKAHEAD(2) operatorClass=RelObjectNames() { element.setOperatorClass(new Table(operatorClass.getNames()).getFullyQualifiedName()); } ]
+        { element.setCollation(createTable(collation.getNames()).getFullyQualifiedName()); } ]
+    [ LOOKAHEAD(2) operatorClass=RelObjectNames() { element.setOperatorClass(createTable(operatorClass.getNames()).getFullyQualifiedName()); } ]
     { return element; }
 }
 
@@ -5656,7 +5686,7 @@ Column Column() #Column :
 
     [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
     {
-        Column col = new Column(data.getNames(), data.getDelimiters());
+        Column col = createColumn(data.getNames(), data.getDelimiters());
         if (tk != null) { col.withCommentText(tk.image); }
         if (arrayConstructor!=null) {
             col.setArrayConstructor(arrayConstructor);
@@ -5742,7 +5772,7 @@ Table Table() #TableName :
     (
         data = RelObjectNames() [ LOOKAHEAD(2) timeTravelStr = TimeTravelBeforeAlias() ]
         {
-            table = new Table(data.getNames());
+            table = createTable(data.getNames());
             table.setTimeTravel(timeTravelStr);
         }
         |
@@ -6951,8 +6981,8 @@ WithCycleClause WithCycleClause() #WithCycleClause:
 }
 {
     <K_CYCLE>
-    name=RelObjectName() { columns.add(new Column(name)); }
-    ( "," name=RelObjectName() { columns.add(new Column(name)); } )*
+    name=RelObjectName() { columns.add(createColumn(name)); }
+    ( "," name=RelObjectName() { columns.add(createColumn(name)); } )*
     <K_SET> name=RelObjectName() { cycle.setMarkColumnName(name); }
     [ <K_TO> value=Expression() { cycle.setMarkValue(value); }
       <K_DEFAULT> value=Expression() { cycle.setMarkDefault(value); } ]
@@ -9500,6 +9530,20 @@ Expression NavigationStep(Expression base):
     { return step; }
 }
 
+StringValue CharacterLiteral():
+{
+    Token literal;
+    StringValue value;
+}
+{
+    literal=<S_CHAR_LITERAL> { value = new StringValue(literal.image); }
+    ( LOOKAHEAD({ isAdjacentStringConcat() })
+        literal=<S_CHAR_LITERAL>
+        { value.setValue(value.getValue() + new StringValue(literal.image).getValue()); }
+    )*
+    { return value; }
+}
+
 Expression PrimaryExpression() #PrimaryExpression:
 {
     Expression retval = null;
@@ -9510,7 +9554,6 @@ Expression PrimaryExpression() #PrimaryExpression:
     Expression timezoneRightExpr = null;
     Token token = null;
     Token sign = null;
-    Token adjacentToken = null;
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
@@ -9609,14 +9652,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(2, {!interrupted}) (token=<K_TRUE> | token=<K_FALSE>) { retval = new BooleanValue(token.image); }
 
-        | token=<S_CHAR_LITERAL> { retval = new StringValue(token.image); linkAST(retval,jjtThis); }
-        ( LOOKAHEAD({ isAdjacentStringConcat() })
-            adjacentToken=<S_CHAR_LITERAL>
-            {
-                ((StringValue) retval)
-                        .setValue(((StringValue) retval).getValue() + new StringValue(adjacentToken.image).getValue());
-            }
-        )*
+        | retval=CharacterLiteral() { linkAST(retval,jjtThis); }
 
         | "{d" token=<S_CHAR_LITERAL> "}"  { retval = new DateValue(token.image); }
 
@@ -11404,7 +11440,7 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     (
         columns = ParenthesedColumnList()
         |
-        s = RelObjectName() { columns = new ExpressionList<Column>(new Column(s)); }
+        s = RelObjectName() { columns = new ExpressionList<Column>(createColumn(s)); }
     )
 
     "->"
@@ -13629,14 +13665,15 @@ ColDataType DataType():
     ColDataType arrayType;
     Integer zonePrecision = null;
 
-    int precision = -1;
-    int scale = -1;
+    Integer precision = null;
+    Integer scale = null;
+    String scaleText;
 }
 {
     (
         LOOKAHEAD(2) tk=<K_TEXT_LITERAL> {
             type = tk.image;
-            return new ColDataType(type, precision, scale);
+            return ColDataType.fromNumericParameters(type, precision, scale);
         }
         |
 		LOOKAHEAD(2) tk=<K_ARRAY_LITERAL> (
@@ -13665,11 +13702,11 @@ ColDataType DataType():
             [
                 LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
                 [ <K_BYTE> | <K_CHAR> ]
-                [ "," tk = <S_LONG> { scale = Integer.valueOf(tk.image); } ]
+                [ "," scaleText=SignedIntegerTypeArgument() { scale = Integer.valueOf(scaleText); } ]
                 ")"
             ]
             {
-                colDataType = new ColDataType(type, precision, scale);
+                colDataType = ColDataType.fromNumericParameters(type, precision, scale);
                 if (zonePrecision != null) {
                     colDataType.setPrecision(zonePrecision);
                 }
@@ -13698,6 +13735,17 @@ String LargeObjectTypeName():
             + type.image + " " + large.image + " " + object.image; }
 }
 
+/** Type modifiers accept negative integer constants, but not unary-plus expressions. */
+String SignedIntegerTypeArgument():
+{
+    Token sign = null;
+    Token number;
+}
+{
+    [ sign="-" ] number=<S_LONG>
+    { return (sign == null ? "" : sign.image) + number.image; }
+}
+
 ColDataType ColDataType():
 {
     ColDataType colDataType = new ColDataType();
@@ -13711,6 +13759,7 @@ ColDataType ColDataType():
     List<String> name;
     ColDataType arrayType;
     ColDataType nestedType = null;
+    String numericArgument = null;
     IntervalQualifier intervalQualifier = null;
     Integer zonePrecision = null;
 
@@ -13808,19 +13857,24 @@ ColDataType ColDataType():
                     && getToken(1).kind == K_DATE_LITERAL })
             intervalQualifier = IntervalQualifier() { colDataType.setIntervalQualifier(intervalQualifier); }
         ]
-        [ LOOKAHEAD(2) "."  arrayType = ColDataType()  { schema += "." + arrayType.toString(); } ]
+        [ LOOKAHEAD(2) "." arrayType = ColDataType() {
+            schema += "." + arrayType.toString();
+            colDataType.setPrecision(arrayType.getPrecision());
+            colDataType.setScale(arrayType.getScale());
+        } ]
         { colDataType.setDataType(schema); }
     )
 
     [
-        LOOKAHEAD(2) "(" {tk2 =null;}
+        LOOKAHEAD(2) "("
         (
+            { tk2 = null; numericArgument = null; }
             (
             LOOKAHEAD((<DATA_TYPE> | <S_IDENTIFIER>) "(") nestedType=ColDataType()
             |
             (
                 (
-                    ( tk=<S_LONG> | tk=<K_MAX> ) [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ]
+                    ( numericArgument=SignedIntegerTypeArgument() | tk=<K_MAX> ) [ LOOKAHEAD(2) (tk2=<K_BYTE> | tk2=<K_CHAR>) ]
                 )
                 |
                 tk=<S_CHAR_LITERAL>
@@ -13835,7 +13889,8 @@ ColDataType ColDataType():
                 argumentsStringList.add(nestedType.toString());
                 nestedType = null;
             } else {
-                argumentsStringList.add(tk.image + (tk2!=null?" " + tk2.image:""));
+                argumentsStringList.add((numericArgument != null ? numericArgument : tk.image)
+                        + (tk2 != null ? " " + tk2.image : ""));
             }
             }
 
@@ -13853,11 +13908,11 @@ ColDataType ColDataType():
                 "Typed XML cannot have additional type arguments");
         if (argumentsStringList.size() > 0) {
             colDataType.setArgumentsStringList(argumentsStringList);
-            // Digits-only arguments are the type's numeric parameters, e.g. mediumint(9).
+            // Integer arguments expose numeric parameters, including negative scales.
             if (argumentsStringList.size() == 1 && argumentsStringList.get(0).matches("\\d+")) {
                 colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
             } else if (argumentsStringList.size() == 2 && argumentsStringList.get(0).matches("\\d+")
-                    && argumentsStringList.get(1).matches("\\d+")) {
+                    && argumentsStringList.get(1).matches("-?\\d+")) {
                 colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
                 colDataType.setScale(Integer.valueOf(argumentsStringList.get(1)));
             }
@@ -15238,7 +15293,7 @@ DefaultConstraint DefaultConstraintSpec():
 {
     [ <K_CONSTRAINT> name=RelObjectName() { constraint.setName(name); } ]
     <K_DEFAULT> expression=Expression() { constraint.setExpression(expression); }
-    <K_FOR> name=RelObjectName() { constraint.setColumn(new Column(name)); }
+    <K_FOR> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
     // See InsertBulk(): <K_WITH> is in the FOLLOW set of every statement tail. WITH VALUES wins
     // over a hypothetical CTE named VALUES, which is the useful reading here.
     [ LOOKAHEAD(2) <K_WITH> <K_VALUES> { constraint.setWithValues(true); } ]
@@ -16347,7 +16402,7 @@ Comment Comment():
     Table table;
     Table view;
     Column column;
-    Token comment;
+    StringValue comment;
 }
 {
     <K_COMMENT> <K_ON>
@@ -16366,7 +16421,7 @@ Comment Comment():
     )
     <K_IS>
     (
-        comment=<S_CHAR_LITERAL> { result.setComment(new StringValue(comment.image)); }
+        comment=CharacterLiteral() { result.setComment(comment); }
         | <K_NULL>
     )
     {
@@ -16661,8 +16716,8 @@ TriggerEvent PostgreSqlTriggerEvent():
         | <K_TRUNCATE> { result = new TriggerEvent(CreateTrigger.Event.TRUNCATE); }
         | <K_UPDATE> { result = new TriggerEvent(CreateTrigger.Event.UPDATE); }
           [ <K_OF> { columns = new ExpressionList<Column>(); }
-            name=RelObjectName() { columns.add(new Column(name)); }
-            ( "," name=RelObjectName() { columns.add(new Column(name)); } )*
+            name=RelObjectName() { columns.add(createColumn(name)); }
+            ( "," name=RelObjectName() { columns.add(createColumn(name)); } )*
             { result.setColumns(columns); } ]
     )
     { return result; }
@@ -16683,7 +16738,7 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
 }
 {
     [ <K_CONSTRAINT> { result.setConstraint(true); } ]
-    <K_TRIGGER> name=RelObjectName() { result.setTrigger(new Table(name)); result.setOrReplace(replace); }
+    <K_TRIGGER> name=RelObjectName() { result.setTrigger(createTable(Collections.singletonList(name))); result.setOrReplace(replace); }
     (
         LOOKAHEAD({ isAccessKeywordAhead("INSTEAD") }) AccessKeyword("INSTEAD") <K_OF> { result.setTiming(CreateTrigger.Timing.INSTEAD_OF); }
         | timing=MySqlTriggerTiming() { result.setTiming(timing); }
@@ -16726,7 +16781,7 @@ Expression PostgreSqlTriggerArgument():
         token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
         | token=<S_LONG> { result = new LongValue(token.image); }
         | token=<S_DOUBLE> { result = new DoubleValue(token.image); }
-        | name=RelObjectName() { result = new Column(name); }
+        | name=RelObjectName() { result = createColumn(name); }
     )
     { return result; }
 }
@@ -17113,7 +17168,7 @@ Expression ExtensionVersion():
 { Token token; String name; Expression result; }
 {
     ( token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
-      | name=RelObjectName() { result = new Column(name); } )
+      | name=RelObjectName() { result = createColumn(name); } )
     { return result; }
 }
 
@@ -17489,8 +17544,8 @@ PublicationTable PublicationTable(boolean drop):
     table=Table() { result.setTable(table); }
     [ "*" { result.setIncludeDescendants(true); } ]
     [ LOOKAHEAD(1) "(" { columns = new ExpressionList<Column>(); }
-      name=RelObjectName() { columns.add(new Column(name)); }
-      ( "," name=RelObjectName() { columns.add(new Column(name)); } )* ")"
+      name=RelObjectName() { columns.add(createColumn(name)); }
+      ( "," name=RelObjectName() { columns.add(createColumn(name)); } )* ")"
       { result.setColumns(columns); } ]
     [ <K_WHERE> "(" expression=Expression() ")" { result.setWhere(expression); } ]
     {
