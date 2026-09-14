@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +35,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.select.OrderByElement;
 
 /**
  * Toolfunctions to start and use JSqlParser.
@@ -247,34 +250,68 @@ public final class CCJSqlParserUtil {
      */
     public static ColDataType parseColDataType(String columnDataType,
             Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        if (columnDataType == null || columnDataType.isEmpty()) {
+        return parseFragment(columnDataType, "column data type", consumer,
+                CCJSqlParser::ColDataType);
+    }
+
+    /**
+     * Parses comma-separated ORDER BY elements without the ORDER BY keywords. Trailing tokens are
+     * rejected. Returns an empty list for null or empty input.
+     */
+    public static List<OrderByElement> parseOrderByElements(String elements)
+            throws JSQLParserException {
+        return parseOrderByElements(elements, null);
+    }
+
+    /**
+     * Parses ORDER BY elements with optional parser configuration. The input contains only the
+     * elements (for example, {@code name DESC, id ASC}), and must be consumed completely.
+     *
+     * @return the parsed elements, or an empty list for null or empty input
+     * @throws JSQLParserException when the input cannot be parsed completely
+     */
+    public static List<OrderByElement> parseOrderByElements(String elements,
+            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
+        return elements == null || elements.isEmpty() ? new ArrayList<>()
+                : parseFragment(elements, "ORDER BY elements", consumer,
+                        CCJSqlParser::OrderByElementList);
+    }
+
+    @FunctionalInterface
+    private interface FragmentParser<T> {
+        T parse(CCJSqlParser parser) throws ParseException;
+    }
+
+    private static <T> T parseFragment(String input, String description,
+            Consumer<CCJSqlParser> consumer, FragmentParser<T> fragment)
+            throws JSQLParserException {
+        if (input == null || input.isEmpty()) {
             return null;
         }
-
         try {
-            return parseColDataType(columnDataType, false, consumer);
+            return parseFragment(input, description, false, consumer, fragment);
         } catch (JSQLParserException ex) {
-            return parseColDataType(columnDataType, true, consumer);
+            return parseFragment(input, description, true, consumer, fragment);
         }
     }
 
-    private static ColDataType parseColDataType(String columnDataType, boolean allowComplexParsing,
-            Consumer<CCJSqlParser> consumer) throws JSQLParserException {
-        CCJSqlParser parser = newParser(columnDataType)
-                .withAllowComplexParsing(allowComplexParsing);
+    private static <T> T parseFragment(String input, String description,
+            boolean allowComplexParsing,
+            Consumer<CCJSqlParser> consumer, FragmentParser<T> fragment)
+            throws JSQLParserException {
+        CCJSqlParser parser = newParser(input).withAllowComplexParsing(allowComplexParsing);
         if (consumer != null) {
             consumer.accept(parser);
         }
-
         try {
-            ColDataType result = parser.ColDataType();
+            T result = fragment.parse(parser);
             if (parser.getNextToken().kind != CCJSqlParserTokenManager.EOF) {
                 throw new JSQLParserException(
-                        "could only parse partial column data type " + result);
+                        "could only parse partial " + description + " " + result);
             }
             return result;
         } catch (ParseException ex) {
-            throw new JSQLParserException(columnDataType, ex);
+            throw new JSQLParserException(input, ex);
         }
     }
 

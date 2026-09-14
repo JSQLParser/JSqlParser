@@ -8182,15 +8182,23 @@ Expression Qualify():
 
 List<OrderByElement> OrderByElements():
 {
-    List<OrderByElement> orderByList = new ArrayList<OrderByElement>();
-    OrderByElement orderByElement = null;
+    List<OrderByElement> elements;
 }
 {
-    <K_ORDER> [ <K_SIBLINGS> ] <K_BY> orderByElement=OrderByElement() { orderByList.add(orderByElement); }
-        ( LOOKAHEAD(2) "," orderByElement=OrderByElement() { orderByList.add(orderByElement); } )*
-    {
-        return orderByList;
-    }
+    <K_ORDER> [ <K_SIBLINGS> ] <K_BY> elements=OrderByElementList()
+    { return elements; }
+}
+
+/** Shared element list for statement clauses and the fragment parsing API. */
+List<OrderByElement> OrderByElementList():
+{
+    List<OrderByElement> elements = new ArrayList<OrderByElement>();
+    OrderByElement element;
+}
+{
+    element=OrderByElement() { elements.add(element); }
+    ( LOOKAHEAD(2) "," element=OrderByElement() { elements.add(element); } )*
+    { return elements; }
 }
 
 OrderByElement OrderByElement():
