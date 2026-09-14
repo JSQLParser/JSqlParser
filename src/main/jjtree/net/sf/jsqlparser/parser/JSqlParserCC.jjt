@@ -16343,6 +16343,7 @@ Commit Commit():
 
 Comment Comment():
 {
+    CommentTarget target;
     Comment result = new Comment();
     Table table;
     Table view;
@@ -16363,6 +16364,8 @@ Comment Comment():
         (
             <K_VIEW> view = Table() { result.setView(view); }
         )
+        |
+        target=CommentTarget() { result.setTarget(target); }
     )
     <K_IS>
     (
@@ -16372,6 +16375,47 @@ Comment Comment():
     {
         return result;
     }
+}
+
+/** Catalog names are already tokenized into parts; quoted dots are part of one identifier. */
+Table CommentObjectName():
+{ ObjectNames names; }
+{
+    names=RelObjectNames()
+    { return names.getNames().size() == 1 ? new Table(names.getNames().get(0), false)
+            : new Table(names.getNames()); }
+}
+
+CommentTarget CommentTarget():
+{
+    CommentTarget result = new CommentTarget();
+    Table name;
+    String constraintName;
+    RoutineReference routine;
+}
+{
+    (
+        <K_FUNCTION> routine=RoutineReference(false)
+        { result.setKind(CommentTarget.Kind.FUNCTION); result.setRoutine(routine); }
+        |
+        <K_CONSTRAINT> constraintName=RelObjectName()
+        { result.setKind(CommentTarget.Kind.CONSTRAINT); result.setName(new Table(constraintName, false)); }
+        <K_ON>
+        [ LOOKAHEAD({ getToken(1).kind == K_DOMAIN && !".".equals(getToken(2).image)
+                && getToken(2).kind != K_IS }) <K_DOMAIN> { result.setOnDomain(true); } ]
+        name=CommentObjectName() { result.setRelation(name); }
+        |
+        (
+            <K_INDEX> { result.setKind(CommentTarget.Kind.INDEX); }
+            | <K_SCHEMA> { result.setKind(CommentTarget.Kind.SCHEMA); }
+            | <K_SEQUENCE> { result.setKind(CommentTarget.Kind.SEQUENCE); }
+            | <K_MATERIALIZED> <K_VIEW> { result.setKind(CommentTarget.Kind.MATERIALIZED_VIEW); }
+            | <K_DOMAIN> { result.setKind(CommentTarget.Kind.DOMAIN); }
+            | <K_TYPE> { result.setKind(CommentTarget.Kind.TYPE); }
+        )
+        name=CommentObjectName() { result.setName(name); }
+    )
+    { return result; }
 }
 
 /** Consumes a keyword that remains an ordinary identifier outside this grammar context. */

@@ -97,7 +97,6 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 
 /**
@@ -322,12 +321,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(Comment comment, S context) {
-        for (ValidationCapability c : getCapabilities()) {
-            validateFeature(c, Feature.comment);
-            validateOptionalFeature(c, comment.getTable(), Feature.commentOnTable);
-            validateOptionalFeature(c, comment.getColumn(), Feature.commentOnColumn);
-            validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
-        }
+        getValidator(CommentValidator.class).validate(comment);
         return null;
     }
 
