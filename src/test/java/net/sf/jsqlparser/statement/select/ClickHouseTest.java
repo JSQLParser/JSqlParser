@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.Function;
@@ -19,6 +20,8 @@ import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ClickHouseTest {
 
@@ -396,5 +399,93 @@ public class ClickHouseTest {
                 "SELECT COLUMNS('m') APPLY(a TIMESTAMP(3) WITH TIME ZONE) FROM t", true);
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT COLUMNS('m') APPLY(a TIMESTAMP WITHOUT TIME ZONE) FROM t", true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[x, x + 1]", "x IN (1, 2)",
+            "CASE x WHEN 1 THEN 0 ELSE 1 END"})
+    public void testColumnsApplyExpressionBodies(String body) throws JSQLParserException {
+        for (String prefix : new String[] {"", " APPLY(sum)"}) {
+            String sql = "SELECT COLUMNS('m')" + prefix + " APPLY(x -> " + body + ") FROM t";
+            PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+            ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                    select.getSelectItem(0).getExpression());
+            ColumnsTransformer transformer = expression.getTransformers()
+                    .get(expression.getTransformers().size() - 1);
+            LambdaExpression lambda = Assertions.assertInstanceOf(LambdaExpression.class,
+                    transformer.getApplyExpression());
+            Assertions.assertEquals(body, lambda.getExpression().toString());
+        }
+    }
+
+    @Test
+    public void testColumnsReplaceCaseExpression() throws JSQLParserException {
+        String sql = "SELECT COLUMNS('m') REPLACE(CASE m WHEN 1 THEN 0 ELSE 1 END AS m) FROM t";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                select.getSelectItem(0).getExpression());
+        SelectItem<?> replacement = expression.getTransformers().get(0).getReplaceItems().get(0);
+        Assertions.assertEquals("CASE m WHEN 1 THEN 0 ELSE 1 END",
+                replacement.getExpression().toString());
+        Assertions.assertEquals("m", replacement.getAlias().getName());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM (SELECT COLUMNS('m') APPLY(sum) FROM t) q",
+            "WITH q AS (SELECT COLUMNS('m') APPLY(x -> x + 1) FROM t) SELECT * FROM q",
+            "SELECT (SELECT COLUMNS('m') APPLY(sum) FROM t) AS result",
+            "SELECT COLUMNS('m') APPLY(sum) EXCEPT (SELECT b FROM t)",
+            "SELECT 1 UNION SELECT COLUMNS('m') APPLY(sum) FROM t",
+            "INSERT INTO dst SELECT COLUMNS('m') APPLY(sum) FROM t",
+            "SELECT JSON_VALUE(doc, '$' DEFAULT (SELECT COLUMNS('m') APPLY(sum) APPLY(max) FROM t) ON EMPTY) FROM src"})
+    public void testColumnsInSelectContexts(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COLUMNS('m').x", "{fn COLUMNS('m')}", "COLUMNS('m')(x)"})
+    public void testDecoratedColumnsFunctionKeepsAlias(String function) throws JSQLParserException {
+        String sql = "SELECT " + function + " APPLY(sum) FROM t";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        SelectItem<?> item = select.getSelectItem(0);
+        Function expression = Assertions.assertInstanceOf(Function.class, item.getExpression());
+        Assertions.assertSame(item, expression.getParent());
+        Assertions.assertEquals("APPLY", item.getAlias().getName());
+        Assertions.assertEquals("sum", item.getAlias().getAliasColumns().get(0).name);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"APPLY(a, b)", "APPLY(a INT)", "REPLACE(a INT)",
+            "REPLACE(a)", "REPLACE(a, b)"})
+    public void testColumnsAliasAstAtEachBoundary(String suffix) throws JSQLParserException {
+        for (String prefix : new String[] {"", " APPLY(sum)"}) {
+            String sql = "SELECT COLUMNS('m')" + prefix + " " + suffix + " FROM t";
+            PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+            SelectItem<?> item = select.getSelectItem(0);
+            if (prefix.isEmpty()) {
+                Assertions.assertInstanceOf(Function.class, item.getExpression());
+            } else {
+                ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                        item.getExpression());
+                Assertions.assertEquals(1, expression.getTransformers().size());
+                Assertions.assertEquals("sum", expression.getTransformers().get(0)
+                        .getApplyExpression().toString());
+            }
+            Alias alias = item.getAlias();
+            Assertions.assertNotNull(alias);
+            Assertions.assertEquals(suffix.substring(0, suffix.indexOf('(')), alias.getName());
+            Assertions.assertFalse(alias.isUseAs());
+            Assertions.assertEquals("a", alias.getAliasColumns().get(0).name);
+            if (suffix.contains("INT")) {
+                Assertions.assertEquals("INT",
+                        alias.getAliasColumns().get(0).colDataType.toString());
+            } else {
+                Assertions.assertNull(alias.getAliasColumns().get(0).colDataType);
+                if (suffix.contains(",")) {
+                    Assertions.assertEquals("b", alias.getAliasColumns().get(1).name);
+                }
+            }
+        }
     }
 }

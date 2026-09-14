@@ -53,6 +53,17 @@ public class ColumnsExpression extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public List<Expression> getAllExpressions() {
+        List<Expression> expressions = new ArrayList<>();
+        if (columns != null) {
+            expressions.add(columns);
+        }
+        for (ColumnsTransformer transformer : transformers) {
+            transformer.collectExpressions(expressions);
+        }
+        return expressions;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append(columns);
         for (ColumnsTransformer transformer : transformers) {

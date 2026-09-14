@@ -26,6 +26,7 @@ import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.ColumnsExpression;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -1929,7 +1930,39 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(ColumnsExpression columnsExpression, S context) {
-        return columnsExpression.appendTo(builder);
+        columnsExpression.getColumns().accept(this, context);
+        for (ColumnsTransformer transformer : columnsExpression.getTransformers()) {
+            switch (transformer.getType()) {
+                case APPLY:
+                    builder.append(" APPLY(");
+                    transformer.getApplyExpression().accept(this, context);
+                    builder.append(")");
+                    break;
+                case EXCEPT:
+                    builder.append(" EXCEPT ");
+                    transformer.getExceptColumns().accept(this, context);
+                    break;
+                case REPLACE:
+                    builder.append(" REPLACE(");
+                    boolean first = true;
+                    for (SelectItem<?> item : transformer.getReplaceItems()) {
+                        if (!first) {
+                            builder.append(", ");
+                        }
+                        first = false;
+                        item.getExpression().accept(this, context);
+                        if (item.getAlias() != null) {
+                            builder.append(item.getAlias());
+                        }
+                    }
+                    builder.append(")");
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Unhandled ColumnsTransformerType: " + transformer.getType());
+            }
+        }
+        return builder;
     }
 
     @Override

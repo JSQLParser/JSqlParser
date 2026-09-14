@@ -73,6 +73,30 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
         return this;
     }
 
+    void collectExpressions(List<Expression> expressions) {
+        switch (type) {
+            case APPLY:
+                if (applyExpression != null) {
+                    expressions.add(applyExpression);
+                }
+                break;
+            case EXCEPT:
+                if (exceptColumns != null) {
+                    expressions.addAll(exceptColumns);
+                }
+                break;
+            case REPLACE:
+                if (replaceItems != null) {
+                    for (SelectItem<?> item : replaceItems) {
+                        expressions.add(item.getExpression());
+                    }
+                }
+                break;
+            default:
+                throw new IllegalStateException("Unhandled ColumnsTransformerType: " + type);
+        }
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
         switch (type) {
             case APPLY:
