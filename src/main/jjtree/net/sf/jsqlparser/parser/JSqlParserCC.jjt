@@ -7054,19 +7054,116 @@ SelectItem<?> SelectItem() #SelectItem:
     Alias alias = null;
 }
 {
-    // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
-    // @todo: parse a proper SEQUENCE instead of a COLUMN
-    (
-        LOOKAHEAD( 3 ) expression = ConnectByPriorOperator()
-        |
-        ( expression=Condition() { expression = prattExpressionRest(expression, 2); } )
-    )
+    expression = SelectItemExpression()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
     {
         SelectItem<?> selectItem = new SelectItem(expression, alias);
         linkAST(selectItem,jjtThis);
         return selectItem;
     }
+}
+
+/**
+ * Recognizes a transformer without consuming it. APPLY(functionName) intentionally takes
+ * precedence over its ambiguous alias-column reading. Other aliases use the existing Alias
+ * grammar, including typed columns, at every transformer boundary. Only the transformer
+ * prefix is probed: expression bodies are parsed normally by the Pratt parser.
+ */
+boolean ColumnsTransformerAhead() #void:
+{}
+{
+      LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
+    | LOOKAHEAD( ( <K_APPLY> | <K_REPLACE> ) AliasColumns() ) { return false; }
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+      { return true; }
+    | { return false; }
+}
+
+/**
+ * Keeps transformer consumption visible to enclosing syntactic lookaheads. The normal
+ * expression is parsed first; only a direct COLUMNS function can acquire transformers.
+ * The conditional node encloses both the matcher and its transformers, but adds no AST
+ * parent for ordinary expressions or alias-column lists.
+ */
+Expression SelectItemExpression() #ColumnsExpression(transformers != null):
+{
+    Expression expression;
+    ColumnsTransformer transformer;
+    List<ColumnsTransformer> transformers = null;
+}
+{
+    // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
+    // @todo: parse a proper SEQUENCE instead of a COLUMN
+    (
+        LOOKAHEAD(3) expression = ConnectByPriorOperator()
+        |
+        ( expression = Condition() { expression = prattExpressionRest(expression, 2); } )
+    )
+    (
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+        {
+            if (!(expression instanceof Function)) {
+                break;
+            }
+            Function function = (Function) expression;
+            if (!"COLUMNS".equalsIgnoreCase(function.getName()) || function.isEscaped()
+                    || function.getAttribute() != null || function.getChainedParameters() != null
+                    || function.getKeep() != null || function.isIgnoreNullsOutside()
+                    || !ColumnsTransformerAhead()) {
+                break;
+            }
+        }
+        transformer = ColumnsTransformer()
+        {
+            if (transformers == null) {
+                transformers = new ArrayList<ColumnsTransformer>();
+            }
+            transformers.add(transformer);
+        }
+    )*
+    {
+        if (transformers == null) {
+            return expression;
+        }
+        ColumnsExpression columnsExpression = new ColumnsExpression(expression, transformers);
+        linkAST(columnsExpression, jjtThis);
+        return columnsExpression;
+    }
+}
+
+/**
+ * Parses a single ClickHouse transformer: APPLY(expression), EXCEPT (columns) or
+ * REPLACE (selectItems). ClickHouse parses these in a loop, so they may repeat
+ * and combine in any order.
+ */
+ColumnsTransformer ColumnsTransformer():
+{
+    Expression applyExpression;
+    ParenthesedExpressionList<Column> exceptColumns;
+    List<SelectItem<?>> replaceItems;
+    ColumnsTransformer transformer;
+}
+{
+    (
+          <K_APPLY> "("
+          (
+              LOOKAHEAD( RelObjectName() "->" ) applyExpression = LambdaExpression()
+              |
+              applyExpression = Expression()
+          )
+          ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.APPLY)
+                  .setApplyExpression(applyExpression); }
+
+        | <K_EXCEPT> exceptColumns = ParenthesedColumnList()
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+                  .setExceptColumns(exceptColumns); }
+
+        | <K_REPLACE> "(" replaceItems = SelectItemsList() ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
+                  .setReplaceItems(replaceItems); }
+    )
+    { return transformer; }
 }
 
 /**
@@ -7116,8 +7213,7 @@ Alias Alias():
   Token token = null;
   boolean useAs = false;
   Alias alias;
-  String colname;
-  ColDataType colDataType = null;
+  List<Alias.AliasColumn> aliasColumns;
 }
 {
     (
@@ -7129,12 +7225,7 @@ Alias Alias():
             [ LOOKAHEAD(2) name=RelObjectName() ]
             { alias = new Alias(name, true ); }
 
-            "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
-            colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-            (
-                "," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-            )*
-            ")" { alias.setAliasColumns(list); }
+            aliasColumns = AliasColumns() { alias.setAliasColumns(aliasColumns); }
 
         )
         |
@@ -7148,14 +7239,28 @@ Alias Alias():
             ( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
             { alias = new Alias(name,useAs); }
 
-            [ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
-                colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-                ("," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); } )*
-            ")" { alias.setAliasColumns(list); } ]
+            [ LOOKAHEAD(2) aliasColumns = AliasColumns() { alias.setAliasColumns(aliasColumns); } ]
 
         )
     )
     { return alias; }
+}
+
+List<Alias.AliasColumn> AliasColumns():
+{
+    List<Alias.AliasColumn> columns = new ArrayList<Alias.AliasColumn>();
+    String name;
+    ColDataType type = null;
+}
+{
+    "(" name = RelObjectName() [ type = ColDataType() ]
+    { columns.add(new Alias.AliasColumn(name, type)); }
+    (
+        "," { type = null; } name = RelObjectName() [ type = ColDataType() ]
+        { columns.add(new Alias.AliasColumn(name, type)); }
+    )*
+    ")"
+    { return columns; }
 }
 
 void SQLServerHint(SQLServerHints hints) : {

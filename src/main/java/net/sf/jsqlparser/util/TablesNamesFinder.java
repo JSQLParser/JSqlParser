@@ -2225,6 +2225,16 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(ColumnsExpression columnsExpression, S context) {
+        for (Expression expression : columnsExpression.getAllExpressions()) {
+            if (expression != null) {
+                expression.accept(this, context);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(HighExpression highExpression, S context) {
         highExpression.getExpression().accept(this, context);
         return null;
