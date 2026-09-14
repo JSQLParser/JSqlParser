@@ -722,7 +722,9 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
       - ``withBackslashEscapeCharacter``, ``withHashLineComments``, ``withDoubleQuotedStrings`` (MySQL and MariaDB, the last for the default ``sql_mode``)
     * - ``SQLSERVER``
       - ``withSquareBracketQuotation`` and ``CLUSTERED`` / ``NONCLUSTERED`` options on table-level primary key and unique constraints and ``CREATE INDEX``
-    * - ``POSTGRESQL``, ``ANSI_SQL``
+    * - ``POSTGRESQL``
+      - tagged dollar strings, the newline rule for ordinary string literals, literal-local ``E'...'`` escapes, and preservation of dots inside quoted names
+    * - ``ANSI_SQL``
       - the newline rule for adjacent string literals
     * - ``BIGQUERY``
       - ``withDoubleQuotedStrings``, ``withBackslashEscapeCharacter``, ``withHashLineComments``, any-whitespace rule for adjacent string literals
@@ -742,6 +744,35 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
       - ``UPDATE target FROM sources SET ...`` with the FROM clause before SET
 
 Features set explicitly *after* the preset win over it.
+
+PostgreSQL names and literals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Select ``Dialect.POSTGRESQL`` when parsing PostgreSQL SQL. For example,
+``DROP INDEX "a.b"`` has the single name ``"a.b"`` and no schema; the dot
+inside the quotes is not a separator. This applies to table and column
+references throughout DDL and DML. The default configuration retains its
+historical name-splitting behavior for compatibility with BigQuery names.
+
+``COMMENT ON TABLE t IS $tag$body$tag$`` accepts tagged dollar strings with
+the PostgreSQL preset, or with ``withDollarQuotedStringTags(true)``. Tagged
+strings remain disabled by default. Table, column and view comments preserve
+their dollar delimiter and literal body. Ordinary single-quoted strings
+separated by a newline concatenate; dollar-quoted strings do not.
+``E'...'`` enables backslash escapes for that literal without changing
+the treatment of ordinary strings elsewhere in the statement.
+
+The shared type grammar accepts negative scales, including
+``numeric(2, -3)``, in type fragments, DDL and casts. ``getPrecision()``
+returns ``2`` and ``getScale()`` returns ``-3``; an omitted scale returns
+``null``. PostgreSQL's precision and scale range checks remain the database's
+responsibility. When constructing a ``ColDataType`` directly,
+``ColDataType.fromNumericParameters("numeric", 2, -3)`` accepts negative scales;
+use ``null`` for omitted parameters. The legacy ``int``
+constructor continues to treat negative arguments as omitted parameters.
+
+Other dialect-specific syntax
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MySQL user-variable targets in ``SELECT ... INTO @variable`` require
 ``Dialect.MYSQL`` or ``Dialect.MARIADB``. They are stored in
