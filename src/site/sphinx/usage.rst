@@ -231,6 +231,27 @@ The fastest way to learn the object model is to look at it. Paste your SQL into 
 Read that as a map: each line is a getter away. ``select.getSelectItems()``, ``select.getFromItem()``, ``select.getWhere()``. Once the tree gets deeper than a couple of levels, stop casting by hand and use :ref:`Use the Visitor Patterns`.
 
 
+DROP INDEX owners
+-----------------
+
+``DROP INDEX ix ON app.t`` exposes ``app.t`` through ``Drop.getTable()``;
+``getName()`` continues to identify the index. The owner is populated for the
+single-index ON form used by MySQL and SQL Server. A DROP INDEX without ON,
+as in PostgreSQL, has a null owner: resolving the index's table requires a catalog.
+SQL Server's multi-owner list and WITH options are outside this extension.
+
+``getParameters()`` includes ON and the rendered table as a legacy token snapshot
+when a structured owner exists. Mutate ``getTable()`` or use ``setTable()`` to
+update the owner; ``addParameters()`` appends options without losing it.
+``setTable(null)`` removes ON, while ``setParameters()`` replaces the entire
+parameter clause with raw tokens and clears the structured owner. Raw parameter
+setters do not parse SQL or infer a table.
+
+Table discovery and statement visitors traverse DROP TABLE/VIEW targets and
+explicit index owners, without reporting catalog-only object names as tables.
+The statement deparser delegates real tables to its configured select deparser.
+MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 

@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -34,6 +33,8 @@ public class Drop implements Statement {
     private ObjectType objectType = ObjectType.OTHER;
     private final List<Table> names = new ArrayList<>();
     private List<String> parameters;
+    private Table table;
+    private int tablePosition;
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
     private boolean materialized = false;
@@ -74,12 +75,55 @@ public class Drop implements Statement {
         }
     }
 
+    /** Returns legacy tokens, including ON and its owner. Structured owners produce a snapshot. */
     public List<String> getParameters() {
-        return parameters;
+        if (table == null) {
+            return parameters;
+        }
+        List<String> tokens = parameters == null ? new ArrayList<>() : new ArrayList<>(parameters);
+        tokens.add(tablePosition, "ON");
+        tokens.add(tablePosition + 1, table.toString());
+        return tokens;
     }
 
+    /** The table explicitly named by DROP INDEX ... ON, or null when SQL does not name one. */
+    public Table getTable() {
+        return table;
+    }
+
+    public void setTable(Table table) {
+        setTable(table, this.table == null ? 0 : tablePosition);
+    }
+
+    /** Places ON among the remaining parameter tokens, preserving their source order. */
+    public void setTable(Table table, int parameterPosition) {
+        int size = parameters == null ? 0 : parameters.size();
+        if (parameterPosition < 0 || parameterPosition > size) {
+            throw new IllegalArgumentException("Invalid ON table position: " + parameterPosition);
+        }
+        this.table = table;
+        tablePosition = table == null ? 0 : parameterPosition;
+    }
+
+    public Drop withTable(Table table) {
+        setTable(table);
+        return this;
+    }
+
+    /** Visits table/view targets and explicit index owners without resolving catalog objects. */
+    public void visitTables(Consumer<Table> visitor) {
+        if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW) {
+            names.forEach(visitor);
+        } else if (objectType == ObjectType.INDEX && table != null) {
+            visitor.accept(table);
+        }
+    }
+
+    /** Replaces all legacy parameters and clears the structured ON table. */
     public void setParameters(List<String> list) {
         parameters = list;
+        table = null;
+        tablePosition = 0;
     }
 
     public String getType() {
@@ -145,22 +189,51 @@ public class Drop implements Statement {
 
     @Override
     public String toString() {
-        String sql = "DROP "
-                + (isUsingTemporary ? "TEMPORARY " : "")
-                + (materialized ? "MATERIALIZED " : "")
-                + type + " "
-                + (ifExists ? "IF EXISTS " : "") + names.stream().map(Table::toString)
-                        .collect(Collectors.joining(", "));
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
+    }
 
-        if (type.equals("FUNCTION")) {
-            sql += formatFuncParams(getParamsByType("FUNCTION"));
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Table> tablePrinter) {
+        builder.append("DROP ");
+        if (isUsingTemporary) {
+            builder.append("TEMPORARY ");
         }
-
-        if (parameters != null && !parameters.isEmpty()) {
-            sql += " " + PlainSelect.getStringList(parameters, false, false);
+        if (materialized) {
+            builder.append("MATERIALIZED ");
         }
+        builder.append(type).append(ifExists ? " IF EXISTS " : " ");
+        appendNames(builder, tablePrinter);
+        if ("FUNCTION".equals(type)) {
+            builder.append(formatFuncParams(getParamsByType("FUNCTION")));
+        }
+        appendParameters(builder, tablePrinter);
+        return builder;
+    }
 
-        return sql;
+    private void appendNames(StringBuilder builder, Consumer<Table> tablePrinter) {
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW) {
+                tablePrinter.accept(names.get(i));
+            } else {
+                builder.append(names.get(i));
+            }
+        }
+    }
+
+    private void appendParameters(StringBuilder builder, Consumer<Table> tablePrinter) {
+        int size = parameters == null ? 0 : parameters.size();
+        for (int i = 0; i <= size; i++) {
+            if (table != null && i == tablePosition) {
+                builder.append(" ON ");
+                tablePrinter.accept(table);
+            }
+            if (i < size) {
+                builder.append(' ').append(parameters.get(i));
+            }
+        }
     }
 
     public List<String> getParamsByType(String type) {
@@ -208,14 +281,15 @@ public class Drop implements Statement {
     }
 
     public Drop addParameters(String... parameters) {
-        List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
-        Collections.addAll(collection, parameters);
-        return this.withParameters(collection);
+        return addParameters(java.util.Arrays.asList(parameters));
     }
 
+    /** Appends trailing tokens without discarding a structured ON table. */
     public Drop addParameters(Collection<String> parameters) {
-        List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
-        collection.addAll(parameters);
-        return this.withParameters(collection);
+        if (this.parameters == null) {
+            this.parameters = new ArrayList<>();
+        }
+        this.parameters.addAll(parameters);
+        return this;
     }
 }
