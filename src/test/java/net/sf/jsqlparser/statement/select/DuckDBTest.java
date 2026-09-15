@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,31 @@ public class DuckDBTest {
     @Test
     void testAntiRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT anti FROM t anti";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testMapColumnType() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE t (m MAP(VARCHAR, INTEGER))";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("MAP",
+                createTable.getColumnDefinitions().get(0).getColDataType().getDataType());
+        Assertions.assertEquals(java.util.Arrays.asList("VARCHAR", "INTEGER"),
+                createTable.getColumnDefinitions().get(0).getColDataType()
+                        .getArgumentsStringList());
+    }
+
+    @Test
+    void testMapCast() throws JSQLParserException {
+        String sqlStr = "SELECT CAST(m AS MAP(VARCHAR, INTEGER)) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testDecimalTypeArgumentsStillParse() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE t (a DECIMAL(10, 2), b VARCHAR(255))";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

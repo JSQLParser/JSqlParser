@@ -13846,6 +13846,9 @@ ColDataType ColDataType():
                 |
                 tk=<S_IDENTIFIER>
                 |
+                // DuckDB parameterises types with other types: MAP(VARCHAR, INTEGER)
+                tk=<DATA_TYPE>
+                |
                 tk=<K_CHAR>
             )
             )
