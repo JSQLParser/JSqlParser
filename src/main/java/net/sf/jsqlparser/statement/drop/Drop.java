@@ -202,6 +202,15 @@ public class Drop implements Statement {
             builder.append("MATERIALIZED ");
         }
         builder.append(type).append(ifExists ? " IF EXISTS " : " ");
+        appendNames(builder, tablePrinter);
+        if ("FUNCTION".equals(type)) {
+            builder.append(formatFuncParams(getParamsByType("FUNCTION")));
+        }
+        appendParameters(builder, tablePrinter);
+        return builder;
+    }
+
+    private void appendNames(StringBuilder builder, Consumer<Table> tablePrinter) {
         for (int i = 0; i < names.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
@@ -212,9 +221,9 @@ public class Drop implements Statement {
                 builder.append(names.get(i));
             }
         }
-        if ("FUNCTION".equals(type)) {
-            builder.append(formatFuncParams(getParamsByType("FUNCTION")));
-        }
+    }
+
+    private void appendParameters(StringBuilder builder, Consumer<Table> tablePrinter) {
         int size = parameters == null ? 0 : parameters.size();
         for (int i = 0; i <= size; i++) {
             if (table != null && i == tablePosition) {
@@ -225,7 +234,6 @@ public class Drop implements Statement {
                 builder.append(' ').append(parameters.get(i));
             }
         }
-        return builder;
     }
 
     public List<String> getParamsByType(String type) {
