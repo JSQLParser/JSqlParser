@@ -273,6 +273,16 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
     }
 
     @Override
+    public <S> T visit(UnPivotQuery unPivotQuery, S context) {
+        visitWithItems(unPivotQuery.getWithItemsList(), context);
+
+        fromItemVisitor.visitFromItem(unPivotQuery.getFromItem(), context);
+        expressionVisitor.visitExpressions(unPivotQuery.getOnExpressions(), context);
+        expressionVisitor.visitExpressions(unPivotQuery.getValueColumns(), context);
+        return null;
+    }
+
+    @Override
     public <S> T visit(FromQuery fromQuery, S context) {
         return null;
     }

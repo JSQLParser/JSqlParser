@@ -189,6 +189,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -492,6 +493,20 @@ public class TablesNamesFinder<Void>
 
         visitPivotPagination(pivotQuery, context);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(UnPivotQuery unPivotQuery, S context) {
+        visitWithItems(unPivotQuery.getWithItemsList(), context);
+        visitFromItem(unPivotQuery.getFromItem(), context);
+        visitExpressions(unPivotQuery.getOnExpressions(), context);
+        visitExpressions(unPivotQuery.getValueColumns(), context);
+        return null;
+    }
+
+    @Override
+    public void visit(UnPivotQuery unPivotQuery) {
+        SelectVisitor.super.visit(unPivotQuery);
     }
 
     private <S> void visitSelectItems(List<? extends SelectItem<?>> selectItems, S context) {

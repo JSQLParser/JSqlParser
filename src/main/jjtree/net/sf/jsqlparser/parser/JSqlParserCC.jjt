@@ -6356,6 +6356,8 @@ Select Select() #Select:
             (
                 LOOKAHEAD(2) select = PivotQuery()
                 |
+                LOOKAHEAD(2) select = UnPivotQuery()
+                |
                 LOOKAHEAD(3) select = PlainSelect()
                 |
                 LOOKAHEAD(3) select = Values()
@@ -7726,6 +7728,28 @@ List<SelectItem<Function>> PivotFunctionItems():
     item = FunctionItem() {functionItems.add(item);}
     ( LOOKAHEAD(2) "," item = FunctionItem() {functionItems.add(item);} )*
     { return functionItems; }
+}
+
+/**
+ * DuckDB's simplified UNPIVOT statement:
+ * UNPIVOT tbl ON columns [INTO NAME name VALUE values].
+ */
+UnPivotQuery UnPivotQuery():
+{
+    UnPivotQuery unPivotQuery = new UnPivotQuery();
+    ExpressionList<Expression> onExpressions;
+    ExpressionList<Column> valueColumns;
+    FromItem fromItem;
+    String nameColumn;
+}
+{
+    <K_UNPIVOT> fromItem=FromItem() { unPivotQuery.setFromItem(fromItem); }
+    <K_ON> onExpressions=ExpressionList() { unPivotQuery.setOnExpressions(onExpressions); }
+    [
+        <K_INTO> <K_NAME> nameColumn=RelObjectName() { unPivotQuery.setNameColumn(nameColumn); }
+        <K_VALUE> valueColumns=ColumnList() { unPivotQuery.setValueColumns(valueColumns); }
+    ]
+    { return unPivotQuery; }
 }
 
 PivotQuery PivotQuery():

@@ -63,6 +63,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -435,6 +436,17 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         }
     }
 
+
+    @Override
+    public <S> StringBuilder visit(UnPivotQuery unPivotQuery, S context) {
+        unPivotQuery.appendSelectBodyTo(builder);
+        return builder;
+    }
+
+    @Override
+    public void visit(UnPivotQuery unPivotQuery) {
+        SelectVisitor.super.visit(unPivotQuery);
+    }
 
     @Override
     public <S> StringBuilder visit(PivotQuery pivotQuery, S context) {

@@ -603,4 +603,39 @@ public class DuckDBTest {
         String sqlStr = "FROM t |> WHERE a > 1";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testUnPivotStatement() throws JSQLParserException {
+        String sqlStr = "UNPIVOT monthly_sales ON jan, feb INTO NAME month VALUE sales";
+        UnPivotQuery unPivotQuery =
+                (UnPivotQuery) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("month", unPivotQuery.getNameColumn());
+        Assertions.assertEquals(2, unPivotQuery.getOnExpressions().size());
+        Assertions.assertEquals(1, unPivotQuery.getValueColumns().size());
+    }
+
+    @Test
+    void testUnPivotStatementWithoutIntoClause() throws JSQLParserException {
+        String sqlStr = "UNPIVOT monthly_sales ON jan, feb";
+        UnPivotQuery unPivotQuery =
+                (UnPivotQuery) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(unPivotQuery.getNameColumn());
+    }
+
+    @Test
+    void testUnPivotStatementTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "UNPIVOT ds.monthly_sales ON jan, feb INTO NAME month VALUE sales";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.monthly_sales"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testUnPivotInFromClauseStillParses() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM monthly_sales UNPIVOT (sales FOR month IN (jan, feb))";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
