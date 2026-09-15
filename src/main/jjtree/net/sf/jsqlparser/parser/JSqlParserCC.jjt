@@ -60,6 +60,7 @@ import net.sf.jsqlparser.statement.create.extension.*;
 import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.macro.*;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
@@ -1211,6 +1212,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /** CREATE [TEMP|TEMPORARY] MACRO, DuckDB's inlined function definition. */
+    private boolean isCreateMacroAhead() {
+        int offset = 1;
+        int kind = getToken(offset).kind;
+        if (kind == K_TEMP || kind == K_TEMPORARY) {
+            offset++;
+        }
+        return getToken(offset).kind == K_MACRO;
+    }
+
     /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
     private boolean isSampleMethod(Token token) {
         return token.kind == K_SYSTEM || token.kind == K_BERNOULLI
@@ -2147,6 +2158,7 @@ String NonReservedWord() :
       | tk=<K_MATCH_PHRASE_PREFIX: "MATCH_PHRASE_PREFIX">
       | tk=<K_MATCH_REGEXP: "MATCH_REGEXP">
       | tk=<K_MATCHED: "MATCHED">
+      | tk=<K_MACRO: "MACRO">
       | tk=<K_MATERIALIZED:"MATERIALIZED">
       | tk=<K_MAX: "MAX">
       | tk=<K_MAX_ROWS: "MAX_ROWS">
@@ -4366,6 +4378,44 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * DuckDB's CREATE [OR REPLACE] [TEMPORARY] MACRO name (parameters) AS [TABLE] body.
+ */
+CreateMacro CreateMacro(boolean isUsingOrReplace) #CreateMacro:
+{
+    CreateMacro createMacro = new CreateMacro();
+    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    ObjectNames name;
+    Expression expression;
+    Select select;
+    String parameterName;
+    Expression defaultValue;
+}
+{
+    { createMacro.setOrReplace(isUsingOrReplace); }
+    [ ( <K_TEMP> | <K_TEMPORARY> ) { createMacro.setTemporary(true); } ]
+    <K_MACRO> name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    "("
+    [
+        parameterName=RelObjectName() { defaultValue = null; }
+        [ ":=" defaultValue=Expression() ]
+        { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
+        (
+            "," parameterName=RelObjectName() { defaultValue = null; }
+            [ ":=" defaultValue=Expression() ]
+            { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
+        )*
+    ]
+    ")" { createMacro.setParameters(parameters); }
+    <K_AS>
+    (
+        LOOKAHEAD(2) <K_TABLE> select=Select() { createMacro.setSelect(select); }
+        |
+        expression=Expression() { createMacro.setExpression(expression); }
+    )
+    { return createMacro; }
 }
 
 /**
@@ -17284,6 +17334,8 @@ Statement Create():
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
         |

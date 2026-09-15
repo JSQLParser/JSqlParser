@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -464,5 +465,38 @@ public class DuckDBTest {
         Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
                 new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
                         .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testCreateScalarMacro() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO add_one(a) AS a + 1";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("add_one", createMacro.getName());
+        Assertions.assertEquals(1, createMacro.getParameters().size());
+        Assertions.assertFalse(createMacro.isTable());
+    }
+
+    @Test
+    void testCreateOrReplaceTemporaryMacroWithDefault() throws JSQLParserException {
+        String sqlStr = "CREATE OR REPLACE TEMPORARY MACRO add(a, b := 5) AS a + b";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(createMacro.isOrReplace());
+        Assertions.assertTrue(createMacro.isTemporary());
+        Assertions.assertEquals("5",
+                createMacro.getParameters().get(1).getDefaultValue().toString());
+    }
+
+    @Test
+    void testCreateTableMacro() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO get_t(i) AS TABLE SELECT * FROM t WHERE id = i";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(createMacro.isTable());
+        Assertions.assertNotNull(createMacro.getSelect());
     }
 }

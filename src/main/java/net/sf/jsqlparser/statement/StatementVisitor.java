@@ -68,6 +68,7 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 
 public interface StatementVisitor<T> {
 
@@ -423,6 +424,12 @@ public interface StatementVisitor<T> {
 
     default void visit(CopyStatement copyStatement) {
         this.visit(copyStatement, null);
+    }
+
+    <S> T visit(CreateMacro createMacro, S context);
+
+    default void visit(CreateMacro createMacro) {
+        this.visit(createMacro, null);
     }
 
     <S> T visit(PurgeStatement purgeStatement, S context);
