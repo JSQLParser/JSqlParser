@@ -371,6 +371,12 @@ public interface StatementVisitor<T> {
         this.visit(renameTableStatement, null);
     }
 
+    <S> T visit(AssertStatement assertStatement, S context);
+
+    default void visit(AssertStatement assertStatement) {
+        this.visit(assertStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

@@ -1933,6 +1933,7 @@ String NonReservedWord() :
       | tk=<K_APPLY:"APPLY">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
       | tk=<K_ARCHIVE: "ARCHIVE">
+      | tk=<K_ASSERT: "ASSERT">
       | tk=<K_ARRAY_LITERAL: "ARRAY" >
       | tk=<K_ASYMMETRIC: "ASYMMETRIC">
       | tk=<K_AT: "AT">
@@ -2911,6 +2912,8 @@ Statement SingleStatement() :
             stm = Grant()
             |
             LOOKAHEAD({ isKeywordAhead("REVOKE") }) stm = Revoke(false)
+            |
+            LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
             |
             stm = PurgeStatement()
             |
@@ -4311,6 +4314,22 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * BigQuery's ASSERT expression [AS description] debugging statement.
+ */
+AssertStatement AssertStatement() #AssertStatement:
+{
+    AssertStatement assertStatement = new AssertStatement();
+    Expression expression;
+    Token token;
+}
+{
+    <K_ASSERT> expression=Expression() { assertStatement.setExpression(expression); }
+    [ <K_AS> token=<S_CHAR_LITERAL>
+        { assertStatement.setDescription(new StringValue(token.image)); } ]
+    { return assertStatement; }
 }
 
 PurgeStatement PurgeStatement(): {

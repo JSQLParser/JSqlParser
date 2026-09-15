@@ -522,6 +522,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(AssertStatement assertStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.MODIFIES_DATA);

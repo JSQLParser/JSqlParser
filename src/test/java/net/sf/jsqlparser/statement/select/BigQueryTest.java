@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestUtils;
@@ -215,5 +216,29 @@ public class BigQueryTest {
 
         Assertions.assertEquals(TablePartitioning.Type.HASH,
                 createTable.getPartitioning().getType());
+    }
+
+    @Test
+    void testAssertStatementWithDescription() throws JSQLParserException {
+        String sqlStr = "ASSERT (SELECT COUNT(*) FROM t) > 0 AS 'table is empty'";
+        AssertStatement assertStatement =
+                (AssertStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("'table is empty'", assertStatement.getDescription().toString());
+    }
+
+    @Test
+    void testAssertStatementWithoutDescription() throws JSQLParserException {
+        String sqlStr = "ASSERT EXISTS(SELECT 1 FROM t)";
+        AssertStatement assertStatement =
+                (AssertStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(assertStatement.getDescription());
+    }
+
+    @Test
+    void testAssertRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT assert FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

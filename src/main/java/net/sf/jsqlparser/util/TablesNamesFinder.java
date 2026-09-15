@@ -209,6 +209,7 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.AssertStatement;
 
 
 /**
@@ -2462,6 +2463,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         StatementVisitor.super.visit(renameTableStatement);
+    }
+
+    @Override
+    public <S> Void visit(AssertStatement assertStatement, S context) {
+        assertStatement.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(AssertStatement assertStatement) {
+        StatementVisitor.super.visit(assertStatement);
     }
 
     @Override
