@@ -160,4 +160,22 @@ public class BigQueryTest {
         Assertions.assertFalse(unnest.isWithOffset());
         Assertions.assertEquals("t", unnest.getAlias().getName());
     }
+
+    @Test
+    void testAggregateFunctionIgnoreNullsBeforeOrderBy() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(x IGNORE NULLS ORDER BY x) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAggregateFunctionIgnoreNullsOrderByLimit() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(DISTINCT x IGNORE NULLS ORDER BY x DESC LIMIT 5) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAggregateFunctionOrderByWithoutNullHandling() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(x ORDER BY x) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }
