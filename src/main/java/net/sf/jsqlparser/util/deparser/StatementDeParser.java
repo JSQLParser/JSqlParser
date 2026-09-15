@@ -97,6 +97,9 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -549,6 +552,24 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(RenameTableStatement renameTableStatement, S context) {
         renameTableStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
+        assertStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
+        exportDataStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(LoadDataStatement loadDataStatement, S context) {
+        loadDataStatement.appendTo(builder);
         return builder;
     }
 

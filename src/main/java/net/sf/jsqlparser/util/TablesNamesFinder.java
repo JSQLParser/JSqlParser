@@ -209,6 +209,9 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 
 /**
@@ -2462,6 +2465,39 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         StatementVisitor.super.visit(renameTableStatement);
+    }
+
+    @Override
+    public <S> Void visit(AssertStatement assertStatement, S context) {
+        assertStatement.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(AssertStatement assertStatement) {
+        StatementVisitor.super.visit(assertStatement);
+    }
+
+    @Override
+    public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
+        exportDataStatement.getSelect().accept((SelectVisitor<?>) this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(ExportDataStatement exportDataStatement) {
+        StatementVisitor.super.visit(exportDataStatement);
+    }
+
+    @Override
+    public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
+        loadDataStatement.getTable().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(LoadDataStatement loadDataStatement) {
+        StatementVisitor.super.visit(loadDataStatement);
     }
 
     @Override

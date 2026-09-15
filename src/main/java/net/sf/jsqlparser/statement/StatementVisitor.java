@@ -68,6 +68,8 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 public interface StatementVisitor<T> {
 
@@ -369,6 +371,24 @@ public interface StatementVisitor<T> {
 
     default void visit(RenameTableStatement renameTableStatement) {
         this.visit(renameTableStatement, null);
+    }
+
+    <S> T visit(AssertStatement assertStatement, S context);
+
+    default void visit(AssertStatement assertStatement) {
+        this.visit(assertStatement, null);
+    }
+
+    <S> T visit(ExportDataStatement exportDataStatement, S context);
+
+    default void visit(ExportDataStatement exportDataStatement) {
+        this.visit(exportDataStatement, null);
+    }
+
+    <S> T visit(LoadDataStatement loadDataStatement, S context);
+
+    default void visit(LoadDataStatement loadDataStatement) {
+        this.visit(loadDataStatement, null);
     }
 
     <S> T visit(PurgeStatement purgeStatement, S context);
