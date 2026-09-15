@@ -142,4 +142,38 @@ public class DuckDBTest {
 
         Assertions.assertNull(insert.getColumnMatching());
     }
+
+    @Test
+    void testUsingSamplePercentShorthand() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t USING SAMPLE 10%";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        SampleClause sampleClause = select.getFromItem().getSampleClause();
+
+        Assertions.assertEquals("%", sampleClause.getPercentageUnit());
+        Assertions.assertNull(sampleClause.getMethod());
+    }
+
+    @Test
+    void testUsingSamplePercentWithMethodInBrackets() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t USING SAMPLE 10 PERCENT (bernoulli)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(SampleClause.SampleMethod.BERNOULLI,
+                select.getFromItem().getSampleClause().getMethod());
+    }
+
+    @Test
+    void testUsingSampleRowsWithSeed() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t USING SAMPLE 10 ROWS (system, 377)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testUsingSampleReservoir() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t USING SAMPLE reservoir (50 ROWS)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(SampleClause.SampleMethod.RESERVOIR,
+                select.getFromItem().getSampleClause().getMethod());
+    }
 }

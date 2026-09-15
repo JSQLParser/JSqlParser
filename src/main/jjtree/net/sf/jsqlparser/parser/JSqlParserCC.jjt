@@ -1211,6 +1211,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
+    private boolean isSampleMethod(Token token) {
+        return token.kind == K_SYSTEM || token.kind == K_BERNOULLI
+                || (token.image != null && "RESERVOIR".equalsIgnoreCase(token.image));
+    }
+
     /** DuckDB's INSERT ... BY NAME|POSITION column matching, never a table alias. */
     private boolean isColumnMatchingAhead() {
         return getToken(1).kind == K_BY
@@ -5871,6 +5877,7 @@ SampleClause SampleClause():
     Number offsetArgument = null;
     Number repeatArgument=null;
     Number seedArgument=null;
+    boolean methodInBrackets = false;
 }
 {
     (
@@ -5887,9 +5894,13 @@ SampleClause SampleClause():
         )
         |
         (
-            // Duck DB
+            // Duck DB: the method is optional and may follow the sample size instead
             <K_USING> <K_SAMPLE> { keyword = "USING SAMPLE"; }
-            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+            [
+                LOOKAHEAD({ isSampleMethod(getToken(1)) })
+                ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+                { method = token.image; }
+            ]
         )
     )
 
@@ -5909,12 +5920,34 @@ SampleClause SampleClause():
         [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
         |
         percentageArgument = Number() { argumentInBrackets = false; }
+        // greedy: a unit directly after the sample size always belongs to the clause
+        [
+            LOOKAHEAD(1)
+            (
+                "%" { percentageUnit="%"; }
+                |
+                <K_PERCENT> { percentageUnit="PERCENT"; }
+                |
+                <K_ROWS> { percentageUnit="ROWS"; }
+            )
+        ]
         [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
     )
+
+    // DuckDB: USING SAMPLE 10 PERCENT (bernoulli[, seed])
+    [
+        LOOKAHEAD({ method == null && getToken(1).kind == OPENING_BRACKET
+                && isSampleMethod(getToken(2)) })
+        "(" ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+        { method = token.image; methodInBrackets = true; }
+        [ "," seedArgument = Number() ]
+        ")"
+    ]
 
     {
         sampleClause = new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
         sampleClause.setArgumentInBrackets(argumentInBrackets);
+        sampleClause.setMethodInBrackets(methodInBrackets);
         sampleClause.setOffsetArgument(offsetArgument);
         return sampleClause;
     }
