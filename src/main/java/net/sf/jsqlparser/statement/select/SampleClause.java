@@ -17,6 +17,7 @@ public class SampleClause {
     private Number percentageArgument;
     private String percentageUnit;
     private boolean argumentInBrackets = true;
+    private boolean methodInBrackets = false;
     // ClickHouse specific
     private Number offsetArgument;
     private Number repeatArgument;
@@ -130,10 +131,23 @@ public class SampleClause {
         return this;
     }
 
+    /**
+     * DuckDB writes the sampling method behind the sample size:
+     * {@code USING SAMPLE 10 PERCENT (bernoulli)}.
+     */
+    public boolean isMethodInBrackets() {
+        return methodInBrackets;
+    }
+
+    public SampleClause setMethodInBrackets(boolean methodInBrackets) {
+        this.methodInBrackets = methodInBrackets;
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
 
         builder.append(" ").append(keyword);
-        if (method != null) {
+        if (method != null && !methodInBrackets) {
             builder.append(" ").append(method);
         }
 
@@ -144,9 +158,18 @@ public class SampleClause {
             } else {
                 builder.append(" ").append(percentageArgument);
                 if (percentageUnit != null) {
-                    builder.append(" ").append(percentageUnit);
+                    // "10%" has no blank, "10 PERCENT" and "10 ROWS" do
+                    builder.append("%".equals(percentageUnit) ? "" : " ").append(percentageUnit);
                 }
             }
+        }
+
+        if (methodInBrackets) {
+            builder.append(" (").append(method);
+            if (seedArgument != null) {
+                builder.append(", ").append(seedArgument);
+            }
+            builder.append(")");
         }
 
         if (offsetArgument != null) {
@@ -157,7 +180,7 @@ public class SampleClause {
             builder.append(" REPEATABLE (").append(repeatArgument).append(")");
         }
 
-        if (seedArgument != null) {
+        if (seedArgument != null && !methodInBrackets) {
             builder.append(" SEED (").append(seedArgument).append(")");
         }
 
@@ -189,7 +212,7 @@ public class SampleClause {
     }
 
     public enum SampleMethod {
-        BERNOULLI, SYSTEM, BLOCK;
+        BERNOULLI, SYSTEM, BLOCK, RESERVOIR;
 
         public static SampleMethod from(String sampleMethod) {
             return Enum.valueOf(SampleMethod.class,

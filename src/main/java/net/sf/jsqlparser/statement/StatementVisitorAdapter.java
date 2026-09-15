@@ -89,6 +89,8 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -615,6 +617,61 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(RenameTableStatement renameTableStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(PragmaStatement pragmaStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ExtensionStatement extensionStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AttachStatement attachStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DetachStatement detachStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ConnectStatement connectStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DisconnectStatement disconnectStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(PrepareStatement prepareStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DeallocateStatement deallocateStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CopyStatement copyStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateMacro createMacro, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateExtensionRepository createExtensionRepository, S context) {
         return null;
     }
 

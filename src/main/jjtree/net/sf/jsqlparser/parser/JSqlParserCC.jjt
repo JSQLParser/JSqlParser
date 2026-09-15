@@ -60,6 +60,7 @@ import net.sf.jsqlparser.statement.create.extension.*;
 import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
+import net.sf.jsqlparser.statement.create.macro.*;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
@@ -1063,9 +1064,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_CONNECT:  return nextKind != K_BY;
             case K_START:    return nextKind != K_WITH;
             case K_LEFT:     return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+                                    && nextKind != K_SEMI && nextKind != K_ANTI
+                                    && nextKind != K_ARRAY_LITERAL;
             case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+                                    && nextKind != K_SEMI && nextKind != K_ANTI
+                                    && nextKind != K_ARRAY_LITERAL;
             case K_ARRAY_LITERAL:
                              return nextKind != K_JOIN;
             case K_ALL:      return nextKind != K_JOIN;
@@ -1209,6 +1212,81 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /**
+     * DuckDB's FROM-first query: a FROM clause followed by query clauses the pipe syntax cannot
+     * consume.  Scanning stops at a pipe operator or the end of the statement, and clause keywords
+     * nested in brackets (a sub-select, for instance) do not count.
+     */
+    private boolean isFromFirstSelectAhead() {
+        if (getToken(1).kind != K_FROM) {
+            return false;
+        }
+        int depth = 0;
+        for (int i = 2;; i++) {
+            Token token = getToken(i);
+            if (token == null || token.kind == EOF || ";".equals(token.image)
+                    || "|>".equals(token.image)) {
+                return false;
+            }
+            if ("(".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image)) {
+                depth--;
+            } else if (depth == 0) {
+                switch (token.kind) {
+                    case K_SELECT:
+                    case K_WHERE:
+                    case K_GROUP:
+                    case K_HAVING:
+                    case K_QUALIFY:
+                    case K_ORDER:
+                    case K_LIMIT:
+                    case K_OFFSET:
+                        return true;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    /** CREATE [TEMP|TEMPORARY] MACRO, DuckDB's inlined function definition. */
+    private boolean isCreateMacroAhead() {
+        int offset = 1;
+        int kind = getToken(offset).kind;
+        if (kind == K_TEMP || kind == K_TEMPORARY) {
+            offset++;
+        }
+        return getToken(offset).kind == K_MACRO;
+    }
+
+    /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
+    private boolean isSampleMethod(Token token) {
+        return token.kind == K_SYSTEM || token.kind == K_BERNOULLI
+                || (token.image != null && "RESERVOIR".equalsIgnoreCase(token.image));
+    }
+
+    /** DuckDB's INSERT ... BY NAME|POSITION column matching, never a table alias. */
+    private boolean isColumnMatchingAhead() {
+        return getToken(1).kind == K_BY
+                && ("NAME".equalsIgnoreCase(getToken(2).image)
+                        || "POSITION".equalsIgnoreCase(getToken(2).image));
+    }
+
+    /** DuckDB 2.0's APPROX NEAREST similarity join, never a table alias. */
+    private boolean isApproxNearestAhead() {
+        return getToken(1).kind == K_APPROX && getToken(2).kind == K_NEAREST;
+    }
+
+    /** SEMI/ANTI stay contextual identifiers unless they prefix a JOIN. */
+    private boolean isSemiAntiJoinAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_SEMI && kind != K_ANTI) {
+            return false;
+        }
+        return getToken(2).kind == K_JOIN;
+    }
+
     /** ASOF stays a contextual identifier outside a join prefix. */
     private boolean isAsOfJoinAhead() {
         if (!isKeywordAhead("ASOF")) {
@@ -1238,7 +1316,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * reserved keywords.
      */
     private boolean isAliasAhead() {
-        if (isAsOfJoinAhead()) {
+        if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
         }
         Token t = getToken(1);
@@ -1480,6 +1558,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             Token token = getToken(i);
             if (token.kind == EOF || ";".equals(token.image) || token.kind == K_BEGIN) { return false; }
             if (token.kind == K_EXECUTE && (getToken(i + 1).kind == K_FUNCTION || getToken(i + 1).kind == K_PROCEDURE)) { return true; }
+            // DuckDB 2.0 uses the standard header with a statement body instead of EXECUTE
+            if ("REFERENCING".equalsIgnoreCase(token.image) || token.kind == K_STATEMENT) { return true; }
         }
     }
 
@@ -1713,6 +1793,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_RLIKE:             // RLIKE
             case K_REGEXP_LIKE:       // REGEXP_LIKE
             case K_REGEXP:            // REGEXP
+            case K_GLOB:              // GLOB (DuckDB/SQLite)
             case K_SIMILAR_TO:        // SIMILAR TO (in LikeExpression)
             case K_SIMILAR:           // SIMILAR TO (in SimilarToExpression)
             case K_MATCH_ANY:         // MATCH_ANY
@@ -1929,8 +2010,10 @@ String NonReservedWord() :
       | tk=<K_ALWAYS:"ALWAYS">
       | tk=<K_ANALYSE:"ANALYSE">
       | tk=<K_ANALYZE:"ANALYZE">
+      | tk=<K_ANTI:"ANTI">
       | tk=<K_APPEND_ONLY:"APPEND_ONLY">
       | tk=<K_APPLY:"APPLY">
+      | tk=<K_APPROX: "APPROX">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
       | tk=<K_ARCHIVE: "ARCHIVE">
       | tk=<K_ARRAY_LITERAL: "ARRAY" >
@@ -1977,6 +2060,7 @@ String NonReservedWord() :
       | tk=<K_COLUMN:"COLUMN">
       | tk=<K_COLUMNS:"COLUMNS">
       | tk=<K_COMMIT:"COMMIT">
+      | tk=<K_COPY: "COPY">
       | tk=<K_COMMENT:"COMMENT">
       | tk=<K_COMMENTS:"COMMENTS">
       | tk=<K_COMPLETION:"COMPLETION">
@@ -1994,6 +2078,7 @@ String NonReservedWord() :
       | tk=<K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
       | tk=<K_DEFAULTS: "DEFAULTS">
       | tk=<K_DEPTH: "DEPTH">
+      | tk=<K_DEALLOCATE: "DEALLOCATE">
       | tk=<K_DEFERRABLE : "DEFERRABLE">
       | tk=<K_DELAYED : "DELAYED">
       | tk=<K_DELETE:"DELETE">
@@ -2055,6 +2140,7 @@ String NonReservedWord() :
       | tk=<K_FORMAT:"FORMAT">
       | tk=<K_FULLTEXT:"FULLTEXT">
       | tk=<K_FUNCTION:"FUNCTION">
+      | tk=<K_GLOB:"GLOB">
       | tk=<K_GRANT:"GRANT">
       | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
@@ -2072,6 +2158,7 @@ String NonReservedWord() :
       | tk=<K_INCLUDING:"INCLUDING">
       | tk=<K_INCREMENT:"INCREMENT">
       | tk=<K_INDEX: "INDEX">
+      | tk=<K_INSTALL: "INSTALL">
       | tk=<K_INFORMATION: "INFORMATION">
       | tk=<K_INSERT:"INSERT">
       | tk=<K_INTERLEAVE: "INTERLEAVE">
@@ -2100,6 +2187,7 @@ String NonReservedWord() :
       | tk=<K_LINEAR:"LINEAR">
       | tk=<K_LINES:"LINES">
       | tk=<K_LIST:"LIST">
+      | tk=<K_LOAD: "LOAD">
       | tk=<K_LOCAL:"LOCAL">
       | tk=<K_LOCK:"LOCK">
       | tk=<K_LOCKED:"LOCKED">
@@ -2116,6 +2204,7 @@ String NonReservedWord() :
       | tk=<K_MATCH_PHRASE_PREFIX: "MATCH_PHRASE_PREFIX">
       | tk=<K_MATCH_REGEXP: "MATCH_REGEXP">
       | tk=<K_MATCHED: "MATCHED">
+      | tk=<K_MACRO: "MACRO">
       | tk=<K_MATERIALIZED:"MATERIALIZED">
       | tk=<K_MAX: "MAX">
       | tk=<K_MAX_ROWS: "MAX_ROWS">
@@ -2133,6 +2222,7 @@ String NonReservedWord() :
       | tk=<K_NAME:"NAME">
       | tk=<K_NEVER:"NEVER">
       | tk=<K_NEXT:"NEXT">
+      | tk=<K_NEAREST: "NEAREST">
       | tk=<K_NEXTVAL: (  (("NEXTVAL")((" ")+("FOR"))?)  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
       | tk=<K_NO:"NO">
       | tk=<K_NOCACHE:"NOCACHE">
@@ -2174,6 +2264,8 @@ String NonReservedWord() :
       | tk=<K_PLACING:"PLACING">
       | tk=<K_PLAN:"PLAN">
       | tk=<K_PLUS:"PLUS">
+      | tk=<K_PRAGMA: "PRAGMA">
+      | tk=<K_PREPARE: "PREPARE">
       | tk=<K_PRECEDING: "PRECEDING">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
@@ -2236,6 +2328,7 @@ String NonReservedWord() :
       | tk=<K_SHARE : "SHARE">
       | tk=<K_SIBLINGS:"SIBLINGS">
       | tk=<K_SIMILAR:"SIMILAR">
+      | tk=<K_SIMILARITY: "SIMILARITY">
       | tk=<K_SIZE:"SIZE">
       | tk=<K_SKIP: "SKIP">
       | tk=<K_SLAVE: "SLAVE">
@@ -2911,6 +3004,28 @@ Statement SingleStatement() :
             stm = Grant()
             |
             LOOKAHEAD({ isKeywordAhead("REVOKE") }) stm = Revoke(false)
+            |
+            LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_INSTALL || getToken(1).kind == K_LOAD
+                    || (getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL) })
+            stm = ExtensionStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_ATTACH }) stm = AttachStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DETACH }) stm = DetachStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_CONNECT && getToken(2).kind != K_BY })
+            stm = ConnectStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DISCONNECT && getToken(2).kind != K_SESSION })
+            stm = DisconnectStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_PREPARE }) stm = PrepareStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
             |
             stm = PurgeStatement()
             |
@@ -4313,6 +4428,287 @@ RenameTableStatement RenameTableStatement(): {
     }
 }
 
+/**
+ * DuckDB's CREATE [OR REPLACE] [TEMPORARY] MACRO name (parameters) AS [TABLE] body.
+ */
+CreateMacro CreateMacro(boolean isUsingOrReplace) #CreateMacro:
+{
+    CreateMacro createMacro = new CreateMacro();
+    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    ObjectNames name;
+    Expression expression;
+    Select select;
+    String parameterName;
+    Expression defaultValue;
+}
+{
+    { createMacro.setOrReplace(isUsingOrReplace); }
+    [ ( <K_TEMP> | <K_TEMPORARY> ) { createMacro.setTemporary(true); } ]
+    <K_MACRO> name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    "("
+    [
+        parameterName=RelObjectName() { defaultValue = null; }
+        [ ":=" defaultValue=Expression() ]
+        { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
+        (
+            "," parameterName=RelObjectName() { defaultValue = null; }
+            [ ":=" defaultValue=Expression() ]
+            { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
+        )*
+    ]
+    ")" { createMacro.setParameters(parameters); }
+    <K_AS>
+    (
+        LOOKAHEAD(2) <K_TABLE> select=Select() { createMacro.setSelect(select); }
+        |
+        expression=Expression() { createMacro.setExpression(expression); }
+    )
+    { return createMacro; }
+}
+
+/**
+ * DuckDB's COPY table [(columns)] FROM path [(options)] and
+ * COPY {table | (query)} TO path [(options)].
+ */
+CopyStatement CopyStatement() #CopyStatement:
+{
+    CopyStatement copyStatement = new CopyStatement();
+    ExpressionList<Column> columns = null;
+    List<String> options = new ArrayList<String>();
+    String option;
+    Select select;
+    Table table;
+    Token token;
+}
+{
+    <K_COPY>
+    (
+        LOOKAHEAD(2) "(" select=Select() ")" { copyStatement.setSelect(select); }
+        |
+        table=Table() { copyStatement.setTable(table); }
+        [ LOOKAHEAD(2) "(" columns=ColumnList() ")" { copyStatement.setColumns(columns); } ]
+    )
+    (
+        <K_FROM> { copyStatement.setFrom(true); }
+        |
+        <K_TO>
+    )
+    (
+        token=<S_CHAR_LITERAL> { copyStatement.setPath(token.image); }
+        |
+        token=<S_IDENTIFIER> { copyStatement.setPath(token.image); }
+    )
+    [
+        LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
+        ( "," option=DatabaseOption() { options.add(option); } )*
+        ")" { copyStatement.setOptions(options); }
+    ]
+    { return copyStatement; }
+}
+
+/**
+ * PREPARE name AS statement, storing a parameterised statement for later EXECUTE.
+ */
+PrepareStatement PrepareStatement() #PrepareStatement:
+{
+    PrepareStatement prepareStatement = new PrepareStatement();
+    ObjectNames name;
+    Statement statement;
+}
+{
+    <K_PREPARE> name=RelObjectNames()
+    { prepareStatement.setName(String.join(".", name.getNames())); }
+    <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    { return prepareStatement; }
+}
+
+/**
+ * DEALLOCATE [PREPARE] name.
+ */
+DeallocateStatement DeallocateStatement() #DeallocateStatement:
+{
+    DeallocateStatement deallocateStatement = new DeallocateStatement();
+    ObjectNames name;
+}
+{
+    <K_DEALLOCATE>
+    [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+    name=RelObjectNames() { deallocateStatement.setName(String.join(".", name.getNames())); }
+    { return deallocateStatement; }
+}
+
+/**
+ * DuckDB's CONNECT target [AS alias], routing the session to a remote database.
+ */
+ConnectStatement ConnectStatement() #ConnectStatement:
+{
+    ConnectStatement connectStatement = new ConnectStatement();
+    ObjectNames name;
+    Token token;
+}
+{
+    <K_CONNECT>
+    (
+        token=<S_CHAR_LITERAL> { connectStatement.setTarget(token.image); }
+        |
+        name=RelObjectNames() { connectStatement.setTarget(String.join(".", name.getNames())); }
+    )
+    [ <K_AS> name=RelObjectNames() { connectStatement.setAlias(String.join(".", name.getNames())); } ]
+    { return connectStatement; }
+}
+
+/**
+ * DuckDB's DISCONNECT [name].
+ */
+DisconnectStatement DisconnectStatement() #DisconnectStatement:
+{
+    DisconnectStatement disconnectStatement = new DisconnectStatement();
+    ObjectNames name;
+}
+{
+    <K_DISCONNECT>
+    [
+        LOOKAHEAD(2)
+        name=RelObjectNames() { disconnectStatement.setName(String.join(".", name.getNames())); }
+    ]
+    { return disconnectStatement; }
+}
+
+/**
+ * DuckDB's ATTACH [DATABASE] [IF NOT EXISTS] path [AS alias] [(options)].
+ */
+AttachStatement AttachStatement() #AttachStatement:
+{
+    AttachStatement attachStatement = new AttachStatement();
+    List<String> options = new ArrayList<String>();
+    String option;
+    ObjectNames name;
+    Token token;
+}
+{
+    <K_ATTACH>
+    // greedy: DATABASE right after ATTACH is the keyword, not the database name
+    [ LOOKAHEAD(2) <K_DATABASE> { attachStatement.setUsingDatabaseKeyword(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { attachStatement.setIfNotExists(true); } ]
+    (
+        token=<S_CHAR_LITERAL> { attachStatement.setDatabasePath(token.image); }
+        |
+        name=RelObjectNames() { attachStatement.setDatabasePath(String.join(".", name.getNames())); }
+    )
+    [ <K_AS> name=RelObjectNames() { attachStatement.setAlias(String.join(".", name.getNames())); } ]
+    [
+        LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
+        ( "," option=DatabaseOption() { options.add(option); } )*
+        ")" { attachStatement.setOptions(options); }
+    ]
+    { return attachStatement; }
+}
+
+/**
+ * One ATTACH or COPY option, such as READ_ONLY, TYPE SQLITE or FORMAT PARQUET.  Option names and
+ * values are free-form keywords, so the tokens are collected verbatim up to the next comma or the
+ * closing bracket.
+ */
+JAVACODE
+String DatabaseOption() {
+    StringBuilder builder = new StringBuilder();
+    int depth = 0;
+    while (true) {
+        Token token = getToken(1);
+        if (token == null || token.kind == EOF) {
+            break;
+        }
+        if (depth == 0 && (",".equals(token.image) || ")".equals(token.image))) {
+            break;
+        }
+        if ("(".equals(token.image)) {
+            depth++;
+        } else if (")".equals(token.image)) {
+            depth--;
+        }
+        getNextToken();
+        if (builder.length() > 0) {
+            builder.append(" ");
+        }
+        builder.append(token.image);
+    }
+    return builder.toString();
+}
+
+/**
+ * DuckDB's DETACH [DATABASE] [IF EXISTS] name.
+ */
+DetachStatement DetachStatement() #DetachStatement:
+{
+    DetachStatement detachStatement = new DetachStatement();
+    ObjectNames name;
+}
+{
+    <K_DETACH>
+    // greedy: DATABASE right after DETACH is the keyword, not the database name
+    [ LOOKAHEAD(2) <K_DATABASE> { detachStatement.setUsingDatabaseKeyword(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { detachStatement.setIfExists(true); } ]
+    name=RelObjectNames() { detachStatement.setDatabaseName(String.join(".", name.getNames())); }
+    { return detachStatement; }
+}
+
+/**
+ * DuckDB's [FORCE] INSTALL extension [FROM repository] and LOAD extension.
+ */
+ExtensionStatement ExtensionStatement() #ExtensionStatement:
+{
+    ExtensionStatement extensionStatement = new ExtensionStatement();
+    ObjectNames name;
+    Token token;
+}
+{
+    [ <K_FORCE> { extensionStatement.setForce(true); } ]
+    (
+        <K_INSTALL> { extensionStatement.setOperation(ExtensionStatement.Operation.INSTALL); }
+        |
+        <K_LOAD> { extensionStatement.setOperation(ExtensionStatement.Operation.LOAD); }
+    )
+    (
+        token=<S_CHAR_LITERAL> { extensionStatement.setExtensionName(token.image); }
+        |
+        name=RelObjectNames() { extensionStatement.setExtensionName(String.join(".", name.getNames())); }
+    )
+    [
+        LOOKAHEAD(2) <K_FROM>
+        (
+            token=<S_CHAR_LITERAL> { extensionStatement.setRepository(token.image); }
+            |
+            name=RelObjectNames() { extensionStatement.setRepository(String.join(".", name.getNames())); }
+        )
+    ]
+    { return extensionStatement; }
+}
+
+/**
+ * DuckDB/SQLite PRAGMA name [(arguments) | = value].
+ */
+PragmaStatement PragmaStatement() #PragmaStatement:
+{
+    PragmaStatement pragmaStatement = new PragmaStatement();
+    ObjectNames name;
+    ExpressionList parameters;
+    Expression value;
+}
+{
+    <K_PRAGMA> name=RelObjectNames()
+    { pragmaStatement.setName(String.join(".", name.getNames())); }
+    // greedy: parentheses right after the pragma name are its arguments
+    [
+        LOOKAHEAD(2)
+        (
+            "(" parameters=ExpressionList() ")" { pragmaStatement.setParameters(parameters); }
+            |
+            "=" value=SimpleExpression() { pragmaStatement.setValue(value); }
+        )
+    ]
+    { return pragmaStatement; }
+}
+
 PurgeStatement PurgeStatement(): {
     PurgeStatement purgeStatement = null;
     Table table;
@@ -4346,11 +4742,19 @@ PurgeStatement PurgeStatement(): {
 
 DescribeStatement Describe(): {
     Table table;
+    Select select;
     DescribeStatement stmt = new DescribeStatement();
     Token tk = null;
 } {
     (tk=<K_DESCRIBE> | tk=<K_DESC>)
-    table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+    (
+        // DuckDB describes the result of a query, not only a table
+        LOOKAHEAD({ getToken(1).kind == K_SELECT || getToken(1).kind == K_WITH
+                || getToken(1).kind == K_FROM || getToken(1).kind == OPENING_BRACKET })
+        select = Select() { stmt.setDescribeType(tk.image).setSelect(select); }
+        |
+        table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+    )
     {
         return stmt;
     }
@@ -5114,11 +5518,25 @@ Insert Insert():
             ]   table=TableReference()
             [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
 
-            [ LOOKAHEAD({ isAliasAhead() && !(getToken(1).kind == K_OVERRIDING
+            [ LOOKAHEAD({ isAliasAhead() && !isColumnMatchingAhead()
+                    && !(getToken(1).kind == K_OVERRIDING
                     && (getToken(2).kind == K_SYSTEM || getToken(2).kind == K_USER)) })
                 [<K_AS> { useAs = true; } ] name=RelObjectName() { table.setAlias(new Alias(name,useAs)); }]
 
             [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
+
+            // DuckDB: INSERT INTO tbl BY NAME|POSITION SELECT ...
+            [
+                LOOKAHEAD({ isColumnMatchingAhead() })
+                <K_BY>
+                (
+                    <K_NAME> { insert.setColumnMatching(Insert.ColumnMatching.BY_NAME); }
+                    |
+                    // POSITION is lexed as a string-function name
+                    <K_STRING_FUNCTION_NAME>
+                    { insert.setColumnMatching(Insert.ColumnMatching.BY_POSITION); }
+                )
+            ]
 
             [ LOOKAHEAD(2) <K_OVERRIDING>
                 ( <K_SYSTEM> { insert.setOverridingMode(Insert.OverridingMode.SYSTEM); }
@@ -5836,6 +6254,7 @@ SampleClause SampleClause():
     Number offsetArgument = null;
     Number repeatArgument=null;
     Number seedArgument=null;
+    boolean methodInBrackets = false;
 }
 {
     (
@@ -5852,9 +6271,13 @@ SampleClause SampleClause():
         )
         |
         (
-            // Duck DB
+            // Duck DB: the method is optional and may follow the sample size instead
             <K_USING> <K_SAMPLE> { keyword = "USING SAMPLE"; }
-            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+            [
+                LOOKAHEAD({ isSampleMethod(getToken(1)) })
+                ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+                { method = token.image; }
+            ]
         )
     )
 
@@ -5874,12 +6297,34 @@ SampleClause SampleClause():
         [ LOOKAHEAD(2) <K_SEED> "(" seedArgument = Number() ")" ]
         |
         percentageArgument = Number() { argumentInBrackets = false; }
+        // greedy: a unit directly after the sample size always belongs to the clause
+        [
+            LOOKAHEAD(1)
+            (
+                "%" { percentageUnit="%"; }
+                |
+                <K_PERCENT> { percentageUnit="PERCENT"; }
+                |
+                <K_ROWS> { percentageUnit="ROWS"; }
+            )
+        ]
         [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
     )
+
+    // DuckDB: USING SAMPLE 10 PERCENT (bernoulli[, seed])
+    [
+        LOOKAHEAD({ method == null && getToken(1).kind == OPENING_BRACKET
+                && isSampleMethod(getToken(2)) })
+        "(" ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+        { method = token.image; methodInBrackets = true; }
+        [ "," seedArgument = Number() ]
+        ")"
+    ]
 
     {
         sampleClause = new SampleClause(keyword, method, percentageArgument, percentageUnit, repeatArgument, seedArgument);
         sampleClause.setArgumentInBrackets(argumentInBrackets);
+        sampleClause.setMethodInBrackets(methodInBrackets);
         sampleClause.setOffsetArgument(offsetArgument);
         return sampleClause;
     }
@@ -5911,11 +6356,15 @@ Select Select() #Select:
 {
     [ with=WithList() ]
     (
+        LOOKAHEAD({ isFromFirstSelectAhead() }) select = FromFirstSelect()
+        |
         LOOKAHEAD(3) select = FromQuery()
         |
         (
             (
                 LOOKAHEAD(2) select = PivotQuery()
+                |
+                LOOKAHEAD(2) select = UnPivotQuery()
                 |
                 LOOKAHEAD(3) select = PlainSelect()
                 |
@@ -5939,6 +6388,53 @@ Select Select() #Select:
     {
         linkAST(select, jjtThis);
         return select.withWithItemsList(with);
+    }
+}
+
+/**
+ * DuckDB's FROM-first query: FROM tbl [SELECT ...] [WHERE ...] [GROUP BY ...] [HAVING ...]
+ * [QUALIFY ...] [ORDER BY ...] [LIMIT ...] [OFFSET ...].  Without a SELECT clause all columns
+ * are returned.
+ */
+PlainSelect FromFirstSelect() #FromFirstSelect:
+{
+    PlainSelect plainSelect = new PlainSelect();
+    List<SelectItem<?>> selectItems = null;
+    FromItem fromItem;
+    List<Join> joins = null;
+    Expression where = null;
+    GroupByElement groupBy = null;
+    Expression having = null;
+    Expression qualify = null;
+    List<OrderByElement> orderByElements = null;
+    Limit limit = null;
+    Offset offset = null;
+}
+{
+    <K_FROM> fromItem=FromItem()
+    {
+        plainSelect.setFromItem(fromItem);
+        plainSelect.setFromFirst(true);
+    }
+    [ LOOKAHEAD(2) joins=JoinsList() { plainSelect.setJoins(joins); } ]
+    // greedy: a SELECT right after the FROM clause belongs to this query
+    [
+        LOOKAHEAD(2)
+        <K_SELECT>
+        [ LOOKAHEAD(2) ( <K_ALL> | <K_DISTINCT> { plainSelect.setDistinct(new Distinct()); } ) ]
+        selectItems=SelectItemsList() { plainSelect.setSelectItems(selectItems); }
+    ]
+    [ LOOKAHEAD(2) where=WhereClause() { plainSelect.setWhere(where); } ]
+    [ LOOKAHEAD(2) groupBy=GroupByColumnReferences() { plainSelect.setGroupByElement(groupBy); } ]
+    [ LOOKAHEAD(2) having=Having() { plainSelect.setHaving(having); } ]
+    [ LOOKAHEAD(2) qualify=Qualify() { plainSelect.setQualify(qualify); } ]
+    [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements=OrderByElements()
+        { plainSelect.setOrderByElements(orderByElements); } ]
+    [ LOOKAHEAD(<K_LIMIT>) limit=LimitWithOffset() { plainSelect.setLimit(limit); } ]
+    [ LOOKAHEAD(<K_OFFSET>) offset=Offset() { plainSelect.setOffset(offset); } ]
+    {
+        linkAST(plainSelect, jjtThis);
+        return plainSelect;
     }
 }
 
@@ -6878,6 +7374,7 @@ WithItem<?> WithItem() #WithItem:
     ParenthesedStatement statement = null;
     WithSearchClause withSearchClause = null;
     WithCycleClause withCycleClause = null;
+    ExpressionList<Expression> usingKeyExpressions = null;
     WithItem<?> withItem;
 }
 {
@@ -6892,6 +7389,8 @@ WithItem<?> WithItem() #WithItem:
              [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
              name=RelObjectName()
              [ "(" selectItems=SelectItemsList() ")" ]
+             // DuckDB 2.0: WITH RECURSIVE tbl (a, b) USING KEY (a, avg(b)) AS (...)
+             [ LOOKAHEAD(2) <K_USING> <K_KEY> "(" usingKeyExpressions=ExpressionList() ")" ]
              <K_AS>
              [ LOOKAHEAD(2) [ <K_NOT> { usingNot = true; } ] <K_MATERIALIZED>  { materialized = true; } ]
              (
@@ -6907,6 +7406,7 @@ WithItem<?> WithItem() #WithItem:
                 withItem = new WithItem(statement, new Alias(name, false))
                     .withRecursive(recursive, usingNot, materialized)
                     .withWithItemList(selectItems);
+                withItem.setUsingKeyExpressions(usingKeyExpressions);
              }
          )
      )
@@ -7240,6 +7740,30 @@ List<SelectItem<Function>> PivotFunctionItems():
     item = FunctionItem() {functionItems.add(item);}
     ( LOOKAHEAD(2) "," item = FunctionItem() {functionItems.add(item);} )*
     { return functionItems; }
+}
+
+/**
+ * DuckDB's simplified UNPIVOT statement:
+ * UNPIVOT tbl ON columns [INTO NAME name VALUE values].
+ */
+UnPivotQuery UnPivotQuery():
+{
+    UnPivotQuery unPivotQuery = new UnPivotQuery();
+    ExpressionList<Expression> onExpressions;
+    ExpressionList<Column> valueColumns;
+    FromItem fromItem;
+    String nameColumn;
+}
+{
+    <K_UNPIVOT> fromItem=FromItem() { unPivotQuery.setFromItem(fromItem); }
+    <K_ON> onExpressions=ExpressionList() { unPivotQuery.setOnExpressions(onExpressions); }
+    // greedy: INTO after the ON list belongs to this UNPIVOT
+    [
+        LOOKAHEAD(2)
+        <K_INTO> <K_NAME> nameColumn=RelObjectName() { unPivotQuery.setNameColumn(nameColumn); }
+        <K_VALUE> valueColumns=ColumnList() { unPivotQuery.setValueColumns(valueColumns); }
+    ]
+    { return unPivotQuery; }
 }
 
 PivotQuery PivotQuery():
@@ -7724,6 +8248,7 @@ Join JoinerExpression() #JoinerExpression:
     List<Column> columns = null;
     KSQLJoinWindow joinWindow = null;
     JoinHint joinHint = null;
+    Token tk = null;
 }
 {
     [ LOOKAHEAD({ isAsOfJoinAhead() }) <S_IDENTIFIER> { join.setAsOf(true); } ]
@@ -7733,15 +8258,19 @@ Join JoinerExpression() #JoinerExpression:
 
     [
         (
-            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
+            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             (
                 <K_RIGHT> { join.setRight(true); }
                 |
                 <K_FULL> { join.setFull(true); }
-            ) [ <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
+            ) [ <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             <K_INNER> { join.setInner(true); }
+            |
+            // DuckDB allows SEMI/ANTI without a LEFT prefix
+            LOOKAHEAD({ isSemiAntiJoinAhead() })
+            ( <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } )
         )
         |
         <K_CROSS> { join.setCross(true); }
@@ -7775,6 +8304,12 @@ Join JoinerExpression() #JoinerExpression:
 
     right=FromItem()
 
+    // DuckDB 2.0: JOIN products APPROX NEAREST 2 BY SIMILARITY array_cosine_similarity(...)
+    [
+        LOOKAHEAD({ isApproxNearestAhead() })
+        <K_APPROX> <K_NEAREST> tk=<S_LONG> { join.setApproxNearest(Long.valueOf(tk.image)); }
+        <K_BY> <K_SIMILARITY> onExpression=Expression() { join.setSimilarity(onExpression); }
+    ]
     [
         LOOKAHEAD(2) (
                         [ <K_WITHIN> joinWindow = KSQLJoinWindowClause() {join.setJoinWindow(joinWindow);} ]
@@ -8981,6 +9516,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_RLIKE>
         | token = <K_REGEXP_LIKE>
         | token = <K_REGEXP>
+        | token = <K_GLOB>
         | token = <K_SIMILAR_TO>
         | token = <K_MATCH_ANY>
         | token = <K_MATCH_ALL>
@@ -12594,7 +13130,9 @@ List<String> IndexAlgorithmOrLockOption():
 {
     ( keyword=<K_ALGORITHM> | keyword=<K_LOCK> ) { option.add(keyword.image); }
     [ "=" { option.add("="); } ]
-    ( value=<K_DEFAULT> | value=<K_NONE> | value=<K_EXCLUSIVE> | value=<S_IDENTIFIER> )
+    // COPY is one of MySQL's ALGORITHM values and also starts the COPY statement
+    ( value=<K_DEFAULT> | value=<K_NONE> | value=<K_EXCLUSIVE> | value=<K_COPY>
+        | value=<S_IDENTIFIER> )
     { option.add(value.image); return option; }
 }
 
@@ -13826,6 +14364,9 @@ ColDataType ColDataType():
                 tk=<S_CHAR_LITERAL>
                 |
                 tk=<S_IDENTIFIER>
+                |
+                // DuckDB parameterises types with other types: MAP(VARCHAR, INTEGER)
+                tk=<DATA_TYPE>
                 |
                 tk=<K_CHAR>
             )
@@ -16316,14 +16857,20 @@ RollbackStatement RollbackStatement():
 {
     <K_ROLLBACK> { rollbackStatement = new RollbackStatement(); }
     [ <K_WORK> { rollbackStatement.setUsingWorkKeyword(true); } ]
-    [   (
-            <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]
-                token=<S_IDENTIFIER> { rollbackStatement.setSavepointName(token.image); }
-        )
-        |
+    // explicit lookahead: FORCE INSTALL starts a new statement, FORCE 'id' belongs here
+    [
+        LOOKAHEAD(2)
         (
-            <K_FORCE> token=<S_CHAR_LITERAL> { rollbackStatement.setForceDistributedTransactionIdentifier(token.image); }
-        ) ]
+            (
+                <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]
+                    token=<S_IDENTIFIER> { rollbackStatement.setSavepointName(token.image); }
+            )
+            |
+            (
+                <K_FORCE> token=<S_CHAR_LITERAL> { rollbackStatement.setForceDistributedTransactionIdentifier(token.image); }
+            )
+        )
+    ]
 
     {
         return rollbackStatement;
@@ -16679,6 +17226,7 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
 {
     CreateTrigger result = new CreateTrigger(); String name; Table table; CreateTrigger.Timing timing;
     TriggerEvent event; TransitionRelation transition; Expression expression; Token token; boolean negative = false;
+    Statement body = null;
     Function routine = new Function(); ExpressionList<Expression> arguments = new ExpressionList<Expression>();
 }
 {
@@ -16691,7 +17239,8 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
     event=PostgreSqlTriggerEvent() { result.getEvents().add(event); }
     ( <K_OR> event=PostgreSqlTriggerEvent() { result.getEvents().add(event); } )*
     <K_ON> table=Table() { result.setTable(table); }
-    [ <K_FROM> table=Table() { result.setReferencedTable(table); } ]
+    // greedy: FROM here names the referenced table, it never starts the trigger body
+    [ LOOKAHEAD(2) <K_FROM> table=Table() { result.setReferencedTable(table); } ]
     [ [ <K_NOT> { negative = true; } ] <K_DEFERRABLE> { result.getConstraintAttributes().setDeferrable(!negative); } ]
     [ LOOKAHEAD({ isAccessKeywordAhead("INITIALLY") })
       AccessKeyword("INITIALLY") ( token=<S_IDENTIFIER> )
@@ -16704,12 +17253,18 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
       ( <K_ROW> { result.setOrientation(CreateTrigger.Orientation.ROW); }
         | <K_STATEMENT> { result.setOrientation(CreateTrigger.Orientation.STATEMENT); } ) ]
     [ <K_WHEN> "(" expression=Expression() ")" { result.setWhenExpression(expression); } ]
-    <K_EXECUTE> ( <K_FUNCTION> | <K_PROCEDURE> { result.setExecuteKeyword(CreateTrigger.ExecuteKeyword.PROCEDURE); } )
-    name=AccessQualifiedName() { routine.setName(name); }
-    "(" [ expression=PostgreSqlTriggerArgument() { arguments.add(expression); }
-          ( "," expression=PostgreSqlTriggerArgument() { arguments.add(expression); } )* ] ")"
+    (
+        LOOKAHEAD(2)
+        <K_EXECUTE> ( <K_FUNCTION> | <K_PROCEDURE> { result.setExecuteKeyword(CreateTrigger.ExecuteKeyword.PROCEDURE); } )
+        name=AccessQualifiedName() { routine.setName(name); }
+        "(" [ expression=PostgreSqlTriggerArgument() { arguments.add(expression); }
+              ( "," expression=PostgreSqlTriggerArgument() { arguments.add(expression); } )* ] ")"
+        { routine.setParameters(arguments); result.setRoutine(routine); }
+        |
+        // DuckDB 2.0 runs a statement rather than a function
+        body=SingleStatement() { result.setBody(body); }
+    )
     {
-        routine.setParameters(arguments); result.setRoutine(routine);
         requireAccessSyntax(!result.isConstraint() || !replace && result.getTiming() == CreateTrigger.Timing.AFTER
             && result.getOrientation() == CreateTrigger.Orientation.ROW, "A constraint trigger requires AFTER FOR EACH ROW without OR REPLACE");
         requireAccessSyntax(result.isConstraint() || result.getReferencedTable() == null
@@ -16894,6 +17449,12 @@ Statement Create():
         |
         LOOKAHEAD(<K_DOMAIN>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE DOMAIN"); } statement = CreateDomain()
         |
+        LOOKAHEAD({ isKeywordAhead("EXTENSION")
+                && "REPOSITORY".equalsIgnoreCase(getToken(2).image) })
+        { requireTypeDdlSyntax(!isUsingOrReplace,
+                "OR REPLACE is not supported for CREATE EXTENSION REPOSITORY"); }
+        statement = CreateExtensionRepository()
+        |
         LOOKAHEAD({ isKeywordAhead("EXTENSION") }) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE EXTENSION"); } statement = CreateExtension()
         |
         LOOKAHEAD({ isKeywordAhead("PUBLICATION") })
@@ -16921,6 +17482,8 @@ Statement Create():
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
         |
@@ -17293,6 +17856,28 @@ AlterDomain AlterDomain():
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterDomain.Action.OWNER); }
     )
     { return result; }
+}
+
+/**
+ * DuckDB 2.0's CREATE EXTENSION REPOSITORY [IF NOT EXISTS] name [WITH PREFIX prefix].
+ */
+CreateExtensionRepository CreateExtensionRepository() #CreateExtensionRepository:
+{
+    CreateExtensionRepository createExtensionRepository = new CreateExtensionRepository();
+    Expression prefix;
+    String name;
+}
+{
+    TypeDdlKeyword("EXTENSION") TypeDdlKeyword("REPOSITORY")
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS>
+        { createExtensionRepository.setIfNotExists(true); } ]
+    name=RelObjectName() { createExtensionRepository.setName(name); }
+    // greedy: WITH PREFIX belongs to the repository definition
+    [
+        LOOKAHEAD(2) <K_WITH> TypeDdlKeyword("PREFIX") prefix=SimpleExpression()
+        { createExtensionRepository.setPrefix(prefix); }
+    ]
+    { return createExtensionRepository; }
 }
 
 CreateExtension CreateExtension():

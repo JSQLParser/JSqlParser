@@ -63,6 +63,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -198,101 +199,16 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             }
         }
 
-        builder.append("SELECT ");
-
-        if (plainSelect.getMySqlHintStraightJoin()) {
-            builder.append("STRAIGHT_JOIN ");
-        }
-
-        OracleHint hint = plainSelect.getOracleHint();
-        if (hint != null) {
-            builder.append(hint).append(" ");
-        }
-
-        Skip skip = plainSelect.getSkip();
-        if (skip != null) {
-            builder.append(skip).append(" ");
-        }
-
-        First first = plainSelect.getFirst();
-        if (first != null) {
-            builder.append(first).append(" ");
-        }
-
-        deparseDistinctClause(plainSelect.getDistinct());
-
-        if (plainSelect.getBigQuerySelectQualifier() != null) {
-            switch (plainSelect.getBigQuerySelectQualifier()) {
-                case AS_STRUCT:
-                    builder.append("AS STRUCT ");
-                    break;
-                case AS_VALUE:
-                    builder.append("AS VALUE ");
-                    break;
+        if (plainSelect.isFromFirst()) {
+            // DuckDB allows the FROM clause to lead, with an optional SELECT clause behind it
+            deparseFromClause(plainSelect, context);
+            if (plainSelect.getSelectItems() != null && !plainSelect.getSelectItems().isEmpty()) {
+                builder.append(" ");
+                deparseSelectClause(plainSelect, context);
             }
-        }
-
-        Top top = plainSelect.getTop();
-        if (top != null) {
-            visit(top);
-        }
-
-        if (plainSelect.getMySqlSqlCacheFlag() != null) {
-            builder.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
-        }
-
-        if (plainSelect.getMySqlSqlCalcFoundRows()) {
-            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
-        }
-
-        deparseSelectItemsClause(plainSelect.getSelectItems());
-
-        if (plainSelect.getIntoTables() != null) {
-            builder.append(" INTO ");
-            for (Iterator<Table> iter = plainSelect.getIntoTables().iterator(); iter.hasNext();) {
-                visit(iter.next(), context);
-                if (iter.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-        }
-
-        deparseMySqlSelectInto(plainSelect, MySqlSelectIntoClause.Position.BEFORE_FROM, context);
-
-        if (plainSelect.getFromItem() != null) {
-            builder.append(" FROM ");
-            if (plainSelect.isUsingOnly()) {
-                builder.append("ONLY ");
-            }
-            plainSelect.getFromItem().accept(this, context);
-
-            if (plainSelect.getFromItem() instanceof Table) {
-                Table table = (Table) plainSelect.getFromItem();
-                if (table.getSampleClause() != null) {
-                    table.getSampleClause().appendTo(builder);
-                }
-            }
-        }
-
-        if (plainSelect.getLateralViews() != null) {
-            for (LateralView lateralView : plainSelect.getLateralViews()) {
-                deparseLateralView(lateralView);
-            }
-        }
-
-        if (plainSelect.getJoins() != null) {
-            for (Join join : plainSelect.getJoins()) {
-                deparseJoin(join);
-            }
-        }
-
-        if (plainSelect.isUsingFinal()) {
-            builder.append(" FINAL");
-        }
-
-        if (plainSelect.getKsqlWindow() != null) {
-            builder.append(" WINDOW ");
-            builder.append(plainSelect.getKsqlWindow().toString());
+        } else {
+            deparseSelectClause(plainSelect, context);
+            deparseFromClause(plainSelect, context);
         }
 
         deparsePreWhereClause(plainSelect);
@@ -417,6 +333,119 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
 
         return builder;
+    }
+
+    private <S> void deparseSelectClause(PlainSelect plainSelect, S context) {
+        builder.append("SELECT ");
+
+        if (plainSelect.getMySqlHintStraightJoin()) {
+            builder.append("STRAIGHT_JOIN ");
+        }
+
+        OracleHint hint = plainSelect.getOracleHint();
+        if (hint != null) {
+            builder.append(hint).append(" ");
+        }
+
+        Skip skip = plainSelect.getSkip();
+        if (skip != null) {
+            builder.append(skip).append(" ");
+        }
+
+        First first = plainSelect.getFirst();
+        if (first != null) {
+            builder.append(first).append(" ");
+        }
+
+        deparseDistinctClause(plainSelect.getDistinct());
+
+        if (plainSelect.getBigQuerySelectQualifier() != null) {
+            switch (plainSelect.getBigQuerySelectQualifier()) {
+                case AS_STRUCT:
+                    builder.append("AS STRUCT ");
+                    break;
+                case AS_VALUE:
+                    builder.append("AS VALUE ");
+                    break;
+            }
+        }
+
+        Top top = plainSelect.getTop();
+        if (top != null) {
+            visit(top);
+        }
+
+        if (plainSelect.getMySqlSqlCacheFlag() != null) {
+            builder.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
+        }
+
+        if (plainSelect.getMySqlSqlCalcFoundRows()) {
+            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
+        }
+
+        deparseSelectItemsClause(plainSelect.getSelectItems());
+
+        if (plainSelect.getIntoTables() != null) {
+            builder.append(" INTO ");
+            for (Iterator<Table> iter = plainSelect.getIntoTables().iterator(); iter.hasNext();) {
+                visit(iter.next(), context);
+                if (iter.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+        }
+
+        deparseMySqlSelectInto(plainSelect, MySqlSelectIntoClause.Position.BEFORE_FROM, context);
+    }
+
+    private <S> void deparseFromClause(PlainSelect plainSelect, S context) {
+        if (plainSelect.getFromItem() != null) {
+            builder.append(plainSelect.isFromFirst() ? "FROM " : " FROM ");
+            if (plainSelect.isUsingOnly()) {
+                builder.append("ONLY ");
+            }
+            plainSelect.getFromItem().accept(this, context);
+
+            if (plainSelect.getFromItem() instanceof Table) {
+                Table table = (Table) plainSelect.getFromItem();
+                if (table.getSampleClause() != null) {
+                    table.getSampleClause().appendTo(builder);
+                }
+            }
+        }
+
+        if (plainSelect.getLateralViews() != null) {
+            for (LateralView lateralView : plainSelect.getLateralViews()) {
+                deparseLateralView(lateralView);
+            }
+        }
+
+        if (plainSelect.getJoins() != null) {
+            for (Join join : plainSelect.getJoins()) {
+                deparseJoin(join);
+            }
+        }
+
+        if (plainSelect.isUsingFinal()) {
+            builder.append(" FINAL");
+        }
+
+        if (plainSelect.getKsqlWindow() != null) {
+            builder.append(" WINDOW ");
+            builder.append(plainSelect.getKsqlWindow().toString());
+        }
+    }
+
+
+    @Override
+    public <S> StringBuilder visit(UnPivotQuery unPivotQuery, S context) {
+        unPivotQuery.appendSelectBodyTo(builder);
+        return builder;
+    }
+
+    @Override
+    public void visit(UnPivotQuery unPivotQuery) {
+        SelectVisitor.super.visit(unPivotQuery);
     }
 
     @Override
@@ -744,6 +773,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" WITHIN ");
             builder.append(join.getJoinWindow().toString());
         }
+        if (join.getApproxNearest() != null) {
+            builder.append(" APPROX NEAREST ").append(join.getApproxNearest())
+                    .append(" BY SIMILARITY ");
+            join.getSimilarity().accept(expressionVisitor, null);
+        }
+
         for (Expression onExpression : join.getOnExpressions()) {
             builder.append(" ON ");
             onExpression.accept(expressionVisitor, null);

@@ -93,6 +93,9 @@ final class DmlDeParserSupport {
             builder.append(' ')
                     .append(PlainSelect.getStringList(item.getWithItemList(), true, true));
         }
+        if (item.getUsingKeyExpressions() != null) {
+            builder.append(" USING KEY (").append(item.getUsingKeyExpressions()).append(")");
+        }
         builder.append(" AS ");
         if (item.isMaterialized()) {
             builder.append(item.isUsingNot() ? "NOT MATERIALIZED " : "MATERIALIZED ");

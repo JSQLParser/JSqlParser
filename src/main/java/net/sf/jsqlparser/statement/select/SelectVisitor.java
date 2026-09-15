@@ -47,6 +47,14 @@ public interface SelectVisitor<T> {
         this.visit(pivotQuery, null);
     }
 
+    default <S> T visit(UnPivotQuery unPivotQuery, S context) {
+        return null;
+    }
+
+    default void visit(UnPivotQuery unPivotQuery) {
+        this.visit(unPivotQuery, null);
+    }
+
     <S> T visit(FromQuery fromQuery, S context);
 
     <S> T visit(SetOperationList setOpList, S context);

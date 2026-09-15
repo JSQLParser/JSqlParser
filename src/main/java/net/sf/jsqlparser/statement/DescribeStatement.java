@@ -10,10 +10,12 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.Select;
 
 public class DescribeStatement implements Statement {
 
     private Table table;
+    private Select select;
     private String describeType;
 
     public DescribeStatement() {
@@ -32,9 +34,24 @@ public class DescribeStatement implements Statement {
         this.table = table;
     }
 
+    /** DuckDB also describes a query: {@code DESCRIBE SELECT ...}. */
+    public Select getSelect() {
+        return select;
+    }
+
+    public void setSelect(Select select) {
+        this.select = select;
+    }
+
+    public DescribeStatement withSelect(Select select) {
+        setSelect(select);
+        return this;
+    }
+
     @Override
     public String toString() {
-        return this.describeType + " " + table.getFullyQualifiedName();
+        return this.describeType + " "
+                + (select != null ? select.toString() : table.getFullyQualifiedName());
     }
 
     @Override

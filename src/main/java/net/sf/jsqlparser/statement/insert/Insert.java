@@ -59,6 +59,7 @@ public class Insert implements Statement {
     private InsertConflictAction conflictAction;
     private InsertDuplicateAction duplicateAction;
     private Alias rowAlias;
+    private ColumnMatching columnMatching;
     private boolean oracleMultiInsert = false;
     private boolean oracleMultiInsertFirst = false;
     private List<OracleMultiInsertBranch> oracleMultiInsertBranches;
@@ -229,6 +230,38 @@ public class Insert implements Statement {
 
     public void setWithItemsList(List<WithItem<?>> withItemsList) {
         this.withItemsList = withItemsList;
+    }
+
+    /**
+     * DuckDB matches the source columns of an INSERT either positionally or by name:
+     * {@code INSERT INTO tbl BY NAME SELECT ...}.
+     */
+    public enum ColumnMatching {
+        BY_NAME("BY NAME"), BY_POSITION("BY POSITION");
+
+        private final String keywords;
+
+        ColumnMatching(String keywords) {
+            this.keywords = keywords;
+        }
+
+        @Override
+        public String toString() {
+            return keywords;
+        }
+    }
+
+    public ColumnMatching getColumnMatching() {
+        return columnMatching;
+    }
+
+    public void setColumnMatching(ColumnMatching columnMatching) {
+        this.columnMatching = columnMatching;
+    }
+
+    public Insert withColumnMatching(ColumnMatching columnMatching) {
+        setColumnMatching(columnMatching);
+        return this;
     }
 
     public OverridingMode getOverridingMode() {
@@ -404,6 +437,10 @@ public class Insert implements Statement {
                 sql.append(columns.get(i).getColumnName());
             }
             sql.append(") ");
+        }
+
+        if (columnMatching != null) {
+            sql.append(columnMatching).append(" ");
         }
 
         if (isOverriding()) {

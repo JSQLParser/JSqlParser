@@ -68,6 +68,8 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 public interface StatementVisitor<T> {
 
@@ -369,6 +371,72 @@ public interface StatementVisitor<T> {
 
     default void visit(RenameTableStatement renameTableStatement) {
         this.visit(renameTableStatement, null);
+    }
+
+    <S> T visit(PragmaStatement pragmaStatement, S context);
+
+    default void visit(PragmaStatement pragmaStatement) {
+        this.visit(pragmaStatement, null);
+    }
+
+    <S> T visit(ExtensionStatement extensionStatement, S context);
+
+    default void visit(ExtensionStatement extensionStatement) {
+        this.visit(extensionStatement, null);
+    }
+
+    <S> T visit(AttachStatement attachStatement, S context);
+
+    default void visit(AttachStatement attachStatement) {
+        this.visit(attachStatement, null);
+    }
+
+    <S> T visit(DetachStatement detachStatement, S context);
+
+    default void visit(DetachStatement detachStatement) {
+        this.visit(detachStatement, null);
+    }
+
+    <S> T visit(ConnectStatement connectStatement, S context);
+
+    default void visit(ConnectStatement connectStatement) {
+        this.visit(connectStatement, null);
+    }
+
+    <S> T visit(DisconnectStatement disconnectStatement, S context);
+
+    default void visit(DisconnectStatement disconnectStatement) {
+        this.visit(disconnectStatement, null);
+    }
+
+    <S> T visit(PrepareStatement prepareStatement, S context);
+
+    default void visit(PrepareStatement prepareStatement) {
+        this.visit(prepareStatement, null);
+    }
+
+    <S> T visit(DeallocateStatement deallocateStatement, S context);
+
+    default void visit(DeallocateStatement deallocateStatement) {
+        this.visit(deallocateStatement, null);
+    }
+
+    <S> T visit(CopyStatement copyStatement, S context);
+
+    default void visit(CopyStatement copyStatement) {
+        this.visit(copyStatement, null);
+    }
+
+    <S> T visit(CreateMacro createMacro, S context);
+
+    default void visit(CreateMacro createMacro) {
+        this.visit(createMacro, null);
+    }
+
+    <S> T visit(CreateExtensionRepository createExtensionRepository, S context);
+
+    default void visit(CreateExtensionRepository createExtensionRepository) {
+        this.visit(createExtensionRepository, null);
     }
 
     <S> T visit(PurgeStatement purgeStatement, S context);

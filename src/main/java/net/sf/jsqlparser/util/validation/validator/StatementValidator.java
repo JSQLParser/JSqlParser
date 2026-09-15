@@ -99,6 +99,17 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
+import net.sf.jsqlparser.statement.PragmaStatement;
+import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 /**
  * @author gitmotte
@@ -478,6 +489,72 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AttachStatement attachStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DetachStatement detachStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ConnectStatement connectStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PrepareStatement prepareStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CopyStatement copyStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateMacro createMacro, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -691,6 +768,50 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(RenameTableStatement renameTableStatement) {
         visit(renameTableStatement, null);
+    }
+
+    public void visit(PragmaStatement pragmaStatement) {
+        visit(pragmaStatement, null);
+    }
+
+    public void visit(ExtensionStatement extensionStatement) {
+        visit(extensionStatement, null);
+    }
+
+    public void visit(AttachStatement attachStatement) {
+        visit(attachStatement, null);
+    }
+
+    public void visit(DetachStatement detachStatement) {
+        visit(detachStatement, null);
+    }
+
+    public void visit(ConnectStatement connectStatement) {
+        visit(connectStatement, null);
+    }
+
+    public void visit(DisconnectStatement disconnectStatement) {
+        visit(disconnectStatement, null);
+    }
+
+    public void visit(PrepareStatement prepareStatement) {
+        visit(prepareStatement, null);
+    }
+
+    public void visit(DeallocateStatement deallocateStatement) {
+        visit(deallocateStatement, null);
+    }
+
+    public void visit(CopyStatement copyStatement) {
+        visit(copyStatement, null);
+    }
+
+    public void visit(CreateMacro createMacro) {
+        visit(createMacro, null);
+    }
+
+    public void visit(CreateExtensionRepository createExtensionRepository) {
+        visit(createExtensionRepository, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {

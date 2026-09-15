@@ -104,6 +104,10 @@ public class InsertDeParser extends AbstractDeParser<Insert> {
             builder.append(")");
         }
 
+        if (insert.getColumnMatching() != null) {
+            builder.append(" ").append(insert.getColumnMatching());
+        }
+
         if (insert.isOverriding()) {
             builder.append(" OVERRIDING ").append(insert.getOverridingMode()).append(" VALUE");
         }

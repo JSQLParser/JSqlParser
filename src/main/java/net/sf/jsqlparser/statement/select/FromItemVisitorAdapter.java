@@ -130,6 +130,11 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     }
 
     @Override
+    public <S> T visit(UnPivotQuery unPivotQuery, S context) {
+        return unPivotQuery.accept(selectVisitor, context);
+    }
+
+    @Override
     public <S> T visit(SetOperationList setOperationList, S context) {
         ArrayList<T> results = new ArrayList<>();
         for (Select select : setOperationList.getSelects()) {
