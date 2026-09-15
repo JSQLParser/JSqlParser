@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -415,5 +416,53 @@ public class DuckDBTest {
     void testExecutePreparedStatement() throws JSQLParserException {
         String sqlStr = "EXECUTE q (1)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCopyFromFile() throws JSQLParserException {
+        String sqlStr = "COPY t FROM 'in.csv'";
+        CopyStatement copy =
+                (CopyStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(copy.isFrom());
+        Assertions.assertEquals("t", copy.getTable().getName());
+        Assertions.assertEquals("'in.csv'", copy.getPath());
+    }
+
+    @Test
+    void testCopyColumnsFromFileWithOptions() throws JSQLParserException {
+        String sqlStr = "COPY t (a, b) FROM 'in.csv' (AUTO_DETECT true)";
+        CopyStatement copy =
+                (CopyStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, copy.getColumns().size());
+        Assertions.assertEquals(java.util.Collections.singletonList("AUTO_DETECT true"),
+                copy.getOptions());
+    }
+
+    @Test
+    void testCopyQueryToFile() throws JSQLParserException {
+        String sqlStr =
+                "COPY (SELECT * FROM t) TO 'out.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)";
+        CopyStatement copy =
+                (CopyStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertFalse(copy.isFrom());
+        Assertions.assertNotNull(copy.getSelect());
+    }
+
+    @Test
+    void testCopyTableToFile() throws JSQLParserException {
+        String sqlStr = "COPY t TO 'out.csv' (FORMAT CSV, DELIMITER '|')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCopyTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "COPY ds.t FROM 'in.csv'";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
     }
 }

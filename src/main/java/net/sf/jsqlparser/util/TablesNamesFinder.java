@@ -217,6 +217,7 @@ import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
 
 
 /**
@@ -2562,6 +2563,21 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(DeallocateStatement deallocateStatement) {
         StatementVisitor.super.visit(deallocateStatement);
+    }
+
+    @Override
+    public <S> Void visit(CopyStatement copyStatement, S context) {
+        if (copyStatement.getSelect() != null) {
+            copyStatement.getSelect().accept((SelectVisitor<?>) this, context);
+        } else if (copyStatement.getTable() != null) {
+            copyStatement.getTable().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CopyStatement copyStatement) {
+        StatementVisitor.super.visit(copyStatement);
     }
 
     @Override

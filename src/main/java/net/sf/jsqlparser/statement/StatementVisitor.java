@@ -419,6 +419,12 @@ public interface StatementVisitor<T> {
         this.visit(deallocateStatement, null);
     }
 
+    <S> T visit(CopyStatement copyStatement, S context);
+
+    default void visit(CopyStatement copyStatement) {
+        this.visit(copyStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

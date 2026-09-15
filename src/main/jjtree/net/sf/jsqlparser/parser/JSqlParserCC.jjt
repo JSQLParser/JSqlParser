@@ -2003,6 +2003,7 @@ String NonReservedWord() :
       | tk=<K_COLUMN:"COLUMN">
       | tk=<K_COLUMNS:"COLUMNS">
       | tk=<K_COMMIT:"COMMIT">
+      | tk=<K_COPY: "COPY">
       | tk=<K_COMMENT:"COMMENT">
       | tk=<K_COMMENTS:"COMMENTS">
       | tk=<K_COMPLETION:"COMPLETION">
@@ -2963,6 +2964,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_PREPARE }) stm = PrepareStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
             |
             stm = PurgeStatement()
             |
@@ -4366,6 +4369,46 @@ RenameTableStatement RenameTableStatement(): {
 }
 
 /**
+ * DuckDB's COPY table [(columns)] FROM path [(options)] and
+ * COPY {table | (query)} TO path [(options)].
+ */
+CopyStatement CopyStatement() #CopyStatement:
+{
+    CopyStatement copyStatement = new CopyStatement();
+    ExpressionList<Column> columns = null;
+    List<String> options = new ArrayList<String>();
+    String option;
+    Select select;
+    Table table;
+    Token token;
+}
+{
+    <K_COPY>
+    (
+        LOOKAHEAD(2) "(" select=Select() ")" { copyStatement.setSelect(select); }
+        |
+        table=Table() { copyStatement.setTable(table); }
+        [ LOOKAHEAD(2) "(" columns=ColumnList() ")" { copyStatement.setColumns(columns); } ]
+    )
+    (
+        <K_FROM> { copyStatement.setFrom(true); }
+        |
+        <K_TO>
+    )
+    (
+        token=<S_CHAR_LITERAL> { copyStatement.setPath(token.image); }
+        |
+        token=<S_IDENTIFIER> { copyStatement.setPath(token.image); }
+    )
+    [
+        LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
+        ( "," option=DatabaseOption() { options.add(option); } )*
+        ")" { copyStatement.setOptions(options); }
+    ]
+    { return copyStatement; }
+}
+
+/**
  * PREPARE name AS statement, storing a parameterised statement for later EXECUTE.
  */
 PrepareStatement PrepareStatement() #PrepareStatement:
@@ -4463,22 +4506,35 @@ AttachStatement AttachStatement() #AttachStatement:
     { return attachStatement; }
 }
 
-/** One ATTACH option, such as READ_ONLY or TYPE SQLITE. */
-String DatabaseOption():
-{
+/**
+ * One ATTACH or COPY option, such as READ_ONLY, TYPE SQLITE or FORMAT PARQUET.  Option names and
+ * values are free-form keywords, so the tokens are collected verbatim up to the next comma or the
+ * closing bracket.
+ */
+JAVACODE
+String DatabaseOption() {
     StringBuilder builder = new StringBuilder();
-    String name;
-    Token token;
-}
-{
-    (
-        name=RelObjectName() { if (builder.length() > 0) builder.append(" "); builder.append(name); }
-        |
-        token=<S_CHAR_LITERAL> { if (builder.length() > 0) builder.append(" "); builder.append(token.image); }
-        |
-        token=<S_LONG> { if (builder.length() > 0) builder.append(" "); builder.append(token.image); }
-    )+
-    { return builder.toString(); }
+    int depth = 0;
+    while (true) {
+        Token token = getToken(1);
+        if (token == null || token.kind == EOF) {
+            break;
+        }
+        if (depth == 0 && (",".equals(token.image) || ")".equals(token.image))) {
+            break;
+        }
+        if ("(".equals(token.image)) {
+            depth++;
+        } else if (")".equals(token.image)) {
+            depth--;
+        }
+        getNextToken();
+        if (builder.length() > 0) {
+            builder.append(" ");
+        }
+        builder.append(token.image);
+    }
+    return builder.toString();
 }
 
 /**
@@ -12890,7 +12946,9 @@ List<String> IndexAlgorithmOrLockOption():
 {
     ( keyword=<K_ALGORITHM> | keyword=<K_LOCK> ) { option.add(keyword.image); }
     [ "=" { option.add("="); } ]
-    ( value=<K_DEFAULT> | value=<K_NONE> | value=<K_EXCLUSIVE> | value=<S_IDENTIFIER> )
+    // COPY is one of MySQL's ALGORITHM values and also starts the COPY statement
+    ( value=<K_DEFAULT> | value=<K_NONE> | value=<K_EXCLUSIVE> | value=<K_COPY>
+        | value=<S_IDENTIFIER> )
     { option.add(value.image); return option; }
 }
 
