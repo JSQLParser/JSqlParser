@@ -209,6 +209,7 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.PragmaStatement;
 
 
 /**
@@ -2466,6 +2467,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(RenameTableStatement renameTableStatement) {
         StatementVisitor.super.visit(renameTableStatement);
+    }
+
+    @Override
+    public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(PragmaStatement pragmaStatement) {
+        StatementVisitor.super.visit(pragmaStatement);
     }
 
     @Override

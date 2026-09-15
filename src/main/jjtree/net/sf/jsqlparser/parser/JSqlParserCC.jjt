@@ -2201,6 +2201,7 @@ String NonReservedWord() :
       | tk=<K_PLACING:"PLACING">
       | tk=<K_PLAN:"PLAN">
       | tk=<K_PLUS:"PLUS">
+      | tk=<K_PRAGMA: "PRAGMA">
       | tk=<K_PRECEDING: "PRECEDING">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
@@ -2938,6 +2939,8 @@ Statement SingleStatement() :
             stm = Grant()
             |
             LOOKAHEAD({ isKeywordAhead("REVOKE") }) stm = Revoke(false)
+            |
+            LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
             |
             stm = PurgeStatement()
             |
@@ -4338,6 +4341,31 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * DuckDB/SQLite PRAGMA name [(arguments) | = value].
+ */
+PragmaStatement PragmaStatement() #PragmaStatement:
+{
+    PragmaStatement pragmaStatement = new PragmaStatement();
+    ObjectNames name;
+    ExpressionList parameters;
+    Expression value;
+}
+{
+    <K_PRAGMA> name=RelObjectNames()
+    { pragmaStatement.setName(String.join(".", name.getNames())); }
+    // greedy: parentheses right after the pragma name are its arguments
+    [
+        LOOKAHEAD(2)
+        (
+            "(" parameters=ExpressionList() ")" { pragmaStatement.setParameters(parameters); }
+            |
+            "=" value=SimpleExpression() { pragmaStatement.setValue(value); }
+        )
+    ]
+    { return pragmaStatement; }
 }
 
 PurgeStatement PurgeStatement(): {

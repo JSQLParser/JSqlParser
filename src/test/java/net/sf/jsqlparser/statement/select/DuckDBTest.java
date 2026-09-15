@@ -14,6 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -204,5 +205,36 @@ public class DuckDBTest {
                 (DescribeStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Assertions.assertEquals("t", describe.getTable().getName());
+    }
+
+    @Test
+    void testPragmaWithArguments() throws JSQLParserException {
+        String sqlStr = "PRAGMA table_info('t')";
+        PragmaStatement pragma =
+                (PragmaStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("table_info", pragma.getName());
+        Assertions.assertEquals(1, pragma.getParameters().size());
+    }
+
+    @Test
+    void testPragmaAssignment() throws JSQLParserException {
+        String sqlStr = "PRAGMA memory_limit = '1GB'";
+        PragmaStatement pragma =
+                (PragmaStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("'1GB'", pragma.getValue().toString());
+    }
+
+    @Test
+    void testPragmaWithoutArguments() throws JSQLParserException {
+        String sqlStr = "PRAGMA database_list";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testPragmaRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT pragma FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

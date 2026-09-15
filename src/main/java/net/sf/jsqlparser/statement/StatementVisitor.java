@@ -371,6 +371,12 @@ public interface StatementVisitor<T> {
         this.visit(renameTableStatement, null);
     }
 
+    <S> T visit(PragmaStatement pragmaStatement, S context);
+
+    default void visit(PragmaStatement pragmaStatement) {
+        this.visit(pragmaStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {
