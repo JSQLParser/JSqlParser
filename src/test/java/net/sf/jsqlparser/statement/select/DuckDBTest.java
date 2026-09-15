@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -175,5 +176,33 @@ public class DuckDBTest {
 
         Assertions.assertEquals(SampleClause.SampleMethod.RESERVOIR,
                 select.getFromItem().getSampleClause().getMethod());
+    }
+
+    @Test
+    void testDescribeQuery() throws JSQLParserException {
+        String sqlStr = "DESCRIBE SELECT * FROM t";
+        DescribeStatement describe =
+                (DescribeStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNotNull(describe.getSelect());
+        Assertions.assertNull(describe.getTable());
+    }
+
+    @Test
+    void testDescribeQueryTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "DESCRIBE SELECT * FROM ds.t";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testDescribeTableStillParses() throws JSQLParserException {
+        String sqlStr = "DESCRIBE t";
+        DescribeStatement describe =
+                (DescribeStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("t", describe.getTable().getName());
     }
 }

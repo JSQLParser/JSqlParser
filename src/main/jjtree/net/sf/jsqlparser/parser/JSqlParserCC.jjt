@@ -4373,11 +4373,19 @@ PurgeStatement PurgeStatement(): {
 
 DescribeStatement Describe(): {
     Table table;
+    Select select;
     DescribeStatement stmt = new DescribeStatement();
     Token tk = null;
 } {
     (tk=<K_DESCRIBE> | tk=<K_DESC>)
-    table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+    (
+        // DuckDB describes the result of a query, not only a table
+        LOOKAHEAD({ getToken(1).kind == K_SELECT || getToken(1).kind == K_WITH
+                || getToken(1).kind == K_FROM || getToken(1).kind == OPENING_BRACKET })
+        select = Select() { stmt.setDescribeType(tk.image).setSelect(select); }
+        |
+        table = Table() { stmt.setDescribeType(tk.image).setTable(table); }
+    )
     {
         return stmt;
     }

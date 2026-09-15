@@ -444,7 +444,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(DescribeStatement describe, S context) {
         builder.append(describe.getDescribeType());
         builder.append(" ");
-        builder.append(describe.getTable());
+        if (describe.getSelect() != null) {
+            describe.getSelect().accept(this, context);
+        } else {
+            builder.append(describe.getTable());
+        }
         return builder;
     }
 

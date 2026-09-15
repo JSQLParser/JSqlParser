@@ -2044,7 +2044,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DescribeStatement describe, S context) {
-        describe.getTable().accept(this, context);
+        if (describe.getSelect() != null) {
+            describe.getSelect().accept((SelectVisitor<?>) this, context);
+        } else {
+            describe.getTable().accept(this, context);
+        }
         return null;
     }
 
