@@ -90,6 +90,7 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -666,6 +667,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateMacro createMacro, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateExtensionRepository createExtensionRepository, S context) {
         return null;
     }
 

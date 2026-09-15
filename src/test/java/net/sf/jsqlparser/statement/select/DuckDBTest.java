@@ -24,6 +24,7 @@ import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -498,5 +499,32 @@ public class DuckDBTest {
 
         Assertions.assertTrue(createMacro.isTable());
         Assertions.assertNotNull(createMacro.getSelect());
+    }
+
+    @Test
+    void testCreateExtensionRepository() throws JSQLParserException {
+        String sqlStr =
+                "CREATE EXTENSION REPOSITORY my_repo WITH PREFIX 'https://extensions.example.org'";
+        CreateExtensionRepository createRepository =
+                (CreateExtensionRepository) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("my_repo", createRepository.getName());
+        Assertions.assertEquals("'https://extensions.example.org'",
+                createRepository.getPrefix().toString());
+    }
+
+    @Test
+    void testCreateExtensionRepositoryIfNotExists() throws JSQLParserException {
+        String sqlStr = "CREATE EXTENSION REPOSITORY IF NOT EXISTS my_repo";
+        CreateExtensionRepository createRepository =
+                (CreateExtensionRepository) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(createRepository.isIfNotExists());
+    }
+
+    @Test
+    void testCreatePostgresExtensionStillParses() throws JSQLParserException {
+        String sqlStr = "CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public CASCADE";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

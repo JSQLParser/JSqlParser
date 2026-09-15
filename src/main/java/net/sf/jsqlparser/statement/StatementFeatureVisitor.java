@@ -94,6 +94,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 /**
  * Derives a {@link StatementFeatures} verdict from a statement tree.
@@ -587,6 +588,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(CreateMacro createMacro, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA);
         return null;

@@ -219,6 +219,7 @@ import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 
 /**
@@ -2592,6 +2593,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateMacro createMacro) {
         StatementVisitor.super.visit(createMacro);
+    }
+
+    @Override
+    public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(CreateExtensionRepository createExtensionRepository) {
+        StatementVisitor.super.visit(createExtensionRepository);
     }
 
     @Override

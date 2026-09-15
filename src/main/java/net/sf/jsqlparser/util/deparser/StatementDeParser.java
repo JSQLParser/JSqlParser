@@ -107,6 +107,7 @@ import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -623,6 +624,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(CreateMacro createMacro, S context) {
         createMacro.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateExtensionRepository createExtensionRepository, S context) {
+        createExtensionRepository.appendTo(builder);
         return builder;
     }
 

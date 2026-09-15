@@ -17307,6 +17307,12 @@ Statement Create():
         |
         LOOKAHEAD(<K_DOMAIN>) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE DOMAIN"); } statement = CreateDomain()
         |
+        LOOKAHEAD({ isKeywordAhead("EXTENSION")
+                && "REPOSITORY".equalsIgnoreCase(getToken(2).image) })
+        { requireTypeDdlSyntax(!isUsingOrReplace,
+                "OR REPLACE is not supported for CREATE EXTENSION REPOSITORY"); }
+        statement = CreateExtensionRepository()
+        |
         LOOKAHEAD({ isKeywordAhead("EXTENSION") }) { requireTypeDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for CREATE EXTENSION"); } statement = CreateExtension()
         |
         LOOKAHEAD({ isKeywordAhead("PUBLICATION") })
@@ -17708,6 +17714,28 @@ AlterDomain AlterDomain():
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterDomain.Action.OWNER); }
     )
     { return result; }
+}
+
+/**
+ * DuckDB 2.0's CREATE EXTENSION REPOSITORY [IF NOT EXISTS] name [WITH PREFIX prefix].
+ */
+CreateExtensionRepository CreateExtensionRepository() #CreateExtensionRepository:
+{
+    CreateExtensionRepository createExtensionRepository = new CreateExtensionRepository();
+    Expression prefix;
+    String name;
+}
+{
+    TypeDdlKeyword("EXTENSION") TypeDdlKeyword("REPOSITORY")
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS>
+        { createExtensionRepository.setIfNotExists(true); } ]
+    name=RelObjectName() { createExtensionRepository.setName(name); }
+    // greedy: WITH PREFIX belongs to the repository definition
+    [
+        LOOKAHEAD(2) <K_WITH> TypeDdlKeyword("PREFIX") prefix=SimpleExpression()
+        { createExtensionRepository.setPrefix(prefix); }
+    ]
+    { return createExtensionRepository; }
 }
 
 CreateExtension CreateExtension():
