@@ -317,4 +317,32 @@ public class BigQueryTest {
                 new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
                         .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
     }
+
+    @Test
+    void testCreateSnapshotTableClone() throws JSQLParserException {
+        String sqlStr = "CREATE SNAPSHOT TABLE ds.snap CLONE ds.t";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("ds.t", createTable.getCloneTable().getFullyQualifiedName());
+    }
+
+    @Test
+    void testCreateSnapshotTableCloneForSystemTimeAsOf() throws JSQLParserException {
+        String sqlStr = "CREATE SNAPSHOT TABLE IF NOT EXISTS ds.snap CLONE ds.t "
+                + "FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP()";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTableCloneWithOptions() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.copy CLONE ds.t OPTIONS (description = 'x')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCloneRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT clone FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

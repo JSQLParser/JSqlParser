@@ -62,6 +62,9 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             builder.append(" PARTITION OF ")
                     .append(createTable.getPartitionOf().getFullyQualifiedName());
         }
+        if (createTable.getCloneTable() != null) {
+            builder.append(" CLONE ").append(createTable.getCloneTable());
+        }
 
         if (createTable.getColumns() != null && !createTable.getColumns().isEmpty()) {
             builder.append(" (");

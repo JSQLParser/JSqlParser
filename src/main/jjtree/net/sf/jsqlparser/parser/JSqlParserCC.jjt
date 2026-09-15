@@ -1975,6 +1975,7 @@ String NonReservedWord() :
       | tk=<K_CLOSE:"CLOSE">
       | tk=<K_CLOUD:"CLOUD">
       | tk=<K_COALESCE:"COALESCE">
+      | tk=<K_CLONE: "CLONE">
       | tk=<K_COLLATE:"COLLATE">
       | tk=<K_COLUMN:"COLUMN">
       | tk=<K_COLUMNS:"COLUMNS">
@@ -13556,6 +13557,12 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
+    [
+        // BigQuery: CREATE [SNAPSHOT] TABLE target CLONE source [FOR SYSTEM_TIME AS OF ...]
+        LOOKAHEAD(2) <K_CLONE> likeTable=Table()
+        [ LOOKAHEAD(2) tableColumn=TimeTravelAfterAlias() { likeTable.setTimeTravel(tableColumn); } ]
+        { createTable.setCloneTable(likeTable); likeTable = null; }
+    ]
     [ <K_OF> ofType=ColDataType() { createTable.setOfType(ofType); } ]
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
