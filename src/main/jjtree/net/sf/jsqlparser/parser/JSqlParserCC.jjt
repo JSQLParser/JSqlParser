@@ -7643,6 +7643,13 @@ FromItem FromItem() #FromItem:
 
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
     [
+        // BigQuery: UNNEST(array) AS alias WITH OFFSET AS offsetAlias
+        LOOKAHEAD(2, { fromItem instanceof TableFunction })
+        <K_WITH> <K_OFFSET> { ((TableFunction) fromItem).setWithOffset(true); }
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias()
+            { ((TableFunction) fromItem).setOffsetAlias(alias); } ]
+    ]
+    [
         LOOKAHEAD(2, {fromItem instanceof Table }) timeTravelStr = TimeTravelAfterAlias()
         { ((Table) fromItem).setTimeTravelStrAfterAlias(timeTravelStr); }
     ]

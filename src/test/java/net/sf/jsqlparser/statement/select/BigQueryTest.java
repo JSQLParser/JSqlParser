@@ -133,4 +133,31 @@ public class BigQueryTest {
         String sqlStr = "SELECT a FROM t LIMIT 10 OFFSET 5";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testUnnestWithOffsetAfterAlias() throws JSQLParserException {
+        String sqlStr = "SELECT x, pos FROM UNNEST([1, 2, 3]) AS x WITH OFFSET AS pos";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction unnest = (TableFunction) select.getFromItem();
+
+        Assertions.assertTrue(unnest.isWithOffset());
+        Assertions.assertEquals("x", unnest.getAlias().getName());
+        Assertions.assertEquals("pos", unnest.getOffsetAlias().getName());
+    }
+
+    @Test
+    void testUnnestWithOffsetWithoutOffsetAlias() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t, UNNEST(t.arr) AS c WITH OFFSET";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testUnnestWithOrdinalityAliasStillBindsToTableFunction() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) WITH ORDINALITY AS t (a, b)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction unnest = (TableFunction) select.getFromItem();
+
+        Assertions.assertFalse(unnest.isWithOffset());
+        Assertions.assertEquals("t", unnest.getAlias().getName());
+    }
 }
