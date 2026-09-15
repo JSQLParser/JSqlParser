@@ -36,4 +36,22 @@ public class DuckDBTest {
                         ");";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testGlobOperator() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t WHERE b GLOB 'y*'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testNotGlobOperator() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t WHERE b NOT GLOB 'y*'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testGlobRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT glob FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

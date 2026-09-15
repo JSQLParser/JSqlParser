@@ -119,7 +119,7 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
     }
 
     public enum KeyWord {
-        LIKE, ILIKE, RLIKE, REGEXP_LIKE, REGEXP, SIMILAR_TO, MATCH_ANY, MATCH_ALL, MATCH_PHRASE, MATCH_PHRASE_PREFIX, MATCH_REGEXP;
+        LIKE, ILIKE, RLIKE, REGEXP_LIKE, REGEXP, GLOB, SIMILAR_TO, MATCH_ANY, MATCH_ALL, MATCH_PHRASE, MATCH_PHRASE_PREFIX, MATCH_REGEXP;
 
         public static KeyWord from(String keyword) {
             return Enum.valueOf(KeyWord.class,

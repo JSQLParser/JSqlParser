@@ -1713,6 +1713,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_RLIKE:             // RLIKE
             case K_REGEXP_LIKE:       // REGEXP_LIKE
             case K_REGEXP:            // REGEXP
+            case K_GLOB:              // GLOB (DuckDB/SQLite)
             case K_SIMILAR_TO:        // SIMILAR TO (in LikeExpression)
             case K_SIMILAR:           // SIMILAR TO (in SimilarToExpression)
             case K_MATCH_ANY:         // MATCH_ANY
@@ -2055,6 +2056,7 @@ String NonReservedWord() :
       | tk=<K_FORMAT:"FORMAT">
       | tk=<K_FULLTEXT:"FULLTEXT">
       | tk=<K_FUNCTION:"FUNCTION">
+      | tk=<K_GLOB:"GLOB">
       | tk=<K_GRANT:"GRANT">
       | tk=<K_GROUPS:"GROUPS">
       | tk=<K_GROUP_CONCAT:"GROUP_CONCAT">
@@ -8981,6 +8983,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_RLIKE>
         | token = <K_REGEXP_LIKE>
         | token = <K_REGEXP>
+        | token = <K_GLOB>
         | token = <K_SIMILAR_TO>
         | token = <K_MATCH_ANY>
         | token = <K_MATCH_ALL>
