@@ -557,4 +557,50 @@ public class DuckDBTest {
                 + "EXECUTE FUNCTION f()";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testFromFirstWithSelect() throws JSQLParserException {
+        String sqlStr = "FROM t SELECT a, b";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(select.isFromFirst());
+        Assertions.assertEquals(2, select.getSelectItems().size());
+    }
+
+    @Test
+    void testFromFirstWithWhere() throws JSQLParserException {
+        String sqlStr = "FROM t WHERE a > 1";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(select.isFromFirst());
+        Assertions.assertNull(select.getSelectItems());
+    }
+
+    @Test
+    void testFromFirstWithClauses() throws JSQLParserException {
+        String sqlStr = "FROM t SELECT a, count(*) WHERE a > 1 GROUP BY a HAVING count(*) > 2 "
+                + "ORDER BY a LIMIT 10";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testFromFirstWithJoin() throws JSQLParserException {
+        String sqlStr = "FROM t JOIN u ON t.id = u.id SELECT t.a";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testFromFirstTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "FROM ds.t WHERE a > 1";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testBarePipeQueryStillParses() throws JSQLParserException {
+        String sqlStr = "FROM t |> WHERE a > 1";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

@@ -66,6 +66,7 @@ public class PlainSelect extends Select {
     private boolean isUsingFinal = false;
     private boolean isUsingOnly = false;
     private boolean useWithNoLog = false;
+    private boolean fromFirst = false;
     private Table intoTempTable = null;
     private List<UpdateSet> settings = null;
 
@@ -543,96 +544,38 @@ public class PlainSelect extends Select {
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
             "PMD.NPathComplexity"})
+    /**
+     * DuckDB allows the FROM clause to come first, with the SELECT clause optional:
+     * {@code FROM tbl SELECT a} and {@code FROM tbl WHERE a > 1}.
+     */
+    public boolean isFromFirst() {
+        return fromFirst;
+    }
+
+    public void setFromFirst(boolean fromFirst) {
+        this.fromFirst = fromFirst;
+    }
+
+    public PlainSelect withFromFirst(boolean fromFirst) {
+        setFromFirst(fromFirst);
+        return this;
+    }
+
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
-        builder.append("SELECT ");
-
-        if (this.mySqlHintStraightJoin) {
-            builder.append("STRAIGHT_JOIN ");
-        }
-
-        if (oracleHint != null) {
-            builder.append(oracleHint).append(" ");
-        }
-
-        if (skip != null) {
-            builder.append(skip).append(" ");
-        }
-
-        if (first != null) {
-            builder.append(first).append(" ");
-        }
-
-        if (distinct != null) {
-            builder.append(distinct).append(" ");
-        }
-
-        if (bigQuerySelectQualifier != null) {
-            switch (bigQuerySelectQualifier) {
-                case AS_STRUCT:
-                    builder.append("AS STRUCT ");
-                    break;
-                case AS_VALUE:
-                    builder.append("AS VALUE ");
-                    break;
+        if (fromFirst) {
+            // DuckDB allows the FROM clause to lead: FROM tbl [SELECT ...] [WHERE ...]
+            appendFromClauseTo(builder);
+            if (selectItems != null && !selectItems.isEmpty()) {
+                builder.append(" ");
+                appendSelectClauseTo(builder);
+                appendIntoClausesTo(builder);
             }
+        } else {
+            appendSelectClauseTo(builder);
+            appendIntoClausesTo(builder);
+            appendFromClauseTo(builder);
         }
 
-        if (top != null) {
-            builder.append(top).append(" ");
-        }
-        if (mySqlCacheFlag != null) {
-            builder.append(mySqlCacheFlag.name()).append(" ");
-        }
-        if (mySqlSqlCalcFoundRows) {
-            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
-        }
-        builder.append(getStringList(selectItems));
-
-        if (intoTables != null) {
-            builder.append(" INTO ");
-            for (Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
-                builder.append(iter.next().toString());
-                if (iter.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-        }
-
-        if (mySqlSelectIntoClause != null
-                && mySqlSelectIntoClause
-                        .getPosition() == MySqlSelectIntoClause.Position.BEFORE_FROM) {
-            builder.append(" ").append(mySqlSelectIntoClause);
-        }
-
-        if (fromItem != null) {
-            builder.append(" FROM ");
-            if (isUsingOnly) {
-                builder.append("ONLY ");
-            }
-            builder.append(fromItem);
-            if (lateralViews != null) {
-                for (LateralView lateralView : lateralViews) {
-                    builder.append(" ").append(lateralView);
-                }
-            }
-            if (joins != null) {
-                for (Join join : joins) {
-                    if (join.isSimple()) {
-                        builder.append(", ").append(join);
-                    } else {
-                        builder.append(" ").append(join);
-                    }
-                }
-            }
-
-            if (isUsingFinal) {
-                builder.append(" FINAL");
-            }
-
-            if (ksqlWindow != null) {
-                builder.append(" WINDOW ").append(ksqlWindow);
-            }
-        }
         if (preWhere != null) {
             builder.append(" PREWHERE ").append(preWhere);
         }
@@ -668,6 +611,114 @@ public class PlainSelect extends Select {
         }
         return builder;
     }
+
+    private void appendSelectClauseTo(StringBuilder builder) {
+        builder.append("SELECT ");
+        appendSelectHintsTo(builder);
+        appendSelectQualifiersTo(builder);
+        appendMySqlSelectFlagsTo(builder);
+        builder.append(getStringList(selectItems));
+    }
+
+    private void appendSelectHintsTo(StringBuilder builder) {
+        if (this.mySqlHintStraightJoin) {
+            builder.append("STRAIGHT_JOIN ");
+        }
+
+        if (oracleHint != null) {
+            builder.append(oracleHint).append(" ");
+        }
+
+        if (skip != null) {
+            builder.append(skip).append(" ");
+        }
+
+        if (first != null) {
+            builder.append(first).append(" ");
+        }
+    }
+
+    private void appendSelectQualifiersTo(StringBuilder builder) {
+        if (distinct != null) {
+            builder.append(distinct).append(" ");
+        }
+
+        if (bigQuerySelectQualifier != null) {
+            switch (bigQuerySelectQualifier) {
+                case AS_STRUCT:
+                    builder.append("AS STRUCT ");
+                    break;
+                case AS_VALUE:
+                    builder.append("AS VALUE ");
+                    break;
+            }
+        }
+
+        if (top != null) {
+            builder.append(top).append(" ");
+        }
+    }
+
+    private void appendMySqlSelectFlagsTo(StringBuilder builder) {
+        if (mySqlCacheFlag != null) {
+            builder.append(mySqlCacheFlag.name()).append(" ");
+        }
+
+        if (mySqlSqlCalcFoundRows) {
+            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
+        }
+    }
+
+    private void appendIntoClausesTo(StringBuilder builder) {
+        if (intoTables != null) {
+            builder.append(" INTO ");
+            for (Iterator<Table> iter = intoTables.iterator(); iter.hasNext();) {
+                builder.append(iter.next().toString());
+                if (iter.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+        }
+
+        if (mySqlSelectIntoClause != null
+                && mySqlSelectIntoClause
+                        .getPosition() == MySqlSelectIntoClause.Position.BEFORE_FROM) {
+            builder.append(" ").append(mySqlSelectIntoClause);
+        }
+    }
+
+    private void appendFromClauseTo(StringBuilder builder) {
+        if (fromItem != null) {
+            builder.append(fromFirst ? "FROM " : " FROM ");
+            if (isUsingOnly) {
+                builder.append("ONLY ");
+            }
+            builder.append(fromItem);
+            if (lateralViews != null) {
+                for (LateralView lateralView : lateralViews) {
+                    builder.append(" ").append(lateralView);
+                }
+            }
+            if (joins != null) {
+                for (Join join : joins) {
+                    if (join.isSimple()) {
+                        builder.append(", ").append(join);
+                    } else {
+                        builder.append(" ").append(join);
+                    }
+                }
+            }
+
+            if (isUsingFinal) {
+                builder.append(" FINAL");
+            }
+
+            if (ksqlWindow != null) {
+                builder.append(" WINDOW ").append(ksqlWindow);
+            }
+        }
+    }
+
 
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExcessiveMethodLength",
