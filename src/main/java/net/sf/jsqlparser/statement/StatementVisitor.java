@@ -377,6 +377,12 @@ public interface StatementVisitor<T> {
         this.visit(pragmaStatement, null);
     }
 
+    <S> T visit(ExtensionStatement extensionStatement, S context);
+
+    default void visit(ExtensionStatement extensionStatement) {
+        this.visit(extensionStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

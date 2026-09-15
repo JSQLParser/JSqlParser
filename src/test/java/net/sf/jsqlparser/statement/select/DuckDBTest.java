@@ -15,6 +15,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.PragmaStatement;
+import net.sf.jsqlparser.statement.ExtensionStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -235,6 +236,48 @@ public class DuckDBTest {
     @Test
     void testPragmaRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT pragma FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testLoadExtension() throws JSQLParserException {
+        String sqlStr = "LOAD httpfs";
+        ExtensionStatement extension =
+                (ExtensionStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(ExtensionStatement.Operation.LOAD, extension.getOperation());
+        Assertions.assertEquals("httpfs", extension.getExtensionName());
+    }
+
+    @Test
+    void testInstallExtension() throws JSQLParserException {
+        String sqlStr = "INSTALL spatial";
+        ExtensionStatement extension =
+                (ExtensionStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(ExtensionStatement.Operation.INSTALL, extension.getOperation());
+        Assertions.assertFalse(extension.isForce());
+    }
+
+    @Test
+    void testForceInstallExtensionFromRepository() throws JSQLParserException {
+        String sqlStr = "FORCE INSTALL h3 FROM community";
+        ExtensionStatement extension =
+                (ExtensionStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(extension.isForce());
+        Assertions.assertEquals("community", extension.getRepository());
+    }
+
+    @Test
+    void testInstallExtensionFromUrl() throws JSQLParserException {
+        String sqlStr = "INSTALL 'path/to/ext.duckdb_extension'";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testLoadRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT load, install FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
