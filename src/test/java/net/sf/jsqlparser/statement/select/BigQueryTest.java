@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -267,6 +268,50 @@ public class BigQueryTest {
     @Test
     void testExportDataTablesNamesFinder() throws JSQLParserException {
         String sqlStr = "EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv') AS SELECT * FROM ds.t";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testLoadDataIntoFromFiles() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO mydataset.mytable "
+                + "FROM FILES (format = 'AVRO', uris = ['gs://bucket/*.avro'])";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertFalse(loadData.isOverwrite());
+        Assertions.assertEquals("mydataset.mytable", loadData.getTable().getFullyQualifiedName());
+        Assertions.assertEquals(2, loadData.getFileOptions().size());
+    }
+
+    @Test
+    void testLoadDataOverwriteWithColumnDefinitions() throws JSQLParserException {
+        String sqlStr = "LOAD DATA OVERWRITE ds.t (id INT64, name STRING) "
+                + "FROM FILES (format = 'CSV', uris = ['gs://b/f.csv'])";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(loadData.isOverwrite());
+        Assertions.assertEquals(2, loadData.getColumnDefinitions().size());
+    }
+
+    @Test
+    void testLoadDataWithOptionsAndConnection() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO ds.t OPTIONS (description = 'x') "
+                + "FROM FILES (format = 'PARQUET') WITH PARTITION COLUMNS "
+                + "WITH CONNECTION myproject.us.conn";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("myproject.us.conn", loadData.getConnectionName());
+        Assertions.assertTrue(loadData.isWithPartitionColumns());
+    }
+
+    @Test
+    void testLoadDataTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO ds.t FROM FILES (format = 'CSV')";
 
         Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
                 new net.sf.jsqlparser.util.TablesNamesFinder<Void>()

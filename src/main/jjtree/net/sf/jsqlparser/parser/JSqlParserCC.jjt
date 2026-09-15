@@ -72,6 +72,7 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
+import net.sf.jsqlparser.statement.load.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
@@ -2101,6 +2102,7 @@ String NonReservedWord() :
       | tk=<K_LINEAR:"LINEAR">
       | tk=<K_LINES:"LINES">
       | tk=<K_LIST:"LIST">
+      | tk=<K_LOAD: "LOAD">
       | tk=<K_LOCAL:"LOCAL">
       | tk=<K_LOCK:"LOCK">
       | tk=<K_LOCKED:"LOCKED">
@@ -2916,6 +2918,8 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_EXPORT && getToken(2).kind == K_DATA }) stm = ExportDataStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_LOAD && getToken(2).kind == K_DATA }) stm = LoadDataStatement()
             |
             stm = PurgeStatement()
             |
@@ -4316,6 +4320,48 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * BigQuery's LOAD DATA {INTO | OVERWRITE} table [(column_definitions)] [OPTIONS (option_list)]
+ * FROM FILES (file_options) [WITH PARTITION COLUMNS] [WITH CONNECTION connection].
+ */
+LoadDataStatement LoadDataStatement() #LoadDataStatement:
+{
+    LoadDataStatement loadDataStatement = new LoadDataStatement();
+    List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    ColumnDefinition columnDefinition;
+    ExpressionList options;
+    ObjectNames connectionName;
+    Table table;
+}
+{
+    <K_LOAD> <K_DATA>
+    ( <K_INTO> | <K_OVERWRITE> { loadDataStatement.setOverwrite(true); } )
+    table=Table() { loadDataStatement.setTable(table); }
+    [
+        LOOKAHEAD(2) "("
+        columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); }
+        ( "," columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); } )*
+        ")" { loadDataStatement.setColumnDefinitions(columnDefinitions); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")" { loadDataStatement.setOptions(options); }
+    ]
+    <K_FROM>
+    LOOKAHEAD({ isKeywordAhead("FILES") }) <S_IDENTIFIER>
+    "(" options=ExpressionList() ")" { loadDataStatement.setFileOptions(options); }
+    [
+        LOOKAHEAD(2) <K_WITH> <K_PARTITION> <K_COLUMNS>
+        { loadDataStatement.setWithPartitionColumns(true); }
+    ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { loadDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    { return loadDataStatement; }
 }
 
 /**
