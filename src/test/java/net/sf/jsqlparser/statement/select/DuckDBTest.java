@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -116,5 +117,29 @@ public class DuckDBTest {
     void testDecimalTypeArgumentsStillParse() throws JSQLParserException {
         String sqlStr = "CREATE TABLE t (a DECIMAL(10, 2), b VARCHAR(255))";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testInsertByName() throws JSQLParserException {
+        String sqlStr = "INSERT INTO t BY NAME SELECT 1 AS b, 2 AS a";
+        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(Insert.ColumnMatching.BY_NAME, insert.getColumnMatching());
+    }
+
+    @Test
+    void testInsertByPosition() throws JSQLParserException {
+        String sqlStr = "INSERT INTO t BY POSITION SELECT 1, 2";
+        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(Insert.ColumnMatching.BY_POSITION, insert.getColumnMatching());
+    }
+
+    @Test
+    void testInsertWithoutColumnMatching() throws JSQLParserException {
+        String sqlStr = "INSERT INTO t (a, b) VALUES (1, 2)";
+        Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(insert.getColumnMatching());
     }
 }

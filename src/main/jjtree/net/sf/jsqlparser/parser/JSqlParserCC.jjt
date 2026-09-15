@@ -1211,6 +1211,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /** DuckDB's INSERT ... BY NAME|POSITION column matching, never a table alias. */
+    private boolean isColumnMatchingAhead() {
+        return getToken(1).kind == K_BY
+                && ("NAME".equalsIgnoreCase(getToken(2).image)
+                        || "POSITION".equalsIgnoreCase(getToken(2).image));
+    }
+
     /** SEMI/ANTI stay contextual identifiers unless they prefix a JOIN. */
     private boolean isSemiAntiJoinAhead() {
         int kind = getToken(1).kind;
@@ -5128,11 +5135,25 @@ Insert Insert():
             ]   table=TableReference()
             [ LOOKAHEAD(2) <K_PARTITION> "(" partitions=Partitions() ")" ]
 
-            [ LOOKAHEAD({ isAliasAhead() && !(getToken(1).kind == K_OVERRIDING
+            [ LOOKAHEAD({ isAliasAhead() && !isColumnMatchingAhead()
+                    && !(getToken(1).kind == K_OVERRIDING
                     && (getToken(2).kind == K_SYSTEM || getToken(2).kind == K_USER)) })
                 [<K_AS> { useAs = true; } ] name=RelObjectName() { table.setAlias(new Alias(name,useAs)); }]
 
             [ LOOKAHEAD(2) "(" columns=ColumnList() ")"  ]
+
+            // DuckDB: INSERT INTO tbl BY NAME|POSITION SELECT ...
+            [
+                LOOKAHEAD({ isColumnMatchingAhead() })
+                <K_BY>
+                (
+                    <K_NAME> { insert.setColumnMatching(Insert.ColumnMatching.BY_NAME); }
+                    |
+                    // POSITION is lexed as a string-function name
+                    <K_STRING_FUNCTION_NAME>
+                    { insert.setColumnMatching(Insert.ColumnMatching.BY_POSITION); }
+                )
+            ]
 
             [ LOOKAHEAD(2) <K_OVERRIDING>
                 ( <K_SYSTEM> { insert.setOverridingMode(Insert.OverridingMode.SYSTEM); }
