@@ -407,6 +407,18 @@ public interface StatementVisitor<T> {
         this.visit(disconnectStatement, null);
     }
 
+    <S> T visit(PrepareStatement prepareStatement, S context);
+
+    default void visit(PrepareStatement prepareStatement) {
+        this.visit(prepareStatement, null);
+    }
+
+    <S> T visit(DeallocateStatement deallocateStatement, S context);
+
+    default void visit(DeallocateStatement deallocateStatement) {
+        this.visit(deallocateStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

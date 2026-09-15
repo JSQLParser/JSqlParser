@@ -20,6 +20,8 @@ import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -371,6 +373,47 @@ public class DuckDBTest {
     @Test
     void testConnectByStillParses() throws JSQLParserException {
         String sqlStr = "SELECT * FROM t START WITH id = 1 CONNECT BY PRIOR id = parent_id";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testPrepareStatement() throws JSQLParserException {
+        String sqlStr = "PREPARE q AS SELECT * FROM t WHERE a = $1";
+        PrepareStatement prepare =
+                (PrepareStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("q", prepare.getName());
+        Assertions.assertNotNull(prepare.getStatement());
+    }
+
+    @Test
+    void testPrepareInsertStatement() throws JSQLParserException {
+        String sqlStr = "PREPARE ins AS INSERT INTO t VALUES ($1, $2)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testPrepareTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "PREPARE q AS SELECT * FROM ds.t";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testDeallocatePreparedStatement() throws JSQLParserException {
+        String sqlStr = "DEALLOCATE PREPARE q";
+        DeallocateStatement deallocate =
+                (DeallocateStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("q", deallocate.getName());
+        Assertions.assertTrue(deallocate.isUsingPrepareKeyword());
+    }
+
+    @Test
+    void testExecutePreparedStatement() throws JSQLParserException {
+        String sqlStr = "EXECUTE q (1)";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

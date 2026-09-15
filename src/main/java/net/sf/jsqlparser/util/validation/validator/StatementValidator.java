@@ -105,6 +105,8 @@ import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
 
 /**
  * @author gitmotte
@@ -520,6 +522,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(PrepareStatement prepareStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -757,6 +771,14 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(DisconnectStatement disconnectStatement) {
         visit(disconnectStatement, null);
+    }
+
+    public void visit(PrepareStatement prepareStatement) {
+        visit(prepareStatement, null);
+    }
+
+    public void visit(DeallocateStatement deallocateStatement) {
+        visit(deallocateStatement, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {

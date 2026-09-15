@@ -215,6 +215,8 @@ import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.statement.ConnectStatement;
 import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
 
 
 /**
@@ -2538,6 +2540,28 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(DisconnectStatement disconnectStatement) {
         StatementVisitor.super.visit(disconnectStatement);
+    }
+
+    @Override
+    public <S> Void visit(PrepareStatement prepareStatement, S context) {
+        prepareStatement.getStatement().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(PrepareStatement prepareStatement) {
+        StatementVisitor.super.visit(prepareStatement);
+    }
+
+    @Override
+    public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(DeallocateStatement deallocateStatement) {
+        StatementVisitor.super.visit(deallocateStatement);
     }
 
     @Override

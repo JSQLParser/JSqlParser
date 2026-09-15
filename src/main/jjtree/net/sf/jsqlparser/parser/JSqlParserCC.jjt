@@ -2020,6 +2020,7 @@ String NonReservedWord() :
       | tk=<K_DBA_RECYCLEBIN: "DBA_RECYCLEBIN">
       | tk=<K_DEFAULTS: "DEFAULTS">
       | tk=<K_DEPTH: "DEPTH">
+      | tk=<K_DEALLOCATE: "DEALLOCATE">
       | tk=<K_DEFERRABLE : "DEFERRABLE">
       | tk=<K_DELAYED : "DELAYED">
       | tk=<K_DELETE:"DELETE">
@@ -2204,6 +2205,7 @@ String NonReservedWord() :
       | tk=<K_PLAN:"PLAN">
       | tk=<K_PLUS:"PLUS">
       | tk=<K_PRAGMA: "PRAGMA">
+      | tk=<K_PREPARE: "PREPARE">
       | tk=<K_PRECEDING: "PRECEDING">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
@@ -2957,6 +2959,10 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_DISCONNECT && getToken(2).kind != K_SESSION })
             stm = DisconnectStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_PREPARE }) stm = PrepareStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
             |
             stm = PurgeStatement()
             |
@@ -4357,6 +4363,37 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * PREPARE name AS statement, storing a parameterised statement for later EXECUTE.
+ */
+PrepareStatement PrepareStatement() #PrepareStatement:
+{
+    PrepareStatement prepareStatement = new PrepareStatement();
+    ObjectNames name;
+    Statement statement;
+}
+{
+    <K_PREPARE> name=RelObjectNames()
+    { prepareStatement.setName(String.join(".", name.getNames())); }
+    <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
+    { return prepareStatement; }
+}
+
+/**
+ * DEALLOCATE [PREPARE] name.
+ */
+DeallocateStatement DeallocateStatement() #DeallocateStatement:
+{
+    DeallocateStatement deallocateStatement = new DeallocateStatement();
+    ObjectNames name;
+}
+{
+    <K_DEALLOCATE>
+    [ LOOKAHEAD(2) <K_PREPARE> { deallocateStatement.setUsingPrepareKeyword(true); } ]
+    name=RelObjectNames() { deallocateStatement.setName(String.join(".", name.getNames())); }
+    { return deallocateStatement; }
 }
 
 /**
