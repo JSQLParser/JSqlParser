@@ -2952,6 +2952,12 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_DETACH }) stm = DetachStatement()
             |
+            LOOKAHEAD({ getToken(1).kind == K_CONNECT && getToken(2).kind != K_BY })
+            stm = ConnectStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DISCONNECT && getToken(2).kind != K_SESSION })
+            stm = DisconnectStatement()
+            |
             stm = PurgeStatement()
             |
             stm = SessionStatement()
@@ -4351,6 +4357,43 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * DuckDB's CONNECT target [AS alias], routing the session to a remote database.
+ */
+ConnectStatement ConnectStatement() #ConnectStatement:
+{
+    ConnectStatement connectStatement = new ConnectStatement();
+    ObjectNames name;
+    Token token;
+}
+{
+    <K_CONNECT>
+    (
+        token=<S_CHAR_LITERAL> { connectStatement.setTarget(token.image); }
+        |
+        name=RelObjectNames() { connectStatement.setTarget(String.join(".", name.getNames())); }
+    )
+    [ <K_AS> name=RelObjectNames() { connectStatement.setAlias(String.join(".", name.getNames())); } ]
+    { return connectStatement; }
+}
+
+/**
+ * DuckDB's DISCONNECT [name].
+ */
+DisconnectStatement DisconnectStatement() #DisconnectStatement:
+{
+    DisconnectStatement disconnectStatement = new DisconnectStatement();
+    ObjectNames name;
+}
+{
+    <K_DISCONNECT>
+    [
+        LOOKAHEAD(2)
+        name=RelObjectNames() { disconnectStatement.setName(String.join(".", name.getNames())); }
+    ]
+    { return disconnectStatement; }
 }
 
 /**

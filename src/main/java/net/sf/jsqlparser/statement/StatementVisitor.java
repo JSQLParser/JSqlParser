@@ -395,6 +395,18 @@ public interface StatementVisitor<T> {
         this.visit(detachStatement, null);
     }
 
+    <S> T visit(ConnectStatement connectStatement, S context);
+
+    default void visit(ConnectStatement connectStatement) {
+        this.visit(connectStatement, null);
+    }
+
+    <S> T visit(DisconnectStatement disconnectStatement, S context);
+
+    default void visit(DisconnectStatement disconnectStatement) {
+        this.visit(disconnectStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

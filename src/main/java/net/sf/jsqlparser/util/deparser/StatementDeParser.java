@@ -101,6 +101,8 @@ import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
 import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -581,6 +583,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(DetachStatement detachStatement, S context) {
         detachStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ConnectStatement connectStatement, S context) {
+        connectStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DisconnectStatement disconnectStatement, S context) {
+        disconnectStatement.appendTo(builder);
         return builder;
     }
 

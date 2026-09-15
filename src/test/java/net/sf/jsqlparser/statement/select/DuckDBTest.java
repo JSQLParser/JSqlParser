@@ -18,6 +18,8 @@ import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
 import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -326,6 +328,49 @@ public class DuckDBTest {
     @Test
     void testAttachRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT attach, detach FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testConnectToRemoteDatabase() throws JSQLParserException {
+        String sqlStr = "CONNECT 'postgres://localhost/mydb'";
+        ConnectStatement connect =
+                (ConnectStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("'postgres://localhost/mydb'", connect.getTarget());
+        Assertions.assertNull(connect.getAlias());
+    }
+
+    @Test
+    void testConnectWithAlias() throws JSQLParserException {
+        String sqlStr = "CONNECT 'postgres://localhost/mydb' AS remote";
+        ConnectStatement connect =
+                (ConnectStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("remote", connect.getAlias());
+    }
+
+    @Test
+    void testDisconnect() throws JSQLParserException {
+        String sqlStr = "DISCONNECT";
+        DisconnectStatement disconnect =
+                (DisconnectStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(disconnect.getName());
+    }
+
+    @Test
+    void testDisconnectNamedConnection() throws JSQLParserException {
+        String sqlStr = "DISCONNECT remote";
+        DisconnectStatement disconnect =
+                (DisconnectStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("remote", disconnect.getName());
+    }
+
+    @Test
+    void testConnectByStillParses() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t START WITH id = 1 CONNECT BY PRIOR id = parent_id";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

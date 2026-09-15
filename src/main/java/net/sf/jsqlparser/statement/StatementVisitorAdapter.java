@@ -639,6 +639,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(ConnectStatement connectStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DisconnectStatement disconnectStatement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(PurgeStatement purgeStatement, S context) {
         return null;
     }

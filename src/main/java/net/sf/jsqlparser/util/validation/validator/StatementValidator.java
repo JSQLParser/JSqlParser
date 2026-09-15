@@ -103,6 +103,8 @@ import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
 import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
 
 /**
  * @author gitmotte
@@ -506,6 +508,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(ConnectStatement connectStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -735,6 +749,14 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(DetachStatement detachStatement) {
         visit(detachStatement, null);
+    }
+
+    public void visit(ConnectStatement connectStatement) {
+        visit(connectStatement, null);
+    }
+
+    public void visit(DisconnectStatement disconnectStatement) {
+        visit(disconnectStatement, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {
