@@ -7374,6 +7374,7 @@ WithItem<?> WithItem() #WithItem:
     ParenthesedStatement statement = null;
     WithSearchClause withSearchClause = null;
     WithCycleClause withCycleClause = null;
+    ExpressionList<Expression> usingKeyExpressions = null;
     WithItem<?> withItem;
 }
 {
@@ -7388,6 +7389,8 @@ WithItem<?> WithItem() #WithItem:
              [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
              name=RelObjectName()
              [ "(" selectItems=SelectItemsList() ")" ]
+             // DuckDB 2.0: WITH RECURSIVE tbl (a, b) USING KEY (a, avg(b)) AS (...)
+             [ LOOKAHEAD(2) <K_USING> <K_KEY> "(" usingKeyExpressions=ExpressionList() ")" ]
              <K_AS>
              [ LOOKAHEAD(2) [ <K_NOT> { usingNot = true; } ] <K_MATERIALIZED>  { materialized = true; } ]
              (
@@ -7403,6 +7406,7 @@ WithItem<?> WithItem() #WithItem:
                 withItem = new WithItem(statement, new Alias(name, false))
                     .withRecursive(recursive, usingNot, materialized)
                     .withWithItemList(selectItems);
+                withItem.setUsingKeyExpressions(usingKeyExpressions);
              }
          )
      )

@@ -665,4 +665,28 @@ public class DuckDBTest {
         String sqlStr = "SELECT approx, nearest, similarity FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testRecursiveCteUsingKey() throws JSQLParserException {
+        String sqlStr = "WITH RECURSIVE tbl (a, b) USING KEY (a, avg(b)) AS "
+                + "(SELECT 1, 2 UNION ALL SELECT a + 1, b FROM tbl WHERE a < 3) SELECT * FROM tbl";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        WithItem<?> withItem = select.getWithItemsList().get(0);
+
+        Assertions.assertEquals(2, withItem.getUsingKeyExpressions().size());
+    }
+
+    @Test
+    void testRecursiveCteUsingKeySingleColumn() throws JSQLParserException {
+        String sqlStr = "WITH RECURSIVE tbl USING KEY (a) AS (SELECT 1 AS a) SELECT * FROM tbl";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testRecursiveCteWithoutUsingKey() throws JSQLParserException {
+        String sqlStr = "WITH RECURSIVE tbl (a) AS (SELECT 1) SELECT * FROM tbl";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(select.getWithItemsList().get(0).getUsingKeyExpressions());
+    }
 }
