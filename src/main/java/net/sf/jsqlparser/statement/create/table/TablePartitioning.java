@@ -27,7 +27,12 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class TablePartitioning implements Serializable {
 
     public enum Type {
-        HASH, KEY, RANGE, LIST
+        HASH, KEY, RANGE, LIST,
+        /**
+         * BigQuery partitions by a bare expression, without a partitioning method keyword:
+         * {@code PARTITION BY DATE(ts)}.
+         */
+        EXPRESSION
     }
 
     private Type type;
@@ -285,6 +290,10 @@ public class TablePartitioning implements Serializable {
     }
 
     private void appendMethod(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        if (type == Type.EXPRESSION) {
+            expressionPrinter.accept(expression);
+            return;
+        }
         if (linear) {
             builder.append("LINEAR ");
         }

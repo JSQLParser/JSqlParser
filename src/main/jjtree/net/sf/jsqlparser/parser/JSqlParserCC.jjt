@@ -14895,6 +14895,7 @@ TablePartitioning CreateTablePartitioning():
 {
     TablePartitioning partitioning = null;
     TablePartitioning subPartitioning = null;
+    Expression expression = null;
     ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     List<PartitionDefinition> partitionDefinitions = null;
@@ -14905,9 +14906,11 @@ TablePartitioning CreateTablePartitioning():
 {
     <K_PARTITION> <K_BY>
     (
-        partitioning=HashOrKeyPartitioning()
+        // explicit lookaheads: the method keywords win over the BigQuery
+        // bare-expression alternative below, which they share a prefix with
+        LOOKAHEAD(2) partitioning=HashOrKeyPartitioning()
         |
-        <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
+        LOOKAHEAD(2) <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -14924,7 +14927,7 @@ TablePartitioning CreateTablePartitioning():
             }
         )
         |
-        <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
+        LOOKAHEAD(2) <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -14940,6 +14943,17 @@ TablePartitioning CreateTablePartitioning():
                 partitioning.setColumns(columns);
             }
         )
+        |
+        // BigQuery partitions by a bare expression: PARTITION BY d, PARTITION BY DATE(ts),
+        // PARTITION BY RANGE_BUCKET(id, GENERATE_ARRAY(0, 100, 10))
+        LOOKAHEAD({ getToken(1).kind != K_HASH && getToken(1).kind != K_KEY
+                && getToken(1).kind != K_LINEAR && getToken(1).kind != K_RANGE
+                && getToken(1).kind != K_LIST })
+        expression=SimpleExpression()
+        {
+            partitioning = new TablePartitioning(TablePartitioning.Type.EXPRESSION);
+            partitioning.setExpression(expression);
+        }
     )
     [ LOOKAHEAD({ getToken(1).kind == K_PARTITIONS })
         <K_PARTITIONS> tk=<S_LONG> { partitioning.setPartitions(Long.valueOf(tk.image)); } ]

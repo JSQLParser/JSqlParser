@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -177,5 +179,41 @@ public class BigQueryTest {
     void testAggregateFunctionOrderByWithoutNullHandling() throws JSQLParserException {
         String sqlStr = "SELECT ARRAY_AGG(x ORDER BY x) FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTablePartitionByExpression() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.t (id INT64, ts TIMESTAMP) PARTITION BY DATE(ts)";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(TablePartitioning.Type.EXPRESSION,
+                createTable.getPartitioning().getType());
+        Assertions.assertEquals("DATE(ts)",
+                createTable.getPartitioning().getExpression().toString());
+    }
+
+    @Test
+    void testCreateTablePartitionByColumnWithOptions() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE ds.t (id INT64, d DATE) PARTITION BY d OPTIONS (description = 'x')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTableAsSelectPartitionByAndClusterBy() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.t PARTITION BY d CLUSTER BY id "
+                + "AS SELECT 1 AS id, CURRENT_DATE() AS d";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTablePartitionByHashStillParses() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE t (id INT) PARTITION BY HASH (id)";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(TablePartitioning.Type.HASH,
+                createTable.getPartitioning().getType());
     }
 }
