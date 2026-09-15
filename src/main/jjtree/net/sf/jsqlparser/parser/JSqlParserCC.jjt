@@ -1515,6 +1515,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             Token token = getToken(i);
             if (token.kind == EOF || ";".equals(token.image) || token.kind == K_BEGIN) { return false; }
             if (token.kind == K_EXECUTE && (getToken(i + 1).kind == K_FUNCTION || getToken(i + 1).kind == K_PROCEDURE)) { return true; }
+            // DuckDB 2.0 uses the standard header with a statement body instead of EXECUTE
+            if ("REFERENCING".equalsIgnoreCase(token.image) || token.kind == K_STATEMENT) { return true; }
         }
     }
 
@@ -17092,6 +17094,7 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
 {
     CreateTrigger result = new CreateTrigger(); String name; Table table; CreateTrigger.Timing timing;
     TriggerEvent event; TransitionRelation transition; Expression expression; Token token; boolean negative = false;
+    Statement body = null;
     Function routine = new Function(); ExpressionList<Expression> arguments = new ExpressionList<Expression>();
 }
 {
@@ -17104,7 +17107,8 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
     event=PostgreSqlTriggerEvent() { result.getEvents().add(event); }
     ( <K_OR> event=PostgreSqlTriggerEvent() { result.getEvents().add(event); } )*
     <K_ON> table=Table() { result.setTable(table); }
-    [ <K_FROM> table=Table() { result.setReferencedTable(table); } ]
+    // greedy: FROM here names the referenced table, it never starts the trigger body
+    [ LOOKAHEAD(2) <K_FROM> table=Table() { result.setReferencedTable(table); } ]
     [ [ <K_NOT> { negative = true; } ] <K_DEFERRABLE> { result.getConstraintAttributes().setDeferrable(!negative); } ]
     [ LOOKAHEAD({ isAccessKeywordAhead("INITIALLY") })
       AccessKeyword("INITIALLY") ( token=<S_IDENTIFIER> )
@@ -17117,12 +17121,18 @@ CreateTrigger PostgreSqlTrigger(boolean replace):
       ( <K_ROW> { result.setOrientation(CreateTrigger.Orientation.ROW); }
         | <K_STATEMENT> { result.setOrientation(CreateTrigger.Orientation.STATEMENT); } ) ]
     [ <K_WHEN> "(" expression=Expression() ")" { result.setWhenExpression(expression); } ]
-    <K_EXECUTE> ( <K_FUNCTION> | <K_PROCEDURE> { result.setExecuteKeyword(CreateTrigger.ExecuteKeyword.PROCEDURE); } )
-    name=AccessQualifiedName() { routine.setName(name); }
-    "(" [ expression=PostgreSqlTriggerArgument() { arguments.add(expression); }
-          ( "," expression=PostgreSqlTriggerArgument() { arguments.add(expression); } )* ] ")"
+    (
+        LOOKAHEAD(2)
+        <K_EXECUTE> ( <K_FUNCTION> | <K_PROCEDURE> { result.setExecuteKeyword(CreateTrigger.ExecuteKeyword.PROCEDURE); } )
+        name=AccessQualifiedName() { routine.setName(name); }
+        "(" [ expression=PostgreSqlTriggerArgument() { arguments.add(expression); }
+              ( "," expression=PostgreSqlTriggerArgument() { arguments.add(expression); } )* ] ")"
+        { routine.setParameters(arguments); result.setRoutine(routine); }
+        |
+        // DuckDB 2.0 runs a statement rather than a function
+        body=SingleStatement() { result.setBody(body); }
+    )
     {
-        routine.setParameters(arguments); result.setRoutine(routine);
         requireAccessSyntax(!result.isConstraint() || !replace && result.getTiming() == CreateTrigger.Timing.AFTER
             && result.getOrientation() == CreateTrigger.Orientation.ROW, "A constraint trigger requires AFTER FOR EACH ROW without OR REPLACE");
         requireAccessSyntax(result.isConstraint() || result.getReferencedTable() == null

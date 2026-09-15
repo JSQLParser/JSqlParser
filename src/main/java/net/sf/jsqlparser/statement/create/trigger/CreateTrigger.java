@@ -241,7 +241,9 @@ public class CreateTrigger implements Statement {
     }
 
     public void appendTo(StringBuilder sql, Consumer<Expression> visitor) {
-        if (routine == null) {
+        // MySQL's shorter form has neither a routine nor any of the standard clauses
+        if (routine == null && transitionRelations.isEmpty() && !constraint
+                && orientation != Orientation.STATEMENT) {
             sql.append(mysqlSql());
             return;
         }
@@ -252,8 +254,13 @@ public class CreateTrigger implements Statement {
             visitor.accept(whenExpression);
             sql.append(')');
         }
-        sql.append(" EXECUTE ").append(executeKeyword).append(' ');
-        visitor.accept(routine);
+        if (routine != null) {
+            sql.append(" EXECUTE ").append(executeKeyword).append(' ');
+            visitor.accept(routine);
+        } else {
+            // DuckDB 2.0 runs a statement rather than a function
+            sql.append(' ').append(body);
+        }
     }
 
     private void appendPostgreSqlHeader(StringBuilder sql, Consumer<Expression> visitor) {

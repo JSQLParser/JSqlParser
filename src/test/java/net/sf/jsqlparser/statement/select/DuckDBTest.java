@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -525,6 +526,35 @@ public class DuckDBTest {
     @Test
     void testCreatePostgresExtensionStillParses() throws JSQLParserException {
         String sqlStr = "CREATE EXTENSION IF NOT EXISTS hstore WITH SCHEMA public CASCADE";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTriggerWithTransitionTablesAndStatementBody() throws JSQLParserException {
+        String sqlStr = "CREATE TRIGGER trg_audit AFTER UPDATE ON target "
+                + "REFERENCING OLD TABLE AS o NEW TABLE AS n FOR EACH STATEMENT "
+                + "INSERT INTO audit SELECT n.id, o.val, n.val FROM o JOIN n ON o.id = n.id";
+        CreateTrigger createTrigger =
+                (CreateTrigger) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createTrigger.getTransitionRelations().size());
+        Assertions.assertEquals(CreateTrigger.Orientation.STATEMENT,
+                createTrigger.getOrientation());
+        Assertions.assertNotNull(createTrigger.getBody());
+    }
+
+    @Test
+    void testCreateTriggerBeforeDeleteWithStatementBody() throws JSQLParserException {
+        String sqlStr = "CREATE TRIGGER trg BEFORE DELETE ON t REFERENCING OLD TABLE AS o "
+                + "FOR EACH STATEMENT DELETE FROM audit WHERE id IN (SELECT id FROM o)";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testPostgreSqlTriggerStillParses() throws JSQLParserException {
+        String sqlStr = "CREATE TRIGGER trg AFTER UPDATE ON target "
+                + "REFERENCING OLD TABLE AS o NEW TABLE AS n FOR EACH STATEMENT "
+                + "EXECUTE FUNCTION f()";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }
