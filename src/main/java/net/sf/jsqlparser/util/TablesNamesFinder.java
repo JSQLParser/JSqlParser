@@ -211,6 +211,8 @@ import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
 
 
 /**
@@ -2490,6 +2492,28 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(ExtensionStatement extensionStatement) {
         StatementVisitor.super.visit(extensionStatement);
+    }
+
+    @Override
+    public <S> Void visit(AttachStatement attachStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(AttachStatement attachStatement) {
+        StatementVisitor.super.visit(attachStatement);
+    }
+
+    @Override
+    public <S> Void visit(DetachStatement detachStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(DetachStatement detachStatement) {
+        StatementVisitor.super.visit(detachStatement);
     }
 
     @Override

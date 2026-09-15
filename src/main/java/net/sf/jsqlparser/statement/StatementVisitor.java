@@ -383,6 +383,18 @@ public interface StatementVisitor<T> {
         this.visit(extensionStatement, null);
     }
 
+    <S> T visit(AttachStatement attachStatement, S context);
+
+    default void visit(AttachStatement attachStatement) {
+        this.visit(attachStatement, null);
+    }
+
+    <S> T visit(DetachStatement detachStatement, S context);
+
+    default void visit(DetachStatement detachStatement) {
+        this.visit(detachStatement, null);
+    }
+
     <S> T visit(PurgeStatement purgeStatement, S context);
 
     default void visit(PurgeStatement purgeStatement) {

@@ -16,6 +16,8 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -278,6 +280,52 @@ public class DuckDBTest {
     @Test
     void testLoadRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT load, install FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAttachDatabaseWithAlias() throws JSQLParserException {
+        String sqlStr = "ATTACH 'file.db' AS mydb";
+        AttachStatement attach =
+                (AttachStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("'file.db'", attach.getDatabasePath());
+        Assertions.assertEquals("mydb", attach.getAlias());
+    }
+
+    @Test
+    void testAttachDatabaseWithOptions() throws JSQLParserException {
+        String sqlStr = "ATTACH DATABASE IF NOT EXISTS 'file.db' AS mydb (TYPE SQLITE, READ_ONLY)";
+        AttachStatement attach =
+                (AttachStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(attach.isIfNotExists());
+        Assertions.assertTrue(attach.isUsingDatabaseKeyword());
+        Assertions.assertEquals(java.util.Arrays.asList("TYPE SQLITE", "READ_ONLY"),
+                attach.getOptions());
+    }
+
+    @Test
+    void testDetachDatabase() throws JSQLParserException {
+        String sqlStr = "DETACH mydb";
+        DetachStatement detach =
+                (DetachStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("mydb", detach.getDatabaseName());
+    }
+
+    @Test
+    void testDetachDatabaseIfExists() throws JSQLParserException {
+        String sqlStr = "DETACH DATABASE IF EXISTS mydb";
+        DetachStatement detach =
+                (DetachStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(detach.isIfExists());
+    }
+
+    @Test
+    void testAttachRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT attach, detach FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

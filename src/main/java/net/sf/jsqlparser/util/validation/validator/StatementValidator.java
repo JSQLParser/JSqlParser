@@ -101,6 +101,8 @@ import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
 
 /**
  * @author gitmotte
@@ -492,6 +494,18 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(AttachStatement attachStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DetachStatement detachStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(PurgeStatement purgeStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -713,6 +727,14 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(ExtensionStatement extensionStatement) {
         visit(extensionStatement, null);
+    }
+
+    public void visit(AttachStatement attachStatement) {
+        visit(attachStatement, null);
+    }
+
+    public void visit(DetachStatement detachStatement) {
+        visit(detachStatement, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {

@@ -99,6 +99,8 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -567,6 +569,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(ExtensionStatement extensionStatement, S context) {
         extensionStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AttachStatement attachStatement, S context) {
+        attachStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DetachStatement detachStatement, S context) {
+        detachStatement.appendTo(builder);
         return builder;
     }
 

@@ -2948,6 +2948,10 @@ Statement SingleStatement() :
                     || (getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL) })
             stm = ExtensionStatement()
             |
+            LOOKAHEAD({ getToken(1).kind == K_ATTACH }) stm = AttachStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_DETACH }) stm = DetachStatement()
+            |
             stm = PurgeStatement()
             |
             stm = SessionStatement()
@@ -4347,6 +4351,71 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * DuckDB's ATTACH [DATABASE] [IF NOT EXISTS] path [AS alias] [(options)].
+ */
+AttachStatement AttachStatement() #AttachStatement:
+{
+    AttachStatement attachStatement = new AttachStatement();
+    List<String> options = new ArrayList<String>();
+    String option;
+    ObjectNames name;
+    Token token;
+}
+{
+    <K_ATTACH>
+    // greedy: DATABASE right after ATTACH is the keyword, not the database name
+    [ LOOKAHEAD(2) <K_DATABASE> { attachStatement.setUsingDatabaseKeyword(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { attachStatement.setIfNotExists(true); } ]
+    (
+        token=<S_CHAR_LITERAL> { attachStatement.setDatabasePath(token.image); }
+        |
+        name=RelObjectNames() { attachStatement.setDatabasePath(String.join(".", name.getNames())); }
+    )
+    [ <K_AS> name=RelObjectNames() { attachStatement.setAlias(String.join(".", name.getNames())); } ]
+    [
+        LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
+        ( "," option=DatabaseOption() { options.add(option); } )*
+        ")" { attachStatement.setOptions(options); }
+    ]
+    { return attachStatement; }
+}
+
+/** One ATTACH option, such as READ_ONLY or TYPE SQLITE. */
+String DatabaseOption():
+{
+    StringBuilder builder = new StringBuilder();
+    String name;
+    Token token;
+}
+{
+    (
+        name=RelObjectName() { if (builder.length() > 0) builder.append(" "); builder.append(name); }
+        |
+        token=<S_CHAR_LITERAL> { if (builder.length() > 0) builder.append(" "); builder.append(token.image); }
+        |
+        token=<S_LONG> { if (builder.length() > 0) builder.append(" "); builder.append(token.image); }
+    )+
+    { return builder.toString(); }
+}
+
+/**
+ * DuckDB's DETACH [DATABASE] [IF EXISTS] name.
+ */
+DetachStatement DetachStatement() #DetachStatement:
+{
+    DetachStatement detachStatement = new DetachStatement();
+    ObjectNames name;
+}
+{
+    <K_DETACH>
+    // greedy: DATABASE right after DETACH is the keyword, not the database name
+    [ LOOKAHEAD(2) <K_DATABASE> { detachStatement.setUsingDatabaseKeyword(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { detachStatement.setIfExists(true); } ]
+    name=RelObjectNames() { detachStatement.setDatabaseName(String.join(".", name.getNames())); }
+    { return detachStatement; }
 }
 
 /**
