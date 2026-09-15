@@ -638,4 +638,31 @@ public class DuckDBTest {
         String sqlStr = "SELECT * FROM monthly_sales UNPIVOT (sales FOR month IN (jan, feb))";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testApproxNearestJoin() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM queries q INNER JOIN products t "
+                + "APPROX NEAREST 2 BY SIMILARITY array_cosine_similarity(q.vec, t.vec)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Join join = select.getJoins().get(0);
+
+        Assertions.assertEquals(2L, join.getApproxNearest());
+        Assertions.assertEquals("array_cosine_similarity(q.vec, t.vec)",
+                join.getSimilarity().toString());
+    }
+
+    @Test
+    void testApproxNearestJoinWithoutAlias() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM queries JOIN products "
+                + "APPROX NEAREST 5 BY SIMILARITY array_distance(queries.vec, products.vec)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(((Table) select.getJoins().get(0).getFromItem()).getAlias());
+    }
+
+    @Test
+    void testApproxRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT approx, nearest, similarity FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

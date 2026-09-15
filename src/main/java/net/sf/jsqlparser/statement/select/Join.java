@@ -37,6 +37,8 @@ public class Join extends ASTNodeAccessImpl {
     private boolean cross = false;
     private boolean semi = false;
     private boolean anti = false;
+    private Long approxNearest;
+    private Expression similarity;
     private boolean any = false;
     private boolean all = false;
     private boolean straight = false;
@@ -195,6 +197,36 @@ public class Join extends ASTNodeAccessImpl {
      *
      * @return true if is a "SEMI" join
      */
+    /**
+     * DuckDB 2.0's similarity join:
+     * {@code JOIN products APPROX NEAREST 2 BY SIMILARITY array_cosine_similarity(...)}.
+     */
+    public Long getApproxNearest() {
+        return approxNearest;
+    }
+
+    public void setApproxNearest(Long approxNearest) {
+        this.approxNearest = approxNearest;
+    }
+
+    public Join withApproxNearest(Long approxNearest) {
+        setApproxNearest(approxNearest);
+        return this;
+    }
+
+    public Expression getSimilarity() {
+        return similarity;
+    }
+
+    public void setSimilarity(Expression similarity) {
+        this.similarity = similarity;
+    }
+
+    public Join withSimilarity(Expression similarity) {
+        setSimilarity(similarity);
+        return this;
+    }
+
     public boolean isAnti() {
         return anti;
     }
@@ -575,6 +607,11 @@ public class Join extends ASTNodeAccessImpl {
             appendJoinKeywordTo(builder);
 
             builder.append(fromItem).append((joinWindow != null) ? " WITHIN " + joinWindow : "");
+        }
+
+        if (approxNearest != null) {
+            builder.append(" APPROX NEAREST ").append(approxNearest)
+                    .append(" BY SIMILARITY ").append(similarity);
         }
 
         for (Expression onExpression : onExpressions) {

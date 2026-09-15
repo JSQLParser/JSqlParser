@@ -1273,6 +1273,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                         || "POSITION".equalsIgnoreCase(getToken(2).image));
     }
 
+    /** DuckDB 2.0's APPROX NEAREST similarity join, never a table alias. */
+    private boolean isApproxNearestAhead() {
+        return getToken(1).kind == K_APPROX && getToken(2).kind == K_NEAREST;
+    }
+
     /** SEMI/ANTI stay contextual identifiers unless they prefix a JOIN. */
     private boolean isSemiAntiJoinAhead() {
         int kind = getToken(1).kind;
@@ -1311,7 +1316,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * reserved keywords.
      */
     private boolean isAliasAhead() {
-        if (isAsOfJoinAhead() || isSemiAntiJoinAhead()) {
+        if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
         }
         Token t = getToken(1);
@@ -2008,6 +2013,7 @@ String NonReservedWord() :
       | tk=<K_ANTI:"ANTI">
       | tk=<K_APPEND_ONLY:"APPEND_ONLY">
       | tk=<K_APPLY:"APPLY">
+      | tk=<K_APPROX: "APPROX">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
       | tk=<K_ARCHIVE: "ARCHIVE">
       | tk=<K_ARRAY_LITERAL: "ARRAY" >
@@ -2216,6 +2222,7 @@ String NonReservedWord() :
       | tk=<K_NAME:"NAME">
       | tk=<K_NEVER:"NEVER">
       | tk=<K_NEXT:"NEXT">
+      | tk=<K_NEAREST: "NEAREST">
       | tk=<K_NEXTVAL: (  (("NEXTVAL")((" ")+("FOR"))?)  |  ( ("NEXT")(" ")+("VALUE") (" ")+("FOR") )  )>
       | tk=<K_NO:"NO">
       | tk=<K_NOCACHE:"NOCACHE">
@@ -2321,6 +2328,7 @@ String NonReservedWord() :
       | tk=<K_SHARE : "SHARE">
       | tk=<K_SIBLINGS:"SIBLINGS">
       | tk=<K_SIMILAR:"SIMILAR">
+      | tk=<K_SIMILARITY: "SIMILARITY">
       | tk=<K_SIZE:"SIZE">
       | tk=<K_SKIP: "SKIP">
       | tk=<K_SLAVE: "SLAVE">
@@ -7745,7 +7753,9 @@ UnPivotQuery UnPivotQuery():
 {
     <K_UNPIVOT> fromItem=FromItem() { unPivotQuery.setFromItem(fromItem); }
     <K_ON> onExpressions=ExpressionList() { unPivotQuery.setOnExpressions(onExpressions); }
+    // greedy: INTO after the ON list belongs to this UNPIVOT
     [
+        LOOKAHEAD(2)
         <K_INTO> <K_NAME> nameColumn=RelObjectName() { unPivotQuery.setNameColumn(nameColumn); }
         <K_VALUE> valueColumns=ColumnList() { unPivotQuery.setValueColumns(valueColumns); }
     ]
@@ -8234,6 +8244,7 @@ Join JoinerExpression() #JoinerExpression:
     List<Column> columns = null;
     KSQLJoinWindow joinWindow = null;
     JoinHint joinHint = null;
+    Token tk = null;
 }
 {
     [ LOOKAHEAD({ isAsOfJoinAhead() }) <S_IDENTIFIER> { join.setAsOf(true); } ]
@@ -8289,6 +8300,12 @@ Join JoinerExpression() #JoinerExpression:
 
     right=FromItem()
 
+    // DuckDB 2.0: JOIN products APPROX NEAREST 2 BY SIMILARITY array_cosine_similarity(...)
+    [
+        LOOKAHEAD({ isApproxNearestAhead() })
+        <K_APPROX> <K_NEAREST> tk=<S_LONG> { join.setApproxNearest(Long.valueOf(tk.image)); }
+        <K_BY> <K_SIMILARITY> onExpression=Expression() { join.setSimilarity(onExpression); }
+    ]
     [
         LOOKAHEAD(2) (
                         [ <K_WITHIN> joinWindow = KSQLJoinWindowClause() {join.setJoinWindow(joinWindow);} ]

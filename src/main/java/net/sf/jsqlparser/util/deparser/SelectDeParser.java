@@ -773,6 +773,12 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" WITHIN ");
             builder.append(join.getJoinWindow().toString());
         }
+        if (join.getApproxNearest() != null) {
+            builder.append(" APPROX NEAREST ").append(join.getApproxNearest())
+                    .append(" BY SIMILARITY ");
+            join.getSimilarity().accept(expressionVisitor, null);
+        }
+
         for (Expression onExpression : join.getOnExpressions()) {
             builder.append(" ON ");
             onExpression.accept(expressionVisitor, null);
