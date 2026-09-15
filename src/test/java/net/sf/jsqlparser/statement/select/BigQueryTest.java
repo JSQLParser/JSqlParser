@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -109,5 +110,27 @@ public class BigQueryTest {
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         TableFunction function = select.getFromItem(TableFunction.class);
         Assertions.assertEquals("TABLE", function.getFunction().getExtraKeyword());
+    }
+
+    @Test
+    void testArrayOffsetAccessor() throws JSQLParserException {
+        String sqlStr = "SELECT arr[OFFSET(0)] FROM t";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        ArrayExpression arrayExpression =
+                (ArrayExpression) select.getSelectItem(0).getExpression();
+
+        Assertions.assertEquals("OFFSET(0)", arrayExpression.getIndexExpression().toString());
+    }
+
+    @Test
+    void testArraySafeOffsetAndOrdinalAccessors() throws JSQLParserException {
+        String sqlStr = "SELECT arr[ORDINAL(1)], arr[SAFE_OFFSET(2)], arr[SAFE_ORDINAL(3)] FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testOffsetClauseStillParses() throws JSQLParserException {
+        String sqlStr = "SELECT a FROM t LIMIT 10 OFFSET 5";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

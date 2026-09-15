@@ -9459,7 +9459,7 @@ Expression ArrayExpression(Expression obj): {
     Expression stopExpr = null;
 } {
     "["
-        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
         [
           (":" { startExpr=idxExpr; idxExpr=null; })
           [stopExpr = SimpleExpression()]
@@ -9468,7 +9468,7 @@ Expression ArrayExpression(Expression obj): {
     { expr =  new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
     (
         LOOKAHEAD(2) "["
-            [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+            [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
             [
               (":" { startExpr=idxExpr; idxExpr=null; })
               [stopExpr = SimpleExpression()]
@@ -9477,6 +9477,29 @@ Expression ArrayExpression(Expression obj): {
         { expr =  new ArrayExpression(expr, idxExpr, startExpr, stopExpr); }
     )*
     { return expr; }
+}
+
+/**
+ * Array subscript index.  BigQuery addresses array elements positionally with
+ * OFFSET(n), ORDINAL(n), SAFE_OFFSET(n) and SAFE_ORDINAL(n).  Only OFFSET needs
+ * an explicit rule here, the others are plain identifiers and parse as functions.
+ */
+Expression ArrayIndexExpression() :
+{
+    Token token;
+    Expression expr;
+}
+{
+    (
+        LOOKAHEAD(2) token = <K_OFFSET> "(" expr = SimpleExpression() ")"
+        {
+            return new Function()
+                    .withName(token.image)
+                    .withParameters(new ExpressionList<Expression>(expr));
+        }
+        |
+        expr = SimpleExpression() { return expr; }
+    )
 }
 
 Expression NavigationStep(Expression base):
