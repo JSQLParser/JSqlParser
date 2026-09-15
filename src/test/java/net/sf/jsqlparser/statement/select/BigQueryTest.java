@@ -13,6 +13,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -240,5 +241,35 @@ public class BigQueryTest {
     void testAssertRemainsUsableAsIdentifier() throws JSQLParserException {
         String sqlStr = "SELECT assert FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testExportData() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv', format = 'CSV', "
+                + "overwrite = true) AS SELECT * FROM t";
+        ExportDataStatement exportData =
+                (ExportDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(3, exportData.getOptions().size());
+        Assertions.assertNull(exportData.getConnectionName());
+    }
+
+    @Test
+    void testExportDataWithConnection() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA WITH CONNECTION myproject.us.myconnection "
+                + "OPTIONS (uri = 'gs://bucket/*.csv') AS SELECT a FROM t";
+        ExportDataStatement exportData =
+                (ExportDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("myproject.us.myconnection", exportData.getConnectionName());
+    }
+
+    @Test
+    void testExportDataTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv') AS SELECT * FROM ds.t";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
     }
 }

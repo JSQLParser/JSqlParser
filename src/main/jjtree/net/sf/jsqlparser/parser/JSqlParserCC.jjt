@@ -2915,6 +2915,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
             |
+            LOOKAHEAD({ getToken(1).kind == K_EXPORT && getToken(2).kind == K_DATA }) stm = ExportDataStatement()
+            |
             stm = PurgeStatement()
             |
             stm = SessionStatement()
@@ -4314,6 +4316,32 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * BigQuery's EXPORT DATA [WITH CONNECTION connection] OPTIONS (option_list) AS query.
+ */
+ExportDataStatement ExportDataStatement() #ExportDataStatement:
+{
+    ExportDataStatement exportDataStatement = new ExportDataStatement();
+    ExpressionList options;
+    ObjectNames connectionName;
+    Select select;
+}
+{
+    <K_EXPORT> <K_DATA>
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { exportDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")"
+        { exportDataStatement.setOptions(options); }
+    ]
+    <K_AS> select=Select() { exportDataStatement.setSelect(select); }
+    { return exportDataStatement; }
 }
 
 /**
