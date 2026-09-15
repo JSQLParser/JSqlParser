@@ -36,6 +36,7 @@ public class Join extends ASTNodeAccessImpl {
     private boolean simple = false;
     private boolean cross = false;
     private boolean semi = false;
+    private boolean anti = false;
     private boolean any = false;
     private boolean all = false;
     private boolean straight = false;
@@ -194,6 +195,19 @@ public class Join extends ASTNodeAccessImpl {
      *
      * @return true if is a "SEMI" join
      */
+    public boolean isAnti() {
+        return anti;
+    }
+
+    public void setAnti(boolean b) {
+        anti = b;
+    }
+
+    public Join withAnti(boolean b) {
+        this.setAnti(b);
+        return this;
+    }
+
     public boolean isSemi() {
         return semi;
     }
@@ -511,6 +525,8 @@ public class Join extends ASTNodeAccessImpl {
             builder.append("INNER ");
         } else if (isSemi()) {
             builder.append("SEMI ");
+        } else if (isAnti()) {
+            builder.append("ANTI ");
         }
 
         if (isArray()) {

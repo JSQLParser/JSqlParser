@@ -54,4 +54,41 @@ public class DuckDBTest {
         String sqlStr = "SELECT glob FROM t";
         TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
+
+    @Test
+    void testSemiJoinWithoutLeft() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t SEMI JOIN u USING (id)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Join join = select.getJoins().get(0);
+
+        Assertions.assertTrue(join.isSemi());
+        Assertions.assertFalse(join.isLeft());
+        Assertions.assertNull(((Table) select.getFromItem()).getAlias());
+    }
+
+    @Test
+    void testAntiJoinWithoutLeft() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t ANTI JOIN u ON t.id = u.id";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Join join = select.getJoins().get(0);
+
+        Assertions.assertTrue(join.isAnti());
+        Assertions.assertNull(((Table) select.getFromItem()).getAlias());
+    }
+
+    @Test
+    void testLeftAntiJoin() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t LEFT ANTI JOIN u ON t.id = u.id";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        Join join = select.getJoins().get(0);
+
+        Assertions.assertTrue(join.isLeft());
+        Assertions.assertTrue(join.isAnti());
+    }
+
+    @Test
+    void testAntiRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT anti FROM t anti";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
 }

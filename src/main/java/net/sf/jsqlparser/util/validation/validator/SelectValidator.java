@@ -328,6 +328,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFeature(c, join.isOuter(), Feature.joinOuter);
             validateFeature(c, join.isInner(), Feature.joinInner);
             validateFeature(c, join.isSemi(), Feature.joinSemi);
+            validateFeature(c, join.isAnti(), Feature.joinAnti);
             validateFeature(c, join.isStraight(), Feature.joinStraight);
             validateFeature(c, join.isApply(), Feature.joinApply);
             validateFeature(c, join.isAsOf(), Feature.joinAsOf);

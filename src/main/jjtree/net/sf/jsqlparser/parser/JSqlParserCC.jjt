@@ -1063,9 +1063,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_CONNECT:  return nextKind != K_BY;
             case K_START:    return nextKind != K_WITH;
             case K_LEFT:     return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+                                    && nextKind != K_SEMI && nextKind != K_ANTI
+                                    && nextKind != K_ARRAY_LITERAL;
             case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
-                                    && nextKind != K_SEMI && nextKind != K_ARRAY_LITERAL;
+                                    && nextKind != K_SEMI && nextKind != K_ANTI
+                                    && nextKind != K_ARRAY_LITERAL;
             case K_ARRAY_LITERAL:
                              return nextKind != K_JOIN;
             case K_ALL:      return nextKind != K_JOIN;
@@ -1209,6 +1211,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isReservedKeywordSafeByFollower();
     }
 
+    /** SEMI/ANTI stay contextual identifiers unless they prefix a JOIN. */
+    private boolean isSemiAntiJoinAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_SEMI && kind != K_ANTI) {
+            return false;
+        }
+        return getToken(2).kind == K_JOIN;
+    }
+
     /** ASOF stays a contextual identifier outside a join prefix. */
     private boolean isAsOfJoinAhead() {
         if (!isKeywordAhead("ASOF")) {
@@ -1238,7 +1249,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * reserved keywords.
      */
     private boolean isAliasAhead() {
-        if (isAsOfJoinAhead()) {
+        if (isAsOfJoinAhead() || isSemiAntiJoinAhead()) {
             return false;
         }
         Token t = getToken(1);
@@ -1930,6 +1941,7 @@ String NonReservedWord() :
       | tk=<K_ALWAYS:"ALWAYS">
       | tk=<K_ANALYSE:"ANALYSE">
       | tk=<K_ANALYZE:"ANALYZE">
+      | tk=<K_ANTI:"ANTI">
       | tk=<K_APPEND_ONLY:"APPEND_ONLY">
       | tk=<K_APPLY:"APPLY">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
@@ -7735,15 +7747,19 @@ Join JoinerExpression() #JoinerExpression:
 
     [
         (
-            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
+            <K_LEFT> { join.setLeft(true); } [ <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             (
                 <K_RIGHT> { join.setRight(true); }
                 |
                 <K_FULL> { join.setFull(true); }
-            ) [ <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
+            ) [ <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } | <K_OUTER> { join.setOuter(true); } | <K_ANY> { join.setAny(true); } | <K_ALL> { join.setAll(true); } ]
             |
             <K_INNER> { join.setInner(true); }
+            |
+            // DuckDB allows SEMI/ANTI without a LEFT prefix
+            LOOKAHEAD({ isSemiAntiJoinAhead() })
+            ( <K_SEMI> { join.setSemi(true); } | <K_ANTI> { join.setAnti(true); } )
         )
         |
         <K_CROSS> { join.setCross(true); }
