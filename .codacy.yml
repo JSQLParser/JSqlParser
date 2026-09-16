@@ -4,5 +4,8 @@ engines:
     exclude_paths:
       # These fixtures use PostgreSQL grammar, not Transact-SQL.
       - "src/test/resources/postgresql/**"
+      # MATCH_RECOGNIZE fixtures use Oracle and BigQuery grammar.
+      - "src/test/resources/net/sf/jsqlparser/statement/select/match-recognize/**"
+      - "src/test/resources/net/sf/jsqlparser/statement/select/match-recognize-2350.sql"
 exclude_paths:
   - "site/**"
