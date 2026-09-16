@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -136,7 +137,7 @@ class ColumnsExpressionTest {
         verify(visitor).visit(expression.getTransformers().get(1).getExceptColumns().get(0),
                 context);
         verify(visitor).visit(
-                (net.sf.jsqlparser.expression.operators.arithmetic.Addition) expression
+                (Addition) expression
                         .getTransformers().get(2).getReplaceItems().get(0).getExpression(),
                 context);
     }
