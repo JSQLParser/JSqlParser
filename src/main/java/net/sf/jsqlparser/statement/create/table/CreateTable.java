@@ -36,6 +36,7 @@ public class CreateTable implements Statement {
     private List<TableElement> tableElements;
     private Select select;
     private Table likeTable;
+    private Table cloneTable;
     private ColDataType ofType;
     private boolean selectParenthesis;
     private boolean ifNotExists = false;
@@ -236,6 +237,22 @@ public class CreateTable implements Statement {
         this.selectParenthesis = parenthesis;
     }
 
+    /**
+     * BigQuery's {@code CREATE [SNAPSHOT] TABLE target CLONE source [FOR SYSTEM_TIME AS OF ...]}.
+     */
+    public Table getCloneTable() {
+        return cloneTable;
+    }
+
+    public void setCloneTable(Table cloneTable) {
+        this.cloneTable = cloneTable;
+    }
+
+    public CreateTable withCloneTable(Table cloneTable) {
+        setCloneTable(cloneTable);
+        return this;
+    }
+
     public boolean isIfNotExists() {
         return ifNotExists;
     }
@@ -329,6 +346,9 @@ public class CreateTable implements Statement {
         }
         if (partitionOf != null) {
             b.append(" PARTITION OF ").append(partitionOf);
+        }
+        if (cloneTable != null) {
+            b.append(" CLONE ").append(cloneTable);
         }
     }
 

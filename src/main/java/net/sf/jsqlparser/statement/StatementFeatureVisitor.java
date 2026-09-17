@@ -93,6 +93,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 /**
  * Derives a {@link StatementFeatures} verdict from a statement tree.
@@ -518,6 +520,27 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(Drop drop, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.MODIFIES_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AssertStatement assertStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_DATA);
         return null;
     }
 

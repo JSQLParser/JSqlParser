@@ -89,6 +89,8 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
 
 import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -613,6 +615,21 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(RenameTableStatement renameTableStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AssertStatement assertStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ExportDataStatement exportDataStatement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(LoadDataStatement loadDataStatement, S context) {
         return null;
     }
 

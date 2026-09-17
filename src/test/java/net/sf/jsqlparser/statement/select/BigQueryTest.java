@@ -10,6 +10,12 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
+import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -109,5 +115,234 @@ public class BigQueryTest {
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         TableFunction function = select.getFromItem(TableFunction.class);
         Assertions.assertEquals("TABLE", function.getFunction().getExtraKeyword());
+    }
+
+    @Test
+    void testArrayOffsetAccessor() throws JSQLParserException {
+        String sqlStr = "SELECT arr[OFFSET(0)] FROM t";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        ArrayExpression arrayExpression =
+                (ArrayExpression) select.getSelectItem(0).getExpression();
+
+        Assertions.assertEquals("OFFSET(0)", arrayExpression.getIndexExpression().toString());
+    }
+
+    @Test
+    void testArraySafeOffsetAndOrdinalAccessors() throws JSQLParserException {
+        String sqlStr = "SELECT arr[ORDINAL(1)], arr[SAFE_OFFSET(2)], arr[SAFE_ORDINAL(3)] FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testOffsetClauseStillParses() throws JSQLParserException {
+        String sqlStr = "SELECT a FROM t LIMIT 10 OFFSET 5";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testUnnestWithOffsetAfterAlias() throws JSQLParserException {
+        String sqlStr = "SELECT x, pos FROM UNNEST([1, 2, 3]) AS x WITH OFFSET AS pos";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction unnest = (TableFunction) select.getFromItem();
+
+        Assertions.assertTrue(unnest.isWithOffset());
+        Assertions.assertEquals("x", unnest.getAlias().getName());
+        Assertions.assertEquals("pos", unnest.getOffsetAlias().getName());
+    }
+
+    @Test
+    void testUnnestWithOffsetWithoutOffsetAlias() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM t, UNNEST(t.arr) AS c WITH OFFSET";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testUnnestWithOrdinalityAliasStillBindsToTableFunction() throws JSQLParserException {
+        String sqlStr = "SELECT * FROM UNNEST(ARRAY[1, 2, 3]) WITH ORDINALITY AS t (a, b)";
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        TableFunction unnest = (TableFunction) select.getFromItem();
+
+        Assertions.assertFalse(unnest.isWithOffset());
+        Assertions.assertEquals("t", unnest.getAlias().getName());
+    }
+
+    @Test
+    void testAggregateFunctionIgnoreNullsBeforeOrderBy() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(x IGNORE NULLS ORDER BY x) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAggregateFunctionIgnoreNullsOrderByLimit() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(DISTINCT x IGNORE NULLS ORDER BY x DESC LIMIT 5) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testAggregateFunctionOrderByWithoutNullHandling() throws JSQLParserException {
+        String sqlStr = "SELECT ARRAY_AGG(x ORDER BY x) FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTablePartitionByExpression() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.t (id INT64, ts TIMESTAMP) PARTITION BY DATE(ts)";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(TablePartitioning.Type.EXPRESSION,
+                createTable.getPartitioning().getType());
+        Assertions.assertEquals("DATE(ts)",
+                createTable.getPartitioning().getExpression().toString());
+    }
+
+    @Test
+    void testCreateTablePartitionByColumnWithOptions() throws JSQLParserException {
+        String sqlStr =
+                "CREATE TABLE ds.t (id INT64, d DATE) PARTITION BY d OPTIONS (description = 'x')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTableAsSelectPartitionByAndClusterBy() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.t PARTITION BY d CLUSTER BY id "
+                + "AS SELECT 1 AS id, CURRENT_DATE() AS d";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTablePartitionByHashStillParses() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE t (id INT) PARTITION BY HASH (id)";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(TablePartitioning.Type.HASH,
+                createTable.getPartitioning().getType());
+    }
+
+    @Test
+    void testAssertStatementWithDescription() throws JSQLParserException {
+        String sqlStr = "ASSERT (SELECT COUNT(*) FROM t) > 0 AS 'table is empty'";
+        AssertStatement assertStatement =
+                (AssertStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("'table is empty'", assertStatement.getDescription().toString());
+    }
+
+    @Test
+    void testAssertStatementWithoutDescription() throws JSQLParserException {
+        String sqlStr = "ASSERT EXISTS(SELECT 1 FROM t)";
+        AssertStatement assertStatement =
+                (AssertStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertNull(assertStatement.getDescription());
+    }
+
+    @Test
+    void testAssertRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT assert FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testExportData() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv', format = 'CSV', "
+                + "overwrite = true) AS SELECT * FROM t";
+        ExportDataStatement exportData =
+                (ExportDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(3, exportData.getOptions().size());
+        Assertions.assertNull(exportData.getConnectionName());
+    }
+
+    @Test
+    void testExportDataWithConnection() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA WITH CONNECTION myproject.us.myconnection "
+                + "OPTIONS (uri = 'gs://bucket/*.csv') AS SELECT a FROM t";
+        ExportDataStatement exportData =
+                (ExportDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("myproject.us.myconnection", exportData.getConnectionName());
+    }
+
+    @Test
+    void testExportDataTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "EXPORT DATA OPTIONS (uri = 'gs://bucket/*.csv') AS SELECT * FROM ds.t";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testLoadDataIntoFromFiles() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO mydataset.mytable "
+                + "FROM FILES (format = 'AVRO', uris = ['gs://bucket/*.avro'])";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertFalse(loadData.isOverwrite());
+        Assertions.assertEquals("mydataset.mytable", loadData.getTable().getFullyQualifiedName());
+        Assertions.assertEquals(2, loadData.getFileOptions().size());
+    }
+
+    @Test
+    void testLoadDataOverwriteWithColumnDefinitions() throws JSQLParserException {
+        String sqlStr = "LOAD DATA OVERWRITE ds.t (id INT64, name STRING) "
+                + "FROM FILES (format = 'CSV', uris = ['gs://b/f.csv'])";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(loadData.isOverwrite());
+        Assertions.assertEquals(2, loadData.getColumnDefinitions().size());
+    }
+
+    @Test
+    void testLoadDataWithOptionsAndConnection() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO ds.t OPTIONS (description = 'x') "
+                + "FROM FILES (format = 'PARQUET') WITH PARTITION COLUMNS "
+                + "WITH CONNECTION myproject.us.conn";
+        LoadDataStatement loadData =
+                (LoadDataStatement) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("myproject.us.conn", loadData.getConnectionName());
+        Assertions.assertTrue(loadData.isWithPartitionColumns());
+    }
+
+    @Test
+    void testLoadDataTablesNamesFinder() throws JSQLParserException {
+        String sqlStr = "LOAD DATA INTO ds.t FROM FILES (format = 'CSV')";
+
+        Assertions.assertEquals(java.util.Collections.singletonList("ds.t"),
+                new net.sf.jsqlparser.util.TablesNamesFinder<Void>()
+                        .getTableList(net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sqlStr)));
+    }
+
+    @Test
+    void testCreateSnapshotTableClone() throws JSQLParserException {
+        String sqlStr = "CREATE SNAPSHOT TABLE ds.snap CLONE ds.t";
+        CreateTable createTable =
+                (CreateTable) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("ds.t", createTable.getCloneTable().getFullyQualifiedName());
+    }
+
+    @Test
+    void testCreateSnapshotTableCloneForSystemTimeAsOf() throws JSQLParserException {
+        String sqlStr = "CREATE SNAPSHOT TABLE IF NOT EXISTS ds.snap CLONE ds.t "
+                + "FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP()";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCreateTableCloneWithOptions() throws JSQLParserException {
+        String sqlStr = "CREATE TABLE ds.copy CLONE ds.t OPTIONS (description = 'x')";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+    }
+
+    @Test
+    void testCloneRemainsUsableAsIdentifier() throws JSQLParserException {
+        String sqlStr = "SELECT clone FROM t";
+        TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
     }
 }

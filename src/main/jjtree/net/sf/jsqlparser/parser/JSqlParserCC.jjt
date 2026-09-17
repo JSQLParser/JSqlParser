@@ -72,6 +72,7 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
+import net.sf.jsqlparser.statement.load.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
@@ -1965,6 +1966,7 @@ String NonReservedWord() :
       | tk=<K_APPLY:"APPLY">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
       | tk=<K_ARCHIVE: "ARCHIVE">
+      | tk=<K_ASSERT: "ASSERT">
       | tk=<K_ARRAY_LITERAL: "ARRAY" >
       | tk=<K_ASYMMETRIC: "ASYMMETRIC">
       | tk=<K_AT: "AT">
@@ -2005,6 +2007,7 @@ String NonReservedWord() :
       | tk=<K_CLOSE:"CLOSE">
       | tk=<K_CLOUD:"CLOUD">
       | tk=<K_COALESCE:"COALESCE">
+      | tk=<K_CLONE: "CLONE">
       | tk=<K_COLLATE:"COLLATE">
       | tk=<K_COLUMN:"COLUMN">
       | tk=<K_COLUMNS:"COLUMNS">
@@ -2132,6 +2135,7 @@ String NonReservedWord() :
       | tk=<K_LINEAR:"LINEAR">
       | tk=<K_LINES:"LINES">
       | tk=<K_LIST:"LIST">
+      | tk=<K_LOAD: "LOAD">
       | tk=<K_LOCAL:"LOCAL">
       | tk=<K_LOCK:"LOCK">
       | tk=<K_LOCKED:"LOCKED">
@@ -2952,6 +2956,12 @@ Statement SingleStatement() :
             stm = Grant()
             |
             LOOKAHEAD({ isKeywordAhead("REVOKE") }) stm = Revoke(false)
+            |
+            LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_EXPORT && getToken(2).kind == K_DATA }) stm = ExportDataStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_LOAD && getToken(2).kind == K_DATA }) stm = LoadDataStatement()
             |
             stm = PurgeStatement()
             |
@@ -4352,6 +4362,90 @@ RenameTableStatement RenameTableStatement(): {
     {
         return renameTableStatement;
     }
+}
+
+/**
+ * BigQuery's LOAD DATA {INTO | OVERWRITE} table [(column_definitions)] [OPTIONS (option_list)]
+ * FROM FILES (file_options) [WITH PARTITION COLUMNS] [WITH CONNECTION connection].
+ */
+LoadDataStatement LoadDataStatement() #LoadDataStatement:
+{
+    LoadDataStatement loadDataStatement = new LoadDataStatement();
+    List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    ColumnDefinition columnDefinition;
+    ExpressionList options;
+    ObjectNames connectionName;
+    Table table;
+}
+{
+    <K_LOAD> <K_DATA>
+    ( <K_INTO> | <K_OVERWRITE> { loadDataStatement.setOverwrite(true); } )
+    table=Table() { loadDataStatement.setTable(table); }
+    [
+        LOOKAHEAD(2) "("
+        columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); }
+        ( "," columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); } )*
+        ")" { loadDataStatement.setColumnDefinitions(columnDefinitions); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")" { loadDataStatement.setOptions(options); }
+    ]
+    <K_FROM>
+    LOOKAHEAD({ isKeywordAhead("FILES") }) <S_IDENTIFIER>
+    "(" options=ExpressionList() ")" { loadDataStatement.setFileOptions(options); }
+    [
+        LOOKAHEAD(2) <K_WITH> <K_PARTITION> <K_COLUMNS>
+        { loadDataStatement.setWithPartitionColumns(true); }
+    ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { loadDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    { return loadDataStatement; }
+}
+
+/**
+ * BigQuery's EXPORT DATA [WITH CONNECTION connection] OPTIONS (option_list) AS query.
+ */
+ExportDataStatement ExportDataStatement() #ExportDataStatement:
+{
+    ExportDataStatement exportDataStatement = new ExportDataStatement();
+    ExpressionList options;
+    ObjectNames connectionName;
+    Select select;
+}
+{
+    <K_EXPORT> <K_DATA>
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { exportDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")"
+        { exportDataStatement.setOptions(options); }
+    ]
+    <K_AS> select=Select() { exportDataStatement.setSelect(select); }
+    { return exportDataStatement; }
+}
+
+/**
+ * BigQuery's ASSERT expression [AS description] debugging statement.
+ */
+AssertStatement AssertStatement() #AssertStatement:
+{
+    AssertStatement assertStatement = new AssertStatement();
+    Expression expression;
+    Token token;
+}
+{
+    <K_ASSERT> expression=Expression() { assertStatement.setExpression(expression); }
+    [ <K_AS> token=<S_CHAR_LITERAL>
+        { assertStatement.setDescription(new StringValue(token.image)); } ]
+    { return assertStatement; }
 }
 
 PurgeStatement PurgeStatement(): {
@@ -7789,6 +7883,13 @@ FromItem FromItem() #FromItem:
 
     [ LOOKAHEAD({ !isMatchRecognizeAhead() && isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
     [
+        // BigQuery: UNNEST(array) AS alias WITH OFFSET AS offsetAlias
+        LOOKAHEAD(2, { fromItem instanceof TableFunction })
+        <K_WITH> <K_OFFSET> { ((TableFunction) fromItem).setWithOffset(true); }
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias()
+            { ((TableFunction) fromItem).setOffsetAlias(alias); } ]
+    ]
+    [
         LOOKAHEAD(2, {fromItem instanceof Table }) timeTravelStr = TimeTravelAfterAlias()
         { ((Table) fromItem).setTimeTravelStrAfterAlias(timeTravelStr); }
     ]
@@ -9872,7 +9973,7 @@ Expression ArrayExpression(Expression obj): {
     Expression stopExpr = null;
 } {
     "["
-        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
         [
           (":" { startExpr=idxExpr; idxExpr=null; })
           [stopExpr = SimpleExpression()]
@@ -9881,7 +9982,7 @@ Expression ArrayExpression(Expression obj): {
     { expr =  new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
     (
         LOOKAHEAD(2) "["
-            [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+            [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
             [
               (":" { startExpr=idxExpr; idxExpr=null; })
               [stopExpr = SimpleExpression()]
@@ -9890,6 +9991,29 @@ Expression ArrayExpression(Expression obj): {
         { expr =  new ArrayExpression(expr, idxExpr, startExpr, stopExpr); }
     )*
     { return expr; }
+}
+
+/**
+ * Array subscript index.  BigQuery addresses array elements positionally with
+ * OFFSET(n), ORDINAL(n), SAFE_OFFSET(n) and SAFE_ORDINAL(n).  Only OFFSET needs
+ * an explicit rule here, the others are plain identifiers and parse as functions.
+ */
+Expression ArrayIndexExpression() :
+{
+    Token token;
+    Expression expr;
+}
+{
+    (
+        LOOKAHEAD(2) token = <K_OFFSET> "(" expr = SimpleExpression() ")"
+        {
+            return new Function()
+                    .withName(token.image)
+                    .withParameters(new ExpressionList<Expression>(expr));
+        }
+        |
+        expr = SimpleExpression() { return expr; }
+    )
 }
 
 Expression NavigationStep(Expression base):
@@ -11922,6 +12046,7 @@ Function InternalFunction(boolean escaped):
     Column attributeColumn = null;
     Token attributeToken = null;
     Limit limit;
+    List<OrderByElement> orderByList = null;
     List<Function.KeywordArgument> keywordArgs = null;
 }
 {
@@ -11969,6 +12094,12 @@ Function InternalFunction(boolean escaped):
         (
              <K_RESPECT> <K_NULLS> {  retval.setNullHandling(Function.NullHandling.RESPECT_NULLS); }
         )
+    ]
+
+    // BigQuery orders aggregate arguments after the null handling:
+    // ARRAY_AGG(expr [IGNORE NULLS] [ORDER BY key] [LIMIT n])
+    [
+        LOOKAHEAD(2) orderByList = OrderByElements() { retval.setOrderByElements(orderByList); }
     ]
 
     [
@@ -12054,7 +12185,8 @@ ExpressionList FunctionArgumentList(Function retval):
     { if ("XMLFOREST".equalsIgnoreCase(retval.getName())) { return XmlForestArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
-    [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
+    // explicit lookahead: InternalFunction accepts ORDER BY after IGNORE NULLS too
+    [ LOOKAHEAD(2) orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
 
     // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
     [
@@ -13912,6 +14044,12 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
+    [
+        // BigQuery: CREATE [SNAPSHOT] TABLE target CLONE source [FOR SYSTEM_TIME AS OF ...]
+        LOOKAHEAD(2) <K_CLONE> likeTable=Table()
+        [ LOOKAHEAD(2) tableColumn=TimeTravelAfterAlias() { likeTable.setTimeTravel(tableColumn); } ]
+        { createTable.setCloneTable(likeTable); likeTable = null; }
+    ]
     [ <K_OF> ofType=ColDataType() { createTable.setOfType(ofType); } ]
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
@@ -15376,6 +15514,7 @@ TablePartitioning CreateTablePartitioning():
 {
     TablePartitioning partitioning = null;
     TablePartitioning subPartitioning = null;
+    Expression expression = null;
     ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     List<PartitionDefinition> partitionDefinitions = null;
@@ -15386,9 +15525,11 @@ TablePartitioning CreateTablePartitioning():
 {
     <K_PARTITION> <K_BY>
     (
-        partitioning=HashOrKeyPartitioning()
+        // explicit lookaheads: the method keywords win over the BigQuery
+        // bare-expression alternative below, which they share a prefix with
+        LOOKAHEAD(2) partitioning=HashOrKeyPartitioning()
         |
-        <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
+        LOOKAHEAD(2) <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -15405,7 +15546,7 @@ TablePartitioning CreateTablePartitioning():
             }
         )
         |
-        <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
+        LOOKAHEAD(2) <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -15421,6 +15562,17 @@ TablePartitioning CreateTablePartitioning():
                 partitioning.setColumns(columns);
             }
         )
+        |
+        // BigQuery partitions by a bare expression: PARTITION BY d, PARTITION BY DATE(ts),
+        // PARTITION BY RANGE_BUCKET(id, GENERATE_ARRAY(0, 100, 10))
+        LOOKAHEAD({ getToken(1).kind != K_HASH && getToken(1).kind != K_KEY
+                && getToken(1).kind != K_LINEAR && getToken(1).kind != K_RANGE
+                && getToken(1).kind != K_LIST })
+        expression=SimpleExpression()
+        {
+            partitioning = new TablePartitioning(TablePartitioning.Type.EXPRESSION);
+            partitioning.setExpression(expression);
+        }
     )
     [ LOOKAHEAD({ getToken(1).kind == K_PARTITIONS })
         <K_PARTITIONS> tk=<S_LONG> { partitioning.setPartitions(Long.valueOf(tk.image)); } ]
