@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -632,16 +633,19 @@ public class ClickHouseTest {
 
         // a lambda alias is handed to the expression visitor
         List<String> expressions = new ArrayList<>();
-        SelectVisitorAdapter<Void> exprVisitor = new SelectVisitorAdapter<>() {
-            @Override
-            public <S> Void visit(WithItem<?> withItem, S context) {
-                return super.visit(withItem, context);
-            }
-        };
+        SelectVisitorAdapter<Void> exprVisitor =
+                new SelectVisitorAdapter<>(new ExpressionVisitorAdapter<>() {
+                    @Override
+                    public <S> Void visit(LambdaExpression lambdaExpression, S context) {
+                        expressions.add(String.valueOf(lambdaExpression));
+                        return super.visit(lambdaExpression, context);
+                    }
+                });
         Select lambdaSelect = (Select) CCJSqlParserUtil
                 .parse("WITH (x -> x * 2) AS double SELECT double(5)");
         Assertions.assertNotNull(lambdaSelect.getWithItemsList().get(0).getExpression());
         lambdaSelect.getSelectBody().accept(exprVisitor, null);
+        Assertions.assertEquals(List.of("x -> x * 2"), expressions);
     }
 
     @Test
