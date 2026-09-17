@@ -2519,6 +2519,10 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
         // no tables involved in this statement
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
         assertStatement.getExpression().accept(this, context);
         return null;
@@ -2532,6 +2536,10 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
         // no tables involved in this statement
+        return null;
+    }
+
+    @Override
     public void visit(AssertStatement assertStatement) {
         StatementVisitor.super.visit(assertStatement);
     }
@@ -2550,6 +2558,10 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(AttachStatement attachStatement, S context) {
         // no tables involved in this statement
+        return null;
+    }
+
+    @Override
     public void visit(ExportDataStatement exportDataStatement) {
         StatementVisitor.super.visit(exportDataStatement);
     }
@@ -2657,6 +2669,9 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateExtensionRepository createExtensionRepository) {
         StatementVisitor.super.visit(createExtensionRepository);
+    }
+
+    @Override
     public void visit(LoadDataStatement loadDataStatement) {
         StatementVisitor.super.visit(loadDataStatement);
     }

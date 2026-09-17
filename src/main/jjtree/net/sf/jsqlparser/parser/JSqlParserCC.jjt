@@ -3051,7 +3051,8 @@ Statement SingleStatement() :
             |
             LOOKAHEAD({ getToken(1).kind == K_PRAGMA }) stm = PragmaStatement()
             |
-            LOOKAHEAD({ getToken(1).kind == K_INSTALL || getToken(1).kind == K_LOAD
+            LOOKAHEAD({ getToken(1).kind == K_INSTALL
+                    || (getToken(1).kind == K_LOAD && getToken(2).kind != K_DATA)
                     || (getToken(1).kind == K_FORCE && getToken(2).kind == K_INSTALL) })
             stm = ExtensionStatement()
             |
@@ -3070,6 +3071,7 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
+            |
             LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_EXPORT && getToken(2).kind == K_DATA }) stm = ExportDataStatement()
@@ -4756,6 +4758,9 @@ PragmaStatement PragmaStatement() #PragmaStatement:
         )
     ]
     { return pragmaStatement; }
+}
+
+/**
  * BigQuery's LOAD DATA {INTO | OVERWRITE} table [(column_definitions)] [OPTIONS (option_list)]
  * FROM FILES (file_options) [WITH PARTITION COLUMNS] [WITH CONNECTION connection].
  */

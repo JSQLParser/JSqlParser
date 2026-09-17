@@ -487,6 +487,11 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -494,6 +499,11 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -549,6 +559,11 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+        // TODO: not yet implemented
+        return null;
+    }
+
+    @Override
     public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -812,6 +827,8 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateExtensionRepository createExtensionRepository) {
         visit(createExtensionRepository, null);
+    }
+
     public void visit(AssertStatement assertStatement) {
         visit(assertStatement, null);
     }

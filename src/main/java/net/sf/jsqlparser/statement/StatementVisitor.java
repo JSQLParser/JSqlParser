@@ -439,6 +439,8 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateExtensionRepository createExtensionRepository) {
         this.visit(createExtensionRepository, null);
+    }
+
     <S> T visit(AssertStatement assertStatement, S context);
 
     default void visit(AssertStatement assertStatement) {

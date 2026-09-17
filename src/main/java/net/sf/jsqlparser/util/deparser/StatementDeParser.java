@@ -576,6 +576,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(PragmaStatement pragmaStatement, S context) {
         pragmaStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
         assertStatement.appendTo(builder);
         return builder;
@@ -584,6 +588,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(ExtensionStatement extensionStatement, S context) {
         extensionStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
         exportDataStatement.appendTo(builder);
         return builder;
@@ -640,6 +648,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(CreateExtensionRepository createExtensionRepository, S context) {
         createExtensionRepository.appendTo(builder);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(LoadDataStatement loadDataStatement, S context) {
         loadDataStatement.appendTo(builder);
         return builder;

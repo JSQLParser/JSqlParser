@@ -529,6 +529,10 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA);
@@ -586,6 +590,12 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(CopyStatement copyStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
@@ -603,6 +613,10 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_DATA);

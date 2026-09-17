@@ -622,12 +622,20 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(PragmaStatement pragmaStatement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(AssertStatement assertStatement, S context) {
         return null;
     }
 
     @Override
     public <S> T visit(ExtensionStatement extensionStatement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(ExportDataStatement exportDataStatement, S context) {
         return null;
     }
@@ -674,6 +682,10 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateExtensionRepository createExtensionRepository, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(LoadDataStatement loadDataStatement, S context) {
         return null;
     }
