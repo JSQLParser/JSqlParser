@@ -13084,11 +13084,43 @@ ColumnOption ColumnDefinitionOption(): {
     IdentityDefinition identity;
     NamedConstraint constraint;
     Expression defaultExpression;
+    GeneratedColumnDefinition generated;
+    ObjectNames collationNames;
+    String collation;
 } {
     (
         LOOKAHEAD({ isKeywordAhead("GENERATED")
                 && (getToken(4).kind == K_IDENTITY || getToken(5).kind == K_IDENTITY) })
         identity=IdentityDefinition() { option = ColumnOption.identity(identity); }
+        |
+        LOOKAHEAD({ (isKeywordAhead("GENERATED") && getToken(2).kind == K_ALWAYS
+                && getToken(3).kind == K_AS && "(".equals(getToken(4).image))
+                || (getToken(1).kind == K_AS && "(".equals(getToken(2).image)) })
+        generated=GeneratedColumnDefinition() { option = ColumnOption.generated(generated); }
+        |
+        LOOKAHEAD(<K_NOT> <K_NULL>) <K_NOT> <K_NULL> { option = ColumnOption.nullability(false); }
+        |
+        LOOKAHEAD(<K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
+        |
+        LOOKAHEAD(<K_VISIBLE>) <K_VISIBLE> { option = ColumnOption.visibility(true); }
+        |
+        LOOKAHEAD(<K_INVISIBLE>) <K_INVISIBLE> { option = ColumnOption.visibility(false); }
+        |
+        LOOKAHEAD(<K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
+        |
+        LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
+        ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
+          | collationNames=RelObjectNames() { collation = String.join(".", collationNames.getNames()); } )
+        { option = ColumnOption.collate(collation); }
+        |
+        LOOKAHEAD(<K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
+        { option = ColumnOption.comment(new StringValue(tk.image)); }
+        |
+        LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
+        { option = ColumnOption.onUpdate(defaultExpression); }
+        |
+        LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
+        { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
         |
         LOOKAHEAD(<K_UNIQUE>) constraint=ColumnUniqueConstraint()
         { option = ColumnOption.constraint(constraint); }
@@ -13116,6 +13148,28 @@ ColumnOption ColumnDefinitionOption(): {
         { option = ColumnOption.raw(parameter); }
     )
     { return option; }
+}
+
+GeneratedColumnDefinition GeneratedColumnDefinition():
+{
+    Expression expression;
+    boolean generatedAlways = false;
+    GeneratedColumnDefinition.Storage storage = null;
+    GeneratedColumnDefinition result;
+}
+{
+    [ LOOKAHEAD({ isKeywordAhead("GENERATED") }) ContextualKeyword("GENERATED") <K_ALWAYS>
+      { generatedAlways = true; } ]
+    <K_AS> "(" expression=Expression() ")"
+    [ LOOKAHEAD({ getToken(1).kind == K_STORED || isKeywordAhead("VIRTUAL") })
+      ( <K_STORED> { storage = GeneratedColumnDefinition.Storage.STORED; }
+        | ContextualKeyword("VIRTUAL") { storage = GeneratedColumnDefinition.Storage.VIRTUAL; } ) ]
+    {
+        result = new GeneratedColumnDefinition(expression);
+        result.setGeneratedAlways(generatedAlways);
+        result.setStorage(storage);
+        return result;
+    }
 }
 
 NamedConstraint ColumnUniqueConstraint():

@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.statement.DeclareStatement.TypeDefExpr;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.ColumnOption;
 import static net.sf.jsqlparser.test.TestUtils.asList;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertEqualsObjectTree;
@@ -87,8 +88,8 @@ public class DeclareStatementTest {
                 .withUserVariable(new UserVariable("MyTableVar"))
                 .withColumnDefinitions(new ArrayList<>())
                 .addColumnDefinitions(
-                        new ColumnDefinition("EmpID", new ColDataType().withDataType("int"),
-                                asList("NOT", "NULL")),
+                        new ColumnDefinition("EmpID", new ColDataType().withDataType("int"))
+                                .addColumnOptions(ColumnOption.nullability(false)),
                         new ColumnDefinition("OldVacationHours", new ColDataType("int")))
                 .addColumnDefinitions(
                         asList(

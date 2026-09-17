@@ -49,8 +49,9 @@ class ColumnOptionMutationTest {
 
     @Test
     void addingStructuredOptionPreservesExistingRawSpecifications() throws JSQLParserException {
-        CreateTable table = parse("id INT NOT NULL");
+        CreateTable table = parse("id INT");
         ColumnDefinition column = table.getColumnDefinitions().get(0);
+        column.setColumnSpecs(Arrays.asList("NOT", "NULL"));
         assertNull(column.getColumnOptions());
         ForeignKeyReference reference = parse("id INT REFERENCES parent(id)")
                 .getColumnDefinitions().get(0).getForeignKeyReference();

@@ -294,6 +294,37 @@ Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, 
 Identity alterations are available as ``ColumnDataType.getIdentityAlterations()``. Sequence ownership is shared by ``CreateSequence`` and ``AlterSequence`` through ``Sequence.getOwnership()``: ``null`` means omitted, ``isNone()`` means explicit ``OWNED BY NONE``, and ``getColumn()`` identifies an owner. ``TablesNamesFinder`` includes ``LIKE`` sources and sequence owners without treating sequence or type names as tables. See `ALTER TABLE <https://www.postgresql.org/docs/18/sql-altertable.html>`_ and `ALTER SEQUENCE <https://www.postgresql.org/docs/18/sql-altersequence.html>`_.
 
 
+Structured column attributes
+============================
+
+``ColumnDefinition.getColumnOptions()`` exposes column nullability, ``COLLATE``,
+``COMMENT``, ``ON UPDATE``, ``AUTO_INCREMENT``, visibility, inline ``PRIMARY KEY``
+and parenthesized generated expressions alongside existing defaults, references
+and identity declarations. CREATE and ALTER column definitions use the same model.
+
+``ColumnOption.Kind`` selects the relevant accessor: ``getNullable()``,
+``getCollation()``, ``getComment()``, ``getOnUpdateExpression()``,
+``getVisible()``, ``getConstraint()`` or ``getGeneratedDefinition()``.
+The AUTO_INCREMENT kind has no additional payload. A missing option does not
+imply a server default. Option order and unknown raw extensions are preserved.
+
+``GeneratedColumnDefinition`` contains an ``Expression``, an explicit
+``GENERATED ALWAYS`` flag, and nullable ``Storage`` (STORED/VIRTUAL). Identity
+columns continue to use ``IdentityDefinition``. Visitors, validators and custom
+expression deparsers traverse generation and ON UPDATE expressions and comment
+literals. This is syntax modeling; server restrictions on permissible generation
+expressions are not evaluated.
+
+Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
+COLLATE option. Consumers can map both directly without reconstructing tokens.
+StringValue comment bodies retain their SQL escape representation.
+
+The legacy ``getColumnSpecs()`` returns a token snapshot when options are
+structured; expression fragments may occupy one token and structured keywords
+use canonical capitalization. Mutate the option objects to change the AST.
+``addColumnSpecs`` preserves existing options; ``setColumnSpecs`` explicitly
+replaces them with raw specifications.
+
 Inspect logical replication statements
 ======================================
 
