@@ -26,19 +26,46 @@ public class PivotVisitorAdapter<T> implements PivotVisitor<T> {
 
     @Override
     public <S> T visit(Pivot pivot, S context) {
-
+        if (pivot.getFunctionItems() != null) {
+            pivot.getFunctionItems()
+                    .forEach(item -> item.getExpression().accept(expressionVisitor, context));
+        }
+        if (pivot.getForColumns() != null) {
+            pivot.getForColumns().accept(expressionVisitor, context);
+        }
+        if (pivot.getSingleInItems() != null) {
+            pivot.getSingleInItems()
+                    .forEach(item -> item.getExpression().accept(expressionVisitor, context));
+        }
+        if (pivot.getMultiInItems() != null) {
+            pivot.getMultiInItems()
+                    .forEach(item -> item.getExpression().accept(expressionVisitor, context));
+        }
         return null;
     }
 
     @Override
     public <S> T visit(PivotXml pivot, S context) {
-
+        visit((Pivot) pivot, context);
+        if (pivot.getInSelect() != null) {
+            pivot.getInSelect().accept(expressionVisitor, context);
+        }
         return null;
     }
 
     @Override
     public <S> T visit(UnPivot unpivot, S context) {
-
+        if (unpivot.getUnPivotClause() != null) {
+            unpivot.getUnPivotClause().forEach(column -> column.accept(expressionVisitor, context));
+        }
+        if (unpivot.getUnPivotForClause() != null) {
+            unpivot.getUnPivotForClause()
+                    .forEach(column -> column.accept(expressionVisitor, context));
+        }
+        if (unpivot.getUnPivotInClause() != null) {
+            unpivot.getUnPivotInClause()
+                    .forEach(item -> item.getExpression().accept(expressionVisitor, context));
+        }
         return null;
     }
 }

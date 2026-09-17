@@ -9,6 +9,10 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import java.util.Set;
+import java.util.Collections;
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+
 import java.util.Map;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -20,6 +24,7 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -146,6 +151,8 @@ import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class ExpressionValidator extends AbstractValidator<Expression>
         implements ExpressionVisitor<Void> {
+    private Set<String> rowPatternVariables = Collections.emptySet();
+
     @Override
     public <S> Void visit(Addition addition, S context) {
         visitBinaryExpression(addition, " + ");
@@ -533,13 +540,30 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         return null;
     }
 
+    void validateMatchRecognizeExpressions(MatchRecognize matchRecognize) {
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = matchRecognize.getPatternVariableNames();
+            matchRecognize
+                    .forEachPatternExpression(
+                            expression -> validateOptionalExpression(expression, this));
+        } finally {
+            rowPatternVariables = previous;
+        }
+    }
+
     @Override
     public <S> Void visit(Column tableColumn, S context) {
         if (tableColumn
                 .getOldOracleJoinSyntax() != SupportsOldOracleJoinSyntax.NO_ORACLE_JOIN) {
             validateFeature(Feature.oracleOldJoinSyntax);
         }
-        validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
+        // A pattern qualifier is not a schema/table name. Resolving its columns
+        // requires binding the input relation, which metadata validation does not do.
+        if (tableColumn.getTable() == null || !rowPatternVariables.contains(
+                MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
+            validateName(NamedObject.column, tableColumn.getFullyQualifiedName());
+        }
         return null;
     }
 
@@ -1153,7 +1177,8 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(Select select, S context) {
-        return null;
+        return select.accept((net.sf.jsqlparser.statement.select.SelectVisitor<Void>) getValidator(
+                SelectValidator.class), context);
     }
 
     @Override
@@ -1215,6 +1240,16 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ColumnsExpression columnsExpression, S context) {
+        for (Expression expression : columnsExpression.getAllExpressions()) {
+            if (expression != null) {
+                expression.accept(this, context);
+            }
+        }
         return null;
     }
 

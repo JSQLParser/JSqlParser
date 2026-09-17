@@ -876,6 +876,11 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(ColumnsExpression columnsExpression, S context) {
+        return visitExpressions(columnsExpression, context, columnsExpression.getAllExpressions());
+    }
+
+    @Override
     public <S> T visit(HighExpression highExpression, S context) {
         return highExpression.getExpression().accept(this, context);
     }

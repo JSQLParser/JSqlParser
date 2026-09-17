@@ -27,6 +27,8 @@ import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ColumnsExpression;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.ConnectByPriorOperator;
 import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
@@ -40,6 +42,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
+import net.sf.jsqlparser.expression.RowPatternFunction;
 import net.sf.jsqlparser.expression.Inverse;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -1843,76 +1846,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(RowPatternFunction function, S context) {
+        return function.appendTo(builder, expression -> expression.accept(this, context));
+    }
+
+    @Override
     public <S> StringBuilder visit(StructType structType, S context) {
-        if (structType.getDialect() != StructType.Dialect.DUCKDB
-                && structType.getKeyword() != null) {
-            builder.append(structType.getKeyword());
-        }
-
-        if (structType.getDialect() != StructType.Dialect.DUCKDB
-                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
-            builder.append("<");
-            int i = 0;
-            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                // optional name
-                if (e.getKey() != null && !e.getKey().isEmpty()) {
-                    builder.append(e.getKey()).append(" ");
-                }
-
-                // mandatory type
-                builder.append(e.getValue());
-            }
-
-            builder.append(">");
-        }
-
-        if (structType.getArguments() != null && !structType.getArguments().isEmpty()) {
-            if (structType.getDialect() == StructType.Dialect.DUCKDB) {
-                builder.append("{ ");
-                int i = 0;
-                for (SelectItem<?> e : structType.getArguments()) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    builder.append(e.getAlias().getName());
-                    builder.append(" : ");
-                    e.getExpression().accept(this, context);
-                }
-                builder.append(" }");
-            } else {
-                builder.append("(");
-                int i = 0;
-                for (SelectItem<?> e : structType.getArguments()) {
-                    if (0 < i++) {
-                        builder.append(",");
-                    }
-                    e.getExpression().accept(this, context);
-                    if (e.getAlias() != null) {
-                        builder.append(" as ");
-                        builder.append(e.getAlias().getName());
-                    }
-                }
-                builder.append(")");
-            }
-        }
-
-        if (structType.getDialect() == StructType.Dialect.DUCKDB
-                && structType.getParameters() != null && !structType.getParameters().isEmpty()) {
-            builder.append("::STRUCT( ");
-            int i = 0;
-            for (Map.Entry<String, ColDataType> e : structType.getParameters()) {
-                if (0 < i++) {
-                    builder.append(",");
-                }
-                builder.append(e.getKey()).append(" ");
-                builder.append(e.getValue());
-            }
-            builder.append(")");
-        }
-        return builder;
+        return structType.appendTo(builder, expression -> expression.accept(this, context));
     }
 
     @Override
@@ -1930,6 +1870,43 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
         builder.append(" -> ");
         lambdaExpression.getExpression().accept(this, context);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ColumnsExpression columnsExpression, S context) {
+        columnsExpression.getColumns().accept(this, context);
+        for (ColumnsTransformer transformer : columnsExpression.getTransformers()) {
+            switch (transformer.getType()) {
+                case APPLY:
+                    builder.append(" APPLY(");
+                    transformer.getApplyExpression().accept(this, context);
+                    builder.append(")");
+                    break;
+                case EXCEPT:
+                    builder.append(" EXCEPT ");
+                    transformer.getExceptColumns().accept(this, context);
+                    break;
+                case REPLACE:
+                    builder.append(" REPLACE(");
+                    boolean first = true;
+                    for (SelectItem<?> item : transformer.getReplaceItems()) {
+                        if (!first) {
+                            builder.append(", ");
+                        }
+                        first = false;
+                        item.getExpression().accept(this, context);
+                        if (item.getAlias() != null) {
+                            builder.append(item.getAlias());
+                        }
+                    }
+                    builder.append(")");
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Unhandled ColumnsTransformerType: " + transformer.getType());
+            }
+        }
         return builder;
     }
 

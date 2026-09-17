@@ -12,10 +12,16 @@ package net.sf.jsqlparser.statement.select;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.ColumnsExpression;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class ClickHouseTest {
 
@@ -256,5 +262,230 @@ public class ClickHouseTest {
         // The inner parametric type may itself be wrapped by another parametric type.
         sql = "SELECT CAST(x AS LowCardinality(Decimal(10, 2))) FROM cast_demo";
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsApplyLambdaIssue2631() throws JSQLParserException {
+        // ClickHouse applies a function or lambda expression to all columns matching
+        // the regular expression: https://github.com/JSQLParser/JSqlParser/issues/2631
+        String sql = "SELECT COLUMNS('^metric_') APPLY(x -> round(x, 2)) FROM metrics";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(1, columnsExpression.getTransformers().size());
+        ColumnsTransformer transformer = columnsExpression.getTransformers().get(0);
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.APPLY,
+                transformer.getType());
+        Assertions.assertInstanceOf(LambdaExpression.class, transformer.getApplyExpression());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsApplyFunctionName() throws JSQLParserException {
+        // chained APPLY modifiers, taken from the ClickHouse SELECT documentation
+        String sql = "SELECT COLUMNS('[jk]') APPLY(toString) APPLY(length) APPLY(max)"
+                + " FROM columns_transformers";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(3, columnsExpression.getTransformers().size());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsExcept() throws JSQLParserException {
+        String sql = "SELECT COLUMNS('^metric_') EXCEPT (metric_disk) FROM metrics";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.EXCEPT,
+                columnsExpression.getTransformers().get(0).getType());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsReplace() throws JSQLParserException {
+        String sql =
+                "SELECT COLUMNS('^metric_') REPLACE(metric_cpu * 100 AS metric_cpu) FROM metrics";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.REPLACE,
+                columnsExpression.getTransformers().get(0).getType());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsCombinedTransformers() throws JSQLParserException {
+        // ClickHouse parses its transformers in a loop, so they combine in any order
+        String sql =
+                "SELECT COLUMNS('m') APPLY(x -> round(x, 2)) EXCEPT (metric_disk) FROM metrics";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        sql = "SELECT COLUMNS('m') EXCEPT (metric_disk) APPLY(x -> round(x, 2)) FROM metrics";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsApplyMultiParamLambda() throws JSQLParserException {
+        String sql = "SELECT COLUMNS('m') APPLY((k, v) -> v > 5) FROM metrics";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testBareColumnsExpressionStaysFunction() throws JSQLParserException {
+        // without a transformer, COLUMNS(...) keeps parsing as a regular function
+        String sql = "SELECT COLUMNS('^metric_') FROM metrics";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        Assertions.assertInstanceOf(Function.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testColumnsItemFollowedBySetOperation() throws JSQLParserException {
+        // a follower keyword without its parenthesis never starts a transformer, so
+        // EXCEPT stays a set operation (a bare APPLY or REPLACE stays an alias)
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') EXCEPT SELECT b FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') EXCEPT ALL SELECT b FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a, COLUMNS('m') EXCEPT SELECT b FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') EXCEPT (SELECT b FROM t)", true);
+        // parenthesized set operation operands that do not start a column list
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') EXCEPT ((SELECT b FROM t))", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') EXCEPT (VALUES (1, 2))", true);
+    }
+
+    @Test
+    public void testBareTransformerKeywordRemainsAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') REPLACE FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY", true);
+    }
+
+    @Test
+    public void testAliasColumnsBodyRemainsAlias() throws JSQLParserException {
+        // T(name[type], ...) is the alias-columns reading of the regular alias path,
+        // not a transformer body (APPLY takes a function name or a lambda in ClickHouse)
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(a, b) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(a, b)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(a INT) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(`a`, `b`) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT COLUMNS('m') REPLACE(a INT, b VARCHAR(10)) FROM t", true);
+    }
+
+    @Test
+    public void testReplaceWithBareIdentifierAsAlias() throws JSQLParserException {
+        // the plain ClickHouse rename form: REPLACE(column AS alias)
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') REPLACE(b AS c) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') REPLACE(b AS c, d AS e) FROM t", true);
+        // keyword-predicate lambda bodies stay on the transformer reading
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(x IS NULL) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT COLUMNS('m') APPLY(x AND y) FROM t", true);
+    }
+
+    @Test
+    public void testTypedAliasColumnWithCompoundTimeZoneType() throws JSQLParserException {
+        // compound timezone types are lexed as a single DT_ZONE token but are still
+        // alias-columns types, so the input belongs to the alias path
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT COLUMNS('m') APPLY(a TIMESTAMP WITH TIME ZONE) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT COLUMNS('m') APPLY(a TIMESTAMP(3) WITH TIME ZONE) FROM t", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT COLUMNS('m') APPLY(a TIMESTAMP WITHOUT TIME ZONE) FROM t", true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[x, x + 1]", "x IN (1, 2)",
+            "CASE x WHEN 1 THEN 0 ELSE 1 END"})
+    public void testColumnsApplyExpressionBodies(String body) throws JSQLParserException {
+        for (String prefix : new String[] {"", " APPLY(sum)"}) {
+            String sql = "SELECT COLUMNS('m')" + prefix + " APPLY(x -> " + body + ") FROM t";
+            PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+            ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                    select.getSelectItem(0).getExpression());
+            ColumnsTransformer transformer = expression.getTransformers()
+                    .get(expression.getTransformers().size() - 1);
+            LambdaExpression lambda = Assertions.assertInstanceOf(LambdaExpression.class,
+                    transformer.getApplyExpression());
+            Assertions.assertEquals(body, lambda.getExpression().toString());
+        }
+    }
+
+    @Test
+    public void testColumnsReplaceCaseExpression() throws JSQLParserException {
+        String sql = "SELECT COLUMNS('m') REPLACE(CASE m WHEN 1 THEN 0 ELSE 1 END AS m) FROM t";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                select.getSelectItem(0).getExpression());
+        SelectItem<?> replacement = expression.getTransformers().get(0).getReplaceItems().get(0);
+        Assertions.assertEquals("CASE m WHEN 1 THEN 0 ELSE 1 END",
+                replacement.getExpression().toString());
+        Assertions.assertEquals("m", replacement.getAlias().getName());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "SELECT * FROM (SELECT COLUMNS('m') APPLY(sum) FROM t) q",
+            "WITH q AS (SELECT COLUMNS('m') APPLY(x -> x + 1) FROM t) SELECT * FROM q",
+            "SELECT (SELECT COLUMNS('m') APPLY(sum) FROM t) AS result",
+            "SELECT COLUMNS('m') APPLY(sum) EXCEPT (SELECT b FROM t)",
+            "SELECT 1 UNION SELECT COLUMNS('m') APPLY(sum) FROM t",
+            "INSERT INTO dst SELECT COLUMNS('m') APPLY(sum) FROM t",
+            "SELECT JSON_VALUE(doc, '$' DEFAULT (SELECT COLUMNS('m') APPLY(sum) APPLY(max) FROM t) ON EMPTY) FROM src"})
+    public void testColumnsInSelectContexts(String sql) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COLUMNS('m').x", "{fn COLUMNS('m')}", "COLUMNS('m')(x)"})
+    public void testDecoratedColumnsFunctionKeepsAlias(String function) throws JSQLParserException {
+        String sql = "SELECT " + function + " APPLY(sum) FROM t";
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+        SelectItem<?> item = select.getSelectItem(0);
+        Function expression = Assertions.assertInstanceOf(Function.class, item.getExpression());
+        Assertions.assertSame(item, expression.getParent());
+        Assertions.assertEquals("APPLY", item.getAlias().getName());
+        Assertions.assertEquals("sum", item.getAlias().getAliasColumns().get(0).name);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"APPLY(a, b)", "APPLY(a INT)", "REPLACE(a INT)",
+            "REPLACE(a)", "REPLACE(a, b)"})
+    public void testColumnsAliasAstAtEachBoundary(String suffix) throws JSQLParserException {
+        for (String prefix : new String[] {"", " APPLY(sum)"}) {
+            String sql = "SELECT COLUMNS('m')" + prefix + " " + suffix + " FROM t";
+            PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(sql, true);
+            SelectItem<?> item = select.getSelectItem(0);
+            if (prefix.isEmpty()) {
+                Assertions.assertInstanceOf(Function.class, item.getExpression());
+            } else {
+                ColumnsExpression expression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                        item.getExpression());
+                Assertions.assertEquals(1, expression.getTransformers().size());
+                Assertions.assertEquals("sum", expression.getTransformers().get(0)
+                        .getApplyExpression().toString());
+            }
+            Alias alias = item.getAlias();
+            Assertions.assertNotNull(alias);
+            Assertions.assertEquals(suffix.substring(0, suffix.indexOf('(')), alias.getName());
+            Assertions.assertFalse(alias.isUseAs());
+            Assertions.assertEquals("a", alias.getAliasColumns().get(0).name);
+            if (suffix.contains("INT")) {
+                Assertions.assertEquals("INT",
+                        alias.getAliasColumns().get(0).colDataType.toString());
+            } else {
+                Assertions.assertNull(alias.getAliasColumns().get(0).colDataType);
+                if (suffix.contains(",")) {
+                    Assertions.assertEquals("b", alias.getAliasColumns().get(1).name);
+                }
+            }
+        }
     }
 }

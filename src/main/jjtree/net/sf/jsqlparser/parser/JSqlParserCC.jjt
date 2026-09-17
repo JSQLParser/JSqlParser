@@ -73,6 +73,7 @@ import net.sf.jsqlparser.statement.create.view.*;
 import net.sf.jsqlparser.statement.delete.*;
 import net.sf.jsqlparser.statement.drop.*;
 import net.sf.jsqlparser.statement.insert.*;
+import net.sf.jsqlparser.statement.load.*;
 import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
@@ -1315,6 +1316,19 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * Instead it goes directly to follower-based disambiguation for
      * reserved keywords.
      */
+    private boolean isMatchRecognizeAhead() {
+        return isKeywordAhead("MATCH_RECOGNIZE") && getToken(2).kind == OPENING_BRACKET;
+    }
+
+    private boolean isRowPatternPrimaryAhead() {
+        Token next = getToken(1);
+        return next.kind == OPENING_BRACKET || next.kind == OP_CARET
+                || next.kind == OPENING_CURLY_BRACKET && "-".equals(getToken(2).image)
+                || next.kind == S_IDENTIFIER || next.kind == S_QUOTED_IDENTIFIER
+                || next.kind == DATA_TYPE
+                || next.kind >= MIN_NON_RESERVED_WORD && next.kind <= MAX_NON_RESERVED_WORD;
+    }
+
     private boolean isAliasAhead() {
         if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
@@ -1699,6 +1713,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    private void requireNoDropIndexOwner(Table owner) throws ParseException {
+        if (owner != null) {
+            throw new ParseException("Duplicate DROP INDEX ON clause");
+        }
+    }
+
     private static boolean hasStructuredColumnOption(List<ColumnOption> options) {
         for (ColumnOption option : options) {
             if (option.getKind() != ColumnOption.Kind.OTHER) {
@@ -1888,10 +1908,23 @@ TOKEN_MGR_DECLS : {
         return -1;
     }
 
+    private RowPatternTokenContext rowPatternContext;
+
     public void CommonTokenAction(Token t)
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
 		t.absoluteEnd = t.absoluteBegin + t.image.length();
+        // Track the lexical region independently of parser lookahead: nested SELECT
+        // disambiguation can fetch PATTERN tokens before its production is entered.
+        if (rowPatternContext == null && t.kind == S_IDENTIFIER
+                && "MATCH_RECOGNIZE".equalsIgnoreCase(t.image)
+                && AbstractJSqlParser.Dialect.BIGQUERY.name().equals(configuration.getValue(Feature.dialect))) {
+            rowPatternContext = new RowPatternTokenContext();
+        }
+        if (rowPatternContext != null) {
+            rowPatternContext.accept(t);
+            if (rowPatternContext.isIdle()) { rowPatternContext = null; }
+        }
 	}
 
 	public int getCurrentTokenAbsolutePosition()
@@ -2016,6 +2049,7 @@ String NonReservedWord() :
       | tk=<K_APPROX: "APPROX">
       | tk=<K_APPROXIMATE:"APPROXIMATE">
       | tk=<K_ARCHIVE: "ARCHIVE">
+      | tk=<K_ASSERT: "ASSERT">
       | tk=<K_ARRAY_LITERAL: "ARRAY" >
       | tk=<K_ASYMMETRIC: "ASYMMETRIC">
       | tk=<K_AT: "AT">
@@ -2056,6 +2090,7 @@ String NonReservedWord() :
       | tk=<K_CLOSE:"CLOSE">
       | tk=<K_CLOUD:"CLOUD">
       | tk=<K_COALESCE:"COALESCE">
+      | tk=<K_CLONE: "CLONE">
       | tk=<K_COLLATE:"COLLATE">
       | tk=<K_COLUMN:"COLUMN">
       | tk=<K_COLUMNS:"COLUMNS">
@@ -2670,7 +2705,12 @@ TOKEN:
 |
 <S_DOLLAR_QUOTED_STRING: "$$">
     {
-        consumeDollarQuotedToken(matchedToken, matchedToken.image);
+        if (rowPatternContext != null && rowPatternContext.isInPattern()) {
+            truncateIdentifierToken(matchedToken, 1);
+            matchedToken.kind = S_IDENTIFIER;
+        } else {
+            consumeDollarQuotedToken(matchedToken, matchedToken.image);
+        }
     }
 |
 // Bare `#` as a binary operator (PostgreSQL bitwise XOR / geometric
@@ -2681,6 +2721,10 @@ TOKEN:
 |
 <S_IDENTIFIER: (<LETTER> (<PART_LETTER>)*) | "$" | ("$" <PART_LETTER_NO_DOLLAR> (<PART_LETTER>)*)>
 {
+    if (rowPatternContext != null && rowPatternContext.isInPattern()) {
+        int dollar = matchedToken.image.indexOf('$');
+        if (dollar >= 0) { truncateIdentifierToken(matchedToken, Math.max(1, dollar)); }
+    }
     if (matchedToken.image.charAt(0) == '$'
             && Boolean.TRUE.equals(configuration.getValue(Feature.allowDollarQuotedStringTags))) {
         String delimiter = StringValue.getDollarQuoteDelimiter(matchedToken.image);
@@ -3026,6 +3070,11 @@ Statement SingleStatement() :
             LOOKAHEAD({ getToken(1).kind == K_DEALLOCATE }) stm = DeallocateStatement()
             |
             LOOKAHEAD({ getToken(1).kind == K_COPY }) stm = CopyStatement()
+            LOOKAHEAD({ getToken(1).kind == K_ASSERT }) stm = AssertStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_EXPORT && getToken(2).kind == K_DATA }) stm = ExportDataStatement()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_LOAD && getToken(2).kind == K_DATA }) stm = LoadDataStatement()
             |
             stm = PurgeStatement()
             |
@@ -4707,6 +4756,87 @@ PragmaStatement PragmaStatement() #PragmaStatement:
         )
     ]
     { return pragmaStatement; }
+ * BigQuery's LOAD DATA {INTO | OVERWRITE} table [(column_definitions)] [OPTIONS (option_list)]
+ * FROM FILES (file_options) [WITH PARTITION COLUMNS] [WITH CONNECTION connection].
+ */
+LoadDataStatement LoadDataStatement() #LoadDataStatement:
+{
+    LoadDataStatement loadDataStatement = new LoadDataStatement();
+    List<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    ColumnDefinition columnDefinition;
+    ExpressionList options;
+    ObjectNames connectionName;
+    Table table;
+}
+{
+    <K_LOAD> <K_DATA>
+    ( <K_INTO> | <K_OVERWRITE> { loadDataStatement.setOverwrite(true); } )
+    table=Table() { loadDataStatement.setTable(table); }
+    [
+        LOOKAHEAD(2) "("
+        columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); }
+        ( "," columnDefinition=ColumnDefinition() { columnDefinitions.add(columnDefinition); } )*
+        ")" { loadDataStatement.setColumnDefinitions(columnDefinitions); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")" { loadDataStatement.setOptions(options); }
+    ]
+    <K_FROM>
+    LOOKAHEAD({ isKeywordAhead("FILES") }) <S_IDENTIFIER>
+    "(" options=ExpressionList() ")" { loadDataStatement.setFileOptions(options); }
+    [
+        LOOKAHEAD(2) <K_WITH> <K_PARTITION> <K_COLUMNS>
+        { loadDataStatement.setWithPartitionColumns(true); }
+    ]
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { loadDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    { return loadDataStatement; }
+}
+
+/**
+ * BigQuery's EXPORT DATA [WITH CONNECTION connection] OPTIONS (option_list) AS query.
+ */
+ExportDataStatement ExportDataStatement() #ExportDataStatement:
+{
+    ExportDataStatement exportDataStatement = new ExportDataStatement();
+    ExpressionList options;
+    ObjectNames connectionName;
+    Select select;
+}
+{
+    <K_EXPORT> <K_DATA>
+    [
+        LOOKAHEAD({ getToken(1).kind == K_WITH && "CONNECTION".equalsIgnoreCase(getToken(2).image) })
+        <K_WITH> <S_IDENTIFIER> connectionName=RelObjectNames()
+        { exportDataStatement.setConnectionName(String.join(".", connectionName.getNames())); }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") })
+        <S_IDENTIFIER> "(" options=ExpressionList() ")"
+        { exportDataStatement.setOptions(options); }
+    ]
+    <K_AS> select=Select() { exportDataStatement.setSelect(select); }
+    { return exportDataStatement; }
+}
+
+/**
+ * BigQuery's ASSERT expression [AS description] debugging statement.
+ */
+AssertStatement AssertStatement() #AssertStatement:
+{
+    AssertStatement assertStatement = new AssertStatement();
+    Expression expression;
+    Token token;
+}
+{
+    <K_ASSERT> expression=Expression() { assertStatement.setExpression(expression); }
+    [ <K_AS> token=<S_CHAR_LITERAL>
+        { assertStatement.setDescription(new StringValue(token.image)); } ]
+    { return assertStatement; }
 }
 
 PurgeStatement PurgeStatement(): {
@@ -7554,19 +7684,116 @@ SelectItem<?> SelectItem() #SelectItem:
     Alias alias = null;
 }
 {
-    // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
-    // @todo: parse a proper SEQUENCE instead of a COLUMN
-    (
-        LOOKAHEAD( 3 ) expression = ConnectByPriorOperator()
-        |
-        ( expression=Condition() { expression = prattExpressionRest(expression, 2); } )
-    )
+    expression = SelectItemExpression()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() ]
     {
         SelectItem<?> selectItem = new SelectItem(expression, alias);
         linkAST(selectItem,jjtThis);
         return selectItem;
     }
+}
+
+/**
+ * Recognizes a transformer without consuming it. APPLY(functionName) intentionally takes
+ * precedence over its ambiguous alias-column reading. Other aliases use the existing Alias
+ * grammar, including typed columns, at every transformer boundary. Only the transformer
+ * prefix is probed: expression bodies are parsed normally by the Pratt parser.
+ */
+boolean ColumnsTransformerAhead() #void:
+{}
+{
+      LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
+    | LOOKAHEAD( ( <K_APPLY> | <K_REPLACE> ) AliasColumns() ) { return false; }
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+      { return true; }
+    | { return false; }
+}
+
+/**
+ * Keeps transformer consumption visible to enclosing syntactic lookaheads. The normal
+ * expression is parsed first; only a direct COLUMNS function can acquire transformers.
+ * The conditional node encloses both the matcher and its transformers, but adds no AST
+ * parent for ordinary expressions or alias-column lists.
+ */
+Expression SelectItemExpression() #ColumnsExpression(transformers != null):
+{
+    Expression expression;
+    ColumnsTransformer transformer;
+    List<ColumnsTransformer> transformers = null;
+}
+{
+    // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
+    // @todo: parse a proper SEQUENCE instead of a COLUMN
+    (
+        LOOKAHEAD(3) expression = ConnectByPriorOperator()
+        |
+        ( expression = Condition() { expression = prattExpressionRest(expression, 2); } )
+    )
+    (
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+        {
+            if (!(expression instanceof Function)) {
+                break;
+            }
+            Function function = (Function) expression;
+            if (!"COLUMNS".equalsIgnoreCase(function.getName()) || function.isEscaped()
+                    || function.getAttribute() != null || function.getChainedParameters() != null
+                    || function.getKeep() != null || function.isIgnoreNullsOutside()
+                    || !ColumnsTransformerAhead()) {
+                break;
+            }
+        }
+        transformer = ColumnsTransformer()
+        {
+            if (transformers == null) {
+                transformers = new ArrayList<ColumnsTransformer>();
+            }
+            transformers.add(transformer);
+        }
+    )*
+    {
+        if (transformers == null) {
+            return expression;
+        }
+        ColumnsExpression columnsExpression = new ColumnsExpression(expression, transformers);
+        linkAST(columnsExpression, jjtThis);
+        return columnsExpression;
+    }
+}
+
+/**
+ * Parses a single ClickHouse transformer: APPLY(expression), EXCEPT (columns) or
+ * REPLACE (selectItems). ClickHouse parses these in a loop, so they may repeat
+ * and combine in any order.
+ */
+ColumnsTransformer ColumnsTransformer():
+{
+    Expression applyExpression;
+    ParenthesedExpressionList<Column> exceptColumns;
+    List<SelectItem<?>> replaceItems;
+    ColumnsTransformer transformer;
+}
+{
+    (
+          <K_APPLY> "("
+          (
+              LOOKAHEAD( RelObjectName() "->" ) applyExpression = LambdaExpression()
+              |
+              applyExpression = Expression()
+          )
+          ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.APPLY)
+                  .setApplyExpression(applyExpression); }
+
+        | <K_EXCEPT> exceptColumns = ParenthesedColumnList()
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+                  .setExceptColumns(exceptColumns); }
+
+        | <K_REPLACE> "(" replaceItems = SelectItemsList() ")"
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
+                  .setReplaceItems(replaceItems); }
+    )
+    { return transformer; }
 }
 
 /**
@@ -7616,8 +7843,7 @@ Alias Alias():
   Token token = null;
   boolean useAs = false;
   Alias alias;
-  String colname;
-  ColDataType colDataType = null;
+  List<Alias.AliasColumn> aliasColumns;
 }
 {
     (
@@ -7629,12 +7855,7 @@ Alias Alias():
             [ LOOKAHEAD(2) name=RelObjectName() ]
             { alias = new Alias(name, true ); }
 
-            "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
-            colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-            (
-                "," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-            )*
-            ")" { alias.setAliasColumns(list); }
+            aliasColumns = AliasColumns() { alias.setAliasColumns(aliasColumns); }
 
         )
         |
@@ -7648,14 +7869,28 @@ Alias Alias():
             ( name=RelObjectName() | token=<S_CHAR_LITERAL> { name=token.image; } )
             { alias = new Alias(name,useAs); }
 
-            [ LOOKAHEAD(2) "(" { List<Alias.AliasColumn> list = new ArrayList<Alias.AliasColumn>(); }
-                colname = RelObjectName() [ colDataType = ColDataType() ] { list.add(new Alias.AliasColumn(colname, colDataType)); }
-                ("," { colDataType=null; } colname = RelObjectName() [ colDataType = ColDataType()] { list.add(new Alias.AliasColumn(colname, colDataType)); } )*
-            ")" { alias.setAliasColumns(list); } ]
+            [ LOOKAHEAD(2) aliasColumns = AliasColumns() { alias.setAliasColumns(aliasColumns); } ]
 
         )
     )
     { return alias; }
+}
+
+List<Alias.AliasColumn> AliasColumns():
+{
+    List<Alias.AliasColumn> columns = new ArrayList<Alias.AliasColumn>();
+    String name;
+    ColDataType type = null;
+}
+{
+    "(" name = RelObjectName() [ type = ColDataType() ]
+    { columns.add(new Alias.AliasColumn(name, type)); }
+    (
+        "," { type = null; } name = RelObjectName() [ type = ColDataType() ]
+        { columns.add(new Alias.AliasColumn(name, type)); }
+    )*
+    ")"
+    { return columns; }
 }
 
 void SQLServerHint(SQLServerHints hints) : {
@@ -8165,14 +8400,29 @@ FromItem FromItem() #FromItem:
         LOOKAHEAD({ getAsBoolean(Feature.allowUnparenthesizedSubSelects) }) fromItem=Select()
     )
 
-    [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
+    [ LOOKAHEAD({ !isMatchRecognizeAhead() && isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
+    [
+        // BigQuery: UNNEST(array) AS alias WITH OFFSET AS offsetAlias
+        LOOKAHEAD(2, { fromItem instanceof TableFunction })
+        <K_WITH> <K_OFFSET> { ((TableFunction) fromItem).setWithOffset(true); }
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias()
+            { ((TableFunction) fromItem).setOffsetAlias(alias); } ]
+    ]
     [
         LOOKAHEAD(2, {fromItem instanceof Table }) timeTravelStr = TimeTravelAfterAlias()
         { ((Table) fromItem).setTimeTravelStrAfterAlias(timeTravelStr); }
     ]
-    [ LOOKAHEAD(2) sampleClause = SampleClause() { fromItem.setSampleClause(sampleClause); } ]
-    [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
-    [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+    (
+        LOOKAHEAD({ isMatchRecognizeAhead() }) fromItem=MatchRecognize(fromItem)
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { fromItem.setAlias(alias); } ]
+        [ LOOKAHEAD(2) sampleClause=SampleClause() { fromItem.setSampleClause(sampleClause); } ]
+        |
+        [ LOOKAHEAD(2) sampleClause = SampleClause() { fromItem.setSampleClause(sampleClause); } ]
+        [ LOOKAHEAD(2) unpivot=UnPivot() { fromItem.setUnPivot(unpivot); } ]
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) pivot=PivotXml() | pivot=Pivot() ) { fromItem.setPivot(pivot); } ]
+    )
     [
         LOOKAHEAD(2)
         (
@@ -8191,6 +8441,265 @@ FromItem FromItem() #FromItem:
         linkAST(fromItem,jjtThis);
         return fromItem;
     }
+}
+
+
+MatchRecognize MatchRecognize(FromItem input) #MatchRecognize:
+{
+    MatchRecognize result = new MatchRecognize(input);
+    ExpressionList<Expression> partition;
+    List<OrderByElement> ordering;
+    List<SelectItem<?>> measures;
+    MatchRecognize.Definition definition;
+    MatchRecognize.Subset subset;
+    RowPattern pattern;
+    MatchRecognize.Options options = null;
+    String variable;
+    Token value;
+}
+{
+    ContextualKeyword("MATCH_RECOGNIZE") "("
+    [ <K_PARTITION> <K_BY> partition=SimpleExpressionList() { result.setPartitionBy(partition); } ]
+    [ LOOKAHEAD(2) ordering=OrderByElements() { result.setOrderByElements(ordering); } ]
+    [ LOOKAHEAD({ isKeywordAhead("MEASURES") }) ContextualKeyword("MEASURES") measures=SelectItemsList()
+        {
+            for (SelectItem<?> measure : measures) {
+                if (measure.getAlias() == null) { throw new ParseException("MATCH_RECOGNIZE measures require an alias"); }
+            }
+            result.setMeasures(measures);
+        }
+    ]
+    [
+        LOOKAHEAD({ isKeywordAhead("ONE") || getToken(1).kind == K_ALL })
+        ( LOOKAHEAD({ isKeywordAhead("ONE") }) ContextualKeyword("ONE") <K_ROW> ContextualKeyword("PER") <K_MATCH>
+            { result.setRowsPerMatch(MatchRecognize.RowsPerMatch.ONE); }
+          | <K_ALL> <K_ROWS> ContextualKeyword("PER") <K_MATCH>
+            { result.setRowsPerMatch(MatchRecognize.RowsPerMatch.ALL); }
+            [
+                <K_SHOW> <K_EMPTY> ContextualKeyword("MATCHES")
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.SHOW); }
+                | LOOKAHEAD({ isKeywordAhead("OMIT") }) ContextualKeyword("OMIT") <K_EMPTY> ContextualKeyword("MATCHES")
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.OMIT); }
+                | <K_WITH> ContextualKeyword("UNMATCHED") <K_ROWS>
+                    { result.setEmptyMatchMode(MatchRecognize.EmptyMatchMode.WITH_UNMATCHED); }
+            ]
+        )
+    ]
+    [ LOOKAHEAD({ isKeywordAhead("AFTER") }) ContextualKeyword("AFTER") <K_MATCH> <K_SKIP>
+        ( LOOKAHEAD({ isKeywordAhead("PAST") }) ContextualKeyword("PAST") <K_LAST> <K_ROW>
+            { result.setSkipMode(MatchRecognize.SkipMode.PAST_LAST_ROW); }
+          | <K_TO>
+            ( LOOKAHEAD(2) <K_NEXT> <K_ROW> { result.setSkipMode(MatchRecognize.SkipMode.TO_NEXT_ROW); }
+              | { result.setSkipMode(MatchRecognize.SkipMode.TO_VARIABLE); }
+                [ LOOKAHEAD({ (getToken(1).kind == K_FIRST || getToken(1).kind == K_LAST)
+                        && !("PATTERN".equalsIgnoreCase(getToken(2).image) && getToken(3).kind == OPENING_BRACKET) })
+                  ( <K_FIRST> { result.setSkipMode(MatchRecognize.SkipMode.TO_FIRST); }
+                  | <K_LAST> { result.setSkipMode(MatchRecognize.SkipMode.TO_LAST); } ) ]
+                variable=RelObjectName() { result.setSkipVariable(variable); }
+            )
+        )
+    ]
+    ContextualKeyword("PATTERN") "(" pattern=RowPattern(0) ")" { result.setPattern(pattern); }
+    [ LOOKAHEAD({ isKeywordAhead("SUBSET") }) ContextualKeyword("SUBSET") subset=MatchRecognizeSubset()
+        { result.getSubsets().add(subset); }
+        ( LOOKAHEAD(2) "," subset=MatchRecognizeSubset() { result.getSubsets().add(subset); } )*
+    ]
+    ContextualKeyword("DEFINE") definition=MatchRecognizeDefinition() { result.getDefinitions().add(definition); }
+    ( LOOKAHEAD(2) "," definition=MatchRecognizeDefinition() { result.getDefinitions().add(definition); } )*
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) ContextualKeyword("OPTIONS") "("
+        { options = new MatchRecognize.Options(); }
+        [ LOOKAHEAD({ isKeywordAhead("use_longest_match") }) ContextualKeyword("use_longest_match") "="
+            ( value=<K_TRUE> | value=<K_FALSE> ) { options.setUseLongestMatch(value.kind == K_TRUE); }
+        ]
+        ")" { result.setOptions(options); }
+    ]
+    ")"
+    {
+        if (Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))) {
+            if (result.getOrderByElements().isEmpty() || result.getMeasures().isEmpty()) {
+                throw new ParseException("BigQuery MATCH_RECOGNIZE requires ORDER BY and MEASURES");
+            }
+            if (result.getRowsPerMatch() != null || result.getSkipVariable() != null || !result.getSubsets().isEmpty()) {
+                throw new ParseException("BigQuery does not support ROWS PER MATCH, SKIP TO a variable or SUBSET");
+            }
+        }
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+MatchRecognize.Subset MatchRecognizeSubset() #MatchRecognizeSubset:
+{
+    String name;
+    String variable;
+    List<String> variables = new ArrayList<String>();
+}
+{
+    name=RelObjectName() "=" "(" variable=RelObjectName() { variables.add(variable); }
+    ( "," variable=RelObjectName() { variables.add(variable); } )* ")"
+    {
+        MatchRecognize.Subset result = new MatchRecognize.Subset(name, variables);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+MatchRecognize.Definition MatchRecognizeDefinition() #MatchRecognizeDefinition:
+{
+    String name;
+    Expression expression;
+}
+{
+    name=RelObjectName() <K_AS> expression=Expression()
+    {
+        MatchRecognize.Definition result = new MatchRecognize.Definition(name, expression);
+        linkAST(result, jjtThis);
+        return result;
+    }
+}
+
+RowPattern RowPattern(int depth) #RowPattern:
+{
+    List<RowPattern> alternatives = new ArrayList<RowPattern>();
+    RowPattern pattern;
+    Token separator;
+}
+{
+    {
+        if (depth > getAsLong(Feature.allowedNestingDepth)) {
+            throw new ParseException("Row pattern exceeds the allowed nesting depth");
+        }
+    }
+    (
+        LOOKAHEAD({ Dialect.SNOWFLAKE.name().equals(getAsString(Feature.dialect)) })
+        pattern=SnowflakeRowPatternSequence(depth) { alternatives.add(pattern); }
+        |
+        pattern=RowPatternSequence(depth) { alternatives.add(pattern); }
+        ( ( separator=<OP_PIPE> | separator=<OP_CONCAT> )
+            { if (separator.kind == OP_CONCAT) { alternatives.add(new RowPattern.Empty()); } }
+            pattern=RowPatternSequence(depth) { alternatives.add(pattern); }
+        )*
+    )
+    {
+        RowPattern result = alternatives.size() == 1 ? alternatives.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.ALTERNATION, alternatives);
+        linkAST(result, jjtThis);
+        return result;
+    }
+}
+
+RowPattern SnowflakeRowPatternSequence(int depth) #SnowflakeRowPatternSequence:
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    ( LOOKAHEAD({ isRowPatternPrimaryAhead() }) pattern=SnowflakeRowPatternAlternative(depth) { patterns.add(pattern); } )*
+    {
+        RowPattern result = patterns.isEmpty() ? new RowPattern.Empty()
+            : patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+RowPattern SnowflakeRowPatternAlternative(int depth) #SnowflakeRowPatternAlternative:
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    pattern=RowPatternFactor(depth) { patterns.add(pattern); }
+    ( <OP_PIPE> pattern=RowPatternFactor(depth) { patterns.add(pattern); } )*
+    {
+        RowPattern result = patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.ALTERNATION, patterns);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
+RowPattern RowPatternSequence(int depth):
+{
+    List<RowPattern> patterns = new ArrayList<RowPattern>();
+    RowPattern pattern;
+}
+{
+    ( LOOKAHEAD({ isRowPatternPrimaryAhead() }) pattern=RowPatternFactor(depth) { patterns.add(pattern); } )*
+    {
+        if (patterns.isEmpty()) { return new RowPattern.Empty(); }
+        return patterns.size() == 1 ? patterns.get(0)
+            : new RowPattern.Operation(RowPattern.Operation.Type.SEQUENCE, patterns);
+    }
+}
+
+RowPattern RowPatternFactor(int depth) #RowPatternFactor:
+{
+    RowPattern pattern;
+    String name;
+    List<RowPattern> permutations = new ArrayList<RowPattern>();
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("PERMUTE") && getToken(2).kind == OPENING_BRACKET })
+            ContextualKeyword("PERMUTE") "("
+            pattern=RowPattern(depth + 1) { permutations.add(pattern); }
+            ( "," pattern=RowPattern(depth + 1) { permutations.add(pattern); } )* ")"
+            { pattern = new RowPattern.Permute(permutations); }
+        | "{" "-" pattern=RowPattern(depth + 1) "-" "}" { pattern = new RowPattern.Exclusion(pattern); }
+        | <OP_CARET> { pattern = new RowPattern.Anchor(RowPattern.Anchor.Type.START); }
+        | LOOKAHEAD({ "$".equals(getToken(1).image) }) <S_IDENTIFIER>
+            { pattern = new RowPattern.Anchor(RowPattern.Anchor.Type.END); }
+        | "(" pattern=RowPattern(depth + 1) ")" { pattern = new RowPattern.Group(pattern); }
+        | name=RelObjectName() { pattern = new RowPattern.Variable(name); }
+    )
+    {
+        if (Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))
+                && (pattern instanceof RowPattern.Permute || pattern instanceof RowPattern.Exclusion)) {
+            throw new ParseException("BigQuery does not support PERMUTE or row pattern exclusion");
+        }
+    }
+    [ LOOKAHEAD({ !(pattern instanceof RowPattern.Anchor)
+            && ("?".equals(getToken(1).image) || "*".equals(getToken(1).image)
+                || "+".equals(getToken(1).image) || getToken(1).kind == OPENING_CURLY_BRACKET) })
+        pattern=RowPatternQuantifier(pattern)
+    ]
+    { linkAST(pattern, jjtThis); return pattern; }
+}
+
+RowPattern RowPatternQuantifier(RowPattern pattern) #RowPatternQuantifier:
+{
+    RowPattern.Quantified result;
+    Expression lower = null;
+    Expression upper = null;
+    boolean range = false;
+}
+{
+    (
+        "*" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.ZERO_OR_MORE); }
+        | "+" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.ONE_OR_MORE); }
+        | "?" { result = new RowPattern.Quantified(pattern, RowPattern.Quantified.Type.OPTIONAL); }
+        | "{" [ LOOKAHEAD({ !",".equals(getToken(1).image) }) lower=RowPatternBound() ]
+            [ "," { range = true; } [ LOOKAHEAD({ getToken(1).kind != CLOSING_CURLY_BRACKET }) upper=RowPatternBound() ] ] "}"
+            {
+                if (lower == null && upper == null) { throw new ParseException("Row pattern quantifier requires a bound"); }
+                result = new RowPattern.Quantified(pattern, range ? RowPattern.Quantified.Type.RANGE : RowPattern.Quantified.Type.EXACT)
+                        .setLowerBound(lower).setUpperBound(upper);
+            }
+    )
+    [ LOOKAHEAD({ (result.getType() != RowPattern.Quantified.Type.EXACT
+            || !Dialect.BIGQUERY.name().equals(getAsString(Feature.dialect))) && "?".equals(getToken(1).image) }) "?" { result.setReluctant(true); } ]
+    { linkAST(result, jjtThis); return result; }
+}
+
+Expression RowPatternBound():
+{
+    Token value;
+    Expression result;
+}
+{
+    ( value=<S_LONG> { result = new LongValue(value.image); }
+      | "?" { result = new JdbcParameter(++jdbcParameterIndex, false, "?"); }
+      | result=UserVariable()
+    )
+    { return result; }
 }
 
 List<Join> JoinsList():
@@ -9995,7 +10504,7 @@ Expression ArrayExpression(Expression obj): {
     Expression stopExpr = null;
 } {
     "["
-        [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+        [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
         [
           (":" { startExpr=idxExpr; idxExpr=null; })
           [stopExpr = SimpleExpression()]
@@ -10004,7 +10513,7 @@ Expression ArrayExpression(Expression obj): {
     { expr =  new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
     (
         LOOKAHEAD(2) "["
-            [LOOKAHEAD(3) idxExpr = SimpleExpression()]
+            [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
             [
               (":" { startExpr=idxExpr; idxExpr=null; })
               [stopExpr = SimpleExpression()]
@@ -10013,6 +10522,29 @@ Expression ArrayExpression(Expression obj): {
         { expr =  new ArrayExpression(expr, idxExpr, startExpr, stopExpr); }
     )*
     { return expr; }
+}
+
+/**
+ * Array subscript index.  BigQuery addresses array elements positionally with
+ * OFFSET(n), ORDINAL(n), SAFE_OFFSET(n) and SAFE_ORDINAL(n).  Only OFFSET needs
+ * an explicit rule here, the others are plain identifiers and parse as functions.
+ */
+Expression ArrayIndexExpression() :
+{
+    Token token;
+    Expression expr;
+}
+{
+    (
+        LOOKAHEAD(2) token = <K_OFFSET> "(" expr = SimpleExpression() ")"
+        {
+            return new Function()
+                    .withName(token.image)
+                    .withParameters(new ExpressionList<Expression>(expr));
+        }
+        |
+        expr = SimpleExpression() { return expr; }
+    )
 }
 
 Expression NavigationStep(Expression base):
@@ -10090,6 +10622,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD(3, { !interrupted}) retval = FullTextSearch()
 
         | LOOKAHEAD(2, {!interrupted}) retval= CastExpression()
+
+        | LOOKAHEAD({ !interrupted && (isKeywordAhead("RUNNING") || getToken(1).kind == K_FINAL)
+                && getToken(3).kind == OPENING_BRACKET }) retval=RowPatternFunction()
 
         | LOOKAHEAD({ !interrupted && isFunctionAhead() })
                   retval = Function() [ LOOKAHEAD(2) retval = AnalyticExpression( (Function) retval ) ]
@@ -11952,6 +12487,23 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     }
 }
 
+RowPatternFunction RowPatternFunction() #RowPatternFunction:
+{
+    RowPatternFunction.EvaluationMode mode;
+    Function function;
+}
+{
+    ( LOOKAHEAD({ isKeywordAhead("RUNNING") }) ContextualKeyword("RUNNING")
+        { mode = RowPatternFunction.EvaluationMode.RUNNING; }
+      | <K_FINAL> { mode = RowPatternFunction.EvaluationMode.FINAL; }
+    )
+    function=Function()
+    {
+        RowPatternFunction result = new RowPatternFunction(mode, function);
+        linkAST(result, jjtThis); return result;
+    }
+}
+
 Function Function() #Function:
 {
     Function function;
@@ -12025,6 +12577,7 @@ Function InternalFunction(boolean escaped):
     Column attributeColumn = null;
     Token attributeToken = null;
     Limit limit;
+    List<OrderByElement> orderByList = null;
     List<Function.KeywordArgument> keywordArgs = null;
 }
 {
@@ -12072,6 +12625,12 @@ Function InternalFunction(boolean escaped):
         (
              <K_RESPECT> <K_NULLS> {  retval.setNullHandling(Function.NullHandling.RESPECT_NULLS); }
         )
+    ]
+
+    // BigQuery orders aggregate arguments after the null handling:
+    // ARRAY_AGG(expr [IGNORE NULLS] [ORDER BY key] [LIMIT n])
+    [
+        LOOKAHEAD(2) orderByList = OrderByElements() { retval.setOrderByElements(orderByList); }
     ]
 
     [
@@ -12157,7 +12716,8 @@ ExpressionList FunctionArgumentList(Function retval):
     { if ("XMLFOREST".equalsIgnoreCase(retval.getName())) { return XmlForestArguments(); } }
     [ LOOKAHEAD(2) extraKeywordToken = <K_TABLE> { retval.setExtraKeyword(extraKeywordToken.image); } ]
     expressionList=ExpressionList()
-    [ orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
+    // explicit lookahead: InternalFunction accepts ORDER BY after IGNORE NULLS too
+    [ LOOKAHEAD(2) orderByList = OrderByElements() { retval.setOrderByElements(orderByList); } ]
 
     // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/LISTAGG.html
     [
@@ -13189,11 +13749,43 @@ ColumnOption ColumnDefinitionOption(): {
     IdentityDefinition identity;
     NamedConstraint constraint;
     Expression defaultExpression;
+    GeneratedColumnDefinition generated;
+    ObjectNames collationNames;
+    String collation;
 } {
     (
         LOOKAHEAD({ isKeywordAhead("GENERATED")
                 && (getToken(4).kind == K_IDENTITY || getToken(5).kind == K_IDENTITY) })
         identity=IdentityDefinition() { option = ColumnOption.identity(identity); }
+        |
+        LOOKAHEAD({ (isKeywordAhead("GENERATED") && getToken(2).kind == K_ALWAYS
+                && getToken(3).kind == K_AS && "(".equals(getToken(4).image))
+                || (getToken(1).kind == K_AS && "(".equals(getToken(2).image)) })
+        generated=GeneratedColumnDefinition() { option = ColumnOption.generated(generated); }
+        |
+        LOOKAHEAD(<K_NOT> <K_NULL>) <K_NOT> <K_NULL> { option = ColumnOption.nullability(false); }
+        |
+        LOOKAHEAD(<K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
+        |
+        LOOKAHEAD(<K_VISIBLE>) <K_VISIBLE> { option = ColumnOption.visibility(true); }
+        |
+        LOOKAHEAD(<K_INVISIBLE>) <K_INVISIBLE> { option = ColumnOption.visibility(false); }
+        |
+        LOOKAHEAD(<K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
+        |
+        LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
+        ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
+          | collationNames=RelObjectNames() { collation = String.join(".", collationNames.getNames()); } )
+        { option = ColumnOption.collate(collation); }
+        |
+        LOOKAHEAD(<K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
+        { option = ColumnOption.comment(new StringValue(tk.image)); }
+        |
+        LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
+        { option = ColumnOption.onUpdate(defaultExpression); }
+        |
+        LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
+        { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
         |
         LOOKAHEAD(<K_UNIQUE>) constraint=ColumnUniqueConstraint()
         { option = ColumnOption.constraint(constraint); }
@@ -13221,6 +13813,28 @@ ColumnOption ColumnDefinitionOption(): {
         { option = ColumnOption.raw(parameter); }
     )
     { return option; }
+}
+
+GeneratedColumnDefinition GeneratedColumnDefinition():
+{
+    Expression expression;
+    boolean generatedAlways = false;
+    GeneratedColumnDefinition.Storage storage = null;
+    GeneratedColumnDefinition result;
+}
+{
+    [ LOOKAHEAD({ isKeywordAhead("GENERATED") }) ContextualKeyword("GENERATED") <K_ALWAYS>
+      { generatedAlways = true; } ]
+    <K_AS> "(" expression=Expression() ")"
+    [ LOOKAHEAD({ getToken(1).kind == K_STORED || isKeywordAhead("VIRTUAL") })
+      ( <K_STORED> { storage = GeneratedColumnDefinition.Storage.STORED; }
+        | ContextualKeyword("VIRTUAL") { storage = GeneratedColumnDefinition.Storage.VIRTUAL; } ) ]
+    {
+        result = new GeneratedColumnDefinition(expression);
+        result.setGeneratedAlways(generatedAlways);
+        result.setStorage(storage);
+        return result;
+    }
 }
 
 NamedConstraint ColumnUniqueConstraint():
@@ -13963,6 +14577,12 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
+    [
+        // BigQuery: CREATE [SNAPSHOT] TABLE target CLONE source [FOR SYSTEM_TIME AS OF ...]
+        LOOKAHEAD(2) <K_CLONE> likeTable=Table()
+        [ LOOKAHEAD(2) tableColumn=TimeTravelAfterAlias() { likeTable.setTimeTravel(tableColumn); } ]
+        { createTable.setCloneTable(likeTable); likeTable = null; }
+    ]
     [ <K_OF> ofType=ColDataType() { createTable.setOfType(ofType); } ]
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
@@ -14971,11 +15591,32 @@ List<String> FuncArgsList():
     }
 }
 
+/** DROP names are lexer-separated identifiers, not strings to split again on dots. */
+Table DropObjectName() #TableName:
+{
+    ObjectNames names;
+    Token literal;
+    Table table;
+    String timeTravel = null;
+}
+{
+    (
+        names=RelObjectNames() [ LOOKAHEAD(2) timeTravel=TimeTravelBeforeAlias() ]
+        { table = names.getNames().size() == 1 ? new Table(names.getNames().get(0), false)
+                : new Table(names.getNames()); table.setTimeTravel(timeTravel); }
+        |
+        literal=<S_CHAR_LITERAL> { table = new Table(literal.image, false); }
+    )
+    { linkAST(table, jjtThis); return table; }
+}
+
 Drop Drop():
 {
     Drop drop = new Drop();
     Token tk = null;
     Table name;
+    Table indexTable = null;
+    int indexTablePosition = 0;
     List<String> dropArgs = new ArrayList<String>();
     List<String> funcArgs = null;
     List<String> indexOption;
@@ -15011,8 +15652,8 @@ Drop Drop():
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
-    name = Table() { drop.setName(name); }
-    ( "," name = Table() { drop.addNames(name); } )*
+    name = DropObjectName() { drop.setName(name); }
+    ( "," name = DropObjectName() { drop.addNames(name); } )*
     [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
     (
         LOOKAHEAD({ getToken(1).kind == K_ALGORITHM
@@ -15027,7 +15668,15 @@ Drop Drop():
         ) { dropArgs.add(tk.image); }
         |
         (
-            <K_ON> name = Table() { dropArgs.add("ON"); dropArgs.add(name.toString()); }
+            <K_ON> name = DropObjectName() {
+                if (drop.getObjectType() == Drop.ObjectType.INDEX) {
+                    requireNoDropIndexOwner(indexTable);
+                    indexTable = name;
+                    indexTablePosition = dropArgs.size();
+                } else {
+                    dropArgs.add("ON"); dropArgs.add(name.toString());
+                }
+            }
         )
         |
         // The lock_option of DROP INDEX. LOCK also starts a LOCK TABLE statement, so it is only
@@ -15038,6 +15687,9 @@ Drop Drop():
     {
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
+        }
+        if (indexTable != null) {
+            drop.setTable(indexTable, indexTablePosition);
         }
         if (drop.getType().equals("FUNCTION")) {
             drop.getTypeToParameters().put("FUNCTION", funcArgs);
@@ -15398,6 +16050,7 @@ TablePartitioning CreateTablePartitioning():
 {
     TablePartitioning partitioning = null;
     TablePartitioning subPartitioning = null;
+    Expression expression = null;
     ExpressionList<Expression> expressionList = null;
     ExpressionList<Column> columns = null;
     List<PartitionDefinition> partitionDefinitions = null;
@@ -15408,9 +16061,11 @@ TablePartitioning CreateTablePartitioning():
 {
     <K_PARTITION> <K_BY>
     (
-        partitioning=HashOrKeyPartitioning()
+        // explicit lookaheads: the method keywords win over the BigQuery
+        // bare-expression alternative below, which they share a prefix with
+        LOOKAHEAD(2) partitioning=HashOrKeyPartitioning()
         |
-        <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
+        LOOKAHEAD(2) <K_RANGE> { partitioning = new TablePartitioning(TablePartitioning.Type.RANGE); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -15427,7 +16082,7 @@ TablePartitioning CreateTablePartitioning():
             }
         )
         |
-        <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
+        LOOKAHEAD(2) <K_LIST> { partitioning = new TablePartitioning(TablePartitioning.Type.LIST); }
         (
             "(" expressionList=SimpleExpressionList() ")" {
                 if (expressionList.size() == 1) {
@@ -15443,6 +16098,17 @@ TablePartitioning CreateTablePartitioning():
                 partitioning.setColumns(columns);
             }
         )
+        |
+        // BigQuery partitions by a bare expression: PARTITION BY d, PARTITION BY DATE(ts),
+        // PARTITION BY RANGE_BUCKET(id, GENERATE_ARRAY(0, 100, 10))
+        LOOKAHEAD({ getToken(1).kind != K_HASH && getToken(1).kind != K_KEY
+                && getToken(1).kind != K_LINEAR && getToken(1).kind != K_RANGE
+                && getToken(1).kind != K_LIST })
+        expression=SimpleExpression()
+        {
+            partitioning = new TablePartitioning(TablePartitioning.Type.EXPRESSION);
+            partitioning.setExpression(expression);
+        }
     )
     [ LOOKAHEAD({ getToken(1).kind == K_PARTITIONS })
         <K_PARTITIONS> tk=<S_LONG> { partitioning.setPartitions(Long.valueOf(tk.image)); } ]
@@ -16890,6 +17556,7 @@ Commit Commit():
 
 Comment Comment():
 {
+    CommentTarget target;
     Comment result = new Comment();
     Table table;
     Table view;
@@ -16910,6 +17577,8 @@ Comment Comment():
         (
             <K_VIEW> view = Table() { result.setView(view); }
         )
+        |
+        target=CommentTarget() { result.setTarget(target); }
     )
     <K_IS>
     (
@@ -16919,6 +17588,47 @@ Comment Comment():
     {
         return result;
     }
+}
+
+/** Catalog names are already tokenized into parts; quoted dots are part of one identifier. */
+Table CommentObjectName():
+{ ObjectNames names; }
+{
+    names=RelObjectNames()
+    { return names.getNames().size() == 1 ? new Table(names.getNames().get(0), false)
+            : new Table(names.getNames()); }
+}
+
+CommentTarget CommentTarget():
+{
+    CommentTarget result = new CommentTarget();
+    Table name;
+    String constraintName;
+    RoutineReference routine;
+}
+{
+    (
+        <K_FUNCTION> routine=RoutineReference(false)
+        { result.setKind(CommentTarget.Kind.FUNCTION); result.setRoutine(routine); }
+        |
+        <K_CONSTRAINT> constraintName=RelObjectName()
+        { result.setKind(CommentTarget.Kind.CONSTRAINT); result.setName(new Table(constraintName, false)); }
+        <K_ON>
+        [ LOOKAHEAD({ getToken(1).kind == K_DOMAIN && !".".equals(getToken(2).image)
+                && getToken(2).kind != K_IS }) <K_DOMAIN> { result.setOnDomain(true); } ]
+        name=CommentObjectName() { result.setRelation(name); }
+        |
+        (
+            <K_INDEX> { result.setKind(CommentTarget.Kind.INDEX); }
+            | <K_SCHEMA> { result.setKind(CommentTarget.Kind.SCHEMA); }
+            | <K_SEQUENCE> { result.setKind(CommentTarget.Kind.SEQUENCE); }
+            | <K_MATERIALIZED> <K_VIEW> { result.setKind(CommentTarget.Kind.MATERIALIZED_VIEW); }
+            | <K_DOMAIN> { result.setKind(CommentTarget.Kind.DOMAIN); }
+            | <K_TYPE> { result.setKind(CommentTarget.Kind.TYPE); }
+        )
+        name=CommentObjectName() { result.setName(name); }
+    )
+    { return result; }
 }
 
 /** Consumes a keyword that remains an ordinary identifier outside this grammar context. */

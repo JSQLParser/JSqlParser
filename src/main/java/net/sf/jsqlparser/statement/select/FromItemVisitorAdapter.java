@@ -86,18 +86,33 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
     }
 
     @Override
+    public <S> T visit(MatchRecognize matchRecognize, S context) {
+        matchRecognize.getInput().accept(this, context);
+        matchRecognize
+                .forEachExpression(expression -> expression.accept(expressionVisitor, context));
+        PivotVisitorAdapter<T> pivots = new PivotVisitorAdapter<>(expressionVisitor);
+        if (matchRecognize.getPivot() != null) {
+            matchRecognize.getPivot().accept(pivots, context);
+        }
+        if (matchRecognize.getUnPivot() != null) {
+            matchRecognize.getUnPivot().accept(pivots, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> T visit(Table table, S context) {
         return null;
     }
 
     @Override
     public <S> T visit(ParenthesedSelect select, S context) {
-        return select.getPlainSelect().accept(selectVisitor, context);
+        return select.getSelect().accept(selectVisitor, context);
     }
 
     @Override
     public <S> T visit(LateralSubSelect lateralSubSelect, S context) {
-        return lateralSubSelect.getPlainSelect().accept(selectVisitor, context);
+        return lateralSubSelect.getSelect().accept(selectVisitor, context);
     }
 
     @Override
@@ -108,7 +123,9 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(ParenthesedFromItem fromItem, S context) {
-        return fromItem.getFromItem().accept(this, context);
+        T result = fromItem.getFromItem().accept(this, context);
+        visitJoins(fromItem.getJoins(), context);
+        return result;
     }
 
     @Override

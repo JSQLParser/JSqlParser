@@ -24,6 +24,8 @@ public class TableFunction extends Function implements FromItem {
     private Function function;
     private ParenthesedExpressionList<Function> rowsFromFunctions;
     private String withClause = null;
+    private boolean withOffset = false;
+    private Alias offsetAlias = null;
 
     public TableFunction(Function function) {
         this.function = function;
@@ -121,6 +123,37 @@ public class TableFunction extends Function implements FromItem {
         return this;
     }
 
+    /**
+     * BigQuery's {@code UNNEST(array) [AS alias] WITH OFFSET [AS offsetAlias]}, where the
+     * {@code WITH OFFSET} clause follows the table alias and carries an alias of its own.
+     */
+    public boolean isWithOffset() {
+        return withOffset;
+    }
+
+    public void setWithOffset(boolean withOffset) {
+        this.withOffset = withOffset;
+    }
+
+    public TableFunction withWithOffset(boolean withOffset) {
+        setWithOffset(withOffset);
+        return this;
+    }
+
+    public Alias getOffsetAlias() {
+        return offsetAlias;
+    }
+
+    public void setOffsetAlias(Alias offsetAlias) {
+        this.offsetAlias = offsetAlias;
+        this.withOffset = true;
+    }
+
+    public TableFunction withOffsetAlias(Alias offsetAlias) {
+        setOffsetAlias(offsetAlias);
+        return this;
+    }
+
     public String getWithClause() {
         return withClause;
     }
@@ -210,6 +243,13 @@ public class TableFunction extends Function implements FromItem {
 
         if (alias != null) {
             builder.append(alias);
+        }
+
+        if (withOffset) {
+            builder.append(" WITH OFFSET");
+            if (offsetAlias != null) {
+                builder.append(offsetAlias);
+            }
         }
         return builder;
     }

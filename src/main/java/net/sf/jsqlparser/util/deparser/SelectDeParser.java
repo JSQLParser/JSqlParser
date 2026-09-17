@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+
 import static java.util.stream.Collectors.joining;
 
 import java.lang.reflect.InvocationTargetException;
@@ -614,6 +616,15 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
         return builder;
     }
 
+
+    @Override
+    public <S> StringBuilder visit(MatchRecognize matchRecognize, S context) {
+        OrderByDeParser ordering = new OrderByDeParser(expressionVisitor, builder);
+        return matchRecognize.appendTo(builder, input -> input.accept(this, context),
+                expression -> expression.accept(expressionVisitor, context),
+                order -> ordering.deParseElement(order, context),
+                pivot -> pivot.accept(this, context), unpivot -> unpivot.accept(this, context));
+    }
 
     @Override
     public <S> StringBuilder visit(Table table, S context) {

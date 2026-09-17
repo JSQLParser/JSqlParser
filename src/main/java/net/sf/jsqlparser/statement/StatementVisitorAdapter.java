@@ -91,6 +91,8 @@ import java.util.List;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
@@ -186,7 +188,8 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Comment comment, S context) {
-
+        comment.visitRelations(table -> table.accept(fromItemVisitor, context));
+        expressionVisitor.visitExpression(comment.getComment(), context);
         return null;
     }
 
@@ -332,10 +335,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Drop drop, S context) {
-        if (drop.getType().equalsIgnoreCase("table")) {
-            drop.getNames().forEach(name -> fromItemVisitor.visitFromItem(name, context));
-        }
-        // @todo: handle schemas
+        drop.visitTables(table -> fromItemVisitor.visitFromItem(table, context));
 
         return null;
     }
@@ -622,11 +622,13 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(PragmaStatement pragmaStatement, S context) {
+    public <S> T visit(AssertStatement assertStatement, S context) {
         return null;
     }
 
     @Override
     public <S> T visit(ExtensionStatement extensionStatement, S context) {
+    public <S> T visit(ExportDataStatement exportDataStatement, S context) {
         return null;
     }
 
@@ -672,6 +674,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateExtensionRepository createExtensionRepository, S context) {
+    public <S> T visit(LoadDataStatement loadDataStatement, S context) {
         return null;
     }
 

@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.select.MatchRecognize;
+import net.sf.jsqlparser.expression.RowPatternFunction;
+
 import net.sf.jsqlparser.expression.AliasedExpression;
 
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -221,6 +224,9 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 
 /**
@@ -237,6 +243,7 @@ public class TablesNamesFinder<Void>
 
     private Set<String> tables;
     private boolean allowColumnProcessing = false;
+    private Set<String> rowPatternVariables = java.util.Collections.emptySet();
 
     private List<String> otherItemNames;
 
@@ -403,26 +410,24 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(PlainSelect plainSelect, S context) {
-        List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
-        if (withItemsList != null && !withItemsList.isEmpty()) {
-            for (WithItem<?> withItem : withItemsList) {
-                withItem.accept((SelectVisitor<?>) this, context);
-            }
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = java.util.Collections.emptySet();
+            return visitPlainSelectBody(plainSelect, context);
+        } finally {
+            rowPatternVariables = previous;
         }
+    }
+
+    private <S> Void visitPlainSelectBody(PlainSelect plainSelect, S context) {
+        visitWithItems(plainSelect.getWithItemsList(), context);
         if (plainSelect.getDistinct() != null) {
             visitSelectItems(plainSelect.getDistinct().getOnSelectItems(), context);
         }
         visitTables(plainSelect.getIntoTables(), context);
 
-        if (plainSelect.getSelectItems() != null) {
-            for (SelectItem<?> item : plainSelect.getSelectItems()) {
-                item.accept(this, context);
-            }
-        }
-
-        if (plainSelect.getFromItem() != null) {
-            plainSelect.getFromItem().accept(this, context);
-        }
+        visitSelectItems(plainSelect.getSelectItems(), context);
+        visitFromItem(plainSelect.getFromItem(), context);
 
         if (plainSelect.getLateralViews() != null) {
             for (LateralView lateralView : plainSelect.getLateralViews()) {
@@ -431,27 +436,17 @@ public class TablesNamesFinder<Void>
         }
 
         visitJoins(plainSelect.getJoins(), context);
-        if (plainSelect.getPreWhere() != null) {
-            plainSelect.getPreWhere().accept(this, context);
-        }
-        if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(this, context);
-        }
+        visitExpression(plainSelect.getPreWhere(), context);
+        visitExpression(plainSelect.getWhere(), context);
 
         visitPreferringClause(plainSelect.getPreferringClause(), context);
         visit(plainSelect.getGroupBy(), context);
 
-        if (plainSelect.getHaving() != null) {
-            plainSelect.getHaving().accept(this, context);
-        }
+        visitExpression(plainSelect.getHaving(), context);
 
-        if (plainSelect.getQualify() != null) {
-            plainSelect.getQualify().accept(this, context);
-        }
+        visitExpression(plainSelect.getQualify(), context);
 
-        if (plainSelect.getOracleHierarchical() != null) {
-            plainSelect.getOracleHierarchical().accept(this, context);
-        }
+        visitExpression(plainSelect.getOracleHierarchical(), context);
 
         if (plainSelect.getWindowDefinitions() != null) {
             for (WindowDefinition windowDefinition : plainSelect.getWindowDefinitions()) {
@@ -470,12 +465,7 @@ public class TablesNamesFinder<Void>
         visitOrderBy(plainSelect.getOrderByElements(), context);
         visitLimit(plainSelect.getLimit(), context);
         visitLimit(plainSelect.getLimitBy(), context);
-        if (plainSelect.getOffset() != null) {
-            plainSelect.getOffset().getOffset().accept(this, context);
-        }
-        if (plainSelect.getFetch() != null) {
-            plainSelect.getFetch().getExpression().accept(this, context);
-        }
+        visitSelectPagination(plainSelect, context);
         visitUpdateSets(plainSelect.getSettings(), context);
         visitFromItem(plainSelect.getIntoTempTable(), context);
         return null;
@@ -491,7 +481,7 @@ public class TablesNamesFinder<Void>
         visitOrderBy(pivotQuery.getOrderByElements(), context);
         visitLimit(pivotQuery.getLimit(), context);
 
-        visitPivotPagination(pivotQuery, context);
+        visitSelectPagination(pivotQuery, context);
         return null;
     }
 
@@ -517,12 +507,12 @@ public class TablesNamesFinder<Void>
         }
     }
 
-    private <S> void visitPivotPagination(PivotQuery pivotQuery, S context) {
-        if (pivotQuery.getOffset() != null) {
-            pivotQuery.getOffset().getOffset().accept(this, context);
+    private <S> void visitSelectPagination(Select select, S context) {
+        if (select.getOffset() != null) {
+            select.getOffset().getOffset().accept(this, context);
         }
-        if (pivotQuery.getFetch() != null && pivotQuery.getFetch().getExpression() != null) {
-            pivotQuery.getFetch().getExpression().accept(this, context);
+        if (select.getFetch() != null && select.getFetch().getExpression() != null) {
+            select.getFetch().getExpression().accept(this, context);
         }
     }
 
@@ -544,6 +534,33 @@ public class TablesNamesFinder<Void>
      */
     protected String extractTableName(Table table) {
         return table.getFullyQualifiedName();
+    }
+
+    @Override
+    public <S> Void visit(RowPatternFunction function, S context) {
+        return function.getFunction().accept(this, context);
+    }
+
+    @Override
+    public <S> Void visit(MatchRecognize matchRecognize, S context) {
+        matchRecognize.getInput().accept(this, context);
+        if (matchRecognize.getPivot() != null) {
+            matchRecognize.getPivot().accept(this, context);
+        }
+        if (matchRecognize.getUnPivot() != null) {
+            matchRecognize.getUnPivot().accept(this, context);
+        }
+        matchRecognize.getPartitionBy().forEach(expression -> expression.accept(this, context));
+        matchRecognize.getOrderByElements()
+                .forEach(order -> order.getExpression().accept(this, context));
+        Set<String> previous = rowPatternVariables;
+        try {
+            rowPatternVariables = matchRecognize.getPatternVariableNames();
+            matchRecognize.forEachPatternExpression(expression -> expression.accept(this, context));
+        } finally {
+            rowPatternVariables = previous;
+        }
+        return null;
     }
 
     @Override
@@ -598,7 +615,9 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(Column tableColumn, S context) {
         if (allowColumnProcessing && tableColumn.getTable() != null
-                && tableColumn.getTable().getName() != null) {
+                && tableColumn.getTable().getName() != null
+                && !rowPatternVariables.contains(
+                        MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
             visit(tableColumn.getTable(), context);
         }
         return null;
@@ -1247,6 +1266,7 @@ public class TablesNamesFinder<Void>
         otherItemNames = new ArrayList<String>();
         tables = new HashSet<>();
         this.allowColumnProcessing = allowColumnProcessing;
+        this.rowPatternVariables = java.util.Collections.emptySet();
     }
 
     @Override
@@ -1562,7 +1582,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Drop drop, S context) {
-        drop.getNames().forEach(name -> visit(name, context));
+        drop.visitTables(table -> visit(table, context));
         return null;
     }
 
@@ -2032,15 +2052,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Comment comment, S context) {
-        if (comment.getTable() != null) {
-            visit(comment.getTable(), context);
-        }
-        if (comment.getColumn() != null) {
-            Table table = comment.getColumn().getTable();
-            if (table != null) {
-                visit(table, context);
-            }
-        }
+        comment.visitRelations(table -> visit(table, context));
         return null;
     }
 
@@ -2251,6 +2263,16 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ColumnsExpression columnsExpression, S context) {
+        for (Expression expression : columnsExpression.getAllExpressions()) {
+            if (expression != null) {
+                expression.accept(this, context);
+            }
+        }
         return null;
     }
 
@@ -2497,6 +2519,8 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
         // no tables involved in this statement
+    public <S> Void visit(AssertStatement assertStatement, S context) {
+        assertStatement.getExpression().accept(this, context);
         return null;
     }
 
@@ -2508,6 +2532,13 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
         // no tables involved in this statement
+    public void visit(AssertStatement assertStatement) {
+        StatementVisitor.super.visit(assertStatement);
+    }
+
+    @Override
+    public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
+        exportDataStatement.getSelect().accept((SelectVisitor<?>) this, context);
         return null;
     }
 
@@ -2519,6 +2550,13 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(AttachStatement attachStatement, S context) {
         // no tables involved in this statement
+    public void visit(ExportDataStatement exportDataStatement) {
+        StatementVisitor.super.visit(exportDataStatement);
+    }
+
+    @Override
+    public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
+        loadDataStatement.getTable().accept(this, context);
         return null;
     }
 
@@ -2619,6 +2657,8 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateExtensionRepository createExtensionRepository) {
         StatementVisitor.super.visit(createExtensionRepository);
+    public void visit(LoadDataStatement loadDataStatement) {
+        StatementVisitor.super.visit(loadDataStatement);
     }
 
     @Override

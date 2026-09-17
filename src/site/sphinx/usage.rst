@@ -231,6 +231,27 @@ The fastest way to learn the object model is to look at it. Paste your SQL into 
 Read that as a map: each line is a getter away. ``select.getSelectItems()``, ``select.getFromItem()``, ``select.getWhere()``. Once the tree gets deeper than a couple of levels, stop casting by hand and use :ref:`Use the Visitor Patterns`.
 
 
+DROP INDEX owners
+-----------------
+
+``DROP INDEX ix ON app.t`` exposes ``app.t`` through ``Drop.getTable()``;
+``getName()`` continues to identify the index. The owner is populated for the
+single-index ON form used by MySQL and SQL Server. A DROP INDEX without ON,
+as in PostgreSQL, has a null owner: resolving the index's table requires a catalog.
+SQL Server's multi-owner list and WITH options are outside this extension.
+
+``getParameters()`` includes ON and the rendered table as a legacy token snapshot
+when a structured owner exists. Mutate ``getTable()`` or use ``setTable()`` to
+update the owner; ``addParameters()`` appends options without losing it.
+``setTable(null)`` removes ON, while ``setParameters()`` replaces the entire
+parameter clause with raw tokens and clears the structured owner. Raw parameter
+setters do not parse SQL or infer a table.
+
+Table discovery and statement visitors traverse DROP TABLE/VIEW targets and
+explicit index owners, without reporting catalog-only object names as tables.
+The statement deparser delegates real tables to its configured select deparser.
+MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
@@ -272,6 +293,37 @@ Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, 
 
 Identity alterations are available as ``ColumnDataType.getIdentityAlterations()``. Sequence ownership is shared by ``CreateSequence`` and ``AlterSequence`` through ``Sequence.getOwnership()``: ``null`` means omitted, ``isNone()`` means explicit ``OWNED BY NONE``, and ``getColumn()`` identifies an owner. ``TablesNamesFinder`` includes ``LIKE`` sources and sequence owners without treating sequence or type names as tables. See `ALTER TABLE <https://www.postgresql.org/docs/18/sql-altertable.html>`_ and `ALTER SEQUENCE <https://www.postgresql.org/docs/18/sql-altersequence.html>`_.
 
+
+Structured column attributes
+============================
+
+``ColumnDefinition.getColumnOptions()`` exposes column nullability, ``COLLATE``,
+``COMMENT``, ``ON UPDATE``, ``AUTO_INCREMENT``, visibility, inline ``PRIMARY KEY``
+and parenthesized generated expressions alongside existing defaults, references
+and identity declarations. CREATE and ALTER column definitions use the same model.
+
+``ColumnOption.Kind`` selects the relevant accessor: ``getNullable()``,
+``getCollation()``, ``getComment()``, ``getOnUpdateExpression()``,
+``getVisible()``, ``getConstraint()`` or ``getGeneratedDefinition()``.
+The AUTO_INCREMENT kind has no additional payload. A missing option does not
+imply a server default. Option order and unknown raw extensions are preserved.
+
+``GeneratedColumnDefinition`` contains an ``Expression``, an explicit
+``GENERATED ALWAYS`` flag, and nullable ``Storage`` (STORED/VIRTUAL). Identity
+columns continue to use ``IdentityDefinition``. Visitors, validators and custom
+expression deparsers traverse generation and ON UPDATE expressions and comment
+literals. This is syntax modeling; server restrictions on permissible generation
+expressions are not evaluated.
+
+Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
+COLLATE option. Consumers can map both directly without reconstructing tokens.
+StringValue comment bodies retain their SQL escape representation.
+
+The legacy ``getColumnSpecs()`` returns a token snapshot when options are
+structured; expression fragments may occupy one token and structured keywords
+use canonical capitalization. Mutate the option objects to change the AST.
+``addColumnSpecs`` preserves existing options; ``setColumnSpecs`` explicitly
+replaces them with raw specifications.
 
 Inspect logical replication statements
 ======================================
@@ -856,6 +908,69 @@ Informix's constraint form requires an explicit dialect selection:
                     + "REFERENCES parent(id) CONSTRAINT fk_child",
             parser -> parser.withDialect(Dialect.INFORMIX));
 
+Row pattern matching (MATCH_RECOGNIZE)
+--------------------------------------
+
+``MatchRecognize`` is a ``FromItem`` wrapping the input relation. Its input
+alias and output alias are independent. ``getMeasures()`` and
+``getDefinitions()`` expose ordinary SQL expressions; ``getPattern()`` exposes
+an editable ``RowPattern`` tree with variables, groups, ordered alternatives,
+sequences, anchors and quantifiers. Oracle and Snowflake additionally support
+``PERMUTE`` and exclusion nodes. Permutations remain compact in the AST.
+
+.. code-block:: java
+
+    PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+        "SELECT * FROM events MATCH_RECOGNIZE ("
+            + "ORDER BY seq MEASURES SUM(A.price) AS total "
+            + "PATTERN (A+) DEFINE A AS price > 0 "
+            + "OPTIONS (use_longest_match = TRUE))",
+        parser -> parser.withDialect(Dialect.BIGQUERY));
+    MatchRecognize match = (MatchRecognize) select.getFromItem();
+    RowPattern.Quantified repetition = (RowPattern.Quantified) match.getPattern();
+    repetition.setReluctant(true);
+    System.out.println(select); // PATTERN (A+?)
+
+``FromItemVisitorAdapter`` traverses the input and clause expressions.
+``RowPatternVisitorAdapter`` traverses pattern nodes and optionally visits
+expressions in quantifier bounds. ``RowPatternFunction`` represents an explicit
+``RUNNING`` or ``FINAL`` prefix while exposing the underlying ``Function`` to
+existing expression visitors. Both ``toString()`` and the deparsers render the
+current AST, including edited nested ``STRUCT`` arguments.
+
+Select the source dialect explicitly:
+
+* ``BIGQUERY`` requires ``ORDER BY``, ``MEASURES``, ``PATTERN`` and ``DEFINE``.
+  It supports empty alternatives, literal or query-parameter bounds, adjacent
+  anchors such as ``^A+$``, and ``OPTIONS (use_longest_match = TRUE/FALSE)``.
+* ``ORACLE`` supports optional ordering/measures, row output modes, targeted
+  ``AFTER MATCH SKIP``, ``SUBSET``, permutations, exclusions and function modes.
+* ``SNOWFLAKE`` supports the corresponding documented forms except ``SUBSET``
+  and BigQuery options. Its documented alternation-before-concatenation
+  precedence is used for the pattern AST. Other presets use
+  concatenation-before-alternation. Rendering adds explicit parentheses at
+  mixed operator boundaries; it does not translate expression syntax between DBs.
+
+Validation checks the ``matchRecognize`` and ``matchRecognizeOptions`` features.
+With an explicit dialect, it also checks selected static rules: pattern variable
+names, bounds, subset/skip targets and incompatible clause options. Table
+finding does not treat pattern qualifiers such as ``A.price`` as table names.
+Metadata validation does not bind these columns to the input relation.
+Function eligibility, aggregation/type rules, data-dependent skip failures and
+query execution remain the database's responsibility.
+
+The test fixtures were compared before and after deparsing using GoogleSQL's
+reference evaluator and Oracle 26ai Free. The reference evaluator is not the
+BigQuery service. Snowflake coverage follows its documentation and parser
+round-trip tests; it has not been executed against a Snowflake account.
+
+See the official `BigQuery MATCH_RECOGNIZE syntax
+<https://docs.cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#match_recognize_clause>`_,
+`Oracle row pattern matching guide
+<https://docs.oracle.com/en/database/oracle/oracle-database/26/dwhsg/sql-pattern-matching-data-warehouses.html>`_
+and `Snowflake MATCH_RECOGNIZE reference
+<https://docs.snowflake.com/en/sql-reference/constructs/match_recognize>`_.
+
 The individual features
 ------------------------------
 
@@ -1063,3 +1178,37 @@ The option is disabled by default and does not enable this syntax in other diale
 returns each explicit direction, or null when omitted. Directions follow list positions;
 replacing the expression list clears them. Validators report the separate
 ``selectGroupByOrdering`` feature, which is not enabled in the MySQL 8.0 capability.
+
+PostgreSQL COMMENT targets
+=========================
+
+``COMMENT ON`` supports ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``,
+``MATERIALIZED VIEW``, ``FUNCTION`` and ``CONSTRAINT`` in addition to the existing
+``TABLE``, ``COLUMN`` and ``VIEW`` forms. These unambiguous target forms also parse
+without a dialect preset. Tagged dollar strings still require
+``Dialect.POSTGRESQL`` or ``withDollarQuotedStringTags(true)``.
+
+The additional targets are exposed through ``Comment.getTarget()`` as a
+``CommentTarget``. Its ``Kind`` identifies the object, and ``getName()`` preserves
+the individual identifier components. ``Table`` is used as the name container;
+an index or type name does not thereby represent a table dependency.
+The original ``Comment.getTable()``, ``getColumn()`` and ``getView()`` accessors
+continue to describe their respective existing forms.
+
+``COMMENT ON FUNCTION app.f(IN value integer) IS 'description'`` uses the shared
+``RoutineReference`` in ``getTarget().getRoutine()``. Argument mode, optional name
+and ``ColDataType`` are preserved. An omitted signature has null arguments;
+``f()`` has an empty argument list. The signature identifies a function and is not
+a function call.
+
+For ``COMMENT ON CONSTRAINT ck ON app.t IS NULL``, ``getName()`` is the constraint
+name and ``getRelation()`` is its owning table. ``ON DOMAIN app.d`` sets
+``isOnDomain()`` and stores the domain as the owner instead. ``NULL`` removes the
+comment and remains represented by a null ``Comment.getComment()``.
+
+Table discovery visits tables, column owners, views, materialized views and
+table-owned constraints. It does not infer an index's table or treat domains,
+sequences, types or functions as tables. Statement visitors visit comment
+literals, and custom SQL deparsers can replace the explicit relation or literal.
+Feature analysis reports a schema modification. Validation exposes a separate
+``commentOn...`` capability for each additional target kind.

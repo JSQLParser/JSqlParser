@@ -31,7 +31,7 @@ public class JSQLParserBenchmark {
     SqlParserRunner runner;
 
     // @Param({ "latest", "5.2", "5.1", "5.0", "4.9", "4.8", "4.7", "4.6", "4.5" })
-    @Param({"latest", "5.3", "5.1"})
+    @Param({"latest", "5.4"})
     public String version;
 
     @Setup(Level.Trial)

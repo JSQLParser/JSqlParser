@@ -97,7 +97,6 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.statement.PragmaStatement;
 import net.sf.jsqlparser.statement.ExtensionStatement;
@@ -110,6 +109,9 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 /**
  * @author gitmotte
@@ -333,12 +335,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(Comment comment, S context) {
-        for (ValidationCapability c : getCapabilities()) {
-            validateFeature(c, Feature.comment);
-            validateOptionalFeature(c, comment.getTable(), Feature.commentOnTable);
-            validateOptionalFeature(c, comment.getColumn(), Feature.commentOnColumn);
-            validateOptionalFeature(c, comment.getView(), Feature.commentOnView);
-        }
+        getValidator(CommentValidator.class).validate(comment);
         return null;
     }
 
@@ -490,12 +487,14 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+    public <S> Void visit(AssertStatement assertStatement, S context) {
         // TODO: not yet implemented
         return null;
     }
 
     @Override
     public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+    public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
         // TODO: not yet implemented
         return null;
     }
@@ -550,6 +549,7 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+    public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
         // TODO: not yet implemented
         return null;
     }
@@ -812,6 +812,16 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(CreateExtensionRepository createExtensionRepository) {
         visit(createExtensionRepository, null);
+    public void visit(AssertStatement assertStatement) {
+        visit(assertStatement, null);
+    }
+
+    public void visit(ExportDataStatement exportDataStatement) {
+        visit(exportDataStatement, null);
+    }
+
+    public void visit(LoadDataStatement loadDataStatement) {
+        visit(loadDataStatement, null);
     }
 
     public void visit(PurgeStatement purgeStatement) {

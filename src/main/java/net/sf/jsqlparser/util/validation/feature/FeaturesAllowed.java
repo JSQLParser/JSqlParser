@@ -45,7 +45,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      */
     public static final FeaturesAllowed SELECT = new FeaturesAllowed("SELECT",
             // select features
-            Feature.select,
+            Feature.select, Feature.matchRecognize, Feature.matchRecognizeOptions,
             Feature.selectGroupBy,
             Feature.selectHaving,
 

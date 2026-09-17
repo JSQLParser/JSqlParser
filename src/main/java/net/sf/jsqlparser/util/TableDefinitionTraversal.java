@@ -133,7 +133,7 @@ public final class TableDefinitionTraversal {
             ColumnDefinition column = (ColumnDefinition) element;
             if (column.getColumnOptions() != null) {
                 for (ColumnOption option : column.getColumnOptions()) {
-                    accept(option.getDefaultExpression(), expressions);
+                    option.visitExpressions(expressions);
                     if (option.getForeignKeyReference() != null) {
                         accept(option.getForeignKeyReference().getTable(), tables);
                     }

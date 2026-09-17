@@ -45,6 +45,9 @@ public class DropValidator extends AbstractValidator<Drop> {
                     Feature.dropSequenceIfExists);
         }
 
+        if (drop.getTable() != null) {
+            validateName(NamedObject.table, drop.getTable().getFullyQualifiedName());
+        }
         NamedObject named = NamedObject.forName(type);
         if (Arrays.asList(NamedObject.table, NamedObject.view).contains(named)) {
             drop.getNames().forEach(name -> validateName(named, name.getFullyQualifiedName()));

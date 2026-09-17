@@ -140,6 +140,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 |---|---|
 | **Queries** | `SELECT` · `WITH …` · Piped SQL |
 | **ksqlDB windows** | JOIN `WITHIN`, window `GRACE PERIOD`, and `EMIT CHANGES`/`FINAL` |
+| **ClickHouse column selection** | `COLUMNS('regexp')` select items with chained `APPLY`, `EXCEPT`, and `REPLACE` transformers |
 | **DML** | `INSERT` · `UPDATE` · `UPSERT` · `MERGE` · `DELETE` · `TRUNCATE TABLE` |
 | **DDL** | `CREATE …` · `ALTER …` · `DROP …` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |

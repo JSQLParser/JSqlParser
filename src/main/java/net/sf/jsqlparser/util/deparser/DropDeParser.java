@@ -9,41 +9,24 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class DropDeParser extends AbstractDeParser<Drop> {
+    private final Consumer<Table> tablePrinter;
 
     public DropDeParser(StringBuilder buffer) {
+        this(buffer, buffer::append);
+    }
+
+    public DropDeParser(StringBuilder buffer, Consumer<Table> tablePrinter) {
         super(buffer);
+        this.tablePrinter = tablePrinter;
     }
 
     @Override
     public void deParse(Drop drop) {
-        builder.append("DROP ");
-        if (drop.isUsingTemporary()) {
-            builder.append("TEMPORARY ");
-        }
-        if (drop.isMaterialized()) {
-            builder.append("MATERIALIZED ");
-        }
-        builder.append(drop.getType());
-        if (drop.isIfExists()) {
-            builder.append(" IF EXISTS");
-        }
-
-        builder.append(" ").append(drop.getNames().stream().map(Object::toString)
-                .collect(Collectors.joining(", ")));
-
-        if (drop.getType().equals("FUNCTION")) {
-            builder.append(Drop.formatFuncParams(drop.getParamsByType("FUNCTION")));
-        }
-
-        if (drop.getParameters() != null && !drop.getParameters().isEmpty()) {
-            builder.append(" ")
-                    .append(PlainSelect.getStringList(drop.getParameters(), false, false));
-        }
+        drop.appendTo(builder, tablePrinter);
     }
-
 }

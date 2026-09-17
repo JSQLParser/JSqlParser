@@ -108,6 +108,9 @@ import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 public class StatementDeParser extends AbstractDeParser<Statement>
         implements StatementVisitor<StringBuilder> {
@@ -221,7 +224,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Drop drop, S context) {
-        DropDeParser dropDeParser = new DropDeParser(builder);
+        DropDeParser dropDeParser =
+                new DropDeParser(builder, table -> table.accept(selectDeParser, context));
         dropDeParser.deParse(drop);
         return builder;
     }
@@ -447,8 +451,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Comment comment, S context) {
-        builder.append(comment.toString());
-        return builder;
+        return comment.appendTo(builder,
+                table -> table.accept(selectDeParser, context),
+                column -> column.accept(expressionDeParser, context),
+                literal -> literal.accept(expressionDeParser, context));
     }
 
     @Override
@@ -570,12 +576,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(PragmaStatement pragmaStatement, S context) {
         pragmaStatement.appendTo(builder);
+    public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
+        assertStatement.appendTo(builder);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(ExtensionStatement extensionStatement, S context) {
         extensionStatement.appendTo(builder);
+    public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
+        exportDataStatement.appendTo(builder);
         return builder;
     }
 
@@ -630,6 +640,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(CreateExtensionRepository createExtensionRepository, S context) {
         createExtensionRepository.appendTo(builder);
+    public <S> StringBuilder visit(LoadDataStatement loadDataStatement, S context) {
+        loadDataStatement.appendTo(builder);
         return builder;
     }
 
