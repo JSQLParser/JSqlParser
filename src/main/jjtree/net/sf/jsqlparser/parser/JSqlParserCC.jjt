@@ -89,6 +89,7 @@ import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.CancellationException;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 import java.util.logging.Level;
@@ -738,57 +739,31 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    /**
-     * Skips "." name continuations starting at token position {@code i}; returns the
-     * position of the first token after the qualified name.
-     */
-    private int skipQualifiedObjectName(int i) {
-        int guard = 0;
-        while (guard++ < 64 && ".".equals(getToken(i).image)) {
-            i += 2;
+    private Token nextWithItemToken(Token current) {
+        if (current.next == null) {
+            current.next = token_source.getNextToken();
         }
-        return i;
+        return current.next;
     }
 
-    /**
-     * Skips the balanced round-bracket group opening at token position {@code i};
-     * returns the position after the matching closing bracket, or -1 when the
-     * group is unbalanced or the scan would run past the token stream.
-     */
-    private int skipBalancedBracketGroup(int i) {
+    private Token skipBalancedBracketGroup(Token current) {
         int depth = 0;
-        int guard = 0;
-        while (guard++ < 4096) {
-            int kind = getToken(i).kind;
-            if (kind == 0) {
-                return -1;
-            }
-            if (kind == OPENING_BRACKET) {
+        while (!interrupted && current.kind != EOF) {
+            if (current.kind == OPENING_BRACKET) {
                 depth++;
-            } else if (kind == CLOSING_BRACKET) {
-                depth--;
-                if (depth == 0) {
-                    return i + 1;
+            } else if (current.kind == CLOSING_BRACKET) {
+                if (--depth == 0) {
+                    return nextWithItemToken(current);
                 }
             }
-            i++;
+            current = nextWithItemToken(current);
         }
-        return -1;
+        if (interrupted) {
+            throw new CancellationException("Parsing interrupted");
+        }
+        return null;
     }
 
-    /**
-     * True when the upcoming WITH item is ClickHouse's expression alias form
-     * {@code WITH <expression> AS <identifier>} (including lambda aliases such as
-     * {@code x -> x * 2} or {@code (x -> x * 2)}), and false for the classic CTE
-     * shape {@code name [(cols)] AS [NOT] MATERIALIZED (statement)} or for the
-     * other WithItem alternatives (FUNCTION, RECURSIVE).
-     *
-     * <p>Everything that cannot start a CTE name (literals, brackets, operators,
-     * function calls) can only be an expression. A name-shaped head followed by
-     * anything but an AS decision point also continues as an expression
-     * ({@code total * 2}, {@code case when .. end}); the CTE shape is exactly
-     * the name-shaped head with AS before a parenthesized statement.</p>
-     */
     private boolean isWithExpressionAliasAhead() {
         try {
             Token t1 = getToken(1);
@@ -798,27 +773,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (!isIdentifierishNameToken(t1)) {
                 return true;
             }
-            int i = skipQualifiedObjectName(2);
-            if (getToken(i).kind == OPENING_BRACKET) {
-                // a column list (CTE) or call arguments (expression); the decision
-                // point sits behind the balanced group either way
-                i = skipBalancedBracketGroup(i);
-                if (i < 0) {
+            Token next = getToken(2);
+            if (next.kind == OPENING_BRACKET) {
+                next = skipBalancedBracketGroup(next);
+                if (next == null) {
                     return false;
                 }
             }
-            if (getToken(i).kind != K_AS) {
+            if (next.kind != K_AS) {
                 return true;
             }
-            i++;
-            if (getToken(i).kind == K_NOT) {
-                i++;
+            next = nextWithItemToken(next);
+            if (next.kind == K_NOT) {
+                next = nextWithItemToken(next);
             }
-            if (getToken(i).kind == K_MATERIALIZED) {
-                i++;
+            if (next.kind == K_MATERIALIZED) {
+                next = nextWithItemToken(next);
             }
-            // the CTE shape requires a parenthesized statement here
-            return getToken(i).kind != OPENING_BRACKET;
+            return next.kind != OPENING_BRACKET;
         } catch (TokenMgrException e) {
             return false;
         }
