@@ -10,15 +10,116 @@
 package net.sf.jsqlparser.statement.select;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.CCJSqlParserConstants;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.ParseException;
+import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
 class WithItemTest {
+
+    @ParameterizedTest
+    @CsvSource({"2047, 1", "2047, -1", "2048, 1", "4096, 1"})
+    void testLargeExpressionAlias(int arguments, String firstArgument) throws JSQLParserException {
+        String expression = "coalesce(" + firstArgument + ", 1".repeat(arguments - 1) + ")";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH " + expression + " AS v, t AS (SELECT v) SELECT v FROM t", true);
+        WithItem<?> item = select.getWithItemsList().get(0);
+        Function function = assertInstanceOf(Function.class, item.getExpression());
+        assertEquals("v", item.getAliasName());
+        assertNull(item.getParenthesedStatement());
+        assertEquals("coalesce", function.getName());
+        assertEquals(arguments, function.getParameters().size());
+        assertEquals(firstArgument, function.getParameters().get(0).toString());
+        assertEquals("1", function.getParameters().get(arguments - 1).toString());
+        assertNotNull(select.getWithItemsList().get(1).getParenthesedStatement());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2047, 2048})
+    void testLargeCteColumnList(int columns) throws JSQLParserException {
+        String names = IntStream.range(0, columns).mapToObj(i -> "c" + i)
+                .collect(Collectors.joining(", "));
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH t(" + names + ") AS (SELECT 1" + ", 1".repeat(columns - 1)
+                        + ") SELECT * FROM t",
+                true);
+        WithItem<?> item = select.getWithItemsList().get(0);
+        assertEquals("t", item.getAliasName());
+        assertNull(item.getExpression());
+        assertNotNull(item.getParenthesedStatement());
+        assertEquals(columns, item.getWithItemList().size());
+        assertEquals("c" + (columns - 1), item.getWithItemList().get(columns - 1).toString());
+    }
+
+    @Test
+    void testLargeNestedExpressionAlias() throws JSQLParserException {
+        String expression = "concat(concat('(', ')')" + ", 'x'".repeat(2047) + ")";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH " + expression + " AS v SELECT v", true);
+        Function function = assertInstanceOf(Function.class,
+                select.getWithItemsList().get(0).getExpression());
+        assertEquals(2048, function.getParameters().size());
+        assertEquals("concat('(', ')')", function.getParameters().get(0).toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 64, 65})
+    void testQualifiedExpressionAlias(int qualifiers) throws JSQLParserException {
+        String name = "s.".repeat(qualifiers) + "coalesce";
+        Select select = (Select) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "WITH " + name + "(1, 2) AS v SELECT v", true);
+        Function function = assertInstanceOf(Function.class,
+                select.getWithItemsList().get(0).getExpression());
+        assertEquals(name, function.getName());
+        assertEquals(2, function.getParameters().size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 2048})
+    @Timeout(5)
+    void testUnclosedExpressionAlias(int arguments) {
+        String sql = "WITH coalesce(1" + ", 1".repeat(arguments - 1);
+        assertThrows(ParseException.class, () -> CCJSqlParserUtil.newParser(sql).Statement());
+    }
+
+    @Test
+    void testInterruptedWithItemLookaheadStopsReading() {
+        CCJSqlParser parser = CCJSqlParserUtil.newParser(
+                "WITH coalesce(1" + ", 1".repeat(512) + ") AS v SELECT v");
+        AtomicBoolean reachedAlias = new AtomicBoolean();
+        parser.token_source = Mockito.spy(parser.token_source);
+        Mockito.doAnswer(invocation -> {
+            Token token = (Token) invocation.callRealMethod();
+            if (token.kind == CCJSqlParserConstants.S_LONG) {
+                parser.interrupted = true;
+            } else if (token.kind == CCJSqlParserConstants.K_AS) {
+                reachedAlias.set(true);
+            }
+            return token;
+        }).when(parser.token_source).getNextToken();
+        assertThrows(CancellationException.class, parser::Statement);
+        assertFalse(reachedAlias.get());
+    }
 
     @Test
     void testNotMaterializedIssue2251() throws JSQLParserException {

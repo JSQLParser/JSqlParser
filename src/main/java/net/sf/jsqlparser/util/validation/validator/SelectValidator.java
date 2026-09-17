@@ -426,6 +426,9 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
         if (withItem.getCycleClause() != null) {
             withItem.getCycleClause().accept(getValidator(ExpressionValidator.class), context);
         }
+        if (withItem.getExpression() != null) {
+            withItem.getExpression().accept(getValidator(ExpressionValidator.class), context);
+        }
         withItem.accept(getValidator(StatementValidator.class), context);
         return null;
     }

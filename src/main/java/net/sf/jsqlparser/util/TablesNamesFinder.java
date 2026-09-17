@@ -366,6 +366,10 @@ public class TablesNamesFinder<Void>
         }
         // dispatch any ParenthesedStatement payload (Select, Delete, Update, Insert)
         withItem.accept((StatementVisitor<?>) this, context);
+        // an expression alias (WITH expr AS name) may read tables on its own
+        if (withItem.getExpression() != null) {
+            withItem.getExpression().accept(this, context);
+        }
         return null;
     }
 

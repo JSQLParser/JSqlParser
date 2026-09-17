@@ -90,6 +90,7 @@ import net.sf.jsqlparser.statement.export.*;
 import net.sf.jsqlparser.statement.lock.*;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.CancellationException;
 import net.sf.jsqlparser.statement.select.SetOperationList.SetOperationType;
 
 import java.util.logging.Level;
@@ -712,6 +713,90 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** The literal tokens that may complete a typed literal in {@link #isImplicitCastAhead()}. */
+    private boolean isTypedLiteralFollower(int kind) {
+        return kind == S_CHAR_LITERAL || kind == S_LONG || kind == S_DOUBLE;
+    }
+
+    /**
+     * Whether the token could start a {@link #RelObjectName()}, mirroring the token
+     * alternatives accepted there (base identifiers, DATA_TYPE, non-reserved keywords
+     * and the reserved-keyword-as-identifier list).
+     */
+    private static boolean isIdentifierishNameToken(Token t) {
+        switch (t.kind) {
+            case S_IDENTIFIER: case S_QUOTED_IDENTIFIER: case DATA_TYPE:
+            case K_DATETIMELITERAL: case K_DATE_LITERAL:
+            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT: case K_CREATE:
+            case K_DEFAULT: case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
+            case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL: case K_LEFT:
+            case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_OPTIMIZE:
+            case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
+            case K_FILE: case K_SET: case K_SOME: case K_START: case K_TABLES:
+            case K_TOP: case K_VALUE: case K_VALUES:
+                return true;
+            default:
+                return t.kind >= MIN_NON_RESERVED_WORD && t.kind <= MAX_NON_RESERVED_WORD;
+        }
+    }
+
+    private Token nextWithItemToken(Token current) {
+        if (current.next == null) {
+            current.next = token_source.getNextToken();
+        }
+        return current.next;
+    }
+
+    private Token skipBalancedBracketGroup(Token current) {
+        int depth = 0;
+        while (!interrupted && current.kind != EOF) {
+            if (current.kind == OPENING_BRACKET) {
+                depth++;
+            } else if (current.kind == CLOSING_BRACKET) {
+                if (--depth == 0) {
+                    return nextWithItemToken(current);
+                }
+            }
+            current = nextWithItemToken(current);
+        }
+        if (interrupted) {
+            throw new CancellationException("Parsing interrupted");
+        }
+        return null;
+    }
+
+    private boolean isWithExpressionAliasAhead() {
+        try {
+            Token t1 = getToken(1);
+            if (t1.kind == K_FUNCTION || t1.kind == K_RECURSIVE) {
+                return false;
+            }
+            if (!isIdentifierishNameToken(t1)) {
+                return true;
+            }
+            Token next = getToken(2);
+            if (next.kind == OPENING_BRACKET) {
+                next = skipBalancedBracketGroup(next);
+                if (next == null) {
+                    return false;
+                }
+            }
+            if (next.kind != K_AS) {
+                return true;
+            }
+            next = nextWithItemToken(next);
+            if (next.kind == K_NOT) {
+                next = nextWithItemToken(next);
+            }
+            if (next.kind == K_MATERIALIZED) {
+                next = nextWithItemToken(next);
+            }
+            return next.kind != OPENING_BRACKET;
+        } catch (TokenMgrException e) {
+            return false;
+        }
+    }
+
     protected boolean isImplicitCastAhead() {
         try {
             int k1 = getToken(1).kind;
@@ -722,18 +807,33 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (k1 == K_JSON) return getToken(2).kind == S_CHAR_LITERAL;
             if (k1 != DATA_TYPE) return false;
             int k2 = getToken(2).kind;
-            if (k2 != OPENING_BRACKET) return true; // DATA_TYPE literal - simple cast
-            // DATA_TYPE( ... ) - precision cast if content is only S_LONG literals
-            // function call otherwise (e.g. UUID(), VARCHAR(col))
+            if (k2 != OPENING_BRACKET) {
+                // a bare DATA_TYPE is a typed literal (INT '5') only when a trailing
+                // literal completes it, possibly after further type-name tokens
+                // (DOUBLE PRECISION '1'); otherwise it is an identifier, e.g. a
+                // column named number or a keyword-named lambda alias
+                if (isTypedLiteralFollower(k2)) {
+                    return true;
+                }
+                return k2 == DATA_TYPE && isTypedLiteralFollower(getToken(3).kind);
+            }
+            // DATA_TYPE( ... ) - precision cast only when a trailing literal completes
+            // the typed literal (DATA_TYPE(N) 'lit'); a function call otherwise,
+            // e.g. double(5), int(5), VARCHAR(col), UUID()
             int k3 = getToken(3).kind;
             if (k3 == CLOSING_BRACKET) return false; // DATA_TYPE() - empty call
             if (k3 != S_LONG) return false;           // DATA_TYPE(expr) - function call
             int k4 = getToken(4).kind;
-            if (k4 == CLOSING_BRACKET) return true;   // DATA_TYPE(N) - precision cast
-            if (k4 != K_COMMA) return false;           // DATA_TYPE(N expr) - function call
-            int k5 = getToken(5).kind;
-            if (k5 != S_LONG) return false;            // DATA_TYPE(N, expr) - function call
-            return getToken(6).kind == CLOSING_BRACKET; // DATA_TYPE(N,M) - precision cast
+            if (k4 == K_COMMA) {
+                int k5 = getToken(5).kind;
+                if (k5 != S_LONG) return false;            // DATA_TYPE(N, expr) - function call
+                if (getToken(6).kind != CLOSING_BRACKET) {
+                    return false;                           // DATA_TYPE(N,M expr) - function call
+                }
+                return isTypedLiteralFollower(getToken(7).kind); // DATA_TYPE(N,M) 'lit'
+            }
+            if (k4 != CLOSING_BRACKET) return false;  // DATA_TYPE(N expr) - function call
+            return isTypedLiteralFollower(getToken(5).kind); // DATA_TYPE(N) 'lit'
         } catch (TokenMgrException e) {
             return false;
         }
@@ -7507,6 +7607,7 @@ WithItem<?> WithItem() #WithItem:
     List<SelectItem<?>> selectItems = null;
     WithFunctionDeclaration withFunctionDeclaration = null;
     ParenthesedStatement statement = null;
+    Expression expr = null;
     WithSearchClause withSearchClause = null;
     WithCycleClause withCycleClause = null;
     ExpressionList<Expression> usingKeyExpressions = null;
@@ -7520,6 +7621,7 @@ WithItem<?> WithItem() #WithItem:
              withItem = new WithItem().withWithFunctionDeclaration(withFunctionDeclaration);
          }
          |
+         LOOKAHEAD({ !isWithExpressionAliasAhead() })
          (
              [ LOOKAHEAD(2) <K_RECURSIVE>  { recursive = true; } ]
              name=RelObjectName()
@@ -7544,12 +7646,47 @@ WithItem<?> WithItem() #WithItem:
                 withItem.setUsingKeyExpressions(usingKeyExpressions);
              }
          )
+         |
+         (
+             // ClickHouse style expression alias: WITH <expression> AS <identifier>
+             expr = WithItemExpression()
+             <K_AS>
+             name = RelObjectName()
+             {
+                withItem = new WithItem().withExpression(expr).withAlias(new Alias(name, false));
+             }
+         )
      )
      [ withSearchClause = WithSearchClause() { withItem.setSearchClause(withSearchClause); } ]
      [ withCycleClause = WithCycleClause() { withItem.setCycleClause(withCycleClause); } ]
      {
      return withItem;
      }
+}
+
+Expression WithItemExpression():
+{
+    LambdaExpression lambdaExpression;
+    Expression expr;
+}
+{
+    (
+        // unparenthesized parameter, e.g. x -> x * 2
+        LOOKAHEAD( RelObjectName() "->" )
+        expr = LambdaExpression()
+        |
+        // parenthesized parameter list, e.g. (value) -> value + 1
+        LOOKAHEAD( ParenthesedColumnList() "->" )
+        expr = LambdaExpression()
+        |
+        // whole lambda wrapped in parentheses, e.g. (x -> x * 2)
+        LOOKAHEAD( "(" ( RelObjectName() | ParenthesedColumnList() ) "->" )
+        "(" lambdaExpression = LambdaExpression() ")"
+        { expr = new ParenthesedExpressionList<Expression>(lambdaExpression); }
+        |
+        expr = Expression()
+    )
+    { return expr; }
 }
 
 WithSearchClause WithSearchClause() #WithSearchClause:

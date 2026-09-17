@@ -323,6 +323,19 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
             return ((Statement) body).accept(statementVisitor, context);
         }
 
+        // a ClickHouse expression alias (WITH <expression> AS <identifier>): a
+        // parenthesized subquery stays on the select path, any other expression
+        // goes to the expression visitor
+        Expression expression = withItem.getExpression();
+        if (expression != null) {
+            if (expression instanceof Select) {
+                return ((Select) expression).accept(this, context);
+            }
+            if (expressionVisitor != null) {
+                return expression.accept(expressionVisitor, context);
+            }
+        }
+
         // no statement visitor available: skip the body rather than fail
         return null;
     }

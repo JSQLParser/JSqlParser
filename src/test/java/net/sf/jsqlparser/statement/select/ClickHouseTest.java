@@ -11,13 +11,20 @@ package net.sf.jsqlparser.statement.select;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -487,5 +494,170 @@ public class ClickHouseTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testWithLambdaExpressionAliasIssue2632() throws JSQLParserException {
+        // https://github.com/JSQLParser/JSqlParser/issues/2632
+        String sql = "WITH (x -> x * 2) AS double SELECT double(5)";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sql, true);
+        WithItem<?> withItem = select.getWithItemsList().get(0);
+        Assertions.assertTrue(withItem.getExpression() instanceof ParenthesedExpressionList);
+        LambdaExpression lambda = (LambdaExpression) ((ParenthesedExpressionList<?>) withItem
+                .getExpression()).get(0);
+        Assertions.assertEquals(List.of("x"), lambda.getIdentifiers());
+        Assertions.assertEquals("double", withItem.getAliasName());
+        Assertions.assertEquals("double(5)",
+                ((PlainSelect) select.getSelectBody()).getSelectItems().get(0).getExpression()
+                        .toString());
+    }
+
+    @Test
+    public void testWithLambdaExpressionAliasDocForms() throws JSQLParserException {
+        // documented lambda form: (param) -> expr — the AST keeps the parameter name only,
+        // so the single-parameter parentheses follow the same deparse convention as
+        // function-argument lambdas and are not preserved
+        Select select = (Select) CCJSqlParserUtil
+                .parse("WITH (value) -> value + 1 AS increment SELECT increment(5)");
+        LambdaExpression lambda = (LambdaExpression) select.getWithItemsList().get(0)
+                .getExpression();
+        Assertions.assertEquals(List.of("value"), lambda.getIdentifiers());
+        Assertions.assertEquals("increment", select.getWithItemsList().get(0).getAliasName());
+        assertSqlCanBeParsedAndDeparsed("WITH value -> value + 1 AS increment SELECT increment(5)",
+                true);
+
+        // multi-parameter lambda with a parenthesized parameter list
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH (id, extension) -> concat(lower(id), extension) AS gen_name "
+                        + "SELECT gen_name('A', 'B')",
+                true);
+
+        // the whole lambda may be wrapped in parentheses (issue #2632 style), multi-param too
+        assertSqlCanBeParsedAndDeparsed("WITH ((x, y) -> x + y) AS f SELECT f(1, 2)", true);
+
+        // unparenthesized parameter is accepted by ClickHouse as well
+        assertSqlCanBeParsedAndDeparsed("WITH x -> x * 2 AS double SELECT double(5)", true);
+    }
+
+    @Test
+    public void testWithExpressionAlias() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("WITH 1 AS one SELECT one + 1", true);
+        assertSqlCanBeParsedAndDeparsed("WITH 2 + 2 AS a SELECT a", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH '2019-08-01 15:23:00' AS ts_upper_bound SELECT ts_upper_bound", true);
+        assertSqlCanBeParsedAndDeparsed("WITH sum(number) AS s SELECT s FROM numbers(3)", true);
+
+        // a bare column reference aliased to another name
+        assertSqlCanBeParsedAndDeparsed("WITH x AS y SELECT y FROM (SELECT 42 AS x)", true);
+
+        // an expression alias may reference an earlier WITH item, and the expression
+        // may itself be a compound one
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH (SELECT sum(number) FROM numbers(10)) AS total, total * 2 AS doubled "
+                        + "SELECT doubled",
+                true);
+        assertSqlCanBeParsedAndDeparsed("WITH sum(x) + 1 AS y SELECT y", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH CASE WHEN 1 < 2 THEN 'a' ELSE 'b' END AS c SELECT c", true);
+        assertSqlCanBeParsedAndDeparsed("WITH t AS u, v AS w SELECT u, w", true);
+    }
+
+    @Test
+    public void testWithParenthesedSubqueryAlias() throws JSQLParserException {
+        String sql = "WITH (SELECT a FROM src) AS v SELECT a FROM v, dst";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+        Assertions.assertEquals(Set.of("src", "dst"), TablesNamesFinder.findTables(sql));
+    }
+
+    @Test
+    public void testWithExpressionAliasMixedItems() throws JSQLParserException {
+        String sql = "WITH 1 AS one, (x -> x * 2) AS double, t AS (SELECT 1 AS a) "
+                + "SELECT one, double(5), a FROM t";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testWithStandardCteUnaffected() throws JSQLParserException {
+        // guards: the classic CTE shapes must keep parsing exactly as before
+        assertSqlCanBeParsedAndDeparsed("WITH t AS (SELECT 1 AS a) SELECT a FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("WITH t (a, b) AS (SELECT 1 AS a, 2 AS b) SELECT a FROM t",
+                true);
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH RECURSIVE q AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM q WHERE n < 3) "
+                        + "SELECT n FROM q",
+                true);
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH a AS MATERIALIZED (SELECT 1 AS b) SELECT b FROM a", true);
+        assertSqlCanBeParsedAndDeparsed(
+                "WITH a AS NOT MATERIALIZED (SELECT 1 AS b) SELECT b FROM a", true);
+    }
+
+    @Test
+    public void testDataTypeNumericArgsFunctionCall() throws JSQLParserException {
+        // ClickHouse names lambda aliases after type-like keywords (issue #2632 uses double),
+        // and calls them like functions: double(5). DATA_TYPE(N) without a trailing literal
+        // is a function call, not a typed literal.
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed("SELECT double(5)", true);
+        Assertions.assertTrue(((PlainSelect) select.getSelectBody()).getSelectItems().get(0)
+                .getExpression() instanceof Function);
+        assertSqlCanBeParsedAndDeparsed("SELECT int(5), varchar(5), double(5) + 1", true);
+
+        // the same family: a DATA_TYPE keyword used as a plain column name, e.g. the
+        // documented ClickHouse corpus sum(number) FROM numbers(10)
+        assertSqlCanBeParsedAndDeparsed("SELECT number FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT sum(number) FROM numbers(3)", true);
+
+        // guards: typed literals with a trailing literal keep their cast reading
+        assertSqlCanBeParsedAndDeparsed("SELECT INT '5'", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT DECIMAL(10,2) '1.5'", true);
+    }
+
+    @Test
+    public void testWithExpressionAliasTraversableByVisitorAdapter() throws JSQLParserException {
+        // a generic SelectVisitorAdapter traversal must reach the expression body of a
+        // WITH <expression> AS <identifier> item, including nested table references,
+        // exactly as it reaches the body of a classic CTE
+        List<String> plainSelects = new ArrayList<>();
+        SelectVisitorAdapter<Void> visitor = new SelectVisitorAdapter<>() {
+            @Override
+            public <S> Void visit(PlainSelect plainSelect, S context) {
+                plainSelects.add(String.valueOf(plainSelect.getFromItem()));
+                return super.visit(plainSelect, context);
+            }
+        };
+        Select select = (Select) CCJSqlParserUtil
+                .parse("WITH (SELECT 1 FROM src) AS v SELECT a FROM v, dst");
+        select.getSelectBody().accept(visitor, null);
+        Assertions.assertTrue(plainSelects.contains("src"),
+                "expression body table missing from traversal: " + plainSelects);
+
+        // a lambda alias is handed to the expression visitor
+        List<String> expressions = new ArrayList<>();
+        SelectVisitorAdapter<Void> exprVisitor =
+                new SelectVisitorAdapter<>(new ExpressionVisitorAdapter<>() {
+                    @Override
+                    public <S> Void visit(LambdaExpression lambdaExpression, S context) {
+                        expressions.add(String.valueOf(lambdaExpression));
+                        return super.visit(lambdaExpression, context);
+                    }
+                });
+        Select lambdaSelect = (Select) CCJSqlParserUtil
+                .parse("WITH (x -> x * 2) AS double SELECT double(5)");
+        Assertions.assertNotNull(lambdaSelect.getWithItemsList().get(0).getExpression());
+        lambdaSelect.getSelectBody().accept(exprVisitor, null);
+        Assertions.assertEquals(List.of("x -> x * 2"), expressions);
+    }
+
+    @Test
+    public void testWithExpressionAliasRecursiveClausesSerialize() throws JSQLParserException {
+        // the tolerant-grammar SEARCH/CYCLE suffix must survive serialization on the
+        // expression branch instead of being dropped
+        String sql = "WITH 1 AS one SEARCH DEPTH FIRST BY one SET o SELECT one";
+        Select select = (Select) assertSqlCanBeParsedAndDeparsed(sql, true);
+        Assertions.assertNotNull(select.getWithItemsList().get(0).getSearchClause());
+
+        String sql2 = "WITH 1 AS one CYCLE one SET c USING p SELECT one";
+        Select select2 = (Select) assertSqlCanBeParsedAndDeparsed(sql2, true);
+        Assertions.assertNotNull(select2.getWithItemsList().get(0).getCycleClause());
     }
 }

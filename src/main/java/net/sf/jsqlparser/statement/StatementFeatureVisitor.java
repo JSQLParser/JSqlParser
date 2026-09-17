@@ -953,6 +953,9 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             if (body instanceof Statement) {
                 ((Statement) body).accept(analysis.statements, context);
             }
+            if (withItem.getExpression() != null) {
+                withItem.getExpression().accept(new FeatureExpressionVisitor(analysis), context);
+            }
             return null;
         }
     }
