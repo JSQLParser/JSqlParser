@@ -7,9 +7,9 @@
 /src/site/sphinx/_themes
 
 # Exclude the Auto-generated Changelog
-/src/site/sphinx/changelog.rst
-/src/site/sphinx/syntax_stable.rst
-/src/site/sphinx/syntax_snapshot.rst
+src/site/sphinx/changelog.rst
+src/site/sphinx/syntax_stable.rst
+src/site/sphinx/syntax_snapshot.rst
 /src/site/sphinx/javadoc_stable.xml
 /src/site/sphinx/javadoc_snapshot.xml
 
