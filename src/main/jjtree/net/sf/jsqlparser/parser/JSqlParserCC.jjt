@@ -1632,6 +1632,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    private void requireNoDropIndexOwner(Table owner) throws ParseException {
+        if (owner != null) {
+            throw new ParseException("Duplicate DROP INDEX ON clause");
+        }
+    }
+
     private static boolean hasStructuredColumnOption(List<ColumnOption> options) {
         for (ColumnOption option : options) {
             if (option.getKind() != ColumnOption.Kind.OTHER) {
@@ -14857,11 +14863,32 @@ List<String> FuncArgsList():
     }
 }
 
+/** DROP names are lexer-separated identifiers, not strings to split again on dots. */
+Table DropObjectName() #TableName:
+{
+    ObjectNames names;
+    Token literal;
+    Table table;
+    String timeTravel = null;
+}
+{
+    (
+        names=RelObjectNames() [ LOOKAHEAD(2) timeTravel=TimeTravelBeforeAlias() ]
+        { table = names.getNames().size() == 1 ? new Table(names.getNames().get(0), false)
+                : new Table(names.getNames()); table.setTimeTravel(timeTravel); }
+        |
+        literal=<S_CHAR_LITERAL> { table = new Table(literal.image, false); }
+    )
+    { linkAST(table, jjtThis); return table; }
+}
+
 Drop Drop():
 {
     Drop drop = new Drop();
     Token tk = null;
     Table name;
+    Table indexTable = null;
+    int indexTablePosition = 0;
     List<String> dropArgs = new ArrayList<String>();
     List<String> funcArgs = null;
     List<String> indexOption;
@@ -14897,8 +14924,8 @@ Drop Drop():
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
-    name = Table() { drop.setName(name); }
-    ( "," name = Table() { drop.addNames(name); } )*
+    name = DropObjectName() { drop.setName(name); }
+    ( "," name = DropObjectName() { drop.addNames(name); } )*
     [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
     (
         LOOKAHEAD({ getToken(1).kind == K_ALGORITHM
@@ -14913,7 +14940,15 @@ Drop Drop():
         ) { dropArgs.add(tk.image); }
         |
         (
-            <K_ON> name = Table() { dropArgs.add("ON"); dropArgs.add(name.toString()); }
+            <K_ON> name = DropObjectName() {
+                if (drop.getObjectType() == Drop.ObjectType.INDEX) {
+                    requireNoDropIndexOwner(indexTable);
+                    indexTable = name;
+                    indexTablePosition = dropArgs.size();
+                } else {
+                    dropArgs.add("ON"); dropArgs.add(name.toString());
+                }
+            }
         )
         |
         // The lock_option of DROP INDEX. LOCK also starts a LOCK TABLE statement, so it is only
@@ -14924,6 +14959,9 @@ Drop Drop():
     {
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
+        }
+        if (indexTable != null) {
+            drop.setTable(indexTable, indexTablePosition);
         }
         if (drop.getType().equals("FUNCTION")) {
             drop.getTypeToParameters().put("FUNCTION", funcArgs);

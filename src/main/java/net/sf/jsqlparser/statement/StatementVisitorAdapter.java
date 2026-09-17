@@ -331,10 +331,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(Drop drop, S context) {
-        if (drop.getType().equalsIgnoreCase("table")) {
-            drop.getNames().forEach(name -> fromItemVisitor.visitFromItem(name, context));
-        }
-        // @todo: handle schemas
+        drop.visitTables(table -> fromItemVisitor.visitFromItem(table, context));
 
         return null;
     }

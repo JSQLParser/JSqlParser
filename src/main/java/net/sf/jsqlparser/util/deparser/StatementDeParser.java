@@ -210,7 +210,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Drop drop, S context) {
-        DropDeParser dropDeParser = new DropDeParser(builder);
+        DropDeParser dropDeParser =
+                new DropDeParser(builder, table -> table.accept(selectDeParser, context));
         dropDeParser.deParse(drop);
         return builder;
     }
