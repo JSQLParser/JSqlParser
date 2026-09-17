@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -175,6 +176,14 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
         validateOptional(plainSelect.getPivot(), p -> p.accept(this, context));
 
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(UnPivotQuery unPivotQuery, S context) {
+        validateFeature(Feature.pivot);
+        validateOptionalFromItem(unPivotQuery.getFromItem());
+        validateOptionalExpressions(unPivotQuery.getOnExpressions());
         return null;
     }
 
@@ -346,6 +355,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFeature(c, join.isOuter(), Feature.joinOuter);
             validateFeature(c, join.isInner(), Feature.joinInner);
             validateFeature(c, join.isSemi(), Feature.joinSemi);
+            validateFeature(c, join.isAnti(), Feature.joinAnti);
             validateFeature(c, join.isStraight(), Feature.joinStraight);
             validateFeature(c, join.isApply(), Feature.joinApply);
             validateFeature(c, join.isAsOf(), Feature.joinAsOf);
@@ -479,6 +489,11 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
 
     public void visit(PivotQuery pivotQuery) {
         visit(pivotQuery, null);
+    }
+
+    @Override
+    public void visit(UnPivotQuery unPivotQuery) {
+        visit(unPivotQuery, null);
     }
 
     public void visit(SelectItem<?> selectExpressionItem) {

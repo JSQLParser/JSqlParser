@@ -192,6 +192,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -212,6 +213,17 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.PragmaStatement;
+import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
@@ -471,6 +483,20 @@ public class TablesNamesFinder<Void>
 
         visitSelectPagination(pivotQuery, context);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(UnPivotQuery unPivotQuery, S context) {
+        visitWithItems(unPivotQuery.getWithItemsList(), context);
+        visitFromItem(unPivotQuery.getFromItem(), context);
+        visitExpressions(unPivotQuery.getOnExpressions(), context);
+        visitExpressions(unPivotQuery.getValueColumns(), context);
+        return null;
+    }
+
+    @Override
+    public void visit(UnPivotQuery unPivotQuery) {
+        SelectVisitor.super.visit(unPivotQuery);
     }
 
     private <S> void visitSelectItems(List<? extends SelectItem<?>> selectItems, S context) {
@@ -2056,7 +2082,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DescribeStatement describe, S context) {
-        describe.getTable().accept(this, context);
+        if (describe.getSelect() != null) {
+            describe.getSelect().accept((SelectVisitor<?>) this, context);
+        } else {
+            describe.getTable().accept(this, context);
+        }
         return null;
     }
 
@@ -2487,8 +2517,25 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
         assertStatement.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(PragmaStatement pragmaStatement) {
+        StatementVisitor.super.visit(pragmaStatement);
+    }
+
+    @Override
+    public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+        // no tables involved in this statement
         return null;
     }
 
@@ -2504,6 +2551,17 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public void visit(ExtensionStatement extensionStatement) {
+        StatementVisitor.super.visit(extensionStatement);
+    }
+
+    @Override
+    public <S> Void visit(AttachStatement attachStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
     public void visit(ExportDataStatement exportDataStatement) {
         StatementVisitor.super.visit(exportDataStatement);
     }
@@ -2512,6 +2570,105 @@ public class TablesNamesFinder<Void>
     public <S> Void visit(LoadDataStatement loadDataStatement, S context) {
         loadDataStatement.getTable().accept(this, context);
         return null;
+    }
+
+    @Override
+    public void visit(AttachStatement attachStatement) {
+        StatementVisitor.super.visit(attachStatement);
+    }
+
+    @Override
+    public <S> Void visit(DetachStatement detachStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(DetachStatement detachStatement) {
+        StatementVisitor.super.visit(detachStatement);
+    }
+
+    @Override
+    public <S> Void visit(ConnectStatement connectStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(ConnectStatement connectStatement) {
+        StatementVisitor.super.visit(connectStatement);
+    }
+
+    @Override
+    public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(DisconnectStatement disconnectStatement) {
+        StatementVisitor.super.visit(disconnectStatement);
+    }
+
+    @Override
+    public <S> Void visit(PrepareStatement prepareStatement, S context) {
+        prepareStatement.getStatement().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public void visit(PrepareStatement prepareStatement) {
+        StatementVisitor.super.visit(prepareStatement);
+    }
+
+    @Override
+    public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(DeallocateStatement deallocateStatement) {
+        StatementVisitor.super.visit(deallocateStatement);
+    }
+
+    @Override
+    public <S> Void visit(CopyStatement copyStatement, S context) {
+        if (copyStatement.getSelect() != null) {
+            copyStatement.getSelect().accept((SelectVisitor<?>) this, context);
+        } else if (copyStatement.getTable() != null) {
+            copyStatement.getTable().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CopyStatement copyStatement) {
+        StatementVisitor.super.visit(copyStatement);
+    }
+
+    @Override
+    public <S> Void visit(CreateMacro createMacro, S context) {
+        if (createMacro.getSelect() != null) {
+            createMacro.getSelect().accept((SelectVisitor<?>) this, context);
+        }
+        return null;
+    }
+
+    @Override
+    public void visit(CreateMacro createMacro) {
+        StatementVisitor.super.visit(createMacro);
+    }
+
+    @Override
+    public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+        // no tables involved in this statement
+        return null;
+    }
+
+    @Override
+    public void visit(CreateExtensionRepository createExtensionRepository) {
+        StatementVisitor.super.visit(createExtensionRepository);
     }
 
     @Override

@@ -93,6 +93,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
@@ -524,6 +526,13 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(PragmaStatement pragmaStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AssertStatement assertStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA);
@@ -531,9 +540,79 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(ExtensionStatement extensionStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AttachStatement attachStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DetachStatement detachStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ConnectStatement connectStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DisconnectStatement disconnectStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(PrepareStatement prepareStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DeallocateStatement deallocateStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SESSION);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CopyStatement copyStatement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ExportDataStatement exportDataStatement, S context) {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.READS_DATA, StmtFeature.MODIFIES_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateMacro createMacro, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateExtensionRepository createExtensionRepository, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA);
         return null;
     }
 

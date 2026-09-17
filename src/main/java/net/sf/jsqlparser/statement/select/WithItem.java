@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
     private boolean recursive = false;
     private boolean usingNot = false;
     private boolean materialized = false;
+    private ExpressionList<Expression> usingKeyExpressions;
 
     public WithItem(K statement, Alias alias) {
         this.statement = statement;
@@ -166,6 +168,23 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
         return this;
     }
 
+    /**
+     * DuckDB 2.0 aggregates a recursive CTE by key:
+     * {@code WITH RECURSIVE tbl (a, b) USING KEY (a, avg(b)) AS (...)}.
+     */
+    public ExpressionList<Expression> getUsingKeyExpressions() {
+        return usingKeyExpressions;
+    }
+
+    public void setUsingKeyExpressions(ExpressionList<Expression> usingKeyExpressions) {
+        this.usingKeyExpressions = usingKeyExpressions;
+    }
+
+    public WithItem<K> withUsingKeyExpressions(ExpressionList<Expression> usingKeyExpressions) {
+        setUsingKeyExpressions(usingKeyExpressions);
+        return this;
+    }
+
     public StringBuilder appendRecursiveClausesTo(StringBuilder builder,
             Consumer<Expression> expressionPrinter) {
         if (searchClause != null) {
@@ -196,6 +215,9 @@ public class WithItem<K extends ParenthesedStatement> implements Serializable {
                     builder.append(withItemList.get(i)).append(i < size - 1 ? "," : "");
                 }
                 builder.append(")");
+            }
+            if (usingKeyExpressions != null) {
+                builder.append(" USING KEY (").append(usingKeyExpressions).append(")");
             }
             builder.append(" AS ");
             if (materialized) {

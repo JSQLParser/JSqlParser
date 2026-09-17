@@ -187,6 +187,10 @@ public enum Feature {
      */
     joinSemi,
     /**
+     * @see net.sf.jsqlparser.statement.select.Join#isAnti()
+     */
+    joinAnti,
+    /**
      * "INNER" join
      */
     joinInner,

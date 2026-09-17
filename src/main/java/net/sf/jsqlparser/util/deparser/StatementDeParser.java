@@ -97,6 +97,17 @@ import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.PragmaStatement;
+import net.sf.jsqlparser.statement.ExtensionStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.AssertStatement;
 import net.sf.jsqlparser.statement.export.ExportDataStatement;
 import net.sf.jsqlparser.statement.load.LoadDataStatement;
@@ -450,7 +461,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(DescribeStatement describe, S context) {
         builder.append(describe.getDescribeType());
         builder.append(" ");
-        builder.append(describe.getTable());
+        if (describe.getSelect() != null) {
+            describe.getSelect().accept(this, context);
+        } else {
+            builder.append(describe.getTable());
+        }
         return builder;
     }
 
@@ -559,14 +574,80 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     }
 
     @Override
+    public <S> StringBuilder visit(PragmaStatement pragmaStatement, S context) {
+        pragmaStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
         assertStatement.appendTo(builder);
         return builder;
     }
 
     @Override
+    public <S> StringBuilder visit(ExtensionStatement extensionStatement, S context) {
+        extensionStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
     public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
         exportDataStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AttachStatement attachStatement, S context) {
+        attachStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DetachStatement detachStatement, S context) {
+        detachStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ConnectStatement connectStatement, S context) {
+        connectStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DisconnectStatement disconnectStatement, S context) {
+        disconnectStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(PrepareStatement prepareStatement, S context) {
+        prepareStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(DeallocateStatement deallocateStatement, S context) {
+        deallocateStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CopyStatement copyStatement, S context) {
+        copyStatement.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateMacro createMacro, S context) {
+        createMacro.appendTo(builder);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateExtensionRepository createExtensionRepository, S context) {
+        createExtensionRepository.appendTo(builder);
         return builder;
     }
 

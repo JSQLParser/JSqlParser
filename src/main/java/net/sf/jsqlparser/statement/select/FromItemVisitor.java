@@ -104,6 +104,14 @@ public interface FromItemVisitor<T> {
         this.visit(pivotQuery, null);
     }
 
+    default <S> T visit(UnPivotQuery unPivotQuery, S context) {
+        return null;
+    }
+
+    default void visit(UnPivotQuery unPivotQuery) {
+        this.visit(unPivotQuery, null);
+    }
+
     <S> T visit(SetOperationList setOperationList, S context);
 
     default void visit(SetOperationList setOperationList) {
