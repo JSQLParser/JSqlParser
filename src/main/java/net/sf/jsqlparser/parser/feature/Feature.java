@@ -614,6 +614,9 @@ public enum Feature {
      */
     commentOnView,
 
+    /** Additional structured catalog targets of COMMENT ON. */
+    commentOnIndex, commentOnSchema, commentOnSequence, commentOnDomain, commentOnType, commentOnMaterializedView, commentOnFunction, commentOnConstraint,
+
     /**
      * SQL "DESCRIBE" statement is allowed
      *
