@@ -1677,6 +1677,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    // In these dialects -> always denotes JSON access, even after a comma or parentheses.
+    private boolean isJsonArrowDialect() {
+        return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                || isMySqlDialect();
+    }
+
     private boolean isMySqlDialect() {
         String dialect = getAsString(Feature.dialect);
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
@@ -10390,7 +10396,7 @@ ExpressionList SimpleExpressionList():
     (
         LOOKAHEAD(2, {!interrupted} ) ","
         (
-            LOOKAHEAD( RelObjectName() "->" ) expr=LambdaExpression()
+            LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
             expr=SimpleExpression()
         )
@@ -10453,7 +10459,7 @@ ExpressionList ComplexExpressionList():
             |
             LOOKAHEAD(2) expr=PostgresNamedFunctionParameter()
             |
-            LOOKAHEAD( RelObjectName() "->" ) expr=LambdaExpression()
+            LOOKAHEAD( RelObjectName() "->", { !isJsonArrowDialect() } ) expr=LambdaExpression()
             |
             expr=Expression()
         ) { expressions.add(expr); }
@@ -10852,7 +10858,7 @@ Expression PrimaryExpression() #PrimaryExpression:
             // SELECT map_filter(my_column, (k,v) -> v.my_inner_column = 'some_value')
             // First-arg form (issue #2195): array_map((x,y,z) -> x + y, ...)
             (
-                LOOKAHEAD(2) "->"
+                LOOKAHEAD(2, { !isJsonArrowDialect() }) "->"
                       retval = Expression()
                       {
                           retval = LambdaExpression.from(list, retval);
