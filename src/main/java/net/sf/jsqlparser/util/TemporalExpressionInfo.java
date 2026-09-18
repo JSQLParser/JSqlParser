@@ -71,48 +71,62 @@ public final class TemporalExpressionInfo {
      * and expressions outside the supported call shapes return an empty result.
      */
     public static Optional<TemporalExpressionInfo> from(Expression source, Dialect dialect) {
-        Expression expression = source;
         if (dialect != Dialect.POSTGRESQL && dialect != Dialect.MYSQL) {
             return Optional.empty();
         }
-        while (expression instanceof ParenthesedExpressionList
-                && ((ParenthesedExpressionList<?>) expression).size() == 1) {
-            expression = ((ParenthesedExpressionList<?>) expression).get(0);
-        }
-        String name;
-        Integer precision = null;
-        boolean parentheses = false;
+        Expression expression = unwrap(source);
         if (expression instanceof TimeKeyExpression) {
-            name = ((TimeKeyExpression) expression).getStringValue();
-            if (name != null && name.endsWith("()")) {
-                parentheses = true;
-                name = name.substring(0, name.length() - 2);
-            }
-        } else if (expression instanceof Column) {
+            return fromKeyword(((TimeKeyExpression) expression).getStringValue(), dialect);
+        }
+        if (expression instanceof Column) {
             Column column = (Column) expression;
             if (column.getTable() != null && column.getTable().getName() != null) {
                 return Optional.empty();
             }
-            name = column.getColumnName();
-        } else if (expression instanceof Function && isPlainCall((Function) expression)) {
-            Function function = (Function) expression;
-            name = function.getName();
-            parentheses = true;
-            if (function.getParameters() != null && !function.getParameters().isEmpty()) {
-                if (function.getParameters().size() != 1
-                        || !(function.getParameters().get(0) instanceof LongValue)) {
-                    return Optional.empty();
-                }
-                BigInteger value =
-                        ((LongValue) function.getParameters().get(0)).getBigIntegerValue();
-                if (value.signum() < 0 || value.bitLength() >= Integer.SIZE) {
-                    return Optional.empty();
-                }
-                precision = value.intValue();
-            }
-        } else {
+            return create(column.getColumnName(), null, false, dialect);
+        }
+        if (expression instanceof Function) {
+            return fromFunction((Function) expression, dialect);
+        }
+        return Optional.empty();
+    }
+
+    private static Expression unwrap(Expression source) {
+        Expression expression = source;
+        while (expression instanceof ParenthesedExpressionList
+                && ((ParenthesedExpressionList<?>) expression).size() == 1) {
+            expression = ((ParenthesedExpressionList<?>) expression).get(0);
+        }
+        return expression;
+    }
+
+    private static Optional<TemporalExpressionInfo> fromKeyword(String name, Dialect dialect) {
+        boolean parentheses = name != null && name.endsWith("()");
+        String keyword = parentheses ? name.substring(0, name.length() - 2) : name;
+        return create(keyword, null, parentheses, dialect);
+    }
+
+    private static Optional<TemporalExpressionInfo> fromFunction(Function function,
+            Dialect dialect) {
+        if (!isPlainCall(function)) {
             return Optional.empty();
         }
+        if (function.getParameters() == null || function.getParameters().isEmpty()) {
+            return create(function.getName(), null, true, dialect);
+        }
+        if (function.getParameters().size() != 1
+                || !(function.getParameters().get(0) instanceof LongValue)) {
+            return Optional.empty();
+        }
+        BigInteger value = ((LongValue) function.getParameters().get(0)).getBigIntegerValue();
+        if (value.signum() < 0 || value.bitLength() >= Integer.SIZE) {
+            return Optional.empty();
+        }
+        return create(function.getName(), value.intValue(), true, dialect);
+    }
+
+    private static Optional<TemporalExpressionInfo> create(String name, Integer precision,
+            boolean parentheses, Dialect dialect) {
         if (name == null) {
             return Optional.empty();
         }
