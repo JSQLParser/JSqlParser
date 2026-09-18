@@ -15,12 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
@@ -34,30 +30,20 @@ import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
 
 class RowsFromColumnDefinitionTest {
 
-    // Accepted/rejected fixtures were checked against PostgreSQL 18.6.
-    static Stream<String> validSql() throws IOException {
-        return fixture("rows-from-valid.sql");
-    }
-
-    static Stream<String> invalidSql() throws IOException {
-        return fixture("rows-from-invalid.sql");
-    }
-
-    private static Stream<String> fixture(String name) throws IOException {
-        try (InputStream input = RowsFromColumnDefinitionTest.class.getResourceAsStream(name)) {
-            return new String(input.readAllBytes(), StandardCharsets.UTF_8).lines()
-                    .filter(line -> !line.isBlank());
-        }
-    }
-
+    // Accepted/rejected cases are data records, not executable SQL batch scripts.
+    // Both outcomes were checked against PostgreSQL 18.6.
     @ParameterizedTest
-    @MethodSource("validSql")
-    void preservesDefinitionsAndOuterAliasesThroughBothRenderers(String sql)
+    @CsvFileSource(resources = "rows-from-cases.tsv", delimiter = '\t')
+    void preservesValidDefinitionsAndRejectsMalformedLists(boolean valid, String sql)
             throws JSQLParserException {
+        if (!valid) {
+            assertThrows(JSQLParserException.class, () -> parse(sql));
+            return;
+        }
         PlainSelect select = parse(sql);
         StringBuilder visitor = new StringBuilder();
         select.accept(new StatementDeParser(visitor));
@@ -66,12 +52,6 @@ class RowsFromColumnDefinitionTest {
             assertEquals(select.toString(), reparsed.toString());
             assertEquals(select.getFromItem().getClass(), reparsed.getFromItem().getClass());
         }
-    }
-
-    @ParameterizedTest
-    @MethodSource("invalidSql")
-    void rejectsTableConstraintsAndMalformedColumnLists(String sql) {
-        assertThrows(JSQLParserException.class, () -> parse(sql));
     }
 
     @Test
