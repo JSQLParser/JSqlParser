@@ -344,8 +344,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Statements statements, S context) {
-        statements.accept(this, context);
-        return builder;
+        return statements.appendTo(builder, statement -> statement.accept(this, context));
     }
 
     @Override
@@ -435,18 +434,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Block block, S context) {
-        builder.append("BEGIN\n");
-        if (block.getStatements() != null) {
-            for (Statement stmt : block.getStatements()) {
-                stmt.accept(this, context);
-                builder.append(";\n");
-            }
-        }
-        builder.append("END");
-        if (block.hasSemicolonAfterEnd()) {
-            builder.append(";");
-        }
-        return builder;
+        return block.appendTo(builder, statements -> statements.accept(this, context));
     }
 
     @Override
@@ -563,8 +551,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(IfElseStatement ifElseStatement, S context) {
-        ifElseStatement.appendTo(builder);
-        return builder;
+        return ifElseStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                statement -> statement.accept(this, context));
     }
 
     @Override

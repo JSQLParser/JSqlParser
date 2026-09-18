@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.function.Consumer;
+
 public class Block implements Statement {
     private boolean hasSemicolonAfterEnd = false;
 
@@ -36,9 +38,13 @@ public class Block implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Statements> statementsPrinter) {
         builder.append("BEGIN\n");
         if (statements != null) {
-            builder.append(statements);
+            statementsPrinter.accept(statements);
         }
         builder.append("END");
         if (hasSemicolonAfterEnd) {

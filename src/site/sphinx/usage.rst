@@ -690,6 +690,20 @@ The object model works in both directions. Build the tree from Java and print it
 
     Assertions.assertEquals(expectedSQLStr, builder.toString());
 
+The same visitor can render an entire statement list:
+
+.. code-block:: java
+
+    Statements statements = CCJSqlParserUtil.parseStatements("SELECT 1; SELECT 2;");
+    StringBuilder script = new StringBuilder();
+    statements.accept(new StatementDeParser(script), null);
+    Assertions.assertEquals("SELECT 1;\nSELECT 2;\n", script.toString());
+
+Statement lists and nested blocks share the separator policy used by
+``Statements.toString()``. Blocks and ``IF/ELSE`` statements retain their own
+semicolon settings. Custom deparsers receive each child statement and the
+``IF/ELSE`` condition through the visitor API, with the supplied context.
+
 
 ODBC timestamp intervals
 ==============================
