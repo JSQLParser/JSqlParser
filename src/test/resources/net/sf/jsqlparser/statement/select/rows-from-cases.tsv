@@ -1,0 +1,20 @@
+true	SELECT * FROM ROWS FROM (json_to_recordset('[{"a":1}]') AS (a integer)) WITH ORDINALITY
+true	SELECT * FROM ROWS FROM (json_to_recordset('[{"a":1,"b":"x"}]') AS (a integer, b text)) AS r
+true	SELECT * FROM ROWS FROM (json_to_recordset('[{"a":1}]') AS (a integer), generate_series(1, 2)) WITH ORDINALITY AS r(a, n, ord)
+true	SELECT * FROM ROWS FROM (generate_series(1, 2), jsonb_to_recordset('[{"a":1.25}]'::jsonb) AS (a numeric(10, 2))) AS r(n, amount)
+true	SELECT * FROM ROWS FROM (json_to_record('{"a":"x"}') AS (a text COLLATE "C"))
+true	SELECT * FROM ROWS FROM (json_to_record('{"a":"x"}') AS (a text COLLATE pg_catalog."C"))
+true	SELECT * FROM ROWS FROM (json_to_record('{"a":[1,2]}') AS (a integer[]))
+true	SELECT * FROM ROWS FROM (json_to_record('{"a":"2026-01-01T12:00:00Z"}') AS (a timestamp(6) with time zone))
+true	SELECT * FROM ROWS FROM (json_to_record('{"odd name":1}') AS ("odd name" integer)) AS r("renamed")
+true	SELECT r.* FROM (VALUES ('[{"a":1}]'::json)) AS src(payload) CROSS JOIN LATERAL ROWS FROM (json_to_recordset(src.payload) AS (a integer)) WITH ORDINALITY AS r
+true	SELECT * FROM ROWS FROM (generate_series(1, 2), generate_series(1, 1)) AS r(a, b)
+true	SELECT * FROM ROWS FROM (json_to_record('{"a":1}') AS (a integer), json_to_record('{"b":2}') AS (b integer))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS ())
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS (a))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer,))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer NOT NULL))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer DEFAULT 1))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS r(a integer))
+false	SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer) WITH ORDINALITY)
+false	SELECT * FROM ROWS FROM ()
