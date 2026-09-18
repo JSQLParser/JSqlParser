@@ -14929,14 +14929,14 @@ ColDataType DataType():
     ColDataType arrayType;
     Integer zonePrecision = null;
 
-    int precision = -1;
+    String precision = null;
     int scale = -1;
 }
 {
     (
         LOOKAHEAD(2) tk=<K_TEXT_LITERAL> {
             type = tk.image;
-            return new ColDataType(type, precision, scale);
+            return ColDataType.fromTypeParameters(type, precision, scale < 0 ? null : Integer.valueOf(scale));
         }
         |
 		LOOKAHEAD(2) tk=<K_ARRAY_LITERAL> (
@@ -14963,13 +14963,13 @@ ColDataType DataType():
                     | tk=<K_CHAR> | tk=<K_JSON>  | tk=<K_STRING> ) { type += " " + tk.image; }
             )*
             [
-                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = Integer.valueOf(tk.image); } |  tk=<K_MAX> { precision = Integer.MAX_VALUE; } )
+                LOOKAHEAD(2) "(" ( tk=<S_LONG> { precision = tk.image; } |  tk=<K_MAX> { precision = "MAX"; } )
                 [ <K_BYTE> | <K_CHAR> ]
                 [ "," tk = <S_LONG> { scale = Integer.valueOf(tk.image); } ]
                 ")"
             ]
             {
-                colDataType = new ColDataType(type, precision, scale);
+                colDataType = ColDataType.fromTypeParameters(type, precision, scale < 0 ? null : Integer.valueOf(scale));
                 if (zonePrecision != null) {
                     colDataType.setPrecision(zonePrecision);
                 }
@@ -15158,10 +15158,10 @@ ColDataType ColDataType():
             colDataType.setArgumentsStringList(argumentsStringList);
             // Digits-only arguments are the type's numeric parameters, e.g. mediumint(9).
             if (argumentsStringList.size() == 1 && argumentsStringList.get(0).matches("\\d+")) {
-                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+                colDataType.setNumericPrecision(new java.math.BigInteger(argumentsStringList.get(0)));
             } else if (argumentsStringList.size() == 2 && argumentsStringList.get(0).matches("\\d+")
                     && argumentsStringList.get(1).matches("\\d+")) {
-                colDataType.setPrecision(Integer.valueOf(argumentsStringList.get(0)));
+                colDataType.setNumericPrecision(new java.math.BigInteger(argumentsStringList.get(0)));
                 colDataType.setScale(Integer.valueOf(argumentsStringList.get(1)));
             }
         }
