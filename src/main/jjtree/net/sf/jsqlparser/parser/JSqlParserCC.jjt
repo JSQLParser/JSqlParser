@@ -2927,8 +2927,10 @@ TOKEN:
         // which contains the <SPECIAL_ESC>, then we will need to
         // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
         // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
-        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter);
                 String img = matchedToken.image;
+        // PostgreSQL's explicit E prefix enables escapes independently of ordinary strings.
+        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+                || img.regionMatches(true, 0, "E'", 0, 2);
                 int pos;
                 if (!allowEscape) {
                     pos = indexOfSequence(img, "\\'");
@@ -19116,17 +19118,18 @@ List<String> captureRest() {
 }
 
 /**
-* Reads the tokens of a function or procedure body.
-* A function body can end in 2 ways:
-* 1) BEGIN...END;
-* 2) Postgres: $$...$$...;
-*/
+ * Captures opaque routine declarations through their terminating semicolon.
+ * PostgreSQL AS string bodies can use ordinary, escape or dollar quotes.
+ * Strings and END tokens in parenthesized arguments are not body boundaries.
+ */
 
 JAVACODE
 List<String> captureFunctionBody() {
   List<String> tokens = new LinkedList<String>();
   Token tok;
   boolean foundEnd = false;
+  boolean bodyStarted = false;
+  int parentheses = 0;
   while(true) {
     tok = getToken(1);
     int l = tokens.size();
@@ -19135,17 +19138,43 @@ List<String> captureFunctionBody() {
         tokens.add(tok.image);
       }
       break;
+    } else if (parentheses == 0 && !bodyStarted && tok.kind == K_AS
+            && getToken(2).kind == S_CHAR_LITERAL) {
+        tokens.add(getNextToken().image);
+        tokens.add(captureRoutineBodyLiteral());
+        foundEnd = true;
+        bodyStarted = true;
+        continue;
     } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
         tokens.set(l-1, tokens.get(l-1) + tok.image);
     } else {
         tokens.add(tok.image);
     }
-    foundEnd |= (tok.kind == K_END)
-        || (tok.kind == S_CHAR_LITERAL && StringValue.getDollarQuoteDelimiter(tok.image) != null);
+    foundEnd |= parentheses == 0 && tok.kind == K_END;
+    if (parentheses == 0 && (tok.kind == K_AS || tok.kind == K_BEGIN)) bodyStarted = true;
+    if (tok.kind == OPENING_BRACKET) parentheses++;
+    if (tok.kind == CLOSING_BRACKET) parentheses--;
 
     tok = getNextToken();
   }
   return tokens;
+}
+
+/**
+ * Keeps the separator required by PostgreSQL's continued string literals.
+ * The routine's legacy token list otherwise renders every gap as one space.
+ */
+JAVACODE
+String captureRoutineBodyLiteral() {
+    String literal = getNextToken().image;
+    if (literal.startsWith("$") || !isAdjacentStringConcat()) {
+        return literal;
+    }
+    StringBuilder body = new StringBuilder(literal);
+    while (isAdjacentStringConcat() && getToken(1).image.startsWith("'")) {
+        body.append('\n').append(getNextToken().image);
+    }
+    return body.toString();
 }
 
 /**
