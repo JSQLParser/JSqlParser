@@ -1016,7 +1016,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (function.isEscaped()) {
             builder.append("}");
         }
-        return builder;
+        return function.appendResultColumnDefinitionsTo(builder);
     }
 
     @Override

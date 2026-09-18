@@ -1,0 +1,8 @@
+SELECT * FROM ROWS FROM (json_to_record('{}') AS ())
+SELECT * FROM ROWS FROM (json_to_record('{}') AS (a))
+SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer,))
+SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer NOT NULL))
+SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer DEFAULT 1))
+SELECT * FROM ROWS FROM (json_to_record('{}') AS r(a integer))
+SELECT * FROM ROWS FROM (json_to_record('{}') AS (a integer) WITH ORDINALITY)
+SELECT * FROM ROWS FROM ()
