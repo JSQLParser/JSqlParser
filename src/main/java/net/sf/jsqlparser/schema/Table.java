@@ -521,15 +521,16 @@ public class Table extends ASTNodeAccessImpl
     }
 
     /**
-     * Sets resolved table.
+     * Stores a detached copy of the resolved table's identifier. Reference-specific flags and
+     * clauses are not copied.
      *
      * @param resolvedTable the resolved table
      * @return this table
      */
     public Table setResolvedTable(Table resolvedTable) {
-        // clone, not reference
         if (resolvedTable != null) {
-            this.resolvedTable = resolvedTable.copyName();
+            this.resolvedTable = new Table();
+            resolvedTable.copyIdentifierPartsTo(this.resolvedTable);
         }
         return this;
     }
@@ -577,18 +578,19 @@ public class Table extends ASTNodeAccessImpl
         return tables;
     }
 
+    /** Copies the table identifier, table-variable flag and resolved table identifier. */
     @Override
     public Table clone() {
-        Table clone = copyName();
+        Table clone = new Table();
+        copyIdentifierPartsTo(clone);
         clone.setTableVariable(tableVariable);
         clone.setResolvedTable(this.resolvedTable != null ? this.resolvedTable.clone() : null);
         return clone;
     }
 
-    private Table copyName() {
-        Table copy = new Table();
-        copy.partItems = new ArrayList<>(partItems);
-        copy.partDelimiters = new ArrayList<>(partDelimiters);
-        return copy;
+    /** Copies identifier components and separators, leaving the target's other state unchanged. */
+    private void copyIdentifierPartsTo(Table target) {
+        target.partItems = new ArrayList<>(partItems);
+        target.partDelimiters = new ArrayList<>(partDelimiters);
     }
 }
