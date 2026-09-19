@@ -17,7 +17,7 @@ public class FunctionAllColumns extends AllColumns {
     private Function function;
 
     public FunctionAllColumns(Function function) {
-        super(null, null, null);
+        super(null);
         this.function = function;
     }
 

@@ -7846,7 +7846,27 @@ boolean ColumnsTransformerAhead() #void:
 {
       LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
     | LOOKAHEAD( ( <K_APPLY> | <K_REPLACE> ) AliasColumns() ) { return false; }
-    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
+        | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
+      { return true; }
+    | { return false; }
+}
+
+/**
+ * Recognizes a transformer after the AllColumns-Pattern '*'.
+ *
+ * This differs from ColumnsTransformerAhead() in one point: after '*' an alias is not a
+ * meaningful reading of REPLACE, so REPLACE (col) stays a transformer here whereas
+ * APPLY (col1, col2) remains an alias. Reusing the COLUMNS(...) rules verbatim would turn
+ * '* REPLACE (x)' into an alias.
+ */
+boolean AllColumnsTransformerAhead() #void:
+{}
+{
+      LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
+    | LOOKAHEAD( <K_APPLY> AliasColumns() ) { return false; }
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
+        | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
       { return true; }
     | { return false; }
 }
@@ -7914,6 +7934,7 @@ ColumnsTransformer ColumnsTransformer():
     ParenthesedExpressionList<Column> exceptColumns;
     List<SelectItem<?>> replaceItems;
     ColumnsTransformer transformer;
+    Token tk;
 }
 {
     (
@@ -7927,8 +7948,11 @@ ColumnsTransformer ColumnsTransformer():
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.APPLY)
                   .setApplyExpression(applyExpression); }
 
-        | <K_EXCEPT> exceptColumns = ParenthesedColumnList()
-          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+        | ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList()
+          { transformer = new ColumnsTransformer(
+                  tk.kind == K_EXCLUDE
+                          ? ColumnsTransformer.ColumnsTransformerType.EXCLUDE
+                          : ColumnsTransformer.ColumnsTransformerType.EXCEPT)
                   .setExceptColumns(exceptColumns); }
 
         | <K_REPLACE> "(" replaceItems = SelectItemsList() ")"
@@ -7945,20 +7969,32 @@ ColumnsTransformer ColumnsTransformer():
  */
 AllColumns AllColumns(boolean allowAdditions):
 {
-    ParenthesedExpressionList<Column> exceptColumns = null;
-    List<SelectItem<?>> replaceExpressions = null;
-    String exceptKeyword=null;
-    Token tk;
+    ColumnsTransformer transformer;
+    List<ColumnsTransformer> transformers = null;
 }
 {
     "*"
-    // BigData allows EXCEPT, DuckDB allows EXCLUDE
-    [ LOOKAHEAD(2, { allowAdditions }) ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList() { exceptKeyword=tk.image; } ]
-    // BigData allows REPLACE
-    [ LOOKAHEAD(2, { allowAdditions }) <K_REPLACE> "(" replaceExpressions = SelectItemsList() ")" ]
+    // BigData allows EXCEPT, DuckDB allows EXCLUDE, ClickHouse allows APPLY;
+    // they may repeat and combine in any order
+    (
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
+            | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
+        {
+            if (!allowAdditions || !AllColumnsTransformerAhead()) {
+                break;
+            }
+        }
+        transformer = ColumnsTransformer()
+        {
+            if (transformers == null) {
+                transformers = new ArrayList<ColumnsTransformer>();
+            }
+            transformers.add(transformer);
+        }
+    )*
 
     {
-        return new AllColumns(exceptColumns, replaceExpressions, exceptKeyword);
+        return new AllColumns(transformers);
     }
 }
 

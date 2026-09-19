@@ -10,9 +10,8 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReturningReferenceType;
 
@@ -22,24 +21,17 @@ public class AllTableColumns extends AllColumns {
     private ReturningReferenceType returningReferenceType = null;
     private String returningQualifier = null;
 
-    public AllTableColumns(Table table, ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions, String exceptKeyword) {
-        super(exceptColumns, replaceExpressions, exceptKeyword);
+    public AllTableColumns(Table table, List<ColumnsTransformer> transformers) {
+        super(transformers);
         this.table = table;
     }
 
-    public AllTableColumns(Table table, ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions) {
-        this(table, exceptColumns, replaceExpressions, "EXCEPT");
-    }
-
     public AllTableColumns(Table table) {
-        this(table, null, null);
+        this(table, (List<ColumnsTransformer>) null);
     }
 
     public AllTableColumns(Table table, AllColumns allColumns) {
-        this(table, allColumns.exceptColumns, allColumns.replaceExpressions,
-                allColumns.getExceptKeyword());
+        this(table, allColumns.getTransformers());
     }
 
     public Table getTable() {
