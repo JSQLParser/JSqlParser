@@ -9,14 +9,13 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.schema.Column;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AllColumns extends ASTNodeAccessImpl implements Expression {
     protected ExpressionList<Column> exceptColumns;
@@ -87,7 +86,8 @@ public class AllColumns extends ASTNodeAccessImpl implements Expression {
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("*");
         if (exceptColumns != null && !exceptColumns.isEmpty()) {
-            builder.append(" ").append(exceptKeyword).append("( ");
+            builder.append(" ").append(exceptKeyword == null ? "EXCEPT" : exceptKeyword)
+                    .append("( ");
             exceptColumns.appendTo(builder);
             builder.append(" )");
         }
