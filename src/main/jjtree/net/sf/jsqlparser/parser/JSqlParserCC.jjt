@@ -4685,10 +4685,18 @@ CopyStatement CopyStatement() #CopyStatement:
         |
         token=<S_IDENTIFIER> { copyStatement.setPath(token.image); }
     )
+    [ LOOKAHEAD({ getToken(1).kind == K_WITH })
+        <K_WITH> { copyStatement.setWithKeyword(true); } ]
     [
         LOOKAHEAD(2) "(" option=DatabaseOption() { options.add(option); }
         ( "," option=DatabaseOption() { options.add(option); } )*
-        ")" { copyStatement.setOptions(options); }
+        ")" {
+            if (copyStatement.isWithKeyword()
+                    || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+                requireDdlSyntax(!options.contains(""), "Expected a COPY option");
+            }
+            copyStatement.setOptions(options);
+        }
     ]
     { return copyStatement; }
 }
