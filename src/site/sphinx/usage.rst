@@ -1243,3 +1243,37 @@ sequences, types or functions as tables. Statement visitors visit comment
 literals, and custom SQL deparsers can replace the explicit relation or literal.
 Feature analysis reports a schema modification. Validation exposes a separate
 ``commentOn...`` capability for each additional target kind.
+
+Current date/time expression metadata
+=====================================
+
+``TemporalExpressionInfo.from(expression, dialect)`` provides a common read-only
+view of MySQL and PostgreSQL current-date/time expressions. It recognizes the
+existing ``TimeKeyExpression``, ``Function`` and ``Column`` representations without
+replacing nodes or changing their SQL rendering:
+
+.. code-block:: java
+
+    PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+            "SELECT CURRENT_TIMESTAMP(6)", p -> p.withDialect(Dialect.POSTGRESQL));
+    TemporalExpressionInfo info = TemporalExpressionInfo.from(
+            select.getSelectItem(0).getExpression(), Dialect.POSTGRESQL).orElseThrow();
+    // info.getKind() == TemporalExpressionInfo.Kind.CURRENT_TIMESTAMP
+    // info.getPrecision() == 6
+
+Import ``TemporalExpressionInfo`` from ``net.sf.jsqlparser.util``. Precision is
+``null`` when omitted, and explicit zero is preserved. ``getName()`` retains the
+original keyword or function name; ``hasParentheses()`` distinguishes bare and
+call forms. Results are snapshots: call ``from`` again after editing an AST.
+
+The dialect is significant. MySQL ``LOCALTIME`` and ``LOCALTIMESTAMP`` are aliases
+of ``CURRENT_TIMESTAMP``; PostgreSQL exposes ``LOCAL_TIME`` and
+``LOCAL_TIMESTAMP`` separately. MySQL ``NOW``, ``CURDATE`` and ``CURTIME`` aliases
+are recognized in their function-call forms. PostgreSQL ``now()`` is recognized
+without precision arguments. Quoted or qualified identifiers, unrelated
+expressions and unsupported dialects return ``Optional.empty()``.
+
+This API identifies expression metadata rather than performing database
+validation. Precision reports the requested value, without applying defaults,
+server range checks or clamping. For example, PostgreSQL accepts precision 7 with
+a warning and clamps it to 6, whereas MySQL rejects it.
