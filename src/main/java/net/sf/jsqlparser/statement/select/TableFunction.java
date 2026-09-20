@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
+import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
@@ -228,13 +229,24 @@ public class TableFunction extends Function implements FromItem {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         if (prefix != null) {
             builder.append(prefix).append(" ");
         }
         if (rowsFromFunctions != null) {
-            builder.append("ROWS FROM ").append(rowsFromFunctions);
+            builder.append("ROWS FROM (");
+            for (int i = 0; i < rowsFromFunctions.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                expressionPrinter.accept(rowsFromFunctions.get(i));
+            }
+            builder.append(")");
         } else {
-            builder.append(function);
+            expressionPrinter.accept(function);
         }
 
         if (withClause != null) {

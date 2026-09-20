@@ -13571,15 +13571,50 @@ ParenthesedExpressionList<Function> RowsFromFunctionList():
 }
 {
     "("
-        function = Function() { functions.add(function); }
+        function = RowsFromFunction() { functions.add(function); }
         (
             ","
-            function = Function() { functions.add(function); }
+            function = RowsFromFunction() { functions.add(function); }
         )*
     ")"
     {
         return functions;
     }
+}
+
+/** A function and its optional PostgreSQL record column definition list. */
+Function RowsFromFunction():
+{
+    Function function;
+    List<ColumnDefinition> columns = new ArrayList<ColumnDefinition>();
+    ColumnDefinition column;
+}
+{
+    function=Function()
+    [ <K_AS> "("
+        column=RowsFromColumnDefinition() { columns.add(column); }
+        ( "," column=RowsFromColumnDefinition() { columns.add(column); } )*
+        ")" { function.setResultColumnDefinitions(columns); }
+    ]
+    { return function; }
+}
+
+ColumnDefinition RowsFromColumnDefinition():
+{
+    String name;
+    String collation;
+    String part;
+    ColDataType type;
+    ColumnDefinition column;
+}
+{
+    name=RelObjectName() type=ColDataType()
+    { column = new ColumnDefinition(name, type); }
+    [ <K_COLLATE> collation=RelObjectName()
+        ( "." part=RelObjectName() { collation += "." + part; } )*
+        { column.addColumnOptions(ColumnOption.collate(collation)); }
+    ]
+    { return column; }
 }
 
 List<Index.ColumnParams> ColumnNamesWithParamsList() : {
