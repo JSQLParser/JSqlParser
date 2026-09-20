@@ -896,6 +896,15 @@ Enable the PostgreSQL dialect when parsing a script containing a ``DO`` block:
 Semicolons and SQL statements inside the body remain part of its string literal;
 they do not split the surrounding script into additional statements.
 
+PostgreSQL ``CREATE FUNCTION`` and ``CREATE PROCEDURE`` declarations also preserve
+``AS '...'``, ``AS E'...'`` and dollar-quoted bodies as opaque text. Their
+``getFunctionDeclarationParts()`` list retains the body and trailing options,
+while a following statement is parsed separately. Newline-separated body string
+continuations retain the newline needed when the declaration is rendered again.
+Use ``Dialect.POSTGRESQL`` for tagged dollar quotes and PostgreSQL-specific DDL
+such as schema-qualified index collations and operator classes. This support
+does not validate PL/pgSQL source or build an AST for statements inside the body.
+
 With ``Dialect.POSTGRESQL``, ``#`` terminates an unquoted identifier, so JSON
 operators such as ``js#>>'{a}'`` and ``js#>'{a}'`` work without surrounding
 spaces. Quote identifiers containing ``#``, for example ``"js#"``. Other
