@@ -4701,12 +4701,26 @@ PrepareStatement PrepareStatement() #PrepareStatement:
     PrepareStatement prepareStatement = new PrepareStatement();
     ObjectNames name;
     Statement statement;
+    List<ColDataType> parameterTypes = new ArrayList<ColDataType>();
+    ColDataType parameterType;
 }
 {
     <K_PREPARE> name=RelObjectNames()
     { prepareStatement.setName(String.join(".", name.getNames())); }
+    [ "(" parameterType=PrepareParameterType() { parameterTypes.add(parameterType); }
+        ( "," parameterType=PrepareParameterType() { parameterTypes.add(parameterType); } )*
+        ")" { prepareStatement.setParameterTypes(parameterTypes); } ]
     <K_AS> statement=SingleStatement() { prepareStatement.setStatement(statement); }
     { return prepareStatement; }
+}
+
+/** PostgreSQL UNKNOWN leaves a parameter type to be inferred from the prepared statement. */
+ColDataType PrepareParameterType():
+{ ColDataType type; Token token; }
+{
+    ( token=<K_UNKNOWN> { type = new ColDataType(token.image); }
+      | type=ColDataType() )
+    { return type; }
 }
 
 /**
