@@ -63,6 +63,17 @@ public class ColDataType implements Serializable {
     }
 
     /**
+     * Creates a parameterized type, using {@code null} for an omitted parameter. Unlike the legacy
+     * primitive constructor, this accepts negative scales, including {@code -1}. The legacy
+     * {@link Integer#MAX_VALUE} precision sentinel continues to represent MAX.
+     */
+    public static ColDataType fromNumericParameters(String dataType, Integer precision,
+            Integer scale) {
+        return fromTypeParameters(dataType, precision == null ? null
+                : precision == Integer.MAX_VALUE ? "MAX" : precision.toString(), scale);
+    }
+
+    /**
      * Creates a type from its numeric parameter spelling. Unlike the legacy primitive constructor,
      * a numeric 2147483647 is distinct from MAX and larger lengths are retained without narrowing.
      */
@@ -295,8 +306,8 @@ public class ColDataType implements Serializable {
     }
 
     /**
-     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)}. Returns
-     * {@code null} when absent.
+     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)} or {@code -3}
+     * for PostgreSQL {@code NUMERIC(2, -3)}. Returns {@code null} when absent.
      */
     public Integer getScale() {
         return scale;

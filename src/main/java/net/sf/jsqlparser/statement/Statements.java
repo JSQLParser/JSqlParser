@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Statements extends ArrayList<Statement> implements Serializable {
 
@@ -34,17 +35,30 @@ public class Statements extends ArrayList<Statement> implements Serializable {
         return type.cast(get(index));
     }
 
+    /**
+     * Appends each statement using the supplied renderer and the list's separators. Blocks and
+     * IF/ELSE statements retain their own semicolon settings. Null entries produced by error
+     * recovery retain the legacy "null;" placeholder without invoking the renderer.
+     */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Statement> statementPrinter) {
+        for (Statement stmt : this) {
+            if (stmt == null) {
+                builder.append("null");
+            } else {
+                statementPrinter.accept(stmt);
+            }
+            // IfElseStatements and Blocks control the Semicolons by themselves
+            if (!(stmt instanceof IfElseStatement || stmt instanceof Block)) {
+                builder.append(';');
+            }
+            builder.append('\n');
+        }
+        return builder;
+    }
+
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
-        for (Statement stmt : this) {
-            // IfElseStatements and Blocks control the Semicolons by themselves
-            if (stmt instanceof IfElseStatement || stmt instanceof Block) {
-                b.append(stmt).append("\n");
-            } else {
-                b.append(stmt).append(";\n");
-            }
-        }
-        return b.toString();
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
     }
 }

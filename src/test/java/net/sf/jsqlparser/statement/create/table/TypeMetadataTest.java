@@ -39,6 +39,10 @@ class TypeMetadataTest {
             "MYSQL | mediumint(9) UNSIGNED | mediumint | 9 |",
             "MYSQL | ENUM('a(b)', 'c') | ENUM | |",
             "POSTGRESQL | NUMERIC(1000, 1000) | NUMERIC | 1000 | 1000",
+            "POSTGRESQL | NUMERIC(2, -1) | NUMERIC | 2 | -1",
+            "POSTGRESQL | NUMERIC(1000, -1000)[] | NUMERIC | 1000 | -1000",
+            "POSTGRESQL | pg_catalog.numeric(2, -3) | pg_catalog.numeric | 2 | -3",
+            "POSTGRESQL | \"numeric\"(2, -3) | \"numeric\" | 2 | -3",
             "POSTGRESQL | NUMERIC(3, 5) | NUMERIC | 3 | 5",
             "POSTGRESQL | DECIMAL(10) | DECIMAL | 10 |",
             "POSTGRESQL | CHARACTER VARYING(255) | CHARACTER VARYING | 255 |",
@@ -108,6 +112,27 @@ class TypeMetadataTest {
     }
 
     @Test
+    void preservesNumericFactoryCompatibilityAlongsideExactParameters() {
+        ColDataType negative = ColDataType.fromNumericParameters("numeric", 2, -1);
+        assertMetadata(negative, "numeric", 2, -1);
+        assertEquals("numeric (2, -1)", negative.toString());
+
+        ColDataType max = ColDataType.fromNumericParameters("VARCHAR", Integer.MAX_VALUE, null);
+        assertTrue(max.isMaxPrecision());
+        assertNull(max.getNumericPrecision());
+        assertEquals("VARCHAR (MAX)", max.toString());
+
+        ColDataType numeric = ColDataType.fromTypeParameters("BLOB", "2147483647", null);
+        assertFalse(numeric.isMaxPrecision());
+        assertEquals(BigInteger.valueOf(Integer.MAX_VALUE), numeric.getNumericPrecision());
+        assertEquals("BLOB (2147483647)", numeric.toString());
+
+        ColDataType omitted = ColDataType.fromNumericParameters("numeric", null, null);
+        assertMetadata(omitted, "numeric", null, null);
+        assertEquals("numeric", omitted.toString());
+    }
+
+    @Test
     void metadataSettersDoNotLeaveStaleLargeOrMaxValues() throws JSQLParserException {
         ColDataType type = parseType("BLOB(4294967295)", Dialect.MYSQL);
         type.setPrecision(5);
@@ -143,7 +168,7 @@ class TypeMetadataTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"BLOB(-1)", "BLOB(1.5)", "BLOB(4294967295", "DECIMAL(10,)"})
+    @ValueSource(strings = {"BLOB(-)", "BLOB(1.5)", "BLOB(4294967295", "DECIMAL(10,)"})
     void rejectsMalformedNumericParameters(String type) {
         assertThrows(JSQLParserException.class, () -> parseType(type, Dialect.MYSQL));
     }
@@ -154,6 +179,16 @@ class TypeMetadataTest {
         String length = "18446744073709551616";
         assertEquals(new BigInteger(length),
                 parseType("BLOB(" + length + ")", Dialect.MYSQL).getNumericPrecision());
+    }
+
+    @Test
+    void preservesSignedGenericArgumentsWithoutTreatingThemAsLengths() throws JSQLParserException {
+        // The shared type-argument grammar accepts signed integers; MySQL rejects this length.
+        ColDataType type = parseType("BLOB(-1)", Dialect.MYSQL);
+        assertEquals(List.of("-1"), type.getArgumentsStringList());
+        assertMetadata(type, "BLOB", null, null);
+        assertEquals(List.of("-1"),
+                parseType(type.toString(), Dialect.MYSQL).getArgumentsStringList());
     }
 
     private static ColDataType parseType(String sql, Dialect dialect) throws JSQLParserException {
