@@ -1515,10 +1515,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "\"XML\"".equalsIgnoreCase(name);
     }
 
+    private boolean isMySqlStatisticsOptionAhead() {
+        String name = getToken(1).image;
+        return "STATS_AUTO_RECALC".equalsIgnoreCase(name)
+                || "STATS_PERSISTENT".equalsIgnoreCase(name)
+                || "STATS_SAMPLE_PAGES".equalsIgnoreCase(name);
+    }
+
     private boolean isMySqlTableOptionAhead() {
         int kind = getToken(1).kind;
         if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
-                || kind == K_AUTO_INCREMENT) {
+                || kind == K_AUTO_INCREMENT || kind == K_UNION
+                || isMySqlStatisticsOptionAhead()) {
             return true;
         }
         if (kind == K_CHARACTER && getToken(2).kind == K_SET
@@ -14803,7 +14811,6 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     Table table = null;
     List<TableElement> tableElements = new ArrayList<TableElement>();
     TableElement element;
-    List<String> tableOptions = new ArrayList<String>();
     List<TableOption> typedTableOptions = new ArrayList<TableOption>();
     List<String> createOptions = new ArrayList<String>();
     Token tk = null;
@@ -14861,21 +14868,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ LOOKAHEAD({ partitionOfTable != null })
         partitionBound=PostgreSqlPartitionBound()
         { createTable.setPartitionBound(partitionBound); } ]
-    ( LOOKAHEAD(2, { getToken(1).kind != K_AS
-            && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
-        (
-            LOOKAHEAD({ isMySqlTableOptionAhead() })
-            tableOption=MySqlTableOption() {
-                typedTableOptions.add(tableOption);
-                tableOptions.addAll(tableOption.getTokens());
-            }
-            |
-            parameter=CreateParameter() {
-                typedTableOptions.add(TableOption.raw(parameter));
-                tableOptions.addAll(parameter);
-            }
-        )
-    )*
+    CreateTableOptions(typedTableOptions)
     [ partitioning=CreateTablePartitioning() { createTable.setPartitioning(partitioning); } ]
 
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
@@ -14935,16 +14928,59 @@ ColumnDefinition CreateTableColumnDefinition(boolean typed):
     { if (true) { return column; } }
 }
 
+/** Reads complete options and keeps commas separate from legacy raw token groups. */
+void CreateTableOptions(List<TableOption> options):
+{ TableOption option; }
+{
+    [ LOOKAHEAD(2, { getToken(1).kind != K_AS
+            && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
+        option=CreateTableOption() { options.add(option); }
+        ( LOOKAHEAD(2, { getToken(1).kind != K_AS
+                && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY)
+                && !(getToken(1).kind == K_COMMA
+                    && "INTERLEAVE".equalsIgnoreCase(getToken(2).image)) })
+            [ "," ] option=CreateTableOption() { options.add(option); }
+        )*
+    ]
+}
+
+TableOption CreateTableOption():
+{ TableOption option; List<String> tokens; }
+{
+    ( LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
+      | tokens=CreateParameter() { option = TableOption.raw(tokens); } )
+    { return option; }
+}
+
 TableOption MySqlTableOption(): {
     Token tk;
     Token tk2 = null;
-    String value;
+    String value = null;
+    List<Table> unionTables = null;
+    Table unionTable;
     boolean useEquals = false;
     String name = "";
     TableOption.Kind kind = null;
     TableOption option;
 } {
     (
+        tk=<K_UNION> { name = tk.image; kind = TableOption.Kind.UNION;
+            unionTables = new ArrayList<Table>(); }
+        [ "=" { useEquals = true; } ]
+        "(" [ unionTable=Table() { unionTables.add(unionTable); }
+            ( "," unionTable=Table() { unionTables.add(unionTable); } )* ] ")"
+        |
+        LOOKAHEAD({ isMySqlStatisticsOptionAhead() }) tk=<S_IDENTIFIER> {
+            name = tk.image;
+            kind = TableOption.Kind.valueOf(name.toUpperCase(Locale.ROOT));
+        }
+        [ "=" { useEquals = true; } ]
+        ( tk=<K_DEFAULT> | tk=<S_LONG> ) { value = tk.image;
+            requireDdlSyntax(kind == TableOption.Kind.STATS_SAMPLE_PAGES
+                    || "DEFAULT".equalsIgnoreCase(value) || "0".equals(value) || "1".equals(value),
+                    "Expected DEFAULT, 0, or 1 for " + name);
+        }
+        |
         tk=<K_ENGINE> {
             name = tk.image;
             kind = TableOption.Kind.ENGINE;
@@ -14989,6 +15025,7 @@ TableOption MySqlTableOption(): {
     )
     {
         option = new TableOption(kind, name, value, useEquals);
+        if (unionTables != null) { option.setUnionTables(unionTables); }
         return option;
     }
 }

@@ -97,6 +97,13 @@ public final class TableDefinitionTraversal {
                 table.getIndexes().forEach(index -> visit(index, expressions, tables));
             }
         }
+        if (table.getTableOptions() != null) {
+            table.getTableOptions().forEach(option -> {
+                if (option.getUnionTables() != null) {
+                    option.getUnionTables().forEach(source -> accept(source, tables));
+                }
+            });
+        }
         accept(table.getTrailingLikeTable(), tables);
         accept(table.getPartitionOf(), tables);
         visit(table.getPartitioning(), expressions);
