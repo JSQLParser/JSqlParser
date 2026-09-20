@@ -287,11 +287,9 @@ public class TestUtils {
 
         @Override
         protected boolean accept(Class<?> clazz) {
-            if (includingASTNode) {
-                return super.accept(clazz);
-            } else {
-                return isNotANode(clazz) && super.accept(clazz);
-            }
+            // Numeric values have value semantics; do not reflect into encapsulated JDK internals.
+            return !Number.class.isAssignableFrom(clazz)
+                    && (includingASTNode || isNotANode(clazz)) && super.accept(clazz);
         }
 
         public boolean isNotANode(Class<?> clazz) {
