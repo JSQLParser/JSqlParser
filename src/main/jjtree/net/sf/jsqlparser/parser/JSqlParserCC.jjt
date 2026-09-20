@@ -4481,60 +4481,58 @@ SetStatement Set(): {
 }
 
 SetStatement SetAssignments(): {
-    Object name;
-    ExpressionList expList;
-    boolean useEqual = false;
-    SetStatement set;
-    Expression exp = null;
+    SetStatement set = new SetStatement();
+    Expression exp;
     Token tk = null;
-    String effectParameter = null;
 }
 {
-    [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) {effectParameter = tk.image; } ]
+    [LOOKAHEAD(3) (tk = <K_LOCAL> | tk = <K_SESSION>) { set.setEffectParameter(tk.image); } ]
+    SetAssignment(set)
     (
-        LOOKAHEAD(2)
-        <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
-        |
-        (
-            name = UserVariable() ["=" { useEqual=true; } ]
-        )
-        |
-        (
-            name = IdentifierChain()
-            ["=" { useEqual=true; } ]
-        )
-    )
-    exp=Expression()
-    {
-        expList = new ExpressionList();
-        expList.add(exp);
-        set = new SetStatement(name, expList)
-            .withUseEqual(useEqual)
-            .withEffectParameter(effectParameter);
-    }
-
-    (
-        { useEqual=false; }
         ","
-        (LOOKAHEAD(3)
-            (
-                ( LOOKAHEAD(2)
-                    <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; useEqual=false; }
-                    |
-                    (name = RelObjectName() ["=" { useEqual=true; } ])
-                )
-                exp=Expression()
-                {
-                    expList = new ExpressionList();
-                    expList.add(exp);
-                    set.add(name, expList, useEqual);
-                }
-            )
-            |
-            exp=Expression() { expList.add(exp); }
-         )
+        ( LOOKAHEAD(3) SetAssignment(set)
+          | exp=Expression() { set.getExpressions(set.getCount() - 1).add(exp); } )
     )*
     { return set; }
+}
+
+/** The first and subsequent assignments use identical names and operators. */
+void SetAssignment(SetStatement set):
+{
+    Object name;
+    Expression expression;
+    SetStatement.AssignmentOperator operator = SetStatement.AssignmentOperator.NONE;
+}
+{
+    (
+    LOOKAHEAD({ (getToken(1).kind == K_CHARACTER && getToken(2).kind == K_SET)
+            || (isKeywordAhead("CHARSET") && !"=".equals(getToken(2).image)
+                && !":=".equals(getToken(2).image)) }) SetCharacterSet(set)
+    |
+    ( LOOKAHEAD(2) <K_DATETIMELITERAL> <K_ZONE> { name = "Time Zone"; }
+      | name=UserVariable()
+      | name=IdentifierChain() )
+    [ "=" { operator = SetStatement.AssignmentOperator.EQUALS; }
+      | ":=" { operator = SetStatement.AssignmentOperator.COLON_EQUALS; } ]
+    expression=Expression()
+    { set.add(name, new ExpressionList<Expression>(expression), operator); }
+    )
+}
+
+/** Character set selection has a single name or DEFAULT, not an arbitrary expression. */
+void SetCharacterSet(SetStatement set):
+{
+    String name;
+    Token value;
+    Expression expression;
+}
+{
+    ( <K_CHARACTER> <K_SET> { name = "CHARACTER SET"; }
+      | <S_IDENTIFIER> { name = "CHARSET"; } )
+    ( value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+      | (value=<S_IDENTIFIER> | value=<S_QUOTED_IDENTIFIER> | value=<K_DEFAULT>)
+        { expression = new Column(value.image); } )
+    { set.add(name, new ExpressionList<Expression>(expression), false); }
 }
 
 SetStatement SqlServerSetOnOffOptions(): {
