@@ -570,7 +570,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
-        assertStatement.appendTo(builder);
+        assertStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
     }
 
@@ -582,7 +583,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
-        exportDataStatement.appendTo(builder);
+        exportDataStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 
@@ -630,7 +633,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CreateMacro createMacro, S context) {
-        createMacro.appendTo(builder);
+        createMacro.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 

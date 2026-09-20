@@ -15,6 +15,8 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.select.Select;
 
+import java.util.function.Consumer;
+
 /**
  * BigQuery's {@code EXPORT DATA [WITH CONNECTION connection] OPTIONS (option_list) AS query}.
  *
@@ -67,14 +69,28 @@ public class ExportDataStatement implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append, builder::append);
+    }
+
+    /** Renders options and the query through the caller's expression and select visitors. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer,
+            Consumer<Select> selectRenderer) {
         builder.append("EXPORT DATA");
         if (connectionName != null) {
             builder.append(" WITH CONNECTION ").append(connectionName);
         }
         if (options != null) {
-            builder.append(" OPTIONS (").append(options).append(")");
+            builder.append(" OPTIONS (");
+            for (int i = 0; i < options.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                expressionRenderer.accept(options.get(i));
+            }
+            builder.append(")");
         }
-        builder.append(" AS ").append(select);
+        builder.append(" AS ");
+        selectRenderer.accept(select);
         return builder;
     }
 

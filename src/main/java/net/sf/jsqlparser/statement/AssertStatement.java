@@ -12,6 +12,8 @@ package net.sf.jsqlparser.statement;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 
+import java.util.function.Consumer;
+
 /**
  * BigQuery's {@code ASSERT expression [AS description]}, which fails the script when the expression
  * does not evaluate to {@code TRUE}.
@@ -62,9 +64,16 @@ public class AssertStatement implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("ASSERT ").append(expression);
+        return appendTo(builder, builder::append);
+    }
+
+    /** Shares statement syntax with deparsers while visiting both expression and description. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
+        builder.append("ASSERT ");
+        expressionRenderer.accept(expression);
         if (description != null) {
-            builder.append(" AS ").append(description);
+            builder.append(" AS ");
+            expressionRenderer.accept(description);
         }
         return builder;
     }
