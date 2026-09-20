@@ -217,29 +217,43 @@ public class Index implements TableElement, Serializable {
         return type;
     }
 
+    /**
+     * Sets the rendered type and refreshes its classification, including when replacing an existing
+     * type. Null and unrecognized types reset the classification to {@link Kind#OTHER}.
+     */
     public void setType(String string) {
         type = string;
-        if (kind == Kind.OTHER && string != null) {
-            String normalized = string.toUpperCase(java.util.Locale.ROOT);
-            if (normalized.startsWith("PRIMARY")) {
-                kind = Kind.PRIMARY_KEY;
-            } else if (normalized.startsWith("UNIQUE")) {
-                kind = Kind.UNIQUE;
-            } else if (normalized.startsWith("FULLTEXT")) {
-                kind = Kind.FULLTEXT;
-            } else if (normalized.startsWith("SPATIAL")) {
-                kind = Kind.SPATIAL;
-            } else if (normalized.startsWith("FOREIGN")) {
-                kind = Kind.FOREIGN_KEY;
-            } else if (normalized.startsWith("CHECK")) {
-                kind = Kind.CHECK;
-            } else if (normalized.startsWith("EXCLUDE")) {
-                kind = Kind.EXCLUDE;
-            } else if (normalized.equals("DEFAULT")) {
-                kind = Kind.DEFAULT;
-            } else if (normalized.contains("INDEX") || normalized.contains("KEY")) {
-                kind = Kind.INDEX;
-            }
+        kind = classifyType(string);
+    }
+
+    private static Kind classifyType(String type) {
+        if (type == null) {
+            return Kind.OTHER;
+        }
+        String normalized = type.trim().toUpperCase(java.util.Locale.ROOT);
+        String keyword = normalized.split("\\s+", 2)[0];
+        switch (keyword) {
+            case "PRIMARY":
+                return Kind.PRIMARY_KEY;
+            case "UNIQUE":
+                return Kind.UNIQUE;
+            case "FULLTEXT":
+                return Kind.FULLTEXT;
+            case "SPATIAL":
+                return Kind.SPATIAL;
+            case "FOREIGN":
+                return Kind.FOREIGN_KEY;
+            case "CHECK":
+                return Kind.CHECK;
+            case "EXCLUDE":
+                return Kind.EXCLUDE;
+            case "DEFAULT":
+                return Kind.DEFAULT;
+            default:
+                return normalized.equals("INDEX") || normalized.equals("KEY")
+                        || normalized.endsWith(" INDEX") || normalized.endsWith(" KEY")
+                                ? Kind.INDEX
+                                : Kind.OTHER;
         }
     }
 
@@ -247,6 +261,11 @@ public class Index implements TableElement, Serializable {
         return kind;
     }
 
+    /**
+     * Sets classification metadata without changing the rendered type. This also supports index
+     * declarations whose keyword is stored separately. A subsequent {@link #setType(String)}
+     * derives the classification from the new type again.
+     */
     public void setKind(Kind kind) {
         this.kind = kind;
     }

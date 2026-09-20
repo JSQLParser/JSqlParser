@@ -1016,7 +1016,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (function.isEscaped()) {
             builder.append("}");
         }
-        return builder;
+        return function.appendResultColumnDefinitionsTo(builder);
     }
 
     @Override
@@ -1857,20 +1857,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(LambdaExpression lambdaExpression, S context) {
-        if (lambdaExpression.getIdentifiers().size() == 1) {
-            builder.append(lambdaExpression.getIdentifiers().get(0));
-        } else {
-            int i = 0;
-            builder.append("( ");
-            for (String s : lambdaExpression.getIdentifiers()) {
-                builder.append(i++ > 0 ? ", " : "").append(s);
-            }
-            builder.append(" )");
-        }
-
-        builder.append(" -> ");
-        lambdaExpression.getExpression().accept(this, context);
-        return builder;
+        return lambdaExpression.appendTo(builder, expression -> expression.accept(this, context));
     }
 
     @Override

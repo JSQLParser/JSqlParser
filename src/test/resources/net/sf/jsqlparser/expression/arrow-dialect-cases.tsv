@@ -1,0 +1,13 @@
+POSTGRESQL	SELECT COALESCE(payload -> 'a', payload -> 'b') FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE((payload) -> key, payload -> 0) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(payload -> -1, (payload) -> (idx + 1)) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(payload -> 'a' -> 'b', payload -> key) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(payload ->> 'a', payload ->> key) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(NULL::jsonb, payload -> key) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(NULL::jsonb, (payload) -> key) FROM arrow_inputs
+POSTGRESQL	SELECT COALESCE(payload -> 'a', (payload) -> 'a', payload -> key) FROM arrow_inputs
+MYSQL	SELECT COALESCE(payload -> '$.a', payload -> '$.b') FROM arrow_inputs
+MYSQL	SELECT COALESCE(NULL, payload -> '$.a') FROM arrow_inputs
+MYSQL	SELECT COALESCE(payload ->> '$.a', payload ->> '$.b') FROM arrow_inputs
+MYSQL	SELECT COALESCE(NULL, payload -> '$[0]', payload -> '$[last]') FROM arrow_inputs
+MYSQL	SELECT COALESCE(i.payload -> '$.a', i.payload -> '$.b') FROM arrow_inputs i
