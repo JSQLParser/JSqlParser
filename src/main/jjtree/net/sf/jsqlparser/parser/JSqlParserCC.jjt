@@ -590,17 +590,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return left;
     }
 
+    private boolean isPostgreSqlJsonAccess(Token token) {
+        return ("->".equals(token.image) || "->>".equals(token.image)
+                || "#>".equals(token.image) || "#>>".equals(token.image))
+                && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+    }
+
         protected Expression prattArithRest(Expression left, int minPrec) throws ParseException {
         while (!interrupted) {
             Token t = getToken(1);
             int op = t.kind;
             int prec;
+            boolean jsonAccess = isPostgreSqlJsonAccess(t);
 
             // Named tokens: OP_SLASH(/), OP_CARET(^), K_DIV, OP_CONCAT(||),
             //               OP_PIPE(|), OP_LSHIFT(<<), OP_RSHIFT(>>),
             //               S_HASH_OPERATOR(#)
             // String-literal tokens: *, +, -, %, & (unnamed in JavaCC grammar)
-            if (op == OP_SLASH || op == OP_CARET || op == K_DIV)              prec = 6;
+            if (jsonAccess || op == OP_JSON_PATH_DELETE || op == OP_JSON_PATH_EXISTS
+                    || (op == OP_CONCAT && Dialect.POSTGRESQL.name()
+                            .equals(getAsString(Feature.dialect))))          prec = 4;
+            else if (op == OP_SLASH || op == OP_CARET || op == K_DIV)         prec = 6;
             else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
@@ -626,7 +636,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             jj_consume_token(op, getToken(1).image);
             Expression right = prattArithRest(PrimaryExpression(), prec + 1);
 
-            if      (op == OP_SLASH)  { Division         r = new Division();         r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+            if (jsonAccess) {
+                JsonExpression access = left instanceof JsonExpression
+                        ? (JsonExpression) left : new JsonExpression(left);
+                access.addIdent(right, t.image);
+                left = access;
+            }
+            else if (op == OP_JSON_PATH_DELETE || op == OP_JSON_PATH_EXISTS) {
+                left = new JsonOperator(t.image).withLeftExpression(left).withRightExpression(right);
+            }
+            else if (op == OP_SLASH)  { Division         r = new Division();         r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == S_HASH_OPERATOR) { Intersects r = new Intersects(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CARET)  { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == K_DIV)     { IntegerDivision  r = new IntegerDivision();  r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -2732,6 +2751,8 @@ TOKEN : /* Operators */
 |   <OP_SLASH: "/">
 |   <OP_LSHIFT: "<<">
 |   <OP_RSHIFT: ">>">
+|   <OP_JSON_PATH_DELETE: "#-">
+|   <OP_JSON_PATH_EXISTS: "@?">
 | 	<OP_DOUBLEAND: "&&">
 | 	<OP_CONTAINS: "&>">
 | 	<OP_CONTAINEDBY: "<&">
@@ -2881,13 +2902,16 @@ TOKEN:
             truncateIdentifierToken(matchedToken, hashIndex);
         }
     }
-    // PostgreSQL does not allow # in unquoted identifiers. Re-lex it as an
-    // operator, including #> and #>>, even when it touches the left operand.
+    // PostgreSQL does not allow # or @ in unquoted identifiers. Re-lex them as
+    // operators, including #>, #>>, #- and @?, when touching the left operand.
     if (matchedToken.kind == S_IDENTIFIER
             && AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))) {
         int hashIndex = matchedToken.image.indexOf('#');
-        if (hashIndex > 0) {
-            truncateIdentifierToken(matchedToken, hashIndex);
+        int atIndex = matchedToken.image.indexOf('@');
+        int operatorIndex = hashIndex < 0 ? atIndex
+                : atIndex < 0 ? hashIndex : Math.min(hashIndex, atIndex);
+        if (operatorIndex > 0) {
+            truncateIdentifierToken(matchedToken, operatorIndex);
         } else if (hashIndex == 0) {
             truncateIdentifierToken(matchedToken, 1);
             matchedToken.kind = S_HASH_OPERATOR;
@@ -10630,7 +10654,8 @@ Expression SimpleExpression():
 {
     [ LOOKAHEAD( 5, { getToken(1).kind == S_AT_IDENTIFIER } ) user = UserVariable() ( operation = "=" | operation = ":=" ) ]
     retval=PrimaryExpression()
-    { retval = prattArithRest(retval, 5); }
+    // PostgreSQL path operators bind below arithmetic and above comparisons.
+    { retval = prattArithRest(retval, 4); }
     {
         if (user != null) {
             VariableAssignment assignment = new VariableAssignment();
@@ -10986,8 +11011,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
     // Check for JSON operands
     [
-        LOOKAHEAD(2, { (ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
-                || !":".equals(getToken(1).image) }) (
+        LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
+                && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                    || !":".equals(getToken(1).image)) }) (
             LOOKAHEAD(2) (
                 token="->"
                 |
@@ -11354,8 +11380,9 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
         }
 
         (
-            LOOKAHEAD(2, { (ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
-                    || !":".equals(getToken(1).image) }) (
+            LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
+                    && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                        || !":".equals(getToken(1).image)) }) (
                 token="->"
                 |
                 token=":"
