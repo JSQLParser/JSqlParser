@@ -12343,15 +12343,32 @@ AnalyticExpression AnalyticExpression(Function function) :
 {
     (
         (
-            <K_FILTER> "(" <K_WHERE> {retval.setType(AnalyticType.FILTER_ONLY);} filter = Expression() ")"
+            filter=AggregateFilter() { retval.setType(AnalyticType.FILTER_ONLY); }
             [ LOOKAHEAD(2) windowFun(retval) ]
+            {
+                if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                        && (retval.getType() == AnalyticType.WITHIN_GROUP
+                            || retval.getType() == AnalyticType.WITHIN_GROUP_OVER)) {
+                    throw new ParseException("FILTER must follow WITHIN GROUP");
+                }
+            }
         )
         | windowFun(retval)
+          [ LOOKAHEAD({ retval.getType() == AnalyticType.WITHIN_GROUP
+                  && getToken(1).kind == K_FILTER }) filter=AggregateFilter() ]
     )
     {
         retval.setFilterExpression(filter);
-        return retval;
+        if (true) { return retval; }
     }
+}
+
+/** Shared FILTER predicate for ordinary, window, and ordered-set aggregates. */
+Expression AggregateFilter():
+{ Expression filter; }
+{
+    <K_FILTER> "(" <K_WHERE> filter=Expression() ")"
+    { return filter; }
 }
 
 WindowElement WindowElement():
