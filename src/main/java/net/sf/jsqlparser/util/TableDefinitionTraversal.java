@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.LikeClause;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPartition;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPrimaryKey;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -47,6 +48,9 @@ public final class TableDefinitionTraversal {
     /** Visits the structured definitions and expressions belonging to a single ALTER action. */
     public static void visit(AlterExpression action, Consumer<Expression> expressions,
             Consumer<Table> tables) {
+        if (action.getOperation() == AlterOperation.RENAME_TABLE) {
+            accept(action.getNewTable(), tables);
+        }
         if (action.getColumnSetDefaultList() != null) {
             action.getColumnSetDefaultList()
                     .forEach(column -> accept(column.getDefaultExpression(), expressions));
