@@ -19550,7 +19550,8 @@ TranscodingFunction TranscodingFunction() #TranscodingFunction :
     ( keywordToken=<K_TRY_CONVERT> | keywordToken=<K_SAFE_CONVERT> | keywordToken=<K_CONVERT> )
     "("
     (
-        LOOKAHEAD(4) colDataType = ColDataType()
+        LOOKAHEAD(4, { !Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) })
+        colDataType = ColDataType()
         "," expression = Expression()
         [ "," style = <S_LONG> { transcodingName = style.image; } ]
 
@@ -19560,11 +19561,14 @@ TranscodingFunction TranscodingFunction() #TranscodingFunction :
         |
         (
             expression = Expression()
-            <K_USING> transcodingName=IdentifierChain()
-
-            {
-                transcodingFunction = new TranscodingFunction(expression, transcodingName);
-            }
+            (
+                <K_USING> transcodingName=IdentifierChain()
+                { transcodingFunction = new TranscodingFunction(keywordToken.image, expression, transcodingName); }
+                |
+                "," colDataType=ColDataType()
+                { transcodingFunction = new TranscodingFunction(keywordToken.image, colDataType, expression, null)
+                        .setSyntax(TranscodingFunction.Syntax.TYPE_LAST); }
+            )
         )
     )
     ")"
