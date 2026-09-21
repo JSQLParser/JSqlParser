@@ -10009,6 +10009,7 @@ Expression Condition():
                     | LOOKAHEAD(2) result = MemberOfExpression(left)
                     | LOOKAHEAD(3) result=IsNullExpression(left)
                     | LOOKAHEAD(3) result=IsBooleanExpression(left)
+                    | LOOKAHEAD(3) result=IsJsonExpression(left)
                     | LOOKAHEAD(3) result=IsUnknownExpression(left)
                     | LOOKAHEAD(2) result=LikeExpression(left)
                     | LOOKAHEAD(3) result=IsDistinctExpression(left)
@@ -10141,7 +10142,8 @@ Expression SQLCondition():
                 |
                 LOOKAHEAD(3) result=IsBooleanExpression(left)
                 |
-                LOOKAHEAD(3) result=IsUnknownExpression(left)
+                LOOKAHEAD(3) result=IsJsonExpression(left)
+                    | LOOKAHEAD(3) result=IsUnknownExpression(left)
                 |
                 LOOKAHEAD(2) result=LikeExpression(left)
                 |
@@ -10399,6 +10401,24 @@ Expression IsBooleanExpression(Expression leftExpression):
         result.setLeftExpression(leftExpression);
         return result;
     }
+}
+
+Expression IsJsonExpression(Expression leftExpression):
+{
+    IsJsonExpression result = new IsJsonExpression();
+    Token type;
+}
+{
+    <K_IS> [ <K_NOT> { result.setNot(true); } ] <K_JSON>
+    [ LOOKAHEAD({ isKeywordAhead("VALUE") || isKeywordAhead("SCALAR")
+            || isKeywordAhead("ARRAY") || isKeywordAhead("OBJECT") })
+        ( type=<K_VALUE> | type=<K_ARRAY_LITERAL> | type=<S_IDENTIFIER> | type=<DATA_TYPE> )
+        { result.setType(IsJsonExpression.Type.valueOf(type.image.toUpperCase(Locale.ROOT))); } ]
+    [ LOOKAHEAD(2) ( <K_WITH> { result.setUniqueKeys(IsJsonExpression.UniqueKeys.WITH); }
+        | <K_WITHOUT> { result.setUniqueKeys(IsJsonExpression.UniqueKeys.WITHOUT); } )
+        <K_UNIQUE> { result.setUseKeysKeyword(false); }
+        [ LOOKAHEAD(<K_KEYS>) <K_KEYS> { result.setUseKeysKeyword(true); } ] ]
+    { result.setLeftExpression(leftExpression); return result; }
 }
 
 Expression IsUnknownExpression(Expression leftExpression):
