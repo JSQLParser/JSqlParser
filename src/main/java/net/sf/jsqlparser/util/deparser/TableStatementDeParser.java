@@ -84,8 +84,7 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
 
     @Override
     public <S> StringBuilder visit(TableStatement tableStatement, S context) {
-        builder.append("TABLE ");
-        builder.append(tableStatement.getTable());
+        tableStatement.appendSelectBodyTo(builder);
         if (tableStatement.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, builder)
                     .deParse(tableStatement.getOrderByElements());

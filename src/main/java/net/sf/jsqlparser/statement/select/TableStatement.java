@@ -30,7 +30,7 @@ public class TableStatement extends Select {
 
     @Override
     public StringBuilder appendSelectBodyTo(StringBuilder builder) {
-        builder.append("TABLE ").append(table.getName());
+        builder.append("TABLE ").append(table);
         return builder;
     }
 
