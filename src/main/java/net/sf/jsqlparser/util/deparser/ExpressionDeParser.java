@@ -1278,10 +1278,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             builder.append(" ");
         }
 
-        if (analyticExpression.getFilterExpression() != null) {
-            builder.append("FILTER (WHERE ");
-            analyticExpression.getFilterExpression().accept(this, context);
-            builder.append(")");
+        if (analyticExpression.getFilterExpression() != null
+                && analyticExpression.getType() != AnalyticType.WITHIN_GROUP) {
+            analyticExpression.appendFilterTo(builder, filter -> filter.accept(this, context));
             if (analyticExpression.getType() != AnalyticType.FILTER_ONLY) {
                 builder.append(" ");
             }
@@ -1360,6 +1359,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
 
             builder.append(")");
+        }
+        if (analyticExpression.getFilterExpression() != null
+                && analyticExpression.getType() == AnalyticType.WITHIN_GROUP) {
+            builder.append(' ');
+            analyticExpression.appendFilterTo(builder, filter -> filter.accept(this, context));
         }
         return builder;
     }
