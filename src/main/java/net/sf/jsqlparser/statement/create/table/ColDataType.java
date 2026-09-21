@@ -40,6 +40,7 @@ public class ColDataType implements Serializable {
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
+    private boolean useCharsetKeyword;
     private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
     private Signedness signedness;
@@ -171,6 +172,15 @@ public class ColDataType implements Serializable {
 
     public void setCharacterSet(String characterSet) {
         this.characterSet = characterSet;
+    }
+
+    /** Whether the character set clause uses MySQL's CHARSET abbreviation. */
+    public boolean isUseCharsetKeyword() {
+        return useCharsetKeyword;
+    }
+
+    public void setUseCharsetKeyword(boolean useCharsetKeyword) {
+        this.useCharsetKeyword = useCharsetKeyword;
     }
 
     public IntervalQualifier getIntervalQualifier() {
@@ -338,7 +348,9 @@ public class ColDataType implements Serializable {
                         : (signedness != null ? " " + signedness : "")
                                 + (zerofill ? " ZEROFILL" : ""))
                 + arraySpec.toString()
-                + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+                + (characterSet != null
+                        ? (useCharsetKeyword ? " CHARSET " : " CHARACTER SET ") + characterSet
+                        : "");
     }
 
     public ColDataType withDataType(String dataType) {
@@ -435,6 +447,7 @@ public class ColDataType implements Serializable {
         return dataType.equalsIgnoreCase(that.dataType)
                 && Objects.equals(argumentsStringList, that.argumentsStringList)
                 && Objects.equals(characterSet, that.characterSet)
+                && useCharsetKeyword == that.useCharsetKeyword
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData)
                 && signedness == that.signedness
@@ -452,6 +465,7 @@ public class ColDataType implements Serializable {
                 .reduce(0, (hash, c) -> 31 * hash + c);
         result = 31 * result + Objects.hashCode(argumentsStringList);
         result = 31 * result + Objects.hashCode(characterSet);
+        result = 31 * result + Boolean.hashCode(useCharsetKeyword);
         result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
         result = 31 * result + Objects.hashCode(signedness);
