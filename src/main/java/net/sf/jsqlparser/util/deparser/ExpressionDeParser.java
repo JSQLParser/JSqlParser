@@ -121,6 +121,7 @@ import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -475,6 +476,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
         }
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(IsJsonExpression expression, S context) {
+        return expression.appendTo(builder, value -> value.accept(this, context));
     }
 
     @Override
