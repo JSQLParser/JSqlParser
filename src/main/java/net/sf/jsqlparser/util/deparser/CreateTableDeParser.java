@@ -17,7 +17,6 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 
 public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
 
@@ -129,17 +128,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             builder.append(' ').append(createTable.getRowMovement().getMode().toString())
                     .append(" ROW MOVEMENT");
         }
-        if (createTable.getSelect() != null) {
-            builder.append(" AS ");
-            if (createTable.isSelectParenthesis()) {
-                builder.append("(");
-            }
-            Select sel = createTable.getSelect();
-            sel.accept(this.statementDeParser, null);
-            if (createTable.isSelectParenthesis()) {
-                builder.append(")");
-            }
-        }
+        createTable.appendSelectTo(builder, select -> select.accept(this.statementDeParser, null));
         if (createTable.getTrailingLikeTable() != null) {
             builder.append(" LIKE ");
             if (createTable.isSelectParenthesis()) {
