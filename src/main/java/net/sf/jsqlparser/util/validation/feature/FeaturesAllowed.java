@@ -113,7 +113,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      */
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
-                    Feature.alterView, Feature.alterIndex)
+                    Feature.alterView, Feature.alterIndex, Feature.alterSchema)
                     .unmodifyable();
     /**
      * all "DROP" {@link Feature}'s
