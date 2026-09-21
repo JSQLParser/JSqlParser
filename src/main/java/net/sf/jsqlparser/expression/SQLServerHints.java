@@ -17,6 +17,18 @@ public class SQLServerHints implements Serializable {
 
     private Boolean noLock;
     private String indexName;
+    private final List<LockHint> lockHints = new ArrayList<>();
+
+    /** Additional argument-free locking hints; NOLOCK retains its existing accessors. */
+    public enum LockHint {
+        HOLDLOCK, NOWAIT, PAGLOCK, READCOMMITTED, READCOMMITTEDLOCK, READPAST, READUNCOMMITTED, REPEATABLEREAD, ROWLOCK, SERIALIZABLE, SNAPSHOT, TABLOCK, TABLOCKX, UPDLOCK, XLOCK
+    }
+
+    /** Returns the mutable list of locking hints, in their original order. */
+    public List<LockHint> getLockHints() {
+        return lockHints;
+    }
+
 
     public SQLServerHints() {}
 
@@ -49,6 +61,9 @@ public class SQLServerHints implements Serializable {
         }
         if (Boolean.TRUE.equals(noLock)) {
             hints.add("NOLOCK");
+        }
+        for (LockHint hint : lockHints) {
+            hints.add(hint.name());
         }
         return " WITH ("
                 + String.join(", ", hints)

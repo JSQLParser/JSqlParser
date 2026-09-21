@@ -6559,10 +6559,12 @@ Table TableWithAlias():
 {
     Table table = null;
     Alias alias = null;
+    SQLServerHints sqlServerHints;
 }
 {
     table=TableReference()
     [ LOOKAHEAD({ isAliasAhead() }) alias=Alias() { table.setAlias(alias); }]
+    [ LOOKAHEAD(<K_WITH> "(") sqlServerHints=SQLServerHints() { table.setSqlServerHints(sqlServerHints); } ]
     { return table; }
 }
 
@@ -8190,11 +8192,21 @@ List<Alias.AliasColumn> AliasColumns():
 
 void SQLServerHint(SQLServerHints hints) : {
     String str;
+    Token keyword;
 }
 {
         <K_INDEX> "(" str = RelObjectName() ")" { hints.setIndexName(str); }
         |
         <K_NOLOCK> { hints.withNoLock(); }
+        |
+        ( keyword=<S_IDENTIFIER> | keyword=<K_NOWAIT> )
+        {
+            try {
+                hints.getLockHints().add(SQLServerHints.LockHint.valueOf(keyword.image.toUpperCase(Locale.ROOT)));
+            } catch (IllegalArgumentException exception) {
+                throw new ParseException("Unsupported SQL Server locking hint: " + keyword.image);
+            }
+        }
 }
 
 SQLServerHints SQLServerHints() : {
