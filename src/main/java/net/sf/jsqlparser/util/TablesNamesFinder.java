@@ -2745,7 +2745,9 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(LockStatement lock, S context) {
-        lock.getTable().accept(this);
+        for (LockStatement.Target target : lock.getTargets()) {
+            target.getTable().accept(this, context);
+        }
         return null;
     }
 

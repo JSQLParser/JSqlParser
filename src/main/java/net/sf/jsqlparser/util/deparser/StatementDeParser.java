@@ -692,7 +692,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(LockStatement lock, S context) {
-        builder.append(lock.toString());
+        lock.appendTo(builder);
         return builder;
     }
 
