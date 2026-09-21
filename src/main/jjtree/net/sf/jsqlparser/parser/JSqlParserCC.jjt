@@ -1791,7 +1791,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     ? ((NamedConstraint) index).getIndexName() : index.getName());
             alterExp.setUk(index.getType().toUpperCase(Locale.ROOT).contains("KEY"));
             alterExp.setUkTypeSpecified(index.getIndexKeyword() != null);
-            for (String option : new ArrayList<String>(index.getIndexSpec())) {
+            // Named constraints render their own options; only legacy indexes need projection.
+            for (String option : index instanceof NamedConstraint ? Collections.<String>emptyList()
+                    : new ArrayList<String>(index.getIndexSpec())) {
                 if (option.toUpperCase(Locale.ROOT).startsWith("USING ")) {
                     alterExp.addParameters("USING");
                     alterExp.addParameters(option.substring("USING ".length()));
@@ -14594,7 +14596,8 @@ Index TableIndexSpec(boolean createContext):
         columns=IndexColumnsWithParamsList()
         TableIndexOptions(createContext, indexOptions)
         {
-            if (createContext) {
+            // MySQL ALTER preserves both the constraint symbol and the index name.
+            if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) {
                 index = new NamedConstraint()
                         .withIndexName(indexName)
                         .withType(typeToken.image
@@ -15584,7 +15587,7 @@ CheckConstraint CheckConstraintSpec(String constraintName):
     CheckConstraint checkConstraint;
 }
 {
-    <K_CHECK> ( LOOKAHEAD(2) "(" exp = Expression() ")" )*
+    <K_CHECK> "(" exp = Expression() ")"
     [ LOOKAHEAD(2)
         [ <K_NOT> { enforced = false; } ]
         <K_ENFORCED> { if (enforced == null) { enforced = true; } }
@@ -17071,7 +17074,8 @@ AlterExpression AlterExpressionAddAlterModify():
         }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
-                && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                    || Dialect.MYSQL.name().equals(getAsString(Feature.dialect)))
                 && (getToken(1).kind == K_CONSTRAINT || getToken(1).kind == K_PRIMARY
                     || getToken(1).kind == K_UNIQUE || getToken(1).kind == K_FOREIGN
                     || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE) })
