@@ -24,6 +24,12 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  */
 public class LockStatement implements Statement {
 
+    private final List<Target> targets = new ArrayList<>();
+    private boolean useTableKeyword = true;
+    private LockMode lockMode;
+    private boolean noWait;
+    private Long waitSeconds;
+
     public enum Scope {
         DEFAULT, ONLY, INCLUDING_DESCENDANTS
     }
@@ -58,12 +64,6 @@ public class LockStatement implements Statement {
                     + (scope == Scope.INCLUDING_DESCENDANTS ? " *" : "");
         }
     }
-
-    private final List<Target> targets = new ArrayList<>();
-    private boolean useTableKeyword = true;
-    private LockMode lockMode;
-    private boolean noWait;
-    private Long waitSeconds;
 
     public LockStatement() {}
 
