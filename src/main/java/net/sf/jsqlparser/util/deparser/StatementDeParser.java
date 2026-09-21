@@ -624,7 +624,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CopyStatement copyStatement, S context) {
-        copyStatement.appendTo(builder);
+        copyStatement.appendTo(builder,
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 
