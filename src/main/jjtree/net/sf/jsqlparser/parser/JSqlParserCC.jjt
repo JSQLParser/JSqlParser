@@ -432,7 +432,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // True when a fresh evaluation started at this token would pass all
     // first-token guards and run the same chain walk.
     private boolean isFunctionAheadChainStartEligible(Token t) {
-        return !t.image.equals("{") && t.kind != K_APPROXIMATE && !isNonFunctionKeyword(t)
+        return !t.image.equals("{") && !t.image.equals("[") && t.kind != K_APPROXIMATE && !isNonFunctionKeyword(t)
                 && t.kind != S_LONG && t.kind != S_DOUBLE && t.kind != S_HEX
                 && t.kind != S_CHAR_LITERAL && t.kind != OPENING_BRACKET
                 && t.kind != CLOSING_BRACKET && t.kind != EOF;
@@ -465,7 +465,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // First token must not be a literal, bracket, or EOF
         if (t.kind == S_LONG || t.kind == S_DOUBLE || t.kind == S_HEX
                 || t.kind == S_CHAR_LITERAL || t.kind == OPENING_BRACKET
-                || t.kind == CLOSING_BRACKET || t.kind == EOF) {
+                || t.kind == CLOSING_BRACKET || t.kind == EOF || "[".equals(t.image)) {
             return 0;
         }
         i++;
@@ -10939,7 +10939,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) <K_ARRAY_LITERAL> [ "<" type=ColDataType() ">" ] retval=ArrayConstructor(true) { if (type!=null) ((ArrayConstructor) retval).setDataType(type); }
 
-        | LOOKAHEAD(3, {!interrupted}) retval=ArrayConstructor(false)
+        | LOOKAHEAD(1, {!interrupted}) retval=ArrayConstructor(false)
 
         | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
 
@@ -11242,29 +11242,25 @@ RangeExpression RangeExpression(Expression startExpression):
 }
 
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
-    ExpressionList expList = new ExpressionList();
-    ArrayConstructor array = new ArrayConstructor(expList, arrayKeyword);
+    ExpressionList<Expression> expList = new ExpressionList<Expression>();
     Expression exp;
 } {
     "["
     [
-        (
-            LOOKAHEAD(3) exp = Expression() [ exp=RangeExpression(exp) ]
-            |
-            exp = ArrayConstructor(false)
-        ) { expList.add(exp); }
-
-        (
-            ","
-            (
-                LOOKAHEAD(3) exp = Expression() [ exp=RangeExpression(exp) ]
-                |
-                exp = ArrayConstructor(false)
-            ){ expList.add(exp); }
-        )*
+        exp=ArrayElement() { expList.add(exp); }
+        ( "," exp=ArrayElement() { expList.add(exp); } )*
     ]
     "]"
-    { return array; }
+    { return new ArrayConstructor(expList, arrayKeyword); }
+}
+
+Expression ArrayElement():
+{
+    Expression expression;
+}
+{
+    expression=Expression() [ expression=RangeExpression(expression) ]
+    { return expression; }
 }
 
 MapExpression MapExpression() #MapExpression:
