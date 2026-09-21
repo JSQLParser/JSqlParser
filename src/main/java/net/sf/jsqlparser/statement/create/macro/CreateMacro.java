@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.select.Select;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * DuckDB's {@code CREATE [OR REPLACE] [TEMPORARY] MACRO name (parameters) AS [TABLE] body}, a named
@@ -115,6 +116,12 @@ public class CreateMacro implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append, builder::append);
+    }
+
+    /** Shares punctuation while exposing parameter defaults and both kinds of macro body. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer,
+            Consumer<Select> selectRenderer) {
         builder.append("CREATE ");
         if (orReplace) {
             builder.append("OR REPLACE ");
@@ -127,13 +134,14 @@ public class CreateMacro implements Statement {
             if (i > 0) {
                 builder.append(", ");
             }
-            builder.append(parameters.get(i));
+            parameters.get(i).appendTo(builder, expressionRenderer);
         }
         builder.append(") AS ");
         if (select != null) {
-            builder.append("TABLE ").append(select);
+            builder.append("TABLE ");
+            selectRenderer.accept(select);
         } else {
-            builder.append(expression);
+            expressionRenderer.accept(expression);
         }
         return builder;
     }
@@ -172,7 +180,18 @@ public class CreateMacro implements Statement {
 
         @Override
         public String toString() {
-            return defaultValue == null ? name : name + " := " + defaultValue;
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        private StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionRenderer) {
+            builder.append(name);
+            if (defaultValue != null) {
+                builder.append(" := ");
+                expressionRenderer.accept(defaultValue);
+            }
+            return builder;
         }
     }
 }
