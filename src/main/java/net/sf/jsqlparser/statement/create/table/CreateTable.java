@@ -39,6 +39,7 @@ public class CreateTable implements Statement {
     private Table cloneTable;
     private ColDataType ofType;
     private boolean selectParenthesis;
+    private boolean useAsKeyword = true;
     private boolean ifNotExists = false;
     private boolean orReplace = false;
     private TablePartitioning partitioning;
@@ -193,6 +194,29 @@ public class CreateTable implements Statement {
 
     public Select getSelect() {
         return select;
+    }
+
+    public boolean isUseAsKeyword() {
+        return useAsKeyword;
+    }
+
+    public void setUseAsKeyword(boolean useAsKeyword) {
+        this.useAsKeyword = useAsKeyword;
+    }
+
+    public StringBuilder appendSelectTo(StringBuilder builder,
+            java.util.function.Consumer<Select> selectRenderer) {
+        if (select != null) {
+            builder.append(useAsKeyword ? " AS " : " ");
+            if (selectParenthesis) {
+                builder.append("(");
+            }
+            selectRenderer.accept(select);
+            if (selectParenthesis) {
+                builder.append(")");
+            }
+        }
+        return builder;
     }
 
     public void setSelect(Select select, boolean parenthesis) {
@@ -388,16 +412,7 @@ public class CreateTable implements Statement {
         if (rowMovement != null) {
             b.append(" ").append(rowMovement.getMode()).append(" ROW MOVEMENT");
         }
-        if (select != null) {
-            b.append(" AS ");
-            if (selectParenthesis) {
-                b.append("(");
-            }
-            b.append(select);
-            if (selectParenthesis) {
-                b.append(")");
-            }
-        }
+        appendSelectTo(b, b::append);
         if (likeTable != null) {
             b.append(" LIKE ");
             if (selectParenthesis) {
