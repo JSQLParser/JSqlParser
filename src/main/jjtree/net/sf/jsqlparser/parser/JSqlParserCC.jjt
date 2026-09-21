@@ -49,6 +49,7 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
+import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.database.*;
@@ -17656,6 +17657,8 @@ Statement Alter():
                 |
                 statement = AlterDefaultPrivileges()
                 |
+                LOOKAHEAD(<K_SCHEMA>) statement = AlterSchema()
+                |
                 LOOKAHEAD(<K_TYPE>) statement = AlterType()
                 |
                 LOOKAHEAD(<K_DOMAIN>) statement = AlterDomain()
@@ -18093,6 +18096,23 @@ CreateRole CreateRole():
     [ LOOKAHEAD(1) <K_WITH> { role.setUseWith(true); } ]
     ( LOOKAHEAD({ isRoleOptionAhead(1) }) option=RoleOption(true) { role.getOptions().add(option); } )*
     { requireAccessSyntax(!role.isUseWith() || !role.getOptions().isEmpty(), "WITH requires role attributes"); return role; }
+}
+
+AlterSchema AlterSchema():
+{
+    AlterSchema statement = new AlterSchema();
+    String name;
+}
+{
+    <K_SCHEMA> name=RelObjectName() { statement.setSchemaName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterSchema.Action.RENAME); statement.setNewName(name); }
+        |
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterSchema.Action.OWNER); statement.setOwner(name); }
+    )
+    { return statement; }
 }
 
 AlterRole AlterRole():

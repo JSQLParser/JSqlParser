@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.expression.RowPatternFunction;
 
@@ -2780,6 +2781,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateRole statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterSchema statement, S context) {
+        // Schema and owner names do not refer to tables.
         return null;
     }
 

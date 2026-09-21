@@ -507,6 +507,8 @@ public enum Feature {
      * @see CreateSchema
      */
     createSchema,
+    /** SQL ALTER SCHEMA rename and owner changes. */
+    alterSchema,
     /**
      * SQL "CREATE VIEW" statement is allowed
      *
