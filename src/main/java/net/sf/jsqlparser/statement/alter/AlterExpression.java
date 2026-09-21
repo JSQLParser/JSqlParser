@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -40,7 +41,7 @@ public class AlterExpression implements Serializable {
     private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
     private AlterOperation operation;
     private String optionalSpecifier;
-    private String newTableName;
+    private Table newTable;
     private TableRenameKeyword tableRenameKeyword = TableRenameKeyword.TO;
     private String columnName;
     // private ColDataType dataType;
@@ -448,11 +449,25 @@ public class AlterExpression implements Serializable {
     }
 
     public String getNewTableName() {
-        return newTableName;
+        return newTable == null ? null : newTable.getFullyQualifiedName();
     }
 
     public void setNewTableName(String newTableName) {
-        this.newTableName = newTableName;
+        newTable = newTableName == null ? null : new Table(newTableName, false);
+    }
+
+    /** Returns the structured destination of a table rename. */
+    public Table getNewTable() {
+        return newTable;
+    }
+
+    public void setNewTable(Table newTable) {
+        this.newTable = newTable;
+    }
+
+    public AlterExpression withNewTable(Table newTable) {
+        setNewTable(newTable);
+        return this;
     }
 
     public TableRenameKeyword getTableRenameKeyword() {
@@ -1013,7 +1028,7 @@ public class AlterExpression implements Serializable {
             }
             b.append(getOldIndex().getName()).append(" TO ").append(getIndex().getName());
         } else {
-            b.append("RENAME TO ").append(newTableName);
+            b.append("RENAME TO ").append(getNewTableName());
         }
     }
 

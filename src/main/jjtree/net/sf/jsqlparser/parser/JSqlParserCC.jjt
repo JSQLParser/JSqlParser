@@ -17296,6 +17296,7 @@ AlterExpression AlterExpressionRenameOp():
     Token tk;
     Token tk2;
     Index index;
+    Table newTable;
 }
 {
     <K_RENAME>
@@ -17317,13 +17318,13 @@ AlterExpression AlterExpressionRenameOp():
             alterExp.setIndex(index);
         }
         |
-        LOOKAHEAD(2) (
+        LOOKAHEAD({ getToken(1).kind == K_TO || getToken(1).kind == K_AS }) (
             (tk=<K_TO> | tk=<K_AS>) {
                 alterExp.setOperation(AlterOperation.RENAME_TABLE);
                 alterExp.setTableRenameKeyword(AlterExpression.TableRenameKeyword.valueOf(
                         tk.image.toUpperCase(Locale.ROOT)));
             }
-            tk2=KeywordOrIdentifier() { alterExp.setNewTableName(tk2.image); }
+            newTable=Table() { alterExp.setNewTable(newTable); }
         )
         |
         LOOKAHEAD(3)
@@ -17340,7 +17341,7 @@ AlterExpression AlterExpressionRenameOp():
                 alterExp.setOperation(AlterOperation.RENAME_TABLE);
                 alterExp.setTableRenameKeyword(AlterExpression.TableRenameKeyword.NONE);
             }
-            tk2=KeywordOrIdentifier() { alterExp.setNewTableName(tk2.image); }
+            newTable=Table() { alterExp.setNewTable(newTable); }
         )
     )
     { return alterExp; }
