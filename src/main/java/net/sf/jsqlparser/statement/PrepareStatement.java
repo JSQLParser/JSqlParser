@@ -9,8 +9,13 @@
  */
 package net.sf.jsqlparser.statement;
 
+import java.util.List;
+import java.util.function.Consumer;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 /**
- * {@code PREPARE name AS statement}, which stores a parameterised statement for later
+ * {@code PREPARE name [(types)] AS statement}, which stores a parameterised statement for later
  * {@code EXECUTE}.
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/query_syntax/prepared_statements">Prepared
@@ -19,6 +24,7 @@ package net.sf.jsqlparser.statement;
 public class PrepareStatement implements Statement {
     private String name;
     private Statement statement;
+    private List<ColDataType> parameterTypes;
 
     public PrepareStatement() {}
 
@@ -53,8 +59,32 @@ public class PrepareStatement implements Statement {
         return this;
     }
 
+    /** Returns declared parameter types, or {@code null} when types are inferred. */
+    public List<ColDataType> getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public void setParameterTypes(List<ColDataType> parameterTypes) {
+        this.parameterTypes = parameterTypes;
+    }
+
+    public PrepareStatement withParameterTypes(List<ColDataType> parameterTypes) {
+        setParameterTypes(parameterTypes);
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("PREPARE ").append(name).append(" AS ").append(statement);
+        return appendTo(builder, builder::append);
+    }
+
+    /** Renders the nested statement through the caller's statement writer. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Statement> statementPrinter) {
+        builder.append("PREPARE ").append(name);
+        if (parameterTypes != null && !parameterTypes.isEmpty()) {
+            builder.append(PlainSelect.getStringList(parameterTypes, true, true));
+        }
+        builder.append(" AS ");
+        statementPrinter.accept(statement);
         return builder;
     }
 

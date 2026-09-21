@@ -612,7 +612,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.appendTo(builder);
+        prepareStatement.appendTo(builder, statement -> statement.accept(this, context));
         return builder;
     }
 
