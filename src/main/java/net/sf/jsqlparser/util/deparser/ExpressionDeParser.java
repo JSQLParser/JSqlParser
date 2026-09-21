@@ -743,29 +743,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(TranscodingFunction transcodingFunction, S context) {
-        if (transcodingFunction.isTranscodeStyle()) {
-            builder.append(transcodingFunction.getKeyword());
-            builder.append("( ");
-            transcodingFunction.getExpression().accept(this, context);
-            builder.append(" USING ")
-                    .append(transcodingFunction.getTranscodingName())
-                    .append(" )");
-        } else {
-            builder
-                    .append(transcodingFunction.getKeyword())
-                    .append("( ")
-                    .append(transcodingFunction.getColDataType())
-                    .append(", ");
-            transcodingFunction.getExpression().accept(this, context);
-
-            String transCodingName = transcodingFunction.getTranscodingName();
-            if (transCodingName != null && !transCodingName.isEmpty()) {
-                builder.append(", ").append(transCodingName);
-            }
-            builder.append(" )");
-        }
-
-        return builder;
+        return transcodingFunction.appendTo(builder,
+                expression -> expression.accept(this, context));
     }
 
     public <S> StringBuilder visit(TrimFunction trimFunction, S context) {
