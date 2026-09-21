@@ -9,22 +9,63 @@
  */
 package net.sf.jsqlparser.statement.lock;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 /**
- * Statement to Lock a specific table.<br>
+ * Statement to lock one or more tables.<br>
  * Example:<br>
  * LOCK TABLE t IN EXCLUSIVE MODE<br>
  * <br>
  */
 public class LockStatement implements Statement {
 
-    private Table table;
+    private final List<Target> targets = new ArrayList<>();
+    private boolean useTableKeyword = true;
     private LockMode lockMode;
     private boolean noWait;
     private Long waitSeconds;
+
+    public enum Scope {
+        DEFAULT, ONLY, INCLUDING_DESCENDANTS
+    }
+
+    public static class Target {
+        private Table table;
+        private Scope scope = Scope.DEFAULT;
+
+        public Target(Table table) {
+            this.table = table;
+        }
+
+        public Table getTable() {
+            return table;
+        }
+
+        public void setTable(Table table) {
+            this.table = table;
+        }
+
+        public Scope getScope() {
+            return scope;
+        }
+
+        public void setScope(Scope scope) {
+            this.scope = Objects.requireNonNull(scope);
+        }
+
+        @Override
+        public String toString() {
+            return (scope == Scope.ONLY ? "ONLY " : "") + table.getFullyQualifiedName()
+                    + (scope == Scope.INCLUDING_DESCENDANTS ? " *" : "");
+        }
+    }
+
+    public LockStatement() {}
 
     /**
      * Creates a new LockStatement
@@ -33,14 +74,12 @@ public class LockStatement implements Statement {
      * @param lockMode The lock mode
      */
     public LockStatement(Table table, LockMode lockMode) {
-        this.table = table;
+        setTable(table);
         this.lockMode = lockMode;
     }
 
     public LockStatement(Table table, LockMode lockMode, boolean noWait, Long waitSeconds) {
         this(table, lockMode);
-        this.table = table;
-        this.lockMode = lockMode;
         this.noWait = noWait;
         this.waitSeconds = waitSeconds;
     }
@@ -52,14 +91,33 @@ public class LockStatement implements Statement {
         }
     }
 
+    /** Returns the first target for compatibility with the single-table API. */
     public Table getTable() {
-        return table;
+        return targets.isEmpty() ? null : targets.get(0).getTable();
     }
 
+    /** Replaces the first target table while preserving its scope and any further targets. */
     public void setTable(Table table) {
-        this.table = table;
+        if (targets.isEmpty()) {
+            targets.add(new Target(table));
+        } else {
+            targets.get(0).setTable(table);
+        }
     }
 
+    public List<Target> getTargets() {
+        return targets;
+    }
+
+    public boolean isUseTableKeyword() {
+        return useTableKeyword;
+    }
+
+    public void setUseTableKeyword(boolean useTableKeyword) {
+        this.useTableKeyword = useTableKeyword;
+    }
+
+    /** Returns null when IN ... MODE was omitted. */
     public LockMode getLockMode() {
         return lockMode;
     }
@@ -104,15 +162,28 @@ public class LockStatement implements Statement {
         return waitSeconds;
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append(useTableKeyword ? "LOCK TABLE " : "LOCK ");
+        for (int i = 0; i < targets.size(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(targets.get(i));
+        }
+        if (lockMode != null) {
+            builder.append(" IN ").append(lockMode.getValue()).append(" MODE");
+        }
+        if (noWait) {
+            builder.append(" NOWAIT");
+        } else if (waitSeconds != null) {
+            builder.append(" WAIT ").append(waitSeconds);
+        }
+        return builder;
+    }
+
     @Override
     public String toString() {
-        return "LOCK TABLE "
-                + table.getFullyQualifiedName()
-                + " IN "
-                + lockMode.getValue()
-                + " MODE"
-                + (noWait ? " NOWAIT" : "")
-                + (waitSeconds != null ? " WAIT " + waitSeconds : "");
+        return appendTo(new StringBuilder()).toString();
     }
 
     @Override

@@ -3532,27 +3532,53 @@ List<String> error_skipto(int kind) {
 }
 
 LockStatement LockStatement(): {
-  	Table table;
-  	boolean noWait = false;
-  	LockMode lockMode;
-    Token waitSecondsToken = null;
-    Long waitSeconds = null;
+    LockStatement statement = new LockStatement();
+    LockStatement.Target target;
+    LockMode mode;
+    Token waitSeconds;
 } {
-  	<K_LOCK> <K_TABLE> table = Table() <K_IN>
-  	(
-  	  LOOKAHEAD(2) ( <K_ROW> <K_SHARE> { lockMode = LockMode.RowShare; } ) |
-  	  ( <K_ROW> <K_EXCLUSIVE> { lockMode = LockMode.RowExclusive; } ) |
-	  LOOKAHEAD(2) ( <K_SHARE> <K_ROW> <K_EXCLUSIVE> { lockMode = LockMode.ShareRowExclusive; } ) |
-  	  LOOKAHEAD(2) ( <K_SHARE> <K_UPDATE> { lockMode = LockMode.ShareUpdate; }  ) |
-  	  ( <K_SHARE> { lockMode = LockMode.Share; } ) |
-  	  ( <K_EXCLUSIVE > { lockMode = LockMode.Exclusive; } )
-  	)
-  	<K_MODE>
-    [ <K_NOWAIT> { noWait = true; } | <K_WAIT> waitSecondsToken = <S_LONG> { waitSeconds = Long.valueOf(waitSecondsToken.image); } ]
+    <K_LOCK>
+    { statement.setUseTableKeyword(false); }
+    [ LOOKAHEAD(<K_TABLE>) <K_TABLE> { statement.setUseTableKeyword(true); } ]
+    target=LockTarget() { statement.getTargets().add(target); }
+    ( "," target=LockTarget() { statement.getTargets().add(target); } )*
+    [ <K_IN> mode=TableLockMode() <K_MODE> { statement.setLockMode(mode); } ]
+    [ <K_NOWAIT> { statement.setNoWait(true); }
+        | <K_WAIT> waitSeconds=<S_LONG> { statement.setWaitSeconds(Long.valueOf(waitSeconds.image)); } ]
+    { return statement; }
+}
 
-  {
-    return new LockStatement(table, lockMode, noWait, waitSeconds);
-  }
+LockStatement.Target LockTarget(): {
+    Table table;
+    boolean only = false;
+    boolean descendants = false;
+    LockStatement.Target target;
+} {
+    [ <K_ONLY> { only = true; } ] table=Table() [ "*" { descendants = true; } ]
+    {
+        requireDdlSyntax(!only || !descendants, "ONLY and * cannot describe the same lock target");
+        target = new LockStatement.Target(table);
+        target.setScope(only ? LockStatement.Scope.ONLY
+                : descendants ? LockStatement.Scope.INCLUDING_DESCENDANTS : LockStatement.Scope.DEFAULT);
+        return target;
+    }
+}
+
+LockMode TableLockMode(): {
+    LockMode mode;
+} {
+    (
+        <K_ROW> ( <K_SHARE> { mode = LockMode.RowShare; }
+                | <K_EXCLUSIVE> { mode = LockMode.RowExclusive; } )
+        | <K_SHARE> { mode = LockMode.Share; }
+            [ <K_ROW> <K_EXCLUSIVE> { mode = LockMode.ShareRowExclusive; }
+                | <K_UPDATE> { mode = LockMode.ShareUpdate; }
+                    [ <K_EXCLUSIVE> { mode = LockMode.ShareUpdateExclusive; } ] ]
+        | <K_EXCLUSIVE> { mode = LockMode.Exclusive; }
+        | AccessKeyword("ACCESS") ( <K_SHARE> { mode = LockMode.AccessShare; }
+                | <K_EXCLUSIVE> { mode = LockMode.AccessExclusive; } )
+    )
+    { return mode; }
 }
 
 LikeClause LikeClause(): {
