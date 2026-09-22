@@ -16306,7 +16306,7 @@ IdentityAlteration ColumnIdentityAlteration():
             }
         )
         |
-        <K_RESTART> [ LOOKAHEAD(2) <K_WITH> restart=SequenceParameterValue() ] {
+        <K_RESTART> [ LOOKAHEAD(1) [ <K_WITH> ] restart=SequenceParameterValue() ] {
             alteration = new IdentityAlteration(IdentityAlteration.Kind.RESTART);
             alteration.setRestartWith(restart);
         }

@@ -61,12 +61,18 @@ public class IdentityAlteration implements Serializable {
         this.parameters = parameters == null ? null : new ArrayList<>(parameters);
     }
 
+    /** Returns the restart value, or null for a bare RESTART using the sequence start value. */
     public Long getRestartWith() {
         return restartWith;
     }
 
     public void setRestartWith(Long restartWith) {
         this.restartWith = restartWith;
+    }
+
+    public IdentityAlteration withRestartWith(Long restartWith) {
+        setRestartWith(restartWith);
+        return this;
     }
 
     public boolean isIfExists() {

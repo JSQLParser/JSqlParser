@@ -293,6 +293,13 @@ Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, 
 
 Identity alterations are available as ``ColumnDataType.getIdentityAlterations()``. Sequence ownership is shared by ``CreateSequence`` and ``AlterSequence`` through ``Sequence.getOwnership()``: ``null`` means omitted, ``isNone()`` means explicit ``OWNED BY NONE``, and ``getColumn()`` identifies an owner. ``TablesNamesFinder`` includes ``LIKE`` sources and sequence owners without treating sequence or type names as tables. See `ALTER TABLE <https://www.postgresql.org/docs/18/sql-altertable.html>`_ and `ALTER SEQUENCE <https://www.postgresql.org/docs/18/sql-altersequence.html>`_.
 
+For identity columns, ``RESTART 20`` and ``RESTART WITH 20`` produce the same
+``IdentityAlteration`` with kind ``RESTART`` and ``getRestartWith() == 20L``.
+The renderer consistently uses ``RESTART WITH 20``. A null restart value means
+bare ``RESTART``, which uses the sequence's configured start value. Call
+``setRestartWith`` to edit a parsed action or construct one with
+``new IdentityAlteration(Kind.RESTART).withRestartWith(20L)``.
+
 
 Structured column attributes
 ============================
