@@ -231,6 +231,19 @@ The fastest way to learn the object model is to look at it. Paste your SQL into 
 Read that as a map: each line is a getter away. ``select.getSelectItems()``, ``select.getFromItem()``, ``select.getWhere()``. Once the tree gets deeper than a couple of levels, stop casting by hand and use :ref:`Use the Visitor Patterns`.
 
 
+PostgreSQL CHECK inheritance
+----------------------------
+
+With ``Dialect.POSTGRESQL``, CREATE and ALTER CHECK constraints support
+``NO INHERIT``. ``CheckConstraint.isNoInherit()`` reports this flag; use
+``setNoInherit`` or ``withNoInherit`` to change it. The check expression remains
+an editable ``Expression`` visited by the existing table traversal and deparsers.
+
+For ``ALTER TABLE t ADD CHECK (id > 0) NO INHERIT NOT VALID``, the two options
+are independent: ``isNoInherit()`` is true and
+``getConstraintAttributes().isNotValid()`` is true. Clearing one flag preserves
+the other when the statement is rendered.
+
 DROP INDEX owners
 -----------------
 

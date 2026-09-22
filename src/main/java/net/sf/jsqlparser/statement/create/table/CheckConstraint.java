@@ -24,6 +24,8 @@ public class CheckConstraint extends NamedConstraint {
 
     private Boolean enforced;
 
+    private boolean noInherit;
+
     public CheckConstraint() {
         setKind(Kind.CHECK);
     }
@@ -44,6 +46,20 @@ public class CheckConstraint extends NamedConstraint {
         this.expression = expression;
     }
 
+    /** Whether PostgreSQL should keep this CHECK from being inherited by child tables. */
+    public boolean isNoInherit() {
+        return noInherit;
+    }
+
+    public void setNoInherit(boolean noInherit) {
+        this.noInherit = noInherit;
+    }
+
+    public CheckConstraint withNoInherit(boolean noInherit) {
+        setNoInherit(noInherit);
+        return this;
+    }
+
     public Boolean getEnforced() {
         return enforced;
     }
@@ -62,6 +78,9 @@ public class CheckConstraint extends NamedConstraint {
             expressionPrinter.accept(expression);
         }
         b.append(')');
+        if (noInherit) {
+            b.append(" NO INHERIT");
+        }
         if (enforced != null) {
             b.append(enforced ? " ENFORCED" : " NOT ENFORCED");
         }
