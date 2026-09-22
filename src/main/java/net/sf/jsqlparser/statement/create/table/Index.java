@@ -24,7 +24,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index implements TableElement, Serializable {
 
     public enum Kind {
-        PRIMARY_KEY, UNIQUE, INDEX, FULLTEXT, SPATIAL, FOREIGN_KEY, CHECK, EXCLUDE, DEFAULT, OTHER
+        PRIMARY_KEY, UNIQUE, INDEX, FULLTEXT, SPATIAL, FOREIGN_KEY, CHECK, EXCLUDE, DEFAULT, NOT_NULL, OTHER
     }
 
     public enum Clustering {
@@ -243,6 +243,8 @@ public class Index implements TableElement, Serializable {
                 return Kind.SPATIAL;
             case "FOREIGN":
                 return Kind.FOREIGN_KEY;
+            case "NOT":
+                return "NOT NULL".equals(normalized) ? Kind.NOT_NULL : Kind.OTHER;
             case "CHECK":
                 return Kind.CHECK;
             case "EXCLUDE":

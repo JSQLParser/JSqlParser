@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
@@ -37,7 +38,12 @@ public class CreateTableValidator extends AbstractValidator<CreateTable> {
             validateOptionalFeature(c, createTable.getSelect(), Feature.createTableFromSelect);
             if (isNotEmpty(createTable.getIndexes())) {
                 for (Index i : createTable.getIndexes()) {
-                    validateName(c, NamedObject.index, i.getName());
+                    if (i instanceof NotNullConstraint) {
+                        validateOptionalName(c, NamedObject.constraint, i.getName(), null, false,
+                                NamedObject.table);
+                    } else {
+                        validateName(c, NamedObject.index, i.getName());
+                    }
                 }
             }
             validateName(c, NamedObject.table, createTable.getTable().getFullyQualifiedName(),

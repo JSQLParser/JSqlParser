@@ -1204,6 +1204,30 @@ Parse procedure definitions one SQL Server batch at a time: a procedure consumes
 remaining batch, including SQL after an ``END``. Client-side ``GO`` batch splitting is
 not performed by this routine declaration parser.
 
+PostgreSQL table-level NOT NULL constraints
+------------------------------------------
+
+``Dialect.POSTGRESQL`` supports PostgreSQL 18's table-level
+``CONSTRAINT nn NOT NULL id``, in both CREATE TABLE and ALTER TABLE ADD.
+``NotNullConstraint`` exposes the constraint name, target ``Column`` and
+``noInherit`` flag; ``getConstraintAttributes().isNotValid()`` represents an
+ALTER ``NOT VALID`` clause when present.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t ADD CONSTRAINT nn NOT NULL id NOT VALID",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    NotNullConstraint constraint = (NotNullConstraint)
+        alter.getAlterExpressions().get(0).getIndex();
+    constraint.getColumn().setColumnName("other_id");
+    constraint.setName("other_nn");
+
+The target column participates in expression visitors and deparsers. New nodes
+can be built with ``new NotNullConstraint().withName("nn")
+.withColumn(new Column("id"))``. This is distinct from column definitions and
+``ALTER COLUMN ... SET NOT NULL``; those retain their existing APIs.
+
 SQL Server identity inserts
 ---------------------------
 

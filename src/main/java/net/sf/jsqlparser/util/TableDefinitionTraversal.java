@@ -27,6 +27,7 @@ import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
@@ -165,6 +166,9 @@ public final class TableDefinitionTraversal {
                 }
             }
             visitOptions(index.getStorageParameters(), expressions);
+            if (index instanceof NotNullConstraint) {
+                accept(((NotNullConstraint) index).getColumn(), expressions);
+            }
             if (index instanceof CheckConstraint) {
                 accept(((CheckConstraint) index).getExpression(), expressions);
             }
