@@ -17053,6 +17053,12 @@ AlterExpression AlterExpressionDrop():
 {
     <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
     (
+        LOOKAHEAD({ Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                && (getToken(1).kind == K_CHECK
+                    || getToken(1).kind == K_FOREIGN && getToken(2).kind == K_KEY
+                        && getToken(3).kind != OPENING_BRACKET) })
+        MySqlDropNamedConstraint(alterExp)
+        |
         (
             <K_PARTITION> {
                 alterExp = new AlterExpressionPartition();
@@ -17116,6 +17122,15 @@ AlterExpression AlterExpressionDrop():
         )
     )
     { return alterExp; }
+}
+
+/** A MySQL deletion target is a constraint name, not a list of key columns. */
+void MySqlDropNamedConstraint(AlterExpression alterExp):
+{ String name; }
+{
+    ( <K_FOREIGN> <K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
+      | <K_CHECK> { alterExp.setOperation(AlterOperation.DROP_CHECK); } )
+    name=RelObjectName() { alterExp.setConstraintName(name); }
 }
 
 /**

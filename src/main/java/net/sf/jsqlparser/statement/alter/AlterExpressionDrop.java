@@ -19,18 +19,11 @@ public class AlterExpressionDrop extends AlterExpression {
 
     @Override
     protected void appendBody(StringBuilder b) {
+        if (isDropSpecialOperation()) {
+            toStringDropSpecial(b);
+            return;
+        }
         switch (getOperation()) {
-            case DROP_PRIMARY_KEY:
-                b.append("DROP PRIMARY KEY ");
-                break;
-            case DROP_UNIQUE:
-                b.append("DROP UNIQUE (")
-                        .append(PlainSelect.getStringList(getPkColumns())).append(')');
-                break;
-            case DROP_FOREIGN_KEY:
-                b.append("DROP FOREIGN KEY (")
-                        .append(PlainSelect.getStringList(getPkColumns())).append(')');
-                break;
             case DROP_PARTITION:
                 b.append("DROP PARTITION ")
                         .append(PlainSelect.getStringList(getPartitions()));
