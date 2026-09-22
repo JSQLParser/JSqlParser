@@ -1300,3 +1300,26 @@ This API identifies expression metadata rather than performing database
 validation. Precision reports the requested value, without applying defaults,
 server range checks or clamping. For example, PostgreSQL accepts precision 7 with
 a warning and clamps it to 6, whereas MySQL rejects it.
+
+Attach a PostgreSQL constraint to an existing index
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With ``Dialect.POSTGRESQL``, ``ALTER TABLE ... ADD UNIQUE USING INDEX`` and
+``ADD PRIMARY KEY USING INDEX`` expose a ``ConstraintUsingIndex`` through
+``AlterExpression.getIndex()``. Its ``getName()`` is the optional new constraint
+name, while ``getExistingIndexName()`` identifies the existing index. This is
+separate from an index declaration's name, columns and access method.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t ADD CONSTRAINT uq UNIQUE USING INDEX i",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    ConstraintUsingIndex constraint = (ConstraintUsingIndex)
+        alter.getAlterExpressions().get(0).getIndex();
+    constraint.setExistingIndexName("replacement_index");
+    constraint.setName("replacement_constraint");
+
+``getConstraintAttributes()`` exposes deferrability and initial timing when
+present. The same AST can be constructed with ``new ConstraintUsingIndex()``
+and its fluent ``withName``, ``withType`` and ``withExistingIndexName`` methods.

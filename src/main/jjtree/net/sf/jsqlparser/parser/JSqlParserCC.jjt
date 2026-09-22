@@ -14845,6 +14845,18 @@ Index CreateTableConstraint():
 { Index index; }
 { index=TableConstraint(true) { return index; } }
 
+/** Attaches an existing PostgreSQL index without declaring new index columns. */
+ConstraintUsingIndex PostgreSqlConstraintUsingIndex():
+{ ConstraintUsingIndex constraint = new ConstraintUsingIndex(); String name; }
+{
+    [ <K_CONSTRAINT> name=RelObjectName() { constraint.setName(name); } ]
+    ( <K_UNIQUE> { constraint.setType("UNIQUE"); }
+      | <K_PRIMARY> <K_KEY> { constraint.setType("PRIMARY KEY"); } )
+    <K_USING> <K_INDEX> name=RelObjectName() { constraint.setExistingIndexName(name); }
+    PostgreSqlConstraintAttributes(constraint)
+    { return constraint; }
+}
+
 /** Shared table-constraint body; index option boundaries depend on CREATE versus ALTER. */
 Index TableConstraint(boolean createContext):
 {
@@ -17247,6 +17259,12 @@ AlterExpression AlterExpressionAddAlterModify():
                     "Informix constraint definitions require ADD");
             alterExp.setIndex(index);
         }
+        |
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ]
+                ( <K_UNIQUE> | <K_PRIMARY> <K_KEY> ) <K_USING> <K_INDEX>,
+                { alterExp.getOperation() == AlterOperation.ADD
+                    && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        index=PostgreSqlConstraintUsingIndex() { alterExp.setIndex(index); }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
                 && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
