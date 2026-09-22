@@ -811,6 +811,25 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
 
 Features set explicitly *after* the preset win over it.
 
+ALTER column names
+~~~~~~~~~~~~~~~~~~
+
+Non-reserved names such as ``comment`` work unquoted in ``ADD``, ``MODIFY``,
+``CHANGE``, ``DROP`` and ``RENAME`` column actions. The ``COLUMN`` keyword does
+not change how the name is interpreted. Column definitions remain editable:
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t MODIFY COLUMN comment TEXT",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    AlterExpression.ColumnDataType column = alter.getAlterExpressions().get(0)
+        .getColDataTypeList().get(0);
+    column.setColumnName("notes");
+    column.getColDataType().setDataType("LONGTEXT");
+    // ALTER TABLE t MODIFY COLUMN notes LONGTEXT
+    String sql = alter.toString();
+
 PostgreSQL names and literals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
