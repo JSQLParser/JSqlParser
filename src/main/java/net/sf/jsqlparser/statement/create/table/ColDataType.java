@@ -37,10 +37,15 @@ public class ColDataType implements Serializable {
         CHAR, VARCHAR
     }
 
+    /** Spelling of a character set clause; MySQL shorthands also select a character set. */
+    public enum CharacterSetSyntax {
+        CHARACTER_SET, CHARSET, ASCII, UNICODE
+    }
+
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
-    private boolean useCharsetKeyword;
+    private CharacterSetSyntax characterSetSyntax = CharacterSetSyntax.CHARACTER_SET;
     private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
     private Signedness signedness;
@@ -166,21 +171,51 @@ public class ColDataType implements Serializable {
         dataType = list.stream().collect(joining("."));
     }
 
+    /** Returns the character set name, resolving ASCII to latin1 and UNICODE to ucs2. */
     public String getCharacterSet() {
         return characterSet;
     }
 
     public void setCharacterSet(String characterSet) {
         this.characterSet = characterSet;
+        if (characterSetSyntax == CharacterSetSyntax.ASCII
+                || characterSetSyntax == CharacterSetSyntax.UNICODE) {
+            characterSetSyntax = CharacterSetSyntax.CHARACTER_SET;
+        }
+    }
+
+    public CharacterSetSyntax getCharacterSetSyntax() {
+        return characterSetSyntax;
+    }
+
+    /**
+     * Selects the clause spelling. ASCII selects latin1 and UNICODE selects ucs2; the explicit
+     * spellings retain the current character set. Calling {@link #setCharacterSet(String)} after a
+     * shorthand switches to CHARACTER SET.
+     */
+    public void setCharacterSetSyntax(CharacterSetSyntax characterSetSyntax) {
+        this.characterSetSyntax = Objects.requireNonNull(characterSetSyntax, "characterSetSyntax");
+        if (characterSetSyntax == CharacterSetSyntax.ASCII) {
+            characterSet = "latin1";
+        } else if (characterSetSyntax == CharacterSetSyntax.UNICODE) {
+            characterSet = "ucs2";
+        }
+    }
+
+    public ColDataType withCharacterSetSyntax(CharacterSetSyntax characterSetSyntax) {
+        setCharacterSetSyntax(characterSetSyntax);
+        return this;
     }
 
     /** Whether the character set clause uses MySQL's CHARSET abbreviation. */
     public boolean isUseCharsetKeyword() {
-        return useCharsetKeyword;
+        return characterSetSyntax == CharacterSetSyntax.CHARSET;
     }
 
     public void setUseCharsetKeyword(boolean useCharsetKeyword) {
-        this.useCharsetKeyword = useCharsetKeyword;
+        setCharacterSetSyntax(useCharsetKeyword
+                ? CharacterSetSyntax.CHARSET
+                : CharacterSetSyntax.CHARACTER_SET);
     }
 
     public IntervalQualifier getIntervalQualifier() {
@@ -348,9 +383,22 @@ public class ColDataType implements Serializable {
                         : (signedness != null ? " " + signedness : "")
                                 + (zerofill ? " ZEROFILL" : ""))
                 + arraySpec.toString()
-                + (characterSet != null
-                        ? (useCharsetKeyword ? " CHARSET " : " CHARACTER SET ") + characterSet
-                        : "");
+                + characterSetClause();
+    }
+
+    private String characterSetClause() {
+        if (characterSet == null) {
+            return "";
+        }
+        switch (characterSetSyntax) {
+            case ASCII:
+            case UNICODE:
+                return " " + characterSetSyntax;
+            case CHARSET:
+                return " CHARSET " + characterSet;
+            default:
+                return " CHARACTER SET " + characterSet;
+        }
     }
 
     public ColDataType withDataType(String dataType) {
@@ -447,7 +495,7 @@ public class ColDataType implements Serializable {
         return dataType.equalsIgnoreCase(that.dataType)
                 && Objects.equals(argumentsStringList, that.argumentsStringList)
                 && Objects.equals(characterSet, that.characterSet)
-                && useCharsetKeyword == that.useCharsetKeyword
+                && characterSetSyntax == that.characterSetSyntax
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData)
                 && signedness == that.signedness
@@ -465,7 +513,7 @@ public class ColDataType implements Serializable {
                 .reduce(0, (hash, c) -> 31 * hash + c);
         result = 31 * result + Objects.hashCode(argumentsStringList);
         result = 31 * result + Objects.hashCode(characterSet);
-        result = 31 * result + Boolean.hashCode(useCharsetKeyword);
+        result = 31 * result + Objects.hashCode(characterSetSyntax);
         result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
         result = 31 * result + Objects.hashCode(signedness);
