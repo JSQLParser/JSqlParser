@@ -2821,7 +2821,8 @@ TOKEN : /* Numeric Constants */
             )>
   |     < S_LONG: ( <DIGIT> )+ >
   |     < #DIGIT: ["0" - "9"] >
-  |     < S_HEX: ("X" ("'" ( <HEX_VALUE> )* "'" (" ")*)+ | "0x" ( <HEX_DIGIT> )+ ) >
+  |     < S_HEX: ("X" <QUOTED_HEX> ( (" ")* <QUOTED_HEX> )* | "0x" ( <HEX_DIGIT> )+ ) >
+  |     < #QUOTED_HEX: "'" ( <HEX_VALUE> )* "'" >
   |     < #HEX_VALUE: ["0"-"9","A"-"F", " "]  >
   |     < #HEX_DIGIT: ["0"-"9","A"-"F"]  >
 }
