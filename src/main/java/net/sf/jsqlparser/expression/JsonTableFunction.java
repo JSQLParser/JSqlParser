@@ -474,6 +474,7 @@ public class JsonTableFunction extends Function {
         private String columnName;
         private boolean forOrdinality;
         private ColDataType dataType;
+        private String collation;
         private boolean formatJson;
         private boolean exists;
         private boolean onEmptyAfterOnError;
@@ -523,6 +524,16 @@ public class JsonTableFunction extends Function {
 
         public JsonTableValueColumnDefinition setDataType(ColDataType dataType) {
             this.dataType = dataType;
+            return this;
+        }
+
+        /** Returns the column collation, including any identifier quoting, or null if absent. */
+        public String getCollation() {
+            return collation;
+        }
+
+        public JsonTableValueColumnDefinition setCollation(String collation) {
+            this.collation = collation;
             return this;
         }
 
@@ -625,6 +636,9 @@ public class JsonTableFunction extends Function {
             }
             if (dataType != null) {
                 builder.append(" ").append(dataType);
+            }
+            if (collation != null) {
+                builder.append(" COLLATE ").append(collation);
             }
             if (formatJson) {
                 builder.append(" FORMAT JSON");
