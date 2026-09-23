@@ -13167,70 +13167,30 @@ JsonTableFunction.JsonTablePassingClause JsonTablePassingClause() : {
     }
 }
 
+/** Compatibility entry point; both column response clauses use the same behaviors. */
 JsonFunction.JsonOnResponseBehavior JsonTableOnEmptyBehavior() : {
-    JsonFunction.JsonOnResponseBehavior behavior = null;
+    JsonFunction.JsonOnResponseBehavior behavior;
+}
+{
+    behavior = JsonTableOnResponseBehavior()
+    { return behavior; }
+}
+
+JsonFunction.JsonOnResponseBehavior JsonTableOnResponseBehavior() : {
+    JsonFunction.JsonOnResponseBehavior behavior;
     Expression expression;
-    Token token;
 }
 {
     (
-        <K_ERROR>
-        {
-            behavior = new JsonFunction.JsonOnResponseBehavior(
-                    JsonFunction.JsonOnResponseBehaviorType.ERROR);
-        }
-        |
-        <K_NULL>
-        {
-            behavior = new JsonFunction.JsonOnResponseBehavior(
-                    JsonFunction.JsonOnResponseBehaviorType.NULL);
-        }
-        |
-        <K_TRUE>
-        {
-            behavior = new JsonFunction.JsonOnResponseBehavior(
-                    JsonFunction.JsonOnResponseBehaviorType.TRUE);
-        }
-        |
-        <K_FALSE>
-        {
-            behavior = new JsonFunction.JsonOnResponseBehavior(
-                    JsonFunction.JsonOnResponseBehaviorType.FALSE);
-        }
-        |
         <K_DEFAULT> expression = Expression()
         {
             behavior = new JsonFunction.JsonOnResponseBehavior(
                     JsonFunction.JsonOnResponseBehaviorType.DEFAULT, expression);
         }
         |
-        token = <S_IDENTIFIER>
-        {
-            if (!token.image.equalsIgnoreCase("EMPTY")) {
-                throw new ParseException(
-                        "Expected EMPTY, ERROR, NULL or DEFAULT but found " + token.image);
-            }
-        }
-        (
-            LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.equalsIgnoreCase("OBJECT") })
-            JsonKeyword("OBJECT")
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_OBJECT);
-            }
-            |
-            [ <K_ARRAY_LITERAL> ]
-            {
-                behavior = new JsonFunction.JsonOnResponseBehavior(
-                        JsonFunction.JsonOnResponseBehaviorType.EMPTY_ARRAY);
-            }
-        )
+        behavior = JsonQueryOnResponseBehavior()
     )
-    {
-        if (behavior != null) {
-            return behavior;
-        }
-    }
+    { return behavior; }
 }
 
 JsonTableFunction.JsonTableWrapperClause JsonTableWrapperClause(boolean beforePathExpr) : {
@@ -13371,20 +13331,20 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
                 quotesClause = JsonTableQuotesClause() { valueColumnDefinition.setQuotesClause(quotesClause); }
             ]
             [
-                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <K_EMPTY> )
-                behavior = JsonTableOnEmptyBehavior()
+                LOOKAHEAD( JsonTableOnResponseBehavior() <K_ON> <K_EMPTY> )
+                behavior = JsonTableOnResponseBehavior()
                 <K_ON> <K_EMPTY>
                 { valueColumnDefinition.setOnEmptyBehavior(behavior); }
             ]
             [
-                LOOKAHEAD( JsonQueryOnResponseBehavior() <K_ON> <K_ERROR> )
-                behavior = JsonQueryOnResponseBehavior()
+                LOOKAHEAD( JsonTableOnResponseBehavior() <K_ON> <K_ERROR> )
+                behavior = JsonTableOnResponseBehavior()
                 <K_ON> <K_ERROR>
                 { valueColumnDefinition.setOnErrorBehavior(behavior); }
             ]
             [
-                LOOKAHEAD( JsonTableOnEmptyBehavior() <K_ON> <K_EMPTY> )
-                behavior = JsonTableOnEmptyBehavior()
+                LOOKAHEAD( JsonTableOnResponseBehavior() <K_ON> <K_EMPTY> )
+                behavior = JsonTableOnResponseBehavior()
                 <K_ON> <K_EMPTY>
                 {
                     valueColumnDefinition.setOnEmptyBehavior(behavior);
