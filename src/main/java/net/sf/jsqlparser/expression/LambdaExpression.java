@@ -10,15 +10,18 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     private List<String> identifiers;
     private Expression expression;
+    private boolean parenthesized;
 
     public LambdaExpression(String identifier, Expression expression) {
         this.identifiers = Collections.singletonList(identifier);
@@ -36,7 +39,18 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
         for (Expression variable : expressionList) {
             identifiers.add(variable.toString());
         }
-        return new LambdaExpression(identifiers, expression);
+        return new LambdaExpression(identifiers, expression)
+                .setParenthesized(expressionList instanceof ParenthesedExpressionList);
+    }
+
+    /** Whether the parameter list was explicitly parenthesized, including a single parameter. */
+    public boolean isParenthesized() {
+        return parenthesized;
+    }
+
+    public LambdaExpression setParenthesized(boolean parenthesized) {
+        this.parenthesized = parenthesized;
+        return this;
     }
 
     public List<String> getIdentifiers() {
@@ -58,7 +72,11 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        if (identifiers.size() == 1) {
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        if (identifiers.size() == 1 && !parenthesized) {
             builder.append(identifiers.get(0));
         } else {
             int i = 0;
@@ -68,7 +86,9 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
             }
             builder.append(" )");
         }
-        return builder.append(" -> ").append(expression);
+        builder.append(" -> ");
+        expressionPrinter.accept(expression);
+        return builder;
     }
 
     @Override

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
@@ -344,8 +345,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Statements statements, S context) {
-        statements.accept(this, context);
-        return builder;
+        return statements.appendTo(builder, statement -> statement.accept(this, context));
     }
 
     @Override
@@ -435,18 +435,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Block block, S context) {
-        builder.append("BEGIN\n");
-        if (block.getStatements() != null) {
-            for (Statement stmt : block.getStatements()) {
-                stmt.accept(this, context);
-                builder.append(";\n");
-            }
-        }
-        builder.append("END");
-        if (block.hasSemicolonAfterEnd()) {
-            builder.append(";");
-        }
-        return builder;
+        return block.appendTo(builder, statements -> statements.accept(this, context));
     }
 
     @Override
@@ -563,8 +552,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(IfElseStatement ifElseStatement, S context) {
-        ifElseStatement.appendTo(builder);
-        return builder;
+        return ifElseStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                statement -> statement.accept(this, context));
     }
 
     @Override
@@ -581,7 +571,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AssertStatement assertStatement, S context) {
-        assertStatement.appendTo(builder);
+        assertStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
         return builder;
     }
 
@@ -593,7 +584,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(ExportDataStatement exportDataStatement, S context) {
-        exportDataStatement.appendTo(builder);
+        exportDataStatement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 
@@ -623,7 +616,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(PrepareStatement prepareStatement, S context) {
-        prepareStatement.appendTo(builder);
+        prepareStatement.appendTo(builder, statement -> statement.accept(this, context));
         return builder;
     }
 
@@ -635,13 +628,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CopyStatement copyStatement, S context) {
-        copyStatement.appendTo(builder);
+        copyStatement.appendTo(builder,
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(CreateMacro createMacro, S context) {
-        createMacro.appendTo(builder);
+        createMacro.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                select -> select.accept((SelectVisitor<?>) selectDeParser, context));
         return builder;
     }
 
@@ -697,7 +693,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(LockStatement lock, S context) {
-        builder.append(lock.toString());
+        lock.appendTo(builder);
         return builder;
     }
 
@@ -711,6 +707,11 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(CreateRole statement, S context) {
         statement.appendTo(builder, e -> e.accept(expressionDeParser, context));
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterSchema statement, S context) {
+        return statement.appendTo(builder);
     }
 
     @Override

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
@@ -879,6 +880,12 @@ public class StatementValidator extends AbstractValidator<Statement>
         for (RoleOption option : statement.getOptions()) {
             validateOptionalExpression(option.getValue());
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterSchema statement, S context) {
+        validateFeature(Feature.alterSchema);
         return null;
     }
 

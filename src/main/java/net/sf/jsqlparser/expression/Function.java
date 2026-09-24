@@ -17,6 +17,9 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +49,7 @@ public class Function extends ASTNodeAccessImpl implements Expression {
     private KeepExpression keep = null;
     private String onOverflowTruncate = null;
     private String extraKeyword = null;
+    private List<ColumnDefinition> resultColumnDefinitions;
 
     /**
      * Generic keyword arguments captured inside function parentheses, e.g.
@@ -54,6 +58,23 @@ public class Function extends ASTNodeAccessImpl implements Expression {
      * have dedicated grammar branches.
      */
     private List<KeywordArgument> keywordArguments = null;
+
+    /** Column definitions supplied for a record-returning function inside ROWS FROM. */
+    public List<ColumnDefinition> getResultColumnDefinitions() {
+        return resultColumnDefinitions;
+    }
+
+    public void setResultColumnDefinitions(List<ColumnDefinition> resultColumnDefinitions) {
+        this.resultColumnDefinitions = resultColumnDefinitions;
+    }
+
+    public StringBuilder appendResultColumnDefinitionsTo(StringBuilder builder) {
+        if (resultColumnDefinitions != null) {
+            builder.append(" AS ")
+                    .append(PlainSelect.getStringList(resultColumnDefinitions, true, true));
+        }
+        return builder;
+    }
 
     public Function() {}
 
@@ -446,7 +467,8 @@ public class Function extends ASTNodeAccessImpl implements Expression {
             ans = "{fn " + ans + "}";
         }
 
-        return ans;
+        return resultColumnDefinitions == null ? ans
+                : appendResultColumnDefinitionsTo(new StringBuilder(ans)).toString();
     }
 
     public Function withAttribute(Expression attribute) {

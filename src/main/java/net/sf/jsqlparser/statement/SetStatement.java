@@ -26,6 +26,21 @@ public final class SetStatement implements Statement {
     private String effectParameter;
     private OnOffOptions onOffOptions;
 
+    /** Assignment punctuation; NONE also supports SET options and PostgreSQL value lists. */
+    public enum AssignmentOperator {
+        NONE(""), EQUALS("="), COLON_EQUALS(":=");
+
+        private final String token;
+
+        AssignmentOperator(String token) {
+            this.token = token;
+        }
+
+        public String getToken() {
+            return token;
+        }
+    }
+
     /** SQL Server options that share the SET option [, option] ON | OFF syntax. */
     public enum OnOffOption {
         QUOTED_IDENTIFIER, CONCAT_NULL_YIELDS_NULL, CURSOR_CLOSE_ON_COMMIT, ARITHABORT, ARITHIGNORE, FMTONLY, NOCOUNT, NOEXEC, NUMERIC_ROUNDABORT, PARSEONLY, ANSI_DEFAULTS, ANSI_NULL_DFLT_OFF, ANSI_NULL_DFLT_ON, ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS, FORCEPLAN, SHOWPLAN_ALL, SHOWPLAN_TEXT, SHOWPLAN_XML, IMPLICIT_TRANSACTIONS, REMOTE_PROC_TRANSACTIONS, XACT_ABORT;
@@ -99,8 +114,12 @@ public final class SetStatement implements Statement {
     }
 
     public void add(Object name, ExpressionList<?> value, boolean useEqual) {
+        add(name, value, useEqual ? AssignmentOperator.EQUALS : AssignmentOperator.NONE);
+    }
+
+    public void add(Object name, ExpressionList<?> value, AssignmentOperator operator) {
         onOffOptions = null;
-        values.add(new NameExpr(name, value, useEqual));
+        values.add(new NameExpr(name, value, operator));
     }
 
     public void remove(int idx) {
@@ -112,7 +131,7 @@ public final class SetStatement implements Statement {
     }
 
     public boolean isUseEqual(int idx) {
-        return values.get(idx).useEqual;
+        return values.get(idx).isUseEqual();
     }
 
     public boolean isUseEqual() {
@@ -129,8 +148,25 @@ public final class SetStatement implements Statement {
     }
 
     public SetStatement setUseEqual(int idx, boolean useEqual) {
-        values.get(idx).useEqual = useEqual;
+        values.get(idx).setUseEqual(useEqual);
         return this;
+    }
+
+    public AssignmentOperator getAssignmentOperator(int idx) {
+        return values.get(idx).operator;
+    }
+
+    public AssignmentOperator getAssignmentOperator() {
+        return getAssignmentOperator(0);
+    }
+
+    public SetStatement setAssignmentOperator(int idx, AssignmentOperator operator) {
+        values.get(idx).operator = Objects.requireNonNull(operator, "operator");
+        return this;
+    }
+
+    public SetStatement setAssignmentOperator(AssignmentOperator operator) {
+        return setAssignmentOperator(0, operator);
     }
 
     public SetStatement withUseEqual(boolean useEqual) {
@@ -194,7 +230,10 @@ public final class SetStatement implements Statement {
 
     private static void appendAssignment(StringBuilder builder, NameExpr value,
             Consumer<Expression> expressionRenderer) {
-        builder.append(value.name).append(value.useEqual ? " = " : " ");
+        builder.append(value.name).append(" ");
+        if (value.operator != AssignmentOperator.NONE) {
+            builder.append(value.operator.getToken()).append(" ");
+        }
         if (value.expressions != null) {
             for (int i = 0; i < value.expressions.size(); i++) {
                 if (i > 0) {
@@ -251,12 +290,16 @@ public final class SetStatement implements Statement {
     static class NameExpr implements Serializable {
         Object name;
         ExpressionList expressions;
-        boolean useEqual;
+        AssignmentOperator operator;
 
         public NameExpr(Object name, ExpressionList<?> expressions, boolean useEqual) {
+            this(name, expressions, useEqual ? AssignmentOperator.EQUALS : AssignmentOperator.NONE);
+        }
+
+        public NameExpr(Object name, ExpressionList<?> expressions, AssignmentOperator operator) {
             this.name = name;
             this.expressions = expressions;
-            this.useEqual = useEqual;
+            this.operator = Objects.requireNonNull(operator, "operator");
         }
 
         public Object getName() {
@@ -276,11 +319,11 @@ public final class SetStatement implements Statement {
         }
 
         public boolean isUseEqual() {
-            return useEqual;
+            return operator == AssignmentOperator.EQUALS;
         }
 
         public void setUseEqual(boolean useEqual) {
-            this.useEqual = useEqual;
+            operator = useEqual ? AssignmentOperator.EQUALS : AssignmentOperator.NONE;
         }
     }
 }

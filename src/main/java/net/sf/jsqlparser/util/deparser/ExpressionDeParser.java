@@ -121,6 +121,7 @@ import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -181,14 +182,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(Addition addition, S context) {
-        deparse(addition, " + ", null);
+        deparse(addition, " + ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(AndExpression andExpression, S context) {
-        deparse(andExpression, andExpression.isUseOperator() ? " && " : " AND ",
-                null);
+        deparse(andExpression, andExpression.isUseOperator() ? " && " : " AND ", context);
         return builder;
     }
 
@@ -225,19 +225,19 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(EqualsTo equalsTo, S context) {
-        deparse(equalsTo, " = ", null);
+        deparse(equalsTo, " = ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(Division division, S context) {
-        deparse(division, " / ", null);
+        deparse(division, " / ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(IntegerDivision division, S context) {
-        deparse(division, " DIV ", null);
+        deparse(division, " DIV ", context);
         return builder;
     }
 
@@ -266,13 +266,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(BitwiseRightShift expr, S context) {
-        deparse(expr, " >> ", null);
+        deparse(expr, " >> ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(BitwiseLeftShift expr, S context) {
-        deparse(expr, " << ", null);
+        deparse(expr, " << ", context);
         return builder;
     }
 
@@ -303,13 +303,13 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(GreaterThan greaterThan, S context) {
-        deparse(greaterThan, " > ", null);
+        deparse(greaterThan, " > ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(GreaterThanEquals greaterThanEquals, S context) {
-        deparse(greaterThanEquals, " >= ", null);
+        deparse(greaterThanEquals, " >= ", context);
 
         return builder;
     }
@@ -478,6 +478,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     }
 
     @Override
+    public <S> StringBuilder visit(IsJsonExpression expression, S context) {
+        return expression.appendTo(builder, value -> value.accept(this, context));
+    }
+
+    @Override
     public <S> StringBuilder visit(IsUnknownExpression isUnknownExpression, S context) {
         if (isUnknownExpression
                 .getOraclePriorPosition() == SupportsOldOracleJoinSyntax.ORACLE_PRIOR_START) {
@@ -616,21 +621,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(MinorThan minorThan, S context) {
-        deparse(minorThan, " < ", null);
+        deparse(minorThan, " < ", context);
 
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(MinorThanEquals minorThanEquals, S context) {
-        deparse(minorThanEquals, " <= ", null);
+        deparse(minorThanEquals, " <= ", context);
 
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(Multiplication multiplication, S context) {
-        deparse(multiplication, " * ", null);
+        deparse(multiplication, " * ", context);
 
         return builder;
     }
@@ -638,23 +643,21 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(NotEqualsTo notEqualsTo, S context) {
         deparse(notEqualsTo,
-                " " + notEqualsTo.getStringExpression() + " ", null);
+                " " + notEqualsTo.getStringExpression() + " ", context);
 
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(DoubleAnd doubleAnd, S context) {
-        deparse(doubleAnd, " " + doubleAnd.getStringExpression() + " ",
-                null);
+        deparse(doubleAnd, " " + doubleAnd.getStringExpression() + " ", context);
 
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(Contains contains, S context) {
-        deparse(contains, " " + contains.getStringExpression() + " ",
-                null);
+        deparse(contains, " " + contains.getStringExpression() + " ", context);
 
         return builder;
     }
@@ -662,7 +665,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(ContainedBy containedBy, S context) {
         deparse(containedBy,
-                " " + containedBy.getStringExpression() + " ", null);
+                " " + containedBy.getStringExpression() + " ", context);
 
         return builder;
     }
@@ -676,14 +679,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(OrExpression orExpression, S context) {
-        deparse(orExpression, " OR ", null);
+        deparse(orExpression, " OR ", context);
 
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(XorExpression xorExpression, S context) {
-        deparse(xorExpression, " XOR ", null);
+        deparse(xorExpression, " XOR ", context);
 
         return builder;
     }
@@ -708,7 +711,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(Subtraction subtraction, S context) {
-        deparse(subtraction, " - ", null);
+        deparse(subtraction, " - ", context);
         return builder;
     }
 
@@ -727,7 +730,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 builder.append("WITH ");
                 for (Iterator<WithItem<?>> iter = select.getWithItemsList().iterator(); iter
                         .hasNext();) {
-                    iter.next().accept(selectVisitor, null);
+                    iter.next().accept(selectVisitor, context);
                     if (iter.hasNext()) {
                         builder.append(", ");
                     }
@@ -736,36 +739,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                 builder.append(" ");
             }
 
-            select.accept(selectVisitor, null);
+            select.accept(selectVisitor, context);
         }
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(TranscodingFunction transcodingFunction, S context) {
-        if (transcodingFunction.isTranscodeStyle()) {
-            builder.append(transcodingFunction.getKeyword());
-            builder.append("( ");
-            transcodingFunction.getExpression().accept(this, context);
-            builder.append(" USING ")
-                    .append(transcodingFunction.getTranscodingName())
-                    .append(" )");
-        } else {
-            builder
-                    .append(transcodingFunction.getKeyword())
-                    .append("( ")
-                    .append(transcodingFunction.getColDataType())
-                    .append(", ");
-            transcodingFunction.getExpression().accept(this, context);
-
-            String transCodingName = transcodingFunction.getTranscodingName();
-            if (transCodingName != null && !transCodingName.isEmpty()) {
-                builder.append(", ").append(transCodingName);
-            }
-            builder.append(" )");
-        }
-
-        return builder;
+        return transcodingFunction.appendTo(builder,
+                expression -> expression.accept(this, context));
     }
 
     public <S> StringBuilder visit(TrimFunction trimFunction, S context) {
@@ -908,6 +890,15 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         return builder;
     }
 
+    private <S> void deParseOrderByElement(OrderByDeParser deParser,
+            OrderByElement element, S context) {
+        if (context == null) {
+            deParser.deParseElement(element);
+        } else {
+            deParser.deParseElement(element, context);
+        }
+    }
+
     @Override
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public <S> StringBuilder visit(Function function, S context) {
@@ -966,7 +957,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     } else {
                         comma = true;
                     }
-                    orderByDeParser.deParseElement(orderByElement);
+                    deParseOrderByElement(orderByDeParser, orderByElement, context);
                 }
             }
 
@@ -975,7 +966,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
 
             if (function.getLimit() != null) {
-                new LimitDeparser(this, builder).deParse(function.getLimit());
+                new LimitDeparser(this, builder).deParse(function.getLimit(), context);
             }
 
             // Generic keyword arguments (e.g. SEPARATOR ',', USING utf8)
@@ -1016,7 +1007,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (function.isEscaped()) {
             builder.append("}");
         }
-        return builder;
+        return function.appendResultColumnDefinitionsTo(builder);
     }
 
     @Override
@@ -1096,7 +1087,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(Concat concat, S context) {
-        deparse(concat, " || ", null);
+        deparse(concat, " || ", context);
         return builder;
     }
 
@@ -1151,25 +1142,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(Matches matches, S context) {
-        deparse(matches, " @@ ", null);
+        deparse(matches, " @@ ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(BitwiseAnd bitwiseAnd, S context) {
-        deparse(bitwiseAnd, " & ", null);
+        deparse(bitwiseAnd, " & ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(BitwiseOr bitwiseOr, S context) {
-        deparse(bitwiseOr, " | ", null);
+        deparse(bitwiseOr, " | ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(BitwiseXor bitwiseXor, S context) {
-        deparse(bitwiseXor, " ^ ", null);
+        deparse(bitwiseXor, " ^ ", context);
         return builder;
     }
 
@@ -1202,7 +1193,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(Modulo modulo, S context) {
-        deparse(modulo, " % ", null);
+        deparse(modulo, " % ", context);
         return builder;
     }
 
@@ -1269,7 +1260,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
 
         if (analyticExpression.getLimit() != null) {
-            new LimitDeparser(this, builder).deParse(analyticExpression.getLimit());
+            new LimitDeparser(this, builder).deParse(analyticExpression.getLimit(), context);
         }
 
         builder.append(") ");
@@ -1278,10 +1269,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             builder.append(" ");
         }
 
-        if (analyticExpression.getFilterExpression() != null) {
-            builder.append("FILTER (WHERE ");
-            analyticExpression.getFilterExpression().accept(this, context);
-            builder.append(")");
+        if (analyticExpression.getFilterExpression() != null
+                && analyticExpression.getType() != AnalyticType.WITHIN_GROUP) {
+            analyticExpression.appendFilterTo(builder, filter -> filter.accept(this, context));
             if (analyticExpression.getType() != AnalyticType.FILTER_ONLY) {
                 builder.append(" ");
             }
@@ -1348,7 +1338,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     if (i > 0) {
                         builder.append(", ");
                     }
-                    orderByDeParser.deParseElement(orderByElements.get(i));
+                    deParseOrderByElement(orderByDeParser, orderByElements.get(i), context);
                 }
             }
 
@@ -1360,6 +1350,11 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             }
 
             builder.append(")");
+        }
+        if (analyticExpression.getFilterExpression() != null
+                && analyticExpression.getType() == AnalyticType.WITHIN_GROUP) {
+            builder.append(' ');
+            analyticExpression.appendFilterTo(builder, filter -> filter.accept(this, context));
         }
         return builder;
     }
@@ -1442,7 +1437,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(RegExpMatchOperator regExpMatchOperator, S context) {
-        deparse(regExpMatchOperator, " " + regExpMatchOperator.getStringExpression() + " ", null);
+        deparse(regExpMatchOperator, " " + regExpMatchOperator.getStringExpression() + " ",
+                context);
         return builder;
     }
 
@@ -1455,7 +1451,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(JsonOperator jsonExpr, S context) {
-        deparse(jsonExpr, " " + jsonExpr.getStringExpression() + " ", null);
+        deparse(jsonExpr, " " + jsonExpr.getStringExpression() + " ", context);
         return builder;
     }
 
@@ -1493,7 +1489,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     public <S> StringBuilder visit(ExpressionList<? extends Expression> expressionList, S context) {
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(this, builder);
-        expressionListDeParser.deParse(expressionList);
+        expressionListDeParser.deParse(expressionList, context);
         return builder;
     }
 
@@ -1504,7 +1500,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         ExpressionListDeParser<?> expressionListDeParser =
                 new ExpressionListDeParser<>(this, builder);
-        expressionListDeParser.deParse(rowConstructor);
+        expressionListDeParser.deParse(rowConstructor, context);
         return builder;
     }
 
@@ -1823,25 +1819,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(GeometryDistance geometryDistance, S context) {
         deparse(geometryDistance,
-                " " + geometryDistance.getStringExpression() + " ", null);
+                " " + geometryDistance.getStringExpression() + " ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(Intersects intersects, S context) {
-        deparse(intersects, " # ", null);
+        deparse(intersects, " # ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(TSQLLeftJoin tsqlLeftJoin, S context) {
-        this.deparse(tsqlLeftJoin, " *= ", null);
+        this.deparse(tsqlLeftJoin, " *= ", context);
         return builder;
     }
 
     @Override
     public <S> StringBuilder visit(TSQLRightJoin tsqlRightJoin, S context) {
-        this.deparse(tsqlRightJoin, " =* ", null);
+        this.deparse(tsqlRightJoin, " =* ", context);
         return builder;
     }
 
@@ -1857,20 +1853,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(LambdaExpression lambdaExpression, S context) {
-        if (lambdaExpression.getIdentifiers().size() == 1) {
-            builder.append(lambdaExpression.getIdentifiers().get(0));
-        } else {
-            int i = 0;
-            builder.append("( ");
-            for (String s : lambdaExpression.getIdentifiers()) {
-                builder.append(i++ > 0 ? ", " : "").append(s);
-            }
-            builder.append(" )");
-        }
-
-        builder.append(" -> ");
-        lambdaExpression.getExpression().accept(this, context);
-        return builder;
+        return lambdaExpression.appendTo(builder, expression -> expression.accept(this, context));
     }
 
     @Override

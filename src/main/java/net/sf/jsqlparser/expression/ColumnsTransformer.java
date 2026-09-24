@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 
 /**
- * A ClickHouse transformer following a {@code COLUMNS(...)} matcher, for example the
+ * A ClickHouse transformer following a {@code COLUMNS(...)} matcher or a {@code *}, for example the
  * {@code APPLY(x -> round(x, 2))} in {@code SELECT COLUMNS('^m') APPLY(x -> round(x, 2))}.
  *
  * ClickHouse parses its transformers in a loop, so they may repeat and combine in any order.
@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 public class ColumnsTransformer extends ASTNodeAccessImpl {
 
     public enum ColumnsTransformerType {
-        APPLY, EXCEPT, REPLACE
+        APPLY, EXCEPT, EXCLUDE, REPLACE
     }
 
     private ColumnsTransformerType type;
@@ -81,6 +81,7 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
                 }
                 break;
             case EXCEPT:
+            case EXCLUDE:
                 if (exceptColumns != null) {
                     expressions.addAll(exceptColumns);
                 }
@@ -104,6 +105,9 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
                 break;
             case EXCEPT:
                 builder.append("EXCEPT ").append(exceptColumns);
+                break;
+            case EXCLUDE:
+                builder.append("EXCLUDE ").append(exceptColumns);
                 break;
             case REPLACE:
                 builder.append("REPLACE(").append(Select.getStringList(replaceItems)).append(")");

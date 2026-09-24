@@ -16,10 +16,12 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * {@code COPY table [(columns)] FROM path [(options)]} and
- * {@code COPY {table | (query)} TO path [(options)]}, DuckDB's bulk import and export statement.
+ * {@code COPY {table | (query)} TO path [(options)]}, the bulk import and export statement in
+ * DuckDB and PostgreSQL.
  *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/copy">COPY</a>
  */
@@ -30,6 +32,7 @@ public class CopyStatement implements Statement {
     private boolean from;
     private String path;
     private List<String> options;
+    private boolean withKeyword;
 
     public Table getTable() {
         return table;
@@ -110,10 +113,31 @@ public class CopyStatement implements Statement {
         return this;
     }
 
+    /** Whether the option list is introduced by the optional WITH keyword. */
+    public boolean isWithKeyword() {
+        return withKeyword;
+    }
+
+    public void setWithKeyword(boolean withKeyword) {
+        this.withKeyword = withKeyword;
+    }
+
+    public CopyStatement withWithKeyword(boolean withKeyword) {
+        setWithKeyword(withKeyword);
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    /** Renders the query through the caller's select writer. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Select> selectPrinter) {
         builder.append("COPY ");
         if (select != null) {
-            builder.append("(").append(select).append(")");
+            builder.append('(');
+            selectPrinter.accept(select);
+            builder.append(')');
         } else {
             builder.append(table);
             if (columns != null && !columns.isEmpty()) {
@@ -121,6 +145,9 @@ public class CopyStatement implements Statement {
             }
         }
         builder.append(from ? " FROM " : " TO ").append(path);
+        if (withKeyword) {
+            builder.append(" WITH");
+        }
         if (options != null && !options.isEmpty()) {
             builder.append(" ").append(PlainSelect.getStringList(options, true, true));
         }

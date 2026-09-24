@@ -11,90 +11,43 @@ package net.sf.jsqlparser.statement.select;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.schema.Column;
 
 public class AllColumns extends ASTNodeAccessImpl implements Expression {
-    protected ExpressionList<Column> exceptColumns;
-    protected List<SelectItem<?>> replaceExpressions;
-    private String exceptKeyword;
-
-    public AllColumns(ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions) {
-        this.exceptColumns = exceptColumns;
-        this.replaceExpressions = replaceExpressions;
-        this.exceptKeyword = exceptColumns != null ? "Except" : null;
-    }
-
-    public AllColumns(ExpressionList<Column> exceptColumns,
-            List<SelectItem<?>> replaceExpressions, String exceptKeyword) {
-        this.exceptColumns = exceptColumns;
-        this.replaceExpressions = replaceExpressions;
-        this.exceptKeyword = exceptKeyword;
-    }
+    private List<ColumnsTransformer> transformers;
 
     public AllColumns() {
-        this(null, null);
+        this(null);
     }
 
-    public ExpressionList<Column> getExceptColumns() {
-        return exceptColumns;
+    public AllColumns(List<ColumnsTransformer> transformers) {
+        this.transformers = transformers;
     }
 
-    public AllColumns setExceptColumns(ExpressionList<Column> exceptColumns) {
-        this.exceptColumns = exceptColumns;
+    public List<ColumnsTransformer> getTransformers() {
+        if (transformers == null) {
+            transformers = new ArrayList<>();
+        }
+        return transformers;
+    }
+
+    public AllColumns setTransformers(List<ColumnsTransformer> transformers) {
+        this.transformers = transformers;
         return this;
     }
 
-    public ExpressionList<Column> addExceptColumn(Column column) {
-        if (exceptColumns == null) {
-            exceptColumns = new ExpressionList<>();
-        }
-        exceptColumns.add(column);
-        return exceptColumns;
-    }
-
-    public List<SelectItem<?>> getReplaceExpressions() {
-        return replaceExpressions;
-    }
-
-    public AllColumns setReplaceExpressions(List<SelectItem<?>> replaceExpressions) {
-        this.replaceExpressions = replaceExpressions;
-        return this;
-    }
-
-    public List<SelectItem<?>> addReplaceExpression(SelectItem<?> selectItem) {
-        if (replaceExpressions == null) {
-            replaceExpressions = new ArrayList<>();
-        }
-        replaceExpressions.add(selectItem);
-        return replaceExpressions;
-    }
-
-    public String getExceptKeyword() {
-        return exceptKeyword;
-    }
-
-    public AllColumns setExceptKeyword(String exceptKeyword) {
-        this.exceptKeyword = exceptKeyword;
+    public AllColumns addTransformer(ColumnsTransformer transformer) {
+        getTransformers().add(transformer);
         return this;
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
         builder.append("*");
-        if (exceptColumns != null && !exceptColumns.isEmpty()) {
-            builder.append(" ").append(exceptKeyword == null ? "EXCEPT" : exceptKeyword)
-                    .append("( ");
-            exceptColumns.appendTo(builder);
-            builder.append(" )");
-        }
-        if (replaceExpressions != null && !replaceExpressions.isEmpty()) {
-            builder.append(" REPLACE( ");
-            builder.append(Select.getStringList(replaceExpressions));
-            builder.append(" )");
+        for (ColumnsTransformer transformer : getTransformers()) {
+            builder.append(" ").append(transformer);
         }
         return builder;
     }

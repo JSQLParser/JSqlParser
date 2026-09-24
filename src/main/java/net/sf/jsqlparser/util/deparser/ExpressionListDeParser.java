@@ -31,6 +31,10 @@ public class ExpressionListDeParser<T extends Expression>
 
     @Override
     public void deParse(ExpressionList<?> expressionList) {
+        deParse(expressionList, null);
+    }
+
+    public <S> void deParse(ExpressionList<?> expressionList, S context) {
         // @todo: remove this NameExpressionList related part
         String comma = expressionList instanceof NamedExpressionList
                 ? " "
@@ -55,7 +59,7 @@ public class ExpressionListDeParser<T extends Expression>
                 builder.append(name);
                 builder.append(" ");
             }
-            expression.accept(expressionVisitor, null);
+            expression.accept(expressionVisitor, context);
             i++;
         }
 

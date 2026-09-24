@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.IntervalQualifier;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,11 +40,13 @@ public class ColDataType implements Serializable {
     private String dataType;
     private List<String> argumentsStringList;
     private String characterSet;
+    private boolean useCharsetKeyword;
     private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
     private Signedness signedness;
     private boolean zerofill;
-    private Integer precision;
+    private BigInteger precision;
+    private boolean maxPrecision;
     private Integer scale;
     private List<TypeModifier> typeModifiers;
     private NationalCharacterType nationalCharacterType;
@@ -54,16 +57,40 @@ public class ColDataType implements Serializable {
     }
 
     public ColDataType(String dataType, int precision, int scale) {
-        this.dataType = dataType;
+        this(dataType);
+        setNumericTypeParameters(precision < 0 ? null
+                : precision == Integer.MAX_VALUE ? "MAX" : Integer.toString(precision),
+                scale < 0 ? null : Integer.valueOf(scale));
+    }
 
-        if (precision >= 0) {
-            this.precision = precision;
-            this.dataType += " (" + (precision == Integer.MAX_VALUE ? "MAX" : precision);
-            if (scale >= 0) {
-                this.scale = scale;
-                this.dataType += ", " + scale;
-            }
-            this.dataType += ")";
+    /**
+     * Creates a parameterized type, using {@code null} for an omitted parameter. Unlike the legacy
+     * primitive constructor, this accepts negative scales, including {@code -1}. The legacy
+     * {@link Integer#MAX_VALUE} precision sentinel continues to represent MAX.
+     */
+    public static ColDataType fromNumericParameters(String dataType, Integer precision,
+            Integer scale) {
+        return fromTypeParameters(dataType, precision == null ? null
+                : precision == Integer.MAX_VALUE ? "MAX" : precision.toString(), scale);
+    }
+
+    /**
+     * Creates a type from its numeric parameter spelling. Unlike the legacy primitive constructor,
+     * a numeric 2147483647 is distinct from MAX and larger lengths are retained without narrowing.
+     */
+    public static ColDataType fromTypeParameters(String dataType, String precision, Integer scale) {
+        ColDataType type = new ColDataType(dataType);
+        type.setNumericTypeParameters(precision, scale);
+        return type;
+    }
+
+    private void setNumericTypeParameters(String parameter, Integer scale) {
+        if (parameter != null) {
+            maxPrecision = "MAX".equalsIgnoreCase(parameter);
+            precision = maxPrecision ? null : new BigInteger(parameter);
+            this.scale = scale;
+            dataType += " (" + (maxPrecision ? "MAX" : precision)
+                    + (scale != null ? ", " + scale : "") + ")";
         }
     }
 
@@ -83,6 +110,54 @@ public class ColDataType implements Serializable {
         return dataType;
     }
 
+    /**
+     * Returns the type name without parenthesized parameters, retaining qualification, quoting and
+     * multiword names such as TIMESTAMP WITH TIME ZONE. The legacy {@link #getDataType()} spelling
+     * is unchanged. Quoted parentheses are part of an identifier and are retained.
+     */
+    public String getBaseTypeName() {
+        if (dataType == null) {
+            return null;
+        }
+        StringBuilder name = new StringBuilder();
+        int depth = 0;
+        char quote = 0;
+        for (int i = 0; i < dataType.length(); i++) {
+            char c = dataType.charAt(i);
+            if (quote != 0) {
+                if (depth == 0) {
+                    name.append(c);
+                }
+                if (c == quote) {
+                    if (i + 1 < dataType.length() && dataType.charAt(i + 1) == quote) {
+                        if (depth == 0) {
+                            name.append(quote);
+                        }
+                        i++;
+                    } else {
+                        quote = 0;
+                    }
+                }
+            } else if (c == '\'' || c == '"' || c == '`' || c == '[') {
+                quote = c == '[' ? ']' : c;
+                if (depth == 0) {
+                    name.append(c);
+                }
+            } else if (c == '(') {
+                depth++;
+                while (name.length() > 0
+                        && Character.isWhitespace(name.charAt(name.length() - 1))) {
+                    name.setLength(name.length() - 1);
+                }
+            } else if (c == ')' && depth > 0) {
+                depth--;
+            } else if (depth == 0) {
+                name.append(c);
+            }
+        }
+        return name.toString().trim();
+    }
+
     public void setDataType(String string) {
         dataType = string;
     }
@@ -97,6 +172,15 @@ public class ColDataType implements Serializable {
 
     public void setCharacterSet(String characterSet) {
         this.characterSet = characterSet;
+    }
+
+    /** Whether the character set clause uses MySQL's CHARSET abbreviation. */
+    public boolean isUseCharsetKeyword() {
+        return useCharsetKeyword;
+    }
+
+    public void setUseCharsetKeyword(boolean useCharsetKeyword) {
+        this.useCharsetKeyword = useCharsetKeyword;
     }
 
     public IntervalQualifier getIntervalQualifier() {
@@ -200,19 +284,40 @@ public class ColDataType implements Serializable {
      * The first numeric type parameter, e.g. {@code 255} for {@code VARCHAR(255)} or {@code 10} for
      * {@code DECIMAL(10, 2)}. {@code MAX} is reported as {@link Integer#MAX_VALUE}. Returns
      * {@code null} when the type carries no numeric parameters, e.g. {@code INT} or
-     * {@code ENUM('a', 'b')}.
+     * {@code ENUM('a', 'b')}, or when a numeric length exceeds the integer range. Use
+     * {@link #getNumericPrecision()} for the full range and {@link #isMaxPrecision()} to
+     * distinguish MAX from the numeric value 2147483647.
      */
     public Integer getPrecision() {
-        return precision;
+        return maxPrecision ? Integer.valueOf(Integer.MAX_VALUE)
+                : precision != null && precision.bitLength() < Integer.SIZE
+                        ? Integer.valueOf(precision.intValue())
+                        : null;
     }
 
     public void setPrecision(Integer precision) {
+        setNumericPrecision(precision == null ? null : BigInteger.valueOf(precision));
+    }
+
+    /** Returns the exact numeric parameter, or null for an omitted parameter or MAX. */
+    public BigInteger getNumericPrecision() {
+        return precision;
+    }
+
+    /** Updates numeric metadata without changing the legacy rendered type spelling. */
+    public void setNumericPrecision(BigInteger precision) {
         this.precision = precision;
+        maxPrecision = false;
+    }
+
+    /** Distinguishes the MAX keyword from an equal numeric value in the legacy accessor. */
+    public boolean isMaxPrecision() {
+        return maxPrecision;
     }
 
     /**
-     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)}. Returns
-     * {@code null} when absent.
+     * The second numeric type parameter, e.g. {@code 2} for {@code DECIMAL(10, 2)} or {@code -3}
+     * for PostgreSQL {@code NUMERIC(2, -3)}. Returns {@code null} when absent.
      */
     public Integer getScale() {
         return scale;
@@ -243,7 +348,9 @@ public class ColDataType implements Serializable {
                         : (signedness != null ? " " + signedness : "")
                                 + (zerofill ? " ZEROFILL" : ""))
                 + arraySpec.toString()
-                + (characterSet != null ? " CHARACTER SET " + characterSet : "");
+                + (characterSet != null
+                        ? (useCharsetKeyword ? " CHARSET " : " CHARACTER SET ") + characterSet
+                        : "");
     }
 
     public ColDataType withDataType(String dataType) {
@@ -340,6 +447,7 @@ public class ColDataType implements Serializable {
         return dataType.equalsIgnoreCase(that.dataType)
                 && Objects.equals(argumentsStringList, that.argumentsStringList)
                 && Objects.equals(characterSet, that.characterSet)
+                && useCharsetKeyword == that.useCharsetKeyword
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData)
                 && signedness == that.signedness
@@ -357,6 +465,7 @@ public class ColDataType implements Serializable {
                 .reduce(0, (hash, c) -> 31 * hash + c);
         result = 31 * result + Objects.hashCode(argumentsStringList);
         result = 31 * result + Objects.hashCode(characterSet);
+        result = 31 * result + Boolean.hashCode(useCharsetKeyword);
         result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
         result = 31 * result + Objects.hashCode(signedness);

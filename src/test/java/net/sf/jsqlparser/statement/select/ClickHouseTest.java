@@ -14,13 +14,12 @@ import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.ColumnsExpression;
 import net.sf.jsqlparser.expression.ColumnsTransformer;
-import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -334,6 +333,28 @@ public class ClickHouseTest {
         assertSqlCanBeParsedAndDeparsed(sql, true);
 
         sql = "SELECT COLUMNS('m') EXCEPT (metric_disk) APPLY(x -> round(x, 2)) FROM metrics";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testAllColumnsApplyIssue2636() throws JSQLParserException {
+        // ClickHouse accepts the same transformers after '*':
+        // https://github.com/JSQLParser/JSqlParser/issues/2636
+        String sql = "SELECT * APPLY(sum) FROM t";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        SelectItem<?> selectItem = plainSelect.getSelectItems().get(0);
+
+        Assertions.assertNull(selectItem.getAlias(),
+                "APPLY must not fall back to an alias");
+        Assertions.assertInstanceOf(AllColumns.class, selectItem.getExpression());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testAllColumnsChainedTransformersIssue2636() throws JSQLParserException {
+        // ClickHouse parses the transformers in a loop, so they may repeat after '*'
+        String sql = "SELECT * APPLY(sum) EXCEPT (a) FROM t";
         assertSqlCanBeParsedAndDeparsed(sql, true);
     }
 

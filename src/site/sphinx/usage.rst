@@ -690,6 +690,20 @@ The object model works in both directions. Build the tree from Java and print it
 
     Assertions.assertEquals(expectedSQLStr, builder.toString());
 
+The same visitor can render an entire statement list:
+
+.. code-block:: java
+
+    Statements statements = CCJSqlParserUtil.parseStatements("SELECT 1; SELECT 2;");
+    StringBuilder script = new StringBuilder();
+    statements.accept(new StatementDeParser(script), null);
+    Assertions.assertEquals("SELECT 1;\nSELECT 2;\n", script.toString());
+
+Statement lists and nested blocks share the separator policy used by
+``Statements.toString()``. Blocks and ``IF/ELSE`` statements retain their own
+semicolon settings. Custom deparsers receive each child statement and the
+``IF/ELSE`` condition through the visitor API, with the supplied context.
+
 
 ODBC timestamp intervals
 ==============================
@@ -774,7 +788,9 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
       - ``withBackslashEscapeCharacter``, ``withHashLineComments``, ``withDoubleQuotedStrings`` (MySQL and MariaDB, the last for the default ``sql_mode``)
     * - ``SQLSERVER``
       - ``withSquareBracketQuotation`` and ``CLUSTERED`` / ``NONCLUSTERED`` options on table-level primary key and unique constraints and ``CREATE INDEX``
-    * - ``POSTGRESQL``, ``ANSI_SQL``
+    * - ``POSTGRESQL``
+      - tagged dollar strings, the newline rule for ordinary string literals, literal-local ``E'...'`` escapes, and preservation of dots inside quoted names
+    * - ``ANSI_SQL``
       - the newline rule for adjacent string literals
     * - ``BIGQUERY``
       - ``withDoubleQuotedStrings``, ``withBackslashEscapeCharacter``, ``withHashLineComments``, any-whitespace rule for adjacent string literals
@@ -794,6 +810,35 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
       - ``UPDATE target FROM sources SET ...`` with the FROM clause before SET
 
 Features set explicitly *after* the preset win over it.
+
+PostgreSQL names and literals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Select ``Dialect.POSTGRESQL`` when parsing PostgreSQL SQL. For example,
+``DROP INDEX "a.b"`` has the single name ``"a.b"`` and no schema; the dot
+inside the quotes is not a separator. This applies to table and column
+references throughout DDL and DML. The default configuration retains its
+historical name-splitting behavior for compatibility with BigQuery names.
+
+``COMMENT ON TABLE t IS $tag$body$tag$`` accepts tagged dollar strings with
+the PostgreSQL preset, or with ``withDollarQuotedStringTags(true)``. Tagged
+strings remain disabled by default. Table, column and view comments preserve
+their dollar delimiter and literal body. Ordinary single-quoted strings
+separated by a newline concatenate; dollar-quoted strings do not.
+``E'...'`` enables backslash escapes for that literal without changing
+the treatment of ordinary strings elsewhere in the statement.
+
+The shared type grammar accepts negative scales, including
+``numeric(2, -3)``, in type fragments, DDL and casts. ``getPrecision()``
+returns ``2`` and ``getScale()`` returns ``-3``; an omitted scale returns
+``null``. PostgreSQL's precision and scale range checks remain the database's
+responsibility. When constructing a ``ColDataType`` directly,
+``ColDataType.fromNumericParameters("numeric", 2, -3)`` accepts negative scales;
+use ``null`` for omitted parameters. The legacy ``int``
+constructor continues to treat negative arguments as omitted parameters.
+
+Other dialect-specific syntax
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MySQL user-variable targets in ``SELECT ... INTO @variable`` require
 ``Dialect.MYSQL`` or ``Dialect.MARIADB``. They are stored in
@@ -850,6 +895,15 @@ Enable the PostgreSQL dialect when parsing a script containing a ``DO`` block:
 
 Semicolons and SQL statements inside the body remain part of its string literal;
 they do not split the surrounding script into additional statements.
+
+PostgreSQL ``CREATE FUNCTION`` and ``CREATE PROCEDURE`` declarations also preserve
+``AS '...'``, ``AS E'...'`` and dollar-quoted bodies as opaque text. Their
+``getFunctionDeclarationParts()`` list retains the body and trailing options,
+while a following statement is parsed separately. Newline-separated body string
+continuations retain the newline needed when the declaration is rendered again.
+Use ``Dialect.POSTGRESQL`` for tagged dollar quotes and PostgreSQL-specific DDL
+such as schema-qualified index collations and operator classes. This support
+does not validate PL/pgSQL source or build an AST for statements inside the body.
 
 With ``Dialect.POSTGRESQL``, ``#`` terminates an unquoted identifier, so JSON
 operators such as ``js#>>'{a}'`` and ``js#>'{a}'`` work without surrounding
@@ -1212,3 +1266,37 @@ sequences, types or functions as tables. Statement visitors visit comment
 literals, and custom SQL deparsers can replace the explicit relation or literal.
 Feature analysis reports a schema modification. Validation exposes a separate
 ``commentOn...`` capability for each additional target kind.
+
+Current date/time expression metadata
+=====================================
+
+``TemporalExpressionInfo.from(expression, dialect)`` provides a common read-only
+view of MySQL and PostgreSQL current-date/time expressions. It recognizes the
+existing ``TimeKeyExpression``, ``Function`` and ``Column`` representations without
+replacing nodes or changing their SQL rendering:
+
+.. code-block:: java
+
+    PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+            "SELECT CURRENT_TIMESTAMP(6)", p -> p.withDialect(Dialect.POSTGRESQL));
+    TemporalExpressionInfo info = TemporalExpressionInfo.from(
+            select.getSelectItem(0).getExpression(), Dialect.POSTGRESQL).orElseThrow();
+    // info.getKind() == TemporalExpressionInfo.Kind.CURRENT_TIMESTAMP
+    // info.getPrecision() == 6
+
+Import ``TemporalExpressionInfo`` from ``net.sf.jsqlparser.util``. Precision is
+``null`` when omitted, and explicit zero is preserved. ``getName()`` retains the
+original keyword or function name; ``hasParentheses()`` distinguishes bare and
+call forms. Results are snapshots: call ``from`` again after editing an AST.
+
+The dialect is significant. MySQL ``LOCALTIME`` and ``LOCALTIMESTAMP`` are aliases
+of ``CURRENT_TIMESTAMP``; PostgreSQL exposes ``LOCAL_TIME`` and
+``LOCAL_TIMESTAMP`` separately. MySQL ``NOW``, ``CURDATE`` and ``CURTIME`` aliases
+are recognized in their function-call forms. PostgreSQL ``now()`` is recognized
+without precision arguments. Quoted or qualified identifiers, unrelated
+expressions and unsupported dialects return ``Optional.empty()``.
+
+This API identifies expression metadata rather than performing database
+validation. Precision reports the requested value, without applying defaults,
+server range checks or clamping. For example, PostgreSQL accepts precision 7 with
+a warning and clamps it to 6, whereas MySQL rejects it.

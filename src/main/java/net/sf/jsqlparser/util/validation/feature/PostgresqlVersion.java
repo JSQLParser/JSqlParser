@@ -103,7 +103,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.createDomain, Feature.alterDomain,
                     Feature.createExtension, Feature.alterExtension, // https://www.postgresql.org/docs/current/sql-altersequence.html
                     Feature.alterSequence, // https://www.postgresql.org/docs/current/sql-createschema.html
-                    Feature.createSchema, // https://www.postgresql.org/docs/current/sql-createindex.html
+                    Feature.createSchema, Feature.alterSchema, // https://www.postgresql.org/docs/current/sql-createindex.html
                     Feature.createIndex, // https://www.postgresql.org/docs/current/sql-createtable.html
                     Feature.createTable, Feature.createTableUnlogged,
                     Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,

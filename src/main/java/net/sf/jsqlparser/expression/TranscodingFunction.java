@@ -14,10 +14,16 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class TranscodingFunction extends ASTNodeAccessImpl implements Expression {
     private String keyword = "CONVERT";
-    private boolean isTranscodeStyle = true;
+
+    public enum Syntax {
+        USING, TYPE_FIRST, TYPE_LAST
+    }
+
+    private Syntax syntax = Syntax.USING;
     private ColDataType colDataType;
     private Expression expression;
     private String transcodingName;
@@ -39,7 +45,7 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
         this.colDataType = colDataType;
         this.expression = expression;
         this.transcodingName = transcodingName;
-        this.isTranscodeStyle = false;
+        this.syntax = Syntax.TYPE_FIRST;
     }
 
     public TranscodingFunction(ColDataType colDataType, Expression expression,
@@ -47,7 +53,7 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
         this.colDataType = colDataType;
         this.expression = expression;
         this.transcodingName = transcodingName;
-        this.isTranscodeStyle = false;
+        this.syntax = Syntax.TYPE_FIRST;
     }
 
     public TranscodingFunction() {
@@ -100,11 +106,11 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
     }
 
     public boolean isTranscodeStyle() {
-        return isTranscodeStyle;
+        return syntax == Syntax.USING;
     }
 
     public TranscodingFunction setTranscodeStyle(boolean transcodeStyle) {
-        isTranscodeStyle = transcodeStyle;
+        syntax = transcodeStyle ? Syntax.USING : Syntax.TYPE_FIRST;
         return this;
     }
 
@@ -112,27 +118,33 @@ public class TranscodingFunction extends ASTNodeAccessImpl implements Expression
         return expressionVisitor.visit(this, context);
     }
 
+    public Syntax getSyntax() {
+        return syntax;
+    }
+
+    public TranscodingFunction setSyntax(Syntax syntax) {
+        this.syntax = Objects.requireNonNull(syntax);
+        return this;
+    }
+
     public StringBuilder appendTo(StringBuilder builder) {
-        if (isTranscodeStyle) {
-            return builder
-                    .append(keyword)
-                    .append("( ")
-                    .append(expression)
-                    .append(" USING ")
-                    .append(transcodingName)
-                    .append(" )");
-        } else {
-            return builder
-                    .append(keyword)
-                    .append("( ")
-                    .append(colDataType)
-                    .append(", ")
-                    .append(expression)
-                    .append(transcodingName != null && !transcodingName.isEmpty()
-                            ? ", " + transcodingName
-                            : "")
-                    .append(" )");
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionRenderer) {
+        builder.append(keyword).append("( ");
+        if (syntax == Syntax.TYPE_FIRST) {
+            builder.append(colDataType).append(", ");
         }
+        expressionRenderer.accept(expression);
+        if (syntax == Syntax.USING) {
+            builder.append(" USING ").append(transcodingName);
+        } else if (syntax == Syntax.TYPE_LAST) {
+            builder.append(", ").append(colDataType);
+        } else if (transcodingName != null && !transcodingName.isEmpty()) {
+            builder.append(", ").append(transcodingName);
+        }
+        return builder.append(" )");
     }
 
     @Override

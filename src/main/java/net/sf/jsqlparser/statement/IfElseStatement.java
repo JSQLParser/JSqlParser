@@ -11,6 +11,7 @@
 package net.sf.jsqlparser.statement;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import net.sf.jsqlparser.expression.Expression;
 
@@ -65,12 +66,21 @@ public class IfElseStatement implements Statement {
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
-        builder.append("IF ").append(condition).append(" ").append(ifStatement)
-                .append(usingSemicolonForIfStatement ? ";" : "");
+        return appendTo(builder, builder::append, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter,
+            Consumer<Statement> statementPrinter) {
+        builder.append("IF ");
+        expressionPrinter.accept(condition);
+        builder.append(' ');
+        statementPrinter.accept(ifStatement);
+        builder.append(usingSemicolonForIfStatement ? ";" : "");
 
         if (elseStatement != null) {
-            builder.append(" ELSE ").append(elseStatement)
-                    .append(usingSemicolonForElseStatement ? ";" : "");
+            builder.append(" ELSE ");
+            statementPrinter.accept(elseStatement);
+            builder.append(usingSemicolonForElseStatement ? ";" : "");
         }
         return builder;
     }

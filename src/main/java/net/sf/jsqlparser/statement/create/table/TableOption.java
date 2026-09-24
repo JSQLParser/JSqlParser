@@ -15,12 +15,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.schema.Table;
 
 /** A structured option following a {@code CREATE TABLE} definition. */
 public class TableOption implements Serializable {
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, OTHER
     }
 
     private Kind kind = Kind.OTHER;
@@ -28,6 +29,7 @@ public class TableOption implements Serializable {
     private String value;
     private boolean useEquals;
     private List<String> tokens;
+    private List<Table> unionTables;
 
     public TableOption() {}
 
@@ -54,6 +56,9 @@ public class TableOption implements Serializable {
 
     public void setKind(Kind kind) {
         this.kind = kind;
+        if (kind != Kind.UNION) {
+            unionTables = null;
+        }
     }
 
     public String getName() {
@@ -65,11 +70,31 @@ public class TableOption implements Serializable {
     }
 
     public String getValue() {
-        return value;
+        return unionTables == null ? value : PlainSelect.getStringList(unionTables, true, true);
     }
 
     public void setValue(String value) {
         this.value = value;
+        unionTables = null;
+    }
+
+    /** Returns the mutable MERGE table sources, including an empty UNION list. */
+    public List<Table> getUnionTables() {
+        return unionTables;
+    }
+
+    /** Replaces raw option contents with structured UNION table references. */
+    public void setUnionTables(List<Table> unionTables) {
+        this.unionTables = unionTables;
+        kind = Kind.UNION;
+        name = "UNION";
+        value = null;
+        tokens = null;
+    }
+
+    public TableOption withUnionTables(List<Table> unionTables) {
+        setUnionTables(unionTables);
+        return this;
     }
 
     public boolean isUseEquals() {
@@ -92,14 +117,18 @@ public class TableOption implements Serializable {
         if (useEquals) {
             result.add("=");
         }
-        if (value != null) {
-            result.add(value);
+        String renderedValue = getValue();
+        if (renderedValue != null) {
+            result.add(renderedValue);
         }
         return Collections.unmodifiableList(result);
     }
 
     public void setTokens(List<String> tokens) {
         this.tokens = tokens;
+        if (tokens != null) {
+            unionTables = null;
+        }
     }
 
     public TableOption withKind(Kind kind) {
@@ -127,6 +156,7 @@ public class TableOption implements Serializable {
         if (tokens != null) {
             return PlainSelect.getStringList(tokens, false, false);
         }
-        return name + (value != null ? (useEquals ? " = " : " ") + value : "");
+        String renderedValue = getValue();
+        return name + (renderedValue != null ? (useEquals ? " = " : " ") + renderedValue : "");
     }
 }

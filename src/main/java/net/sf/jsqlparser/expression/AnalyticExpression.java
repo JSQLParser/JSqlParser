@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.util.function.Consumer;
 import java.util.Locale;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
@@ -338,10 +339,8 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append(keep).append(" ");
         }
 
-        if (filterExpression != null) {
-            b.append("FILTER (WHERE ");
-            b.append(filterExpression);
-            b.append(")");
+        if (filterExpression != null && type != AnalyticType.WITHIN_GROUP) {
+            appendFilterTo(b, b::append);
             if (type != AnalyticType.FILTER_ONLY) {
                 b.append(" ");
             }
@@ -382,7 +381,20 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
             b.append(windowDef.toString());
         }
 
+        if (filterExpression != null && type == AnalyticType.WITHIN_GROUP) {
+            b.append(' ');
+            appendFilterTo(b, b::append);
+        }
         return b.toString();
+    }
+
+    /** Renders the filter using the caller's expression writer. */
+    public void appendFilterTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        if (filterExpression != null) {
+            builder.append("FILTER (WHERE ");
+            expressionPrinter.accept(filterExpression);
+            builder.append(')');
+        }
     }
 
     public boolean isAllColumns() {

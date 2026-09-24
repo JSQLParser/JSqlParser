@@ -18,7 +18,10 @@ public enum LockMode {
 
     // These are Oracle specific, as far as I know
     RowShare("ROW SHARE"), RowExclusive("ROW EXCLUSIVE"), ShareUpdate(
-            "SHARE UPDATE"), ShareRowExclusive("SHARE ROW EXCLUSIVE");
+            "SHARE UPDATE"), ShareRowExclusive("SHARE ROW EXCLUSIVE"),
+
+    AccessShare("ACCESS SHARE"), AccessExclusive("ACCESS EXCLUSIVE"), ShareUpdateExclusive(
+            "SHARE UPDATE EXCLUSIVE");
 
     private final String value;
 
