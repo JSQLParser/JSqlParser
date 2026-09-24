@@ -14879,7 +14879,8 @@ Index TableConstraint(boolean createContext):
         |
         <K_CONSTRAINT>
         [ LOOKAHEAD({ !isTableIndexAhead() && getToken(1).kind != K_FOREIGN
-                && getToken(1).kind != K_CHECK && getToken(1).kind != K_EXCLUDE }) constraintName=RelObjectName() ]
+                && getToken(1).kind != K_CHECK && getToken(1).kind != K_EXCLUDE
+                && !(getToken(1).kind == K_NOT && getToken(2).kind == K_NULL) }) constraintName=RelObjectName() ]
         (
             LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(createContext) {
                 if (index instanceof NamedConstraint) {
@@ -14899,6 +14900,10 @@ Index TableConstraint(boolean createContext):
             }
             |
             index=PostgreSqlExcludeConstraint() { index.setName(constraintName); }
+            |
+            LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                    && getToken(1).kind == K_NOT })
+            index=PostgreSqlNotNullConstraint() { index.setName(constraintName); }
         )
         |
         fkIndex=ForeignKeySpec(null) { index = fkIndex; }
@@ -14906,9 +14911,23 @@ Index TableConstraint(boolean createContext):
         checkConstraint=CheckConstraintSpec(null) { index = checkConstraint; }
         |
         index=PostgreSqlExcludeConstraint()
+        |
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && getToken(1).kind == K_NOT })
+        index=PostgreSqlNotNullConstraint()
     )
     PostgreSqlConstraintAttributes(index)
     { return index; }
+}
+
+/** PostgreSQL 18 adds a table-level NOT NULL with a named target column. */
+NotNullConstraint PostgreSqlNotNullConstraint():
+{ NotNullConstraint constraint = new NotNullConstraint(); String name; }
+{
+    <K_NOT> <K_NULL> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
+    [ LOOKAHEAD({ getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") { constraint.setNoInherit(true); } ]
+    { return constraint; }
 }
 
 ExcludeConstraint PostgreSqlExcludeConstraint():
@@ -17309,7 +17328,9 @@ AlterExpression AlterExpressionAddAlterModify():
                     || Dialect.MYSQL.name().equals(getAsString(Feature.dialect)))
                 && (getToken(1).kind == K_CONSTRAINT || getToken(1).kind == K_PRIMARY
                     || getToken(1).kind == K_UNIQUE || getToken(1).kind == K_FOREIGN
-                    || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE) })
+                    || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE
+                    || getToken(1).kind == K_NOT
+                        && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) })
         index=TableConstraint(false) { setAlterTableIndex(alterExp, index); }
         |
         LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(false) {
