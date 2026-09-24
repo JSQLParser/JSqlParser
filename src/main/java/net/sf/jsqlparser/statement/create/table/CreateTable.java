@@ -40,6 +40,7 @@ public class CreateTable implements Statement {
     private ColDataType ofType;
     private boolean selectParenthesis;
     private boolean useAsKeyword = true;
+    private Boolean withData;
     private boolean ifNotExists = false;
     private boolean orReplace = false;
     private TablePartitioning partitioning;
@@ -204,6 +205,15 @@ public class CreateTable implements Statement {
         this.useAsKeyword = useAsKeyword;
     }
 
+    /** Returns null for omission, true for WITH DATA, and false for WITH NO DATA. */
+    public Boolean getWithData() {
+        return withData;
+    }
+
+    public void setWithData(Boolean withData) {
+        this.withData = withData;
+    }
+
     public StringBuilder appendSelectTo(StringBuilder builder,
             java.util.function.Consumer<Select> selectRenderer) {
         if (select != null) {
@@ -214,6 +224,9 @@ public class CreateTable implements Statement {
             selectRenderer.accept(select);
             if (selectParenthesis) {
                 builder.append(")");
+            }
+            if (withData != null) {
+                builder.append(withData ? " WITH DATA" : " WITH NO DATA");
             }
         }
         return builder;
