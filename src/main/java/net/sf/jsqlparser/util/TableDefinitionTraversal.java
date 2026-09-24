@@ -109,6 +109,9 @@ public final class TableDefinitionTraversal {
                 }
             });
         }
+        if (table.getInherits() != null) {
+            table.getInherits().forEach(parent -> accept(parent, tables));
+        }
         accept(table.getTrailingLikeTable(), tables);
         accept(table.getPartitionOf(), tables);
         visit(table.getPartitioning(), expressions);
