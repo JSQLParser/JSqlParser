@@ -1947,7 +1947,10 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterView alterView, S context) {
-        throwUnsupported(alterView);
+        visit(alterView.getView(), context);
+        if (alterView.getSelect() != null) {
+            alterView.getSelect().accept((SelectVisitor<?>) this, context);
+        }
         return null;
     }
 

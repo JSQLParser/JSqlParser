@@ -14491,18 +14491,53 @@ AlterEvent AlterEvent():
     { return alterEvent; }
 }
 
-TriggerDefiner MySqlTriggerDefiner():
+/** Account spelling is shared, including CURRENT_USER and CURRENT_USER(). */
+void MySqlDefiner(MySqlDefiner definer):
 {
-    TriggerDefiner definer = new TriggerDefiner();
-    StringValue user = null;
-    StringValue host = null;
+    StringValue user;
+    StringValue host;
+    String name;
 }
 {
-    LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
-    <S_IDENTIFIER> "=" user=MySqlAccountNamePart() { definer.setUser(user); }
-    [ LOOKAHEAD({ getToken(1).kind == K_AT_SIGN })
-      <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
-    { return definer; }
+    ContextualKeyword("DEFINER") "="
+    (
+        LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) name=RelObjectName()
+        { definer.setUser(new StringValue(name).setQuoteStr("")); }
+        [ "(" ")" { definer.setCurrentUserParentheses(true); } ]
+        |
+        user=MySqlAccountNamePart() { definer.setUser(user); }
+        [ <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+    )
+}
+
+TriggerDefiner MySqlTriggerDefiner():
+{ TriggerDefiner definer = new TriggerDefiner(); }
+{ MySqlDefiner(definer) { return definer; } }
+
+/** MySQL fixes the prefix order: ALGORITHM, DEFINER, SQL SECURITY. */
+MySqlViewOptions MySqlViewPrefix():
+{
+    MySqlViewOptions options = new MySqlViewOptions();
+    MySqlDefiner definer;
+    Token token;
+    boolean present = false;
+}
+{
+    [ <K_ALGORITHM> "=" ( token=<K_MERGE> | token=<S_IDENTIFIER> ) {
+        requireDdlSyntax("MERGE".equalsIgnoreCase(token.image) || "TEMPTABLE".equalsIgnoreCase(token.image)
+                || "UNDEFINED".equalsIgnoreCase(token.image), "Expected MERGE, TEMPTABLE, or UNDEFINED");
+        options.setAlgorithm(MySqlViewOptions.Algorithm.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        present = true;
+    } ]
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") }) { definer = new MySqlDefiner(); }
+        MySqlDefiner(definer) { options.setDefiner(definer); present = true; } ]
+    [ LOOKAHEAD({ isKeywordAhead("SQL") }) ContextualKeyword("SQL") <K_SECURITY> token=<S_IDENTIFIER> {
+        requireDdlSyntax("DEFINER".equalsIgnoreCase(token.image) || "INVOKER".equalsIgnoreCase(token.image),
+                "Expected DEFINER or INVOKER");
+        options.setSecurity(MySqlViewOptions.Security.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        present = true;
+    } ]
+    { return present ? options : null; }
 }
 
 CreateTrigger.Timing MySqlTriggerTiming():
@@ -14578,7 +14613,7 @@ CreateSchema CreateSchema():
 {
     <K_SCHEMA>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { schema.setIfNotExists(true); } ]
-    [
+    [ LOOKAHEAD(1)
         ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); }
 
         (
@@ -15752,9 +15787,12 @@ CreateView CreateView(boolean isUsingOrReplace):
     List<ViewOption> viewOptions = new ArrayList<ViewOption>();
     ViewOption viewOption = null;
     boolean withData;
+    MySqlViewOptions mySqlOptions;
+    CreateView.CheckOption checkOption;
 }
 {
     { createView.setOrReplace(isUsingOrReplace);}
+    mySqlOptions=MySqlViewPrefix() { createView.setMySqlOptions(mySqlOptions); }
     [
         <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); }
         | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
@@ -15797,19 +15835,23 @@ CreateView CreateView(boolean isUsingOrReplace):
         (
             <K_READ> <K_ONLY> { createView.setWithReadOnly(true); }
             |
-            [ <K_LOCAL> { createView.setCheckOption(CreateView.CheckOption.LOCAL); }
-                | LOOKAHEAD({ isKeywordAhead("CASCADED") }) tk=<S_IDENTIFIER>
-                    { createView.setCheckOption(CreateView.CheckOption.CASCADED); } ]
-            <K_CHECK> <K_OPTION> {
-                if (createView.getCheckOption() == null) {
-                    createView.setCheckOption(CreateView.CheckOption.DEFAULT);
-                }
-            }
+            checkOption=ViewCheckOption() { createView.setCheckOption(checkOption); }
             |
             withData=DataPopulation() { createView.setWithData(withData); }
         )
     ]
     { createView.validateOptions(); return createView; }
+}
+
+CreateView.CheckOption ViewCheckOption():
+{
+    CreateView.CheckOption option = CreateView.CheckOption.DEFAULT;
+}
+{
+    [ <K_LOCAL> { option = CreateView.CheckOption.LOCAL; }
+        | ContextualKeyword("CASCADED") { option = CreateView.CheckOption.CASCADED; } ]
+    <K_CHECK> <K_OPTION>
+    { return option; }
 }
 
 ViewOption PostgreSqlViewOption():
@@ -16072,15 +16114,19 @@ void AlterExpressionConstraintTail(AlterExpression alterExp, Index index):
 AlterView AlterView(boolean useReplace):
 {
     AlterView alterView = new AlterView();
+    MySqlViewOptions options;
+    CreateView.CheckOption checkOption;
     Table view = null;
     Select select = null;
     List<String> columnNames = null;
 }
 {
+    options=MySqlViewPrefix() { alterView.setMySqlOptions(options); }
     <K_VIEW> view=Table() { alterView.setView(view); alterView.setUseReplace(useReplace); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
     select=Select()
+    [ LOOKAHEAD(2) <K_WITH> checkOption=ViewCheckOption() { alterView.setCheckOption(checkOption); } ]
     {
         alterView.setSelect(select);
         return alterView;
@@ -17969,7 +18015,7 @@ Statement Alter():
                 |
                 statement = AlterSession()
                 |
-                statement = AlterView(false)
+                LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = AlterView(false)
                 |
                 statement = AlterSystemStatement()
                 |
@@ -18886,6 +18932,8 @@ Statement Create():
         statement = CreateUser()
         |
         statement = CreateEvent()
+        |
+        LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = CreateView(isUsingOrReplace)
         |
         LOOKAHEAD({ getToken(1).kind == K_TRIGGER
                 || "DEFINER".equalsIgnoreCase(getToken(1).image) })
