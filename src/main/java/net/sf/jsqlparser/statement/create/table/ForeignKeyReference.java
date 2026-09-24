@@ -33,7 +33,19 @@ public class ForeignKeyReference implements Serializable {
     private Table table;
     private List<String> referencedColumnNames;
     private MatchType matchType;
+    private ConstraintAttributes constraintAttributes;
     private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
+
+    /**
+     * Attributes of a column REFERENCES clause; table constraints own their attributes on Index.
+     */
+    public ConstraintAttributes getConstraintAttributes() {
+        return constraintAttributes;
+    }
+
+    public void setConstraintAttributes(ConstraintAttributes constraintAttributes) {
+        this.constraintAttributes = constraintAttributes;
+    }
 
     public Table getTable() {
         return table;
@@ -130,6 +142,9 @@ public class ForeignKeyReference implements Serializable {
             builder.append(" MATCH ").append(matchType);
         }
         referentialActions.forEach(builder::append);
+        if (constraintAttributes != null) {
+            constraintAttributes.appendTo(builder);
+        }
         return builder.toString();
     }
 }

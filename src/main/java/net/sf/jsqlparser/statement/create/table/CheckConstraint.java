@@ -22,8 +22,6 @@ public class CheckConstraint extends NamedConstraint {
 
     private Expression expression;
 
-    private Boolean enforced;
-
     private boolean noInherit;
 
     public CheckConstraint() {
@@ -61,11 +59,19 @@ public class CheckConstraint extends NamedConstraint {
     }
 
     public Boolean getEnforced() {
-        return enforced;
+        return getConstraintAttributes() == null ? null : getConstraintAttributes().getEnforced();
     }
 
     public void setEnforced(Boolean enforced) {
-        this.enforced = enforced;
+        ConstraintAttributes attributes = getConstraintAttributes();
+        if (attributes == null) {
+            if (enforced == null) {
+                return;
+            }
+            attributes = new ConstraintAttributes();
+            setConstraintAttributes(attributes);
+        }
+        attributes.setEnforced(enforced);
     }
 
     @Override
@@ -80,9 +86,6 @@ public class CheckConstraint extends NamedConstraint {
         b.append(')');
         if (noInherit) {
             b.append(" NO INHERIT");
-        }
-        if (enforced != null) {
-            b.append(enforced ? " ENFORCED" : " NOT ENFORCED");
         }
         appendConstraintSuffixTo(b);
         appendConstraintAttributesTo(b);
