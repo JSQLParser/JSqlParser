@@ -14217,7 +14217,9 @@ IdentityDefinition IdentityDefinition():
     Token token;
     IdentityDefinition.GenerationMode mode;
     IdentityDefinition identity;
-    List<Sequence.Parameter> parameters;
+    List<Sequence.Parameter> parameters = new ArrayList<Sequence.Parameter>();
+    Sequence.Parameter parameter;
+    Sequence sequenceName;
 }
 {
     token=<S_IDENTIFIER> {
@@ -14226,8 +14228,18 @@ IdentityDefinition IdentityDefinition():
     ( <K_ALWAYS> { mode = IdentityDefinition.GenerationMode.ALWAYS; }
         | <K_BY> <K_DEFAULT> { mode = IdentityDefinition.GenerationMode.BY_DEFAULT; } )
     <K_AS> <K_IDENTITY> { identity = new IdentityDefinition(mode); }
-    [ LOOKAHEAD(2) "(" parameters=SequenceParameters() ")" {
-        requireDdlSyntax(!parameters.isEmpty(), "Expected an identity sequence parameter");
+    [ LOOKAHEAD(1) "("
+        (
+            (
+                LOOKAHEAD(<K_SEQUENCE> <K_NAME>)
+                <K_SEQUENCE> <K_NAME> sequenceName=Sequence()
+                { parameter = new Sequence.Parameter(Sequence.ParameterType.SEQUENCE_NAME)
+                        .withSequenceName(sequenceName); }
+                | parameter=SequenceParameter()
+            )
+            { parameters.add(parameter); }
+        )+
+        ")" {
         identity.setParameters(parameters);
     } ]
     { return identity; }
