@@ -12788,7 +12788,7 @@ ExpressionList ExecuteArguments(): {
         LOOKAHEAD("(") arguments=ExpressionList()
         |
         argument=ExecuteArgument() { arguments.add(argument); }
-        ( "," argument=ExecuteArgument() { arguments.add(argument); } )*
+        ( LOOKAHEAD(2) "," argument=ExecuteArgument() { arguments.add(argument); } )*
     )
     { return arguments; }
 }
@@ -13898,8 +13898,17 @@ Index.Option PostgreSqlIndexOption():
     boolean useEquals = false;
 }
 {
-    name=RelObjectName() [ "=" { useEquals = true; } ] value=Expression()
+    name=PostgreSqlStorageParameterName() [ "=" { useEquals = true; } ] value=Expression()
     { return new Index.Option(name, value, useEquals); }
+}
+
+/** Storage parameters can have namespaces, such as toast.autovacuum_enabled. */
+String PostgreSqlStorageParameterName():
+{ String name; String part; }
+{
+    name=RelObjectName()
+    ( LOOKAHEAD(".") "." part=RelObjectNameExt() { name += "." + part; } )*
+    { return name; }
 }
 
 List<Index.Option> PostgreSqlIndexOptions():
@@ -15055,6 +15064,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     TableOption tableOption = null;
     SpannerInterleaveIn interleaveIn = null;
     Select select = null;
+    Execute execute;
+    int optionCount;
     Table likeTable = null;
     RowMovement rowMovement = null;
     String tableColumn = null;
@@ -15072,7 +15083,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ <K_UNLOGGED> { createTable.setUnlogged(true); } ]
 
     // table options, not required but 1 or none
-    [ tk=<K_GLOBAL> { createOptions.add(tk.image);} ]
+    [ ( tk=<K_GLOBAL> | tk=<K_LOCAL> ) { createOptions.add(tk.image);} ]
 
     (parameter = CreateParameter() { createOptions.addAll(parameter); })*
 
@@ -15115,7 +15126,11 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         partitionBound=PostgreSqlPartitionBound()
         { createTable.setPartitionBound(partitionBound); } ]
     CreateTableOptions(typedTableOptions)
-    [ partitioning=CreateTablePartitioning() { createTable.setPartitioning(partitioning); } ]
+    [ LOOKAHEAD(<K_PARTITION> <K_BY>) partitioning=CreateTablePartitioning()
+        { createTable.setPartitioning(partitioning); } ]
+    { optionCount = typedTableOptions.size(); }
+    CreateTableOptions(typedTableOptions)
+    { createTable.setTableOptionsAfterPartition(typedTableOptions.size() > optionCount); }
 
     // see https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2126725
     // table properties , all these are optional
@@ -15126,8 +15141,16 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             { createTable.setDuplicateHandling(CreateTable.DuplicateHandling.valueOf(
                     tk.image.toUpperCase(Locale.ROOT))); } ]
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
-        ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
-        { createTable.setSelect(select, false); }
+        (
+            LOOKAHEAD(<K_EXECUTE>) execute=Execute() {
+                requireDdlSyntax(createTable.isUseAsKeyword() && createTable.getDuplicateHandling() == null,
+                        "CREATE TABLE EXECUTE requires AS and cannot use duplicate handling");
+                createTable.setExecute(execute);
+            }
+            |
+            ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
+            { createTable.setSelect(select, false); }
+        )
         [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()
             { createTable.setWithData(withData); } ]
     ]
@@ -15201,9 +15224,18 @@ void CreateTableOptions(List<TableOption> options):
 }
 
 TableOption CreateTableOption():
-{ TableOption option; List<String> tokens; }
+{ TableOption option; List<String> tokens; List<Index.Option> storageParameters; }
 {
-    ( LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
+    (
+      LOOKAHEAD(<K_WITH> "(") <K_WITH> storageParameters=PostgreSqlIndexOptions() {
+          option = new TableOption(); option.setStorageParameters(storageParameters);
+      }
+      |
+      LOOKAHEAD(<K_WITHOUT> <S_IDENTIFIER>) <K_WITHOUT> ContextualKeyword("OIDS") {
+          option = new TableOption(TableOption.Kind.WITHOUT_OIDS, "WITHOUT OIDS", null, false);
+      }
+      |
+      LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
       | tokens=CreateParameter() { option = TableOption.raw(tokens); } )
     { return option; }
 }
@@ -16746,6 +16778,9 @@ TablePartitioning CreateTablePartitioning():
 {
     <K_PARTITION> <K_BY>
     (
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        partitioning=PostgreSqlPartitionKey()
+        |
         // explicit lookaheads: the method keywords win over the BigQuery
         // bare-expression alternative below, which they share a prefix with
         LOOKAHEAD(2) partitioning=HashOrKeyPartitioning()
@@ -16807,13 +16842,47 @@ TablePartitioning CreateTablePartitioning():
     ]
     [ LOOKAHEAD(2) partitionDefinitions=PartitionDefinitions()
         { partitioning.setPartitionDefinitions(partitionDefinitions); } ]
-    ( LOOKAHEAD(2, { !isCreateTableQueryPrefix() })
+    ( LOOKAHEAD(2, { !isCreateTableQueryPrefix()
+            && !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
         parameter=CreateParameter() { partitionOptions.addAll(parameter); } )*
     {
         if (!partitionOptions.isEmpty()) {
             partitioning.setPartitionOptions(partitionOptions);
         }
         return partitioning;
+    }
+}
+
+/** Shares collation/opclass nodes with index keys, excluding index-only ordering. */
+TablePartitioning PostgreSqlPartitionKey():
+{
+    TablePartitioning result;
+    Token method;
+    List<Index.ColumnParams> keys;
+    ExpressionList<Expression> expressions = new ExpressionList<Expression>();
+    boolean attributes = false;
+}
+{
+    ( method=<K_RANGE> | method=<K_LIST> | method=<K_HASH> )
+    keys=IndexKeyColumns(false)
+    {
+        result = new TablePartitioning(TablePartitioning.Type.valueOf(method.image.toUpperCase(Locale.ROOT)));
+        for (Index.ColumnParams key : keys) {
+            requireDdlSyntax(key.getSortOrder() == null && key.getNullOrdering() == null
+                    && key.getOperatorClassParameters() == null,
+                    "Partition keys do not accept index ordering or operator-class parameters");
+            attributes |= key.getCollation() != null || key.getOperatorClass() != null;
+            Expression expression = key.getExpression();
+            if (expression == null) { expression = createColumn(key.getColumnName()); }
+            else if (key.isExpressionParenthesized()) {
+                expression = new ParenthesedExpressionList<Expression>(expression);
+            }
+            expressions.add(expression);
+        }
+        if (attributes) { result.setKeyColumns(keys); }
+        else if (expressions.size() == 1) { result.setExpression(expressions.get(0)); }
+        else { result.setExpressionList(expressions); }
+        return result;
     }
 }
 
