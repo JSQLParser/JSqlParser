@@ -18812,40 +18812,86 @@ SequenceOwnership SequenceOwnership():
     { return ownership; }
 }
 
-CreateSequence CreateSequence():
+/** AS, ownership and numeric parameters share the same sequence-option boundary. */
+void SequenceDefinitionOptions(Sequence sequence):
 {
-  CreateSequence createSequence = new CreateSequence();
-  Sequence sequence;
-  List<Sequence.Parameter> sequenceParameters;
-  Token dataType = null;
-  SequenceOwnership ownership;
+    List<Sequence.Parameter> parameters = new ArrayList<Sequence.Parameter>();
+    Sequence.Parameter parameter;
+    SequenceOwnership ownership;
+    Token dataType;
 }
 {
-  <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
-  [ <K_AS> ( dataType=<S_IDENTIFIER> | dataType=<DATA_TYPE> ) { sequence.setDataType(dataType.image); } ]
-  sequenceParameters = SequenceParameters()
-  [ LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() { sequence.setOwnership(ownership); } ]
-    {
-        sequence.setParameters(sequenceParameters);
-        return createSequence;
-    }
+    (
+        LOOKAHEAD(2)
+        (
+            <K_AS> ( dataType=<S_IDENTIFIER> | dataType=<DATA_TYPE> ) {
+                requireDdlSyntax(sequence.getDataType() == null, "Duplicate sequence AS clause");
+                sequence.setDataType(dataType.image);
+            }
+            |
+            LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() {
+                requireDdlSyntax(sequence.getOwnership() == null, "Duplicate sequence OWNED BY clause");
+                sequence.setOwnership(ownership);
+            }
+            |
+            parameter=SequenceParameter() { parameters.add(parameter); }
+        )
+    )*
+    { sequence.setParameters(parameters); }
+}
+
+CreateSequence CreateSequence():
+{
+    CreateSequence result = new CreateSequence();
+    Sequence sequence;
+    Token persistence;
+    Token scope = null;
+}
+{
+    [
+        ( <K_UNLOGGED> { result.setPersistence(CreateSequence.Persistence.UNLOGGED); }
+          |
+          [ ( scope=<K_LOCAL> | scope=<K_GLOBAL> ) ]
+          ( persistence=<K_TEMP> | persistence=<K_TEMPORARY> ) {
+              result.setPersistence(CreateSequence.Persistence.valueOf(
+                  (scope == null ? "" : scope.image.toUpperCase(Locale.ROOT) + "_")
+                  + persistence.image.toUpperCase(Locale.ROOT)));
+          } )
+    ]
+    <K_SEQUENCE>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { result.setIfNotExists(true); } ]
+    sequence=Sequence() { result.setSequence(sequence); }
+    SequenceDefinitionOptions(sequence)
+    { return result; }
 }
 
 AlterSequence AlterSequence():
 {
-  AlterSequence alterSequence = new AlterSequence();
-  Sequence sequence;
-  List<Sequence.Parameter> sequenceParameters;
-  SequenceOwnership ownership;
+    AlterSequence result = new AlterSequence();
+    Sequence sequence;
+    String name;
 }
 {
-    <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
-    sequenceParameters = SequenceParameters()
-    [ LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() { sequence.setOwnership(ownership); } ]
-    {
-        sequence.setParameters(sequenceParameters);
-        return alterSequence;
-    }
+    <K_SEQUENCE> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { result.setIfExists(true); } ]
+    sequence=Sequence() { result.setSequence(sequence); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { result.setAction(AlterSequence.Action.RENAME); result.setNewName(name); }
+        |
+        LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { result.setAction(AlterSequence.Action.OWNER); result.setOwner(name); }
+        |
+        <K_SET>
+        (
+            <K_SCHEMA> name=RelObjectName()
+            { result.setAction(AlterSequence.Action.SET_SCHEMA); result.setSchemaName(name); }
+            | <K_UNLOGGED> { result.setAction(AlterSequence.Action.SET_UNLOGGED); }
+            | ContextualKeyword("LOGGED") { result.setAction(AlterSequence.Action.SET_LOGGED); }
+        )
+        |
+        SequenceDefinitionOptions(sequence)
+    )
+    { return result; }
 }
 
 Statement Create():
@@ -18897,6 +18943,7 @@ Statement Create():
         |
         statement = CreateDatabase()
         |
+        LOOKAHEAD([ <K_UNLOGGED> | [ <K_LOCAL> | <K_GLOBAL> ] ( <K_TEMP> | <K_TEMPORARY> ) ] <K_SEQUENCE>)
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)

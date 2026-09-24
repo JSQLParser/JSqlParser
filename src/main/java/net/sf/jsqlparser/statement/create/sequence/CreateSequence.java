@@ -18,7 +18,42 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  */
 public class CreateSequence implements Statement {
 
+    public enum Persistence {
+        TEMP, TEMPORARY, UNLOGGED, LOCAL_TEMP, LOCAL_TEMPORARY, GLOBAL_TEMP, GLOBAL_TEMPORARY
+    }
+
     public Sequence sequence;
+    private Persistence persistence;
+    private boolean ifNotExists;
+
+    public Persistence getPersistence() {
+        return persistence;
+    }
+
+    public void setPersistence(Persistence persistence) {
+        this.persistence = persistence;
+    }
+
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
+    }
+
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("CREATE ");
+        if (persistence != null) {
+            builder.append(persistence.name().replace('_', ' ')).append(' ');
+        }
+        builder.append("SEQUENCE ");
+        if (ifNotExists) {
+            builder.append("IF NOT EXISTS ");
+        }
+        return builder.append(sequence);
+    }
+
 
     public Sequence getSequence() {
         return sequence;
@@ -35,9 +70,7 @@ public class CreateSequence implements Statement {
 
     @Override
     public String toString() {
-        String sql;
-        sql = "CREATE SEQUENCE " + sequence;
-        return sql;
+        return appendTo(new StringBuilder()).toString();
     }
 
     public CreateSequence withSequence(Sequence sequence) {
