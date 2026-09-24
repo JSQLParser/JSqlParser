@@ -1540,6 +1540,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "\"XML\"".equalsIgnoreCase(name);
     }
 
+    private boolean isPostgreSqlConstraintAttributeAhead() {
+        int kind = getToken(1).kind;
+        int next = getToken(2).kind;
+        return kind == K_DEFERRABLE || kind == K_ENFORCED || isKeywordAhead("INITIALLY")
+                || kind == K_NOT && (next == K_DEFERRABLE || next == K_ENFORCED
+                    || "VALID".equalsIgnoreCase(getToken(2).image));
+    }
+
     private boolean isMySqlStatisticsOptionAhead() {
         String name = getToken(1).image;
         return "STATS_AUTO_RECALC".equalsIgnoreCase(name)
@@ -1547,10 +1555,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "STATS_SAMPLE_PAGES".equalsIgnoreCase(name);
     }
 
+    private boolean isMySqlScalarTableOptionAhead() {
+        int kind = getToken(1).kind;
+        return kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+                || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
+    }
+
     private boolean isMySqlTableOptionAhead() {
         int kind = getToken(1).kind;
         if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
-                || kind == K_AUTO_INCREMENT || kind == K_UNION
+                || isMySqlScalarTableOptionAhead() || kind == K_UNION
                 || isMySqlStatisticsOptionAhead()) {
             return true;
         }
@@ -13821,7 +13835,7 @@ Index.ColumnParams IndexColumnWithParams(): {
             || (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                 && getToken(1).kind != K_ASC && getToken(1).kind != K_DESC
                 && getToken(1).kind != K_NULLS && getToken(1).kind != K_COLLATE
-                && getToken(1).kind != K_WITH) })
+                && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT) })
         operatorClass=IndexKeyAttributeName()
         [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlIndexOptions() ]
         {
@@ -13838,7 +13852,7 @@ Index.ColumnParams IndexColumnWithParams(): {
         { if (!postgres) { columnParams.add(sortOrder.image); } } ]
     [ LOOKAHEAD(2) <K_NULLS> (nullOrdering=<K_FIRST> | nullOrdering=<K_LAST>)
         { if (!postgres) { columnParams.add("NULLS"); columnParams.add(nullOrdering.image); } } ]
-    ( LOOKAHEAD(2, { !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && getToken(1).kind != K_WITH }) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
+    ( LOOKAHEAD(2, { !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT }) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
     {
         column = expression != null
                 ? new Index.ColumnParams(expression,
@@ -13899,7 +13913,11 @@ List<Index.Option> PostgreSqlIndexOptions():
     { return options; }
 }
 
-List<Index.ColumnParams> IndexColumnsWithParamsList() : {
+List<Index.ColumnParams> IndexColumnsWithParamsList():
+{ List<Index.ColumnParams> columns; }
+{ columns=IndexKeyColumns(false) { return columns; } }
+
+List<Index.ColumnParams> IndexKeyColumns(boolean temporal) : {
     List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
     Index.ColumnParams column = null;
 }
@@ -13918,6 +13936,10 @@ List<Index.ColumnParams> IndexColumnsWithParamsList() : {
         }
     )*
 
+    [ <K_WITHOUT> <K_OVERLAPS> {
+        requireDdlSyntax(temporal, "WITHOUT OVERLAPS requires a PRIMARY KEY or UNIQUE constraint");
+        column.setWithoutOverlaps(true);
+    } ]
     ")"
 
     { return colNames; }
@@ -14124,6 +14146,11 @@ ColumnOption ColumnDefinitionOption(): {
                 || (getToken(1).kind == K_AS && "(".equals(getToken(2).image)) })
         generated=GeneratedColumnDefinition() { option = ColumnOption.generated(generated); }
         |
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_NOT> <K_NULL>,
+                { Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                    && (getToken(1).kind == K_CONSTRAINT || getToken(3).kind == K_NO) })
+        constraint=PostgreSqlColumnNotNullConstraint() { option = ColumnOption.constraint(constraint); }
+        |
         LOOKAHEAD(<K_NOT> <K_NULL>) <K_NOT> <K_NULL> { option = ColumnOption.nullability(false); }
         |
         LOOKAHEAD(<K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
@@ -14161,7 +14188,7 @@ ColumnOption ColumnDefinitionOption(): {
         tk=<S_IDENTIFIER> <K_DEFAULT> <K_VALUE>
         { option = ColumnOption.serialDefaultValue(); }
         |
-        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec()
+        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec(true)
         { option = ColumnOption.reference(reference); }
         |
         LOOKAHEAD(<K_DROP> <K_DEFAULT>) <K_DROP> <K_DEFAULT>
@@ -14695,7 +14722,7 @@ Index TableIndexSpec(boolean createContext):
         typeToken=<K_PRIMARY> keywordToken=<K_KEY>
         clustering=SqlServerIndexClustering()
         [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET }) indexName=RelObjectName() ]
-        columns=IndexColumnsWithParamsList()
+        columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
             index = new NamedConstraint()
@@ -14714,11 +14741,12 @@ Index TableIndexSpec(boolean createContext):
         [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET
                 && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
         [ using=UsingIndexType() ]
-        columns=IndexColumnsWithParamsList()
+        columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
-            // MySQL ALTER preserves both the constraint symbol and the index name.
-            if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) {
+            // PostgreSQL and MySQL ALTER preserve named constraints separately from index names.
+            if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                    || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
                 index = new NamedConstraint()
                         .withIndexName(indexName)
                         .withType(typeToken.image
@@ -14810,25 +14838,61 @@ void PostgreSqlConstraintOptions(Index index):
 }
 
 void PostgreSqlConstraintAttributes(Index index):
+{ ConstraintAttributes attributes; }
 {
-    ConstraintAttributes attributes = new ConstraintAttributes();
-    boolean present = false;
-    boolean deferrable = true;
+    attributes=PostgreSqlConstraintAttributeList(index.getConstraintAttributes())
+    {
+        requireDdlSyntax(attributes == null || attributes.getEnforced() == null
+                || index instanceof CheckConstraint || index instanceof ForeignKeyIndex,
+                "ENFORCED is supported only for CHECK and foreign key constraints");
+        index.setConstraintAttributes(attributes);
+    }
+}
+
+/** Shared attribute parsing for table constraints and column REFERENCES clauses. */
+ConstraintAttributes PostgreSqlConstraintAttributeList(ConstraintAttributes attributes):
+{
+    boolean present = attributes != null;
+    boolean negative;
+    Boolean enforced;
     Token token;
 }
 {
-    [ LOOKAHEAD(2) [ <K_NOT> { deferrable = false; } ] <K_DEFERRABLE> {
-        attributes.setDeferrable(deferrable); present = true;
-    } ]
-    [ LOOKAHEAD({ isKeywordAhead("INITIALLY") }) token=<S_IDENTIFIER> token=<S_IDENTIFIER> {
-        requireDdlSyntax("IMMEDIATE".equalsIgnoreCase(token.image) || "DEFERRED".equalsIgnoreCase(token.image),
-                "Expected IMMEDIATE or DEFERRED");
-        attributes.setInitially(ConstraintAttributes.Initially.valueOf(token.image.toUpperCase(Locale.ROOT)));
-        present = true;
-    } ]
-    [ LOOKAHEAD({ getToken(1).kind == K_NOT && "VALID".equalsIgnoreCase(getToken(2).image) })
-        <K_NOT> token=<S_IDENTIFIER> { attributes.setNotValid(true); present = true; } ]
-    { if (present) { index.setConstraintAttributes(attributes); } }
+    { if (attributes == null) { attributes = new ConstraintAttributes(); } }
+    ( LOOKAHEAD({ isPostgreSqlConstraintAttributeAhead() }) (
+        LOOKAHEAD(2) { negative = false; }
+        [ <K_NOT> { negative = true; } ] <K_DEFERRABLE> {
+            requireDdlSyntax(attributes.getDeferrable() == null, "Duplicate DEFERRABLE clause");
+            attributes.setDeferrable(!negative); present = true;
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("INITIALLY") }) <S_IDENTIFIER> token=<S_IDENTIFIER> {
+            requireDdlSyntax(attributes.getInitially() == null, "Duplicate INITIALLY clause");
+            requireDdlSyntax("IMMEDIATE".equalsIgnoreCase(token.image) || "DEFERRED".equalsIgnoreCase(token.image),
+                    "Expected IMMEDIATE or DEFERRED");
+            attributes.setInitially(ConstraintAttributes.Initially.valueOf(token.image.toUpperCase(Locale.ROOT)));
+            present = true;
+        }
+        |
+        LOOKAHEAD(2) enforced=ConstraintEnforcement() {
+            requireDdlSyntax(attributes.getEnforced() == null, "Duplicate ENFORCED clause");
+            attributes.setEnforced(enforced); present = true;
+        }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_NOT && "VALID".equalsIgnoreCase(getToken(2).image) })
+        <K_NOT> <S_IDENTIFIER> {
+            requireDdlSyntax(!attributes.isNotValid(), "Duplicate NOT VALID clause");
+            attributes.setNotValid(true); present = true;
+        }
+    ) )*
+    { return present ? attributes : null; }
+}
+
+Boolean ConstraintEnforcement():
+{ boolean enforced = true; }
+{
+    [ <K_NOT> { enforced = false; } ] <K_ENFORCED>
+    { return enforced; }
 }
 
 /**
@@ -14908,12 +14972,27 @@ Index TableConstraint(boolean createContext):
 
 /** PostgreSQL 18 adds a table-level NOT NULL with a named target column. */
 NotNullConstraint PostgreSqlNotNullConstraint():
-{ NotNullConstraint constraint = new NotNullConstraint(); String name; }
+{ NotNullConstraint constraint = new NotNullConstraint(); String name; boolean noInherit; }
 {
     <K_NOT> <K_NULL> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
-    [ LOOKAHEAD({ getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
-        <K_NO> TypeDdlKeyword("INHERIT") { constraint.setNoInherit(true); } ]
+    noInherit=PostgreSqlNoInheritClause() { constraint.setNoInherit(noInherit); }
     { return constraint; }
+}
+
+NotNullConstraint PostgreSqlColumnNotNullConstraint():
+{ String name = null; boolean noInherit; }
+{
+    [ <K_CONSTRAINT> name=RelObjectName() ]
+    <K_NOT> <K_NULL> noInherit=PostgreSqlNoInheritClause()
+    { return new NotNullConstraint().withColumnConstraint(true).withName(name).withNoInherit(noInherit); }
+}
+
+boolean PostgreSqlNoInheritClause():
+{ boolean noInherit = false; }
+{
+    [ LOOKAHEAD({ getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") { noInherit = true; } ]
+    { return noInherit; }
 }
 
 ExcludeConstraint PostgreSqlExcludeConstraint():
@@ -14984,6 +15063,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     Table partitionOfTable = null;
     PartitionBound partitionBound = null;
     ColDataType ofType = null;
+    Table parent;
+    List<Table> parents = new ArrayList<Table>();
     ObjectNames typeName;
     boolean withData;
 }
@@ -15013,6 +15094,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
     [ LOOKAHEAD(2) (
+        LOOKAHEAD("(" ")") "(" ")" { createTable.setTableElements(tableElements); }
+        |
         LOOKAHEAD("(" RelObjectName() ("," RelObjectName())* ")") (
             "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")"
         )
@@ -15029,6 +15112,10 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             )
         )
     ]
+    [ LOOKAHEAD({ isKeywordAhead("INHERITS") }) ContextualKeyword("INHERITS")
+        "(" parent=Table() { parents.add(parent); }
+        ( "," parent=Table() { parents.add(parent); } )* ")"
+        { createTable.setInherits(parents); } ]
     [ LOOKAHEAD({ partitionOfTable != null })
         partitionBound=PostgreSqlPartitionBound()
         { createTable.setPartitionBound(partitionBound); } ]
@@ -15198,18 +15285,49 @@ TableOption MySqlTableOption(): {
         [ "=" { useEquals = true; } ]
         value=MySqlTableOptionValue()
         |
-        tk=<K_AUTO_INCREMENT> {
-            name = tk.image;
-            kind = TableOption.Kind.AUTO_INCREMENT;
-        }
-        [ "=" { useEquals = true; } ]
-        value=MySqlTableOptionValue()
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
+        { return option; }
     )
     {
         option = new TableOption(kind, name, value, useEquals);
         if (unionTables != null) { option.setUnionTables(unionTables); }
         return option;
     }
+}
+
+/** Common CREATE/ALTER options with a quoted string or unsigned integer value. */
+TableOption MySqlScalarTableOption():
+{
+    Token token;
+    String name;
+    String value;
+    TableOption.Kind kind;
+    boolean useEquals = false;
+}
+{
+    (
+        <K_AUTO_INCREMENT> { name = "AUTO_INCREMENT"; kind = TableOption.Kind.AUTO_INCREMENT; }
+        [ "=" { useEquals = true; } ] token=<S_LONG> { value = token.image; }
+        |
+        (
+            <K_ENCRYPTION> { name = "ENCRYPTION"; kind = TableOption.Kind.ENCRYPTION; }
+            | <K_PASSWORD> { name = "PASSWORD"; kind = TableOption.Kind.PASSWORD; }
+            | <K_DATA> <K_DIRECTORY> { name = "DATA DIRECTORY"; kind = TableOption.Kind.DATA_DIRECTORY; }
+            | <K_INDEX> <K_DIRECTORY> { name = "INDEX DIRECTORY"; kind = TableOption.Kind.INDEX_DIRECTORY; }
+        )
+        [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
+    )
+    { return new TableOption(kind, name, value, useEquals); }
+}
+
+AlterExpressionTableOption AlterScalarTableOption():
+{
+    TableOption option;
+    AlterExpressionTableOption expression = new AlterExpressionTableOption();
+}
+{
+    option=MySqlScalarTableOption()
+    { expression.setStructuredTableOption(option); return expression; }
 }
 
 String MySqlTableOptionValue(): {
@@ -15802,16 +15920,55 @@ void ReferentialActionSpec(ForeignKeyReference reference):
     }
 }
 
-ForeignKeyReference ForeignKeyReferenceSpec():
+/** Shares column/period boundaries on both sides of a foreign key. */
+List<Index.ColumnParams> ForeignKeyColumns(boolean allowParameters):
+{
+    List<Index.ColumnParams> columns = new ArrayList<Index.ColumnParams>();
+    Index.ColumnParams column;
+}
+{
+    "(" column=ForeignKeyColumn(allowParameters) { columns.add(column); }
+    ( "," {
+        requireDdlSyntax(!column.isPeriod(), "PERIOD must mark the final foreign key column");
+    } column=ForeignKeyColumn(allowParameters) { columns.add(column); } )* ")"
+    { return columns; }
+}
+
+Index.ColumnParams ForeignKeyColumn(boolean allowParameters):
+{
+    boolean period = false;
+    String name;
+    List<String> parameters = null;
+}
+{
+    [ LOOKAHEAD({ isKeywordAhead("PERIOD") && getToken(2).kind != K_COMMA
+            && getToken(2).kind != CLOSING_BRACKET })
+        ContextualKeyword("PERIOD") { period = true; } ]
+    name=RelObjectName()
+    [ parameters=CreateParameter() {
+        requireDdlSyntax(allowParameters && !period, "Expected a foreign key column name");
+    } ]
+    { return new Index.ColumnParams(name, parameters).withPeriod(period); }
+}
+
+ForeignKeyReference ForeignKeyReferenceSpec(boolean columnContext):
 {
     ForeignKeyReference reference = new ForeignKeyReference();
     ForeignKeyReference.MatchType matchType;
     Token matchToken;
     List<String> refColNames = null;
+    List<Index.ColumnParams> referencedColumns;
     Table fkTable;
 }
 {
-    <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) refColNames=ColumnsNamesList() ]
+    <K_REFERENCES> fkTable=Table()
+    [ LOOKAHEAD(2) referencedColumns=ForeignKeyColumns(false) {
+        refColNames = new ArrayList<String>();
+        for (Index.ColumnParams column : referencedColumns) {
+            refColNames.add(column.getColumnName());
+        }
+        reference.setUsingPeriod(referencedColumns.get(referencedColumns.size() - 1).isPeriod());
+    } ]
     {
         reference.setTable(fkTable);
         reference.setReferencedColumnNames(refColNames);
@@ -15829,6 +15986,12 @@ ForeignKeyReference ForeignKeyReferenceSpec():
     ]
     ReferentialActions(reference)
     {
+        if (columnContext) {
+            ConstraintAttributes attributes = PostgreSqlConstraintAttributeList(null);
+            requireDdlSyntax(attributes == null || !attributes.isNotValid(),
+                    "NOT VALID requires a table constraint");
+            reference.setConstraintAttributes(attributes);
+        }
         return reference;
     }
 }
@@ -15849,10 +16012,7 @@ CheckConstraint CheckConstraintSpec(String constraintName):
     [ LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
             && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
         <K_NO> TypeDdlKeyword("INHERIT") { noInherit = true; } ]
-    [ LOOKAHEAD(2)
-        [ <K_NOT> { enforced = false; } ]
-        <K_ENFORCED> { if (enforced == null) { enforced = true; } }
-    ]
+    [ LOOKAHEAD(2) enforced=ConstraintEnforcement() ]
     {
         checkConstraint = new CheckConstraint().withName(constraintName).withExpression(exp)
                 .withEnforced(enforced).withNoInherit(noInherit);
@@ -15877,12 +16037,12 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
 {
     tk=<K_FOREIGN> tk2=<K_KEY>
     [ LOOKAHEAD(2) indexName=RelObjectName() { fkIndex.setIndexName(indexName); } ]
-    colNames = ColumnNamesWithParamsList()
+    colNames = ForeignKeyColumns(true)
     {
         if (constraintName != null) { fkIndex.setName(constraintName); }
         fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
     }
-    reference=ForeignKeyReferenceSpec() { fkIndex.setReference(reference); }
+    reference=ForeignKeyReferenceSpec(false) { fkIndex.setReference(reference); }
     {
         return fkIndex;
     }
@@ -17731,17 +17891,7 @@ AlterExpression AlterExpression():
             tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
         )
       |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-            ["=" { alterExp.setUseEqual(true);} ]
-            tk=<S_CHAR_LITERAL> {
-                if (alterExp.getUseEqual()) {
-                    alterExp.setTableOption("ENCRYPTION = " + tk.image);
-                } else {
-                    alterExp.setTableOption("ENCRYPTION " + tk.image);
-                }
-            }
-        )
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) alterExp=AlterScalarTableOption()
       |
         alterExp = AlterExpressionDiscardOrImport()
       |
@@ -17772,18 +17922,6 @@ AlterExpression AlterExpression():
             { alterExp = new AlterExpressionTableOption(); }
             <K_ENABLE> <K_KEYS> {
                 alterExp.setOperation(AlterOperation.ENABLE_KEYS);
-            }
-        )
-      |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-            ["=" { alterExp.setUseEqual(true);} ]
-            tk=<S_LONG> {
-                if (alterExp.getUseEqual()) {
-                    alterExp.setTableOption("AUTO_INCREMENT = " + tk.image);
-                } else {
-                    alterExp.setTableOption("AUTO_INCREMENT " + tk.image);
-                }
             }
         )
       |
