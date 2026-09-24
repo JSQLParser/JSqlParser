@@ -76,6 +76,28 @@ class PostgreSqlTemporalConstraintTest {
     }
 
     @Test
+    void preservesPeriodAndEnforcementTogether() throws JSQLParserException {
+        for (String prefix : List.of("CREATE TABLE t (id INT, valid DATERANGE, ",
+                "ALTER TABLE t ADD ")) {
+            Statement statement = parse(prefix
+                    + "CONSTRAINT fk FOREIGN KEY (id, PERIOD valid) REFERENCES p(id, PERIOD valid)"
+                    + " ON DELETE NO ACTION NOT ENFORCED"
+                    + (prefix.startsWith("CREATE") ? ")" : ""));
+            ForeignKeyIndex foreign = (ForeignKeyIndex) index(statement);
+            assertTrue(foreign.getColumns().get(1).isPeriod());
+            assertTrue(foreign.getReference().isUsingPeriod());
+            assertEquals(false, foreign.getConstraintAttributes().getEnforced());
+            assertNull(foreign.getReference().getConstraintAttributes());
+            roundTrip(statement);
+            foreign.getConstraintAttributes().setEnforced(true);
+            assertTrue(statement.toString().endsWith(prefix.startsWith("CREATE")
+                    ? " ENFORCED)"
+                    : " ENFORCED"));
+            roundTrip(statement);
+        }
+    }
+
+    @Test
     void retainsQuotedAndUnquotedIdentifiersAndLegacyProjections() throws JSQLParserException {
         CreateTable table = (CreateTable) parse("CREATE TABLE t (id INT, period DATERANGE, "
                 + "FOREIGN KEY (id, period) REFERENCES p(id, period))");
