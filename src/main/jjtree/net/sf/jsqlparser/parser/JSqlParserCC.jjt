@@ -3066,6 +3066,7 @@ Token KeywordOrIdentifier():
       | tk = <K_DATA>
       | tk = <K_TYPE>
       | tk = <K_VERSION>
+      | tk = <K_COMMENT>
     )
     { return tk; }
 }
@@ -17262,7 +17263,8 @@ AlterExpression AlterExpressionAddAlterModify():
         constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
         [ AlterExpressionUsingIndex(alterExp) ]
         |
-        LOOKAHEAD(2) (
+        // Include the literal: COLUMN comment is a column definition, not a COMMENT clause.
+        LOOKAHEAD(RelObjectName() <K_COMMENT> <S_CHAR_LITERAL>) (
           sk3=RelObjectName() <K_COMMENT> tk=<S_CHAR_LITERAL> { alterExp.withColumnName(sk3).withCommentText(tk.image); }
         )
         |
