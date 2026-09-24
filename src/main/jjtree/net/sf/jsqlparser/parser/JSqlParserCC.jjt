@@ -14143,8 +14143,7 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
         { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
         |
-        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>,
-                { Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>)
         [ <K_CONSTRAINT> constraintName=RelObjectName() ]
         constraint=CheckConstraintSpec(constraintName)
         { option = ColumnOption.constraint(constraint); }
