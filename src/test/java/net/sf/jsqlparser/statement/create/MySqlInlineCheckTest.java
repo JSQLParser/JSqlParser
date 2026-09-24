@@ -81,6 +81,20 @@ class MySqlInlineCheckTest {
                 Dialect.MYSQL);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"", " NO INHERIT"})
+    void preservesPostgreSql18InlineCheckEnforcement(String inheritance)
+            throws JSQLParserException {
+        CreateTable table = (CreateTable) parse(
+                "CREATE TABLE t (a INT CHECK (a > 0)" + inheritance + " NOT ENFORCED)",
+                Dialect.POSTGRESQL);
+        CheckConstraint check = assertInstanceOf(CheckConstraint.class,
+                table.getColumnDefinitions().get(0).getColumnOptions().get(0).getConstraint());
+        assertEquals(false, check.getEnforced());
+        assertEquals(!inheritance.isEmpty(), check.isNoInherit());
+        roundTrip(table, Dialect.POSTGRESQL);
+    }
+
     private static Statement parse(String sql, Dialect dialect) throws JSQLParserException {
         return CCJSqlParserUtil.parse(sql, p -> {
             if (dialect != null) {
