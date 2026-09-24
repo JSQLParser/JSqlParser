@@ -504,6 +504,11 @@ public class AlterExpression implements Serializable {
         this.columnOldName = columnOldName;
     }
 
+    /**
+     * Returns the constraint name, including any SQL identifier quotes. For named
+     * {@link AlterOperation#DROP_FOREIGN_KEY} and {@link AlterOperation#DROP_CHECK} actions, this
+     * is the deletion target; {@link #getPkColumns()} is not used.
+     */
     public String getConstraintName() {
         return this.constraintName;
     }
@@ -884,6 +889,7 @@ public class AlterExpression implements Serializable {
             case DROP_PRIMARY_KEY:
             case DROP_UNIQUE:
             case DROP_FOREIGN_KEY:
+            case DROP_CHECK:
                 return true;
             case DROP:
                 return columnName == null && pkColumns != null && !pkColumns.isEmpty();
@@ -1041,8 +1047,15 @@ public class AlterExpression implements Serializable {
                 b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
                 break;
             case DROP_FOREIGN_KEY:
-                b.append("DROP FOREIGN KEY (").append(PlainSelect.getStringList(pkColumns))
-                        .append(')');
+                b.append("DROP FOREIGN KEY ");
+                if (constraintName != null) {
+                    b.append(constraintName);
+                } else {
+                    b.append('(').append(PlainSelect.getStringList(pkColumns)).append(')');
+                }
+                break;
+            case DROP_CHECK:
+                b.append("DROP CHECK ").append(constraintName);
                 break;
             default:
                 // Oracle Multi Column Drop

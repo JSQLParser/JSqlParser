@@ -252,6 +252,29 @@ explicit index owners, without reporting catalog-only object names as tables.
 The statement deparser delegates real tables to its configured select deparser.
 MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
 
+MySQL named constraint drops
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With ``Dialect.MYSQL``, ``DROP FOREIGN KEY name`` and ``DROP CHECK name``
+expose the target through ``AlterExpression.getConstraintName()``. Inspect
+``getOperation()`` for ``DROP_FOREIGN_KEY`` or ``DROP_CHECK``. Identifier
+quotes are preserved, and changing the name changes both SQL renderers.
+These named targets do not populate the legacy ``getPkColumns()`` list.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE child DROP FOREIGN KEY fk_parent",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    AlterExpression drop = alter.getAlterExpressions().get(0);
+    drop.setConstraintName("fk_customer");
+    // ALTER TABLE child DROP FOREIGN KEY fk_customer
+    String sql = alter.toString();
+
+    // The same API also supports constructing an action without parsing SQL.
+    AlterExpression checkDrop = new AlterExpression()
+        .withOperation(AlterOperation.DROP_CHECK).withConstraintName("positive_id");
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
