@@ -16334,6 +16334,9 @@ Drop Drop():
         tk=<K_FUNCTION>
     )
     { drop.setType(tk.image); }
+    [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
+            && getToken(1).kind == K_CONCURRENTLY })
+        <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
