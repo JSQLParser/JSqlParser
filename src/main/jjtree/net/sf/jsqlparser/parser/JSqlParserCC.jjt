@@ -1547,10 +1547,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "STATS_SAMPLE_PAGES".equalsIgnoreCase(name);
     }
 
+    private boolean isMySqlScalarTableOptionAhead() {
+        int kind = getToken(1).kind;
+        return kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+                || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
+    }
+
     private boolean isMySqlTableOptionAhead() {
         int kind = getToken(1).kind;
         if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
-                || kind == K_AUTO_INCREMENT || kind == K_UNION
+                || isMySqlScalarTableOptionAhead() || kind == K_UNION
                 || isMySqlStatisticsOptionAhead()) {
             return true;
         }
@@ -15185,18 +15191,49 @@ TableOption MySqlTableOption(): {
         [ "=" { useEquals = true; } ]
         value=MySqlTableOptionValue()
         |
-        tk=<K_AUTO_INCREMENT> {
-            name = tk.image;
-            kind = TableOption.Kind.AUTO_INCREMENT;
-        }
-        [ "=" { useEquals = true; } ]
-        value=MySqlTableOptionValue()
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
+        { return option; }
     )
     {
         option = new TableOption(kind, name, value, useEquals);
         if (unionTables != null) { option.setUnionTables(unionTables); }
         return option;
     }
+}
+
+/** Common CREATE/ALTER options with a quoted string or unsigned integer value. */
+TableOption MySqlScalarTableOption():
+{
+    Token token;
+    String name;
+    String value;
+    TableOption.Kind kind;
+    boolean useEquals = false;
+}
+{
+    (
+        <K_AUTO_INCREMENT> { name = "AUTO_INCREMENT"; kind = TableOption.Kind.AUTO_INCREMENT; }
+        [ "=" { useEquals = true; } ] token=<S_LONG> { value = token.image; }
+        |
+        (
+            <K_ENCRYPTION> { name = "ENCRYPTION"; kind = TableOption.Kind.ENCRYPTION; }
+            | <K_PASSWORD> { name = "PASSWORD"; kind = TableOption.Kind.PASSWORD; }
+            | <K_DATA> <K_DIRECTORY> { name = "DATA DIRECTORY"; kind = TableOption.Kind.DATA_DIRECTORY; }
+            | <K_INDEX> <K_DIRECTORY> { name = "INDEX DIRECTORY"; kind = TableOption.Kind.INDEX_DIRECTORY; }
+        )
+        [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
+    )
+    { return new TableOption(kind, name, value, useEquals); }
+}
+
+AlterExpressionTableOption AlterScalarTableOption():
+{
+    TableOption option;
+    AlterExpressionTableOption expression = new AlterExpressionTableOption();
+}
+{
+    option=MySqlScalarTableOption()
+    { expression.setStructuredTableOption(option); return expression; }
 }
 
 String MySqlTableOptionValue(): {
@@ -17718,17 +17755,7 @@ AlterExpression AlterExpression():
             tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
         )
       |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_ENCRYPTION> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-            ["=" { alterExp.setUseEqual(true);} ]
-            tk=<S_CHAR_LITERAL> {
-                if (alterExp.getUseEqual()) {
-                    alterExp.setTableOption("ENCRYPTION = " + tk.image);
-                } else {
-                    alterExp.setTableOption("ENCRYPTION " + tk.image);
-                }
-            }
-        )
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) alterExp=AlterScalarTableOption()
       |
         alterExp = AlterExpressionDiscardOrImport()
       |
@@ -17759,18 +17786,6 @@ AlterExpression AlterExpression():
             { alterExp = new AlterExpressionTableOption(); }
             <K_ENABLE> <K_KEYS> {
                 alterExp.setOperation(AlterOperation.ENABLE_KEYS);
-            }
-        )
-      |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_AUTO_INCREMENT> {alterExp.setOperation(AlterOperation.SET_TABLE_OPTION);}
-            ["=" { alterExp.setUseEqual(true);} ]
-            tk=<S_LONG> {
-                if (alterExp.getUseEqual()) {
-                    alterExp.setTableOption("AUTO_INCREMENT = " + tk.image);
-                } else {
-                    alterExp.setTableOption("AUTO_INCREMENT " + tk.image);
-                }
             }
         )
       |
