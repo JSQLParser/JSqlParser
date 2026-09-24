@@ -13264,6 +13264,8 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
     JsonTableFunction.JsonTableWrapperClause wrapperClause;
     JsonTableFunction.JsonTableQuotesClause quotesClause;
     String encoding;
+    String collation;
+    Token collationLiteral;
 }
 {
     (
@@ -13303,6 +13305,13 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
                                 getToken(1).image.equalsIgnoreCase("ALLOW")
                                 || getToken(1).image.equalsIgnoreCase("DISALLOW"))) } )
                 dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
+                [ LOOKAHEAD({ Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                        && getToken(1).kind == K_COLLATE })
+                    <K_COLLATE>
+                    ( collation = RelObjectName()
+                      | collationLiteral = <S_CHAR_LITERAL> { collation = collationLiteral.image; } )
+                    { valueColumnDefinition.setCollation(collation); }
+                ]
             ]
             [
                 <K_FORMAT> <K_JSON> { valueColumnDefinition.setFormatJson(true); }
