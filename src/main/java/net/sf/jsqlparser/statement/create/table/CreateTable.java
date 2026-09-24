@@ -37,6 +37,7 @@ public class CreateTable implements Statement {
     private Select select;
     private Table likeTable;
     private Table cloneTable;
+    private List<Table> inherits;
     private ColDataType ofType;
     private boolean selectParenthesis;
     private boolean useAsKeyword = true;
@@ -317,6 +318,27 @@ public class CreateTable implements Statement {
         this.partitionBound = partitionBound;
     }
 
+    /** PostgreSQL parent tables, in declaration order; null if INHERITS is absent. */
+    public List<Table> getInherits() {
+        return inherits;
+    }
+
+    public void setInherits(List<Table> inherits) {
+        this.inherits = inherits;
+    }
+
+    public CreateTable withInherits(List<Table> inherits) {
+        setInherits(inherits);
+        return this;
+    }
+
+    /** Shared rendering of the structured parent references. */
+    public void appendInheritanceTo(StringBuilder builder) {
+        if (inherits != null) {
+            builder.append(" INHERITS ").append(PlainSelect.getStringList(inherits, true, true));
+        }
+    }
+
     public boolean isSelectParenthesis() {
         return selectParenthesis;
     }
@@ -339,6 +361,7 @@ public class CreateTable implements Statement {
         StringBuilder b = new StringBuilder();
         appendCreateClause(b);
         appendColumnDefinitions(b);
+        appendInheritanceTo(b);
         if (partitionBound != null) {
             b.append(" ").append(partitionBound);
         }

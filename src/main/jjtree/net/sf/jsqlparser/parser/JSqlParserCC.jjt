@@ -14968,6 +14968,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     Table partitionOfTable = null;
     PartitionBound partitionBound = null;
     ColDataType ofType = null;
+    Table parent;
+    List<Table> parents = new ArrayList<Table>();
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -14991,6 +14993,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
     [ LOOKAHEAD(2) (
+        LOOKAHEAD("(" ")") "(" ")" { createTable.setTableElements(tableElements); }
+        |
         LOOKAHEAD(3) (
             "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")"
         )
@@ -15007,6 +15011,10 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             )
         )
     ]
+    [ LOOKAHEAD({ isKeywordAhead("INHERITS") }) ContextualKeyword("INHERITS")
+        "(" parent=Table() { parents.add(parent); }
+        ( "," parent=Table() { parents.add(parent); } )* ")"
+        { createTable.setInherits(parents); } ]
     [ LOOKAHEAD({ partitionOfTable != null })
         partitionBound=PostgreSqlPartitionBound()
         { createTable.setPartitionBound(partitionBound); } ]

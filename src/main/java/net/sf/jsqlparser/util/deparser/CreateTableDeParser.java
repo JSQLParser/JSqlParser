@@ -106,6 +106,7 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             builder.append(")");
         }
 
+        createTable.appendInheritanceTo(builder);
         if (createTable.getPartitionBound() != null) {
             builder.append(' ');
             createTable.getPartitionBound().appendTo(builder,
