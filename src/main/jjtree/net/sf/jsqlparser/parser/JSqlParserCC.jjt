@@ -14133,6 +14133,7 @@ ColumnOption ColumnDefinitionOption(): {
     ColumnOption option;
     IdentityDefinition identity;
     NamedConstraint constraint;
+    String constraintName = null;
     Expression defaultExpression;
     GeneratedColumnDefinition generated;
     ObjectNames collationNames;
@@ -14171,6 +14172,12 @@ ColumnOption ColumnDefinitionOption(): {
         |
         LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
         { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
+        |
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>,
+                { Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        [ <K_CONSTRAINT> constraintName=RelObjectName() ]
+        constraint=CheckConstraintSpec(constraintName)
+        { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD(<K_UNIQUE>) constraint=ColumnUniqueConstraint()
         { option = ColumnOption.constraint(constraint); }
@@ -15783,17 +15790,21 @@ CheckConstraint CheckConstraintSpec(String constraintName):
 {
     Expression exp = null;
     Boolean enforced = null;
+    boolean noInherit = false;
     CheckConstraint checkConstraint;
 }
 {
     <K_CHECK> "(" exp = Expression() ")"
+    [ LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+            && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") { noInherit = true; } ]
     [ LOOKAHEAD(2)
         [ <K_NOT> { enforced = false; } ]
         <K_ENFORCED> { if (enforced == null) { enforced = true; } }
     ]
     {
         checkConstraint = new CheckConstraint().withName(constraintName).withExpression(exp)
-                .withEnforced(enforced);
+                .withEnforced(enforced).withNoInherit(noInherit);
         checkConstraint.setKind(Index.Kind.CHECK);
         return checkConstraint;
     }
