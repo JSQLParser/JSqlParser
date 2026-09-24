@@ -1440,6 +1440,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isKeywordAhead("MATCH_RECOGNIZE") && getToken(2).kind == OPENING_BRACKET;
     }
 
+    private boolean isCreateTableQueryPrefix() {
+        int kind = getToken(1).kind;
+        return kind == K_AS || kind == K_TABLE || kind == K_IGNORE || kind == K_REPLACE;
+    }
+
     private boolean isRowPatternPrimaryAhead() {
         Token next = getToken(1);
         return next.kind == OPENING_BRACKET || next.kind == OP_CARET
@@ -14143,8 +14148,7 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
         { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
         |
-        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>,
-                { Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>)
         [ <K_CONSTRAINT> constraintName=RelObjectName() ]
         constraint=CheckConstraintSpec(constraintName)
         { option = ColumnOption.constraint(constraint); }
@@ -14217,7 +14221,9 @@ IdentityDefinition IdentityDefinition():
     Token token;
     IdentityDefinition.GenerationMode mode;
     IdentityDefinition identity;
-    List<Sequence.Parameter> parameters;
+    List<Sequence.Parameter> parameters = new ArrayList<Sequence.Parameter>();
+    Sequence.Parameter parameter;
+    Sequence sequenceName;
 }
 {
     token=<S_IDENTIFIER> {
@@ -14226,8 +14232,18 @@ IdentityDefinition IdentityDefinition():
     ( <K_ALWAYS> { mode = IdentityDefinition.GenerationMode.ALWAYS; }
         | <K_BY> <K_DEFAULT> { mode = IdentityDefinition.GenerationMode.BY_DEFAULT; } )
     <K_AS> <K_IDENTITY> { identity = new IdentityDefinition(mode); }
-    [ LOOKAHEAD(2) "(" parameters=SequenceParameters() ")" {
-        requireDdlSyntax(!parameters.isEmpty(), "Expected an identity sequence parameter");
+    [ LOOKAHEAD(1) "("
+        (
+            (
+                LOOKAHEAD(<K_SEQUENCE> <K_NAME>)
+                <K_SEQUENCE> <K_NAME> sequenceName=Sequence()
+                { parameter = new Sequence.Parameter(Sequence.ParameterType.SEQUENCE_NAME)
+                        .withSequenceName(sequenceName); }
+                | parameter=SequenceParameter()
+            )
+            { parameters.add(parameter); }
+        )+
+        ")" {
         identity.setParameters(parameters);
     } ]
     { return identity; }
@@ -14970,6 +14986,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     ColDataType ofType = null;
     Table parent;
     List<Table> parents = new ArrayList<Table>();
+    boolean withData;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -15026,9 +15043,14 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
     [ LOOKAHEAD(2)
         { createTable.setUseAsKeyword(false); }
+        [ ( tk=<K_IGNORE> | tk=<K_REPLACE> )
+            { createTable.setDuplicateHandling(CreateTable.DuplicateHandling.valueOf(
+                    tk.image.toUpperCase(Locale.ROOT))); } ]
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
         ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
         { createTable.setSelect(select, false); }
+        [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()
+            { createTable.setWithData(withData); } ]
     ]
     [
     <K_LIKE> ( LOOKAHEAD("(" Table() ")") "(" likeTable=Table() { createTable.setLikeTable(likeTable, true); } ")"
@@ -15087,10 +15109,10 @@ ColumnDefinition CreateTableColumnDefinition(boolean typed):
 void CreateTableOptions(List<TableOption> options):
 { TableOption option; }
 {
-    [ LOOKAHEAD(2, { getToken(1).kind != K_AS && getToken(1).kind != K_TABLE
+    [ LOOKAHEAD(2, { !isCreateTableQueryPrefix()
             && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
         option=CreateTableOption() { options.add(option); }
-        ( LOOKAHEAD(2, { getToken(1).kind != K_AS && getToken(1).kind != K_TABLE
+        ( LOOKAHEAD(2, { !isCreateTableQueryPrefix()
                 && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY)
                 && !(getToken(1).kind == K_COMMA
                     && "INTERLEAVE".equalsIgnoreCase(getToken(2).image)) })
@@ -15619,7 +15641,7 @@ CreateView CreateView(boolean isUsingOrReplace):
     List<Index.Option> storageParameters = null;
     List<ViewOption> viewOptions = new ArrayList<ViewOption>();
     ViewOption viewOption = null;
-    boolean withData = true;
+    boolean withData;
 }
 {
     { createView.setOrReplace(isUsingOrReplace);}
@@ -15674,7 +15696,7 @@ CreateView CreateView(boolean isUsingOrReplace):
                 }
             }
             |
-            [ <K_NO> { withData = false; } ] <K_DATA> { createView.setWithData(withData); }
+            withData=DataPopulation() { createView.setWithData(withData); }
         )
     ]
     { createView.validateOptions(); return createView; }
@@ -15690,6 +15712,14 @@ ViewOption PostgreSqlViewOption():
     name=RelObjectName()
     [ "=" { useEquals = true; } value=PrimaryExpression() ]
     { return new ViewOption(name, value, useEquals); }
+}
+
+/** Shared WITH [NO] DATA tail for table and materialized-view query sources. */
+boolean DataPopulation():
+{ boolean withData = true; }
+{
+    [ <K_NO> { withData = false; } ] <K_DATA>
+    { return withData; }
 }
 
 List<String> CreateViewTailComment():
@@ -15739,21 +15769,32 @@ ReferentialAction.Action Action():
  * Shared between CREATE TABLE FK and ALTER TABLE FK definitions.
  */
 void ReferentialActions(ForeignKeyReference reference):
+{}
 {
-    Token tk;
-    ReferentialAction.Action action = null;
+    [ LOOKAHEAD(2) ReferentialActionSpec(reference) ]
+    [ LOOKAHEAD(2) ReferentialActionSpec(reference) ]
+}
+
+void ReferentialActionSpec(ForeignKeyReference reference):
+{
+    Token token;
+    ReferentialAction.Type type;
+    ReferentialAction.Action action;
+    List<String> columnNames = null;
 }
 {
-    [ LOOKAHEAD(2) (
-        <K_ON>
-        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-    )]
-    [ LOOKAHEAD(2) (
-        <K_ON>
-        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-    )]
+    <K_ON> ( token=<K_DELETE> | token=<K_UPDATE> )
+    { type = ReferentialAction.Type.from(token.image); }
+    action=Action()
+    [ LOOKAHEAD({ type == ReferentialAction.Type.DELETE
+            && (action == ReferentialAction.Action.SET_NULL
+                || action == ReferentialAction.Action.SET_DEFAULT)
+            && "(".equals(getToken(1).image) })
+        columnNames=ColumnsNamesList() ]
+    {
+        reference.setReferentialAction(type, action);
+        reference.getReferentialAction(type).setColumnNames(columnNames);
+    }
 }
 
 ForeignKeyReference ForeignKeyReferenceSpec():
@@ -16614,7 +16655,7 @@ TablePartitioning CreateTablePartitioning():
     ]
     [ LOOKAHEAD(2) partitionDefinitions=PartitionDefinitions()
         { partitioning.setPartitionDefinitions(partitionDefinitions); } ]
-    ( LOOKAHEAD(2, { getToken(1).kind != K_AS })
+    ( LOOKAHEAD(2, { !isCreateTableQueryPrefix() })
         parameter=CreateParameter() { partitionOptions.addAll(parameter); } )*
     {
         if (!partitionOptions.isEmpty()) {

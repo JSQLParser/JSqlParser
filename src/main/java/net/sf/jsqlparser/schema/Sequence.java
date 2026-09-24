@@ -187,7 +187,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
      * The available parameters to a sequence
      */
     public enum ParameterType {
-        INCREMENT_BY, INCREMENT, START_WITH, START, RESTART_WITH, MAXVALUE, NOMAXVALUE, MINVALUE, NOMINVALUE, CYCLE, NOCYCLE, CACHE, NOCACHE, ORDER, NOORDER, KEEP, NOKEEP, SESSION, GLOBAL, NO_MINVALUE, NO_MAXVALUE, NO_CYCLE;
+        INCREMENT_BY, INCREMENT, START_WITH, START, RESTART_WITH, MAXVALUE, NOMAXVALUE, MINVALUE, NOMINVALUE, CYCLE, NOCYCLE, CACHE, NOCACHE, ORDER, NOORDER, KEEP, NOKEEP, SESSION, GLOBAL, NO_MINVALUE, NO_MAXVALUE, NO_CYCLE, SEQUENCE_NAME;
 
         public static ParameterType from(String type) {
             return Enum.valueOf(ParameterType.class, type.toUpperCase(Locale.ROOT));
@@ -201,6 +201,7 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
         private final ParameterType option;
         private Long value;
+        private Sequence sequenceName;
 
         public Parameter(ParameterType option) {
             this.option = option;
@@ -214,6 +215,20 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
             return option;
         }
 
+        /** The sequence named by an identity declaration's SEQUENCE NAME option. */
+        public Sequence getSequenceName() {
+            return sequenceName;
+        }
+
+        public void setSequenceName(Sequence sequenceName) {
+            this.sequenceName = sequenceName;
+        }
+
+        public Parameter withSequenceName(Sequence sequenceName) {
+            setSequenceName(sequenceName);
+            return this;
+        }
+
         @Override
         public String toString() {
             return formatParameter();
@@ -225,6 +240,8 @@ public class Sequence extends ASTNodeAccessImpl implements MultiPartName {
 
         public String formatParameter() {
             switch (option) {
+                case SEQUENCE_NAME:
+                    return "SEQUENCE NAME " + sequenceName.getFullyQualifiedName();
                 case INCREMENT_BY:
                     return prefix("INCREMENT BY");
                 case INCREMENT:
