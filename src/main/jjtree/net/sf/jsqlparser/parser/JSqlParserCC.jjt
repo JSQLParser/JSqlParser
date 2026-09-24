@@ -1440,6 +1440,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isKeywordAhead("MATCH_RECOGNIZE") && getToken(2).kind == OPENING_BRACKET;
     }
 
+    private boolean isCreateTableQueryPrefix() {
+        int kind = getToken(1).kind;
+        return kind == K_AS || kind == K_TABLE || kind == K_IGNORE || kind == K_REPLACE;
+    }
+
     private boolean isRowPatternPrimaryAhead() {
         Token next = getToken(1);
         return next.kind == OPENING_BRACKET || next.kind == OP_CARET
@@ -15018,6 +15023,9 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ rowMovement = RowMovement() { createTable.setRowMovement(rowMovement); }]
     [ LOOKAHEAD(2)
         { createTable.setUseAsKeyword(false); }
+        [ ( tk=<K_IGNORE> | tk=<K_REPLACE> )
+            { createTable.setDuplicateHandling(CreateTable.DuplicateHandling.valueOf(
+                    tk.image.toUpperCase(Locale.ROOT))); } ]
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
         ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
         { createTable.setSelect(select, false); }
@@ -15079,10 +15087,10 @@ ColumnDefinition CreateTableColumnDefinition(boolean typed):
 void CreateTableOptions(List<TableOption> options):
 { TableOption option; }
 {
-    [ LOOKAHEAD(2, { getToken(1).kind != K_AS && getToken(1).kind != K_TABLE
+    [ LOOKAHEAD(2, { !isCreateTableQueryPrefix()
             && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY) })
         option=CreateTableOption() { options.add(option); }
-        ( LOOKAHEAD(2, { getToken(1).kind != K_AS && getToken(1).kind != K_TABLE
+        ( LOOKAHEAD(2, { !isCreateTableQueryPrefix()
                 && !(getToken(1).kind == K_PARTITION && getToken(2).kind == K_BY)
                 && !(getToken(1).kind == K_COMMA
                     && "INTERLEAVE".equalsIgnoreCase(getToken(2).image)) })
@@ -16606,7 +16614,7 @@ TablePartitioning CreateTablePartitioning():
     ]
     [ LOOKAHEAD(2) partitionDefinitions=PartitionDefinitions()
         { partitioning.setPartitionDefinitions(partitionDefinitions); } ]
-    ( LOOKAHEAD(2, { getToken(1).kind != K_AS })
+    ( LOOKAHEAD(2, { !isCreateTableQueryPrefix() })
         parameter=CreateParameter() { partitionOptions.addAll(parameter); } )*
     {
         if (!partitionOptions.isEmpty()) {
