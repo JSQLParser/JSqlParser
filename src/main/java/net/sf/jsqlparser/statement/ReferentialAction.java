@@ -11,11 +11,15 @@ package net.sf.jsqlparser.statement;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.List;
+import java.util.Objects;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class ReferentialAction implements Serializable {
 
     private Type type;
     private Action action;
+    private List<String> columnNames;
 
     public ReferentialAction() {
         // default constructor
@@ -52,6 +56,20 @@ public class ReferentialAction implements Serializable {
         return this;
     }
 
+    /** Columns affected by PostgreSQL ON DELETE SET NULL or SET DEFAULT; null means all columns. */
+    public List<String> getColumnNames() {
+        return columnNames;
+    }
+
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
+
+    public ReferentialAction withColumnNames(List<String> columnNames) {
+        setColumnNames(columnNames);
+        return this;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -64,7 +82,9 @@ public class ReferentialAction implements Serializable {
     @Override
     public String toString() {
         return " ON " + getType().name() + " " +
-                getAction().getAction();
+                getAction().getAction()
+                + (columnNames == null ? ""
+                        : " " + PlainSelect.getStringList(columnNames, true, true));
     }
 
     @Override
@@ -79,12 +99,8 @@ public class ReferentialAction implements Serializable {
             return false;
         }
         ReferentialAction other = (ReferentialAction) obj;
-        // if (action != other.action) {
-        // return false;
-        // }
-        // if (type != other.type) {
-        // return false;
-        return action == other.action && type == other.type;
+        return action == other.action && type == other.type
+                && Objects.equals(columnNames, other.columnNames);
     }
 
     public enum Type {

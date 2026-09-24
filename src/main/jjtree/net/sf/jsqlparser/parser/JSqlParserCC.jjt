@@ -15761,21 +15761,32 @@ ReferentialAction.Action Action():
  * Shared between CREATE TABLE FK and ALTER TABLE FK definitions.
  */
 void ReferentialActions(ForeignKeyReference reference):
+{}
 {
-    Token tk;
-    ReferentialAction.Action action = null;
+    [ LOOKAHEAD(2) ReferentialActionSpec(reference) ]
+    [ LOOKAHEAD(2) ReferentialActionSpec(reference) ]
+}
+
+void ReferentialActionSpec(ForeignKeyReference reference):
+{
+    Token token;
+    ReferentialAction.Type type;
+    ReferentialAction.Action action;
+    List<String> columnNames = null;
 }
 {
-    [ LOOKAHEAD(2) (
-        <K_ON>
-        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-    )]
-    [ LOOKAHEAD(2) (
-        <K_ON>
-        ( tk=<K_DELETE> | tk=<K_UPDATE> ) action = Action()
-        { reference.setReferentialAction(ReferentialAction.Type.from(tk.image), action); }
-    )]
+    <K_ON> ( token=<K_DELETE> | token=<K_UPDATE> )
+    { type = ReferentialAction.Type.from(token.image); }
+    action=Action()
+    [ LOOKAHEAD({ type == ReferentialAction.Type.DELETE
+            && (action == ReferentialAction.Action.SET_NULL
+                || action == ReferentialAction.Action.SET_DEFAULT)
+            && "(".equals(getToken(1).image) })
+        columnNames=ColumnsNamesList() ]
+    {
+        reference.setReferentialAction(type, action);
+        reference.getReferentialAction(type).setColumnNames(columnNames);
+    }
 }
 
 ForeignKeyReference ForeignKeyReferenceSpec():
