@@ -14968,6 +14968,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     Table partitionOfTable = null;
     PartitionBound partitionBound = null;
     ColDataType ofType = null;
+    boolean withData;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -15021,6 +15022,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         [ <K_AS> { createTable.setUseAsKeyword(true); } ]
         ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
         { createTable.setSelect(select, false); }
+        [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()
+            { createTable.setWithData(withData); } ]
     ]
     [
     <K_LIKE> ( LOOKAHEAD("(" Table() ")") "(" likeTable=Table() { createTable.setLikeTable(likeTable, true); } ")"
@@ -15611,7 +15614,7 @@ CreateView CreateView(boolean isUsingOrReplace):
     List<Index.Option> storageParameters = null;
     List<ViewOption> viewOptions = new ArrayList<ViewOption>();
     ViewOption viewOption = null;
-    boolean withData = true;
+    boolean withData;
 }
 {
     { createView.setOrReplace(isUsingOrReplace);}
@@ -15666,7 +15669,7 @@ CreateView CreateView(boolean isUsingOrReplace):
                 }
             }
             |
-            [ <K_NO> { withData = false; } ] <K_DATA> { createView.setWithData(withData); }
+            withData=DataPopulation() { createView.setWithData(withData); }
         )
     ]
     { createView.validateOptions(); return createView; }
@@ -15682,6 +15685,14 @@ ViewOption PostgreSqlViewOption():
     name=RelObjectName()
     [ "=" { useEquals = true; } value=PrimaryExpression() ]
     { return new ViewOption(name, value, useEquals); }
+}
+
+/** Shared WITH [NO] DATA tail for table and materialized-view query sources. */
+boolean DataPopulation():
+{ boolean withData = true; }
+{
+    [ <K_NO> { withData = false; } ] <K_DATA>
+    { return withData; }
 }
 
 List<String> CreateViewTailComment():
