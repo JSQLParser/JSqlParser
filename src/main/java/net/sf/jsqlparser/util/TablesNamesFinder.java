@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.expression.RowPatternFunction;
@@ -2909,6 +2910,11 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(OracleNullStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterDatabase statement, S context) {
         return null;
     }
 

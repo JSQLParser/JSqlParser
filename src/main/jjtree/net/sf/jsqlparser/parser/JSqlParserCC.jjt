@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.database.*;
@@ -14652,6 +14653,35 @@ DatabaseOption MySqlDatabaseOption():
     { return new DatabaseOption(kind, name, value, useDefault, useEquals); }
 }
 
+/** Reuses CREATE's database options; READ ONLY is specific to ALTER. */
+AlterDatabase AlterDatabase():
+{
+    AlterDatabase result = new AlterDatabase();
+    String name;
+    DatabaseOption option;
+    Token value;
+    boolean equals;
+}
+{
+    ( <K_DATABASE> | <K_SCHEMA> { result.setUseSchemaKeyword(true); } )
+    [ LOOKAHEAD({ !isMySqlDatabaseOptionAhead() && getToken(1).kind != K_READ })
+        name=RelObjectName() { result.setDatabaseName(name); } ]
+    (
+        (
+            LOOKAHEAD({ isMySqlDatabaseOptionAhead() }) option=MySqlDatabaseOption()
+            |
+            <K_READ> <K_ONLY> { equals = false; }
+            [ "=" { equals = true; } ]
+            ( value=<K_DEFAULT> | value=<S_LONG> ) {
+                requireDdlSyntax(value.kind == K_DEFAULT || "0".equals(value.image) || "1".equals(value.image),
+                        "READ ONLY requires DEFAULT, 0, or 1");
+                option = new DatabaseOption(DatabaseOption.Kind.READ_ONLY, "READ ONLY", value.image, false, equals);
+            }
+        ) { result.getOptions().add(option); }
+    )+
+    { return result; }
+}
+
 List<String> PathSpecification():
 {
     Token tk;
@@ -17950,6 +17980,10 @@ Statement Alter():
                 statement = AlterRole()
                 |
                 statement = AlterDefaultPrivileges()
+                |
+                LOOKAHEAD({ getToken(1).kind == K_DATABASE || (getToken(1).kind == K_SCHEMA
+                        && Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) })
+                statement = AlterDatabase()
                 |
                 LOOKAHEAD(<K_SCHEMA>) statement = AlterSchema()
                 |

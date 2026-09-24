@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -668,6 +669,14 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(OracleNullStatement statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterDatabase statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterDatabase statement) {
         visit(statement, null);
     }
 
