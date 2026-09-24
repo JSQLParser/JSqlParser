@@ -12667,7 +12667,17 @@ CastExpression CastExpression():
         )
         |
         (
-            type=ColDataType() { retval.setColDataType(type); }
+            type=ColDataType() {
+                // Preserve the established MySQL CAST type-name API outside PostgreSQL mode.
+                if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                        && type.isUsingArrayKeyword() && type.getArrayData().size() == 1
+                        && type.getArrayData().get(0) == null) {
+                    type.setUsingArrayKeyword(false);
+                    type.getArrayData().clear();
+                    type.setDataType(type.getDataType() + " ARRAY");
+                }
+                retval.setColDataType(type);
+            }
             // MySQL casts to an array of the given type when a multi-valued index key part is
             // defined, e.g. CAST(data->'$.zips' AS UNSIGNED ARRAY). ARRAY reads as a further
             // word of the type, the way INT UNSIGNED already does.
@@ -14135,6 +14145,7 @@ ColumnOption ColumnDefinitionOption(): {
     GeneratedColumnDefinition generated;
     ObjectNames collationNames;
     String collation;
+    String compression;
 } {
     (
         LOOKAHEAD({ isKeywordAhead("GENERATED")
@@ -14160,6 +14171,12 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_INVISIBLE>) <K_INVISIBLE> { option = ColumnOption.visibility(false); }
         |
         LOOKAHEAD(<K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
+        |
+        LOOKAHEAD(<K_STORAGE>) <K_STORAGE> ( tk=<K_EXTENDED> | tk=<K_DEFAULT> | tk=<S_IDENTIFIER> )
+        { option = ColumnOption.storage(accessEnum(ColumnOption.Storage.class, tk.image)); }
+        |
+        LOOKAHEAD({ isKeywordAhead("COMPRESSION") }) ContextualKeyword("COMPRESSION") compression=RelObjectName()
+        { option = ColumnOption.compression(compression); }
         |
         LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
         ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
@@ -15559,9 +15576,9 @@ ColDataType ColDataType():
             intervalQualifier = IntervalQualifier() { colDataType.setIntervalQualifier(intervalQualifier); }
         ]
         [ LOOKAHEAD(2) "." arrayType = ColDataType() {
-            schema += "." + arrayType.toString();
-            colDataType.setPrecision(arrayType.getPrecision());
-            colDataType.setScale(arrayType.getScale());
+            schema += "." + arrayType.getDataType();
+            // Retain the nested type's structured suffixes instead of flattening them into its name.
+            colDataType = arrayType;
         } ]
         { colDataType.setDataType(schema); }
     )
@@ -15604,7 +15621,18 @@ ColDataType ColDataType():
     ]
     ( LOOKAHEAD(1) typeModifier=MySqlTypeModifier()
         { colDataType.addTypeModifier(typeModifier); } )*
-    [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
+    (
+        LOOKAHEAD(<K_ARRAY_LITERAL>) <K_ARRAY_LITERAL> { tk = null; }
+        [ LOOKAHEAD(2) "[" tk=<S_LONG> "]" ] {
+            array.add(tk == null ? null : Integer.valueOf(tk.image));
+            colDataType.setArrayData(array);
+            colDataType.setUsingArrayKeyword(true);
+        }
+        |
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ]
+            { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+
+            { colDataType.setArrayData(array); } ]
+    )
     [
         LOOKAHEAD({ (getToken(1).kind == K_CHARACTER && getToken(2).kind == K_SET)
                 || isKeywordAhead("CHARSET") }) TypeCharacterSet(colDataType)
