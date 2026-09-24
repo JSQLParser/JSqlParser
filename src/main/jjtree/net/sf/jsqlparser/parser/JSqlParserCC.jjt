@@ -14931,12 +14931,23 @@ Index.ColumnParams PostgreSqlExcludeElement():
 {
     Index.ColumnParams column;
     Token operator;
+    ExclusionOperator reference;
 }
 {
     column=IndexColumnWithParams() <K_WITH>
-    ( operator="=" | operator=<OP_NOTEQUALSSTANDARD> | operator=<OP_NOTEQUALSBANG> | operator="<" | operator=">"
-        | operator=<OP_MINORTHANEQUALS> | operator=<OP_GREATERTHANEQUALS> | operator="&&" | operator="@>" | operator="<@" )
-    { column.setExclusionOperator(operator.image); return column; }
+    (
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                && isKeywordAhead("OPERATOR") })
+        TypeDdlKeyword("OPERATOR") "(" reference=PostgreSqlOperatorReference() ")" {
+            reference.setUseOperatorKeyword(true);
+            column.setExclusionOperatorReference(reference);
+        }
+        |
+        ( operator="=" | operator=<OP_NOTEQUALSSTANDARD> | operator=<OP_NOTEQUALSBANG> | operator="<" | operator=">"
+            | operator=<OP_MINORTHANEQUALS> | operator=<OP_GREATERTHANEQUALS> | operator="&&" | operator="@>" | operator="<@" )
+        { column.setExclusionOperator(operator.image); }
+    )
+    { return column; }
 }
 
 
@@ -19166,7 +19177,12 @@ RoutineReference RoutineReference(boolean aggregate):
 }
 
 String ExtensionOperatorName():
-{ String schema = null; String operator = ""; Token token; }
+{ ExclusionOperator operator; }
+{ operator=PostgreSqlOperatorReference() { return operator.getQualifiedName(); } }
+
+/** Shared schema-qualified operator spelling used in DDL references. */
+ExclusionOperator PostgreSqlOperatorReference():
+{ String schema = null; Token token; }
 {
     [ LOOKAHEAD(RelObjectName() ".") schema=RelObjectName() "." ]
     ( token="+" | token="-" | token="*" | token="/" | token="%" | token="="
@@ -19174,7 +19190,7 @@ String ExtensionOperatorName():
       | token=<OP_MINORTHANEQUALS> | token=<OP_GREATERTHANEQUALS> | token="&&" | token="@>" | token="<@" | token="~"
       | token="~*" | token="!~" | token="!~*" | token="?" | token="?|" | token="?&"
       | token=<OP_CONCAT> )
-    { operator = token.image; return (schema == null ? "" : schema + ".") + operator; }
+    { return new ExclusionOperator().withSchemaName(schema).withName(token.image); }
 }
 
 ColDataType ExtensionOperatorType():

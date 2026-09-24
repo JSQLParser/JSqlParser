@@ -304,6 +304,15 @@ Ordinary views expose ordered ``ViewOption`` values for ``security_barrier``, ``
 
 Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, storage parameters and ``ConstraintAttributes``. ``ExcludeConstraint`` reuses ``Index.ColumnParams`` for its keys; each key exposes its expression and exclusion operator. Column identity clauses are represented by ``ColumnOption.Kind.IDENTITY`` and ``IdentityDefinition``, with a generation mode and ordered ``Sequence.Parameter`` values. These APIs cover the schema clauses described in `CREATE TABLE <https://www.postgresql.org/docs/18/sql-createtable.html>`_.
 
+Exclusion keys expose ``getExclusionOperatorReference()`` for structured access
+to an operator's ``schemaName``, ``name`` and ``useOperatorKeyword`` flag. In
+``Dialect.POSTGRESQL``, both CREATE and ALTER accept ``WITH OPERATOR(pg_catalog.&&)``.
+Editing the reference updates both statement renderers. The existing string
+``getExclusionOperator()`` returns its complete SQL spelling; its setter remains
+available for replacing opaque operator text. New code can construct a reference
+with ``new ExclusionOperator().withSchemaName("pg_catalog").withName("&&")
+.withUseOperatorKeyword(true)``.
+
 .. code-block:: java
 
     Alter alter = (Alter) CCJSqlParserUtil.parse(

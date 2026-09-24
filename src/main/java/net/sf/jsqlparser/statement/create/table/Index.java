@@ -414,14 +414,30 @@ public class Index implements TableElement, Serializable {
         private List<Option> operatorClassParameters;
         private SortOrder sortOrder;
         private NullOrdering nullOrdering;
-        private String exclusionOperator;
+        private ExclusionOperator exclusionOperator;
 
         public String getExclusionOperator() {
+            return exclusionOperator == null ? null : exclusionOperator.toString();
+        }
+
+        /** Replaces the complete operator text; retained for source compatibility. */
+        public void setExclusionOperator(String exclusionOperator) {
+            this.exclusionOperator = exclusionOperator == null ? null
+                    : new ExclusionOperator().withName(exclusionOperator);
+        }
+
+        /** Returns the editable operator reference, or null when this is not an exclusion key. */
+        public ExclusionOperator getExclusionOperatorReference() {
             return exclusionOperator;
         }
 
-        public void setExclusionOperator(String exclusionOperator) {
+        public void setExclusionOperatorReference(ExclusionOperator exclusionOperator) {
             this.exclusionOperator = exclusionOperator;
+        }
+
+        public ColumnParams withExclusionOperatorReference(ExclusionOperator exclusionOperator) {
+            setExclusionOperatorReference(exclusionOperator);
+            return this;
         }
 
         public ColumnParams(String columnName) {
