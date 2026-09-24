@@ -417,6 +417,8 @@ public class Index implements TableElement, Serializable {
         private SortOrder sortOrder;
         private NullOrdering nullOrdering;
         private ExclusionOperator exclusionOperator;
+        private boolean withoutOverlaps;
+        private boolean period;
 
         public String getExclusionOperator() {
             return exclusionOperator == null ? null : exclusionOperator.toString();
@@ -464,6 +466,34 @@ public class Index implements TableElement, Serializable {
             this.columnName = null;
             this.params = params;
             this.expression = expression;
+        }
+
+        /** Marks the final key of a PostgreSQL temporal PRIMARY KEY or UNIQUE constraint. */
+        public boolean isWithoutOverlaps() {
+            return withoutOverlaps;
+        }
+
+        public void setWithoutOverlaps(boolean withoutOverlaps) {
+            this.withoutOverlaps = withoutOverlaps;
+        }
+
+        public ColumnParams withWithoutOverlaps(boolean withoutOverlaps) {
+            setWithoutOverlaps(withoutOverlaps);
+            return this;
+        }
+
+        /** Marks the final referencing column of a temporal foreign key. */
+        public boolean isPeriod() {
+            return period;
+        }
+
+        public void setPeriod(boolean period) {
+            this.period = period;
+        }
+
+        public ColumnParams withPeriod(boolean period) {
+            setPeriod(period);
+            return this;
         }
 
         public String getColumnName() {
@@ -569,6 +599,9 @@ public class Index implements TableElement, Serializable {
 
         /** Renders expression keys through the caller's expression printer. */
         public void appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+            if (period) {
+                builder.append("PERIOD ");
+            }
             if (expression != null) {
                 if (expressionParenthesized) {
                     builder.append('(');
@@ -587,6 +620,9 @@ public class Index implements TableElement, Serializable {
             appendNullOrdering(builder);
             if (exclusionOperator != null) {
                 builder.append(" WITH ").append(exclusionOperator);
+            }
+            if (withoutOverlaps) {
+                builder.append(" WITHOUT OVERLAPS");
             }
         }
 

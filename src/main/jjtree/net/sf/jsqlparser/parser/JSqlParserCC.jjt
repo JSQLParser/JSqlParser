@@ -13816,7 +13816,7 @@ Index.ColumnParams IndexColumnWithParams(): {
             || (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                 && getToken(1).kind != K_ASC && getToken(1).kind != K_DESC
                 && getToken(1).kind != K_NULLS && getToken(1).kind != K_COLLATE
-                && getToken(1).kind != K_WITH) })
+                && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT) })
         operatorClass=IndexKeyAttributeName()
         [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlIndexOptions() ]
         {
@@ -13833,7 +13833,7 @@ Index.ColumnParams IndexColumnWithParams(): {
         { if (!postgres) { columnParams.add(sortOrder.image); } } ]
     [ LOOKAHEAD(2) <K_NULLS> (nullOrdering=<K_FIRST> | nullOrdering=<K_LAST>)
         { if (!postgres) { columnParams.add("NULLS"); columnParams.add(nullOrdering.image); } } ]
-    ( LOOKAHEAD(2, { !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && getToken(1).kind != K_WITH }) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
+    ( LOOKAHEAD(2, { !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT }) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
     {
         column = expression != null
                 ? new Index.ColumnParams(expression,
@@ -13894,7 +13894,11 @@ List<Index.Option> PostgreSqlIndexOptions():
     { return options; }
 }
 
-List<Index.ColumnParams> IndexColumnsWithParamsList() : {
+List<Index.ColumnParams> IndexColumnsWithParamsList():
+{ List<Index.ColumnParams> columns; }
+{ columns=IndexKeyColumns(false) { return columns; } }
+
+List<Index.ColumnParams> IndexKeyColumns(boolean temporal) : {
     List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
     Index.ColumnParams column = null;
 }
@@ -13913,6 +13917,10 @@ List<Index.ColumnParams> IndexColumnsWithParamsList() : {
         }
     )*
 
+    [ <K_WITHOUT> <K_OVERLAPS> {
+        requireDdlSyntax(temporal, "WITHOUT OVERLAPS requires a PRIMARY KEY or UNIQUE constraint");
+        column.setWithoutOverlaps(true);
+    } ]
     ")"
 
     { return colNames; }
@@ -14679,7 +14687,7 @@ Index TableIndexSpec(boolean createContext):
         typeToken=<K_PRIMARY> keywordToken=<K_KEY>
         clustering=SqlServerIndexClustering()
         [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET }) indexName=RelObjectName() ]
-        columns=IndexColumnsWithParamsList()
+        columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
             index = new NamedConstraint()
@@ -14698,11 +14706,12 @@ Index TableIndexSpec(boolean createContext):
         [ LOOKAHEAD({ clustering == null && getToken(1).kind != OPENING_BRACKET
                 && getToken(1).kind != K_USING }) indexName=RelObjectName() ]
         [ using=UsingIndexType() ]
-        columns=IndexColumnsWithParamsList()
+        columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
-            // MySQL ALTER preserves both the constraint symbol and the index name.
-            if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) {
+            // PostgreSQL and MySQL ALTER preserve named constraints separately from index names.
+            if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                    || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
                 index = new NamedConstraint()
                         .withIndexName(indexName)
                         .withType(typeToken.image
@@ -15748,16 +15757,55 @@ void ReferentialActions(ForeignKeyReference reference):
     )]
 }
 
+/** Shares column/period boundaries on both sides of a foreign key. */
+List<Index.ColumnParams> ForeignKeyColumns(boolean allowParameters):
+{
+    List<Index.ColumnParams> columns = new ArrayList<Index.ColumnParams>();
+    Index.ColumnParams column;
+}
+{
+    "(" column=ForeignKeyColumn(allowParameters) { columns.add(column); }
+    ( "," {
+        requireDdlSyntax(!column.isPeriod(), "PERIOD must mark the final foreign key column");
+    } column=ForeignKeyColumn(allowParameters) { columns.add(column); } )* ")"
+    { return columns; }
+}
+
+Index.ColumnParams ForeignKeyColumn(boolean allowParameters):
+{
+    boolean period = false;
+    String name;
+    List<String> parameters = null;
+}
+{
+    [ LOOKAHEAD({ isKeywordAhead("PERIOD") && getToken(2).kind != K_COMMA
+            && getToken(2).kind != CLOSING_BRACKET })
+        ContextualKeyword("PERIOD") { period = true; } ]
+    name=RelObjectName()
+    [ parameters=CreateParameter() {
+        requireDdlSyntax(allowParameters && !period, "Expected a foreign key column name");
+    } ]
+    { return new Index.ColumnParams(name, parameters).withPeriod(period); }
+}
+
 ForeignKeyReference ForeignKeyReferenceSpec():
 {
     ForeignKeyReference reference = new ForeignKeyReference();
     ForeignKeyReference.MatchType matchType;
     Token matchToken;
     List<String> refColNames = null;
+    List<Index.ColumnParams> referencedColumns;
     Table fkTable;
 }
 {
-    <K_REFERENCES> fkTable=Table() [ LOOKAHEAD(2) refColNames=ColumnsNamesList() ]
+    <K_REFERENCES> fkTable=Table()
+    [ LOOKAHEAD(2) referencedColumns=ForeignKeyColumns(false) {
+        refColNames = new ArrayList<String>();
+        for (Index.ColumnParams column : referencedColumns) {
+            refColNames.add(column.getColumnName());
+        }
+        reference.setUsingPeriod(referencedColumns.get(referencedColumns.size() - 1).isPeriod());
+    } ]
     {
         reference.setTable(fkTable);
         reference.setReferencedColumnNames(refColNames);
@@ -15823,7 +15871,7 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
 {
     tk=<K_FOREIGN> tk2=<K_KEY>
     [ LOOKAHEAD(2) indexName=RelObjectName() { fkIndex.setIndexName(indexName); } ]
-    colNames = ColumnNamesWithParamsList()
+    colNames = ForeignKeyColumns(true)
     {
         if (constraintName != null) { fkIndex.setName(constraintName); }
         fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);

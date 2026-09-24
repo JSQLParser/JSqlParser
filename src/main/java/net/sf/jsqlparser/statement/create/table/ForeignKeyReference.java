@@ -21,7 +21,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** The target and actions of a column- or table-level foreign-key reference. */
 public class ForeignKeyReference implements Serializable {
@@ -33,7 +32,22 @@ public class ForeignKeyReference implements Serializable {
     private Table table;
     private List<String> referencedColumnNames;
     private MatchType matchType;
+    private boolean usingPeriod;
     private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
+
+    /** Whether the final explicitly referenced column is prefixed with PERIOD. */
+    public boolean isUsingPeriod() {
+        return usingPeriod;
+    }
+
+    public void setUsingPeriod(boolean usingPeriod) {
+        this.usingPeriod = usingPeriod;
+    }
+
+    public ForeignKeyReference withUsingPeriod(boolean usingPeriod) {
+        setUsingPeriod(usingPeriod);
+        return this;
+    }
 
     public Table getTable() {
         return table;
@@ -124,7 +138,17 @@ public class ForeignKeyReference implements Serializable {
     public String toString() {
         StringBuilder builder = new StringBuilder("REFERENCES ").append(table);
         if (referencedColumnNames != null) {
-            builder.append(PlainSelect.getStringList(referencedColumnNames, true, true));
+            builder.append('(');
+            for (int i = 0; i < referencedColumnNames.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                if (usingPeriod && i == referencedColumnNames.size() - 1) {
+                    builder.append("PERIOD ");
+                }
+                builder.append(referencedColumnNames.get(i));
+            }
+            builder.append(')');
         }
         if (matchType != null) {
             builder.append(" MATCH ").append(matchType);
