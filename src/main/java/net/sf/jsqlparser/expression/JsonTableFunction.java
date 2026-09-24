@@ -620,9 +620,6 @@ public class JsonTableFunction extends Function {
                 builder.append(" FOR ORDINALITY");
                 return builder.toString();
             }
-            if (exists) {
-                builder.append(" EXISTS");
-            }
             if (dataType != null) {
                 builder.append(" ").append(dataType);
             }
@@ -636,6 +633,9 @@ public class JsonTableFunction extends Function {
                 builder.append(" ");
                 builder.append(scalarsType);
                 builder.append(" SCALARS");
+            }
+            if (exists) {
+                builder.append(" EXISTS");
             }
             if (wrapperClause != null && wrapperClause.isBeforePathExpression()) {
                 builder.append(" ").append(wrapperClause);
