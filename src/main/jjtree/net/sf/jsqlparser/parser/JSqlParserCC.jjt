@@ -1555,9 +1555,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "STATS_SAMPLE_PAGES".equalsIgnoreCase(name);
     }
 
+    private boolean isMySqlEngineAttributeAhead() {
+        return isKeywordAhead("ENGINE_ATTRIBUTE") || isKeywordAhead("SECONDARY_ENGINE_ATTRIBUTE");
+    }
+
     private boolean isMySqlScalarTableOptionAhead() {
         int kind = getToken(1).kind;
-        return kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+        return isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
                 || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
     }
 
@@ -15237,6 +15241,9 @@ TableOption MySqlTableOption(): {
                     "Expected DEFAULT, 0, or 1 for " + name);
         }
         |
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
+        { return option; }
+        |
         tk=<K_ENGINE> {
             name = tk.image;
             kind = TableOption.Kind.ENGINE;
@@ -15271,9 +15278,6 @@ TableOption MySqlTableOption(): {
         }
         [ "=" { useEquals = true; } ]
         value=MySqlTableOptionValue()
-        |
-        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
-        { return option; }
     )
     {
         option = new TableOption(kind, name, value, useEquals);
@@ -15301,6 +15305,10 @@ TableOption MySqlScalarTableOption():
             | <K_PASSWORD> { name = "PASSWORD"; kind = TableOption.Kind.PASSWORD; }
             | <K_DATA> <K_DIRECTORY> { name = "DATA DIRECTORY"; kind = TableOption.Kind.DATA_DIRECTORY; }
             | <K_INDEX> <K_DIRECTORY> { name = "INDEX DIRECTORY"; kind = TableOption.Kind.INDEX_DIRECTORY; }
+            | LOOKAHEAD({ isMySqlEngineAttributeAhead() }) token=<S_IDENTIFIER> {
+                name = token.image.toUpperCase(Locale.ROOT);
+                kind = TableOption.Kind.valueOf(name);
+            }
         )
         [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
     )
@@ -16676,7 +16684,8 @@ void IndexOptionList(List<String> list) :
 {}
 {
     (
-       LOOKAHEAD(2) IndexOption(list)
+       LOOKAHEAD(2, { !(getToken(1).kind == K_USING && getToken(2).kind == K_INDEX) })
+       IndexOption(list)
     )*
 }
 
@@ -16697,9 +16706,13 @@ void IndexOption(List<String> list) :
     Token tk2 = null;
     String sk1 = null;
     boolean useEqual = false;
+    TableOption attribute;
 }
 {
     (
+      LOOKAHEAD({ isMySqlEngineAttributeAhead() }) attribute=MySqlScalarTableOption()
+      { list.addAll(attribute.getTokens()); }
+    |
       tk1=<K_KEY_BLOCK_SIZE> ["=" { useEqual = true; } ] tk2=<S_LONG>
       {
         list.add("KEY_BLOCK_SIZE" +  (useEqual ? " = " : "") + tk2.image);
