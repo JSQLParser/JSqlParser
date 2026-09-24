@@ -13,13 +13,28 @@ import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 
-/** PostgreSQL 18 table-level NOT NULL constraint, optionally named and non-inheritable. */
+/** PostgreSQL 18 column- or table-level NOT NULL constraint. */
 public class NotNullConstraint extends NamedConstraint {
     private Column column;
     private boolean noInherit;
+    private boolean columnConstraint;
 
     public NotNullConstraint() {
         setType("NOT NULL");
+    }
+
+    /** Whether the target is implicit in the enclosing column definition. */
+    public boolean isColumnConstraint() {
+        return columnConstraint;
+    }
+
+    public void setColumnConstraint(boolean columnConstraint) {
+        this.columnConstraint = columnConstraint;
+    }
+
+    public NotNullConstraint withColumnConstraint(boolean columnConstraint) {
+        setColumnConstraint(columnConstraint);
+        return this;
     }
 
     public Column getColumn() {
@@ -61,12 +76,15 @@ public class NotNullConstraint extends NamedConstraint {
 
     @Override
     public void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter) {
-        if (column == null) {
+        if (!columnConstraint && column == null) {
             throw new IllegalStateException("NOT NULL requires a target column");
         }
         appendConstraintPrefixTo(sql);
-        sql.append("NOT NULL ");
-        expressionPrinter.accept(column);
+        sql.append("NOT NULL");
+        if (!columnConstraint) {
+            sql.append(' ');
+            expressionPrinter.accept(column);
+        }
         if (noInherit) {
             sql.append(" NO INHERIT");
         }
