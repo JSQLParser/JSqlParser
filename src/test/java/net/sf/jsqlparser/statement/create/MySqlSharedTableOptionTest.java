@@ -83,6 +83,17 @@ class MySqlSharedTableOptionTest {
                 () -> CCJSqlParserUtil.parse("CREATE TABLE t (id INT) " + option));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"VECTOR", "VECTOR(0)", "VECTOR(1)", "VECTOR(2048)", "VECTOR(16383)"})
+    void preservesMySql9VectorColumnsBeforeTableOptions(String type) throws JSQLParserException {
+        CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+                "CREATE TABLE t (v " + type + ") ENCRYPTION='N'");
+        assertEquals(type, table.getColumnDefinitions().get(0).getColDataType().toString()
+                .replace(" ", ""));
+        assertEquals(TableOption.Kind.ENCRYPTION, table.getTableOptions().get(0).getKind());
+        roundTrip(table);
+    }
+
     private static void roundTrip(Statement statement) throws JSQLParserException {
         StringBuilder out = new StringBuilder();
         statement.accept(new StatementDeParser(out));
