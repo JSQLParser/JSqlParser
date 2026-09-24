@@ -1540,6 +1540,14 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "\"XML\"".equalsIgnoreCase(name);
     }
 
+    private boolean isPostgreSqlConstraintAttributeAhead() {
+        int kind = getToken(1).kind;
+        int next = getToken(2).kind;
+        return kind == K_DEFERRABLE || kind == K_ENFORCED || isKeywordAhead("INITIALLY")
+                || kind == K_NOT && (next == K_DEFERRABLE || next == K_ENFORCED
+                    || "VALID".equalsIgnoreCase(getToken(2).image));
+    }
+
     private boolean isMySqlStatisticsOptionAhead() {
         String name = getToken(1).image;
         return "STATS_AUTO_RECALC".equalsIgnoreCase(name)
@@ -14167,7 +14175,7 @@ ColumnOption ColumnDefinitionOption(): {
         tk=<S_IDENTIFIER> <K_DEFAULT> <K_VALUE>
         { option = ColumnOption.serialDefaultValue(); }
         |
-        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec()
+        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec(true)
         { option = ColumnOption.reference(reference); }
         |
         LOOKAHEAD(<K_DROP> <K_DEFAULT>) <K_DROP> <K_DEFAULT>
@@ -14816,25 +14824,61 @@ void PostgreSqlConstraintOptions(Index index):
 }
 
 void PostgreSqlConstraintAttributes(Index index):
+{ ConstraintAttributes attributes; }
 {
-    ConstraintAttributes attributes = new ConstraintAttributes();
-    boolean present = false;
-    boolean deferrable = true;
+    attributes=PostgreSqlConstraintAttributeList(index.getConstraintAttributes())
+    {
+        requireDdlSyntax(attributes == null || attributes.getEnforced() == null
+                || index instanceof CheckConstraint || index instanceof ForeignKeyIndex,
+                "ENFORCED is supported only for CHECK and foreign key constraints");
+        index.setConstraintAttributes(attributes);
+    }
+}
+
+/** Shared attribute parsing for table constraints and column REFERENCES clauses. */
+ConstraintAttributes PostgreSqlConstraintAttributeList(ConstraintAttributes attributes):
+{
+    boolean present = attributes != null;
+    boolean negative;
+    Boolean enforced;
     Token token;
 }
 {
-    [ LOOKAHEAD(2) [ <K_NOT> { deferrable = false; } ] <K_DEFERRABLE> {
-        attributes.setDeferrable(deferrable); present = true;
-    } ]
-    [ LOOKAHEAD({ isKeywordAhead("INITIALLY") }) token=<S_IDENTIFIER> token=<S_IDENTIFIER> {
-        requireDdlSyntax("IMMEDIATE".equalsIgnoreCase(token.image) || "DEFERRED".equalsIgnoreCase(token.image),
-                "Expected IMMEDIATE or DEFERRED");
-        attributes.setInitially(ConstraintAttributes.Initially.valueOf(token.image.toUpperCase(Locale.ROOT)));
-        present = true;
-    } ]
-    [ LOOKAHEAD({ getToken(1).kind == K_NOT && "VALID".equalsIgnoreCase(getToken(2).image) })
-        <K_NOT> token=<S_IDENTIFIER> { attributes.setNotValid(true); present = true; } ]
-    { if (present) { index.setConstraintAttributes(attributes); } }
+    { if (attributes == null) { attributes = new ConstraintAttributes(); } }
+    ( LOOKAHEAD({ isPostgreSqlConstraintAttributeAhead() }) (
+        LOOKAHEAD(2) { negative = false; }
+        [ <K_NOT> { negative = true; } ] <K_DEFERRABLE> {
+            requireDdlSyntax(attributes.getDeferrable() == null, "Duplicate DEFERRABLE clause");
+            attributes.setDeferrable(!negative); present = true;
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("INITIALLY") }) <S_IDENTIFIER> token=<S_IDENTIFIER> {
+            requireDdlSyntax(attributes.getInitially() == null, "Duplicate INITIALLY clause");
+            requireDdlSyntax("IMMEDIATE".equalsIgnoreCase(token.image) || "DEFERRED".equalsIgnoreCase(token.image),
+                    "Expected IMMEDIATE or DEFERRED");
+            attributes.setInitially(ConstraintAttributes.Initially.valueOf(token.image.toUpperCase(Locale.ROOT)));
+            present = true;
+        }
+        |
+        LOOKAHEAD(2) enforced=ConstraintEnforcement() {
+            requireDdlSyntax(attributes.getEnforced() == null, "Duplicate ENFORCED clause");
+            attributes.setEnforced(enforced); present = true;
+        }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_NOT && "VALID".equalsIgnoreCase(getToken(2).image) })
+        <K_NOT> <S_IDENTIFIER> {
+            requireDdlSyntax(!attributes.isNotValid(), "Duplicate NOT VALID clause");
+            attributes.setNotValid(true); present = true;
+        }
+    ) )*
+    { return present ? attributes : null; }
+}
+
+Boolean ConstraintEnforcement():
+{ boolean enforced = true; }
+{
+    [ <K_NOT> { enforced = false; } ] <K_ENFORCED>
+    { return enforced; }
 }
 
 /**
@@ -15826,7 +15870,7 @@ void ReferentialActionSpec(ForeignKeyReference reference):
     }
 }
 
-ForeignKeyReference ForeignKeyReferenceSpec():
+ForeignKeyReference ForeignKeyReferenceSpec(boolean columnContext):
 {
     ForeignKeyReference reference = new ForeignKeyReference();
     ForeignKeyReference.MatchType matchType;
@@ -15853,6 +15897,12 @@ ForeignKeyReference ForeignKeyReferenceSpec():
     ]
     ReferentialActions(reference)
     {
+        if (columnContext) {
+            ConstraintAttributes attributes = PostgreSqlConstraintAttributeList(null);
+            requireDdlSyntax(attributes == null || !attributes.isNotValid(),
+                    "NOT VALID requires a table constraint");
+            reference.setConstraintAttributes(attributes);
+        }
         return reference;
     }
 }
@@ -15873,10 +15923,7 @@ CheckConstraint CheckConstraintSpec(String constraintName):
     [ LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
             && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
         <K_NO> TypeDdlKeyword("INHERIT") { noInherit = true; } ]
-    [ LOOKAHEAD(2)
-        [ <K_NOT> { enforced = false; } ]
-        <K_ENFORCED> { if (enforced == null) { enforced = true; } }
-    ]
+    [ LOOKAHEAD(2) enforced=ConstraintEnforcement() ]
     {
         checkConstraint = new CheckConstraint().withName(constraintName).withExpression(exp)
                 .withEnforced(enforced).withNoInherit(noInherit);
@@ -15906,7 +15953,7 @@ ForeignKeyIndex ForeignKeySpec(String constraintName):
         if (constraintName != null) { fkIndex.setName(constraintName); }
         fkIndex.withType(tk.image + " " + tk2.image).withColumns(colNames);
     }
-    reference=ForeignKeyReferenceSpec() { fkIndex.setReference(reference); }
+    reference=ForeignKeyReferenceSpec(false) { fkIndex.setReference(reference); }
     {
         return fkIndex;
     }

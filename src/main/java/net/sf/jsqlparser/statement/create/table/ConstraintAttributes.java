@@ -20,6 +20,7 @@ public class ConstraintAttributes implements Serializable {
     private Boolean deferrable;
     private Initially initially;
     private boolean notValid;
+    private Boolean enforced;
 
     public Boolean getDeferrable() {
         return deferrable;
@@ -45,12 +46,24 @@ public class ConstraintAttributes implements Serializable {
         this.notValid = notValid;
     }
 
+    /** Null preserves an omitted ENFORCED clause. */
+    public Boolean getEnforced() {
+        return enforced;
+    }
+
+    public void setEnforced(Boolean enforced) {
+        this.enforced = enforced;
+    }
+
     public void appendTo(StringBuilder sql) {
         if (deferrable != null) {
             sql.append(deferrable ? " DEFERRABLE" : " NOT DEFERRABLE");
         }
         if (initially != null) {
             sql.append(" INITIALLY ").append(initially);
+        }
+        if (enforced != null) {
+            sql.append(enforced ? " ENFORCED" : " NOT ENFORCED");
         }
         if (notValid) {
             sql.append(" NOT VALID");
