@@ -14119,6 +14119,11 @@ ColumnOption ColumnDefinitionOption(): {
                 || (getToken(1).kind == K_AS && "(".equals(getToken(2).image)) })
         generated=GeneratedColumnDefinition() { option = ColumnOption.generated(generated); }
         |
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_NOT> <K_NULL>,
+                { Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                    && (getToken(1).kind == K_CONSTRAINT || getToken(3).kind == K_NO) })
+        constraint=PostgreSqlColumnNotNullConstraint() { option = ColumnOption.constraint(constraint); }
+        |
         LOOKAHEAD(<K_NOT> <K_NULL>) <K_NOT> <K_NULL> { option = ColumnOption.nullability(false); }
         |
         LOOKAHEAD(<K_NULL>) <K_NULL> { option = ColumnOption.nullability(true); }
@@ -14892,12 +14897,27 @@ Index TableConstraint(boolean createContext):
 
 /** PostgreSQL 18 adds a table-level NOT NULL with a named target column. */
 NotNullConstraint PostgreSqlNotNullConstraint():
-{ NotNullConstraint constraint = new NotNullConstraint(); String name; }
+{ NotNullConstraint constraint = new NotNullConstraint(); String name; boolean noInherit; }
 {
     <K_NOT> <K_NULL> name=RelObjectName() { constraint.setColumn(createColumn(name)); }
-    [ LOOKAHEAD({ getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
-        <K_NO> TypeDdlKeyword("INHERIT") { constraint.setNoInherit(true); } ]
+    noInherit=PostgreSqlNoInheritClause() { constraint.setNoInherit(noInherit); }
     { return constraint; }
+}
+
+NotNullConstraint PostgreSqlColumnNotNullConstraint():
+{ String name = null; boolean noInherit; }
+{
+    [ <K_CONSTRAINT> name=RelObjectName() ]
+    <K_NOT> <K_NULL> noInherit=PostgreSqlNoInheritClause()
+    { return new NotNullConstraint().withColumnConstraint(true).withName(name).withNoInherit(noInherit); }
+}
+
+boolean PostgreSqlNoInheritClause():
+{ boolean noInherit = false; }
+{
+    [ LOOKAHEAD({ getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") { noInherit = true; } ]
+    { return noInherit; }
 }
 
 ExcludeConstraint PostgreSqlExcludeConstraint():
