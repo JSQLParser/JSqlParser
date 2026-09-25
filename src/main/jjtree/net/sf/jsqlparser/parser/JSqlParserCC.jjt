@@ -13921,7 +13921,7 @@ Index.ColumnParams IndexColumnWithParams(): {
                 && getToken(1).kind != K_NULLS && getToken(1).kind != K_COLLATE
                 && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT) })
         operatorClass=IndexKeyAttributeName()
-        [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlIndexOptions() ]
+        [ LOOKAHEAD(2) operatorClassParameters=PostgreSqlOptions(false) ]
         {
             if (!postgres) {
                 columnParams.add(operatorClass);
@@ -13975,15 +13975,23 @@ String IndexKeyAttributeName():
     { return name; }
 }
 
-Index.Option PostgreSqlIndexOption():
+Index.Option PostgreSqlIndexOption(boolean allowBare):
 {
     String name = null;
     Expression value = null;
     boolean useEquals = false;
 }
 {
-    name=PostgreSqlStorageParameterName() [ "=" { useEquals = true; } ] value=Expression()
-    { return new Index.Option(name, value, useEquals); }
+    name=PostgreSqlStorageParameterName()
+    [ [ "=" { useEquals = true; } ] value=Expression() ]
+    {
+        requireDdlSyntax(allowBare || value != null,
+                "Operator-class parameters require a value");
+        requireDdlSyntax(value == null || useEquals
+                || !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)),
+                "PostgreSQL parameter values require an equals sign");
+        return new Index.Option(name, value, useEquals);
+    }
 }
 
 /** Storage parameters can have namespaces, such as toast.autovacuum_enabled. */
@@ -13995,14 +14003,19 @@ String PostgreSqlStorageParameterName():
     { return name; }
 }
 
+/** Storage parameters allow a bare name; operator-class parameters require a value. */
 List<Index.Option> PostgreSqlIndexOptions():
+{ List<Index.Option> options; }
+{ options=PostgreSqlOptions(true) { return options; } }
+
+List<Index.Option> PostgreSqlOptions(boolean allowBare):
 {
     List<Index.Option> options = new ArrayList<Index.Option>();
     Index.Option option = null;
 }
 {
-    "(" option=PostgreSqlIndexOption() { options.add(option); }
-    ( "," option=PostgreSqlIndexOption() { options.add(option); } )* ")"
+    "(" option=PostgreSqlIndexOption(allowBare) { options.add(option); }
+    ( "," option=PostgreSqlIndexOption(allowBare) { options.add(option); } )* ")"
     { return options; }
 }
 
@@ -14346,6 +14359,7 @@ NamedConstraint ColumnKeyConstraint():
             constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
         } ]
     )
+    PostgreSqlIndexStorageOptions(constraint)
     PostgreSqlConstraintAttributes(constraint)
     {
         requireDdlSyntax(constraint.getConstraintAttributes() == null
@@ -15002,11 +15016,19 @@ void TableIndexOptions(boolean createContext, List<String> options):
 void PostgreSqlConstraintOptions(Index index):
 {
     List<String> columns;
+}
+{
+    [ <K_INCLUDE> columns=ColumnsNamesList() { index.setIncludeColumns(columns); } ]
+    PostgreSqlIndexStorageOptions(index)
+}
+
+/** Column keys share storage/tablespace options, but do not allow INCLUDE. */
+void PostgreSqlIndexStorageOptions(Index index):
+{
     List<Index.Option> parameters;
     String tableSpace;
 }
 {
-    [ <K_INCLUDE> columns=ColumnsNamesList() { index.setIncludeColumns(columns); } ]
     [ LOOKAHEAD(2) <K_WITH> parameters=PostgreSqlIndexOptions() { index.setStorageParameters(parameters); } ]
     [ LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> tableSpace=RelObjectName() {
         index.setTableSpace(tableSpace);
