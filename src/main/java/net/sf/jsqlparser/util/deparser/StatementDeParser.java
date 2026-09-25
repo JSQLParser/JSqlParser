@@ -38,9 +38,7 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -301,26 +299,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Truncate truncate, S context) {
-        builder.append("TRUNCATE");
-        if (truncate.isTableToken()) {
-            builder.append(" TABLE");
-        }
-        if (truncate.isOnly()) {
-            builder.append(" ONLY");
-        }
-        builder.append(" ");
-        if (truncate.getTables() != null && !truncate.getTables().isEmpty()) {
-            builder.append(truncate.getTables().stream()
-                    .map(Table::toString)
-                    .collect(Collectors.joining(", ")));
-        } else {
-            builder.append(truncate.getTable());
-        }
-        if (truncate.getCascade()) {
-            builder.append(" CASCADE");
-        }
-
-        return builder;
+        return truncate.appendTo(builder);
     }
 
     @Override

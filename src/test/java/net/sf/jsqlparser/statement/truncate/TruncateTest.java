@@ -18,7 +18,6 @@ import net.sf.jsqlparser.schema.Table;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -72,8 +71,8 @@ public class TruncateTest {
         String statement = "TRUNCATE TABLE foo";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTable(new Table("foo"))
-            .withTableToken(true), statement);
+                .withTable(new Table("foo"))
+                .withTableToken(true), statement);
     }
 
     @Test
@@ -81,9 +80,9 @@ public class TruncateTest {
         String statement = "TRUNCATE TABLE foo CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTable(new Table("foo"))
-            .withTableToken(true)
-            .withCascade(true), statement);
+                .withTable(new Table("foo"))
+                .withTableToken(true)
+                .withCascade(true), statement);
     }
 
     @Test
@@ -91,9 +90,9 @@ public class TruncateTest {
         String statement = "TRUNCATE TABLE ONLY foo";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTable(new Table("foo"))
-            .withTableToken(true)
-            .withOnly(true), statement);
+                .withTable(new Table("foo"))
+                .withTableToken(true)
+                .withOnly(true), statement);
     }
 
     @Test
@@ -101,16 +100,15 @@ public class TruncateTest {
         String statement = "TRUNCATE ONLY foo CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTable(new Table("foo"))
-            .withCascade(true)
-            .withOnly(true), statement);
+                .withTable(new Table("foo"))
+                .withCascade(true)
+                .withOnly(true), statement);
     }
 
     @Test
-    public void throwsParseWhenOnlyUsedWithMultipleTables() {
+    public void onlyAppliesToItsOwnTarget() throws JSQLParserException {
         String statement = "TRUNCATE TABLE ONLY foo, bar";
-        assertThrows(JSQLParserException.class,
-                () -> parserManager.parse(new StringReader(statement)));
+        assertSqlCanBeParsedAndDeparsed(statement);
     }
 
 }

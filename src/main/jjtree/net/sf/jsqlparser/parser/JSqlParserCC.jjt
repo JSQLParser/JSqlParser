@@ -3653,18 +3653,39 @@ LockStatement LockStatement(): {
     { return statement; }
 }
 
-LockStatement.Target LockTarget(): {
+LockStatement.Target LockTarget():
+{ TableReference reference; LockStatement.Target target; }
+{
+    reference=RelationTarget()
+    {
+        target = new LockStatement.Target(reference.getTable());
+        target.setOnly(reference.isOnly());
+        target.setIncludeDescendants(reference.isIncludeDescendants());
+        target.setParenthesized(reference.isParenthesized());
+        return target;
+    }
+}
+
+/** Shared PostgreSQL relation_expr target, including ONLY (qualified_name). */
+TableReference RelationTarget():
+{
     Table table;
     boolean only = false;
     boolean descendants = false;
-    LockStatement.Target target;
-} {
-    [ <K_ONLY> { only = true; } ] table=Table() [ "*" { descendants = true; } ]
+    boolean parenthesized = false;
+    TableReference target;
+}
+{
+    [ <K_ONLY> { only = true; } ]
+    ( "(" table=Table() ")" { parenthesized = true; } | table=Table() )
+    [ "*" { descendants = true; } ]
     {
-        requireDdlSyntax(!only || !descendants, "ONLY and * cannot describe the same lock target");
-        target = new LockStatement.Target(table);
-        target.setScope(only ? LockStatement.Scope.ONLY
-                : descendants ? LockStatement.Scope.INCLUDING_DESCENDANTS : LockStatement.Scope.DEFAULT);
+        requireDdlSyntax(!only || !descendants, "ONLY and * cannot describe the same relation target");
+        requireDdlSyntax(!parenthesized || only, "Parenthesized relation targets require ONLY");
+        target = new TableReference(table);
+        target.setOnly(only);
+        target.setIncludeDescendants(descendants);
+        target.setParenthesized(parenthesized);
         return target;
     }
 }
@@ -16826,38 +16847,18 @@ Drop Drop():
 }
 
 Truncate Truncate():
+{ Truncate truncate = new Truncate(); TableReference target; }
 {
-    Truncate truncate = new Truncate();
-    Table table;
-    List<Table> tables = new ArrayList<Table>();
-    boolean only = false;
-    boolean cascade = false;
-}
-{
-/**
-* TRUNCATE can be followed directly by the table name in Postgresql
-* See: https://www.postgresql.org/docs/current/sql-truncate.html
-*
-* TRUNCATE [ TABLE ] [ ONLY ] name [ * ] [, ... ]
-*      [ RESTART IDENTITY | CONTINUE IDENTITY ] [ CASCADE | RESTRICT ]
-*
-*/
     <K_TRUNCATE>
-    [LOOKAHEAD(2) <K_TABLE>  {truncate.setTableToken(true);}]
-    [<K_ONLY>  { only = true; }]
-    table=Table() { tables.add(table); } (LOOKAHEAD(2) "," table=Table() { tables.add(table); } )*
-    [<K_CASCADE> { cascade = true; }]
-    {
-       if (only && tables.size() > 1 ) {
-          throw new ParseException("Cannot TRUNCATE ONLY with multiple tables");
-       } else {
-          return truncate
-             .withTables(tables)
-             .withTable(table)
-             .withOnly(only)
-             .withCascade(cascade);
-       }
-    }
+    [ LOOKAHEAD(2) <K_TABLE> { truncate.setTableToken(true); } ]
+    target=RelationTarget() { truncate.getTargets().add(target); }
+    ( LOOKAHEAD(2) "," target=RelationTarget() { truncate.getTargets().add(target); } )*
+    [ ( <K_RESTART> { truncate.setIdentityOption(Truncate.IdentityOption.RESTART); }
+        | ContextualKeyword("CONTINUE") { truncate.setIdentityOption(Truncate.IdentityOption.CONTINUE); } )
+      <K_IDENTITY> ]
+    [ <K_CASCADE> { truncate.setDropBehavior(Truncate.DropBehavior.CASCADE); }
+      | <K_RESTRICT> { truncate.setDropBehavior(Truncate.DropBehavior.RESTRICT); } ]
+    { return truncate; }
 }
 
 /**
