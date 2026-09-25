@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -1024,4 +1030,46 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(CreateForeignDataWrapper statement, S context) {
+        validateFeature(Feature.createForeignDataWrapper);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterForeignDataWrapper statement, S context) {
+        validateFeature(Feature.alterForeignDataWrapper);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateServer statement, S context) {
+        validateFeature(Feature.createServer);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterServer statement, S context) {
+        validateFeature(Feature.alterServer);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateUserMapping statement, S context) {
+        validateFeature(Feature.createUserMapping);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterUserMapping statement, S context) {
+        validateFeature(Feature.alterUserMapping);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
 }
