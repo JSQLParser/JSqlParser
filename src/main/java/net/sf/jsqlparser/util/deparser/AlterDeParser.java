@@ -50,6 +50,11 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
                     expression -> expression.accept(expressionVisitor, null));
             return;
         }
+        if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) {
+            ((net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) action).appendTo(builder,
+                    expression -> expression.accept(expressionVisitor, null));
+            return;
+        }
         if (action instanceof RelationAlterAction) {
             ((RelationAlterAction) action).appendTo(builder,
                     expression -> expression.accept(expressionVisitor, null));
