@@ -63,6 +63,7 @@ import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.macro.*;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
@@ -1560,9 +1561,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isKeywordAhead("ENGINE_ATTRIBUTE") || isKeywordAhead("SECONDARY_ENGINE_ATTRIBUTE");
     }
 
+    private boolean isMySqlAdditionalTableOptionAhead() {
+        String name = getToken(1).image.toUpperCase(Locale.ROOT);
+        return Arrays.asList("SECONDARY_ENGINE", "AUTOEXTEND_SIZE", "INSERT_METHOD", "PACK_KEYS",
+                "DELAY_KEY_WRITE", "CHECKSUM", "CONNECTION", "COMPRESSION").contains(name);
+    }
+
     private boolean isMySqlScalarTableOptionAhead() {
         int kind = getToken(1).kind;
-        return isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+        return isMySqlAdditionalTableOptionAhead() || isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
                 || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
     }
 
@@ -15594,7 +15601,7 @@ TableOption MySqlTableOption(): {
     }
 }
 
-/** Common CREATE/ALTER options with a quoted string or unsigned integer value. */
+/** Shared CREATE/ALTER table options with option-specific value syntax. */
 TableOption MySqlScalarTableOption():
 {
     Token token;
@@ -15602,9 +15609,14 @@ TableOption MySqlScalarTableOption():
     String value;
     TableOption.Kind kind;
     boolean useEquals = false;
+    TableOption additional;
 }
 {
     (
+        LOOKAHEAD({ isMySqlAdditionalTableOptionAhead() }) additional=MySqlAdditionalTableOption()
+        { name = additional.getName(); kind = additional.getKind();
+          value = additional.getValue(); useEquals = additional.isUseEquals(); }
+        |
         <K_AUTO_INCREMENT> { name = "AUTO_INCREMENT"; kind = TableOption.Kind.AUTO_INCREMENT; }
         [ "=" { useEquals = true; } ] token=<S_LONG> { value = token.image; }
         |
@@ -15621,6 +15633,65 @@ TableOption MySqlScalarTableOption():
         [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
     )
     { return new TableOption(kind, name, value, useEquals); }
+}
+
+TableOption MySqlAdditionalTableOption():
+{
+    Token token;
+    String name;
+    String value;
+    boolean useEquals = false;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("SECONDARY_ENGINE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_NULL> { value = token.image; } | token=<S_CHAR_LITERAL> { value = token.image; } | value=RelObjectName() )
+        |
+        LOOKAHEAD({ isKeywordAhead("INSERT_METHOD") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_NO> | token=<K_FIRST> | token=<K_LAST> ) { value = token.image; }
+        |
+        LOOKAHEAD({ isKeywordAhead("PACK_KEYS") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_DEFAULT> | token=<S_LONG> ) {
+            value = token.image;
+            if (token.kind == S_LONG && !"0".equals(value) && !"1".equals(value)) {
+                throw new ParseException("PACK_KEYS requires 0, 1 or DEFAULT");
+            }
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("AUTOEXTEND_SIZE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        value=MySqlSizeNumber()
+        |
+        LOOKAHEAD({ isKeywordAhead("CHECKSUM") || isKeywordAhead("DELAY_KEY_WRITE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        token=<S_LONG> { value = token.image; }
+        |
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        token=<S_CHAR_LITERAL> { value = token.image; }
+    )
+    { if (true) { return new TableOption(TableOption.Kind.valueOf(name), name, value, useEquals); } }
+}
+
+String MySqlSizeNumber():
+{
+    Token number;
+}
+{
+    ( number=<S_LONG> | number=<S_IDENTIFIER> )
+    {
+        requireDdlSyntax(number.kind == S_LONG || number.image.matches("[0-9]+[kKmMgG]"),
+                "Expected an unsigned size with an optional K, M or G suffix");
+        return number.image;
+    }
 }
 
 /** Statistics and row format share CREATE's validation and option nodes. */
@@ -18370,6 +18441,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
+                |
                 LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
                 |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
@@ -19577,6 +19650,8 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
+        |
         LOOKAHEAD({ isPostgreSqlRoleAhead() }) statement = CreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }
         |
@@ -20831,4 +20906,49 @@ String TimeTravelAfterAlias():
     {
         return builder.toString();
     }
+}
+
+CreateStatistics CreateStatistics():
+{
+    CreateStatistics statement = new CreateStatistics();
+    String name; CreateStatistics.Kind kind; Expression expression; Table table;
+}
+{
+    ContextualKeyword("STATISTICS")
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+    [ LOOKAHEAD({ getToken(1).kind != K_ON && getToken(1).kind != OPENING_BRACKET })
+        name=TypeDdlName() { statement.setName(name); } ]
+    [ "(" name=RelObjectName() { kind=accessEnum(CreateStatistics.Kind.class,name); statement.getKinds().add(kind); }
+      ( "," name=RelObjectName() { kind=accessEnum(CreateStatistics.Kind.class,name);
+        requireDdlSyntax(!statement.getKinds().contains(kind),"Duplicate statistics kind"); statement.getKinds().add(kind); } )* ")" ]
+    <K_ON> expression=PostgreSqlStatisticsExpression() { statement.getExpressions().add(expression); }
+    ( "," expression=PostgreSqlStatisticsExpression() { statement.getExpressions().add(expression); } )*
+    <K_FROM> table=Table() { statement.setTable(table); }
+    {
+        requireDdlSyntax(!statement.isIfNotExists() || statement.getName()!=null,"IF NOT EXISTS requires a statistics name");
+        requireDdlSyntax(statement.getExpressions().size()>1 || statement.getKinds().isEmpty()
+                && statement.getExpressions().get(0) instanceof ParenthesedExpressionList,
+                "Single-expression statistics require a parenthesized expression and no explicit kinds");
+        return statement;
+    }
+}
+Expression PostgreSqlStatisticsExpression():
+{ Expression expression; String name; }
+{
+    ( "(" expression=Expression() ")" { expression = new ParenthesedExpressionList<Expression>(expression); }
+      | name=RelObjectName() { expression = createColumn(name); } )
+    { return expression; }
+}
+AlterStatistics AlterStatistics():
+{ AlterStatistics statement = new AlterStatistics(); String name; Long target; }
+{
+    ContextualKeyword("STATISTICS") name=TypeDdlName() { statement.setName(name); }
+    ( <K_RENAME> <K_TO> name=RelObjectName() { statement.setAction(AlterStatistics.Action.RENAME); statement.setNewName(name); }
+      | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setAction(AlterStatistics.Action.OWNER); statement.setOwner(name); }
+      | <K_SET> ( <K_SCHEMA> name=RelObjectName() { statement.setAction(AlterStatistics.Action.SET_SCHEMA); statement.setSchemaName(name); }
+        | ContextualKeyword("STATISTICS") { statement.setAction(AlterStatistics.Action.SET_STATISTICS); }
+          ( <K_DEFAULT> | target=SequenceParameterValue() {
+              requireDdlSyntax(target>=-1 && target<=10000,"Statistics target must be DEFAULT or between -1 and 10000");
+              statement.setStatistics(target.intValue()); } ) ) )
+    { return statement; }
 }

@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -713,6 +715,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(DropPolicy statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateStatistics statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateStatistics statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterStatistics statement) {
         visit(statement, null);
     }
 }
