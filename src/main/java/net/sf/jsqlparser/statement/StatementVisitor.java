@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -731,6 +733,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterStatistics statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateRule statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateRule statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(NotifyStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(NotifyStatement statement) {
         visit(statement, null);
     }
 }

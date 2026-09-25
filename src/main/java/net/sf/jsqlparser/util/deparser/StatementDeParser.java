@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -852,5 +854,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(AlterStatistics statement, S context) {
         return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateRule statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context),
+                action -> action.accept(this, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(NotifyStatement statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 }

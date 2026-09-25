@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -1024,4 +1026,20 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(CreateRule statement, S context) {
+        validateFeature(Feature.createRule);
+        statement.visitExpressions(this::validateOptionalExpression);
+        statement.visitTables(this::validateOptionalFromItem);
+        statement.getActions().forEach(action -> action.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(NotifyStatement statement, S context) {
+        validateFeature(Feature.notifyStatement);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
 }

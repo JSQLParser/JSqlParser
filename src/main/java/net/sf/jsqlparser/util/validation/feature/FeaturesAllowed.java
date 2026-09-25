@@ -101,6 +101,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all "CREATE" {@link Feature}'s
      */
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
+            Feature.createRule,
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
@@ -157,7 +158,8 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all DML {@link Feature}'s
      */
     public static final FeaturesAllowed DML =
-            new FeaturesAllowed("DML").add(SELECT, INSERT, UPDATE, DELETE, MERGE)
+            new FeaturesAllowed("DML", Feature.notifyStatement)
+                    .add(SELECT, INSERT, UPDATE, DELETE, MERGE)
                     .unmodifyable();
     /**
      * all DDL {@link Feature}'s
