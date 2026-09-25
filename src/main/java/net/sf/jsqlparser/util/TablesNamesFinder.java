@@ -1612,7 +1612,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(Truncate truncate, S context) {
-        visit(truncate.getTable(), context);
+        truncate.getTables().forEach(table -> visit(table, context));
         return null;
     }
 
