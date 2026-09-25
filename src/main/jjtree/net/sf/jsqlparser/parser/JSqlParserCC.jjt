@@ -1829,8 +1829,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || getToken(4).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(5).image);
         }
         int offset = getToken(2).kind == K_COLUMN ? 4 : 3;
-        return getToken(offset).kind == K_DROP && "EXPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
-                || getToken(offset).kind == K_SET && (getToken(offset + 1).kind == K_STORAGE
+        return getToken(offset).kind == K_RESET
+                || getToken(offset).kind == K_DROP && "EXPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
+                || getToken(offset).kind == K_SET && (getToken(offset + 1).kind == OPENING_BRACKET
+                    || getToken(offset + 1).kind == K_STORAGE
                     || "COMPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
                     || "STATISTICS".equalsIgnoreCase(getToken(offset + 1).image));
     }
@@ -1865,7 +1867,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 requireDdlSyntax(type == AlterRelation.ObjectType.VIEW ? defaults
                         : column == RelationAlterAction.ColumnAction.SET_STATISTICS
                             || column == RelationAlterAction.ColumnAction.SET_STORAGE
-                            || column == RelationAlterAction.ColumnAction.SET_COMPRESSION,
+                            || column == RelationAlterAction.ColumnAction.SET_COMPRESSION
+                            || column == RelationAlterAction.ColumnAction.SET_OPTIONS
+                            || column == RelationAlterAction.ColumnAction.RESET_OPTIONS,
                         "Unsupported view column action: " + column);
             }
         }
@@ -18385,8 +18389,21 @@ RelationAlterAction PostgreSqlRelationAction():
                     action.setDefaultExpression(expression);
                 }
                 |
-                LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS") statistics=SequenceParameterValue()
-                { action.setColumnAction(RelationAlterAction.ColumnAction.SET_STATISTICS); action.setStatistics(statistics); }
+                LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS")
+                { action.setColumnAction(RelationAlterAction.ColumnAction.SET_STATISTICS); }
+                ( <K_DEFAULT> { action.setStatisticsDefault(true); }
+                  | statistics=SequenceParameterValue() {
+                      requireDdlSyntax(statistics >= -1 && statistics <= 10000, "Statistics target must be between -1 and 10000");
+                      action.setStatistics(statistics);
+                  } )
+                |
+                LOOKAHEAD("(") options=PostgreSqlIndexOptions() {
+                    for (Index.Option option : options) {
+                        requireDdlSyntax(option.getValue() != null && option.isUseEquals(),
+                                "Column attributes require a value and an equals sign");
+                    }
+                    action.setColumnAction(RelationAlterAction.ColumnAction.SET_OPTIONS); action.setOptions(options);
+                }
                 |
                 <K_STORAGE> ( token=<K_EXTENDED> | token=<K_DEFAULT> | token=<S_IDENTIFIER> ) {
                     requireDdlSyntax(Arrays.asList("PLAIN", "EXTERNAL", "EXTENDED", "MAIN", "DEFAULT")
@@ -18397,6 +18414,10 @@ RelationAlterAction PostgreSqlRelationAction():
                 ContextualKeyword("COMPRESSION") name=RelObjectName()
                 { action.setColumnAction(RelationAlterAction.ColumnAction.SET_COMPRESSION); action.setValue(name); }
             )
+            |
+            <K_RESET> "(" name=RelObjectName() { names.add(name); }
+            ( "," name=RelObjectName() { names.add(name); } )* ")"
+            { action.setColumnAction(RelationAlterAction.ColumnAction.RESET_OPTIONS); action.setResetOptions(names); }
             |
             <K_DROP>
             (

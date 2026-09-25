@@ -23,7 +23,7 @@ public class RelationAlterAction extends AlterExpression {
     }
 
     public enum ColumnAction {
-        SET_DEFAULT, DROP_DEFAULT, SET_STATISTICS, SET_STORAGE, SET_COMPRESSION, DROP_EXPRESSION
+        SET_DEFAULT, DROP_DEFAULT, SET_STATISTICS, SET_STORAGE, SET_COMPRESSION, DROP_EXPRESSION, SET_OPTIONS, RESET_OPTIONS
     }
 
     public enum ReplicaIdentity {
@@ -37,6 +37,7 @@ public class RelationAlterAction extends AlterExpression {
     private String value;
     private Integer columnNumber;
     private Long statistics;
+    private boolean statisticsDefault;
     private Expression defaultExpression;
     private Table relation;
     private boolean noInherit;
@@ -102,6 +103,18 @@ public class RelationAlterAction extends AlterExpression {
 
     public void setStatistics(Long statistics) {
         this.statistics = statistics;
+        statisticsDefault = false;
+    }
+
+    public boolean isStatisticsDefault() {
+        return statisticsDefault;
+    }
+
+    public void setStatisticsDefault(boolean statisticsDefault) {
+        this.statisticsDefault = statisticsDefault;
+        if (statisticsDefault) {
+            statistics = null;
+        }
     }
 
     public Expression getDefaultExpression() {
@@ -237,7 +250,16 @@ public class RelationAlterAction extends AlterExpression {
                 builder.append(" DROP DEFAULT");
                 break;
             case SET_STATISTICS:
-                builder.append(" SET STATISTICS ").append(statistics);
+                builder.append(" SET STATISTICS ")
+                        .append(statisticsDefault ? "DEFAULT" : statistics);
+                break;
+            case SET_OPTIONS:
+                builder.append(" SET ");
+                Index.Option.appendListTo(builder, options, expressionPrinter);
+                break;
+            case RESET_OPTIONS:
+                builder.append(" RESET ")
+                        .append(PlainSelect.getStringList(resetOptions, true, true));
                 break;
             case SET_STORAGE:
                 builder.append(" SET STORAGE ").append(value);
@@ -259,7 +281,8 @@ public class RelationAlterAction extends AlterExpression {
     public void visitExpressions(Consumer<Expression> visitor) {
         if (kind == Kind.ALTER_COLUMN && columnAction == ColumnAction.SET_DEFAULT) {
             visitor.accept(defaultExpression);
-        } else if (kind == Kind.SET_OPTIONS && options != null) {
+        } else if ((kind == Kind.SET_OPTIONS || kind == Kind.ALTER_COLUMN
+                && columnAction == ColumnAction.SET_OPTIONS) && options != null) {
             options.stream().map(Index.Option::getValue).filter(java.util.Objects::nonNull)
                     .forEach(visitor);
         }
