@@ -11,6 +11,8 @@ package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -2952,6 +2954,18 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(DropPolicy statement, S context) {
         visit(statement.getTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateStatistics statement, S context) {
+        visit(statement.getTable(), context);
+        statement.getExpressions().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterStatistics statement, S context) {
         return null;
     }
 }
