@@ -38,6 +38,22 @@ public class Drop implements Statement {
     private Map<String, List<String>> typeToParameters = new HashMap<>();
     private boolean ifExists = false;
     private boolean materialized = false;
+    private boolean concurrently;
+
+    /** PostgreSQL DROP INDEX CONCURRENTLY, preceding IF EXISTS and the index name. */
+    public boolean isConcurrently() {
+        return concurrently;
+    }
+
+    public void setConcurrently(boolean concurrently) {
+        this.concurrently = concurrently;
+    }
+
+    public Drop withConcurrently(boolean concurrently) {
+        setConcurrently(concurrently);
+        return this;
+    }
+
 
     private boolean isUsingTemporary;
 
@@ -201,7 +217,11 @@ public class Drop implements Statement {
         if (materialized) {
             builder.append("MATERIALIZED ");
         }
-        builder.append(type).append(ifExists ? " IF EXISTS " : " ");
+        builder.append(type);
+        if (concurrently) {
+            builder.append(" CONCURRENTLY");
+        }
+        builder.append(ifExists ? " IF EXISTS " : " ");
         appendNames(builder, tablePrinter);
         if ("FUNCTION".equals(type)) {
             builder.append(formatFuncParams(getParamsByType("FUNCTION")));

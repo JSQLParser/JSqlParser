@@ -23,6 +23,22 @@ import net.sf.jsqlparser.statement.select.Select;
 
 public class CreateView implements Statement {
 
+    private MySqlViewOptions mySqlOptions;
+
+    public MySqlViewOptions getMySqlOptions() {
+        return mySqlOptions;
+    }
+
+    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
+        this.mySqlOptions = mySqlOptions;
+    }
+
+    public void appendMySqlOptionsTo(StringBuilder builder) {
+        if (mySqlOptions != null) {
+            mySqlOptions.appendTo(builder);
+        }
+    }
+
     private Table view;
     private Select select;
     private boolean orReplace = false;
@@ -271,6 +287,7 @@ public class CreateView implements Statement {
         if (isOrReplace()) {
             sql.append("OR REPLACE ");
         }
+        appendMySqlOptionsTo(sql);
         appendForceOptionIfApplicable(sql);
         if (secure) {
             sql.append("SECURE ");
@@ -328,7 +345,7 @@ public class CreateView implements Statement {
         }
     }
 
-    public void appendOptionsAfterQueryTo(StringBuilder sql) {
+    public static void appendCheckOptionTo(StringBuilder sql, CheckOption checkOption) {
         if (checkOption != null) {
             sql.append(" WITH ");
             if (checkOption != CheckOption.DEFAULT) {
@@ -336,6 +353,10 @@ public class CreateView implements Statement {
             }
             sql.append("CHECK OPTION");
         }
+    }
+
+    public void appendOptionsAfterQueryTo(StringBuilder sql) {
+        appendCheckOptionTo(sql, checkOption);
         if (withData != null) {
             sql.append(withData ? " WITH DATA" : " WITH NO DATA");
         }

@@ -50,6 +50,7 @@ import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
 import net.sf.jsqlparser.statement.comment.*;
 import net.sf.jsqlparser.statement.create.database.*;
@@ -1555,9 +1556,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "STATS_SAMPLE_PAGES".equalsIgnoreCase(name);
     }
 
+    private boolean isMySqlEngineAttributeAhead() {
+        return isKeywordAhead("ENGINE_ATTRIBUTE") || isKeywordAhead("SECONDARY_ENGINE_ATTRIBUTE");
+    }
+
     private boolean isMySqlScalarTableOptionAhead() {
         int kind = getToken(1).kind;
-        return kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+        return isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
                 || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
     }
 
@@ -12667,7 +12672,17 @@ CastExpression CastExpression():
         )
         |
         (
-            type=ColDataType() { retval.setColDataType(type); }
+            type=ColDataType() {
+                // Preserve the established MySQL CAST type-name API outside PostgreSQL mode.
+                if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+                        && type.isUsingArrayKeyword() && type.getArrayData().size() == 1
+                        && type.getArrayData().get(0) == null) {
+                    type.setUsingArrayKeyword(false);
+                    type.getArrayData().clear();
+                    type.setDataType(type.getDataType() + " ARRAY");
+                }
+                retval.setColDataType(type);
+            }
             // MySQL casts to an array of the given type when a multi-valued index key part is
             // defined, e.g. CAST(data->'$.zips' AS UNSIGNED ARRAY). ARRAY reads as a further
             // word of the type, the way INT UNSIGNED already does.
@@ -14144,6 +14159,7 @@ ColumnOption ColumnDefinitionOption(): {
     GeneratedColumnDefinition generated;
     ObjectNames collationNames;
     String collation;
+    String compression;
 } {
     (
         LOOKAHEAD({ isKeywordAhead("GENERATED")
@@ -14170,6 +14186,12 @@ ColumnOption ColumnDefinitionOption(): {
         |
         LOOKAHEAD(<K_AUTO_INCREMENT>) <K_AUTO_INCREMENT> { option = ColumnOption.autoIncrement(); }
         |
+        LOOKAHEAD(<K_STORAGE>) <K_STORAGE> ( tk=<K_EXTENDED> | tk=<K_DEFAULT> | tk=<S_IDENTIFIER> )
+        { option = ColumnOption.storage(accessEnum(ColumnOption.Storage.class, tk.image)); }
+        |
+        LOOKAHEAD({ isKeywordAhead("COMPRESSION") }) ContextualKeyword("COMPRESSION") compression=RelObjectName()
+        { option = ColumnOption.compression(compression); }
+        |
         LOOKAHEAD(<K_COLLATE>) <K_COLLATE>
         ( tk=<S_CHAR_LITERAL> { collation = tk.image; }
           | collationNames=RelObjectNames() { collation = String.join(".", collationNames.getNames()); } )
@@ -14181,15 +14203,12 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
         { option = ColumnOption.onUpdate(defaultExpression); }
         |
-        LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
-        { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] ( <K_PRIMARY> <K_KEY> | <K_UNIQUE> ))
+        constraint=ColumnKeyConstraint() { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>)
         [ <K_CONSTRAINT> constraintName=RelObjectName() ]
         constraint=CheckConstraintSpec(constraintName)
-        { option = ColumnOption.constraint(constraint); }
-        |
-        LOOKAHEAD(<K_UNIQUE>) constraint=ColumnUniqueConstraint()
         { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD({ isKeywordAhead("SERIAL")
@@ -14197,8 +14216,10 @@ ColumnOption ColumnDefinitionOption(): {
         tk=<S_IDENTIFIER> <K_DEFAULT> <K_VALUE>
         { option = ColumnOption.serialDefaultValue(); }
         |
-        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec(true)
-        { option = ColumnOption.reference(reference); }
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_REFERENCES>)
+        [ <K_CONSTRAINT> constraintName=RelObjectName() ]
+        reference=ForeignKeyReferenceSpec(true)
+        { reference.setConstraintName(constraintName); option = ColumnOption.reference(reference); }
         |
         LOOKAHEAD(<K_DROP> <K_DEFAULT>) <K_DROP> <K_DEFAULT>
         { option = ColumnOption.raw("DROP", "DEFAULT"); }
@@ -14239,17 +14260,30 @@ GeneratedColumnDefinition GeneratedColumnDefinition():
     }
 }
 
-NamedConstraint ColumnUniqueConstraint():
+/** Keeps a column key's name and attributes on the same node in CREATE and ALTER. */
+NamedConstraint ColumnKeyConstraint():
 {
-    NamedConstraint constraint = new NamedConstraint().withType("UNIQUE");
+    NamedConstraint constraint = new NamedConstraint();
+    String name;
     Boolean nullsDistinct = null;
 }
 {
-    <K_UNIQUE>
-    [ <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT> {
-        constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
-    } ]
-    { return constraint; }
+    [ <K_CONSTRAINT> name=RelObjectName() { constraint.setName(name); } ]
+    (
+        <K_PRIMARY> <K_KEY> { constraint.setType("PRIMARY KEY"); }
+        |
+        <K_UNIQUE> { constraint.setType("UNIQUE"); }
+        [ <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT> {
+            constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
+        } ]
+    )
+    PostgreSqlConstraintAttributes(constraint)
+    {
+        requireDdlSyntax(constraint.getConstraintAttributes() == null
+                || !constraint.getConstraintAttributes().isNotValid(),
+                "NOT VALID requires a table constraint");
+        return constraint;
+    }
 }
 
 IdentityDefinition IdentityDefinition():
@@ -14500,18 +14534,53 @@ AlterEvent AlterEvent():
     { return alterEvent; }
 }
 
-TriggerDefiner MySqlTriggerDefiner():
+/** Account spelling is shared, including CURRENT_USER and CURRENT_USER(). */
+void MySqlDefiner(MySqlDefiner definer):
 {
-    TriggerDefiner definer = new TriggerDefiner();
-    StringValue user = null;
-    StringValue host = null;
+    StringValue user;
+    StringValue host;
+    String name;
 }
 {
-    LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
-    <S_IDENTIFIER> "=" user=MySqlAccountNamePart() { definer.setUser(user); }
-    [ LOOKAHEAD({ getToken(1).kind == K_AT_SIGN })
-      <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
-    { return definer; }
+    ContextualKeyword("DEFINER") "="
+    (
+        LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) name=RelObjectName()
+        { definer.setUser(new StringValue(name).setQuoteStr("")); }
+        [ "(" ")" { definer.setCurrentUserParentheses(true); } ]
+        |
+        user=MySqlAccountNamePart() { definer.setUser(user); }
+        [ <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+    )
+}
+
+TriggerDefiner MySqlTriggerDefiner():
+{ TriggerDefiner definer = new TriggerDefiner(); }
+{ MySqlDefiner(definer) { return definer; } }
+
+/** MySQL fixes the prefix order: ALGORITHM, DEFINER, SQL SECURITY. */
+MySqlViewOptions MySqlViewPrefix():
+{
+    MySqlViewOptions options = new MySqlViewOptions();
+    MySqlDefiner definer;
+    Token token;
+    boolean present = false;
+}
+{
+    [ <K_ALGORITHM> "=" ( token=<K_MERGE> | token=<S_IDENTIFIER> ) {
+        requireDdlSyntax("MERGE".equalsIgnoreCase(token.image) || "TEMPTABLE".equalsIgnoreCase(token.image)
+                || "UNDEFINED".equalsIgnoreCase(token.image), "Expected MERGE, TEMPTABLE, or UNDEFINED");
+        options.setAlgorithm(MySqlViewOptions.Algorithm.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        present = true;
+    } ]
+    [ LOOKAHEAD({ isKeywordAhead("DEFINER") }) { definer = new MySqlDefiner(); }
+        MySqlDefiner(definer) { options.setDefiner(definer); present = true; } ]
+    [ LOOKAHEAD({ isKeywordAhead("SQL") }) ContextualKeyword("SQL") <K_SECURITY> token=<S_IDENTIFIER> {
+        requireDdlSyntax("DEFINER".equalsIgnoreCase(token.image) || "INVOKER".equalsIgnoreCase(token.image),
+                "Expected DEFINER or INVOKER");
+        options.setSecurity(MySqlViewOptions.Security.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        present = true;
+    } ]
+    { return present ? options : null; }
 }
 
 CreateTrigger.Timing MySqlTriggerTiming():
@@ -14587,7 +14656,7 @@ CreateSchema CreateSchema():
 {
     <K_SCHEMA>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { schema.setIfNotExists(true); } ]
-    [
+    [ LOOKAHEAD(1)
         ( tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { schema.setSchemaName(tk.image); }
 
         (
@@ -14659,6 +14728,35 @@ DatabaseOption MySqlDatabaseOption():
     [ "=" { useEquals = true; } ]
     ( value=RelObjectName() | valueToken=<S_CHAR_LITERAL> { value = valueToken.image; } )
     { return new DatabaseOption(kind, name, value, useDefault, useEquals); }
+}
+
+/** Reuses CREATE's database options; READ ONLY is specific to ALTER. */
+AlterDatabase AlterDatabase():
+{
+    AlterDatabase result = new AlterDatabase();
+    String name;
+    DatabaseOption option;
+    Token value;
+    boolean equals;
+}
+{
+    ( <K_DATABASE> | <K_SCHEMA> { result.setUseSchemaKeyword(true); } )
+    [ LOOKAHEAD({ !isMySqlDatabaseOptionAhead() && getToken(1).kind != K_READ })
+        name=RelObjectName() { result.setDatabaseName(name); } ]
+    (
+        (
+            LOOKAHEAD({ isMySqlDatabaseOptionAhead() }) option=MySqlDatabaseOption()
+            |
+            <K_READ> <K_ONLY> { equals = false; }
+            [ "=" { equals = true; } ]
+            ( value=<K_DEFAULT> | value=<S_LONG> ) {
+                requireDdlSyntax(value.kind == K_DEFAULT || "0".equals(value.image) || "1".equals(value.image),
+                        "READ ONLY requires DEFAULT, 0, or 1");
+                option = new DatabaseOption(DatabaseOption.Kind.READ_ONLY, "READ ONLY", value.image, false, equals);
+            }
+        ) { result.getOptions().add(option); }
+    )+
+    { return result; }
 }
 
 List<String> PathSpecification():
@@ -14850,6 +14948,15 @@ void PostgreSqlConstraintAttributes(Index index):
 { ConstraintAttributes attributes; }
 {
     attributes=PostgreSqlConstraintAttributeList(index.getConstraintAttributes())
+    ( LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+            && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") {
+            requireDdlSyntax(index instanceof CheckConstraint && !((CheckConstraint) index).isNoInherit(),
+                    "NO INHERIT requires a CHECK constraint and cannot be repeated");
+            ((CheckConstraint) index).setNoInherit(true);
+        }
+        attributes=PostgreSqlConstraintAttributeList(attributes)
+    )*
     {
         requireDdlSyntax(attributes == null || attributes.getEnforced() == null
                 || index instanceof CheckConstraint || index instanceof ForeignKeyIndex,
@@ -15076,6 +15183,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     ColDataType ofType = null;
     Table parent;
     List<Table> parents = new ArrayList<Table>();
+    ObjectNames typeName;
     boolean withData;
 }
 {
@@ -15096,19 +15204,23 @@ CreateTable CreateTable(boolean isUsingOrReplace):
         [ LOOKAHEAD(2) tableColumn=TimeTravelAfterAlias() { likeTable.setTimeTravel(tableColumn); } ]
         { createTable.setCloneTable(likeTable); likeTable = null; }
     ]
-    [ <K_OF> ofType=ColDataType() { createTable.setOfType(ofType); } ]
+    [ <K_OF> typeName=RelObjectNames() {
+        ofType = new ColDataType();
+        ofType.setDataType(typeName.getNames());
+        createTable.setOfType(ofType);
+    } ]
     [ LOOKAHEAD(2) <K_PARTITION> <K_OF> partitionOfTable=Table()
         { createTable.setPartitionOf(partitionOfTable); } ]
     [ LOOKAHEAD(2) (
         LOOKAHEAD("(" ")") "(" ")" { createTable.setTableElements(tableElements); }
         |
-        LOOKAHEAD(3) (
+        LOOKAHEAD("(" RelObjectName() ("," RelObjectName())* ")") (
             "(" tableColumn=RelObjectName() { columns.add(tableColumn); } ("," tableColumn=RelObjectName() { columns.add(tableColumn); } )* ")"
         )
         |
             (
-                "(" element=CreateTableElement(ofType != null) { tableElements.add(element); }
-                ( LOOKAHEAD(2) "," element=CreateTableElement(ofType != null)
+                "(" element=CreateTableElement(ofType != null || partitionOfTable != null) { tableElements.add(element); }
+                ( LOOKAHEAD(2) "," element=CreateTableElement(ofType != null || partitionOfTable != null)
                     { tableElements.add(element); }
                 )*
                 [ LOOKAHEAD({ Dialect.SQLSERVER.name().equals(getAsString(Feature.dialect))
@@ -15167,8 +15279,16 @@ CreateTable CreateTable(boolean isUsingOrReplace):
             createTable.setCreateOptionsStrings(createOptions);
         if (typedTableOptions.size() > 0)
             createTable.setTableOptions(typedTableOptions);
-        if (columns.size() > 0)
-            createTable.setColumns(columns);
+        if (!columns.isEmpty()) {
+            if (ofType != null || partitionOfTable != null) {
+                for (String name : columns) {
+                    tableElements.add(new ColumnDefinition().withColumnName(name));
+                }
+                createTable.setTableElements(tableElements);
+            } else {
+                createTable.setColumns(columns);
+            }
+        }
         return createTable;
     }
 }
@@ -15269,6 +15389,9 @@ TableOption MySqlTableOption(): {
                     "Expected DEFAULT, 0, or 1 for " + name);
         }
         |
+        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
+        { return option; }
+        |
         tk=<K_ENGINE> {
             name = tk.image;
             kind = TableOption.Kind.ENGINE;
@@ -15303,9 +15426,6 @@ TableOption MySqlTableOption(): {
         }
         [ "=" { useEquals = true; } ]
         value=MySqlTableOptionValue()
-        |
-        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
-        { return option; }
     )
     {
         option = new TableOption(kind, name, value, useEquals);
@@ -15333,6 +15453,10 @@ TableOption MySqlScalarTableOption():
             | <K_PASSWORD> { name = "PASSWORD"; kind = TableOption.Kind.PASSWORD; }
             | <K_DATA> <K_DIRECTORY> { name = "DATA DIRECTORY"; kind = TableOption.Kind.DATA_DIRECTORY; }
             | <K_INDEX> <K_DIRECTORY> { name = "INDEX DIRECTORY"; kind = TableOption.Kind.INDEX_DIRECTORY; }
+            | LOOKAHEAD({ isMySqlEngineAttributeAhead() }) token=<S_IDENTIFIER> {
+                name = token.image.toUpperCase(Locale.ROOT);
+                kind = TableOption.Kind.valueOf(name);
+            }
         )
         [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
     )
@@ -15591,9 +15715,9 @@ ColDataType ColDataType():
             intervalQualifier = IntervalQualifier() { colDataType.setIntervalQualifier(intervalQualifier); }
         ]
         [ LOOKAHEAD(2) "." arrayType = ColDataType() {
-            schema += "." + arrayType.toString();
-            colDataType.setPrecision(arrayType.getPrecision());
-            colDataType.setScale(arrayType.getScale());
+            schema += "." + arrayType.getDataType();
+            // Retain the nested type's structured suffixes instead of flattening them into its name.
+            colDataType = arrayType;
         } ]
         { colDataType.setDataType(schema); }
     )
@@ -15636,7 +15760,18 @@ ColDataType ColDataType():
     ]
     ( LOOKAHEAD(1) typeModifier=MySqlTypeModifier()
         { colDataType.addTypeModifier(typeModifier); } )*
-    [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ] { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+ { colDataType.setArrayData(array); } ]
+    (
+        LOOKAHEAD(<K_ARRAY_LITERAL>) <K_ARRAY_LITERAL> { tk = null; }
+        [ LOOKAHEAD(2) "[" tk=<S_LONG> "]" ] {
+            array.add(tk == null ? null : Integer.valueOf(tk.image));
+            colDataType.setArrayData(array);
+            colDataType.setUsingArrayKeyword(true);
+        }
+        |
+        [ LOOKAHEAD(2) ( LOOKAHEAD(2) "[" {tk=null;} [ tk=<S_LONG> ]
+            { array.add(tk!=null?Integer.valueOf(tk.image):null); } "]" )+
+            { colDataType.setArrayData(array); } ]
+    )
     [
         LOOKAHEAD({ (getToken(1).kind == K_CHARACTER && getToken(2).kind == K_SET)
                 || isKeywordAhead("CHARSET") }) TypeCharacterSet(colDataType)
@@ -15784,9 +15919,12 @@ CreateView CreateView(boolean isUsingOrReplace):
     List<ViewOption> viewOptions = new ArrayList<ViewOption>();
     ViewOption viewOption = null;
     boolean withData;
+    MySqlViewOptions mySqlOptions;
+    CreateView.CheckOption checkOption;
 }
 {
     { createView.setOrReplace(isUsingOrReplace);}
+    mySqlOptions=MySqlViewPrefix() { createView.setMySqlOptions(mySqlOptions); }
     [
         <K_NO> <K_FORCE> { createView.setForce(ForceOption.NO_FORCE); }
         | <K_FORCE> { createView.setForce(ForceOption.FORCE); }
@@ -15829,19 +15967,23 @@ CreateView CreateView(boolean isUsingOrReplace):
         (
             <K_READ> <K_ONLY> { createView.setWithReadOnly(true); }
             |
-            [ <K_LOCAL> { createView.setCheckOption(CreateView.CheckOption.LOCAL); }
-                | LOOKAHEAD({ isKeywordAhead("CASCADED") }) tk=<S_IDENTIFIER>
-                    { createView.setCheckOption(CreateView.CheckOption.CASCADED); } ]
-            <K_CHECK> <K_OPTION> {
-                if (createView.getCheckOption() == null) {
-                    createView.setCheckOption(CreateView.CheckOption.DEFAULT);
-                }
-            }
+            checkOption=ViewCheckOption() { createView.setCheckOption(checkOption); }
             |
             withData=DataPopulation() { createView.setWithData(withData); }
         )
     ]
     { createView.validateOptions(); return createView; }
+}
+
+CreateView.CheckOption ViewCheckOption():
+{
+    CreateView.CheckOption option = CreateView.CheckOption.DEFAULT;
+}
+{
+    [ <K_LOCAL> { option = CreateView.CheckOption.LOCAL; }
+        | ContextualKeyword("CASCADED") { option = CreateView.CheckOption.CASCADED; } ]
+    <K_CHECK> <K_OPTION>
+    { return option; }
 }
 
 ViewOption PostgreSqlViewOption():
@@ -16104,15 +16246,19 @@ void AlterExpressionConstraintTail(AlterExpression alterExp, Index index):
 AlterView AlterView(boolean useReplace):
 {
     AlterView alterView = new AlterView();
+    MySqlViewOptions options;
+    CreateView.CheckOption checkOption;
     Table view = null;
     Select select = null;
     List<String> columnNames = null;
 }
 {
+    options=MySqlViewPrefix() { alterView.setMySqlOptions(options); }
     <K_VIEW> view=Table() { alterView.setView(view); alterView.setUseReplace(useReplace); }
     [ columnNames = ColumnsNamesList() { alterView.setColumnNames(columnNames); } ]
     <K_AS>
     select=Select()
+    [ LOOKAHEAD(2) <K_WITH> checkOption=ViewCheckOption() { alterView.setCheckOption(checkOption); } ]
     {
         alterView.setSelect(select);
         return alterView;
@@ -16366,6 +16512,9 @@ Drop Drop():
         tk=<K_FUNCTION>
     )
     { drop.setType(tk.image); }
+    [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
+            && getToken(1).kind == K_CONCURRENTLY })
+        <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
@@ -16708,7 +16857,8 @@ void IndexOptionList(List<String> list) :
 {}
 {
     (
-       LOOKAHEAD(2) IndexOption(list)
+       LOOKAHEAD(2, { !(getToken(1).kind == K_USING && getToken(2).kind == K_INDEX) })
+       IndexOption(list)
     )*
 }
 
@@ -16729,9 +16879,13 @@ void IndexOption(List<String> list) :
     Token tk2 = null;
     String sk1 = null;
     boolean useEqual = false;
+    TableOption attribute;
 }
 {
     (
+      LOOKAHEAD({ isMySqlEngineAttributeAhead() }) attribute=MySqlScalarTableOption()
+      { list.addAll(attribute.getTokens()); }
+    |
       tk1=<K_KEY_BLOCK_SIZE> ["=" { useEqual = true; } ] tk2=<S_LONG>
       {
         list.add("KEY_BLOCK_SIZE" +  (useEqual ? " = " : "") + tk2.image);
@@ -18020,6 +18174,10 @@ Statement Alter():
                 |
                 statement = AlterDefaultPrivileges()
                 |
+                LOOKAHEAD({ getToken(1).kind == K_DATABASE || (getToken(1).kind == K_SCHEMA
+                        && Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) })
+                statement = AlterDatabase()
+                |
                 LOOKAHEAD(<K_SCHEMA>) statement = AlterSchema()
                 |
                 LOOKAHEAD(<K_TYPE>) statement = AlterType()
@@ -18038,7 +18196,7 @@ Statement Alter():
                 |
                 statement = AlterSession()
                 |
-                statement = AlterView(false)
+                LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = AlterView(false)
                 |
                 statement = AlterSystemStatement()
                 |
@@ -18881,40 +19039,86 @@ SequenceOwnership SequenceOwnership():
     { return ownership; }
 }
 
-CreateSequence CreateSequence():
+/** AS, ownership and numeric parameters share the same sequence-option boundary. */
+void SequenceDefinitionOptions(Sequence sequence):
 {
-  CreateSequence createSequence = new CreateSequence();
-  Sequence sequence;
-  List<Sequence.Parameter> sequenceParameters;
-  Token dataType = null;
-  SequenceOwnership ownership;
+    List<Sequence.Parameter> parameters = new ArrayList<Sequence.Parameter>();
+    Sequence.Parameter parameter;
+    SequenceOwnership ownership;
+    Token dataType;
 }
 {
-  <K_SEQUENCE> sequence=Sequence() { createSequence.setSequence(sequence); }
-  [ <K_AS> ( dataType=<S_IDENTIFIER> | dataType=<DATA_TYPE> ) { sequence.setDataType(dataType.image); } ]
-  sequenceParameters = SequenceParameters()
-  [ LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() { sequence.setOwnership(ownership); } ]
-    {
-        sequence.setParameters(sequenceParameters);
-        return createSequence;
-    }
+    (
+        LOOKAHEAD(2)
+        (
+            <K_AS> ( dataType=<S_IDENTIFIER> | dataType=<DATA_TYPE> ) {
+                requireDdlSyntax(sequence.getDataType() == null, "Duplicate sequence AS clause");
+                sequence.setDataType(dataType.image);
+            }
+            |
+            LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() {
+                requireDdlSyntax(sequence.getOwnership() == null, "Duplicate sequence OWNED BY clause");
+                sequence.setOwnership(ownership);
+            }
+            |
+            parameter=SequenceParameter() { parameters.add(parameter); }
+        )
+    )*
+    { sequence.setParameters(parameters); }
+}
+
+CreateSequence CreateSequence():
+{
+    CreateSequence result = new CreateSequence();
+    Sequence sequence;
+    Token persistence;
+    Token scope = null;
+}
+{
+    [
+        ( <K_UNLOGGED> { result.setPersistence(CreateSequence.Persistence.UNLOGGED); }
+          |
+          [ ( scope=<K_LOCAL> | scope=<K_GLOBAL> ) ]
+          ( persistence=<K_TEMP> | persistence=<K_TEMPORARY> ) {
+              result.setPersistence(CreateSequence.Persistence.valueOf(
+                  (scope == null ? "" : scope.image.toUpperCase(Locale.ROOT) + "_")
+                  + persistence.image.toUpperCase(Locale.ROOT)));
+          } )
+    ]
+    <K_SEQUENCE>
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { result.setIfNotExists(true); } ]
+    sequence=Sequence() { result.setSequence(sequence); }
+    SequenceDefinitionOptions(sequence)
+    { return result; }
 }
 
 AlterSequence AlterSequence():
 {
-  AlterSequence alterSequence = new AlterSequence();
-  Sequence sequence;
-  List<Sequence.Parameter> sequenceParameters;
-  SequenceOwnership ownership;
+    AlterSequence result = new AlterSequence();
+    Sequence sequence;
+    String name;
 }
 {
-    <K_SEQUENCE> sequence=Sequence() { alterSequence.setSequence(sequence); }
-    sequenceParameters = SequenceParameters()
-    [ LOOKAHEAD({ isKeywordAhead("OWNED") }) ownership=SequenceOwnership() { sequence.setOwnership(ownership); } ]
-    {
-        sequence.setParameters(sequenceParameters);
-        return alterSequence;
-    }
+    <K_SEQUENCE> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { result.setIfExists(true); } ]
+    sequence=Sequence() { result.setSequence(sequence); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { result.setAction(AlterSequence.Action.RENAME); result.setNewName(name); }
+        |
+        LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { result.setAction(AlterSequence.Action.OWNER); result.setOwner(name); }
+        |
+        <K_SET>
+        (
+            <K_SCHEMA> name=RelObjectName()
+            { result.setAction(AlterSequence.Action.SET_SCHEMA); result.setSchemaName(name); }
+            | <K_UNLOGGED> { result.setAction(AlterSequence.Action.SET_UNLOGGED); }
+            | ContextualKeyword("LOGGED") { result.setAction(AlterSequence.Action.SET_LOGGED); }
+        )
+        |
+        SequenceDefinitionOptions(sequence)
+    )
+    { return result; }
 }
 
 Statement Create():
@@ -18956,6 +19160,8 @@ Statement Create():
         |
         statement = CreateEvent()
         |
+        LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = CreateView(isUsingOrReplace)
+        |
         LOOKAHEAD({ getToken(1).kind == K_TRIGGER
                 || "DEFINER".equalsIgnoreCase(getToken(1).image) })
         statement = CreateTrigger()
@@ -18966,6 +19172,7 @@ Statement Create():
         |
         statement = CreateDatabase()
         |
+        LOOKAHEAD([ <K_UNLOGGED> | [ <K_LOCAL> | <K_GLOBAL> ] ( <K_TEMP> | <K_TEMPORARY> ) ] <K_SEQUENCE>)
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)
