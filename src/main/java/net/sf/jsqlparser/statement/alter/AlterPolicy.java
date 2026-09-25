@@ -16,6 +16,9 @@ import net.sf.jsqlparser.statement.create.policy.PolicyOptions;
 public class AlterPolicy implements Statement {
     private String policyName;
     private net.sf.jsqlparser.schema.Table table;
+    private String newName;
+    private PolicyOptions options = new PolicyOptions();
+
 
     public String getPolicyName() {
         return policyName;
@@ -35,8 +38,6 @@ public class AlterPolicy implements Statement {
         return this;
     }
 
-    private String newName;
-    private PolicyOptions options = new PolicyOptions();
 
     public String getNewName() {
         return newName;
