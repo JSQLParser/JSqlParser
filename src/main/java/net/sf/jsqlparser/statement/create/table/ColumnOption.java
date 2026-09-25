@@ -23,7 +23,45 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColumnOption implements Serializable {
 
     public enum Kind {
-        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, OTHER
+        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, STORAGE, COMPRESSION, OTHER
+    }
+
+    /** PostgreSQL storage strategies and MySQL column storage locations. */
+    public enum Storage {
+        PLAIN, EXTERNAL, EXTENDED, MAIN, DEFAULT, DISK, MEMORY
+    }
+
+    private Storage storage;
+    private String compression;
+
+    public static ColumnOption storage(Storage storage) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.STORAGE;
+        option.setStorage(storage);
+        return option;
+    }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Storage storage) {
+        this.storage = Objects.requireNonNull(storage, "storage");
+    }
+
+    public static ColumnOption compression(String compression) {
+        ColumnOption option = new ColumnOption();
+        option.kind = Kind.COMPRESSION;
+        option.setCompression(compression);
+        return option;
+    }
+
+    public String getCompression() {
+        return compression;
+    }
+
+    public void setCompression(String compression) {
+        this.compression = Objects.requireNonNull(compression, "compression");
     }
 
     private Kind kind = Kind.OTHER;
@@ -256,6 +294,12 @@ public class ColumnOption implements Serializable {
     /** Appends the option using the supplied printer for structured expressions. */
     public void appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         switch (kind) {
+            case STORAGE:
+                builder.append("STORAGE ").append(storage);
+                break;
+            case COMPRESSION:
+                builder.append("COMPRESSION ").append(compression);
+                break;
             case DEFAULT:
                 builder.append("DEFAULT ");
                 expressionPrinter.accept(defaultExpression);

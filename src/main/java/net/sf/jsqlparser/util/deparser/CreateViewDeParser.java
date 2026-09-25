@@ -41,6 +41,7 @@ public class CreateViewDeParser extends AbstractDeParser<CreateView> {
         if (createView.isOrReplace()) {
             builder.append("OR REPLACE ");
         }
+        createView.appendMySqlOptionsTo(builder);
         switch (createView.getForce()) {
             case FORCE:
                 builder.append("FORCE ");

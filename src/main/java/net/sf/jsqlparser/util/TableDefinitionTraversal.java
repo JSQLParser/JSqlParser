@@ -108,6 +108,7 @@ public final class TableDefinitionTraversal {
         }
         if (table.getTableOptions() != null) {
             table.getTableOptions().forEach(option -> {
+                visitOptions(option.getStorageParameters(), expressions);
                 if (option.getUnionTables() != null) {
                     option.getUnionTables().forEach(source -> accept(source, tables));
                 }
@@ -115,6 +116,9 @@ public final class TableDefinitionTraversal {
         }
         if (table.getInherits() != null) {
             table.getInherits().forEach(parent -> accept(parent, tables));
+        }
+        if (table.getExecute() != null && table.getExecute().getExprList() != null) {
+            accept(table.getExecute().getExprList(), expressions);
         }
         accept(table.getTrailingLikeTable(), tables);
         accept(table.getPartitionOf(), tables);
@@ -127,7 +131,12 @@ public final class TableDefinitionTraversal {
         if (partitioning == null) {
             return;
         }
-        if (partitioning.getExpression() != null) {
+        if (partitioning.getKeyColumns() != null) {
+            partitioning.getKeyColumns().forEach(key -> {
+                accept(key.getExpression(), expressions);
+                visitOptions(key.getOperatorClassParameters(), expressions);
+            });
+        } else if (partitioning.getExpression() != null) {
             accept(partitioning.getExpression(), expressions);
         } else if (partitioning.getExpressionList() != null) {
             accept(partitioning.getExpressionList(), expressions);

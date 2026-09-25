@@ -30,7 +30,7 @@ class MySqlAlterOrderingOptionsTest {
     @ValueSource(strings = {"ORDER BY id DESC, label ASC", "ORDER BY id, label",
             "ENGINE = InnoDB, ROW_FORMAT = DYNAMIC, STATS_PERSISTENT = DEFAULT",
             "STATS_AUTO_RECALC = 1, STATS_SAMPLE_PAGES = 16",
-            "ORDER BY id DESC, label ASC, ENGINE = InnoDB", "ROW_FORMAT COMPACT, ORDER BY id DESC"})
+            "ENGINE = InnoDB, ORDER BY id DESC, label ASC", "ROW_FORMAT COMPACT, ORDER BY id DESC"})
     void actionAndOrderListBoundariesRemainSeparate(String actions) throws JSQLParserException {
         Alter alter = parse("ALTER TABLE t " + actions);
         assertEquals("ALTER TABLE t " + actions, alter.toString());
@@ -79,7 +79,8 @@ class MySqlAlterOrderingOptionsTest {
     @Test
     void invalidOptionsAndOrderExpressionsFail() {
         for (String actions : new String[] {"ROW_FORMAT = invalid", "STATS_PERSISTENT = 2",
-                "ORDER BY id + 1"}) {
+                "ORDER BY id + 1", "ORDER BY id, ENGINE = InnoDB",
+                "ORDER BY id, ADD COLUMN x INT"}) {
             assertThrows(JSQLParserException.class, () -> parse("ALTER TABLE t " + actions));
         }
     }

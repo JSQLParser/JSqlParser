@@ -30,6 +30,17 @@ public class ForeignKeyReference implements Serializable {
     }
 
     private Table table;
+    private String constraintName;
+
+    /** Optional name of a column REFERENCES constraint. Table constraints own their name. */
+    public String getConstraintName() {
+        return constraintName;
+    }
+
+    public void setConstraintName(String constraintName) {
+        this.constraintName = constraintName;
+    }
+
     private List<String> referencedColumnNames;
     private MatchType matchType;
     private boolean usingPeriod;
@@ -148,7 +159,11 @@ public class ForeignKeyReference implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("REFERENCES ").append(table);
+        StringBuilder builder = new StringBuilder();
+        if (constraintName != null) {
+            builder.append("CONSTRAINT ").append(constraintName).append(' ');
+        }
+        builder.append("REFERENCES ").append(table);
         if (referencedColumnNames != null) {
             builder.append('(');
             for (int i = 0; i < referencedColumnNames.size(); i++) {

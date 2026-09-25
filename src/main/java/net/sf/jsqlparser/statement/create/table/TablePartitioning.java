@@ -35,6 +35,20 @@ public class TablePartitioning implements Serializable {
         EXPRESSION
     }
 
+    private List<Index.ColumnParams> keyColumns;
+
+    /** PostgreSQL keys carrying collation/operator-class attributes, otherwise null. */
+    public List<Index.ColumnParams> getKeyColumns() {
+        return keyColumns;
+    }
+
+    public void setKeyColumns(List<Index.ColumnParams> keyColumns) {
+        this.keyColumns = keyColumns;
+        expression = null;
+        expressionList = null;
+        columns = null;
+    }
+
     private Type type;
     private boolean linear;
     private boolean columnsSyntax;
@@ -84,6 +98,7 @@ public class TablePartitioning implements Serializable {
 
     public void setExpression(Expression expression) {
         this.expression = expression;
+        keyColumns = null;
     }
 
     /**
@@ -97,6 +112,7 @@ public class TablePartitioning implements Serializable {
 
     public void setExpressionList(ExpressionList<Expression> expressionList) {
         this.expressionList = expressionList;
+        keyColumns = null;
     }
 
     public ExpressionList<Column> getColumns() {
@@ -105,6 +121,7 @@ public class TablePartitioning implements Serializable {
 
     public void setColumns(ExpressionList<Column> columns) {
         this.columns = columns;
+        keyColumns = null;
     }
 
     public Integer getAlgorithm() {
@@ -305,7 +322,16 @@ public class TablePartitioning implements Serializable {
         if (columnsSyntax) {
             builder.append(" COLUMNS");
         }
-        if (expression != null) {
+        if (keyColumns != null) {
+            builder.append(" (");
+            for (int i = 0; i < keyColumns.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                keyColumns.get(i).appendTo(builder, expressionPrinter);
+            }
+            builder.append(')');
+        } else if (expression != null) {
             builder.append(" (");
             expressionPrinter.accept(expression);
             builder.append(')');
