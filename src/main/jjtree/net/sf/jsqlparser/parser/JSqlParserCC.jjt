@@ -1565,7 +1565,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         int kind = getToken(1).kind;
         if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
                 || isMySqlScalarTableOptionAhead() || kind == K_UNION
-                || isMySqlStatisticsOptionAhead()) {
+                || isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT")) {
             return true;
         }
         if (kind == K_CHARACTER && getToken(2).kind == K_SET
@@ -15237,6 +15237,13 @@ TableOption MySqlTableOption(): {
                     "Expected DEFAULT, 0, or 1 for " + name);
         }
         |
+        LOOKAHEAD({ isKeywordAhead("ROW_FORMAT") }) ContextualKeyword("ROW_FORMAT")
+        { name = "ROW_FORMAT"; kind = TableOption.Kind.ROW_FORMAT; }
+        [ "=" { useEquals = true; } ] value=RelObjectName() {
+            requireDdlSyntax(Arrays.asList("DEFAULT", "DYNAMIC", "FIXED", "COMPRESSED", "REDUNDANT", "COMPACT")
+                    .contains(value.toUpperCase(Locale.ROOT)), "Invalid MySQL ROW_FORMAT");
+        }
+        |
         tk=<K_ENGINE> {
             name = tk.image;
             kind = TableOption.Kind.ENGINE;
@@ -15305,6 +15312,31 @@ TableOption MySqlScalarTableOption():
         [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
     )
     { return new TableOption(kind, name, value, useEquals); }
+}
+
+/** Statistics and row format share CREATE's validation and option nodes. */
+AlterExpressionTableOption AlterSharedTableOption():
+{ TableOption option; AlterExpressionTableOption action = new AlterExpressionTableOption(); }
+{
+    option=MySqlTableOption()
+    { action.setStructuredTableOption(option); return action; }
+}
+
+AlterExpressionOrderBy MySqlAlterOrderBy():
+{ AlterExpressionOrderBy action = new AlterExpressionOrderBy(); OrderByElement element; }
+{
+    <K_ORDER> <K_BY> element=MySqlAlterOrderColumn() { action.getOrderByElements().add(element); }
+    ( LOOKAHEAD("," RelObjectName() [ <K_ASC> | <K_DESC> ] ( "," | <ST_SEMICOLON> | <EOF> | <K_END> ))
+        "," element=MySqlAlterOrderColumn() { action.getOrderByElements().add(element); } )*
+    { return action; }
+}
+
+OrderByElement MySqlAlterOrderColumn():
+{ OrderByElement element = new OrderByElement(); String name; Token order; }
+{
+    name=RelObjectName() { element.setExpression(createColumn(name)); }
+    [ LOOKAHEAD(2) ( order=<K_ASC> | order=<K_DESC> ) { element.setAsc(order.kind == K_ASC); element.setAscDescPresent(true); } ]
+    { return element; }
 }
 
 AlterExpressionTableOption AlterScalarTableOption():
@@ -17754,6 +17786,11 @@ AlterExpression AlterExpression():
 {
 
     (
+        LOOKAHEAD(<K_ORDER> <K_BY>) alterExp=MySqlAlterOrderBy()
+      |
+        LOOKAHEAD({ isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT") })
+        alterExp=AlterSharedTableOption()
+      |
         LOOKAHEAD(<K_ALTER> <K_PRIMARY> <K_KEY>,
                 { Dialect.COCKROACHDB.name().equals(getAsString(Feature.dialect)) })
         alterExp = CockroachAlterPrimaryKey()
