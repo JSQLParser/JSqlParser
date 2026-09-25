@@ -26,7 +26,6 @@ public class AlterSequenceDeParser extends AbstractDeParser<AlterSequence> {
 
     @Override
     public void deParse(AlterSequence statement) {
-        builder.append("ALTER SEQUENCE ");
-        builder.append(statement.getSequence());
+        statement.appendTo(builder);
     }
 }
