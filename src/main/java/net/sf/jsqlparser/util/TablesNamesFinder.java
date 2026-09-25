@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -2966,6 +2968,20 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateRule statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        statement.visitTables(table -> visit(table, context));
+        statement.getActions().forEach(action -> action.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(NotifyStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
     }
 }
