@@ -21,7 +21,7 @@ import net.sf.jsqlparser.schema.Table;
 public class TableOption implements Serializable {
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, FOREIGN_SERVER, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, OTHER
     }
 
     private ForeignTableOptions foreignTableOptions;
@@ -43,6 +43,19 @@ public class TableOption implements Serializable {
     private List<String> tokens;
     private List<Table> unionTables;
     private List<Index.Option> storageParameters;
+    private ColumnOption.Storage tablespaceStorage;
+
+    public ColumnOption.Storage getTablespaceStorage() {
+        return tablespaceStorage;
+    }
+
+    public void setTablespaceStorage(ColumnOption.Storage storage) {
+        if (storage != null && storage != ColumnOption.Storage.DISK
+                && storage != ColumnOption.Storage.MEMORY) {
+            throw new IllegalArgumentException("TABLESPACE storage must be DISK or MEMORY");
+        }
+        tablespaceStorage = storage;
+    }
 
     public List<Index.Option> getStorageParameters() {
         return storageParameters;
@@ -51,6 +64,7 @@ public class TableOption implements Serializable {
     public void setStorageParameters(List<Index.Option> storageParameters) {
         this.storageParameters = storageParameters;
         foreignTableOptions = null;
+        tablespaceStorage = null;
         kind = Kind.STORAGE_PARAMETERS;
         name = "WITH";
         value = null;
@@ -96,6 +110,9 @@ public class TableOption implements Serializable {
 
     public void setKind(Kind kind) {
         this.kind = kind;
+        if (kind != Kind.TABLESPACE) {
+            tablespaceStorage = null;
+        }
         if (kind != Kind.FOREIGN_SERVER) {
             foreignTableOptions = null;
         }
@@ -141,6 +158,7 @@ public class TableOption implements Serializable {
     public void setUnionTables(List<Table> unionTables) {
         this.unionTables = unionTables;
         foreignTableOptions = null;
+        tablespaceStorage = null;
         kind = Kind.UNION;
         name = "UNION";
         value = null;
@@ -177,12 +195,17 @@ public class TableOption implements Serializable {
         if (renderedValue != null) {
             result.add(renderedValue);
         }
+        if (kind == Kind.TABLESPACE && tablespaceStorage != null) {
+            result.add("STORAGE");
+            result.add(tablespaceStorage.name());
+        }
         return Collections.unmodifiableList(result);
     }
 
     public void setTokens(List<String> tokens) {
         this.tokens = tokens;
         if (tokens != null) {
+            tablespaceStorage = null;
             foreignTableOptions = null;
             unionTables = null;
             storageParameters = null;
@@ -218,6 +241,9 @@ public class TableOption implements Serializable {
             return PlainSelect.getStringList(tokens, false, false);
         }
         String renderedValue = getValue();
-        return name + (renderedValue != null ? (useEquals ? " = " : " ") + renderedValue : "");
+        return name + (renderedValue != null ? (useEquals ? " = " : " ") + renderedValue : "")
+                + (kind == Kind.TABLESPACE && tablespaceStorage != null
+                        ? " STORAGE " + tablespaceStorage
+                        : "");
     }
 }

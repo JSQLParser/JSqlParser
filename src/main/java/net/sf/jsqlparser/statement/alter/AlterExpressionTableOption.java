@@ -33,6 +33,76 @@ public class AlterExpressionTableOption extends AlterExpression {
     }
 
     @Override
+    public AlterOperation getOperation() {
+        if (structuredTableOption != null) {
+            switch (structuredTableOption.getKind()) {
+                case ENGINE:
+                    return AlterOperation.ENGINE;
+                case KEY_BLOCK_SIZE:
+                    return AlterOperation.KEY_BLOCK_SIZE;
+                case COMMENT:
+                    return structuredTableOption.isUseEquals()
+                            ? AlterOperation.COMMENT_WITH_EQUAL_SIGN
+                            : AlterOperation.COMMENT;
+                default:
+                    return AlterOperation.SET_TABLE_OPTION;
+            }
+        }
+        return super.getOperation();
+    }
+
+    @Override
+    public String getEngineOption() {
+        return structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.ENGINE
+                        ? structuredTableOption.getValue()
+                        : super.getEngineOption();
+    }
+
+    @Override
+    public void setEngineOption(String value) {
+        if (structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.ENGINE) {
+            structuredTableOption.setValue(value);
+        }
+        super.setEngineOption(value);
+    }
+
+    @Override
+    public int getKeyBlockSize() {
+        return structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.KEY_BLOCK_SIZE
+                        ? Integer.parseInt(structuredTableOption.getValue())
+                        : super.getKeyBlockSize();
+    }
+
+    @Override
+    public void setKeyBlockSize(int value) {
+        if (structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.KEY_BLOCK_SIZE) {
+            structuredTableOption.setValue(Integer.toString(value));
+        }
+        super.setKeyBlockSize(value);
+    }
+
+    @Override
+    public String getCommentText() {
+        return structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.COMMENT
+                        ? structuredTableOption.getValue()
+                        : super.getCommentText();
+    }
+
+    @Override
+    public void setCommentText(String value) {
+        if (structuredTableOption != null
+                && structuredTableOption.getKind() == TableOption.Kind.COMMENT) {
+            structuredTableOption.setValue(value);
+        }
+        super.setCommentText(value);
+    }
+
+    @Override
     public String getTableOption() {
         return structuredTableOption == null ? super.getTableOption()
                 : structuredTableOption.toString();
@@ -60,6 +130,10 @@ public class AlterExpressionTableOption extends AlterExpression {
 
     @Override
     protected void appendBody(StringBuilder b) {
+        if (structuredTableOption != null) {
+            b.append(structuredTableOption);
+            return;
+        }
         switch (getOperation()) {
             case SET_TABLE_OPTION:
                 b.append(getTableOption());

@@ -1567,15 +1567,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 "DELAY_KEY_WRITE", "CHECKSUM", "CONNECTION", "COMPRESSION").contains(name);
     }
 
+    private boolean isMySqlNumericTableOptionAhead() {
+        return getToken(1).kind == K_KEY_BLOCK_SIZE || isKeywordAhead("AVG_ROW_LENGTH")
+                || isKeywordAhead("MAX_ROWS") || isKeywordAhead("MIN_ROWS");
+    }
+
+    private boolean isMySqlTableOptionAction(AlterExpression action) {
+        return action instanceof AlterExpressionTableOption
+                && ((AlterExpressionTableOption) action).getStructuredTableOption() != null
+                || action instanceof AlterExpressionCharset
+                    && action.getConvertType() != AlterExpression.ConvertType.CONVERT_TO;
+    }
+
     private boolean isMySqlScalarTableOptionAhead() {
         int kind = getToken(1).kind;
-        return isMySqlAdditionalTableOptionAhead() || isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+        return isMySqlNumericTableOptionAhead() || isMySqlAdditionalTableOptionAhead() || isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
                 || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
     }
 
     private boolean isMySqlTableOptionAhead() {
         int kind = getToken(1).kind;
-        if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
+        if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT || kind == K_TABLESPACE
                 || isMySqlScalarTableOptionAhead() || kind == K_UNION
                 || isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT")) {
             return true;
@@ -15530,6 +15542,7 @@ TableOption MySqlTableOption(): {
     String name = "";
     TableOption.Kind kind = null;
     TableOption option;
+    ColumnOption.Storage storage = null;
 } {
     (
         tk=<K_UNION> { name = tk.image; kind = TableOption.Kind.UNION;
@@ -15558,6 +15571,14 @@ TableOption MySqlTableOption(): {
         |
         LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
         { return option; }
+        |
+        <K_TABLESPACE> { name = "TABLESPACE"; kind = TableOption.Kind.TABLESPACE; }
+        [ "=" { useEquals = true; } ] value=RelObjectName()
+        [ LOOKAHEAD(2) <K_STORAGE> tk=<S_IDENTIFIER> {
+            requireDdlSyntax("DISK".equalsIgnoreCase(tk.image) || "MEMORY".equalsIgnoreCase(tk.image),
+                    "Expected DISK or MEMORY after STORAGE");
+            storage = ColumnOption.Storage.valueOf(tk.image.toUpperCase(Locale.ROOT));
+        } ]
         |
         tk=<K_ENGINE> {
             name = tk.image;
@@ -15597,6 +15618,7 @@ TableOption MySqlTableOption(): {
     {
         option = new TableOption(kind, name, value, useEquals);
         if (unionTables != null) { option.setUnionTables(unionTables); }
+        option.setTablespaceStorage(storage);
         return option;
     }
 }
@@ -15613,6 +15635,12 @@ TableOption MySqlScalarTableOption():
 }
 {
     (
+        LOOKAHEAD({ isMySqlNumericTableOptionAhead() })
+        ( token=<K_KEY_BLOCK_SIZE> | token=<K_MAX_ROWS> | token=<K_MIN_ROWS> | token=<S_IDENTIFIER> ) {
+            name = token.image.toUpperCase(Locale.ROOT); kind = TableOption.Kind.valueOf(name);
+        }
+        [ "=" { useEquals = true; } ] token=<S_LONG> { value = token.image; }
+        |
         LOOKAHEAD({ isMySqlAdditionalTableOptionAhead() }) additional=MySqlAdditionalTableOption()
         { name = additional.getName(); kind = additional.getKind();
           value = additional.getValue(); useEquals = additional.isUseEquals(); }
@@ -15694,12 +15722,44 @@ String MySqlSizeNumber():
     }
 }
 
-/** Statistics and row format share CREATE's validation and option nodes. */
-AlterExpressionTableOption AlterSharedTableOption():
-{ TableOption option; AlterExpressionTableOption action = new AlterExpressionTableOption(); }
+/** Adapts CREATE's option nodes to the existing ALTER option APIs. */
+AlterExpression AlterSharedTableOption():
+{
+    TableOption option;
+    TableOption collation = null;
+    AlterExpressionCharset charset;
+    AlterExpressionTableOption action;
+}
 {
     option=MySqlTableOption()
-    { action.setStructuredTableOption(option); return action; }
+    [ LOOKAHEAD({ option.getKind() == TableOption.Kind.CHARACTER_SET && getToken(1).kind == K_COLLATE })
+        collation=MySqlTableOption() ]
+    {
+        if (option.getKind() == TableOption.Kind.CHARACTER_SET || option.getKind() == TableOption.Kind.COLLATE) {
+            charset = new AlterExpressionCharset();
+            boolean useDefault = option.getName().toUpperCase(Locale.ROOT).startsWith("DEFAULT ");
+            if (option.getKind() == TableOption.Kind.CHARACTER_SET) {
+                charset.setOperation(AlterOperation.CONVERT);
+                charset.setConvertType(useDefault ? AlterExpression.ConvertType.DEFAULT_CHARACTER_SET
+                        : AlterExpression.ConvertType.CHARACTER_SET);
+                charset.setCharacterSet(option.getValue());
+                charset.setHasEqualForCharacterSet(option.isUseEquals());
+                if (collation != null) {
+                    charset.setCollation(collation.getValue());
+                    charset.setHasEqualForCollate(collation.isUseEquals());
+                }
+            } else {
+                charset.setOperation(AlterOperation.COLLATE);
+                charset.setCollation(option.getValue());
+                charset.setHasEqualForCollate(option.isUseEquals());
+                charset.setDefaultCollateSpecified(useDefault);
+            }
+            return charset;
+        }
+        action = new AlterExpressionTableOption();
+        action.setStructuredTableOption(option);
+        return action;
+    }
 }
 
 AlterExpressionOrderBy MySqlAlterOrderBy():
@@ -15716,16 +15776,6 @@ OrderByElement MySqlAlterOrderColumn():
     name=RelObjectName() { element.setExpression(createColumn(name)); }
     [ LOOKAHEAD(2) ( order=<K_ASC> | order=<K_DESC> ) { element.setAsc(order.kind == K_ASC); element.setAscDescPresent(true); } ]
     { return element; }
-}
-
-AlterExpressionTableOption AlterScalarTableOption():
-{
-    TableOption option;
-    AlterExpressionTableOption expression = new AlterExpressionTableOption();
-}
-{
-    option=MySqlScalarTableOption()
-    { expression.setStructuredTableOption(option); return expression; }
 }
 
 String MySqlTableOptionValue(): {
@@ -18241,7 +18291,7 @@ AlterExpression AlterExpression():
         |
         LOOKAHEAD(<K_ORDER> <K_BY>) alterExp=MySqlAlterOrderBy()
       |
-        LOOKAHEAD({ isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT") })
+        LOOKAHEAD({ isMySqlTableOptionAhead() })
         alterExp=AlterSharedTableOption()
       |
         LOOKAHEAD({ isPostgreSqlRelationActionAhead() }) alterExp=PostgreSqlRelationAction() {
@@ -18296,23 +18346,9 @@ AlterExpression AlterExpression():
       |
         (
          { alterExp = new AlterExpressionTableOption(); }
-         <K_KEY_BLOCK_SIZE> { alterExp.setOperation(AlterOperation.KEY_BLOCK_SIZE); }
-         ["=" { alterExp.setUseEqual(true);} ]
-         tk=<S_LONG> { alterExp.setKeyBlockSize(Integer.parseInt(tk.image)); }
-        )
-      |
-        (
-         { alterExp = new AlterExpressionTableOption(); }
          <K_LOCK> { alterExp.setOperation(AlterOperation.LOCK); }
          ["=" { alterExp.setUseEqual(true);} ]
          sk3 = RelObjectName() { alterExp.setLockOption(sk3); }
-        )
-      |
-        (
-         { alterExp = new AlterExpressionTableOption(); }
-         <K_ENGINE> { alterExp.setOperation(AlterOperation.ENGINE); }
-         ["=" { alterExp.setUseEqual(true);} ]
-         sk3 = RelObjectName() { alterExp.setEngineOption(sk3); }
         )
       |
         LOOKAHEAD(2) alterExp = AlterExpressionRenameOp()
@@ -18323,57 +18359,8 @@ AlterExpression AlterExpression():
           alterExp.setConvertType(AlterExpression.ConvertType.CONVERT_TO);
         }
         <K_TO> <K_CHARACTER> <K_SET> tk=<S_IDENTIFIER> { alterExp.setCharacterSet(tk.image); }
-        [<K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
+        [ LOOKAHEAD(2) <K_COLLATE> tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
         )
-      |
-        LOOKAHEAD(3)
-        (
-          { alterExp = new AlterExpressionCharset(); }
-          <K_DEFAULT>
-          (
-              <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
-              tk=<S_IDENTIFIER> {
-                  alterExp.setOperation(AlterOperation.CONVERT);
-                  alterExp.setConvertType(AlterExpression.ConvertType.DEFAULT_CHARACTER_SET);
-                  alterExp.setCharacterSet(tk.image);
-              }
-              [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
-                  tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
-          |
-              <K_COLLATE>
-              [ "=" { alterExp.setHasEqualForCollate(true); } ]
-              tk=<S_IDENTIFIER> {
-                  alterExp.setOperation(AlterOperation.COLLATE);
-                  alterExp.setCollation(tk.image);
-                  alterExp.setDefaultCollateSpecified(true);
-              }
-          )
-        )
-      |
-        ({ alterExp = new AlterExpressionCharset(); }
-        <K_CHARACTER> <K_SET> [ "=" { alterExp.setHasEqualForCharacterSet(true); } ]
-        tk=<S_IDENTIFIER> {
-          alterExp.setOperation(AlterOperation.CONVERT);
-          alterExp.setConvertType(AlterExpression.ConvertType.CHARACTER_SET);
-          alterExp.setCharacterSet(tk.image);
-        }
-        [<K_COLLATE> [ "=" { alterExp.setHasEqualForCollate(true); } ]
-            tk2=<S_IDENTIFIER> { alterExp.setCollation(tk2.image); }]
-        )
-      |
-        ({ alterExp = new AlterExpressionCharset(); }
-        <K_COLLATE> { alterExp.setOperation(AlterOperation.COLLATE); }
-        [ "=" { alterExp.setHasEqualForCollate(true); } ]
-        tk=<S_IDENTIFIER> { alterExp.setCollation(tk.image); }
-        )
-      |
-        ({ alterExp = new AlterExpressionTableOption(); }
-        <K_COMMENT> {alterExp.setOperation(AlterOperation.COMMENT);}
-            ["=" {alterExp.setOperation(AlterOperation.COMMENT_WITH_EQUAL_SIGN);} ]
-            tk=<S_CHAR_LITERAL> { alterExp.setCommentText(tk.image); }
-        )
-      |
-        LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) alterExp=AlterScalarTableOption()
       |
         alterExp = AlterExpressionDiscardOrImport()
       |
@@ -18757,7 +18744,12 @@ Alter AlterTable(boolean foreign):
 
     alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
 
-    ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
+    (
+        "," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
+        | LOOKAHEAD({ isMySqlTableOptionAhead() })
+          { requireDdlSyntax(isMySqlTableOptionAction(alterExp), "Expected a comma before table options"); }
+          alterExp=AlterSharedTableOption() { alter.addAlterExpression(alterExp); }
+    )*
 
     {
         for (AlterExpression action : alter.getAlterExpressions()) {
