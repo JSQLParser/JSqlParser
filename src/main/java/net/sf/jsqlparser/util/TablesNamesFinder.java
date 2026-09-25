@@ -11,7 +11,8 @@ package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
-
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
@@ -2920,10 +2921,26 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(AlterRelation statement, S context) {
+        if (statement.getObjectType() != AlterRelation.ObjectType.INDEX) {
+            visit(statement.getRelation(), context);
+        }
+        statement.getActions().forEach(action -> {
+            action.visitExpressions(expression -> expression.accept(this, context));
+            action.visitTables(table -> visit(table, context));
+        });
+        return null;
+    }
+
+    @Override
     public <S> Void visit(AlterDatabase statement, S context) {
         return null;
     }
 
+    @Override
+    public <S> Void visit(AlterTablespaceMove statement, S context) {
+        return null;
+    }
 
     @Override
     public <S> Void visit(CreateStatistics statement, S context) {
