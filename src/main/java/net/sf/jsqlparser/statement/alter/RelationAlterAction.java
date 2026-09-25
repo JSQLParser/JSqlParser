@@ -18,6 +18,23 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
 public class RelationAlterAction extends AlterExpression {
+    private TriggerState triggerState;
+    private TriggerTarget triggerTarget;
+    private Kind kind;
+    private ColumnAction columnAction;
+    private ReplicaIdentity replicaIdentity;
+    private String newName;
+    private String value;
+    private Integer columnNumber;
+    private Long statistics;
+    private boolean statisticsDefault;
+    private Expression defaultExpression;
+    private Table relation;
+    private boolean noInherit;
+    private boolean noDependency;
+    private List<Index.Option> options;
+    private List<String> resetOptions;
+
     public enum Kind {
         RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE
     }
@@ -37,8 +54,6 @@ public class RelationAlterAction extends AlterExpression {
         NAME, ALL, USER
     }
 
-    private TriggerState triggerState;
-    private TriggerTarget triggerTarget;
 
     public TriggerState getTriggerState() {
         return triggerState;
@@ -56,20 +71,6 @@ public class RelationAlterAction extends AlterExpression {
         this.triggerTarget = triggerTarget;
     }
 
-    private Kind kind;
-    private ColumnAction columnAction;
-    private ReplicaIdentity replicaIdentity;
-    private String newName;
-    private String value;
-    private Integer columnNumber;
-    private Long statistics;
-    private boolean statisticsDefault;
-    private Expression defaultExpression;
-    private Table relation;
-    private boolean noInherit;
-    private boolean noDependency;
-    private List<Index.Option> options;
-    private List<String> resetOptions;
 
     public RelationAlterAction() {
         setOperation(AlterOperation.ALTER_RELATION);
