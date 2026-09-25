@@ -29,6 +29,16 @@ public class RelationAlterAction extends AlterExpression {
     private Long statistics;
     private boolean statisticsDefault;
     private Expression defaultExpression;
+    private Expression generationExpression;
+
+    public Expression getGenerationExpression() {
+        return generationExpression;
+    }
+
+    public void setGenerationExpression(Expression expression) {
+        generationExpression = expression;
+    }
+
     private Table relation;
     private boolean noInherit;
     private boolean noDependency;
@@ -40,7 +50,7 @@ public class RelationAlterAction extends AlterExpression {
     }
 
     public enum ColumnAction {
-        SET_DEFAULT, DROP_DEFAULT, SET_STATISTICS, SET_STORAGE, SET_COMPRESSION, DROP_EXPRESSION, SET_OPTIONS, RESET_OPTIONS
+        SET_DEFAULT, DROP_DEFAULT, SET_STATISTICS, SET_STORAGE, SET_COMPRESSION, SET_EXPRESSION, DROP_EXPRESSION, SET_OPTIONS, RESET_OPTIONS
     }
 
     public enum ReplicaIdentity {
@@ -311,6 +321,12 @@ public class RelationAlterAction extends AlterExpression {
             case SET_COMPRESSION:
                 builder.append(" SET COMPRESSION ").append(value);
                 break;
+            case SET_EXPRESSION:
+                builder.append(" SET EXPRESSION ");
+                net.sf.jsqlparser.statement.create.table.GeneratedColumnDefinition
+                        .appendExpressionTo(
+                                builder, generationExpression, expressionPrinter);
+                break;
             case DROP_EXPRESSION:
                 builder.append(" DROP EXPRESSION");
                 if (isUsingIfExists()) {
@@ -325,6 +341,8 @@ public class RelationAlterAction extends AlterExpression {
     public void visitExpressions(Consumer<Expression> visitor) {
         if (kind == Kind.ALTER_COLUMN && columnAction == ColumnAction.SET_DEFAULT) {
             visitor.accept(defaultExpression);
+        } else if (kind == Kind.ALTER_COLUMN && columnAction == ColumnAction.SET_EXPRESSION) {
+            visitor.accept(generationExpression);
         } else if ((kind == Kind.SET_OPTIONS || kind == Kind.ALTER_COLUMN
                 && columnAction == ColumnAction.SET_OPTIONS) && options != null) {
             options.stream().map(Index.Option::getValue).filter(java.util.Objects::nonNull)
