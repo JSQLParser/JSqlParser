@@ -21,15 +21,14 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Alter implements Statement {
-
     private Table table;
     private boolean useOnly = false;
-
     private boolean useTableIfExists = false;
-
     private List<AlterExpression> alterExpressions;
-
     private boolean useDescendants;
+    private boolean foreignTable;
+
+
 
     public boolean isUseDescendants() {
         return useDescendants;
@@ -54,7 +53,6 @@ public class Alter implements Statement {
         return builder.append(' ');
     }
 
-    private boolean foreignTable;
 
     public boolean isForeignTable() {
         return foreignTable;
