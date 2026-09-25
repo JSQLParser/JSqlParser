@@ -22,6 +22,8 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.ColumnOption;
+import net.sf.jsqlparser.statement.create.table.ForeignDataOption;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataOptions;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
@@ -61,6 +63,10 @@ public final class TableDefinitionTraversal {
         }
         if (action.getOperation() == AlterOperation.RENAME_TABLE) {
             accept(action.getNewTable(), tables);
+        }
+        if (action instanceof AlterForeignDataOptions) {
+            ForeignDataOption.visitExpressions(((AlterForeignDataOptions) action).getOptions(),
+                    expressions);
         }
         if (action.getColumnSetDefaultList() != null) {
             action.getColumnSetDefaultList()
@@ -111,6 +117,10 @@ public final class TableDefinitionTraversal {
             if (table.getIndexes() != null) {
                 table.getIndexes().forEach(index -> visit(index, expressions, tables));
             }
+        }
+        if (table.getForeignTableOptions() != null) {
+            ForeignDataOption.visitExpressions(table.getForeignTableOptions().getOptions(),
+                    expressions);
         }
         if (table.getTableOptions() != null) {
             table.getTableOptions().forEach(option -> {

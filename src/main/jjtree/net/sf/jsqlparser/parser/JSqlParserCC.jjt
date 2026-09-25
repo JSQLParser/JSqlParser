@@ -14240,6 +14240,7 @@ ColumnDefinition ColumnDefinition(): {
 
 ColumnOption ColumnDefinitionOption(): {
     Token tk;
+    List<ForeignDataOption> foreignOptions;
     List<String> parameter;
     ForeignKeyReference reference;
     ColumnOption option;
@@ -14253,6 +14254,9 @@ ColumnOption ColumnDefinitionOption(): {
     String compression;
 } {
     (
+        LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && isKeywordAhead("OPTIONS") })
+        foreignOptions=ForeignDataOptions(false) { option = ColumnOption.foreignOptions(foreignOptions); }
+        |
         LOOKAHEAD({ isKeywordAhead("GENERATED")
                 && (getToken(4).kind == K_IDENTITY || getToken(5).kind == K_IDENTITY) })
         identity=IdentityDefinition() { option = ColumnOption.identity(identity); }
@@ -15285,6 +15289,8 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     List<Table> parents = new ArrayList<Table>();
     ObjectNames typeName;
     boolean withData;
+    boolean foreign = false;
+    ForeignTableOptions foreignOptions;
 }
 {
     { createTable.setOrReplace(isUsingOrReplace);}
@@ -15295,6 +15301,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
 
     (parameter = CreateParameter() { createOptions.addAll(parameter); })*
 
+    { for (String opt : createOptions) { if ("FOREIGN".equalsIgnoreCase(opt)) { foreign = true; } } }
     <K_TABLE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTable.setIfNotExists(true); }]
     table=Table()
@@ -15337,6 +15344,9 @@ CreateTable CreateTable(boolean isUsingOrReplace):
     [ LOOKAHEAD({ partitionOfTable != null })
         partitionBound=PostgreSqlPartitionBound()
         { createTable.setPartitionBound(partitionBound); } ]
+    [ LOOKAHEAD({ isKeywordAhead("SERVER") }) foreignOptions=ForeignTableOptions()
+      { requireDdlSyntax(foreign, "SERVER requires CREATE FOREIGN TABLE");
+        typedTableOptions.add(TableOption.foreignServer(foreignOptions)); } ]
     CreateTableOptions(typedTableOptions)
     [ LOOKAHEAD(<K_PARTITION> <K_BY>) partitioning=CreateTablePartitioning()
         { createTable.setPartitioning(partitioning); } ]
@@ -15389,8 +15399,58 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                 createTable.setColumns(columns);
             }
         }
+        requireDdlSyntax(!foreign
+                || createTable.getForeignTableOptions() != null, "CREATE FOREIGN TABLE requires SERVER");
         return createTable;
     }
+}
+
+ForeignTableOptions ForeignTableOptions():
+{
+    ForeignTableOptions result = new ForeignTableOptions();
+    String name;
+    List<ForeignDataOption> options;
+}
+{
+    ContextualKeyword("SERVER") name=RelObjectName() { result.setServer(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { result.setOptions(options); } ]
+    { return result; }
+}
+
+List<ForeignDataOption> ForeignDataOptions(boolean alter):
+{
+    List<ForeignDataOption> options = new ArrayList<ForeignDataOption>();
+    ForeignDataOption option;
+}
+{
+    ContextualKeyword("OPTIONS") "(" option=ForeignDataOption() { options.add(option); }
+    ( "," option=ForeignDataOption() { options.add(option); } )* ")"
+    {
+        for (ForeignDataOption item : options) {
+            requireDdlSyntax(alter || item.getAction() == null, "CREATE options do not allow ADD, SET or DROP");
+        }
+        return options;
+    }
+}
+
+ForeignDataOption ForeignDataOption():
+{
+    ForeignDataOption.Action action = null;
+    String name;
+    Token value;
+    ForeignDataOption option;
+}
+{
+    (
+        LOOKAHEAD(<K_DROP>) <K_DROP> name=RelObjectName()
+        { option = new ForeignDataOption(name, null); option.setAction(ForeignDataOption.Action.DROP); }
+        |
+        [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
+          | <K_SET> { action = ForeignDataOption.Action.SET; } ) ]
+        name=RelObjectName() value=<S_CHAR_LITERAL>
+        { option = new ForeignDataOption(name, new StringValue(value.image)); option.setAction(action); }
+    )
+    { return option; }
 }
 
 TableElement CreateTableElement(boolean typed):
@@ -16679,11 +16739,14 @@ Drop Drop():
     List<String> funcArgs = null;
     List<String> indexOption;
     boolean useTemporary = false;
+    boolean foreign = false;
 }
 {
     <K_DROP>
     [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
+        <K_FOREIGN> tk=<K_TABLE> { foreign = true; }
+        |
         tk=<S_IDENTIFIER>
         |
         (
@@ -16706,7 +16769,7 @@ Drop Drop():
         |
         tk=<K_FUNCTION>
     )
-    { drop.setType(tk.image); }
+    { drop.setType(foreign ? "FOREIGN TABLE" : tk.image); }
     [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
             && getToken(1).kind == K_CONCURRENTLY })
         <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
@@ -18172,6 +18235,10 @@ AlterExpression AlterExpression():
 {
 
     (
+        LOOKAHEAD({ isKeywordAhead("OPTIONS") || getToken(1).kind == K_ALTER
+                && "OPTIONS".equalsIgnoreCase(getToken(getToken(2).kind == K_COLUMN ? 4 : 3).image) })
+        alterExp=AlterForeignDataOptions()
+        |
         LOOKAHEAD(<K_ORDER> <K_BY>) alterExp=MySqlAlterOrderBy()
       |
         LOOKAHEAD({ isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT") })
@@ -18404,7 +18471,9 @@ Statement Alter():
                 LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
                 statement = PostgreSqlTablespaceMove()
                 |
-                statement = AlterTable()
+                statement = AlterForeignTable()
+                |
+                statement = AlterTable(false)
                 |
                 statement = AlterSession()
                 |
@@ -18646,7 +18715,26 @@ RelationAlterAction PostgreSqlRelationAction():
     { return action; }
 }
 
-Alter AlterTable():
+AlterForeignDataOptions AlterForeignDataOptions():
+{
+    AlterForeignDataOptions action = new AlterForeignDataOptions();
+    String name;
+    List<ForeignDataOption> options;
+}
+{
+    [ <K_ALTER> [ LOOKAHEAD(1) <K_COLUMN> { action.hasColumn(true); } ]
+      name=RelObjectName() { action.setColumnName(name); } ]
+    options=ForeignDataOptions(true) { action.setOptions(options); }
+    { return action; }
+}
+
+Alter AlterForeignTable():
+{ Alter alter; }
+{
+    <K_FOREIGN> alter=AlterTable(true) { alter.setForeignTable(true); return alter; }
+}
+
+Alter AlterTable(boolean foreign):
 {
     Alter alter = new Alter();
     Table table;
@@ -18654,16 +18742,27 @@ Alter AlterTable():
     boolean usingIfExists = false;
 }
 {
-    <K_TABLE>
-    [ <K_ONLY> { alter.setUseOnly(true); } ]
+    <K_TABLE> { alter.setForeignTable(foreign); }
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alter.setUseTableIfExists(true); } ]
+    [ <K_ONLY> { alter.setUseOnly(true); } ]
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {
+        requireDdlSyntax(!alter.isUseTableIfExists(), "Duplicate IF EXISTS");
+        alter.setUseTableIfExists(true);
+    } ]
     table=Table() { alter.setTable(table); }
+    [ "*" {
+        requireDdlSyntax(!alter.isUseOnly(), "ONLY cannot be combined with descendant marker");
+        alter.setUseDescendants(true);
+    } ]
 
     alterExp=AlterExpression() { alter.addAlterExpression(alterExp); }
 
     ("," alterExp=AlterExpression() { alter.addAlterExpression(alterExp); } )*
 
     {
+        for (AlterExpression action : alter.getAlterExpressions()) {
+            requireDdlSyntax(foreign || !(action instanceof AlterForeignDataOptions), "OPTIONS requires ALTER FOREIGN TABLE");
+        }
         return alter;
     }
 }

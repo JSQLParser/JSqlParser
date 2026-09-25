@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataOptions;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPartition;
@@ -33,14 +34,7 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
 
     @Override
     public void deParse(Alter alter) {
-        builder.append("ALTER TABLE ");
-        if (alter.isUseOnly()) {
-            builder.append("ONLY ");
-        }
-        if (alter.isUseTableIfExists()) {
-            builder.append("IF EXISTS ");
-        }
-        builder.append(alter.getTable().getFullyQualifiedName()).append(' ');
+        alter.appendTargetTo(builder);
         for (Iterator<AlterExpression> iterator = alter.getAlterExpressions().iterator(); iterator
                 .hasNext();) {
             deParseAction(iterator.next());
@@ -51,6 +45,11 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
     }
 
     private void deParseAction(AlterExpression action) {
+        if (action instanceof AlterForeignDataOptions) {
+            ((AlterForeignDataOptions) action).appendTo(builder,
+                    expression -> expression.accept(expressionVisitor, null));
+            return;
+        }
         if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) {
             ((net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) action).appendTo(builder,
                     expression -> expression.accept(expressionVisitor, null));

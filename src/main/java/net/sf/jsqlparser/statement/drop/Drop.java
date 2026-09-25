@@ -26,7 +26,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Drop implements Statement {
 
     public enum ObjectType {
-        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, OTHER
+        DATABASE, EVENT, FUNCTION, INDEX, PROCEDURE, SCHEMA, SEQUENCE, SERVER, TABLE, TABLESPACE, TRIGGER, VIEW, FOREIGN_TABLE, OTHER
     }
 
     private String type;
@@ -128,7 +128,8 @@ public class Drop implements Statement {
 
     /** Visits table/view targets and explicit index owners without resolving catalog objects. */
     public void visitTables(Consumer<Table> visitor) {
-        if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW) {
+        if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW
+                || objectType == ObjectType.FOREIGN_TABLE) {
             names.forEach(visitor);
         } else if (objectType == ObjectType.INDEX && table != null) {
             visitor.accept(table);
@@ -149,7 +150,7 @@ public class Drop implements Statement {
     public void setType(String string) {
         type = string;
         try {
-            objectType = ObjectType.valueOf(string.toUpperCase(Locale.ROOT));
+            objectType = ObjectType.valueOf(string.toUpperCase(Locale.ROOT).replace(' ', '_'));
         } catch (IllegalArgumentException | NullPointerException ignored) {
             objectType = ObjectType.OTHER;
         }
@@ -162,7 +163,7 @@ public class Drop implements Statement {
     public void setObjectType(ObjectType objectType) {
         this.objectType = objectType == null ? ObjectType.OTHER : objectType;
         if (this.objectType != ObjectType.OTHER) {
-            this.type = this.objectType.name();
+            this.type = this.objectType.name().replace('_', ' ');
         }
     }
 
@@ -235,7 +236,8 @@ public class Drop implements Statement {
             if (i > 0) {
                 builder.append(", ");
             }
-            if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW) {
+            if (objectType == ObjectType.TABLE || objectType == ObjectType.VIEW
+                    || objectType == ObjectType.FOREIGN_TABLE) {
                 tablePrinter.accept(names.get(i));
             } else {
                 builder.append(names.get(i));

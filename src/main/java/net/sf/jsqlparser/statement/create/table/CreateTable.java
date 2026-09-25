@@ -50,6 +50,19 @@ public class CreateTable implements Statement {
 
     private Table table;
     private boolean unlogged = false;
+
+    /** The structured SERVER clause, also present in the shared table-options list. */
+    public ForeignTableOptions getForeignTableOptions() {
+        if (tableOptions != null) {
+            for (TableOption option : tableOptions) {
+                if (option.getForeignTableOptions() != null) {
+                    return option.getForeignTableOptions();
+                }
+            }
+        }
+        return null;
+    }
+
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<TableOption> tableOptions;
