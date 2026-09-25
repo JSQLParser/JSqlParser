@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.expression.RowPatternFunction;
@@ -2909,6 +2910,18 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(OracleNullStatement statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRelation statement, S context) {
+        if (statement.getObjectType() != AlterRelation.ObjectType.INDEX) {
+            visit(statement.getRelation(), context);
+        }
+        statement.getActions().forEach(action -> {
+            action.visitExpressions(expression -> expression.accept(this, context));
+            action.visitTables(table -> visit(table, context));
+        });
         return null;
     }
 

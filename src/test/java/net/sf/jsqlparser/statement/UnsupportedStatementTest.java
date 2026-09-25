@@ -118,11 +118,11 @@ public class UnsupportedStatementTest {
     }
 
     @Test
-    void testAlter() throws JSQLParserException {
+    void testFormerlyUnsupportedAlterIndex() throws JSQLParserException {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        assertInstanceOf(UnsupportedStatement.class, statement);
+        assertInstanceOf(net.sf.jsqlparser.statement.alter.AlterRelation.class, statement);
     }
 
     @Test
