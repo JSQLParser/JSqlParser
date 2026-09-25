@@ -49,6 +49,9 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
+import net.sf.jsqlparser.statement.create.fdw.*;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
@@ -1534,7 +1537,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     private boolean isKeywordAhead(String keyword) {
         Token token = getToken(1);
-        return token.image != null && keyword.equalsIgnoreCase(token.image);
+        return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
     }
 
     private boolean isXmlTypeName(String name) {
@@ -18441,6 +18444,12 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD(<K_FOREIGN> <K_DATA>) statement = AlterForeignDataWrapper()
+                |
+                LOOKAHEAD({ isKeywordAhead("SERVER") }) statement = AlterServer()
+                |
+                LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) statement = AlterUserMapping()
+                |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
                 LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
@@ -19650,6 +19659,12 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        LOOKAHEAD(<K_FOREIGN> <K_DATA>) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateForeignDataWrapper()
+        |
+        LOOKAHEAD({ isKeywordAhead("SERVER") }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateServer()
+        |
+        LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateUserMapping()
+        |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
         |
         LOOKAHEAD({ isPostgreSqlRoleAhead() }) statement = CreateRole()
@@ -20951,4 +20966,132 @@ AlterStatistics AlterStatistics():
               requireDdlSyntax(target>=-1 && target<=10000,"Statistics target must be DEFAULT or between -1 and 10000");
               statement.setStatistics(target.intValue()); } ) ) )
     { return statement; }
+}
+
+CreateForeignDataWrapper CreateForeignDataWrapper():
+{
+    CreateForeignDataWrapper statement = new CreateForeignDataWrapper();
+    String name; ForeignDataWrapperFunctions functions; List<ForeignDataOption> options;
+}
+{
+    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName()
+    functions=ForeignDataWrapperFunctions()
+    { statement.setName(name); statement.setFunctions(functions); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
+    { return statement; }
+}
+
+AlterForeignDataWrapper AlterForeignDataWrapper():
+{
+    AlterForeignDataWrapper statement = new AlterForeignDataWrapper();
+    String name; ForeignDataWrapperFunctions functions; List<ForeignDataOption> options;
+}
+{
+    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterForeignDataWrapper.Action.RENAME); statement.setNewName(name); }
+        | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterForeignDataWrapper.Action.OWNER); statement.setOwner(name); }
+        | functions=ForeignDataWrapperFunctions() { statement.setFunctions(functions); }
+          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
+          { requireDdlSyntax(functions.isHandlerSpecified() || functions.isValidatorSpecified()
+                    || statement.getOptions() != null, "ALTER FOREIGN DATA WRAPPER requires an action"); }
+    )
+    { return statement; }
+}
+
+ForeignDataWrapperFunctions ForeignDataWrapperFunctions():
+{
+    ForeignDataWrapperFunctions functions = new ForeignDataWrapperFunctions();
+    String name; boolean handler;
+}
+{
+    ( LOOKAHEAD({ isKeywordAhead("HANDLER") || isKeywordAhead("VALIDATOR") || getToken(1).kind == K_NO })
+        { name = null; }
+        (
+            <K_NO>
+            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+              | ContextualKeyword("VALIDATOR") { handler = false; } )
+            |
+            ( LOOKAHEAD({ isKeywordAhead("HANDLER") }) ContextualKeyword("HANDLER") { handler = true; }
+              | ContextualKeyword("VALIDATOR") { handler = false; } )
+            name=AccessQualifiedName()
+        )
+        {
+            if (handler) {
+                requireDdlSyntax(!functions.isHandlerSpecified(), "Duplicate HANDLER clause"); functions.setHandler(name);
+            } else {
+                requireDdlSyntax(!functions.isValidatorSpecified(), "Duplicate VALIDATOR clause"); functions.setValidator(name);
+            }
+        }
+    )*
+    { return functions; }
+}
+
+CreateServer CreateServer():
+{
+    CreateServer statement = new CreateServer(); String name; Token type;
+    Expression version; List<ForeignDataOption> options;
+}
+{
+    ContextualKeyword("SERVER")
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+    name=RelObjectName() { statement.setName(name); }
+    [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(new StringValue(type.image)); } ]
+    [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
+    <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setForeignDataWrapper(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
+    { return statement; }
+}
+
+Expression ForeignServerVersion():
+{ Token value; Expression version; }
+{
+    ( value=<S_CHAR_LITERAL> { version = new StringValue(value.image); }
+      | <K_NULL> { version = new NullValue(); } )
+    { return version; }
+}
+
+AlterServer AlterServer():
+{
+    AlterServer statement = new AlterServer(); String name;
+    Expression version; List<ForeignDataOption> options;
+}
+{
+    ContextualKeyword("SERVER") name=RelObjectName() { statement.setName(name); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterServer.Action.RENAME); statement.setNewName(name); }
+        | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterServer.Action.OWNER); statement.setOwner(name); }
+        | [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
+          [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
+          { requireDdlSyntax(statement.getVersion() != null || statement.getOptions() != null,
+                    "ALTER SERVER requires VERSION or OPTIONS"); }
+    )
+    { return statement; }
+}
+
+CreateUserMapping CreateUserMapping():
+{
+    CreateUserMapping statement = new CreateUserMapping(); String name; List<ForeignDataOption> options;
+}
+{
+    <K_USER> ContextualKeyword("MAPPING")
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+    <K_FOR> name=RelObjectName() { statement.setUser(name); }
+    ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
+    [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
+    { return statement; }
+}
+
+AlterUserMapping AlterUserMapping():
+{
+    AlterUserMapping statement = new AlterUserMapping(); String name; List<ForeignDataOption> options;
+}
+{
+    <K_USER> ContextualKeyword("MAPPING") <K_FOR> name=RelObjectName() { statement.setUser(name); }
+    ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
+    options=ForeignDataOptions(true) { statement.setOptions(options); return statement; }
 }

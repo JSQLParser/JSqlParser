@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -852,5 +858,41 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(AlterStatistics statement, S context) {
         return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateForeignDataWrapper statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterForeignDataWrapper statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateServer statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterServer statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateUserMapping statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterUserMapping statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 }
