@@ -14172,15 +14172,12 @@ ColumnOption ColumnDefinitionOption(): {
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
         { option = ColumnOption.onUpdate(defaultExpression); }
         |
-        LOOKAHEAD(<K_PRIMARY> <K_KEY>) <K_PRIMARY> <K_KEY>
-        { option = ColumnOption.constraint(new NamedConstraint().withType("PRIMARY KEY")); }
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] ( <K_PRIMARY> <K_KEY> | <K_UNIQUE> ))
+        constraint=ColumnKeyConstraint() { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_CHECK>)
         [ <K_CONSTRAINT> constraintName=RelObjectName() ]
         constraint=CheckConstraintSpec(constraintName)
-        { option = ColumnOption.constraint(constraint); }
-        |
-        LOOKAHEAD(<K_UNIQUE>) constraint=ColumnUniqueConstraint()
         { option = ColumnOption.constraint(constraint); }
         |
         LOOKAHEAD({ isKeywordAhead("SERIAL")
@@ -14188,8 +14185,10 @@ ColumnOption ColumnDefinitionOption(): {
         tk=<S_IDENTIFIER> <K_DEFAULT> <K_VALUE>
         { option = ColumnOption.serialDefaultValue(); }
         |
-        LOOKAHEAD(<K_REFERENCES>) reference=ForeignKeyReferenceSpec(true)
-        { option = ColumnOption.reference(reference); }
+        LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ] <K_REFERENCES>)
+        [ <K_CONSTRAINT> constraintName=RelObjectName() ]
+        reference=ForeignKeyReferenceSpec(true)
+        { reference.setConstraintName(constraintName); option = ColumnOption.reference(reference); }
         |
         LOOKAHEAD(<K_DROP> <K_DEFAULT>) <K_DROP> <K_DEFAULT>
         { option = ColumnOption.raw("DROP", "DEFAULT"); }
@@ -14230,17 +14229,30 @@ GeneratedColumnDefinition GeneratedColumnDefinition():
     }
 }
 
-NamedConstraint ColumnUniqueConstraint():
+/** Keeps a column key's name and attributes on the same node in CREATE and ALTER. */
+NamedConstraint ColumnKeyConstraint():
 {
-    NamedConstraint constraint = new NamedConstraint().withType("UNIQUE");
+    NamedConstraint constraint = new NamedConstraint();
+    String name;
     Boolean nullsDistinct = null;
 }
 {
-    <K_UNIQUE>
-    [ <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT> {
-        constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
-    } ]
-    { return constraint; }
+    [ <K_CONSTRAINT> name=RelObjectName() { constraint.setName(name); } ]
+    (
+        <K_PRIMARY> <K_KEY> { constraint.setType("PRIMARY KEY"); }
+        |
+        <K_UNIQUE> { constraint.setType("UNIQUE"); }
+        [ <K_NULLS> [ <K_NOT> { nullsDistinct = false; } ] <K_DISTINCT> {
+            constraint.setNullsDistinct(nullsDistinct == null ? true : nullsDistinct);
+        } ]
+    )
+    PostgreSqlConstraintAttributes(constraint)
+    {
+        requireDdlSyntax(constraint.getConstraintAttributes() == null
+                || !constraint.getConstraintAttributes().isNotValid(),
+                "NOT VALID requires a table constraint");
+        return constraint;
+    }
 }
 
 IdentityDefinition IdentityDefinition():
@@ -14841,6 +14853,15 @@ void PostgreSqlConstraintAttributes(Index index):
 { ConstraintAttributes attributes; }
 {
     attributes=PostgreSqlConstraintAttributeList(index.getConstraintAttributes())
+    ( LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
+            && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
+        <K_NO> TypeDdlKeyword("INHERIT") {
+            requireDdlSyntax(index instanceof CheckConstraint && !((CheckConstraint) index).isNoInherit(),
+                    "NO INHERIT requires a CHECK constraint and cannot be repeated");
+            ((CheckConstraint) index).setNoInherit(true);
+        }
+        attributes=PostgreSqlConstraintAttributeList(attributes)
+    )*
     {
         requireDdlSyntax(attributes == null || attributes.getEnforced() == null
                 || index instanceof CheckConstraint || index instanceof ForeignKeyIndex,
