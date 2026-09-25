@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -2937,6 +2939,19 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterTablespaceMove statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterPolicy statement, S context) {
+        visit(statement.getTable(), context);
+        statement.getOptions().visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DropPolicy statement, S context) {
+        visit(statement.getTable(), context);
         return null;
     }
 }

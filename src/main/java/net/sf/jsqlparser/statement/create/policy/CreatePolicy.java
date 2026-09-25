@@ -14,7 +14,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.List;
 
 /**
@@ -30,9 +30,16 @@ public class CreatePolicy implements Statement {
     private Table table;
     private PolicyMode policyMode;
     private PolicyCommand policyCommand;
-    private List<String> roles = new ArrayList<>();
-    private Expression usingExpression;
-    private Expression withCheckExpression;
+    private PolicyOptions options = new PolicyOptions();
+
+    public PolicyOptions getOptions() {
+        return options;
+    }
+
+    public CreatePolicy setOptions(PolicyOptions options) {
+        this.options = java.util.Objects.requireNonNull(options);
+        return this;
+    }
 
     public String getPolicyName() {
         return policyName;
@@ -118,34 +125,34 @@ public class CreatePolicy implements Statement {
     }
 
     public List<String> getRoles() {
-        return roles;
+        return options.getRoles();
     }
 
     public CreatePolicy setRoles(List<String> roles) {
-        this.roles = roles;
+        options.setRoles(roles);
         return this;
     }
 
     public CreatePolicy addRole(String role) {
-        this.roles.add(role);
+        options.getRoles().add(role);
         return this;
     }
 
     public Expression getUsingExpression() {
-        return usingExpression;
+        return options.getUsingExpression();
     }
 
     public CreatePolicy setUsingExpression(Expression usingExpression) {
-        this.usingExpression = usingExpression;
+        options.setUsingExpression(usingExpression);
         return this;
     }
 
     public Expression getWithCheckExpression() {
-        return withCheckExpression;
+        return options.getWithCheckExpression();
     }
 
     public CreatePolicy setWithCheckExpression(Expression withCheckExpression) {
-        this.withCheckExpression = withCheckExpression;
+        options.setWithCheckExpression(withCheckExpression);
         return this;
     }
 
@@ -154,39 +161,22 @@ public class CreatePolicy implements Statement {
         return statementVisitor.visit(this, context);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder("CREATE POLICY ");
-        builder.append(policyName);
-        builder.append(" ON ");
-        builder.append(table.toString());
 
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> printer) {
+        builder.append("CREATE POLICY ").append(policyName).append(" ON ").append(table);
         if (policyMode != null) {
             builder.append(" AS ").append(policyMode);
         }
-
         if (policyCommand != null) {
             builder.append(" FOR ").append(policyCommand);
         }
+        options.appendTo(builder, printer);
+        return builder;
+    }
 
-        if (roles != null && !roles.isEmpty()) {
-            builder.append(" TO ");
-            for (int i = 0; i < roles.size(); i++) {
-                if (i > 0) {
-                    builder.append(", ");
-                }
-                builder.append(roles.get(i));
-            }
-        }
-
-        if (usingExpression != null) {
-            builder.append(" USING (").append(usingExpression.toString()).append(")");
-        }
-
-        if (withCheckExpression != null) {
-            builder.append(" WITH CHECK (").append(withCheckExpression.toString()).append(")");
-        }
-
-        return builder.toString();
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
     }
 }
