@@ -30,6 +30,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 class PostgreSqlRelationAlterTest {
     @ParameterizedTest
     @ValueSource(strings = {
+            "ALTER TABLE t CLUSTER ON ix", "ALTER TABLE t SET WITHOUT CLUSTER",
+            "ALTER TABLE t SET WITHOUT OIDS", "ALTER TABLE t SET LOGGED",
+            "ALTER TABLE t SET UNLOGGED",
+            "ALTER TABLE t OF public.typ", "ALTER TABLE t NOT OF",
+            "ALTER TABLE t ENABLE ALWAYS TRIGGER trg", "ALTER TABLE t ENABLE REPLICA TRIGGER trg",
+            "ALTER TABLE t DISABLE TRIGGER ALL", "ALTER TABLE t ENABLE TRIGGER USER",
+            "ALTER TABLE t ENABLE TRIGGER \"ALL\"",
+            "ALTER MATERIALIZED VIEW mv CLUSTER ON ix",
+            "ALTER MATERIALIZED VIEW mv SET WITHOUT CLUSTER",
             "ALTER INDEX ix RENAME TO ix2",
             "ALTER INDEX ix SET TABLESPACE pg_default",
             "ALTER INDEX ix SET (fillfactor=80)",
@@ -158,6 +167,46 @@ class PostgreSqlRelationAlterTest {
             "ALTER VIEW v RENAME TO v2, SET (security_invoker=true)"})
     void objectBoundariesAreEnforced(String sql) {
         assertThrows(JSQLParserException.class, () -> parse(sql));
+    }
+
+    @Test
+    void triggerTargetsAndTypeNamesAreMutableWithoutInventingTables() throws JSQLParserException {
+        Alter statement = (Alter) parse("ALTER TABLE t ENABLE REPLICA TRIGGER trg");
+        RelationAlterAction action = (RelationAlterAction) statement.getAlterExpressions().get(0);
+        assertEquals(RelationAlterAction.TriggerState.ENABLE_REPLICA, action.getTriggerState());
+        action.setTriggerState(RelationAlterAction.TriggerState.DISABLE);
+        action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER);
+        assertEquals("ALTER TABLE t DISABLE TRIGGER USER", statement.toString());
+        assertRoundTrip(statement);
+        statement = (Alter) parse("ALTER TABLE t OF public.typ");
+        action = (RelationAlterAction) statement.getAlterExpressions().get(0);
+        action.setValue("other.typ");
+        assertEquals(java.util.Set.of("t"), new TablesNamesFinder().getTables(statement));
+        assertRoundTrip(statement);
+        for (String sql : List.of("ALTER TABLE t ENABLE ALWAYS TRIGGER ALL",
+                "ALTER INDEX ix SET LOGGED", "ALTER VIEW v CLUSTER ON ix")) {
+            assertThrows(JSQLParserException.class, () -> parse(sql));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"TABLE", "INDEX", "MATERIALIZED VIEW"})
+    void bulkTablespaceMovesShareOneModel(String objectType) throws JSQLParserException {
+        AlterTablespaceMove statement = (AlterTablespaceMove) parse("ALTER " + objectType
+                + " ALL IN TABLESPACE old_space OWNED BY alice, \"Bob\" SET TABLESPACE new_space NOWAIT");
+        assertEquals(objectType.replace(' ', '_'), statement.getObjectType().name());
+        assertEquals(List.of("alice", "\"Bob\""), statement.getOwners());
+        assertEquals("old_space", statement.getSourceTablespace());
+        assertTrue(statement.isNoWait());
+        assertTrue(new TablesNamesFinder().getTables(statement).isEmpty());
+        statement.setTargetTablespace("pg_default");
+        statement.getOwners().clear();
+        statement.setNoWait(false);
+        assertEquals(
+                "ALTER " + objectType + " ALL IN TABLESPACE old_space SET TABLESPACE pg_default",
+                statement.toString());
+        assertRoundTrip(statement);
+        assertEquals(2, CCJSqlParserUtil.parseStatements(statement + "; SELECT 1").size());
     }
 
     private static Statement parse(String sql) throws JSQLParserException {

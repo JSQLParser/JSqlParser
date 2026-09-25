@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -689,4 +690,11 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+    default <S> T visit(AlterTablespaceMove statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTablespaceMove statement) {
+        visit(statement, null);
+    }
 }

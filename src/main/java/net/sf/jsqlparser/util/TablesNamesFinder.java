@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
@@ -2934,4 +2935,8 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+    @Override
+    public <S> Void visit(AlterTablespaceMove statement, S context) {
+        return null;
+    }
 }

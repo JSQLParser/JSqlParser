@@ -19,7 +19,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
 public class RelationAlterAction extends AlterExpression {
     public enum Kind {
-        RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY
+        RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE
     }
 
     public enum ColumnAction {
@@ -28,6 +28,32 @@ public class RelationAlterAction extends AlterExpression {
 
     public enum ReplicaIdentity {
         DEFAULT, FULL, NOTHING, USING_INDEX
+    }
+
+    public enum TriggerState {
+        ENABLE, DISABLE, ENABLE_ALWAYS, ENABLE_REPLICA
+    }
+    public enum TriggerTarget {
+        NAME, ALL, USER
+    }
+
+    private TriggerState triggerState;
+    private TriggerTarget triggerTarget;
+
+    public TriggerState getTriggerState() {
+        return triggerState;
+    }
+
+    public void setTriggerState(TriggerState triggerState) {
+        this.triggerState = triggerState;
+    }
+
+    public TriggerTarget getTriggerTarget() {
+        return triggerTarget;
+    }
+
+    public void setTriggerTarget(TriggerTarget triggerTarget) {
+        this.triggerTarget = triggerTarget;
     }
 
     private Kind kind;
@@ -178,6 +204,23 @@ public class RelationAlterAction extends AlterExpression {
 
     private void appendDefinition(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         switch (kind) {
+            case CLUSTER_ON:
+                builder.append("CLUSTER ON ").append(value);
+                break;
+            case SET_WITHOUT_CLUSTER:
+            case SET_WITHOUT_OIDS:
+            case SET_LOGGED:
+            case SET_UNLOGGED:
+            case NOT_OF:
+                builder.append(kind.name().replace('_', ' '));
+                break;
+            case OF:
+                builder.append("OF ").append(value);
+                break;
+            case TRIGGER_STATE:
+                builder.append(triggerState.name().replace('_', ' ')).append(" TRIGGER ")
+                        .append(triggerTarget == TriggerTarget.NAME ? value : triggerTarget);
+                break;
             case RENAME:
                 builder.append("RENAME TO ").append(newName);
                 break;

@@ -1817,11 +1817,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         Token first = getToken(1);
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
-                || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER")) { return true; }
+                || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
+                || first.kind == K_OF || first.kind == K_NOT && getToken(2).kind == K_OF
+                || (first.kind == K_ENABLE || first.kind == K_DISABLE)
+                    && (getToken(2).kind == K_TRIGGER || getToken(2).kind == K_ALWAYS
+                        || "REPLICA".equalsIgnoreCase(getToken(2).image))) { return true; }
         if (first.kind == K_NO) { return "INHERIT".equalsIgnoreCase(getToken(2).image); }
         if (first.kind == K_SET) {
             return getToken(2).kind == OPENING_BRACKET || getToken(2).kind == K_SCHEMA
-                    || getToken(2).kind == K_TABLESPACE || "ACCESS".equalsIgnoreCase(getToken(2).image);
+                    || getToken(2).kind == K_TABLESPACE || "ACCESS".equalsIgnoreCase(getToken(2).image)
+                    || getToken(2).kind == K_WITHOUT || getToken(2).kind == K_UNLOGGED
+                    || "LOGGED".equalsIgnoreCase(getToken(2).image);
         }
         if (first.kind != K_ALTER) { return false; }
         if (getToken(2).kind == K_CONSTRAINT) {
@@ -1850,7 +1856,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     RelationAlterAction.Kind.OWNER, RelationAlterAction.Kind.SET_SCHEMA));
             if (type == AlterRelation.ObjectType.MATERIALIZED_VIEW) {
                 allowed.addAll(EnumSet.of(RelationAlterAction.Kind.SET_TABLESPACE,
-                        RelationAlterAction.Kind.SET_ACCESS_METHOD, RelationAlterAction.Kind.DEPENDS_ON_EXTENSION));
+                        RelationAlterAction.Kind.SET_ACCESS_METHOD, RelationAlterAction.Kind.DEPENDS_ON_EXTENSION,
+                        RelationAlterAction.Kind.CLUSTER_ON, RelationAlterAction.Kind.SET_WITHOUT_CLUSTER));
             }
         }
         requireDdlSyntax(allowed.contains(kind), "Unsupported " + type + " action: " + kind);
@@ -18259,6 +18266,9 @@ Statement Alter():
                 |
                 statement = AlterEvent()
                 |
+                LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
+                statement = PostgreSqlTablespaceMove()
+                |
                 statement = AlterTable()
                 |
                 statement = AlterSession()
@@ -18294,6 +18304,23 @@ Statement Alter():
     {
         return statement;
     }
+}
+
+AlterTablespaceMove PostgreSqlTablespaceMove():
+{
+    AlterTablespaceMove result = new AlterTablespaceMove();
+    String name;
+}
+{
+    ( <K_TABLE> { result.setObjectType(AlterTablespaceMove.ObjectType.TABLE); }
+      | <K_INDEX> { result.setObjectType(AlterTablespaceMove.ObjectType.INDEX); }
+      | <K_MATERIALIZED> <K_VIEW> { result.setObjectType(AlterTablespaceMove.ObjectType.MATERIALIZED_VIEW); } )
+    <K_ALL> <K_IN> <K_TABLESPACE> name=RelObjectName() { result.setSourceTablespace(name); }
+    [ ContextualKeyword("OWNED") <K_BY> name=RelObjectName() { result.getOwners().add(name); }
+      ( "," name=RelObjectName() { result.getOwners().add(name); } )* ]
+    <K_SET> <K_TABLESPACE> name=RelObjectName() { result.setTargetTablespace(name); }
+    [ <K_NOWAIT> { result.setNoWait(true); } ]
+    { return result; }
 }
 
 /** The new relation statements reuse the same actions as structured ALTER TABLE properties. */
@@ -18341,6 +18368,30 @@ RelationAlterAction PostgreSqlRelationAction():
 }
 {
     (
+        LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER") <K_ON> name=RelObjectName()
+        { action.setKind(RelationAlterAction.Kind.CLUSTER_ON); action.setValue(name); }
+        |
+        <K_OF> name=AccessQualifiedName()
+        { action.setKind(RelationAlterAction.Kind.OF); action.setValue(name); }
+        |
+        <K_NOT> <K_OF> { action.setKind(RelationAlterAction.Kind.NOT_OF); }
+        |
+        ( <K_DISABLE> { action.setTriggerState(RelationAlterAction.TriggerState.DISABLE); }
+          | <K_ENABLE> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE); }
+            [ <K_ALWAYS> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_ALWAYS); }
+              | ContextualKeyword("REPLICA") { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_REPLICA); } ] )
+        <K_TRIGGER>
+        ( LOOKAHEAD(1) <K_ALL> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.ALL); }
+          | LOOKAHEAD(1) <K_USER> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER); }
+          | name=RelObjectName() { action.setTriggerTarget(RelationAlterAction.TriggerTarget.NAME); action.setValue(name); } )
+        {
+            action.setKind(RelationAlterAction.Kind.TRIGGER_STATE);
+            requireDdlSyntax(action.getTriggerTarget() == RelationAlterAction.TriggerTarget.NAME
+                    || action.getTriggerState() == RelationAlterAction.TriggerState.ENABLE
+                    || action.getTriggerState() == RelationAlterAction.TriggerState.DISABLE,
+                    "ENABLE ALWAYS/REPLICA requires a trigger name");
+        }
+        |
         <K_RENAME>
         (
             LOOKAHEAD(1) <K_TO> name=RelObjectName() {
@@ -18359,7 +18410,14 @@ RelationAlterAction PostgreSqlRelationAction():
         |
         <K_SET>
         (
-            <K_SCHEMA> name=RelObjectName()
+            <K_WITHOUT>
+            ( LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER")
+              { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_CLUSTER); }
+              | ContextualKeyword("OIDS") { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_OIDS); } )
+            | <K_UNLOGGED> { action.setKind(RelationAlterAction.Kind.SET_UNLOGGED); }
+            | LOOKAHEAD({ isKeywordAhead("LOGGED") }) ContextualKeyword("LOGGED")
+              { action.setKind(RelationAlterAction.Kind.SET_LOGGED); }
+            | <K_SCHEMA> name=RelObjectName()
             { action.setKind(RelationAlterAction.Kind.SET_SCHEMA); action.setValue(name); }
             | <K_TABLESPACE> name=RelObjectName()
             { action.setKind(RelationAlterAction.Kind.SET_TABLESPACE); action.setValue(name); }

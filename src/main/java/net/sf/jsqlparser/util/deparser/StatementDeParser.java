@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.deparser;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -822,4 +823,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         return statement.appendTo(builder);
     }
 
+    @Override
+    public <S> StringBuilder visit(AlterTablespaceMove statement, S context) {
+        return statement.appendTo(builder);
+    }
 }
