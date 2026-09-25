@@ -1821,8 +1821,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isPostgreSqlRelationActionAhead() {
-        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         Token first = getToken(1);
+        if ((first.kind == K_ENABLE || first.kind == K_DISABLE)
+                && ("RULE".equalsIgnoreCase(getToken(2).image)
+                    || (getToken(2).kind == K_ALWAYS || "REPLICA".equalsIgnoreCase(getToken(2).image))
+                        && "RULE".equalsIgnoreCase(getToken(3).image))) { return true; }
+        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
                 || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
                 || first.kind == K_OF || first.kind == K_NOT && getToken(2).kind == K_OF
@@ -18559,6 +18563,18 @@ AlterRelation PostgreSqlAlterRelation():
     }
 }
 
+/** Shared state syntax; each caller applies its own target restrictions. */
+RelationAlterAction.EnableState PostgreSqlEnableState():
+{ RelationAlterAction.EnableState state; }
+{
+    ( <K_DISABLE> { state = RelationAlterAction.EnableState.DISABLE; }
+      | <K_ENABLE> { state = RelationAlterAction.EnableState.ENABLE; }
+        [ <K_ALWAYS> { state = RelationAlterAction.EnableState.ENABLE_ALWAYS; }
+          | LOOKAHEAD({ isKeywordAhead("REPLICA") }) ContextualKeyword("REPLICA")
+            { state = RelationAlterAction.EnableState.ENABLE_REPLICA; } ] )
+    { return state; }
+}
+
 RelationAlterAction PostgreSqlRelationAction():
 {
     RelationAlterAction action = new RelationAlterAction();
@@ -18567,6 +18583,7 @@ RelationAlterAction PostgreSqlRelationAction():
     Table relation;
     Expression expression;
     Long statistics;
+    RelationAlterAction.EnableState enableState;
     List<Index.Option> options;
     List<String> names = new ArrayList<String>();
 }
@@ -18580,21 +18597,22 @@ RelationAlterAction PostgreSqlRelationAction():
         |
         <K_NOT> <K_OF> { action.setKind(RelationAlterAction.Kind.NOT_OF); }
         |
-        ( <K_DISABLE> { action.setTriggerState(RelationAlterAction.TriggerState.DISABLE); }
-          | <K_ENABLE> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE); }
-            [ <K_ALWAYS> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_ALWAYS); }
-              | ContextualKeyword("REPLICA") { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_REPLICA); } ] )
-        <K_TRIGGER>
-        ( LOOKAHEAD(1) <K_ALL> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.ALL); }
-          | LOOKAHEAD(1) <K_USER> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER); }
-          | name=RelObjectName() { action.setTriggerTarget(RelationAlterAction.TriggerTarget.NAME); action.setValue(name); } )
-        {
-            action.setKind(RelationAlterAction.Kind.TRIGGER_STATE);
-            requireDdlSyntax(action.getTriggerTarget() == RelationAlterAction.TriggerTarget.NAME
-                    || action.getTriggerState() == RelationAlterAction.TriggerState.ENABLE
-                    || action.getTriggerState() == RelationAlterAction.TriggerState.DISABLE,
-                    "ENABLE ALWAYS/REPLICA requires a trigger name");
-        }
+        enableState=PostgreSqlEnableState() { action.setEnableState(enableState); }
+        (
+            <K_TRIGGER>
+            ( LOOKAHEAD(1) <K_ALL> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.ALL); }
+              | LOOKAHEAD(1) <K_USER> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER); }
+              | name=RelObjectName() { action.setTriggerTarget(RelationAlterAction.TriggerTarget.NAME); action.setValue(name); } )
+            {
+                action.setKind(RelationAlterAction.Kind.TRIGGER_STATE);
+                requireDdlSyntax(action.getTriggerTarget() == RelationAlterAction.TriggerTarget.NAME
+                        || enableState == RelationAlterAction.EnableState.ENABLE
+                        || enableState == RelationAlterAction.EnableState.DISABLE,
+                        "ENABLE ALWAYS/REPLICA requires a trigger name");
+            }
+            | ContextualKeyword("RULE") name=RelObjectName()
+            { action.setKind(RelationAlterAction.Kind.RULE_STATE); action.setValue(name); }
+        )
         |
         <K_RENAME>
         (
