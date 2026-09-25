@@ -3201,6 +3201,8 @@ Statement SingleStatement() :
             |
             stm = Create()
             |
+            LOOKAHEAD(<K_DROP> <K_POLICY>) stm = DropPolicy()
+            |
             stm = Drop()
             |
             stm = Analyze()
@@ -18169,6 +18171,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
+                |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
                 statement = AlterRole()
                 |
@@ -19893,9 +19897,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     Table table;
     String policyMode = null;
     Token commandToken = null;
-    String roleName;
-    Expression usingExpr = null;
-    Expression checkExpr = null;
+    PolicyOptions options;
 }
 {
     <K_POLICY> policyName=RelObjectName() { createPolicy.setPolicyName(policyName); }
@@ -19917,19 +19919,41 @@ CreatePolicy CreatePolicy() #CreatePolicy:
       { createPolicy.setPolicyCommand(PolicyCommand.from(commandToken.image)); }
     ]
 
-    [ <K_TO>
-      roleName=RelObjectName() { createPolicy.addRole(roleName); }
-      ( "," roleName=RelObjectName() { createPolicy.addRole(roleName); } )*
-    ]
-
-    [ <K_USING> "(" usingExpr=Expression() ")" { createPolicy.setUsingExpression(usingExpr); } ]
-
-    [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" checkExpr=Expression() ")" { createPolicy.setWithCheckExpression(checkExpr); } ]
+    options=PolicyOptions() { createPolicy.setOptions(options); }
 
     {
 
         return createPolicy;
     }
+}
+
+
+PolicyOptions PolicyOptions():
+{ PolicyOptions options = new PolicyOptions(); String role; Expression expression; }
+{
+    [ <K_TO> role=RelObjectName() { options.getRoles().add(role); }
+      ( "," role=RelObjectName() { options.getRoles().add(role); } )* ]
+    [ <K_USING> "(" expression=Expression() ")" { options.setUsingExpression(expression); } ]
+    [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" expression=Expression() ")" { options.setWithCheckExpression(expression); } ]
+    { return options; }
+}
+AlterPolicy AlterPolicy():
+{ AlterPolicy statement = new AlterPolicy(); String name; Table table; PolicyOptions options; }
+{
+    <K_POLICY> name=RelObjectName() { statement.setPolicyName(name); }
+    <K_ON> table=Table() { statement.setTable(table); }
+    ( <K_RENAME> <K_TO> name=RelObjectName() { statement.setNewName(name); }
+      | options=PolicyOptions() { statement.setOptions(options); } )
+    { return statement; }
+}
+DropPolicy DropPolicy():
+{ DropPolicy statement = new DropPolicy(); String name; Table table; Token behavior; }
+{
+    <K_DROP> <K_POLICY> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+    name=RelObjectName() { statement.setPolicyName(name); }
+    <K_ON> table=Table() { statement.setTable(table); }
+    [ (behavior=<K_CASCADE> | behavior=<K_RESTRICT>) { statement.setBehavior(DropPolicy.Behavior.valueOf(behavior.image.toUpperCase(Locale.ROOT))); } ]
+    { return statement; }
 }
 
 UnsupportedStatement UnsupportedStatement():

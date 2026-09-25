@@ -31,31 +31,6 @@ public class CreatePolicyDeParser extends AbstractDeParser<CreatePolicy> {
 
     @Override
     public void deParse(CreatePolicy createPolicy) {
-        builder.append("CREATE POLICY ").append(createPolicy.getPolicyName());
-        builder.append(" ON ").append(createPolicy.getTable());
-
-        if (createPolicy.getPolicyMode() != null) {
-            builder.append(" AS ").append(createPolicy.getPolicyMode());
-        }
-
-        if (createPolicy.getPolicyCommand() != null) {
-            builder.append(" FOR ").append(createPolicy.getPolicyCommand());
-        }
-
-        if (createPolicy.getRoles() != null && !createPolicy.getRoles().isEmpty()) {
-            builder.append(" TO ").append(String.join(", ", createPolicy.getRoles()));
-        }
-
-        if (createPolicy.getUsingExpression() != null) {
-            builder.append(" USING (");
-            createPolicy.getUsingExpression().accept(expressionVisitor, null);
-            builder.append(")");
-        }
-
-        if (createPolicy.getWithCheckExpression() != null) {
-            builder.append(" WITH CHECK (");
-            createPolicy.getWithCheckExpression().accept(expressionVisitor, null);
-            builder.append(")");
-        }
+        createPolicy.appendTo(builder, expression -> expression.accept(expressionVisitor, null));
     }
 }

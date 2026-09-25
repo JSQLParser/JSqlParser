@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
+
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -680,4 +683,20 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+
+    default <S> T visit(AlterPolicy statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterPolicy statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(DropPolicy statement, S context) {
+        return null;
+    }
+
+    default void visit(DropPolicy statement) {
+        visit(statement, null);
+    }
 }

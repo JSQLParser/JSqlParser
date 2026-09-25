@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
+
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
@@ -2921,4 +2924,17 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(AlterPolicy statement, S context) {
+        visit(statement.getTable(), context);
+        statement.getOptions().visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DropPolicy statement, S context) {
+        visit(statement.getTable(), context);
+        return null;
+    }
 }
