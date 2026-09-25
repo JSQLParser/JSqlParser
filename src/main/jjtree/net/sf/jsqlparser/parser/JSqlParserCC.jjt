@@ -63,6 +63,7 @@ import net.sf.jsqlparser.statement.create.event.*;
 import net.sf.jsqlparser.statement.create.function.*;
 import net.sf.jsqlparser.statement.create.index.*;
 import net.sf.jsqlparser.statement.create.macro.*;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.policy.*;
 import net.sf.jsqlparser.statement.create.procedure.*;
 import net.sf.jsqlparser.statement.create.schema.*;
@@ -18169,6 +18170,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
+                |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
                 statement = AlterRole()
                 |
@@ -19131,6 +19134,8 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
+        |
         LOOKAHEAD({ isPostgreSqlRoleAhead() }) statement = CreateRole()
         { requireAccessSyntax(!isUsingOrReplace, "CREATE ROLE does not accept OR REPLACE"); }
         |
@@ -20365,4 +20370,49 @@ String TimeTravelAfterAlias():
     {
         return builder.toString();
     }
+}
+
+CreateStatistics CreateStatistics():
+{
+    CreateStatistics statement = new CreateStatistics();
+    String name; CreateStatistics.Kind kind; Expression expression; Table table;
+}
+{
+    ContextualKeyword("STATISTICS")
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+    [ LOOKAHEAD({ getToken(1).kind != K_ON && getToken(1).kind != OPENING_BRACKET })
+        name=TypeDdlName() { statement.setName(name); } ]
+    [ "(" name=RelObjectName() { kind=accessEnum(CreateStatistics.Kind.class,name); statement.getKinds().add(kind); }
+      ( "," name=RelObjectName() { kind=accessEnum(CreateStatistics.Kind.class,name);
+        requireDdlSyntax(!statement.getKinds().contains(kind),"Duplicate statistics kind"); statement.getKinds().add(kind); } )* ")" ]
+    <K_ON> expression=PostgreSqlStatisticsExpression() { statement.getExpressions().add(expression); }
+    ( "," expression=PostgreSqlStatisticsExpression() { statement.getExpressions().add(expression); } )*
+    <K_FROM> table=Table() { statement.setTable(table); }
+    {
+        requireDdlSyntax(!statement.isIfNotExists() || statement.getName()!=null,"IF NOT EXISTS requires a statistics name");
+        requireDdlSyntax(statement.getExpressions().size()>1 || statement.getKinds().isEmpty()
+                && statement.getExpressions().get(0) instanceof ParenthesedExpressionList,
+                "Single-expression statistics require a parenthesized expression and no explicit kinds");
+        return statement;
+    }
+}
+Expression PostgreSqlStatisticsExpression():
+{ Expression expression; String name; }
+{
+    ( "(" expression=Expression() ")" { expression = new ParenthesedExpressionList<Expression>(expression); }
+      | name=RelObjectName() { expression = createColumn(name); } )
+    { return expression; }
+}
+AlterStatistics AlterStatistics():
+{ AlterStatistics statement = new AlterStatistics(); String name; Long target; }
+{
+    ContextualKeyword("STATISTICS") name=TypeDdlName() { statement.setName(name); }
+    ( <K_RENAME> <K_TO> name=RelObjectName() { statement.setAction(AlterStatistics.Action.RENAME); statement.setNewName(name); }
+      | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setAction(AlterStatistics.Action.OWNER); statement.setOwner(name); }
+      | <K_SET> ( <K_SCHEMA> name=RelObjectName() { statement.setAction(AlterStatistics.Action.SET_SCHEMA); statement.setSchemaName(name); }
+        | ContextualKeyword("STATISTICS") { statement.setAction(AlterStatistics.Action.SET_STATISTICS); }
+          ( <K_DEFAULT> | target=SequenceParameterValue() {
+              requireDdlSyntax(target>=-1 && target<=10000,"Statistics target must be DEFAULT or between -1 and 10000");
+              statement.setStatistics(target.intValue()); } ) ) )
+    { return statement; }
 }

@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
+
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
@@ -2921,4 +2924,16 @@ public class TablesNamesFinder<Void>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(CreateStatistics statement, S context) {
+        visit(statement.getTable(), context);
+        statement.getExpressions().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterStatistics statement, S context) {
+        return null;
+    }
 }

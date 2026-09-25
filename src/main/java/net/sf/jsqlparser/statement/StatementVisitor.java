@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
+
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -680,4 +683,20 @@ public interface StatementVisitor<T> {
         visit(statement, null);
     }
 
+
+    default <S> T visit(CreateStatistics statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateStatistics statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterStatistics statement) {
+        visit(statement, null);
+    }
 }

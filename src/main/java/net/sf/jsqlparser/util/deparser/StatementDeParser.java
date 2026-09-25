@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
+
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -815,4 +818,15 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         return statement.appendTo(builder);
     }
 
+
+    @Override
+    public <S> StringBuilder visit(CreateStatistics statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterStatistics statement, S context) {
+        return statement.appendTo(builder);
+    }
 }
