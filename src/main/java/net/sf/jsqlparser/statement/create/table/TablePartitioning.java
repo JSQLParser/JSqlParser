@@ -43,10 +43,10 @@ public class TablePartitioning implements Serializable {
     }
 
     public void setKeyColumns(List<Index.ColumnParams> keyColumns) {
+        if (keyColumns != null) {
+            clearKeyRepresentation();
+        }
         this.keyColumns = keyColumns;
-        expression = null;
-        expressionList = null;
-        columns = null;
     }
 
     private Type type;
@@ -97,8 +97,10 @@ public class TablePartitioning implements Serializable {
     }
 
     public void setExpression(Expression expression) {
+        if (expression != null) {
+            clearKeyRepresentation();
+        }
         this.expression = expression;
-        keyColumns = null;
     }
 
     /**
@@ -111,8 +113,10 @@ public class TablePartitioning implements Serializable {
     }
 
     public void setExpressionList(ExpressionList<Expression> expressionList) {
+        if (expressionList != null) {
+            clearKeyRepresentation();
+        }
         this.expressionList = expressionList;
-        keyColumns = null;
     }
 
     public ExpressionList<Column> getColumns() {
@@ -120,8 +124,18 @@ public class TablePartitioning implements Serializable {
     }
 
     public void setColumns(ExpressionList<Column> columns) {
+        if (columns != null) {
+            clearKeyRepresentation();
+        }
         this.columns = columns;
+    }
+
+    /** Selecting a key representation must replace the previously rendered key. */
+    private void clearKeyRepresentation() {
         keyColumns = null;
+        expression = null;
+        expressionList = null;
+        columns = null;
     }
 
     public Integer getAlgorithm() {

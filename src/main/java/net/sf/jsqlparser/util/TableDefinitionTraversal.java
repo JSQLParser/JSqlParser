@@ -53,6 +53,12 @@ public final class TableDefinitionTraversal {
             ((net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) action).getOrderByElements()
                     .forEach(element -> accept(element.getExpression(), expressions));
         }
+        if (action instanceof net.sf.jsqlparser.statement.alter.RelationAlterAction) {
+            net.sf.jsqlparser.statement.alter.RelationAlterAction relation =
+                    (net.sf.jsqlparser.statement.alter.RelationAlterAction) action;
+            relation.visitExpressions(expressions);
+            relation.visitTables(tables);
+        }
         if (action.getOperation() == AlterOperation.RENAME_TABLE) {
             accept(action.getNewTable(), tables);
         }

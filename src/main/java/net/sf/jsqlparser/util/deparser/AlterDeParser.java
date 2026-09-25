@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPartition;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPrimaryKey;
+import net.sf.jsqlparser.statement.alter.RelationAlterAction;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import java.util.Iterator;
@@ -52,6 +53,11 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
     private void deParseAction(AlterExpression action) {
         if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) {
             ((net.sf.jsqlparser.statement.alter.AlterExpressionOrderBy) action).appendTo(builder,
+                    expression -> expression.accept(expressionVisitor, null));
+            return;
+        }
+        if (action instanceof RelationAlterAction) {
+            ((RelationAlterAction) action).appendTo(builder,
                     expression -> expression.accept(expressionVisitor, null));
             return;
         }

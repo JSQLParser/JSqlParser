@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.test.TestUtils;
@@ -118,11 +119,11 @@ public class UnsupportedStatementTest {
     }
 
     @Test
-    void testAlter() throws JSQLParserException {
+    void testFormerlyUnsupportedAlterIndex() throws JSQLParserException {
         String sqlStr =
                 "ALTER INDEX idx_t_fa RENAME TO idx_t_fb";
         Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        assertInstanceOf(UnsupportedStatement.class, statement);
+        assertInstanceOf(AlterRelation.class, statement);
     }
 
     @Test
