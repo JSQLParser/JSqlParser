@@ -2561,6 +2561,7 @@ String NonReservedWord() :
       | tk=<K_STARTING:"STARTING">
       | tk=<K_STEP: "STEP">
       | tk=<K_STORED: "STORED">
+      | tk=<K_STATEMENT:"STATEMENT">
       | tk=<K_STORAGE: "STORAGE">
       | tk=<K_STREAM: "STREAM">
       | tk=<K_STRICT: "STRICT">
@@ -2692,7 +2693,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_IN:"IN">
 |   <K_INCLUDES:"INCLUDES"> /* Salesforce SOQL */
 |   <K_INNER:"INNER">
-|   <K_STATEMENT:"STATEMENT">
 |   <K_STRAIGHT:"STRAIGHT_JOIN">
 |   <K_INTERSECT:"INTERSECT">
 |   <K_INTERVAL:"INTERVAL">
