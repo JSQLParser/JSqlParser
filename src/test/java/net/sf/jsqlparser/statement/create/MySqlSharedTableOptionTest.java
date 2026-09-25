@@ -26,7 +26,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class MySqlSharedTableOptionTest {
     @ParameterizedTest
-    @CsvSource(value = {"ENCRYPTION|'N'|ENCRYPTION", "PASSWORD|'ignored'|PASSWORD",
+    @CsvSource(value = {"SECONDARY_ENGINE|NULL|SECONDARY_ENGINE",
+            "SECONDARY_ENGINE|'engine'|SECONDARY_ENGINE",
+            "SECONDARY_ENGINE|engine_name|SECONDARY_ENGINE", "AUTOEXTEND_SIZE|4M|AUTOEXTEND_SIZE",
+            "AUTOEXTEND_SIZE|0|AUTOEXTEND_SIZE", "INSERT_METHOD|NO|INSERT_METHOD",
+            "INSERT_METHOD|FIRST|INSERT_METHOD", "INSERT_METHOD|LAST|INSERT_METHOD",
+            "PACK_KEYS|DEFAULT|PACK_KEYS", "PACK_KEYS|1|PACK_KEYS", "PACK_KEYS|0|PACK_KEYS",
+            "DELAY_KEY_WRITE|2|DELAY_KEY_WRITE", "CHECKSUM|0|CHECKSUM",
+            "CONNECTION|'mysql://server/db/t'|CONNECTION", "COMPRESSION|'zlib'|COMPRESSION",
+            "ENCRYPTION|'N'|ENCRYPTION", "PASSWORD|'ignored'|PASSWORD",
             "DATA DIRECTORY|'/tmp/data dir'|DATA_DIRECTORY",
             "INDEX DIRECTORY|'/tmp/index dir'|INDEX_DIRECTORY",
             "AUTO_INCREMENT|18446744073709551614|AUTO_INCREMENT"}, delimiter = '|',
@@ -77,7 +85,8 @@ class MySqlSharedTableOptionTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"ENCRYPTION=", "PASSWORD=1", "DATA DIRECTORY='/tmp' INDEX DIRECTORY=",
-            "AUTO_INCREMENT=-1", "AUTO_INCREMENT='5'", "ENCRYPTION='N',"})
+            "PACK_KEYS=2", "AUTOEXTEND_SIZE=-1", "INSERT_METHOD=UNKNOWN", "COMPRESSION=1",
+            "SECONDARY_ENGINE=", "AUTO_INCREMENT=-1", "AUTO_INCREMENT='5'", "ENCRYPTION='N',"})
     void rejectsMissingOrWrongCreateValues(String option) {
         assertThrows(JSQLParserException.class,
                 () -> CCJSqlParserUtil.parse("CREATE TABLE t (id INT) " + option));
