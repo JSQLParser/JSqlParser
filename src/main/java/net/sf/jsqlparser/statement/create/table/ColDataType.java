@@ -48,6 +48,17 @@ public class ColDataType implements Serializable {
     private CharacterSetSyntax characterSetSyntax = CharacterSetSyntax.CHARACTER_SET;
     private IntervalQualifier intervalQualifier;
     private List<Integer> arrayData = new ArrayList<Integer>();
+    private boolean usingArrayKeyword;
+
+    /** ARRAY or ARRAY[n] spelling; arrayData still contains the single dimension. */
+    public boolean isUsingArrayKeyword() {
+        return usingArrayKeyword;
+    }
+
+    public void setUsingArrayKeyword(boolean usingArrayKeyword) {
+        this.usingArrayKeyword = usingArrayKeyword;
+    }
+
     private Signedness signedness;
     private boolean zerofill;
     private BigInteger precision;
@@ -365,7 +376,13 @@ public class ColDataType implements Serializable {
     @Override
     public String toString() {
         StringBuilder arraySpec = new StringBuilder();
+        if (usingArrayKeyword && !arrayData.isEmpty()) {
+            arraySpec.append(" ARRAY");
+        }
         for (Integer item : arrayData) {
+            if (usingArrayKeyword && item == null) {
+                continue;
+            }
             arraySpec.append("[");
             if (item != null) {
                 arraySpec.append(item);
@@ -498,6 +515,7 @@ public class ColDataType implements Serializable {
                 && characterSetSyntax == that.characterSetSyntax
                 && Objects.equals(intervalQualifier, that.intervalQualifier)
                 && Objects.equals(arrayData, that.arrayData)
+                && usingArrayKeyword == that.usingArrayKeyword
                 && signedness == that.signedness
                 && zerofill == that.zerofill
                 && Objects.equals(typeModifiers, that.typeModifiers)
@@ -516,6 +534,7 @@ public class ColDataType implements Serializable {
         result = 31 * result + Objects.hashCode(characterSetSyntax);
         result = 31 * result + Objects.hashCode(intervalQualifier);
         result = 31 * result + Objects.hashCode(arrayData);
+        result = 31 * result + Boolean.hashCode(usingArrayKeyword);
         result = 31 * result + Objects.hashCode(signedness);
         result = 31 * result + Boolean.hashCode(zerofill);
         result = 31 * result + Objects.hashCode(typeModifiers);
