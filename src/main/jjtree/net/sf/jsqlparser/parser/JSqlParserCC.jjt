@@ -1821,8 +1821,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isPostgreSqlRelationActionAhead() {
-        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         Token first = getToken(1);
+        int columnActionOffset = getToken(2).kind == K_COLUMN ? 4 : 3;
+        if (first.kind == K_ALTER && getToken(columnActionOffset).kind == K_SET
+                && "EXPRESSION".equalsIgnoreCase(getToken(columnActionOffset + 1).image)) {
+            return true;
+        }
+        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
         if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
                 || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
                 || first.kind == K_OF || first.kind == K_NOT && getToken(2).kind == K_OF
@@ -14343,7 +14348,7 @@ GeneratedColumnDefinition GeneratedColumnDefinition():
 {
     [ LOOKAHEAD({ isKeywordAhead("GENERATED") }) ContextualKeyword("GENERATED") <K_ALWAYS>
       { generatedAlways = true; } ]
-    <K_AS> "(" expression=Expression() ")"
+    expression=ColumnGenerationExpression()
     [ LOOKAHEAD({ getToken(1).kind == K_STORED || isKeywordAhead("VIRTUAL") })
       ( <K_STORED> { storage = GeneratedColumnDefinition.Storage.STORED; }
         | ContextualKeyword("VIRTUAL") { storage = GeneratedColumnDefinition.Storage.VIRTUAL; } ) ]
@@ -14353,6 +14358,14 @@ GeneratedColumnDefinition GeneratedColumnDefinition():
         result.setStorage(storage);
         return result;
     }
+}
+
+/** Shared expression body for generated declarations and ALTER SET EXPRESSION. */
+Expression ColumnGenerationExpression():
+{ Expression expression; }
+{
+    <K_AS> "(" expression=Expression() ")"
+    { return expression; }
 }
 
 /** Keeps a column key's name and attributes on the same node in CREATE and ALTER. */
@@ -16909,6 +16922,7 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
 {
     String columnName = null;
     boolean withType = false;
+    boolean useSetData = false;
     ColDataType dataType = null;
     List<String> columnSpecs = new ArrayList<String>();
     List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
@@ -16927,7 +16941,8 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     ( LOOKAHEAD({ isIdentityAlterationAhead() })
         identityAlteration=ColumnIdentityAlteration() { identityAlterations.add(identityAlteration); } )*
     |
-    ( LOOKAHEAD(2) <K_TYPE> { withType = true; } )?
+    [ LOOKAHEAD({ getToken(1).kind == K_TYPE || getToken(1).kind == K_SET && getToken(2).kind == K_DATA })
+      useSetData=TypeChangePrefix() { withType = true; } ]
     ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING) }) option = ColumnDefinitionOption() {
         columnOptions.add(option);
@@ -16936,7 +16951,9 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     [ LOOKAHEAD({ withType && getToken(1).kind == K_USING }) <K_USING> usingExpression=Expression() ]
     )
     {
+        requireDdlSyntax(!withType || dataType != null, "TYPE requires a data type");
         result = new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
+        result.setUseSetData(useSetData);
         result.setUsingExpression(usingExpression);
         result.setIdentityAlterations(identityAlterations);
         if (hasStructuredColumnOption(columnOptions)) {
@@ -16944,6 +16961,14 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
         }
         return result;
     }
+}
+
+/** Type changes in ALTER TABLE and ALTER TYPE accept the same optional SET DATA prefix. */
+boolean TypeChangePrefix():
+{ boolean useSetData = false; }
+{
+    [ <K_SET> <K_DATA> { useSetData = true; } ] <K_TYPE>
+    { return useSetData; }
 }
 
 IdentityAlteration ColumnIdentityAlteration():
@@ -18651,6 +18676,12 @@ RelationAlterAction PostgreSqlRelationAction():
                     action.setDefaultExpression(expression);
                 }
                 |
+                LOOKAHEAD({ isKeywordAhead("EXPRESSION") }) ContextualKeyword("EXPRESSION")
+                expression=ColumnGenerationExpression() {
+                    action.setColumnAction(RelationAlterAction.ColumnAction.SET_EXPRESSION);
+                    action.setGenerationExpression(expression);
+                }
+                |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS")
                 { action.setColumnAction(RelationAlterAction.ColumnAction.SET_STATISTICS); }
                 ( <K_DEFAULT> { action.setStatisticsDefault(true); }
@@ -19960,6 +19991,7 @@ AlterType.AttributeChange TypeAttributeChange():
     AlterType.AttributeChange result = new AlterType.AttributeChange();
     TypeAttribute attribute = new TypeAttribute();
     String name; ColDataType type; AlterType.Behavior behavior;
+    boolean useSetData;
 }
 {
     (
@@ -19968,7 +20000,7 @@ AlterType.AttributeChange TypeAttributeChange():
         | <K_DROP> TypeDdlKeyword("ATTRIBUTE") [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { result.setIfExists(true); } ]
           name=RelObjectName() { attribute.setName(name); result.setKind(AlterType.AttributeChange.Kind.DROP); }
         | <K_ALTER> TypeDdlKeyword("ATTRIBUTE") name=RelObjectName() { attribute.setName(name); }
-          [ <K_SET> <K_DATA> { result.setUseSetData(true); } ] <K_TYPE>
+          useSetData=TypeChangePrefix() { result.setUseSetData(useSetData); }
           type=ColDataType() { attribute.setDataType(type); result.setKind(AlterType.AttributeChange.Kind.ALTER); }
           [ <K_COLLATE> name=TypeDdlName() { attribute.setCollation(name); } ]
     )
