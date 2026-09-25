@@ -1813,6 +1813,75 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    private boolean isPostgreSqlRelationActionAhead() {
+        if (!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) { return false; }
+        Token first = getToken(1);
+        if (first.kind == K_VALIDATE || first.kind == K_RESET || isKeywordAhead("INHERIT")
+                || isKeywordAhead("REPLICA") || isKeywordAhead("OWNER") || isKeywordAhead("CLUSTER")
+                || first.kind == K_OF || first.kind == K_NOT && getToken(2).kind == K_OF
+                || (first.kind == K_ENABLE || first.kind == K_DISABLE)
+                    && (getToken(2).kind == K_TRIGGER || getToken(2).kind == K_ALWAYS
+                        || "REPLICA".equalsIgnoreCase(getToken(2).image))) { return true; }
+        if (first.kind == K_NO) { return "INHERIT".equalsIgnoreCase(getToken(2).image); }
+        if (first.kind == K_SET) {
+            return getToken(2).kind == OPENING_BRACKET || getToken(2).kind == K_SCHEMA
+                    || getToken(2).kind == K_TABLESPACE || "ACCESS".equalsIgnoreCase(getToken(2).image)
+                    || getToken(2).kind == K_WITHOUT || getToken(2).kind == K_UNLOGGED
+                    || "LOGGED".equalsIgnoreCase(getToken(2).image);
+        }
+        if (first.kind != K_ALTER) { return false; }
+        if (getToken(2).kind == K_CONSTRAINT) {
+            return "INHERIT".equalsIgnoreCase(getToken(4).image)
+                    || getToken(4).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(5).image);
+        }
+        int offset = getToken(2).kind == K_COLUMN ? 4 : 3;
+        return getToken(offset).kind == K_RESET
+                || getToken(offset).kind == K_DROP && "EXPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
+                || getToken(offset).kind == K_SET && (getToken(offset + 1).kind == OPENING_BRACKET
+                    || getToken(offset + 1).kind == K_STORAGE
+                    || "COMPRESSION".equalsIgnoreCase(getToken(offset + 1).image)
+                    || "STATISTICS".equalsIgnoreCase(getToken(offset + 1).image));
+    }
+
+    private void validateRelationAction(AlterRelation.ObjectType type, RelationAlterAction action) throws ParseException {
+        RelationAlterAction.Kind kind = action.getKind();
+        EnumSet<RelationAlterAction.Kind> allowed = EnumSet.of(RelationAlterAction.Kind.RENAME,
+                RelationAlterAction.Kind.SET_OPTIONS, RelationAlterAction.Kind.RESET_OPTIONS,
+                RelationAlterAction.Kind.ALTER_COLUMN);
+        if (type == AlterRelation.ObjectType.INDEX) {
+            allowed.addAll(EnumSet.of(RelationAlterAction.Kind.SET_TABLESPACE,
+                    RelationAlterAction.Kind.ATTACH_PARTITION, RelationAlterAction.Kind.DEPENDS_ON_EXTENSION));
+        } else {
+            allowed.addAll(EnumSet.of(RelationAlterAction.Kind.RENAME_COLUMN,
+                    RelationAlterAction.Kind.OWNER, RelationAlterAction.Kind.SET_SCHEMA));
+            if (type == AlterRelation.ObjectType.MATERIALIZED_VIEW) {
+                allowed.addAll(EnumSet.of(RelationAlterAction.Kind.SET_TABLESPACE,
+                        RelationAlterAction.Kind.SET_ACCESS_METHOD, RelationAlterAction.Kind.DEPENDS_ON_EXTENSION,
+                        RelationAlterAction.Kind.CLUSTER_ON, RelationAlterAction.Kind.SET_WITHOUT_CLUSTER));
+            }
+        }
+        requireDdlSyntax(allowed.contains(kind), "Unsupported " + type + " action: " + kind);
+        if (kind == RelationAlterAction.Kind.ALTER_COLUMN) {
+            RelationAlterAction.ColumnAction column = action.getColumnAction();
+            if (type == AlterRelation.ObjectType.INDEX) {
+                requireDdlSyntax(action.getColumnNumber() != null
+                        && column == RelationAlterAction.ColumnAction.SET_STATISTICS,
+                        "ALTER INDEX column actions require an ordinal and SET STATISTICS");
+            } else {
+                requireDdlSyntax(action.getColumnNumber() == null, "Expected a column name");
+                boolean defaults = column == RelationAlterAction.ColumnAction.SET_DEFAULT
+                        || column == RelationAlterAction.ColumnAction.DROP_DEFAULT;
+                requireDdlSyntax(type == AlterRelation.ObjectType.VIEW ? defaults
+                        : column == RelationAlterAction.ColumnAction.SET_STATISTICS
+                            || column == RelationAlterAction.ColumnAction.SET_STORAGE
+                            || column == RelationAlterAction.ColumnAction.SET_COMPRESSION
+                            || column == RelationAlterAction.ColumnAction.SET_OPTIONS
+                            || column == RelationAlterAction.ColumnAction.RESET_OPTIONS,
+                        "Unsupported view column action: " + column);
+            }
+        }
+    }
+
     private boolean isIdentityAlterationAhead() {
         int first = getToken(1).kind;
         int second = getToken(2).kind;
@@ -17977,6 +18046,11 @@ AlterExpression AlterExpression():
 {
 
     (
+        LOOKAHEAD({ isPostgreSqlRelationActionAhead() }) alterExp=PostgreSqlRelationAction() {
+            requireDdlSyntax(((RelationAlterAction) alterExp).getColumnNumber() == null,
+                    "ALTER TABLE expects a column name, not an ordinal");
+        }
+      |
         LOOKAHEAD(<K_ALTER> <K_PRIMARY> <K_KEY>,
                 { Dialect.COCKROACHDB.name().equals(getAsString(Feature.dialect)) })
         alterExp = CockroachAlterPrimaryKey()
@@ -18192,11 +18266,17 @@ Statement Alter():
                 |
                 statement = AlterEvent()
                 |
+                LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
+                statement = PostgreSqlTablespaceMove()
+                |
                 statement = AlterTable()
                 |
                 statement = AlterSession()
                 |
-                LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = AlterView(false)
+                LOOKAHEAD(MySqlViewPrefix() <K_VIEW> Table() [ ColumnsNamesList() ] <K_AS>) statement = AlterView(false)
+                |
+                LOOKAHEAD({ getToken(1).kind == K_INDEX || getToken(1).kind == K_MATERIALIZED
+                        || getToken(1).kind == K_VIEW }) statement=PostgreSqlAlterRelation()
                 |
                 statement = AlterSystemStatement()
                 |
@@ -18224,6 +18304,211 @@ Statement Alter():
     {
         return statement;
     }
+}
+
+AlterTablespaceMove PostgreSqlTablespaceMove():
+{
+    AlterTablespaceMove result = new AlterTablespaceMove();
+    String name;
+}
+{
+    ( <K_TABLE> { result.setObjectType(AlterTablespaceMove.ObjectType.TABLE); }
+      | <K_INDEX> { result.setObjectType(AlterTablespaceMove.ObjectType.INDEX); }
+      | <K_MATERIALIZED> <K_VIEW> { result.setObjectType(AlterTablespaceMove.ObjectType.MATERIALIZED_VIEW); } )
+    <K_ALL> <K_IN> <K_TABLESPACE> name=RelObjectName() { result.setSourceTablespace(name); }
+    [ ContextualKeyword("OWNED") <K_BY> name=RelObjectName() { result.getOwners().add(name); }
+      ( "," name=RelObjectName() { result.getOwners().add(name); } )* ]
+    <K_SET> <K_TABLESPACE> name=RelObjectName() { result.setTargetTablespace(name); }
+    [ <K_NOWAIT> { result.setNoWait(true); } ]
+    { return result; }
+}
+
+/** The new relation statements reuse the same actions as structured ALTER TABLE properties. */
+AlterRelation PostgreSqlAlterRelation():
+{
+    AlterRelation result = new AlterRelation();
+    Table relation;
+    RelationAlterAction action;
+}
+{
+    ( <K_INDEX> { result.setObjectType(AlterRelation.ObjectType.INDEX); }
+      | <K_VIEW> { result.setObjectType(AlterRelation.ObjectType.VIEW); }
+      | <K_MATERIALIZED> <K_VIEW> { result.setObjectType(AlterRelation.ObjectType.MATERIALIZED_VIEW); } )
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { result.setIfExists(true); } ]
+    relation=Table() { result.setRelation(relation); }
+    action=PostgreSqlRelationAction() {
+        validateRelationAction(result.getObjectType(), action); result.getActions().add(action);
+    }
+    ( "," action=PostgreSqlRelationAction() {
+        validateRelationAction(result.getObjectType(), action); result.getActions().add(action);
+    } )*
+    {
+        if (result.getActions().size() > 1) {
+            for (RelationAlterAction item : result.getActions()) {
+                requireDdlSyntax(!EnumSet.of(RelationAlterAction.Kind.RENAME,
+                        RelationAlterAction.Kind.RENAME_COLUMN, RelationAlterAction.Kind.SET_SCHEMA,
+                        RelationAlterAction.Kind.ATTACH_PARTITION, RelationAlterAction.Kind.DEPENDS_ON_EXTENSION)
+                        .contains(item.getKind()), "This relation action must be a separate statement");
+            }
+        }
+        return result;
+    }
+}
+
+RelationAlterAction PostgreSqlRelationAction():
+{
+    RelationAlterAction action = new RelationAlterAction();
+    String name;
+    Token token;
+    Table relation;
+    Expression expression;
+    Long statistics;
+    List<Index.Option> options;
+    List<String> names = new ArrayList<String>();
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER") <K_ON> name=RelObjectName()
+        { action.setKind(RelationAlterAction.Kind.CLUSTER_ON); action.setValue(name); }
+        |
+        <K_OF> name=AccessQualifiedName()
+        { action.setKind(RelationAlterAction.Kind.OF); action.setValue(name); }
+        |
+        <K_NOT> <K_OF> { action.setKind(RelationAlterAction.Kind.NOT_OF); }
+        |
+        ( <K_DISABLE> { action.setTriggerState(RelationAlterAction.TriggerState.DISABLE); }
+          | <K_ENABLE> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE); }
+            [ <K_ALWAYS> { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_ALWAYS); }
+              | ContextualKeyword("REPLICA") { action.setTriggerState(RelationAlterAction.TriggerState.ENABLE_REPLICA); } ] )
+        <K_TRIGGER>
+        ( LOOKAHEAD(1) <K_ALL> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.ALL); }
+          | LOOKAHEAD(1) <K_USER> { action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER); }
+          | name=RelObjectName() { action.setTriggerTarget(RelationAlterAction.TriggerTarget.NAME); action.setValue(name); } )
+        {
+            action.setKind(RelationAlterAction.Kind.TRIGGER_STATE);
+            requireDdlSyntax(action.getTriggerTarget() == RelationAlterAction.TriggerTarget.NAME
+                    || action.getTriggerState() == RelationAlterAction.TriggerState.ENABLE
+                    || action.getTriggerState() == RelationAlterAction.TriggerState.DISABLE,
+                    "ENABLE ALWAYS/REPLICA requires a trigger name");
+        }
+        |
+        <K_RENAME>
+        (
+            LOOKAHEAD(1) <K_TO> name=RelObjectName() {
+                action.setKind(RelationAlterAction.Kind.RENAME); action.setNewName(name);
+            }
+            |
+            [ LOOKAHEAD(1) <K_COLUMN> { action.hasColumn(true); } ]
+            name=RelObjectName() { action.setColumnName(name); }
+            <K_TO> name=RelObjectName() {
+                action.setKind(RelationAlterAction.Kind.RENAME_COLUMN); action.setNewName(name);
+            }
+        )
+        |
+        LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { action.setKind(RelationAlterAction.Kind.OWNER); action.setValue(name); }
+        |
+        <K_SET>
+        (
+            <K_WITHOUT>
+            ( LOOKAHEAD({ isKeywordAhead("CLUSTER") }) ContextualKeyword("CLUSTER")
+              { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_CLUSTER); }
+              | ContextualKeyword("OIDS") { action.setKind(RelationAlterAction.Kind.SET_WITHOUT_OIDS); } )
+            | <K_UNLOGGED> { action.setKind(RelationAlterAction.Kind.SET_UNLOGGED); }
+            | LOOKAHEAD({ isKeywordAhead("LOGGED") }) ContextualKeyword("LOGGED")
+              { action.setKind(RelationAlterAction.Kind.SET_LOGGED); }
+            | <K_SCHEMA> name=RelObjectName()
+            { action.setKind(RelationAlterAction.Kind.SET_SCHEMA); action.setValue(name); }
+            | <K_TABLESPACE> name=RelObjectName()
+            { action.setKind(RelationAlterAction.Kind.SET_TABLESPACE); action.setValue(name); }
+            | LOOKAHEAD({ isKeywordAhead("ACCESS") }) ContextualKeyword("ACCESS") ContextualKeyword("METHOD") name=RelObjectName()
+            { action.setKind(RelationAlterAction.Kind.SET_ACCESS_METHOD); action.setValue(name); }
+            | options=PostgreSqlIndexOptions()
+            { action.setKind(RelationAlterAction.Kind.SET_OPTIONS); action.setOptions(options); }
+        )
+        |
+        <K_RESET> "(" name=IndexKeyAttributeName() { names.add(name); }
+        ( "," name=IndexKeyAttributeName() { names.add(name); } )* ")"
+        { action.setKind(RelationAlterAction.Kind.RESET_OPTIONS); action.setResetOptions(names); }
+        |
+        LOOKAHEAD(<K_ALTER> <K_CONSTRAINT>) <K_ALTER> <K_CONSTRAINT> name=RelObjectName()
+        [ <K_NO> { action.setNoInherit(true); } ] ContextualKeyword("INHERIT")
+        { action.setKind(RelationAlterAction.Kind.ALTER_CONSTRAINT_INHERIT); action.setConstraintName(name); }
+        |
+        <K_ALTER> [ LOOKAHEAD(1) <K_COLUMN> { action.hasColumn(true); } ]
+        ( token=<S_LONG> { action.setColumnNumber(Integer.valueOf(token.image)); }
+          | name=RelObjectName() { action.setColumnName(name); } )
+        { action.setKind(RelationAlterAction.Kind.ALTER_COLUMN); }
+        (
+            <K_SET>
+            (
+                <K_DEFAULT> expression=Expression() {
+                    action.setColumnAction(RelationAlterAction.ColumnAction.SET_DEFAULT);
+                    action.setDefaultExpression(expression);
+                }
+                |
+                LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS")
+                { action.setColumnAction(RelationAlterAction.ColumnAction.SET_STATISTICS); }
+                ( <K_DEFAULT> { action.setStatisticsDefault(true); }
+                  | statistics=SequenceParameterValue() {
+                      requireDdlSyntax(statistics >= -1 && statistics <= 10000, "Statistics target must be between -1 and 10000");
+                      action.setStatistics(statistics);
+                  } )
+                |
+                LOOKAHEAD("(") options=PostgreSqlIndexOptions() {
+                    for (Index.Option option : options) {
+                        requireDdlSyntax(option.getValue() != null && option.isUseEquals(),
+                                "Column attributes require a value and an equals sign");
+                    }
+                    action.setColumnAction(RelationAlterAction.ColumnAction.SET_OPTIONS); action.setOptions(options);
+                }
+                |
+                <K_STORAGE> ( token=<K_EXTENDED> | token=<K_DEFAULT> | token=<S_IDENTIFIER> ) {
+                    requireDdlSyntax(Arrays.asList("PLAIN", "EXTERNAL", "EXTENDED", "MAIN", "DEFAULT")
+                            .contains(token.image.toUpperCase(Locale.ROOT)), "Invalid column storage strategy");
+                    action.setColumnAction(RelationAlterAction.ColumnAction.SET_STORAGE); action.setValue(token.image);
+                }
+                |
+                ContextualKeyword("COMPRESSION") name=RelObjectName()
+                { action.setColumnAction(RelationAlterAction.ColumnAction.SET_COMPRESSION); action.setValue(name); }
+            )
+            |
+            <K_RESET> "(" name=RelObjectName() { names.add(name); }
+            ( "," name=RelObjectName() { names.add(name); } )* ")"
+            { action.setColumnAction(RelationAlterAction.ColumnAction.RESET_OPTIONS); action.setResetOptions(names); }
+            |
+            <K_DROP>
+            (
+                <K_DEFAULT> { action.setColumnAction(RelationAlterAction.ColumnAction.DROP_DEFAULT); }
+                |
+                ContextualKeyword("EXPRESSION") { action.setColumnAction(RelationAlterAction.ColumnAction.DROP_EXPRESSION); }
+                [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { action.setUsingIfExists(true); } ]
+            )
+        )
+        |
+        <K_ATTACH> <K_PARTITION> relation=Table()
+        { action.setKind(RelationAlterAction.Kind.ATTACH_PARTITION); action.setRelation(relation); }
+        |
+        LOOKAHEAD({ isKeywordAhead("DEPENDS") || getToken(1).kind == K_NO && "DEPENDS".equalsIgnoreCase(getToken(2).image) })
+        [ <K_NO> { action.setNoDependency(true); } ] ContextualKeyword("DEPENDS") <K_ON> ContextualKeyword("EXTENSION") name=RelObjectName()
+        { action.setKind(RelationAlterAction.Kind.DEPENDS_ON_EXTENSION); action.setValue(name); }
+        |
+        <K_VALIDATE> <K_CONSTRAINT> name=RelObjectName()
+        { action.setKind(RelationAlterAction.Kind.VALIDATE_CONSTRAINT); action.setConstraintName(name); }
+        |
+        LOOKAHEAD({ isKeywordAhead("REPLICA") }) ContextualKeyword("REPLICA") <K_IDENTITY>
+        { action.setKind(RelationAlterAction.Kind.REPLICA_IDENTITY); }
+        (
+            <K_USING> <K_INDEX> name=RelObjectName()
+            { action.setReplicaIdentity(RelationAlterAction.ReplicaIdentity.USING_INDEX); action.setValue(name); }
+            | ( token=<K_DEFAULT> | token=<K_FULL> | token=<S_IDENTIFIER> )
+            { action.setReplicaIdentity(accessEnum(RelationAlterAction.ReplicaIdentity.class, token.image)); }
+        )
+        |
+        [ <K_NO> { action.setNoInherit(true); } ] ContextualKeyword("INHERIT") relation=Table()
+        { action.setKind(RelationAlterAction.Kind.INHERIT); action.setRelation(relation); }
+    )
+    { return action; }
 }
 
 Alter AlterTable():
