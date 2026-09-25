@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -1024,4 +1026,16 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(CreateTextSearchConfiguration statement, S context) {
+        validateFeature(Feature.createTextSearchConfiguration);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchConfiguration statement, S context) {
+        validateFeature(Feature.alterTextSearchConfiguration);
+        return null;
+    }
 }

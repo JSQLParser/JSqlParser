@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -2966,6 +2968,16 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchConfiguration statement, S context) {
         return null;
     }
 }

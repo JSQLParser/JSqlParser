@@ -101,6 +101,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all "CREATE" {@link Feature}'s
      */
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
+            Feature.createTextSearchConfiguration,
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
@@ -113,6 +114,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      */
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
+                    Feature.alterTextSearchConfiguration,
                     Feature.alterView, Feature.alterIndex, Feature.alterSchema)
                     .unmodifyable();
     /**

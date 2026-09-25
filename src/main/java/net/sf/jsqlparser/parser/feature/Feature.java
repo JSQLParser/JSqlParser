@@ -580,6 +580,8 @@ public enum Feature {
      */
     createSequence,
     /** Publication and subscription definitions. */
+    createTextSearchConfiguration, alterTextSearchConfiguration,
+
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**
      * Structured type, domain and extension statements.
