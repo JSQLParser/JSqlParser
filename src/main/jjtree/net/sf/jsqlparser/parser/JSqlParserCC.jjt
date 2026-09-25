@@ -1576,7 +1576,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         int kind = getToken(1).kind;
         if (kind == K_ENGINE || kind == K_COLLATE || kind == K_COMMENT
                 || isMySqlScalarTableOptionAhead() || kind == K_UNION
-                || isMySqlStatisticsOptionAhead()) {
+                || isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT")) {
             return true;
         }
         if (kind == K_CHARACTER && getToken(2).kind == K_SET
@@ -3275,6 +3275,8 @@ Statement SingleStatement() :
             stm = RenameTableStatement()
             |
             stm = Create()
+            |
+            LOOKAHEAD(<K_DROP> <K_POLICY>) stm = DropPolicy()
             |
             stm = Drop()
             |
@@ -15486,6 +15488,13 @@ TableOption MySqlTableOption(): {
                     "Expected DEFAULT, 0, or 1 for " + name);
         }
         |
+        LOOKAHEAD({ isKeywordAhead("ROW_FORMAT") }) ContextualKeyword("ROW_FORMAT")
+        { name = "ROW_FORMAT"; kind = TableOption.Kind.ROW_FORMAT; }
+        [ "=" { useEquals = true; } ] value=RelObjectName() {
+            requireDdlSyntax(Arrays.asList("DEFAULT", "DYNAMIC", "FIXED", "COMPRESSED", "REDUNDANT", "COMPACT")
+                    .contains(value.toUpperCase(Locale.ROOT)), "Invalid MySQL ROW_FORMAT");
+        }
+        |
         LOOKAHEAD({ isMySqlScalarTableOptionAhead() }) option=MySqlScalarTableOption()
         { return option; }
         |
@@ -15622,6 +15631,30 @@ String MySqlSizeNumber():
                 "Expected an unsigned size with an optional K, M or G suffix");
         return number.image;
     }
+}
+
+/** Statistics and row format share CREATE's validation and option nodes. */
+AlterExpressionTableOption AlterSharedTableOption():
+{ TableOption option; AlterExpressionTableOption action = new AlterExpressionTableOption(); }
+{
+    option=MySqlTableOption()
+    { action.setStructuredTableOption(option); return action; }
+}
+
+AlterExpressionOrderBy MySqlAlterOrderBy():
+{ AlterExpressionOrderBy action = new AlterExpressionOrderBy(); OrderByElement element; }
+{
+    <K_ORDER> <K_BY> element=MySqlAlterOrderColumn() { action.getOrderByElements().add(element); }
+    ( LOOKAHEAD(1) "," element=MySqlAlterOrderColumn() { action.getOrderByElements().add(element); } )*
+    { return action; }
+}
+
+OrderByElement MySqlAlterOrderColumn():
+{ OrderByElement element = new OrderByElement(); String name; Token order; }
+{
+    name=RelObjectName() { element.setExpression(createColumn(name)); }
+    [ LOOKAHEAD(2) ( order=<K_ASC> | order=<K_DESC> ) { element.setAsc(order.kind == K_ASC); element.setAscDescPresent(true); } ]
+    { return element; }
 }
 
 AlterExpressionTableOption AlterScalarTableOption():
@@ -18138,6 +18171,11 @@ AlterExpression AlterExpression():
 {
 
     (
+        LOOKAHEAD(<K_ORDER> <K_BY>) alterExp=MySqlAlterOrderBy()
+      |
+        LOOKAHEAD({ isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT") })
+        alterExp=AlterSharedTableOption()
+      |
         LOOKAHEAD({ isPostgreSqlRelationActionAhead() }) alterExp=PostgreSqlRelationAction() {
             requireDdlSyntax(((RelationAlterAction) alterExp).getColumnNumber() == null,
                     "ALTER TABLE expects a column name, not an ordinal");
@@ -18335,6 +18373,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
+                |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
                 statement = AlterRole()
                 |
@@ -20270,9 +20310,7 @@ CreatePolicy CreatePolicy() #CreatePolicy:
     Table table;
     String policyMode = null;
     Token commandToken = null;
-    String roleName;
-    Expression usingExpr = null;
-    Expression checkExpr = null;
+    PolicyOptions options;
 }
 {
     <K_POLICY> policyName=RelObjectName() { createPolicy.setPolicyName(policyName); }
@@ -20294,19 +20332,41 @@ CreatePolicy CreatePolicy() #CreatePolicy:
       { createPolicy.setPolicyCommand(PolicyCommand.from(commandToken.image)); }
     ]
 
-    [ <K_TO>
-      roleName=RelObjectName() { createPolicy.addRole(roleName); }
-      ( "," roleName=RelObjectName() { createPolicy.addRole(roleName); } )*
-    ]
-
-    [ <K_USING> "(" usingExpr=Expression() ")" { createPolicy.setUsingExpression(usingExpr); } ]
-
-    [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" checkExpr=Expression() ")" { createPolicy.setWithCheckExpression(checkExpr); } ]
+    options=PolicyOptions() { createPolicy.setOptions(options); }
 
     {
 
         return createPolicy;
     }
+}
+
+
+PolicyOptions PolicyOptions():
+{ PolicyOptions options = new PolicyOptions(); String role; Expression expression; }
+{
+    [ <K_TO> role=RelObjectName() { options.getRoles().add(role); }
+      ( "," role=RelObjectName() { options.getRoles().add(role); } )* ]
+    [ <K_USING> "(" expression=Expression() ")" { options.setUsingExpression(expression); } ]
+    [ LOOKAHEAD(2) <K_WITH> <K_CHECK> "(" expression=Expression() ")" { options.setWithCheckExpression(expression); } ]
+    { return options; }
+}
+AlterPolicy AlterPolicy():
+{ AlterPolicy statement = new AlterPolicy(); String name; Table table; PolicyOptions options; }
+{
+    <K_POLICY> name=RelObjectName() { statement.setPolicyName(name); }
+    <K_ON> table=Table() { statement.setTable(table); }
+    ( <K_RENAME> <K_TO> name=RelObjectName() { statement.setNewName(name); }
+      | options=PolicyOptions() { statement.setOptions(options); } )
+    { return statement; }
+}
+DropPolicy DropPolicy():
+{ DropPolicy statement = new DropPolicy(); String name; Table table; Token behavior; }
+{
+    <K_DROP> <K_POLICY> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+    name=RelObjectName() { statement.setPolicyName(name); }
+    <K_ON> table=Table() { statement.setTable(table); }
+    [ (behavior=<K_CASCADE> | behavior=<K_RESTRICT>) { statement.setBehavior(DropPolicy.Behavior.valueOf(behavior.image.toUpperCase(Locale.ROOT))); } ]
+    { return statement; }
 }
 
 UnsupportedStatement UnsupportedStatement():

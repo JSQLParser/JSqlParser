@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -695,6 +697,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterTablespaceMove statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterPolicy statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterPolicy statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(DropPolicy statement, S context) {
+        return null;
+    }
+
+    default void visit(DropPolicy statement) {
         visit(statement, null);
     }
 }
