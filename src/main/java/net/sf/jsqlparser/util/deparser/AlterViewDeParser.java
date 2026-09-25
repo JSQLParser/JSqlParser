@@ -37,6 +37,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         } else {
             builder.append("ALTER ");
         }
+        alterView.appendMySqlOptionsTo(builder);
         builder.append("VIEW ").append(alterView.getView().getFullyQualifiedName());
         if (alterView.getColumnNames() != null) {
             builder.append(PlainSelect.getStringList(alterView.getColumnNames(), true, true));
@@ -44,6 +45,7 @@ public class AlterViewDeParser extends AbstractDeParser<AlterView> {
         builder.append(" AS ");
 
         alterView.getSelect().accept(selectVisitor, null);
+        alterView.appendCheckOptionTo(builder);
     }
 
 }

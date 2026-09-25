@@ -23,6 +23,36 @@ import java.util.Optional;
 
 public class AlterView implements Statement {
 
+    private MySqlViewOptions mySqlOptions;
+
+    public MySqlViewOptions getMySqlOptions() {
+        return mySqlOptions;
+    }
+
+    public void setMySqlOptions(MySqlViewOptions mySqlOptions) {
+        this.mySqlOptions = mySqlOptions;
+    }
+
+    public void appendMySqlOptionsTo(StringBuilder builder) {
+        if (mySqlOptions != null) {
+            mySqlOptions.appendTo(builder);
+        }
+    }
+
+    private CreateView.CheckOption checkOption;
+
+    public CreateView.CheckOption getCheckOption() {
+        return checkOption;
+    }
+
+    public void setCheckOption(CreateView.CheckOption checkOption) {
+        this.checkOption = checkOption;
+    }
+
+    public void appendCheckOptionTo(StringBuilder sql) {
+        CreateView.appendCheckOptionTo(sql, checkOption);
+    }
+
     private Table view;
     private Select select;
     private boolean useReplace = false;
@@ -68,12 +98,14 @@ public class AlterView implements Statement {
         } else {
             sql = new StringBuilder("ALTER ");
         }
+        appendMySqlOptionsTo(sql);
         sql.append("VIEW ");
         sql.append(view);
         if (columnNames != null) {
             sql.append(PlainSelect.getStringList(columnNames, true, true));
         }
         sql.append(" AS ").append(select);
+        appendCheckOptionTo(sql);
         return sql.toString();
     }
 
