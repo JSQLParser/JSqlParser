@@ -49,6 +49,7 @@ import net.sf.jsqlparser.schema.*;
 import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.sequence.*;
@@ -18441,6 +18442,8 @@ Statement Alter():
         (
             <K_ALTER>
             (
+                LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
+                |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
                 LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
@@ -19650,6 +19653,8 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
+        |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
         |
         LOOKAHEAD({ isPostgreSqlRoleAhead() }) statement = CreateRole()
@@ -20950,5 +20955,38 @@ AlterStatistics AlterStatistics():
           ( <K_DEFAULT> | target=SequenceParameterValue() {
               requireDdlSyntax(target>=-1 && target<=10000,"Statistics target must be DEFAULT or between -1 and 10000");
               statement.setStatistics(target.intValue()); } ) ) )
+    { return statement; }
+}
+
+CreateCollation CreateCollation():
+{
+    CreateCollation statement = new CreateCollation(); String name; List<Index.Option> options;
+}
+{
+    ContextualKeyword("COLLATION")
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+    name=AccessQualifiedName() { statement.setName(name); }
+    ( <K_FROM> name=AccessQualifiedName() { statement.setSourceCollation(name); }
+      | options=PostgreSqlOptions(true) {
+          for (Index.Option option : options) {
+              requireDdlSyntax(option.getValue() == null || option.isUseEquals(),
+                      "Collation parameter values require an equals sign");
+          }
+          statement.setOptions(options);
+      } )
+    { return statement; }
+}
+
+AlterCollation AlterCollation():
+{ AlterCollation statement = new AlterCollation(); String name; }
+{
+    ContextualKeyword("COLLATION") name=AccessQualifiedName() { statement.setName(name); }
+    ( <K_REFRESH> <K_VERSION> { statement.setAction(AlterCollation.Action.REFRESH_VERSION); }
+      | <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterCollation.Action.RENAME); statement.setNewName(name); }
+      | <K_SET> <K_SCHEMA> name=RelObjectName()
+        { statement.setAction(AlterCollation.Action.SET_SCHEMA); statement.setSchemaName(name); }
+      | ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterCollation.Action.OWNER); statement.setOwner(name); } )
     { return statement; }
 }

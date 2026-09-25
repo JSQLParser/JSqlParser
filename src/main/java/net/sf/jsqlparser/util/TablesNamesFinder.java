@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -2966,6 +2968,17 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateCollation statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterCollation statement, S context) {
         return null;
     }
 }
