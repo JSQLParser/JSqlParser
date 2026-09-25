@@ -51,6 +51,12 @@ public final class TableDefinitionTraversal {
     /** Visits the structured definitions and expressions belonging to a single ALTER action. */
     public static void visit(AlterExpression action, Consumer<Expression> expressions,
             Consumer<Table> tables) {
+        if (action instanceof net.sf.jsqlparser.statement.alter.RelationAlterAction) {
+            net.sf.jsqlparser.statement.alter.RelationAlterAction relation =
+                    (net.sf.jsqlparser.statement.alter.RelationAlterAction) action;
+            relation.visitExpressions(expressions);
+            relation.visitTables(tables);
+        }
         if (action.getOperation() == AlterOperation.RENAME_TABLE) {
             accept(action.getNewTable(), tables);
         }
