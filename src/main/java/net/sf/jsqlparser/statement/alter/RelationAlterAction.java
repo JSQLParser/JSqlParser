@@ -18,7 +18,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
 public class RelationAlterAction extends AlterExpression {
-    private TriggerState triggerState;
+    private EnableState enableState;
     private TriggerTarget triggerTarget;
     private Kind kind;
     private ColumnAction columnAction;
@@ -36,7 +36,7 @@ public class RelationAlterAction extends AlterExpression {
     private List<String> resetOptions;
 
     public enum Kind {
-        RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE
+        RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE, RULE_STATE
     }
 
     public enum ColumnAction {
@@ -47,6 +47,12 @@ public class RelationAlterAction extends AlterExpression {
         DEFAULT, FULL, NOTHING, USING_INDEX
     }
 
+    /** State shared by trigger and rewrite-rule actions. */
+    public enum EnableState {
+        ENABLE, DISABLE, ENABLE_ALWAYS, ENABLE_REPLICA
+    }
+
+    /** Compatibility names for existing trigger clients. */
     public enum TriggerState {
         ENABLE, DISABLE, ENABLE_ALWAYS, ENABLE_REPLICA
     }
@@ -55,12 +61,20 @@ public class RelationAlterAction extends AlterExpression {
     }
 
 
-    public TriggerState getTriggerState() {
-        return triggerState;
+    public EnableState getEnableState() {
+        return enableState;
     }
 
-    public void setTriggerState(TriggerState triggerState) {
-        this.triggerState = triggerState;
+    public void setEnableState(EnableState state) {
+        enableState = state;
+    }
+
+    public TriggerState getTriggerState() {
+        return enableState == null ? null : TriggerState.valueOf(enableState.name());
+    }
+
+    public void setTriggerState(TriggerState state) {
+        enableState = state == null ? null : EnableState.valueOf(state.name());
     }
 
     public TriggerTarget getTriggerTarget() {
@@ -219,8 +233,11 @@ public class RelationAlterAction extends AlterExpression {
                 builder.append("OF ").append(value);
                 break;
             case TRIGGER_STATE:
-                builder.append(triggerState.name().replace('_', ' ')).append(" TRIGGER ")
+                builder.append(enableState.name().replace('_', ' ')).append(" TRIGGER ")
                         .append(triggerTarget == TriggerTarget.NAME ? value : triggerTarget);
+                break;
+            case RULE_STATE:
+                builder.append(enableState.name().replace('_', ' ')).append(" RULE ").append(value);
                 break;
             case RENAME:
                 builder.append("RENAME TO ").append(newName);
