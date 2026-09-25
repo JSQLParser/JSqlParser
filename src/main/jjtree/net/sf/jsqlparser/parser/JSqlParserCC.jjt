@@ -1543,11 +1543,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isPostgreSqlConstraintAttributeAhead() {
-        int kind = getToken(1).kind;
-        int next = getToken(2).kind;
-        return kind == K_DEFERRABLE || kind == K_ENFORCED || isKeywordAhead("INITIALLY")
+        return isPostgreSqlConstraintAttributeAhead(1);
+    }
+
+    private boolean isPostgreSqlConstraintAttributeAhead(int offset) {
+        int kind = getToken(offset).kind;
+        int next = getToken(offset + 1).kind;
+        return kind == K_DEFERRABLE || kind == K_ENFORCED
+                || "INITIALLY".equalsIgnoreCase(getToken(offset).image)
                 || kind == K_NOT && (next == K_DEFERRABLE || next == K_ENFORCED
-                    || "VALID".equalsIgnoreCase(getToken(2).image));
+                    || "VALID".equalsIgnoreCase(getToken(offset + 1).image));
     }
 
     private boolean isMySqlStatisticsOptionAhead() {
@@ -18222,6 +18227,24 @@ AlterExpressionPartition AlterExpressionPostgreSqlPartitionOp():
 * Dispatcher production for all ALTER TABLE expression types.
 * Delegates to focused sub-productions for each operation category.
 */
+AlterConstraintAttributes AlterConstraintAttributes():
+{
+    AlterConstraintAttributes action = new AlterConstraintAttributes();
+    String name;
+    ConstraintAttributes attributes;
+}
+{
+    <K_ALTER> <K_CONSTRAINT> name=RelObjectName()
+    attributes=PostgreSqlConstraintAttributeList(null)
+    {
+        requireDdlSyntax(attributes != null && !attributes.isNotValid(),
+                "ALTER CONSTRAINT requires attributes and does not accept NOT VALID");
+        action.setConstraintSymbol(name);
+        action.setAttributes(attributes);
+        return action;
+    }
+}
+
 AlterExpression AlterExpression():
 {
     AlterExpression alterExp = null;
@@ -18243,6 +18266,9 @@ AlterExpression AlterExpression():
       |
         LOOKAHEAD({ isMySqlStatisticsOptionAhead() || isKeywordAhead("ROW_FORMAT") })
         alterExp=AlterSharedTableOption()
+      |
+        LOOKAHEAD({ getToken(1).kind == K_ALTER && getToken(2).kind == K_CONSTRAINT
+                && isPostgreSqlConstraintAttributeAhead(4) }) alterExp=AlterConstraintAttributes()
       |
         LOOKAHEAD({ isPostgreSqlRelationActionAhead() }) alterExp=PostgreSqlRelationAction() {
             requireDdlSyntax(((RelationAlterAction) alterExp).getColumnNumber() == null,
@@ -18423,6 +18449,7 @@ AlterExpression AlterExpression():
                             i++;
                         }
 
+                    requireDdlSyntax(i > 0, "Expected an ALTER TABLE action");
                     alterExp.setOptionalSpecifier( optionalSpecifier.toString() );
                }
     )
