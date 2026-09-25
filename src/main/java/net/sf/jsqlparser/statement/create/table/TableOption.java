@@ -21,8 +21,19 @@ import net.sf.jsqlparser.schema.Table;
 public class TableOption implements Serializable {
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, 
-        STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, FOREIGN_SERVER, OTHER
+    }
+
+    private ForeignTableOptions foreignTableOptions;
+
+    public ForeignTableOptions getForeignTableOptions() {
+        return foreignTableOptions;
+    }
+
+    public static TableOption foreignServer(ForeignTableOptions options) {
+        TableOption option = new TableOption(Kind.FOREIGN_SERVER, "SERVER", null, false);
+        option.foreignTableOptions = options;
+        return option;
     }
 
     private Kind kind = Kind.OTHER;
@@ -39,6 +50,7 @@ public class TableOption implements Serializable {
 
     public void setStorageParameters(List<Index.Option> storageParameters) {
         this.storageParameters = storageParameters;
+        foreignTableOptions = null;
         kind = Kind.STORAGE_PARAMETERS;
         name = "WITH";
         value = null;
@@ -48,7 +60,9 @@ public class TableOption implements Serializable {
 
     public void appendTo(StringBuilder builder,
             java.util.function.Consumer<net.sf.jsqlparser.expression.Expression> expressionPrinter) {
-        if (storageParameters != null) {
+        if (foreignTableOptions != null) {
+            foreignTableOptions.appendTo(builder, expressionPrinter);
+        } else if (storageParameters != null) {
             builder.append("WITH ");
             Index.Option.appendListTo(builder, storageParameters, expressionPrinter);
         } else {
@@ -82,6 +96,9 @@ public class TableOption implements Serializable {
 
     public void setKind(Kind kind) {
         this.kind = kind;
+        if (kind != Kind.FOREIGN_SERVER) {
+            foreignTableOptions = null;
+        }
         if (kind != Kind.STORAGE_PARAMETERS) {
             storageParameters = null;
         }
@@ -99,6 +116,9 @@ public class TableOption implements Serializable {
     }
 
     public String getValue() {
+        if (foreignTableOptions != null) {
+            return foreignTableOptions.toString().substring("SERVER ".length());
+        }
         if (storageParameters != null) {
             return PlainSelect.getStringList(storageParameters, true, true);
         }
@@ -107,6 +127,7 @@ public class TableOption implements Serializable {
 
     public void setValue(String value) {
         this.value = value;
+        foreignTableOptions = null;
         unionTables = null;
         storageParameters = null;
     }
@@ -119,6 +140,7 @@ public class TableOption implements Serializable {
     /** Replaces raw option contents with structured UNION table references. */
     public void setUnionTables(List<Table> unionTables) {
         this.unionTables = unionTables;
+        foreignTableOptions = null;
         kind = Kind.UNION;
         name = "UNION";
         value = null;
@@ -161,6 +183,7 @@ public class TableOption implements Serializable {
     public void setTokens(List<String> tokens) {
         this.tokens = tokens;
         if (tokens != null) {
+            foreignTableOptions = null;
             unionTables = null;
             storageParameters = null;
         }
@@ -188,6 +211,9 @@ public class TableOption implements Serializable {
 
     @Override
     public String toString() {
+        if (foreignTableOptions != null) {
+            return foreignTableOptions.toString();
+        }
         if (tokens != null) {
             return PlainSelect.getStringList(tokens, false, false);
         }

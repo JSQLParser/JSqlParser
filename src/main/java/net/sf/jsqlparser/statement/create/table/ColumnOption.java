@@ -23,12 +23,30 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class ColumnOption implements Serializable {
 
     public enum Kind {
-        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, STORAGE, COMPRESSION, OTHER
+        SERIAL_DEFAULT_VALUE, REFERENCE, IDENTITY, CONSTRAINT, DEFAULT, NULLABILITY, COLLATE, COMMENT, ON_UPDATE, GENERATED, AUTO_INCREMENT, VISIBILITY, STORAGE, COMPRESSION, FOREIGN_OPTIONS, OTHER
     }
 
     /** PostgreSQL storage strategies and MySQL column storage locations. */
     public enum Storage {
         PLAIN, EXTERNAL, EXTENDED, MAIN, DEFAULT, DISK, MEMORY
+    }
+
+    private List<ForeignDataOption> foreignOptions;
+
+    public List<ForeignDataOption> getForeignOptions() {
+        return foreignOptions;
+    }
+
+    public void setForeignOptions(List<ForeignDataOption> options) {
+        foreignOptions = options;
+        kind = Kind.FOREIGN_OPTIONS;
+        tokens = null;
+    }
+
+    public static ColumnOption foreignOptions(List<ForeignDataOption> options) {
+        ColumnOption option = new ColumnOption();
+        option.setForeignOptions(options);
+        return option;
     }
 
     private Storage storage;
@@ -175,7 +193,9 @@ public class ColumnOption implements Serializable {
 
     /** Visits expressions of the selected option kind, including comment literals. */
     public void visitExpressions(Consumer<Expression> visitor) {
-        if (kind == Kind.DEFAULT) {
+        if (kind == Kind.FOREIGN_OPTIONS) {
+            ForeignDataOption.visitExpressions(foreignOptions, visitor);
+        } else if (kind == Kind.DEFAULT) {
             visitor.accept(defaultExpression);
         } else if (kind == Kind.COMMENT) {
             visitor.accept(comment);
@@ -294,6 +314,9 @@ public class ColumnOption implements Serializable {
     /** Appends the option using the supplied printer for structured expressions. */
     public void appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         switch (kind) {
+            case FOREIGN_OPTIONS:
+                ForeignDataOption.appendOptionsTo(builder, foreignOptions, expressionPrinter);
+                break;
             case STORAGE:
                 builder.append("STORAGE ").append(storage);
                 break;

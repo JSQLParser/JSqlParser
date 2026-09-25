@@ -29,6 +29,41 @@ public class Alter implements Statement {
 
     private List<AlterExpression> alterExpressions;
 
+    private boolean useDescendants;
+
+    public boolean isUseDescendants() {
+        return useDescendants;
+    }
+
+    public void setUseDescendants(boolean useDescendants) {
+        this.useDescendants = useDescendants;
+    }
+
+    public StringBuilder appendTargetTo(StringBuilder builder) {
+        builder.append(foreignTable ? "ALTER FOREIGN TABLE " : "ALTER TABLE ");
+        if (useTableIfExists) {
+            builder.append("IF EXISTS ");
+        }
+        if (useOnly) {
+            builder.append("ONLY ");
+        }
+        builder.append(table.getFullyQualifiedName());
+        if (useDescendants) {
+            builder.append(" *");
+        }
+        return builder.append(' ');
+    }
+
+    private boolean foreignTable;
+
+    public boolean isForeignTable() {
+        return foreignTable;
+    }
+
+    public void setForeignTable(boolean foreignTable) {
+        this.foreignTable = foreignTable;
+    }
+
     public Table getTable() {
         return table;
     }
@@ -82,16 +117,7 @@ public class Alter implements Statement {
     public String toString() {
 
         StringBuilder b = new StringBuilder();
-        b.append("ALTER TABLE ");
-        if (useOnly) {
-            b.append("ONLY ");
-        }
-
-        if (useTableIfExists) {
-            b.append("IF EXISTS ");
-        }
-
-        b.append(table.getFullyQualifiedName()).append(" ");
+        appendTargetTo(b);
 
         Iterator<AlterExpression> altIter = alterExpressions.iterator();
 
