@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -731,6 +733,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterStatistics statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTextSearchConfiguration statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTextSearchConfiguration statement) {
         visit(statement, null);
     }
 }

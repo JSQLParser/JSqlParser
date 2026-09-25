@@ -97,6 +97,7 @@ public enum PostgresqlVersion implements Version {
 
                     // https://www.postgresql.org/docs/current/sql-createsequence.html
                     Feature.createSequence,
+                    Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,

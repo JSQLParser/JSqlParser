@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -851,6 +853,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterStatistics statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateTextSearchConfiguration statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterTextSearchConfiguration statement, S context) {
         return statement.appendTo(builder);
     }
 }
