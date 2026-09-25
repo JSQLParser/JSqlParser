@@ -14,11 +14,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** A structured option shared by MySQL {@code CREATE DATABASE} and {@code CREATE SCHEMA}. */
+/**
+ * A structured option shared by MySQL {@code CREATE/ALTER DATABASE} and
+ * {@code CREATE/ALTER SCHEMA}.
+ */
 public class DatabaseOption implements Serializable {
 
     public enum Kind {
-        CHARACTER_SET, COLLATE, ENCRYPTION, OTHER
+        CHARACTER_SET, COLLATE, ENCRYPTION, READ_ONLY, OTHER
     }
 
     private Kind kind = Kind.OTHER;
