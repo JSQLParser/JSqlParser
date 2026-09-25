@@ -1560,9 +1560,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return isKeywordAhead("ENGINE_ATTRIBUTE") || isKeywordAhead("SECONDARY_ENGINE_ATTRIBUTE");
     }
 
+    private boolean isMySqlAdditionalTableOptionAhead() {
+        String name = getToken(1).image.toUpperCase(Locale.ROOT);
+        return Arrays.asList("SECONDARY_ENGINE", "AUTOEXTEND_SIZE", "INSERT_METHOD", "PACK_KEYS",
+                "DELAY_KEY_WRITE", "CHECKSUM", "CONNECTION", "COMPRESSION").contains(name);
+    }
+
     private boolean isMySqlScalarTableOptionAhead() {
         int kind = getToken(1).kind;
-        return isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
+        return isMySqlAdditionalTableOptionAhead() || isMySqlEngineAttributeAhead() || kind == K_ENCRYPTION || kind == K_PASSWORD || kind == K_AUTO_INCREMENT
                 || (kind == K_DATA || kind == K_INDEX) && getToken(2).kind == K_DIRECTORY;
     }
 
@@ -15434,7 +15440,7 @@ TableOption MySqlTableOption(): {
     }
 }
 
-/** Common CREATE/ALTER options with a quoted string or unsigned integer value. */
+/** Shared CREATE/ALTER table options with option-specific value syntax. */
 TableOption MySqlScalarTableOption():
 {
     Token token;
@@ -15442,9 +15448,14 @@ TableOption MySqlScalarTableOption():
     String value;
     TableOption.Kind kind;
     boolean useEquals = false;
+    TableOption additional;
 }
 {
     (
+        LOOKAHEAD({ isMySqlAdditionalTableOptionAhead() }) additional=MySqlAdditionalTableOption()
+        { name = additional.getName(); kind = additional.getKind();
+          value = additional.getValue(); useEquals = additional.isUseEquals(); }
+        |
         <K_AUTO_INCREMENT> { name = "AUTO_INCREMENT"; kind = TableOption.Kind.AUTO_INCREMENT; }
         [ "=" { useEquals = true; } ] token=<S_LONG> { value = token.image; }
         |
@@ -15461,6 +15472,65 @@ TableOption MySqlScalarTableOption():
         [ "=" { useEquals = true; } ] token=<S_CHAR_LITERAL> { value = token.image; }
     )
     { return new TableOption(kind, name, value, useEquals); }
+}
+
+TableOption MySqlAdditionalTableOption():
+{
+    Token token;
+    String name;
+    String value;
+    boolean useEquals = false;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("SECONDARY_ENGINE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_NULL> { value = token.image; } | token=<S_CHAR_LITERAL> { value = token.image; } | value=RelObjectName() )
+        |
+        LOOKAHEAD({ isKeywordAhead("INSERT_METHOD") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_NO> | token=<K_FIRST> | token=<K_LAST> ) { value = token.image; }
+        |
+        LOOKAHEAD({ isKeywordAhead("PACK_KEYS") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        ( token=<K_DEFAULT> | token=<S_LONG> ) {
+            value = token.image;
+            if (token.kind == S_LONG && !"0".equals(value) && !"1".equals(value)) {
+                throw new ParseException("PACK_KEYS requires 0, 1 or DEFAULT");
+            }
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("AUTOEXTEND_SIZE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        value=MySqlSizeNumber()
+        |
+        LOOKAHEAD({ isKeywordAhead("CHECKSUM") || isKeywordAhead("DELAY_KEY_WRITE") })
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        token=<S_LONG> { value = token.image; }
+        |
+        token=<S_IDENTIFIER> { name = token.image.toUpperCase(Locale.ROOT); }
+        [ "=" { useEquals = true; } ]
+        token=<S_CHAR_LITERAL> { value = token.image; }
+    )
+    { if (true) { return new TableOption(TableOption.Kind.valueOf(name), name, value, useEquals); } }
+}
+
+String MySqlSizeNumber():
+{
+    Token number;
+}
+{
+    ( number=<S_LONG> | number=<S_IDENTIFIER> )
+    {
+        requireDdlSyntax(number.kind == S_LONG || number.image.matches("[0-9]+[kKmMgG]"),
+                "Expected an unsigned size with an optional K, M or G suffix");
+        return number.image;
+    }
 }
 
 AlterExpressionTableOption AlterScalarTableOption():
