@@ -21,7 +21,7 @@ import net.sf.jsqlparser.schema.Table;
 public class TableOption implements Serializable {
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, OTHER
     }
 
     private Kind kind = Kind.OTHER;
@@ -30,6 +30,31 @@ public class TableOption implements Serializable {
     private boolean useEquals;
     private List<String> tokens;
     private List<Table> unionTables;
+    private List<Index.Option> storageParameters;
+
+    public List<Index.Option> getStorageParameters() {
+        return storageParameters;
+    }
+
+    public void setStorageParameters(List<Index.Option> storageParameters) {
+        this.storageParameters = storageParameters;
+        kind = Kind.STORAGE_PARAMETERS;
+        name = "WITH";
+        value = null;
+        tokens = null;
+        unionTables = null;
+    }
+
+    public void appendTo(StringBuilder builder,
+            java.util.function.Consumer<net.sf.jsqlparser.expression.Expression> expressionPrinter) {
+        if (storageParameters != null) {
+            builder.append("WITH ");
+            Index.Option.appendListTo(builder, storageParameters, expressionPrinter);
+        } else {
+            builder.append(toString());
+        }
+    }
+
 
     public TableOption() {}
 
@@ -56,6 +81,9 @@ public class TableOption implements Serializable {
 
     public void setKind(Kind kind) {
         this.kind = kind;
+        if (kind != Kind.STORAGE_PARAMETERS) {
+            storageParameters = null;
+        }
         if (kind != Kind.UNION) {
             unionTables = null;
         }
@@ -70,12 +98,16 @@ public class TableOption implements Serializable {
     }
 
     public String getValue() {
+        if (storageParameters != null) {
+            return PlainSelect.getStringList(storageParameters, true, true);
+        }
         return unionTables == null ? value : PlainSelect.getStringList(unionTables, true, true);
     }
 
     public void setValue(String value) {
         this.value = value;
         unionTables = null;
+        storageParameters = null;
     }
 
     /** Returns the mutable MERGE table sources, including an empty UNION list. */
@@ -90,6 +122,7 @@ public class TableOption implements Serializable {
         name = "UNION";
         value = null;
         tokens = null;
+        storageParameters = null;
     }
 
     public TableOption withUnionTables(List<Table> unionTables) {
@@ -128,6 +161,7 @@ public class TableOption implements Serializable {
         this.tokens = tokens;
         if (tokens != null) {
             unionTables = null;
+            storageParameters = null;
         }
     }
 

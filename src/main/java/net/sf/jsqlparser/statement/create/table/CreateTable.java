@@ -25,6 +25,29 @@ import net.sf.jsqlparser.statement.select.Select;
 
 public class CreateTable implements Statement {
 
+    private boolean tableOptionsAfterPartition;
+
+    public boolean isTableOptionsAfterPartition() {
+        return tableOptionsAfterPartition;
+    }
+
+    public void setTableOptionsAfterPartition(boolean tableOptionsAfterPartition) {
+        this.tableOptionsAfterPartition = tableOptionsAfterPartition;
+    }
+
+    private net.sf.jsqlparser.statement.execute.Execute execute;
+
+    /** Prepared statement source of PostgreSQL CREATE TABLE AS EXECUTE. */
+    public net.sf.jsqlparser.statement.execute.Execute getExecute() {
+        return execute;
+    }
+
+    public void setExecute(net.sf.jsqlparser.statement.execute.Execute execute) {
+        this.execute = execute;
+        select = null;
+        selectParenthesis = false;
+    }
+
     private Table table;
     private boolean unlogged = false;
     private List<String> createOptionsStrings;
@@ -231,7 +254,13 @@ public class CreateTable implements Statement {
 
     public StringBuilder appendSelectTo(StringBuilder builder,
             java.util.function.Consumer<Select> selectRenderer) {
-        if (select != null) {
+        return appendQueryTo(builder, selectRenderer, builder::append);
+    }
+
+    public StringBuilder appendQueryTo(StringBuilder builder,
+            java.util.function.Consumer<Select> selectRenderer,
+            java.util.function.Consumer<net.sf.jsqlparser.statement.execute.Execute> executeRenderer) {
+        if (select != null || execute != null) {
             if (duplicateHandling != null) {
                 builder.append(' ').append(duplicateHandling);
             }
@@ -239,7 +268,11 @@ public class CreateTable implements Statement {
             if (selectParenthesis) {
                 builder.append("(");
             }
-            selectRenderer.accept(select);
+            if (execute != null) {
+                executeRenderer.accept(execute);
+            } else {
+                selectRenderer.accept(select);
+            }
             if (selectParenthesis) {
                 builder.append(")");
             }
@@ -252,6 +285,7 @@ public class CreateTable implements Statement {
 
     public void setSelect(Select select, boolean parenthesis) {
         this.select = select;
+        this.execute = null;
         this.selectParenthesis = parenthesis;
     }
 
@@ -449,14 +483,27 @@ public class CreateTable implements Statement {
         }
     }
 
-    private void appendTableOptions(StringBuilder b) {
-        String options = tableOptions != null
-                ? PlainSelect.getStringList(tableOptions, false, false)
-                : PlainSelect.getStringList(tableOptionsStrings, false, false);
-        if (options != null && options.length() > 0) {
-            b.append(" ").append(options);
+    public void appendTableOptionsTo(StringBuilder builder,
+            java.util.function.Consumer<net.sf.jsqlparser.expression.Expression> expressionPrinter) {
+        if (tableOptions != null) {
+            for (TableOption option : tableOptions) {
+                builder.append(' ');
+                option.appendTo(builder, expressionPrinter);
+            }
+        } else {
+            String options = PlainSelect.getStringList(tableOptionsStrings, false, false);
+            if (options != null && !options.isEmpty()) {
+                builder.append(' ').append(options);
+            }
         }
-        if (partitioning != null) {
+    }
+
+    private void appendTableOptions(StringBuilder b) {
+        if (partitioning != null && tableOptionsAfterPartition) {
+            b.append(" ").append(partitioning);
+        }
+        appendTableOptionsTo(b, b::append);
+        if (partitioning != null && !tableOptionsAfterPartition) {
             b.append(" ").append(partitioning);
         }
     }

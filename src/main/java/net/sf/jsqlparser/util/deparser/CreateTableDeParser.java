@@ -114,11 +114,15 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
                             null));
         }
 
-        params = PlainSelect.getStringList(createTable.getTableOptionsStrings(), false, false);
-        if (!"".equals(params)) {
-            builder.append(' ').append(params);
+        if (createTable.getPartitioning() != null && createTable.isTableOptionsAfterPartition()) {
+            builder.append(' ');
+            createTable.getPartitioning().appendTo(builder,
+                    expression -> expression.accept(statementDeParser.getExpressionDeParser(),
+                            null));
         }
-        if (createTable.getPartitioning() != null) {
+        createTable.appendTableOptionsTo(builder,
+                expression -> expression.accept(statementDeParser.getExpressionDeParser(), null));
+        if (createTable.getPartitioning() != null && !createTable.isTableOptionsAfterPartition()) {
             builder.append(' ');
             createTable.getPartitioning().appendTo(builder,
                     expression -> expression.accept(statementDeParser.getExpressionDeParser(),
@@ -129,7 +133,8 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             builder.append(' ').append(createTable.getRowMovement().getMode().toString())
                     .append(" ROW MOVEMENT");
         }
-        createTable.appendSelectTo(builder, select -> select.accept(this.statementDeParser, null));
+        createTable.appendQueryTo(builder, select -> select.accept(this.statementDeParser, null),
+                execute -> execute.accept(this.statementDeParser, null));
         if (createTable.getTrailingLikeTable() != null) {
             builder.append(" LIKE ");
             if (createTable.isSelectParenthesis()) {

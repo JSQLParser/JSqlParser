@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.expression.RowPatternFunction;
@@ -1948,7 +1949,10 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterView alterView, S context) {
-        throwUnsupported(alterView);
+        visit(alterView.getView(), context);
+        if (alterView.getSelect() != null) {
+            alterView.getSelect().accept((SelectVisitor<?>) this, context);
+        }
         return null;
     }
 
@@ -2922,6 +2926,11 @@ public class TablesNamesFinder<Void>
             action.visitExpressions(expression -> expression.accept(this, context));
             action.visitTables(table -> visit(table, context));
         });
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterDatabase statement, S context) {
         return null;
     }
 

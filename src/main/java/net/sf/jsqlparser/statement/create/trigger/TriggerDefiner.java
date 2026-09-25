@@ -9,45 +9,18 @@
  */
 package net.sf.jsqlparser.statement.create.trigger;
 
-import java.io.Serializable;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.statement.MySqlDefiner;
 
-/** Structured account used by a MySQL trigger {@code DEFINER} clause. */
-public class TriggerDefiner implements Serializable {
-
-    private StringValue user;
-    private StringValue host;
-
-    public StringValue getUser() {
-        return user;
-    }
-
-    public void setUser(StringValue user) {
-        this.user = user;
-    }
-
-    public StringValue getHost() {
-        return host;
-    }
-
-    public void setHost(StringValue host) {
-        this.host = host;
-    }
-
+/** Retains the trigger API while sharing MySQL DEFINER account handling with views. */
+public class TriggerDefiner extends MySqlDefiner {
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder().append(user);
-        if (host != null) {
-            builder.append("@").append(host);
-        }
-        return builder.toString();
-    }
-
     public TriggerDefiner withUser(StringValue user) {
         setUser(user);
         return this;
     }
 
+    @Override
     public TriggerDefiner withHost(StringValue host) {
         setHost(host);
         return this;

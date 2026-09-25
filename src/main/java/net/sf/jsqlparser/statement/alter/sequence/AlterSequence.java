@@ -18,7 +18,79 @@ import net.sf.jsqlparser.statement.StatementVisitor;
  */
 public class AlterSequence implements Statement {
 
+    public enum Action {
+        PARAMETERS, RENAME, OWNER, SET_SCHEMA, SET_LOGGED, SET_UNLOGGED
+    }
+
     public Sequence sequence;
+    private boolean ifExists;
+    private Action action = Action.PARAMETERS;
+    private String newName;
+    private String owner;
+    private String schemaName;
+
+    public boolean isIfExists() {
+        return ifExists;
+    }
+
+    public void setIfExists(boolean ifExists) {
+        this.ifExists = ifExists;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = java.util.Objects.requireNonNull(action, "action");
+    }
+
+    public String getNewName() {
+        return newName;
+    }
+
+    public void setNewName(String newName) {
+        this.newName = newName;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getSchemaName() {
+        return schemaName;
+    }
+
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("ALTER SEQUENCE ");
+        if (ifExists) {
+            builder.append("IF EXISTS ");
+        }
+        builder.append(action == Action.PARAMETERS ? sequence : sequence.getFullyQualifiedName());
+        switch (action) {
+            case RENAME:
+                return builder.append(" RENAME TO ").append(newName);
+            case OWNER:
+                return builder.append(" OWNER TO ").append(owner);
+            case SET_SCHEMA:
+                return builder.append(" SET SCHEMA ").append(schemaName);
+            case SET_LOGGED:
+                return builder.append(" SET LOGGED");
+            case SET_UNLOGGED:
+                return builder.append(" SET UNLOGGED");
+            default:
+                return builder;
+        }
+    }
+
 
     public Sequence getSequence() {
         return sequence;
@@ -35,9 +107,7 @@ public class AlterSequence implements Statement {
 
     @Override
     public String toString() {
-        String sql;
-        sql = "ALTER SEQUENCE " + sequence;
-        return sql;
+        return appendTo(new StringBuilder()).toString();
     }
 
     public AlterSequence withSequence(Sequence sequence) {
