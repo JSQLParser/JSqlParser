@@ -580,6 +580,8 @@ public enum Feature {
      */
     createSequence,
     /** Publication and subscription definitions. */
+    createCollation, alterCollation,
+
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**
      * Structured type, domain and extension statements.

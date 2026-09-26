@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -1024,4 +1026,17 @@ public class StatementValidator extends AbstractValidator<Statement>
         return null;
     }
 
+
+    @Override
+    public <S> Void visit(CreateCollation statement, S context) {
+        validateFeature(Feature.createCollation);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterCollation statement, S context) {
+        validateFeature(Feature.alterCollation);
+        return null;
+    }
 }
