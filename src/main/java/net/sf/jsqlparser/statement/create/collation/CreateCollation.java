@@ -20,6 +20,8 @@ import net.sf.jsqlparser.statement.create.table.Index;
 public class CreateCollation implements Statement {
     private String name;
     private boolean ifNotExists;
+    private String sourceCollation;
+    private List<Index.Option> options;
 
     public String getName() {
         return name;
@@ -36,9 +38,6 @@ public class CreateCollation implements Statement {
     public void setIfNotExists(boolean value) {
         ifNotExists = value;
     }
-
-    private String sourceCollation;
-    private List<Index.Option> options;
 
     public String getSourceCollation() {
         return sourceCollation;
