@@ -20,11 +20,19 @@ import net.sf.jsqlparser.schema.Table;
 /** A structured option following a {@code CREATE TABLE} definition. */
 public class TableOption implements Serializable {
 
+    private ForeignTableOptions foreignTableOptions;
+    private Kind kind = Kind.OTHER;
+    private String name;
+    private String value;
+    private boolean useEquals;
+    private List<String> tokens;
+    private List<Table> unionTables;
+    private List<Index.Option> storageParameters;
+    private ColumnOption.Storage tablespaceStorage;
+
     public enum Kind {
         ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, OTHER
     }
-
-    private ForeignTableOptions foreignTableOptions;
 
     public ForeignTableOptions getForeignTableOptions() {
         return foreignTableOptions;
@@ -35,15 +43,6 @@ public class TableOption implements Serializable {
         option.foreignTableOptions = options;
         return option;
     }
-
-    private Kind kind = Kind.OTHER;
-    private String name;
-    private String value;
-    private boolean useEquals;
-    private List<String> tokens;
-    private List<Table> unionTables;
-    private List<Index.Option> storageParameters;
-    private ColumnOption.Storage tablespaceStorage;
 
     public ColumnOption.Storage getTablespaceStorage() {
         return tablespaceStorage;
