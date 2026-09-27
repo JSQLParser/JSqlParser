@@ -2199,6 +2199,12 @@ TOKEN_MGR_DECLS : {
 
     private RowPatternTokenContext rowPatternContext;
 
+    private void reportMySqlCommentError() {
+        throw new TokenMgrException(input_stream.mySqlCommentError == null
+                ? "Unexpected control character" : input_stream.mySqlCommentError,
+                TokenMgrException.LEXICAL_ERROR);
+    }
+
     public void CommonTokenAction(Token t)
 	{
 		t.absoluteBegin = getCurrentTokenAbsolutePosition();
@@ -2889,6 +2895,18 @@ TOKEN : /* Operators */
 |   <OP_RSHIFT: ">>">
 |   <OP_JSON_PATH_DELETE: "#-">
 |   <OP_JSON_PATH_EXISTS: "@?">
+|   <OP_MINUS: "-">
+|   <MYSQL_MINUS: "\u0002"> {
+        if (!input_stream.mySqlMinusSubstitution) {
+            input_stream.mySqlCommentError = "Unexpected control character";
+            reportMySqlCommentError();
+        }
+        matchedToken.kind = OP_MINUS;
+        matchedToken.image = "-";
+    }
+|   <MYSQL_EXECUTABLE_COMMENT_ERROR: "\u0003"> {
+        reportMySqlCommentError();
+    }
 | 	<OP_DOUBLEAND: "&&">
 | 	<OP_CONTAINS: "&>">
 | 	<OP_CONTAINEDBY: "<&">

@@ -818,6 +818,14 @@ public enum Feature {
     /** Enables legacy GROUP BY ordering with the MYSQL dialect; disabled by default. */
     allowLegacyMySqlGroupBy(false),
 
+    /**
+     * Target MySQL version for executable comments, encoded as major * 10000 + minor * 100 + patch.
+     * A negative value leaves the version unspecified: conditional comments then fail instead of
+     * silently discarding SQL. Only used with the MYSQL dialect; unversioned comments need no
+     * value.
+     */
+    mySqlServerVersion(-1),
+
     // PERFORMANCE
 
     /**
