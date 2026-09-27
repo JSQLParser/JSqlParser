@@ -124,7 +124,7 @@ public enum MariaDbVersion implements Version {
                     Feature.grant, // https://mariadb.com/kb/en/commit/
                     Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
-                    Feature.mysqlCalcFoundRows,
+                    Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,
                     Feature.mysqlSqlCacheFlag)),
 
     ORACLE_MODE("oracle_mode", V10_5_4.copy().add(Feature.selectUnique).getFeatures());
