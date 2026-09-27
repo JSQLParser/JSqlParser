@@ -215,7 +215,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(RefreshMaterializedViewStatement materializedViewStatement,
             S context) {
-        new RefreshMaterializedViewStatementDeParser(builder).deParse(materializedViewStatement);
+        new RefreshMaterializedViewStatementDeParser(builder,
+                table -> table.accept(selectDeParser, context)).deParse(materializedViewStatement);
         return builder;
     }
 
