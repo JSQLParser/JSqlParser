@@ -20596,41 +20596,34 @@ List<String> captureRest() {
 /**
  * Captures opaque routine declarations through their terminating semicolon.
  * PostgreSQL AS string bodies can use ordinary, escape or dollar quotes.
- * Strings and END tokens in parenthesized arguments are not body boundaries.
+ * The boundary tracker distinguishes simple statements, declaration sections,
+ * compound bodies, and expression CASE from procedural END qualifiers.
  */
 
 JAVACODE
 List<String> captureFunctionBody() {
   List<String> tokens = new LinkedList<String>();
   Token tok;
-  boolean foundEnd = false;
-  boolean bodyStarted = false;
-  int parentheses = 0;
+  RoutineBodyBoundary boundary = new RoutineBodyBoundary();
   while(true) {
     tok = getToken(1);
     int l = tokens.size();
-    if( tok.kind == EOF || ( foundEnd && tok.kind == ST_SEMICOLON) ) {
+    if (boundary.endsAt(tok)) {
       if (tok.kind == ST_SEMICOLON) {
         tokens.add(tok.image);
       }
       break;
-    } else if (parentheses == 0 && !bodyStarted && tok.kind == K_AS
-            && getToken(2).kind == S_CHAR_LITERAL) {
+    } else if (boundary.startsQuotedBody(tok, getToken(2))) {
         tokens.add(getNextToken().image);
         tokens.add(captureRoutineBodyLiteral());
-        foundEnd = true;
-        bodyStarted = true;
+        boundary.quotedBody();
         continue;
     } else if ( l>0 && ( tok.image.equals(".") ||  tokens.get(l-1).endsWith(".")) ) {
         tokens.set(l-1, tokens.get(l-1) + tok.image);
     } else {
         tokens.add(tok.image);
     }
-    foundEnd |= parentheses == 0 && tok.kind == K_END;
-    if (parentheses == 0 && (tok.kind == K_AS || tok.kind == K_BEGIN)) bodyStarted = true;
-    if (tok.kind == OPENING_BRACKET) parentheses++;
-    if (tok.kind == CLOSING_BRACKET) parentheses--;
-
+    boundary.accept(tok, getToken(2));
     tok = getNextToken();
   }
   return tokens;
