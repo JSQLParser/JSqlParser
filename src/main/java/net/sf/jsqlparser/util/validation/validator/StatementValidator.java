@@ -208,7 +208,7 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(Truncate truncate, S context) {
         validateFeature(Feature.truncate);
-        validateOptionalFromItem(truncate.getTable());
+        truncate.getTables().forEach(this::validateOptionalFromItem);
         return null;
     }
 
