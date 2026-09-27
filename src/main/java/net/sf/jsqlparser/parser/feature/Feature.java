@@ -580,6 +580,8 @@ public enum Feature {
      */
     createSequence,
     /** Publication and subscription definitions. */
+    createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
+
     createTextSearchConfiguration, alterTextSearchConfiguration,
 
     createPublication, alterPublication, createSubscription, alterSubscription,

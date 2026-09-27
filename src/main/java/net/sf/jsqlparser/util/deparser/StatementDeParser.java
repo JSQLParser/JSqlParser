@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -40,9 +46,7 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
@@ -303,26 +307,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(Truncate truncate, S context) {
-        builder.append("TRUNCATE");
-        if (truncate.isTableToken()) {
-            builder.append(" TABLE");
-        }
-        if (truncate.isOnly()) {
-            builder.append(" ONLY");
-        }
-        builder.append(" ");
-        if (truncate.getTables() != null && !truncate.getTables().isEmpty()) {
-            builder.append(truncate.getTables().stream()
-                    .map(Table::toString)
-                    .collect(Collectors.joining(", ")));
-        } else {
-            builder.append(truncate.getTable());
-        }
-        if (truncate.getCascade()) {
-            builder.append(" CASCADE");
-        }
-
-        return builder;
+        return truncate.appendTo(builder);
     }
 
     @Override
@@ -854,6 +839,42 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(AlterStatistics statement, S context) {
         return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateForeignDataWrapper statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterForeignDataWrapper statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateServer statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterServer statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateUserMapping statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterUserMapping statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override

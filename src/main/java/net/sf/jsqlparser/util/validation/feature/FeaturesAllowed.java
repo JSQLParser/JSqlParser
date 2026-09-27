@@ -103,6 +103,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
             Feature.createTextSearchConfiguration,
             Feature.createSchema, Feature.createSequence, Feature.createTable,
+            Feature.createForeignDataWrapper, Feature.createServer, Feature.createUserMapping,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
             Feature.createTableIfNotExists, Feature.createTableRowMovement,
@@ -115,7 +116,8 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterTextSearchConfiguration,
-                    Feature.alterView, Feature.alterIndex, Feature.alterSchema)
+                    Feature.alterView, Feature.alterIndex, Feature.alterSchema,
+                    Feature.alterForeignDataWrapper, Feature.alterServer, Feature.alterUserMapping)
                     .unmodifyable();
     /**
      * all "DROP" {@link Feature}'s
