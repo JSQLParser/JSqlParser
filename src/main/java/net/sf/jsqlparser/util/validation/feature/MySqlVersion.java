@@ -24,13 +24,10 @@ import net.sf.jsqlparser.parser.feature.Feature;
  */
 public enum MySqlVersion implements Version {
     V8_0("8.0",
-            EnumSet.of(
-                    // supported if used with jdbc
+            EnumSet.of(// supported if used with jdbc
                     Feature.jdbcParameter,
-                    Feature.jdbcNamedParameter,
-                    // expressions
-                    Feature.exprLike,
-                    // https://dev.mysql.com/doc/refman/8.0/en/select.html
+                    Feature.jdbcNamedParameter, // expressions
+                    Feature.exprLike, // https://dev.mysql.com/doc/refman/8.0/en/select.html
                     Feature.select,
                     Feature.selectGroupBy, Feature.selectHaving,
                     Feature.limit, Feature.limitOffset, Feature.offset, Feature.offsetParam,
@@ -42,8 +39,7 @@ public enum MySqlVersion implements Version {
                     Feature.selectForShare,
                     Feature.distinct,
 
-                    Feature.setOperation,
-                    // https://dev.mysql.com/doc/refman/8.0/en/union.html
+                    Feature.setOperation, // https://dev.mysql.com/doc/refman/8.0/en/union.html
                     Feature.setOperationUnion,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/with.html#common-table-expressions
@@ -82,58 +78,41 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
-                    Feature.drop,
-                    // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
-                    Feature.dropTable,
-                    // https://dev.mysql.com/doc/refman/8.0/en/drop-index.html
-                    Feature.dropIndex,
-                    // https://dev.mysql.com/doc/refman/8.0/en/drop-view.html
-                    Feature.dropView,
-                    // https://dev.mysql.com/doc/refman/8.0/en/drop-database.html
+                    Feature.drop, // https://dev.mysql.com/doc/refman/8.0/en/drop-table.html
+                    Feature.dropTable, // https://dev.mysql.com/doc/refman/8.0/en/drop-index.html
+                    Feature.dropIndex, // https://dev.mysql.com/doc/refman/8.0/en/drop-view.html
+                    Feature.dropView, // https://dev.mysql.com/doc/refman/8.0/en/drop-database.html
                     Feature.dropSchema,
                     Feature.dropTableIfExists, Feature.dropViewIfExists,
                     Feature.dropSchemaIfExists, Feature.dropSequenceIfExists,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/alter-table.html
-                    Feature.alterTable,
-                    // https://dev.mysql.com/doc/refman/8.0/en/alter-view.html
+                    Feature.alterTable, // https://dev.mysql.com/doc/refman/8.0/en/alter-view.html
                     Feature.alterView,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/create-database.html
-                    Feature.createSchema,
-                    // https://dev.mysql.com/doc/refman/8.0/en/create-view.html
+                    Feature.createSchema, // https://dev.mysql.com/doc/refman/8.0/en/create-view.html
                     Feature.createView,
                     Feature.createViewWithComment,
-                    Feature.createOrReplaceView,
-                    // https://dev.mysql.com/doc/refman/8.0/en/create-table.html
+                    Feature.createOrReplaceView, // https://dev.mysql.com/doc/refman/8.0/en/create-table.html
                     Feature.createTable, Feature.createTableCreateOptionStrings,
                     Feature.createTableTableOptionStrings,
-                    Feature.createTableFromSelect, Feature.createTableIfNotExists,
-                    // https://dev.mysql.com/doc/refman/8.0/en/create-index.html
-                    Feature.createIndex,
-                    // https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
+                    Feature.createTableFromSelect, Feature.createTableIfNotExists, // https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+                    Feature.createIndex, // https://dev.mysql.com/doc/refman/8.0/en/create-trigger.html
                     Feature.createTrigger,
 
                     // https://dev.mysql.com/doc/refman/8.0/en/describe.html
                     Feature.describe,
-                    Feature.desc,
-                    // https://dev.mysql.com/doc/refman/8.0/en/explain.html
-                    Feature.explain,
-                    // https://dev.mysql.com/doc/refman/8.0/en/show.html
-                    Feature.show,
-                    // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
-                    Feature.showTables,
-                    // https://dev.mysql.com/doc/refman/8.0/en/show-columns.html
-                    Feature.showColumns,
-                    // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
-                    Feature.showIndex,
-                    // https://dev.mysql.com/doc/refman/8.0/en/grant.html
-                    Feature.grant,
-                    // https://dev.mysql.com/doc/refman/8.0/en/use.html
-                    Feature.use,
-                    // https://dev.mysql.com/doc/refman/8.0/en/commit.html
-                    Feature.commit,
-                    //
+                    Feature.desc, // https://dev.mysql.com/doc/refman/8.0/en/explain.html
+                    Feature.explain, // https://dev.mysql.com/doc/refman/8.0/en/show.html
+                    Feature.show, // https://dev.mysql.com/doc/refman/8.0/en/show-tables.html
+                    Feature.showTables, // https://dev.mysql.com/doc/refman/8.0/en/show-columns.html
+                    Feature.showColumns, // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
+                    Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
+                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/use.html
+                    Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
+                    Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
+                    Feature.transactionChain, Feature.transactionConsistentSnapshot, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlCalcFoundRows));

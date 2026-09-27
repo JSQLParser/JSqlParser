@@ -41,6 +41,8 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.StartTransaction;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
@@ -286,8 +288,42 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(StartTransaction statement, S context) {
+        validateFeature(Feature.startTransaction);
+        for (StartTransaction.Mode mode : statement.getModes()) {
+            switch (mode) {
+                case ISOLATION_LEVEL_SERIALIZABLE:
+                case ISOLATION_LEVEL_REPEATABLE_READ:
+                case ISOLATION_LEVEL_READ_COMMITTED:
+                case ISOLATION_LEVEL_READ_UNCOMMITTED:
+                    validateFeature(Feature.transactionIsolationLevel);
+                    break;
+                case DEFERRABLE:
+                case NOT_DEFERRABLE:
+                    validateFeature(Feature.transactionDeferrable);
+                    break;
+                case WITH_CONSISTENT_SNAPSHOT:
+                    validateFeature(Feature.transactionConsistentSnapshot);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ReleaseSavepointStatement statement, S context) {
+        validateFeature(Feature.releaseSavepoint);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
+        if (commit.getChain() != null) {
+            validateFeature(Feature.transactionChain);
+        }
         return null;
     }
 
@@ -468,7 +504,9 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(RollbackStatement rollbackStatement, S context) {
-        // TODO: not yet implemented
+        if (rollbackStatement.getChain() != null) {
+            validateFeature(Feature.transactionChain);
+        }
         return null;
     }
 
