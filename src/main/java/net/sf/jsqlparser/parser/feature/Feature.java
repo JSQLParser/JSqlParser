@@ -582,6 +582,8 @@ public enum Feature {
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
 
+    createCollation, alterCollation,
+
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**
      * Structured type, domain and extension statements.

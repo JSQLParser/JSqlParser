@@ -101,6 +101,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      * all "CREATE" {@link Feature}'s
      */
     public static final FeaturesAllowed CREATE = new FeaturesAllowed("CREATE", Feature.createIndex,
+            Feature.createCollation,
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createForeignDataWrapper, Feature.createServer, Feature.createUserMapping,
             Feature.createTableUnlogged,
@@ -114,6 +115,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
      */
     public static final FeaturesAllowed ALTER =
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
+                    Feature.alterCollation,
                     Feature.alterView, Feature.alterIndex, Feature.alterSchema,
                     Feature.alterForeignDataWrapper, Feature.alterServer, Feature.alterUserMapping)
                     .unmodifyable();
