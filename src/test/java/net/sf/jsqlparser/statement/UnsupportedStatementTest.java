@@ -200,6 +200,7 @@ public class UnsupportedStatementTest {
     void testRedshiftSetStatementIssue1708() throws JSQLParserException {
         Statement st = TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "SET x TO y;", true, parser -> parser.withUnsupportedStatements());
-        assertInstanceOf(UnsupportedStatement.class, st);
+        SetStatement set = assertInstanceOf(SetStatement.class, st);
+        assertEquals(SetStatement.AssignmentOperator.TO, set.getAssignmentOperator());
     }
 }
