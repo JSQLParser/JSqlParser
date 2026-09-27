@@ -798,7 +798,7 @@ public enum Feature {
 
     // MYSQL
 
-    mySqlHintStraightJoin, mysqlSqlCacheFlag, mysqlCalcFoundRows,
+    mySqlHintStraightJoin, mysqlSqlCacheFlag, mysqlCalcFoundRows, mysqlSelectModifiers,
 
     // SQLSERVER
 

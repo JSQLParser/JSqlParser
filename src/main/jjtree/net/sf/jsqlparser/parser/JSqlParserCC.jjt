@@ -1768,6 +1768,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    private boolean isMySqlSelectModifierAhead() {
+        Token token = getToken(1);
+        // These existing modifiers remain available without a dialect preset.
+        if (token.kind == K_STRAIGHT || token.kind == K_SQL_CACHE
+                || token.kind == K_SQL_NO_CACHE || token.kind == K_SQL_CALC_FOUND_ROWS) {
+            return true;
+        }
+        // Keep qualified names, aliases and standalone identifier expressions intact.
+        int next = getToken(2).kind;
+        if (next == K_AS || next == K_FROM || next == EOF || next == ST_SEMICOLON
+                || ".".equals(getToken(2).image) || ",".equals(getToken(2).image)
+                || ")".equals(getToken(2).image)) {
+            return false;
+        }
+        if (getAsString(Feature.dialect) != null && !isMySqlDialect()) {
+            return false;
+        }
+        return token.kind == K_HIGH_PRIORITY || token.kind == S_IDENTIFIER
+                && ("SQL_SMALL_RESULT".equalsIgnoreCase(token.image)
+                    || "SQL_BIG_RESULT".equalsIgnoreCase(token.image)
+                    || "SQL_BUFFER_RESULT".equalsIgnoreCase(token.image));
+    }
+
     private boolean isMySqlSelectIntoAhead() {
         if (getToken(1).kind != K_INTO) { return false; }
         int kind = getToken(2).kind;
@@ -7446,6 +7469,29 @@ LateralView LateralView() #LateralView:
     }
 }
 
+/** SELECT modifiers are contextual here so other dialects retain identifier spellings. */
+void MySqlSelectModifier(PlainSelect select):
+{
+    Token token;
+    MySqlSelectModifier modifier;
+}
+{
+    ( LOOKAHEAD({ getToken(1).kind == K_HIGH_PRIORITY && isMySqlSelectModifierAhead() }) token=<K_HIGH_PRIORITY>
+        | token=<K_STRAIGHT>
+        | token=<K_SQL_CALC_FOUND_ROWS> | token=<K_SQL_NO_CACHE> | token=<K_SQL_CACHE>
+        | LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && isMySqlSelectModifierAhead() }) token=<S_IDENTIFIER> )
+    {
+        modifier = MySqlSelectModifier.valueOf(token.image.toUpperCase(Locale.ROOT));
+        if ((modifier == MySqlSelectModifier.SQL_CACHE
+                && select.getMySqlSqlCacheFlag() == MySqlSqlCacheFlags.SQL_NO_CACHE)
+                || (modifier == MySqlSelectModifier.SQL_NO_CACHE
+                && select.getMySqlSqlCacheFlag() == MySqlSqlCacheFlags.SQL_CACHE)) {
+            throw new ParseException("SQL_CACHE and SQL_NO_CACHE cannot be combined");
+        }
+        select.addMySqlSelectModifiers(modifier);
+    }
+}
+
 ForClause ForClause() #ForClause:
 {
     Token token = null;
@@ -7583,7 +7629,6 @@ PlainSelect PlainSelect() #PlainSelect:
     Table updateTable = null;
     List<Table> updateTables = new ArrayList<Table>();
     Wait wait = null;
-    boolean mySqlSqlCalcFoundRows = false;
     Token token;
     KSQLWindow ksqlWindow = null;
     boolean noWait = false;
@@ -7592,11 +7637,12 @@ PlainSelect PlainSelect() #PlainSelect:
     Table intoTempTable = null;
     List<UpdateSet> settings = null;
     Distinct distinct;
+    boolean all = false;
 }
 {
     <K_SELECT>
 
-    [ <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
+    [ LOOKAHEAD(2) <K_STRAIGHT> { plainSelect.setMySqlHintStraightJoin(true); } ]
 
     { plainSelect.setOracleHint(getOracleHint()); }
 
@@ -7609,9 +7655,11 @@ PlainSelect PlainSelect() #PlainSelect:
     // @Todo: reflect the order when de-parsing
     [ LOOKAHEAD(2) top = Top() { plainSelect.setTop(top);    } ]
 
+    ( LOOKAHEAD({ isMySqlSelectModifierAhead() }) MySqlSelectModifier(plainSelect) )*
+
     [ LOOKAHEAD(2)
         (
-        <K_ALL>
+        <K_ALL> { all = true; }
         |
         (
             <K_DISTINCT> { distinct = new Distinct(); plainSelect.setDistinct(distinct); }
@@ -7621,14 +7669,17 @@ PlainSelect PlainSelect() #PlainSelect:
         <K_DISTINCTROW> { distinct = new Distinct(); distinct.setUseDistinctRow(true); plainSelect.setDistinct(distinct); }
         |
         <K_UNIQUE> { distinct = new Distinct(true); plainSelect.setDistinct(distinct); }
-        |
-        <K_SQL_CALC_FOUND_ROWS> { plainSelect.setMySqlSqlCalcFoundRows(true); }
-        |
-        <K_SQL_NO_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_NO_CACHE); }
-        |
-        <K_SQL_CACHE> { plainSelect.setMySqlSqlCacheFlag(MySqlSqlCacheFlags.SQL_CACHE); }
         )
     ]
+
+    ( LOOKAHEAD({ isMySqlSelectModifierAhead() }) MySqlSelectModifier(plainSelect) )*
+    {
+        if ((all || plainSelect.getDistinct() != null)
+                && (getToken(1).kind == K_ALL || getToken(1).kind == K_DISTINCT
+                    || getToken(1).kind == K_DISTINCTROW || getToken(1).kind == K_UNIQUE)) {
+            throw new ParseException("SELECT cannot combine ALL and DISTINCT qualifiers");
+        }
+    }
 
     [
         <K_AS>
