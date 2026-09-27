@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 
@@ -880,4 +882,9 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         return null;
     }
 
+
+    @Override
+    public <S> T visit(CreateAccessMethod statement, S context) {
+        return null;
+    }
 }

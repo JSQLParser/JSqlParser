@@ -51,6 +51,7 @@ import net.sf.jsqlparser.statement.analyze.*;
 import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.create.fdw.*;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -19710,6 +19711,10 @@ Statement Create():
 {
     <K_CREATE> [ <K_OR> <K_REPLACE> { isUsingOrReplace = true; } ]
     (
+        LOOKAHEAD({ isKeywordAhead("ACCESS") && "METHOD".equalsIgnoreCase(getToken(2).image) })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE ACCESS METHOD does not support OR REPLACE"); }
+        statement = CreateAccessMethod()
+        |
         LOOKAHEAD(<K_FOREIGN> <K_DATA>) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateForeignDataWrapper()
         |
         LOOKAHEAD({ isKeywordAhead("SERVER") }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateServer()
@@ -21146,4 +21151,18 @@ AlterUserMapping AlterUserMapping():
     <K_USER> ContextualKeyword("MAPPING") <K_FOR> name=RelObjectName() { statement.setUser(name); }
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     options=ForeignDataOptions(true) { statement.setOptions(options); return statement; }
+}
+
+CreateAccessMethod CreateAccessMethod():
+{
+    CreateAccessMethod statement = new CreateAccessMethod();
+    String name;
+}
+{
+    ContextualKeyword("ACCESS") ContextualKeyword("METHOD") name=RelObjectName()
+    { statement.setName(name); }
+    <K_TYPE> ( <K_TABLE> { statement.setType(CreateAccessMethod.Type.TABLE); }
+               | <K_INDEX> { statement.setType(CreateAccessMethod.Type.INDEX); } )
+    ContextualKeyword("HANDLER") name=AccessQualifiedName()
+    { statement.setHandler(name); return statement; }
 }

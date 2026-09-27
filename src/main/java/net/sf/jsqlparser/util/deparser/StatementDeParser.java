@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
@@ -873,5 +875,10 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(AlterUserMapping statement, S context) {
         return statement.appendTo(builder,
                 expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateAccessMethod statement, S context) {
+        return statement.appendTo(builder);
     }
 }

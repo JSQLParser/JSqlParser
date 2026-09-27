@@ -97,6 +97,7 @@ public enum PostgresqlVersion implements Version {
 
                     // https://www.postgresql.org/docs/current/sql-createsequence.html
                     Feature.createSequence,
+                    Feature.createAccessMethod,
                     Feature.createForeignDataWrapper, Feature.alterForeignDataWrapper,
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
                     Feature.alterUserMapping,
@@ -154,7 +155,8 @@ public enum PostgresqlVersion implements Version {
                     Feature.set, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit)), V11("11", V10.copy().getFeatures()), V12("12",
-                            V11.copy().getFeatures()), V13("13",
+                            V11.copy().add(Feature.createAccessMethodTable).getFeatures()), V13(
+                                    "13",
                                     V12.copy().getFeatures()), V14("14", V13.copy().getFeatures());
 
     private Set<Feature> features;

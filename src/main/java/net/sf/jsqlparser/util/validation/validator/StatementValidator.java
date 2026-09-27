@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
@@ -1070,6 +1072,15 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(AlterUserMapping statement, S context) {
         validateFeature(Feature.alterUserMapping);
         statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateAccessMethod statement, S context) {
+        validateFeature(Feature.createAccessMethod);
+        if (statement.getType() == CreateAccessMethod.Type.TABLE) {
+            validateFeature(Feature.createAccessMethodTable);
+        }
         return null;
     }
 }
