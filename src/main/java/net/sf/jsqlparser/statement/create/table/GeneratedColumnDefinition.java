@@ -73,13 +73,19 @@ public class GeneratedColumnDefinition implements Serializable {
         if (generatedAlways) {
             builder.append("GENERATED ALWAYS ");
         }
-        builder.append("AS (");
-        expressionPrinter.accept(expression);
-        builder.append(')');
+        appendExpressionTo(builder, expression, expressionPrinter);
         if (storage != null) {
             builder.append(' ').append(storage);
         }
         return builder;
+    }
+
+    /** Prints the common AS (expression) body of declarations and expression replacements. */
+    public static StringBuilder appendExpressionTo(StringBuilder builder, Expression expression,
+            Consumer<Expression> expressionPrinter) {
+        builder.append("AS (");
+        expressionPrinter.accept(expression);
+        return builder.append(')');
     }
 
     @Override
