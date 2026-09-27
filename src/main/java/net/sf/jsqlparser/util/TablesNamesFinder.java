@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -2966,6 +2972,42 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(AlterStatistics statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateForeignDataWrapper statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterForeignDataWrapper statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateServer statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterServer statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateUserMapping statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterUserMapping statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
         return null;
     }
 }
