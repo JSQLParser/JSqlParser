@@ -1536,7 +1536,17 @@ public class AlterExpression implements Serializable {
     public static final class ColumnDataType extends ColumnDefinition {
 
         private final boolean withType;
+        private boolean useSetData;
         private Expression usingExpression;
+
+        public boolean isUseSetData() {
+            return useSetData;
+        }
+
+        public void setUseSetData(boolean useSetData) {
+            this.useSetData = useSetData;
+        }
+
         private List<IdentityAlteration> identityAlterations;
 
         public boolean isWithType() {
@@ -1587,7 +1597,8 @@ public class AlterExpression implements Serializable {
                         .append(PlainSelect.getStringList(identityAlterations, false, false));
                 return;
             }
-            builder.append(withType ? " TYPE " : getColDataType() == null ? "" : " ");
+            builder.append(withType ? (useSetData ? " SET DATA TYPE " : " TYPE ")
+                    : getColDataType() == null ? "" : " ");
             appendDataTypeAndSpecTo(builder, expressionPrinter);
             if (usingExpression != null) {
                 builder.append(" USING ");
