@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement;
 
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -62,13 +63,31 @@ public class RefreshMaterializedViewStatementTest {
                 return getBuilder();
             }
         };
-        statement.accept(new StatementDeParser(expressions, selects, output), "context");
+        StringBuilder original = new StringBuilder();
+        StatementDeParser deparser = new StatementDeParser(expressions, selects, original);
+        deparser.setBuilder(output);
+        assertSame(output, statement.accept(deparser, "context"));
+        assertEquals("", original.toString());
         assertEquals("REFRESH MATERIALIZED VIEW new_schema.\"renamed view\" WITH NO DATA",
                 output.toString());
         RefreshMaterializedViewStatement reparsed =
                 (RefreshMaterializedViewStatement) CCJSqlParserUtil.parse(output.toString());
         assertEquals(RefreshMode.WITH_NO_DATA, reparsed.getRefreshMode());
         assertEquals("new_schema", reparsed.getView().getSchemaName());
+    }
+
+    @Test
+    void statementDeparserUsesReplacementOutputBuffer() throws JSQLParserException {
+        StringBuilder original = new StringBuilder("old output");
+        StringBuilder replacement = new StringBuilder();
+        StatementDeParser deparser = new StatementDeParser(original);
+        deparser.setBuilder(replacement);
+        RefreshMaterializedViewStatement statement =
+                (RefreshMaterializedViewStatement) CCJSqlParserUtil
+                        .parse("REFRESH MATERIALIZED VIEW schema_name.mv WITH NO DATA");
+        assertSame(replacement, statement.accept(deparser, null));
+        assertEquals("old output", original.toString());
+        assertEquals(statement.toString(), replacement.toString());
     }
 
     @Test
