@@ -13,7 +13,6 @@ import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
@@ -86,8 +85,8 @@ public class TruncateMultipleTablesTest {
         String statement = "TRUNCATE TABLE foo, bar";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTables(List.of(new Table("foo"), new Table("bar")))
-            .withTableToken(true), statement);
+                .withTables(List.of(new Table("foo"), new Table("bar")))
+                .withTableToken(true), statement);
     }
 
     @Test
@@ -95,16 +94,18 @@ public class TruncateMultipleTablesTest {
         String statement = "TRUNCATE TABLE foo, bar CASCADE";
         assertSqlCanBeParsedAndDeparsed(statement);
         assertDeparse(new Truncate()
-            .withTables(List.of(new Table("foo"), new Table("bar")))
-            .withTableToken(true)
-            .withCascade(true), statement);
+                .withTables(List.of(new Table("foo"), new Table("bar")))
+                .withTableToken(true)
+                .withCascade(true), statement);
     }
 
     @Test
-    public void testTruncateDoesNotAllowOnlyWithMultipleTables() {
+    public void testTruncateAllowsOnlyForAnIndividualTarget() throws JSQLParserException {
         String statement = "TRUNCATE TABLE ONLY foo, bar";
-        assertThrows(JSQLParserException.class,
-            () -> parserManager.parse(new StringReader(statement)));
+        Truncate truncate = (Truncate) parserManager.parse(new StringReader(statement));
+        assertEquals(statement, truncate.toString());
+        assertTrue(truncate.getTargets().get(0).isOnly());
+        assertEquals(2, truncate.getTargets().size());
     }
 
 }

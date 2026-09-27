@@ -34,34 +34,20 @@ public class LockStatement implements Statement {
         DEFAULT, ONLY, INCLUDING_DESCENDANTS
     }
 
-    public static class Target {
-        private Table table;
-        private Scope scope = Scope.DEFAULT;
-
+    public static class Target extends net.sf.jsqlparser.schema.TableReference {
         public Target(Table table) {
-            this.table = table;
-        }
-
-        public Table getTable() {
-            return table;
-        }
-
-        public void setTable(Table table) {
-            this.table = table;
+            super(table);
         }
 
         public Scope getScope() {
-            return scope;
+            return isOnly() ? Scope.ONLY
+                    : isIncludeDescendants() ? Scope.INCLUDING_DESCENDANTS : Scope.DEFAULT;
         }
 
         public void setScope(Scope scope) {
-            this.scope = Objects.requireNonNull(scope);
-        }
-
-        @Override
-        public String toString() {
-            return (scope == Scope.ONLY ? "ONLY " : "") + table.getFullyQualifiedName()
-                    + (scope == Scope.INCLUDING_DESCENDANTS ? " *" : "");
+            Objects.requireNonNull(scope);
+            setOnly(scope == Scope.ONLY);
+            setIncludeDescendants(scope == Scope.INCLUDING_DESCENDANTS);
         }
     }
 
