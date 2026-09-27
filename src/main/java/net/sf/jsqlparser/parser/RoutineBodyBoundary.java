@@ -78,34 +78,60 @@ final class RoutineBodyBoundary {
     }
 
     private void acceptTopLevel(Token token, Token next) {
-        int kind = token.kind;
         if (afterDot) {
             return; // Qualified type/column names may use otherwise significant keywords.
         }
         // END IF/CASE/LOOP/WHILE/REPEAT is one terminator, not another opener.
-        if (previousKind == K_END && (kind == K_IF || kind == K_CASE || kind == K_LOOP
-                || keyword(token, "WHILE") || keyword(token, "REPEAT"))) {
+        if (previousKind == K_END && isEndQualifier(token)) {
             return;
         }
+        if (!acceptRoutineHeader(token)) {
+            acceptBodyToken(token, next);
+        }
+    }
+
+    private boolean acceptRoutineHeader(Token token) {
+        int kind = token.kind;
         if (kind == K_RETURNS && !bodyStarted) {
             standardReturns = true;
             returnTypeName = true;
-            return;
+            return true;
         }
         if (returnTypeName) {
             returnTypeName = keyword(token, "SETOF");
-            return;
+            return true;
         }
         if (!compoundBody && (kind == K_AS || kind == K_IS)
                 && (!bodyStarted || statementKind == K_RETURN && !standardReturns
                         || statementKind == K_SET)) {
             declarations = true;
             bodyStarted = false;
+            return true;
+        }
+        return false;
+    }
+
+    private void acceptBodyToken(Token token, Token next) {
+        int kind = token.kind;
+        if (acceptStatementBoundary(kind)) {
             return;
         }
+        if (!(hasParameters || declarations || bodyStarted)) {
+            return;
+        }
+        if (handlerAction && isSimpleStatementStart(kind)) {
+            startStatement();
+        }
+        if (acceptBeginOrCase(kind) || declarations || acceptControlFlow(token)) {
+            return;
+        }
+        acceptStatementToken(token, next);
+    }
+
+    private boolean acceptStatementBoundary(int kind) {
         if (kind == ST_SEMICOLON) {
             startStatement();
-            return;
+            return true;
         }
         if (kind == K_END) {
             if (!blocks.isEmpty()) {
@@ -116,14 +142,12 @@ final class RoutineBodyBoundary {
                 completed = true;
             }
             statementStart = false;
-            return;
+            return true;
         }
-        if (!(hasParameters || declarations || bodyStarted)) {
-            return;
-        }
-        if (handlerAction && isSimpleStatementStart(kind)) {
-            startStatement();
-        }
+        return false;
+    }
+
+    private boolean acceptBeginOrCase(int kind) {
         if (kind == K_BEGIN
                 && (!bodyStarted || statementStart || statementKind == K_DECLARE)) {
             blocks.push(Block.BEGIN);
@@ -131,7 +155,7 @@ final class RoutineBodyBoundary {
             compoundBody = true;
             bodyStarted = true;
             startStatement();
-            return;
+            return true;
         }
         if (kind == K_CASE) {
             boolean statementCase = !declarations && (statementStart || handlerAction);
@@ -142,43 +166,55 @@ final class RoutineBodyBoundary {
                 handlerAction = false;
             }
             statementStart = false;
-            return;
+            return true;
         }
-        if (declarations) {
-            return;
-        }
-        if ((statementStart || handlerAction) && (kind == K_IF || kind == K_LOOP
-                || keyword(token, "WHILE") || keyword(token, "REPEAT"))) {
-            Block block = kind == K_IF ? Block.IF
-                    : kind == K_LOOP ? Block.LOOP
-                            : keyword(token, "WHILE") ? Block.WHILE : Block.REPEAT;
+        return false;
+    }
+
+    private boolean acceptControlFlow(Token token) {
+        int kind = token.kind;
+        Block block = controlBlock(token);
+        if ((statementStart || handlerAction) && block != null) {
             blocks.push(block);
             bodyStarted = true;
             compoundBody = true;
             handlerAction = false;
             statementKind = kind;
             statementStart = block == Block.LOOP || block == Block.REPEAT;
-            return;
+            return true;
         }
+        if (acceptOracleLoop(kind)) {
+            return true;
+        }
+        if (isStatementBranch(kind)) {
+            startStatement();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean acceptOracleLoop(int kind) {
         if (kind == K_LOOP && (statementKind == K_FOR || blocks.peek() == Block.WHILE)) {
             // Oracle FOR/WHILE ... LOOP shares the same END LOOP boundary.
             if (blocks.peek() != Block.WHILE) {
                 blocks.push(Block.LOOP);
             }
             startStatement();
-            return;
+            return true;
         }
-        if ((kind == K_THEN || kind == K_ELSE) && !blocks.isEmpty()
+        return false;
+    }
+
+    private boolean isStatementBranch(int kind) {
+        return (kind == K_THEN || kind == K_ELSE) && !blocks.isEmpty()
                 && blocks.peek() != Block.CASE_EXPRESSION
-                || kind == K_DO && blocks.peek() == Block.WHILE) {
-            startStatement();
+                || kind == K_DO && blocks.peek() == Block.WHILE;
+    }
+
+    private void acceptStatementToken(Token token, Token next) {
+        int kind = token.kind;
+        if (isStatementPrefix(token, next)) {
             return;
-        }
-        if (previousKind == K_BEGIN && keyword(token, "ATOMIC")) {
-            return;
-        }
-        if (statementStart && (":".equals(next.image) || ":".equals(token.image))) {
-            return; // A label precedes the statement it names.
         }
         if (!bodyStarted) {
             // SET may also be a PostgreSQL header option; AS remains recognizable above.
@@ -194,6 +230,29 @@ final class RoutineBodyBoundary {
             handlerAction = true;
         }
         statementStart = false;
+    }
+
+    private boolean isStatementPrefix(Token token, Token next) {
+        // ATOMIC and a label precede the statement they qualify.
+        return previousKind == K_BEGIN && keyword(token, "ATOMIC")
+                || statementStart && (":".equals(next.image) || ":".equals(token.image));
+    }
+
+    private static boolean isEndQualifier(Token token) {
+        return token.kind == K_CASE || controlBlock(token) != null;
+    }
+
+    private static Block controlBlock(Token token) {
+        if (token.kind == K_IF) {
+            return Block.IF;
+        }
+        if (token.kind == K_LOOP) {
+            return Block.LOOP;
+        }
+        if (keyword(token, "WHILE")) {
+            return Block.WHILE;
+        }
+        return keyword(token, "REPEAT") ? Block.REPEAT : null;
     }
 
     private void startStatement() {
