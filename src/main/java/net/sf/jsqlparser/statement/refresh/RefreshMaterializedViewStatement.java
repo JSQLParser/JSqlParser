@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.refresh;
 
+import java.util.function.Consumer;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -60,34 +61,24 @@ public class RefreshMaterializedViewStatement implements Statement {
         this.concurrently = concurrently;
     }
 
-    @SuppressWarnings("PMD.SwitchStmtsShouldHaveDefault")
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Table> tablePrinter) {
+        builder.append("REFRESH MATERIALIZED VIEW ");
+        if (concurrently) {
+            builder.append("CONCURRENTLY ");
+        }
+        tablePrinter.accept(view);
+        if (refreshMode == RefreshMode.WITH_DATA) {
+            builder.append(" WITH DATA");
+        } else if (refreshMode == RefreshMode.WITH_NO_DATA) {
+            builder.append(" WITH NO DATA");
+        }
+        return builder;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("REFRESH MATERIALIZED VIEW ");
-        if (this.refreshMode == null) {
-            if (concurrently) {
-                builder.append("CONCURRENTLY ");
-            }
-            builder.append(view);
-            return builder.toString();
-        }
-        switch (this.refreshMode) {
-            case WITH_DATA:
-                if (concurrently) {
-                    builder.append("CONCURRENTLY ");
-                }
-                builder.append(view);
-                builder.append(" WITH DATA");
-                break;
-            case WITH_NO_DATA:
-                builder.append(view);
-                if (!concurrently) {
-                    builder.append(" WITH NO DATA");
-                }
-                break;
-        }
-        return builder.toString();
+        return appendTo(builder, builder::append).toString();
     }
 
     @Override
