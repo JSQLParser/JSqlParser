@@ -80,6 +80,42 @@ class TransactionStatementTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"START TRANSACTION READ ONLY, READ WRITE",
+            "START TRANSACTION READ WRITE, READ ONLY"})
+    void contradictoryAccessModesAreRejectedOnlyForMysql(String sql) throws Exception {
+        JSQLParserException error = assertThrows(JSQLParserException.class,
+                () -> parse(sql, Dialect.MYSQL));
+        assertTrue(error.getCause().getMessage()
+                .contains("cannot specify both READ ONLY and READ WRITE"));
+        assertThrows(JSQLParserException.class,
+                () -> parse(sql.replace(", ", ", WITH CONSISTENT SNAPSHOT, "), Dialect.MYSQL));
+        StartTransaction postgres = assertInstanceOf(StartTransaction.class,
+                roundTrip(sql, Dialect.POSTGRESQL));
+        List<StartTransaction.Mode> expected = sql.endsWith("READ WRITE")
+                ? List.of(StartTransaction.Mode.READ_ONLY, StartTransaction.Mode.READ_WRITE)
+                : List.of(StartTransaction.Mode.READ_WRITE, StartTransaction.Mode.READ_ONLY);
+        assertEquals(expected, postgres.getModes());
+        assertEquals(sql, postgres.toString());
+        StartTransaction permissive = assertInstanceOf(StartTransaction.class,
+                CCJSqlParserUtil.parse(sql));
+        assertEquals(expected, permissive.getModes());
+        assertEquals(sql, permissive.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"START TRANSACTION READ ONLY, READ ONLY",
+            "START TRANSACTION READ WRITE, READ WRITE"})
+    void mysqlRepeatedAccessModesArePreserved(String sql) throws Exception {
+        StartTransaction statement = assertInstanceOf(StartTransaction.class,
+                roundTrip(sql, Dialect.MYSQL));
+        StartTransaction.Mode mode = sql.endsWith("READ ONLY")
+                ? StartTransaction.Mode.READ_ONLY
+                : StartTransaction.Mode.READ_WRITE;
+        assertEquals(List.of(mode, mode), statement.getModes());
+        assertEquals(sql, statement.toString());
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"COMMIT", "COMMIT WORK", "COMMIT TRANSACTION", "COMMIT AND CHAIN",
             "COMMIT WORK AND NO CHAIN", "COMMIT TRANSACTION AND CHAIN", "ROLLBACK",
             "ROLLBACK WORK", "ROLLBACK TRANSACTION", "ROLLBACK AND CHAIN",

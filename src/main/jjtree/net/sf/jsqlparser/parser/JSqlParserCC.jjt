@@ -19052,6 +19052,10 @@ StartTransaction StartTransaction():
     {
         requireDdlSyntax(!isMySqlDialect() || statement.getCommand() != StartTransaction.Command.BEGIN
                 || statement.getModes().isEmpty(), "MySQL BEGIN does not accept transaction characteristics");
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || !statement.getModes().contains(StartTransaction.Mode.READ_ONLY)
+                || !statement.getModes().contains(StartTransaction.Mode.READ_WRITE),
+                "MySQL transactions cannot specify both READ ONLY and READ WRITE");
         return statement;
     }
 }

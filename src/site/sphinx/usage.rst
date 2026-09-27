@@ -1426,6 +1426,8 @@ Transaction statements
 transaction modes. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
 ``[NOT] DEFERRABLE`` are supported, as is MySQL ``WITH CONSISTENT SNAPSHOT``.
 PostgreSQL accepts mode lists with or without commas; output uses commas.
+The explicit MySQL dialect rejects a transaction containing both ``READ ONLY`` and
+``READ WRITE``, while retaining repeated occurrences of the same mode.
 
 Choose the dialect explicitly to parse ``BEGIN`` as a transaction command:
 
