@@ -9,6 +9,12 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -731,6 +737,54 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterStatistics statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateForeignDataWrapper statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateForeignDataWrapper statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterForeignDataWrapper statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterForeignDataWrapper statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateServer statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateServer statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterServer statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterServer statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateUserMapping statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateUserMapping statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterUserMapping statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterUserMapping statement) {
         visit(statement, null);
     }
 }

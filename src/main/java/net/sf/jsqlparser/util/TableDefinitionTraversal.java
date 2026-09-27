@@ -61,6 +61,10 @@ public final class TableDefinitionTraversal {
             relation.visitExpressions(expressions);
             relation.visitTables(tables);
         }
+        if (action instanceof net.sf.jsqlparser.statement.alter.AlterExpressionTableOption) {
+            visit(((net.sf.jsqlparser.statement.alter.AlterExpressionTableOption) action)
+                    .getStructuredTableOption(), expressions, tables);
+        }
         if (action.getOperation() == AlterOperation.RENAME_TABLE) {
             accept(action.getNewTable(), tables);
         }
@@ -123,12 +127,7 @@ public final class TableDefinitionTraversal {
                     expressions);
         }
         if (table.getTableOptions() != null) {
-            table.getTableOptions().forEach(option -> {
-                visitOptions(option.getStorageParameters(), expressions);
-                if (option.getUnionTables() != null) {
-                    option.getUnionTables().forEach(source -> accept(source, tables));
-                }
-            });
+            table.getTableOptions().forEach(option -> visit(option, expressions, tables));
         }
         if (table.getInherits() != null) {
             table.getInherits().forEach(parent -> accept(parent, tables));
@@ -140,6 +139,17 @@ public final class TableDefinitionTraversal {
         accept(table.getPartitionOf(), tables);
         visit(table.getPartitioning(), expressions);
         visit(table.getPartitionBound(), expressions);
+    }
+
+    /** Shared CREATE/ALTER table option traversal. */
+    public static void visit(net.sf.jsqlparser.statement.create.table.TableOption option,
+            Consumer<Expression> expressions, Consumer<Table> tables) {
+        if (option != null) {
+            visitOptions(option.getStorageParameters(), expressions);
+            if (option.getUnionTables() != null) {
+                option.getUnionTables().forEach(source -> accept(source, tables));
+            }
+        }
     }
 
     /** Visits the active partition key and any subpartition key. Raw bounds remain opaque. */
