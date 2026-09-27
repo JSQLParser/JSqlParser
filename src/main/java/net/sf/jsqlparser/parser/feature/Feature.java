@@ -706,6 +706,8 @@ public enum Feature {
      * @see SetStatement
      */
     set,
+    /** PostgreSQL SET configuration_parameter TO value. */
+    setAssignmentTo,
     /** SQL Server SET option [, option] ON | OFF. */
     sqlServerSetOptions,
     /**

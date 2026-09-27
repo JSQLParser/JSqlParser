@@ -26,6 +26,11 @@ public class SetStatementValidator extends AbstractValidator<SetStatement> {
             if (set.getOnOffOptions() != null) {
                 validateFeature(c, Feature.sqlServerSetOptions);
             }
+            for (int i = 0; i < set.getCount(); i++) {
+                if (set.getAssignmentOperator(i) == SetStatement.AssignmentOperator.TO) {
+                    validateFeature(c, Feature.setAssignmentTo);
+                }
+            }
         }
         for (int i = 0; i < set.getCount(); i++) {
             validateOptionalExpressions(set.getExpressions(i));

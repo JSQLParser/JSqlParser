@@ -4724,10 +4724,40 @@ void SetAssignment(SetStatement set):
       | name=UserVariable()
       | name=IdentifierChain() )
     [ "=" { operator = SetStatement.AssignmentOperator.EQUALS; }
-      | ":=" { operator = SetStatement.AssignmentOperator.COLON_EQUALS; } ]
-    expression=Expression()
-    { set.add(name, new ExpressionList<Expression>(expression), operator); }
+      | ":=" { operator = SetStatement.AssignmentOperator.COLON_EQUALS; }
+      | LOOKAHEAD({ getToken(1).kind == K_TO && (getAsString(Feature.dialect) == null
+              || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) })
+        <K_TO> { operator = SetStatement.AssignmentOperator.TO; } ]
+    expression=SetAssignmentValue()
+    {
+        if (operator == SetStatement.AssignmentOperator.TO
+                && (name instanceof UserVariable || "Time Zone".equals(name))) {
+            throw new ParseException("SET TO requires a configuration parameter name");
+        }
+        set.add(name, new ExpressionList<Expression>(expression), operator);
+    }
     )
+    {
+        for (int i = 0; i < set.getCount(); i++) {
+            if (set.getAssignmentOperator(i) == SetStatement.AssignmentOperator.TO
+                    && set.getCount() != 1) {
+                throw new ParseException("SET TO accepts one configuration parameter with a value list");
+            }
+        }
+    }
+}
+
+/** ON is a setting value even when the preceding separator is TO. */
+Expression SetAssignmentValue():
+{
+    Token value;
+    Expression expression;
+}
+{
+    ( LOOKAHEAD({ getToken(1).kind == K_ON && getToken(0).kind == K_TO })
+      value=<K_ON> { expression = new Column(value.image); }
+      | expression=Expression() )
+    { return expression; }
 }
 
 /** Character set selection has a single name or DEFAULT, not an arbitrary expression. */
