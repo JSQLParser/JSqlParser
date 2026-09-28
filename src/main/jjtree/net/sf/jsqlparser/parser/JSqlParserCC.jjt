@@ -52,6 +52,7 @@ import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.create.fdw.*;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -18594,6 +18595,10 @@ Statement Alter():
                 |
                 LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) statement = AlterUserMapping()
                 |
+                LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
+                        && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
+                statement = AlterTextSearchConfiguration()
+                |
                 LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
@@ -19835,6 +19840,10 @@ Statement Create():
         LOOKAHEAD({ isKeywordAhead("SERVER") }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateServer()
         |
         LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateUserMapping()
+        |
+        LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
+                && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE TEXT SEARCH CONFIGURATION does not support OR REPLACE"); } statement = CreateTextSearchConfiguration()
         |
         LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
         |
@@ -21261,6 +21270,71 @@ AlterUserMapping AlterUserMapping():
     <K_USER> ContextualKeyword("MAPPING") <K_FOR> name=RelObjectName() { statement.setUser(name); }
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     options=ForeignDataOptions(true) { statement.setOptions(options); return statement; }
+}
+
+CreateTextSearchConfiguration CreateTextSearchConfiguration():
+{ CreateTextSearchConfiguration statement = new CreateTextSearchConfiguration(); String name; }
+{
+    <K_TEXT_LITERAL> <K_SEARCH> ContextualKeyword("CONFIGURATION")
+    name=AccessQualifiedName() { statement.setName(name); }
+    "(" ( <K_PARSER> { statement.setSourceKind(CreateTextSearchConfiguration.SourceKind.PARSER); }
+          | <K_COPY> { statement.setSourceKind(CreateTextSearchConfiguration.SourceKind.COPY); } )
+    "=" name=TextSearchConfigurationSource() ")" { statement.setSourceName(name); return statement; }
+}
+
+AlterTextSearchConfiguration AlterTextSearchConfiguration():
+{
+    AlterTextSearchConfiguration statement = new AlterTextSearchConfiguration();
+    String name; List<String> names;
+}
+{
+    <K_TEXT_LITERAL> <K_SEARCH> ContextualKeyword("CONFIGURATION")
+    name=AccessQualifiedName() { statement.setName(name); }
+    (
+        <K_ADD> ContextualKeyword("MAPPING") <K_FOR> names=AccessNames() { statement.setTokenTypes(names); }
+        <K_WITH> names=TextSearchDictionaryNames()
+        { statement.setAction(AlterTextSearchConfiguration.Action.ADD_MAPPING); statement.setDictionaries(names); }
+        |
+        <K_ALTER> ContextualKeyword("MAPPING")
+        [ <K_FOR> names=AccessNames() { statement.setTokenTypes(names); } ]
+        ( <K_REPLACE> name=AccessQualifiedName() { statement.setOldDictionary(name); }
+          <K_WITH> name=AccessQualifiedName()
+          { statement.setAction(AlterTextSearchConfiguration.Action.REPLACE_MAPPING); statement.setNewDictionary(name); }
+          | <K_WITH> names=TextSearchDictionaryNames() {
+              requireDdlSyntax(!statement.getTokenTypes().isEmpty(), "ALTER MAPPING WITH requires token types");
+              statement.setAction(AlterTextSearchConfiguration.Action.ALTER_MAPPING); statement.setDictionaries(names);
+          } )
+        |
+        <K_DROP> ContextualKeyword("MAPPING")
+        [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+        <K_FOR> names=AccessNames()
+        { statement.setAction(AlterTextSearchConfiguration.Action.DROP_MAPPING); statement.setTokenTypes(names); }
+        |
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.RENAME); statement.setNewName(name); }
+        |
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.SET_SCHEMA); statement.setSchemaName(name); }
+        |
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.OWNER); statement.setOwner(name); }
+    )
+    { return statement; }
+}
+
+List<String> TextSearchDictionaryNames():
+{ List<String> names = new ArrayList<String>(); String name; }
+{
+    name=AccessQualifiedName() { names.add(name); }
+    ( "," name=AccessQualifiedName() { names.add(name); } )*
+    { return names; }
+}
+
+String TextSearchConfigurationSource():
+{ String name; Token value; }
+{
+    ( value=<S_CHAR_LITERAL> { name = value.image; } | name=AccessQualifiedName() )
+    { return name; }
 }
 
 CreateCollation CreateCollation():
