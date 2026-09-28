@@ -3269,13 +3269,14 @@ Statement Statement() #Statement:
                            ifElseStatement.setUsingSemicolonForIfStatement(true);
                      }
                  ]
+                 <EOF>
             )
             |
             (
                 (stm = SingleStatement()
                     | stm = Block())
 
-                ( <ST_SEMICOLON> | <EOF> )
+                ( <ST_SEMICOLON> )* <EOF>
             )
             |
             LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
