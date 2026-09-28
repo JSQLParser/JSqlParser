@@ -107,7 +107,8 @@ class PostgreSqlRelationAlterTest {
         RelationAlterAction action = assertInstanceOf(RelationAlterAction.class,
                 statement.getAlterExpressions().get(0));
         assertEquals(RelationAlterAction.Kind.REPLICA_IDENTITY, action.getKind());
-        assertEquals(RelationAlterAction.ReplicaIdentity.valueOf(mode), action.getReplicaIdentity());
+        assertEquals(RelationAlterAction.ReplicaIdentity.valueOf(mode),
+                action.getReplicaIdentity());
         assertRoundTrip(statement);
 
         action.setReplicaIdentity(RelationAlterAction.ReplicaIdentity.NOTHING);
