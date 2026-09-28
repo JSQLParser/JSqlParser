@@ -26,9 +26,9 @@ public final class SetStatement implements Statement {
     private String effectParameter;
     private OnOffOptions onOffOptions;
 
-    /** Assignment punctuation; NONE also supports SET options and PostgreSQL value lists. */
+    /** Assignment separator; NONE also supports SET options and PostgreSQL TIME ZONE. */
     public enum AssignmentOperator {
-        NONE(""), EQUALS("="), COLON_EQUALS(":=");
+        NONE(""), EQUALS("="), COLON_EQUALS(":="), TO("TO");
 
         private final String token;
 

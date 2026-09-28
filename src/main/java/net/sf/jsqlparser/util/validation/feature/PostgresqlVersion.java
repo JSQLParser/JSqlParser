@@ -101,6 +101,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
                     Feature.alterUserMapping,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
+                    Feature.createCollation, Feature.alterCollation,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,
@@ -152,7 +153,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.grant,
                     Feature.revoke, Feature.createRole, Feature.alterRole,
                     Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-set.html
-                    Feature.set, // https://www.postgresql.org/docs/current/sql-reset.html
+                    Feature.set, Feature.setAssignmentTo, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit)), V11("11", V10.copy().getFeatures()), V12("12",
                             V11.copy().getFeatures()), V13("13",

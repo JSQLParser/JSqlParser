@@ -109,6 +109,21 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.allowLegacyMySqlGroupBy, enabled);
     }
 
+    /**
+     * Resolves MySQL executable comments against this server version (for example 90702 for 9.7.2).
+     * Requires the MYSQL dialect. Rendered SQL reflects this version, without conditional wrappers.
+     * Without an explicit version, conditional executable comments raise a lexical error.
+     *
+     * @param version major * 10000 + minor * 100 + patch, from 0 through 999999
+     * @return this parser
+     */
+    public P withMySqlServerVersion(int version) {
+        if (version < 0 || version > 999999) {
+            throw new IllegalArgumentException("MySQL server version must be between 0 and 999999");
+        }
+        return withFeature(Feature.mySqlServerVersion, (long) version);
+    }
+
     public P withTimeOut(long timeOutMillSeconds) {
         return withFeature(Feature.timeOut, timeOutMillSeconds);
     }

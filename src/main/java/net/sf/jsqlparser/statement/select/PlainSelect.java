@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
@@ -45,14 +47,13 @@ public class PlainSelect extends Select {
     private Expression qualify;
     private OptimizeFor optimizeFor;
     private Skip skip;
-    private boolean mySqlHintStraightJoin;
+    private final EnumSet<MySqlSelectModifier> mySqlSelectModifiers =
+            EnumSet.noneOf(MySqlSelectModifier.class);
     private First first;
     private Top top;
     private OracleHierarchicalExpression oracleHierarchical = null;
     private PreferringClause preferringClause = null;
     private OracleHint oracleHint = null;
-    private boolean mySqlSqlCalcFoundRows = false;
-    private MySqlSqlCacheFlags mySqlCacheFlag = null;
     private String forXmlPath;
     private KSQLWindow ksqlWindow = null;
     private EmitMode emitMode = EmitMode.NONE;
@@ -397,11 +398,11 @@ public class PlainSelect extends Select {
     }
 
     public boolean getMySqlHintStraightJoin() {
-        return this.mySqlHintStraightJoin;
+        return mySqlSelectModifiers.contains(MySqlSelectModifier.STRAIGHT_JOIN);
     }
 
     public void setMySqlHintStraightJoin(boolean mySqlHintStraightJoin) {
-        this.mySqlHintStraightJoin = mySqlHintStraightJoin;
+        setMySqlSelectModifier(MySqlSelectModifier.STRAIGHT_JOIN, mySqlHintStraightJoin);
     }
 
     public First getFirst() {
@@ -616,15 +617,11 @@ public class PlainSelect extends Select {
         builder.append("SELECT ");
         appendSelectHintsTo(builder);
         appendSelectQualifiersTo(builder);
-        appendMySqlSelectFlagsTo(builder);
+        appendMySqlSelectModifiersTo(builder);
         builder.append(getStringList(selectItems));
     }
 
     private void appendSelectHintsTo(StringBuilder builder) {
-        if (this.mySqlHintStraightJoin) {
-            builder.append("STRAIGHT_JOIN ");
-        }
-
         if (oracleHint != null) {
             builder.append(oracleHint).append(" ");
         }
@@ -659,13 +656,48 @@ public class PlainSelect extends Select {
         }
     }
 
-    private void appendMySqlSelectFlagsTo(StringBuilder builder) {
-        if (mySqlCacheFlag != null) {
-            builder.append(mySqlCacheFlag.name()).append(" ");
+    /** Appends the typed modifiers in MySQL's documented SELECT order. */
+    public void appendMySqlSelectModifiersTo(StringBuilder builder) {
+        for (MySqlSelectModifier modifier : mySqlSelectModifiers) {
+            builder.append(modifier).append(" ");
         }
+    }
 
-        if (mySqlSqlCalcFoundRows) {
-            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
+    /** Returns the modifiers independently of the selected expressions and aliases. */
+    public Set<MySqlSelectModifier> getMySqlSelectModifiers() {
+        return Collections.unmodifiableSet(mySqlSelectModifiers);
+    }
+
+    public void setMySqlSelectModifiers(Collection<MySqlSelectModifier> modifiers) {
+        EnumSet<MySqlSelectModifier> copy = EnumSet.noneOf(MySqlSelectModifier.class);
+        if (modifiers != null) {
+            copy.addAll(modifiers);
+        }
+        if (copy.contains(MySqlSelectModifier.SQL_CACHE)
+                && copy.contains(MySqlSelectModifier.SQL_NO_CACHE)) {
+            throw new IllegalArgumentException("SQL_CACHE and SQL_NO_CACHE cannot be combined");
+        }
+        mySqlSelectModifiers.clear();
+        mySqlSelectModifiers.addAll(copy);
+    }
+
+    public PlainSelect addMySqlSelectModifiers(MySqlSelectModifier... modifiers) {
+        EnumSet<MySqlSelectModifier> copy = mySqlSelectModifiers.clone();
+        Collections.addAll(copy, modifiers);
+        setMySqlSelectModifiers(copy);
+        return this;
+    }
+
+    public PlainSelect withMySqlSelectModifiers(Collection<MySqlSelectModifier> modifiers) {
+        setMySqlSelectModifiers(modifiers);
+        return this;
+    }
+
+    private void setMySqlSelectModifier(MySqlSelectModifier modifier, boolean enabled) {
+        if (enabled) {
+            mySqlSelectModifiers.add(modifier);
+        } else {
+            mySqlSelectModifiers.remove(modifier);
         }
     }
 
@@ -759,19 +791,28 @@ public class PlainSelect extends Select {
     }
 
     public boolean getMySqlSqlCalcFoundRows() {
-        return this.mySqlSqlCalcFoundRows;
+        return mySqlSelectModifiers.contains(MySqlSelectModifier.SQL_CALC_FOUND_ROWS);
     }
 
     public void setMySqlSqlCalcFoundRows(boolean mySqlCalcFoundRows) {
-        this.mySqlSqlCalcFoundRows = mySqlCalcFoundRows;
+        setMySqlSelectModifier(MySqlSelectModifier.SQL_CALC_FOUND_ROWS, mySqlCalcFoundRows);
     }
 
     public MySqlSqlCacheFlags getMySqlSqlCacheFlag() {
-        return this.mySqlCacheFlag;
+        if (mySqlSelectModifiers.contains(MySqlSelectModifier.SQL_CACHE)) {
+            return MySqlSqlCacheFlags.SQL_CACHE;
+        }
+        return mySqlSelectModifiers.contains(MySqlSelectModifier.SQL_NO_CACHE)
+                ? MySqlSqlCacheFlags.SQL_NO_CACHE
+                : null;
     }
 
     public void setMySqlSqlCacheFlag(MySqlSqlCacheFlags sqlCacheFlag) {
-        this.mySqlCacheFlag = sqlCacheFlag;
+        mySqlSelectModifiers.remove(MySqlSelectModifier.SQL_CACHE);
+        mySqlSelectModifiers.remove(MySqlSelectModifier.SQL_NO_CACHE);
+        if (sqlCacheFlag != null) {
+            mySqlSelectModifiers.add(MySqlSelectModifier.valueOf(sqlCacheFlag.name()));
+        }
     }
 
     public PlainSelect withDistinct(Distinct distinct) {

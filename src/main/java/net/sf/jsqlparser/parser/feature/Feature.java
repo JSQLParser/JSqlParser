@@ -582,7 +582,7 @@ public enum Feature {
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
 
-    createTextSearchConfiguration, alterTextSearchConfiguration,
+    createTextSearchConfiguration, alterTextSearchConfiguration, createCollation, alterCollation,
 
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**
@@ -708,6 +708,8 @@ public enum Feature {
      * @see SetStatement
      */
     set,
+    /** PostgreSQL SET configuration_parameter TO value. */
+    setAssignmentTo,
     /** SQL Server SET option [, option] ON | OFF. */
     sqlServerSetOptions,
     /**
@@ -798,7 +800,7 @@ public enum Feature {
 
     // MYSQL
 
-    mySqlHintStraightJoin, mysqlSqlCacheFlag, mysqlCalcFoundRows,
+    mySqlHintStraightJoin, mysqlSqlCacheFlag, mysqlCalcFoundRows, mysqlSelectModifiers,
 
     // SQLSERVER
 
@@ -819,6 +821,14 @@ public enum Feature {
 
     /** Enables legacy GROUP BY ordering with the MYSQL dialect; disabled by default. */
     allowLegacyMySqlGroupBy(false),
+
+    /**
+     * Target MySQL version for executable comments, encoded as major * 10000 + minor * 100 + patch.
+     * A negative value leaves the version unspecified: conditional comments then fail instead of
+     * silently discarding SQL. Only used with the MYSQL dialect; unversioned comments need no
+     * value.
+     */
+    mySqlServerVersion(-1),
 
     // PERFORMANCE
 

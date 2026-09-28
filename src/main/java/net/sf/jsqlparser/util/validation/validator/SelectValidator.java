@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.MinusOp;
 import net.sf.jsqlparser.statement.select.MySqlSelectIntoClause;
+import net.sf.jsqlparser.statement.select.MySqlSelectModifier;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.OptionClause;
 import net.sf.jsqlparser.statement.select.OptionHint;
@@ -107,6 +108,12 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
             validateFeature(c, plainSelect.getMySqlSqlCacheFlag() != null,
                     Feature.mysqlSqlCacheFlag);
             validateFeature(c, plainSelect.getMySqlSqlCalcFoundRows(), Feature.mysqlCalcFoundRows);
+            validateFeature(c, plainSelect.getMySqlSelectModifiers().stream()
+                    .anyMatch(modifier -> modifier == MySqlSelectModifier.HIGH_PRIORITY
+                            || modifier == MySqlSelectModifier.SQL_SMALL_RESULT
+                            || modifier == MySqlSelectModifier.SQL_BIG_RESULT
+                            || modifier == MySqlSelectModifier.SQL_BUFFER_RESULT),
+                    Feature.mysqlSelectModifiers);
             validateOptionalFeature(c, plainSelect.getIntoTables(), Feature.selectInto);
             validateOptionalFeature(c, plainSelect.getKsqlWindow(), Feature.kSqlWindow);
             validateFeature(c,
