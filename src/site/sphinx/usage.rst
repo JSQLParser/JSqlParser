@@ -863,6 +863,36 @@ One grammar covers every supported RDBMS, but a few pieces of syntax mean differ
 
 Features set explicitly *after* the preset win over it.
 
+MySQL comments
+~~~~~~~~~~~~~~
+
+With ``Dialect.MYSQL``, ``--`` starts a line comment only when followed by
+whitespace or a control character. Thus ``SELECT 1--2`` contains subtraction
+and a negative operand. SQL inside an unversioned executable comment is parsed
+normally: ``SELECT 1 /*! + 2 */`` becomes ``SELECT 1 + 2``. Optimizer hints
+(``/*+ ... */``) remain separate from executable comments.
+
+Conditional executable comments require an explicit target server version:
+
+.. code-block:: java
+
+    Statement stmt = CCJSqlParserUtil.parse(
+            "SELECT 1 /*!90702 + 2 */",
+            parser -> parser.withDialect(Dialect.MYSQL).withMySqlServerVersion(90702));
+
+The value is ``major * 10000 + minor * 100 + patch``; for example, ``90702``
+means 9.7.2 and ``260700`` means 26.7.0. Five-digit and six-digit comment version
+prefixes follow MySQL's whitespace rules. SQL for a newer server is ignored;
+SQL for the configured version or an older one participates in the AST.
+Both SQL renderers produce the resolved SQL for that target, without the
+conditional wrappers. Without a target, a conditional executable comment
+raises an error instead of silently discarding its SQL. This replaces the
+previous treatment of all executable comments as ordinary discarded comments.
+The same configuration applies to parsers constructed with a ``StreamProvider``
+or ``FeatureConfiguration``. Other dialects retain their comment behavior.
+Nested executable comments are rejected; nested-comment acceptance in other
+dialects is not a guarantee that the same SQL is valid on MySQL.
+
 ALTER column names
 ~~~~~~~~~~~~~~~~~~
 

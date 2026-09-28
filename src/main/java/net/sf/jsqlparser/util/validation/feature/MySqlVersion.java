@@ -115,7 +115,7 @@ public enum MySqlVersion implements Version {
                     Feature.transactionChain, Feature.transactionConsistentSnapshot, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
-                    Feature.mysqlCalcFoundRows));
+                    Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));
 
     private Set<Feature> features;
     private String versionString;

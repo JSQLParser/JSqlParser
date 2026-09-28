@@ -15,6 +15,8 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -217,7 +219,9 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(RefreshMaterializedViewStatement materializedViewStatement,
             S context) {
-        new RefreshMaterializedViewStatementDeParser(builder).deParse(materializedViewStatement);
+        selectDeParser.setBuilder(builder);
+        new RefreshMaterializedViewStatementDeParser(builder,
+                table -> table.accept(selectDeParser, context)).deParse(materializedViewStatement);
         return builder;
     }
 
@@ -885,5 +889,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(AlterUserMapping statement, S context) {
         return statement.appendTo(builder,
                 expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateCollation statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterCollation statement, S context) {
+        return statement.appendTo(builder);
     }
 }

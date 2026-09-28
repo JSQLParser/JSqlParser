@@ -100,6 +100,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.createForeignDataWrapper, Feature.alterForeignDataWrapper,
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
                     Feature.alterUserMapping,
+                    Feature.createCollation, Feature.alterCollation,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,
                     Feature.createType, Feature.alterType,
@@ -151,7 +152,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.grant,
                     Feature.revoke, Feature.createRole, Feature.alterRole,
                     Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-set.html
-                    Feature.set, // https://www.postgresql.org/docs/current/sql-reset.html
+                    Feature.set, Feature.setAssignmentTo, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
                     Feature.transactionIsolationLevel, Feature.transactionDeferrable)), V11("11",

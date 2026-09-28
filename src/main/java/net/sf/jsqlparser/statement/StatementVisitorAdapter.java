@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.alter.AlterPublication;
 import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.schema.Column;
@@ -466,7 +467,13 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(SetStatement set, S context) {
-
+        for (int i = 0; i < set.getCount(); i++) {
+            if (set.getExpressions(i) != null) {
+                for (Expression expression : set.getExpressions(i)) {
+                    expressionVisitor.visitExpression(expression, context);
+                }
+            }
+        }
         return null;
     }
 

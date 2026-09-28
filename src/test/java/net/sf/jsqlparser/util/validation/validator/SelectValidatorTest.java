@@ -27,6 +27,14 @@ public class SelectValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    public void testValidationMySqlSelectModifiers() {
+        String sql =
+                "SELECT HIGH_PRIORITY SQL_SMALL_RESULT SQL_BIG_RESULT SQL_BUFFER_RESULT a FROM t";
+        validateNoErrors(sql, 1, DatabaseType.MYSQL, DatabaseType.MARIADB);
+        validateNotSupported(sql, 1, 1, DatabaseType.POSTGRESQL, Feature.mysqlSelectModifiers);
+    }
+
+    @Test
     public void testValidationSelectDistinct() throws JSQLParserException {
         String sql = "SELECT DISTINCT a, b FROM tab";
         validateNoErrors(sql, 1, DatabaseType.DATABASES);
