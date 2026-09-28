@@ -149,6 +149,7 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity"})
@@ -726,7 +727,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(Select select, S context) {
         if (selectVisitor != null) {
-            if (select.getWithItemsList() != null) {
+            // ValuesStatementDeParser owns WITH rendering when using SelectDeParser.
+            if (select.getWithItemsList() != null
+                    && !(select instanceof Values && selectVisitor instanceof SelectDeParser)) {
                 builder.append("WITH ");
                 for (Iterator<WithItem<?>> iter = select.getWithItemsList().iterator(); iter
                         .hasNext();) {

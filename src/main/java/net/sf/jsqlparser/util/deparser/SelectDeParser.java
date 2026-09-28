@@ -934,7 +934,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
 
     @Override
     public <S> StringBuilder visit(Values values, S context) {
-        new ValuesStatementDeParser(expressionVisitor, builder).deParse(values);
+        new ValuesStatementDeParser(expressionVisitor, this, builder).deParse(values, context);
         return builder;
     }
 
