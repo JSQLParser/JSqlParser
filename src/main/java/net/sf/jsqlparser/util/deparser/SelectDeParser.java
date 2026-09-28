@@ -340,10 +340,6 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
     private <S> void deparseSelectClause(PlainSelect plainSelect, S context) {
         builder.append("SELECT ");
 
-        if (plainSelect.getMySqlHintStraightJoin()) {
-            builder.append("STRAIGHT_JOIN ");
-        }
-
         OracleHint hint = plainSelect.getOracleHint();
         if (hint != null) {
             builder.append(hint).append(" ");
@@ -377,13 +373,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             visit(top);
         }
 
-        if (plainSelect.getMySqlSqlCacheFlag() != null) {
-            builder.append(plainSelect.getMySqlSqlCacheFlag().name()).append(" ");
-        }
-
-        if (plainSelect.getMySqlSqlCalcFoundRows()) {
-            builder.append("SQL_CALC_FOUND_ROWS").append(" ");
-        }
+        plainSelect.appendMySqlSelectModifiersTo(builder);
 
         deparseSelectItemsClause(plainSelect.getSelectItems());
 

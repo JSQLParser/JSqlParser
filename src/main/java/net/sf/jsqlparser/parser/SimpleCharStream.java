@@ -60,7 +60,12 @@ public class SimpleCharStream {
     // the `#` in the token image. Wired (with the token manager's
     // configuration) before parsing, null keeps this inert.
     static final char HASH_SUBSTITUTION = '\u0001';
+    static final char MYSQL_MINUS_SUBSTITUTION = '\u0002';
+    static final char MYSQL_COMMENT_ERROR = '\u0003';
     FeatureConfiguration featureConfiguration;
+    private boolean mySqlExecutableComment;
+    String mySqlCommentError;
+    boolean mySqlMinusSubstitution;
 
     /**
      * Constructor.
@@ -173,8 +178,24 @@ public class SimpleCharStream {
      * Start.
      */
     public final char BeginToken() throws java.io.IOException {
+        mySqlMinusSubstitution = false;
+        if (mySqlCommentError != null) {
+            // Parser lookahead may catch lexical errors. Keep this failure sticky until ReInit
+            // rather than allowing a later token request to continue after the rejected marker.
+            return MYSQL_COMMENT_ERROR;
+        }
         tokenBegin = -1;
-        char c = readChar();
+        char c;
+        try {
+            c = readChar();
+        } catch (java.io.IOException e) {
+            if (!mySqlExecutableComment) {
+                throw e;
+            }
+            // JavaCC treats exceptions from BeginToken as EOF. Emit a real token whose lexical
+            // action reports the error, so an unclosed executable comment cannot succeed as SQL.
+            c = mySqlCommentError("Unterminated MySQL executable comment");
+        }
         tokenBegin = bufpos;
 
         absoluteTokenBegin = totalCharsRead;
@@ -183,8 +204,101 @@ public class SimpleCharStream {
                 && featureConfiguration.getAsBoolean(Feature.allowHashLineComments)) {
             buffer[bufpos] = HASH_SUBSTITUTION;
             c = HASH_SUBSTITUTION;
+        } else if ((c == '-' || c == '/' || c == '*') && featureConfiguration != null
+                && AbstractJSqlParser.Dialect.MYSQL.name()
+                        .equals(featureConfiguration.getValue(Feature.dialect))) {
+            c = mySqlCommentBoundary(c);
         }
         return c;
+    }
+
+    /** Changes only token boundaries, never characters being scanned inside strings or names. */
+    private char mySqlCommentBoundary(char c) throws java.io.IOException {
+        if (c == '-') {
+            String following = peekCharacters(2);
+            if (following.length() == 2 && following.charAt(0) == '-'
+                    && !isMySqlCommentSpace(following.charAt(1))) {
+                mySqlMinusSubstitution = true;
+                buffer[bufpos] = MYSQL_MINUS_SUBSTITUTION;
+                return MYSQL_MINUS_SUBSTITUTION;
+            }
+        } else if (c == '*' && mySqlExecutableComment && peekCharacters(1).equals("/")) {
+            eraseCommentMarker(2);
+            mySqlExecutableComment = false;
+            return ' ';
+        } else if (c == '/') {
+            String following = peekCharacters(9);
+            if (following.startsWith("*!")) {
+                if (mySqlExecutableComment) {
+                    return mySqlCommentError("Nested MySQL executable comments are not supported");
+                }
+                int digits = mySqlCommentVersionLength(following);
+                if (digits > 0) {
+                    long target = featureConfiguration.getAsLong(Feature.mySqlServerVersion);
+                    if (target < 0 || target > 999999) {
+                        return mySqlCommentError("MySQL conditional executable comments require "
+                                + "withMySqlServerVersion(major * 10000 + minor * 100 + patch)");
+                    }
+                    int minimum = Integer.parseInt(following.substring(2, 2 + digits));
+                    if (minimum > target) {
+                        return c;
+                    }
+                }
+                eraseCommentMarker(3 + digits);
+                mySqlExecutableComment = true;
+                return ' ';
+            }
+        }
+        return c;
+    }
+
+    private static boolean isMySqlCommentSpace(char c) {
+        return c <= ' ' || c == '\u007f';
+    }
+
+    private static int mySqlCommentVersionLength(String following) {
+        if (following.length() < 7) {
+            return 0;
+        }
+        for (int i = 2; i < 7; i++) {
+            if (following.charAt(i) < '0' || following.charAt(i) > '9') {
+                return 0;
+            }
+        }
+        // MySQL recognizes a sixth digit only when followed by whitespace. Otherwise the
+        // five-digit prefix is the version and the remaining characters belong to the SQL body.
+        return following.length() >= 9 && following.charAt(7) >= '0'
+                && following.charAt(7) <= '9' && (following.charAt(8) == ' '
+                        || following.charAt(8) >= '\t' && following.charAt(8) <= '\r')
+                                ? 6
+                                : 5;
+    }
+
+    private String peekCharacters(int length) {
+        StringBuilder result = new StringBuilder(length);
+        try {
+            for (int i = 0; i < length; i++) {
+                result.append(readChar());
+            }
+        } catch (java.io.IOException ignored) {
+            // Only the successfully read characters need to be rewound, including at EOF.
+        }
+        backup(result.length());
+        return result.toString();
+    }
+
+    private void eraseCommentMarker(int length) throws java.io.IOException {
+        buffer[bufpos] = ' ';
+        for (int i = 1; i < length; i++) {
+            readChar();
+            buffer[bufpos] = ' ';
+        }
+        backup(length - 1);
+    }
+
+    private char mySqlCommentError(String message) {
+        mySqlCommentError = message;
+        return MYSQL_COMMENT_ERROR;
     }
 
     protected final void UpdateLineColumn(char c) {
@@ -330,6 +444,8 @@ public class SimpleCharStream {
         prevCharIsLF = prevCharIsCR = false;
         tokenBegin = inBuf = maxNextCharInd = 0;
         bufpos = -1;
+        mySqlExecutableComment = false;
+        mySqlCommentError = null;
     }
 
     /**
@@ -362,6 +478,8 @@ public class SimpleCharStream {
         String image = doGetImage();
         if (!image.isEmpty() && image.charAt(0) == HASH_SUBSTITUTION) {
             image = "#" + image.substring(1);
+        } else if (!image.isEmpty() && image.charAt(0) == MYSQL_MINUS_SUBSTITUTION) {
+            image = "-" + image.substring(1);
         }
         return image;
     }

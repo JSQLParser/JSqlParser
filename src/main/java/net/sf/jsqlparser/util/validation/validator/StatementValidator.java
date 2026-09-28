@@ -17,6 +17,8 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -1081,6 +1083,19 @@ public class StatementValidator extends AbstractValidator<Statement>
         if (statement.getType() == CreateAccessMethod.Type.TABLE) {
             validateFeature(Feature.createAccessMethodTable);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateCollation statement, S context) {
+        validateFeature(Feature.createCollation);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterCollation statement, S context) {
+        validateFeature(Feature.alterCollation);
         return null;
     }
 }

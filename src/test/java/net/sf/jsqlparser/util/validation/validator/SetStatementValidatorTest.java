@@ -11,11 +11,21 @@ package net.sf.jsqlparser.util.validation.validator;
 
 import java.util.Arrays;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
+import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import org.junit.jupiter.api.Test;
 
 public class SetStatementValidatorTest extends ValidationTestAsserts {
+
+    @Test
+    public void validatesToSeparatelyFromTheGeneralSetFeature() {
+        String sql = "SET LOCAL search_path TO my_schema, public";
+        validateNoErrors(sql, 1, DatabaseType.POSTGRESQL);
+        validateNotAllowed(sql, 1, 1, new FeaturesAllowed("set-only", Feature.set),
+                Feature.setAssignmentTo);
+    }
 
     @Test
     public void testValidateSet() throws JSQLParserException {
