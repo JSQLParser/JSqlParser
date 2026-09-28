@@ -112,6 +112,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.StartTransaction;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
@@ -1994,6 +1996,16 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(DateTimeLiteralExpression literal, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(StartTransaction statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ReleaseSavepointStatement statement, S context) {
         return null;
     }
 

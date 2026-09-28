@@ -1448,3 +1448,42 @@ separate from an index declaration's name, columns and access method.
 ``getConstraintAttributes()`` exposes deferrability and initial timing when
 present. The same AST can be constructed with ``new ConstraintUsingIndex()``
 and its fluent ``withName``, ``withType`` and ``withExistingIndexName`` methods.
+
+Transaction statements
+======================
+
+``START TRANSACTION`` produces a ``StartTransaction`` with an ordered list of typed
+transaction modes. PostgreSQL isolation levels, ``READ ONLY`` / ``READ WRITE``, and
+``[NOT] DEFERRABLE`` are supported, as is MySQL ``WITH CONSISTENT SNAPSHOT``.
+PostgreSQL accepts mode lists with or without commas; output uses commas.
+The explicit MySQL dialect rejects a transaction containing both ``READ ONLY`` and
+``READ WRITE``, while retaining repeated occurrences of the same mode.
+
+Choose the dialect explicitly to parse ``BEGIN`` as a transaction command:
+
+.. code-block:: java
+
+    StartTransaction transaction = (StartTransaction) CCJSqlParserUtil.parse(
+        "BEGIN ISOLATION LEVEL SERIALIZABLE READ ONLY",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    transaction.getModes().set(1, StartTransaction.Mode.READ_WRITE);
+    // BEGIN ISOLATION LEVEL SERIALIZABLE, READ WRITE
+    String sql = transaction.toString();
+
+Without a dialect, ``BEGIN`` retains the existing procedural block interpretation.
+MySQL and PostgreSQL dialects distinguish ``BEGIN`` transactions from
+``BEGIN SELECT ...; END`` blocks by the following tokens. Oracle blocks and opaque
+routine bodies retain their existing handling.
+
+``Commit`` and ``RollbackStatement`` expose optional ``TransactionKeyword``
+(``WORK`` or PostgreSQL ``TRANSACTION``) and ``TransactionChain`` (``CHAIN`` or
+``NO_CHAIN``). A null chain preserves the server's default behavior. The existing
+rollback work/savepoint/force accessors remain available. ``RELEASE [SAVEPOINT]``
+produces ``ReleaseSavepointStatement``; the MySQL dialect requires ``SAVEPOINT``.
+Savepoint names retain identifier quoting. These statements are traversed by
+statement visitors, deparsers and transaction feature analysis.
+
+The validator checks the new statement and mode capabilities. PostgreSQL
+``AND [NO] CHAIN`` is enabled beginning with its version 12 capability set.
+This support does not include MySQL transaction completion ``[NO] RELEASE``,
+PostgreSQL ``COMMIT PREPARED`` / ``ROLLBACK PREPARED``, or XA commands.

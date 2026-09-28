@@ -51,6 +51,8 @@ import java.util.List;
 
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.StartTransaction;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
@@ -386,6 +388,16 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(RollbackStatement rollbackStatement, S context) {
         builder.append(rollbackStatement.toString());
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(StartTransaction statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(ReleaseSavepointStatement statement, S context) {
+        return statement.appendTo(builder);
     }
 
     @Override

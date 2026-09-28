@@ -125,6 +125,22 @@ public interface StatementVisitor<T> {
         this.visit(comment, null);
     }
 
+    default <S> T visit(StartTransaction statement, S context) {
+        return null;
+    }
+
+    default void visit(StartTransaction statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(ReleaseSavepointStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(ReleaseSavepointStatement statement) {
+        visit(statement, null);
+    }
+
     <S> T visit(Commit commit, S context);
 
     default void visit(Commit commit) {
