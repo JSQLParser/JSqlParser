@@ -52,6 +52,7 @@ import net.sf.jsqlparser.statement.alter.*;
 import net.sf.jsqlparser.statement.create.fdw.*;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
@@ -1770,6 +1771,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    private boolean isBeginTransactionAhead() {
+        String dialect = getAsString(Feature.dialect);
+        if (getToken(1).kind != K_BEGIN || !(isMySqlDialect()
+                || Dialect.POSTGRESQL.name().equals(dialect))) { return false; }
+        Token next = getToken(2);
+        return next.kind == EOF || next.kind == ST_SEMICOLON || next.kind == K_WORK
+                || next.kind == K_READ || next.kind == K_DEFERRABLE || next.kind == K_NOT
+                || "TRANSACTION".equalsIgnoreCase(next.image)
+                || "ISOLATION".equalsIgnoreCase(next.image);
+    }
+
+    private boolean isTransactionModeAhead() {
+        return isKeywordAhead("ISOLATION") || getToken(1).kind == K_READ
+                || getToken(1).kind == K_DEFERRABLE
+                || getToken(1).kind == K_NOT && getToken(2).kind == K_DEFERRABLE
+                || getToken(1).kind == K_WITH && "CONSISTENT".equalsIgnoreCase(getToken(2).image);
+    }
+
     private boolean isMySqlSelectModifierAhead() {
         Token token = getToken(1);
         // These existing modifiers remain available without a dialect preset.
@@ -2655,6 +2674,7 @@ String NonReservedWord() :
       | tk=<K_RENAME:"RENAME">
       | tk=<K_REORGANIZE: "REORGANIZE">
       | tk=<K_REPAIR: "REPAIR">
+      | tk=<K_RELEASE: "RELEASE">
       | tk=<K_REPEATABLE: "REPEATABLE">
       | tk=<K_REPLACE:"REPLACE">
       | tk=<K_RESET:"RESET">
@@ -3379,6 +3399,12 @@ Statement SingleStatement() :
             stm = RefreshMaterializedView()
             |
             stm = Use()
+            |
+            LOOKAHEAD({ isBeginTransactionAhead()
+                    || getToken(1).kind == K_START && "TRANSACTION".equalsIgnoreCase(getToken(2).image) })
+            stm = StartTransaction()
+            |
+            LOOKAHEAD({ isKeywordAhead("RELEASE") }) stm = ReleaseSavepointStatement()
             |
             stm = SavepointStatement()
             |
@@ -18599,6 +18625,10 @@ Statement Alter():
                 |
                 LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) statement = AlterUserMapping()
                 |
+                LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
+                        && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
+                statement = AlterTextSearchConfiguration()
+                |
                 LOOKAHEAD({ isKeywordAhead("COLLATION") }) statement = AlterCollation()
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
@@ -19122,58 +19152,147 @@ Wait Wait():
     }
 }
 
-SavepointStatement SavepointStatement():
+StartTransaction StartTransaction():
 {
-  SavepointStatement savepointStatement;
+    StartTransaction statement = new StartTransaction();
+    TransactionKeyword keyword;
+    StartTransaction.Mode mode;
+    boolean comma;
 }
 {
-    <K_SAVEPOINT> token=<S_IDENTIFIER>
+    (
+        <K_START> ContextualKeyword("TRANSACTION")
+        |
+        <K_BEGIN> { statement.setCommand(StartTransaction.Command.BEGIN); }
+        [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
+            keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
+    )
+    [
+        LOOKAHEAD({ isTransactionModeAhead() })
+        mode=TransactionMode() { statement.addMode(mode); }
+        (
+            LOOKAHEAD({ ",".equals(getToken(1).image) || isTransactionModeAhead() })
+            { comma = false; }
+            [ "," { comma = true; } ]
+            mode=TransactionMode()
+            { requireDdlSyntax(!isMySqlDialect() || comma, "MySQL transaction characteristics require commas");
+              statement.addMode(mode); }
+        )*
+    ]
     {
-        savepointStatement = new SavepointStatement(token.image);
-        return savepointStatement;
+        requireDdlSyntax(!isMySqlDialect() || statement.getCommand() != StartTransaction.Command.BEGIN
+                || statement.getModes().isEmpty(), "MySQL BEGIN does not accept transaction characteristics");
+        requireDdlSyntax(!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                || !statement.getModes().contains(StartTransaction.Mode.READ_ONLY)
+                || !statement.getModes().contains(StartTransaction.Mode.READ_WRITE),
+                "MySQL transactions cannot specify both READ ONLY and READ WRITE");
+        return statement;
     }
+}
+
+TransactionKeyword TransactionKeyword():
+{ TransactionKeyword keyword; }
+{
+    ( <K_WORK> { keyword = TransactionKeyword.WORK; }
+      | ContextualKeyword("TRANSACTION") { keyword = TransactionKeyword.TRANSACTION;
+          requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept the TRANSACTION keyword here"); } )
+    { return keyword; }
+}
+
+TransactionChain TransactionChain():
+{ boolean negative = false; }
+{
+    <K_AND> [ <K_NO> { negative = true; } ] ContextualKeyword("CHAIN")
+    { return negative ? TransactionChain.NO_CHAIN : TransactionChain.CHAIN; }
+}
+
+StartTransaction.Mode TransactionMode():
+{ StartTransaction.Mode mode; }
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("ISOLATION") })
+        ContextualKeyword("ISOLATION") <K_LEVEL>
+        (
+            LOOKAHEAD({ isKeywordAhead("SERIALIZABLE") }) ContextualKeyword("SERIALIZABLE")
+            { mode = StartTransaction.Mode.ISOLATION_LEVEL_SERIALIZABLE; }
+            | <K_REPEATABLE> <K_READ> { mode = StartTransaction.Mode.ISOLATION_LEVEL_REPEATABLE_READ; }
+            | <K_READ>
+            ( LOOKAHEAD({ isKeywordAhead("COMMITTED") }) ContextualKeyword("COMMITTED")
+                { mode = StartTransaction.Mode.ISOLATION_LEVEL_READ_COMMITTED; }
+              | ContextualKeyword("UNCOMMITTED") { mode = StartTransaction.Mode.ISOLATION_LEVEL_READ_UNCOMMITTED; } )
+        )
+        { requireDdlSyntax(!isMySqlDialect(), "MySQL START TRANSACTION does not accept ISOLATION LEVEL"); }
+        |
+        <K_READ>
+        ( <K_ONLY> { mode = StartTransaction.Mode.READ_ONLY; }
+          | ContextualKeyword("WRITE") { mode = StartTransaction.Mode.READ_WRITE; } )
+        |
+        <K_DEFERRABLE> { mode = StartTransaction.Mode.DEFERRABLE;
+            requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept DEFERRABLE transactions"); }
+        |
+        <K_NOT> <K_DEFERRABLE> { mode = StartTransaction.Mode.NOT_DEFERRABLE;
+            requireDdlSyntax(!isMySqlDialect(), "MySQL does not accept DEFERRABLE transactions"); }
+        |
+        <K_WITH> ContextualKeyword("CONSISTENT") ContextualKeyword("SNAPSHOT")
+        { mode = StartTransaction.Mode.WITH_CONSISTENT_SNAPSHOT;
+          requireDdlSyntax(!Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)),
+              "PostgreSQL does not accept WITH CONSISTENT SNAPSHOT"); }
+    )
+    { return mode; }
+}
+
+ReleaseSavepointStatement ReleaseSavepointStatement():
+{ String name; boolean usingSavepointKeyword = false; }
+{
+    <K_RELEASE>
+    [ LOOKAHEAD({ getToken(1).kind == K_SAVEPOINT }) <K_SAVEPOINT> { usingSavepointKeyword = true; } ]
+    name=RelObjectName()
+    { requireDdlSyntax(!isMySqlDialect() || usingSavepointKeyword, "MySQL RELEASE requires SAVEPOINT");
+      return new ReleaseSavepointStatement(name).withUsingSavepointKeyword(usingSavepointKeyword); }
+}
+
+SavepointStatement SavepointStatement():
+{ String name; }
+{
+    <K_SAVEPOINT> name=RelObjectName()
+    { return new SavepointStatement(name); }
 }
 
 RollbackStatement RollbackStatement():
 {
-    RollbackStatement rollbackStatement;
-    boolean usingWorkKeyword=false;
-    boolean usingSavepointKeyword=false;
-    String savepointName=null;
-    String forceDistributedTransactionIdentifier=null;
+    RollbackStatement statement = new RollbackStatement();
+    TransactionKeyword keyword;
+    TransactionChain chain;
+    String name;
+    Token identifier;
 }
 {
-    <K_ROLLBACK> { rollbackStatement = new RollbackStatement(); }
-    [ <K_WORK> { rollbackStatement.setUsingWorkKeyword(true); } ]
-    // explicit lookahead: FORCE INSTALL starts a new statement, FORCE 'id' belongs here
+    <K_ROLLBACK>
+    [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
+        keyword=TransactionKeyword() { statement.setKeyword(keyword); } ]
+    // FORCE INSTALL starts a new statement, whereas FORCE 'id' belongs here.
     [
         LOOKAHEAD(2)
         (
-            (
-                <K_TO> [ <K_SAVEPOINT> { rollbackStatement.setUsingSavepointKeyword(true); }]
-                    token=<S_IDENTIFIER> { rollbackStatement.setSavepointName(token.image); }
-            )
+            <K_TO> [ LOOKAHEAD({ getToken(1).kind == K_SAVEPOINT }) <K_SAVEPOINT> { statement.setUsingSavepointKeyword(true); } ]
+                name=RelObjectName() { statement.setSavepointName(name); }
             |
-            (
-                <K_FORCE> token=<S_CHAR_LITERAL> { rollbackStatement.setForceDistributedTransactionIdentifier(token.image); }
-            )
+            <K_FORCE> identifier=<S_CHAR_LITERAL> { statement.setForceDistributedTransactionIdentifier(identifier.image); }
+            |
+            chain=TransactionChain() { statement.setChain(chain); }
         )
     ]
-
-    {
-        return rollbackStatement;
-    }
+    { return statement; }
 }
 
 Commit Commit():
+{ Commit commit = new Commit(); TransactionKeyword keyword; TransactionChain chain; }
 {
-  Commit commit=new Commit();
-}
-{
-  <K_COMMIT>
-  {
-    return commit;
-  }
+    <K_COMMIT>
+    [ LOOKAHEAD({ getToken(1).kind == K_WORK || isKeywordAhead("TRANSACTION") })
+        keyword=TransactionKeyword() { commit.setKeyword(keyword); } ]
+    [ chain=TransactionChain() { commit.setChain(chain); } ]
+    { return commit; }
 }
 
 Comment Comment():
@@ -19840,6 +19959,10 @@ Statement Create():
         LOOKAHEAD({ isKeywordAhead("SERVER") }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateServer()
         |
         LOOKAHEAD({ getToken(1).kind == K_USER && "MAPPING".equalsIgnoreCase(getToken(2).image) }) { requireDdlSyntax(!isUsingOrReplace, "OR REPLACE is not supported for foreign-data objects"); } statement = CreateUserMapping()
+        |
+        LOOKAHEAD({ getToken(1).kind == K_TEXT_LITERAL && getToken(2).kind == K_SEARCH
+                && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE TEXT SEARCH CONFIGURATION does not support OR REPLACE"); } statement = CreateTextSearchConfiguration()
         |
         LOOKAHEAD({ isKeywordAhead("RULE") }) statement = CreateRule(isUsingOrReplace)
         |
@@ -21268,6 +21391,71 @@ AlterUserMapping AlterUserMapping():
     <K_USER> ContextualKeyword("MAPPING") <K_FOR> name=RelObjectName() { statement.setUser(name); }
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setServer(name); }
     options=ForeignDataOptions(true) { statement.setOptions(options); return statement; }
+}
+
+CreateTextSearchConfiguration CreateTextSearchConfiguration():
+{ CreateTextSearchConfiguration statement = new CreateTextSearchConfiguration(); String name; }
+{
+    <K_TEXT_LITERAL> <K_SEARCH> ContextualKeyword("CONFIGURATION")
+    name=AccessQualifiedName() { statement.setName(name); }
+    "(" ( <K_PARSER> { statement.setSourceKind(CreateTextSearchConfiguration.SourceKind.PARSER); }
+          | <K_COPY> { statement.setSourceKind(CreateTextSearchConfiguration.SourceKind.COPY); } )
+    "=" name=TextSearchConfigurationSource() ")" { statement.setSourceName(name); return statement; }
+}
+
+AlterTextSearchConfiguration AlterTextSearchConfiguration():
+{
+    AlterTextSearchConfiguration statement = new AlterTextSearchConfiguration();
+    String name; List<String> names;
+}
+{
+    <K_TEXT_LITERAL> <K_SEARCH> ContextualKeyword("CONFIGURATION")
+    name=AccessQualifiedName() { statement.setName(name); }
+    (
+        <K_ADD> ContextualKeyword("MAPPING") <K_FOR> names=AccessNames() { statement.setTokenTypes(names); }
+        <K_WITH> names=TextSearchDictionaryNames()
+        { statement.setAction(AlterTextSearchConfiguration.Action.ADD_MAPPING); statement.setDictionaries(names); }
+        |
+        <K_ALTER> ContextualKeyword("MAPPING")
+        [ <K_FOR> names=AccessNames() { statement.setTokenTypes(names); } ]
+        ( <K_REPLACE> name=AccessQualifiedName() { statement.setOldDictionary(name); }
+          <K_WITH> name=AccessQualifiedName()
+          { statement.setAction(AlterTextSearchConfiguration.Action.REPLACE_MAPPING); statement.setNewDictionary(name); }
+          | <K_WITH> names=TextSearchDictionaryNames() {
+              requireDdlSyntax(!statement.getTokenTypes().isEmpty(), "ALTER MAPPING WITH requires token types");
+              statement.setAction(AlterTextSearchConfiguration.Action.ALTER_MAPPING); statement.setDictionaries(names);
+          } )
+        |
+        <K_DROP> ContextualKeyword("MAPPING")
+        [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
+        <K_FOR> names=AccessNames()
+        { statement.setAction(AlterTextSearchConfiguration.Action.DROP_MAPPING); statement.setTokenTypes(names); }
+        |
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.RENAME); statement.setNewName(name); }
+        |
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.SET_SCHEMA); statement.setSchemaName(name); }
+        |
+        ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { statement.setAction(AlterTextSearchConfiguration.Action.OWNER); statement.setOwner(name); }
+    )
+    { return statement; }
+}
+
+List<String> TextSearchDictionaryNames():
+{ List<String> names = new ArrayList<String>(); String name; }
+{
+    name=AccessQualifiedName() { names.add(name); }
+    ( "," name=AccessQualifiedName() { names.add(name); } )*
+    { return names; }
+}
+
+String TextSearchConfigurationSource():
+{ String name; Token value; }
+{
+    ( value=<S_CHAR_LITERAL> { name = value.image; } | name=AccessQualifiedName() )
+    { return name; }
 }
 
 CreateRule CreateRule(boolean orReplace):

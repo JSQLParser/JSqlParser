@@ -15,6 +15,8 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
@@ -123,6 +125,22 @@ public interface StatementVisitor<T> {
 
     default void visit(Comment comment) {
         this.visit(comment, null);
+    }
+
+    default <S> T visit(StartTransaction statement, S context) {
+        return null;
+    }
+
+    default void visit(StartTransaction statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(ReleaseSavepointStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(ReleaseSavepointStatement statement) {
+        visit(statement, null);
     }
 
     <S> T visit(Commit commit, S context);
@@ -789,6 +807,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterUserMapping statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTextSearchConfiguration statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTextSearchConfiguration statement) {
         visit(statement, null);
     }
 
