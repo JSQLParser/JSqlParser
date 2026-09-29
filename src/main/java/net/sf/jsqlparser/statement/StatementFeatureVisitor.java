@@ -784,6 +784,16 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     // ---- session / transaction --------------------------------------------------------------
 
     @Override
+    public <S> Void visit(StartTransaction statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
+    public <S> Void visit(ReleaseSavepointStatement statement, S context) {
+        return transactionOnly();
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return transactionOnly();
     }

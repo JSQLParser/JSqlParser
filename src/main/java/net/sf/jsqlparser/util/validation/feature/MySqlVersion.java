@@ -111,7 +111,8 @@ public enum MySqlVersion implements Version {
                     Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
                     Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
-                    Feature.commit, //
+                    Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
+                    Feature.transactionChain, Feature.transactionConsistentSnapshot, //
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSqlCacheFlag,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows));

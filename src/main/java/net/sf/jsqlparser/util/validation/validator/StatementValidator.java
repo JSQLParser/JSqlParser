@@ -17,6 +17,8 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
@@ -45,6 +47,8 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.StartTransaction;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
@@ -290,8 +294,42 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(StartTransaction statement, S context) {
+        validateFeature(Feature.startTransaction);
+        for (StartTransaction.Mode mode : statement.getModes()) {
+            switch (mode) {
+                case ISOLATION_LEVEL_SERIALIZABLE:
+                case ISOLATION_LEVEL_REPEATABLE_READ:
+                case ISOLATION_LEVEL_READ_COMMITTED:
+                case ISOLATION_LEVEL_READ_UNCOMMITTED:
+                    validateFeature(Feature.transactionIsolationLevel);
+                    break;
+                case DEFERRABLE:
+                case NOT_DEFERRABLE:
+                    validateFeature(Feature.transactionDeferrable);
+                    break;
+                case WITH_CONSISTENT_SNAPSHOT:
+                    validateFeature(Feature.transactionConsistentSnapshot);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ReleaseSavepointStatement statement, S context) {
+        validateFeature(Feature.releaseSavepoint);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         validateFeature(Feature.commit);
+        if (commit.getChain() != null) {
+            validateFeature(Feature.transactionChain);
+        }
         return null;
     }
 
@@ -472,7 +510,9 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     @Override
     public <S> Void visit(RollbackStatement rollbackStatement, S context) {
-        // TODO: not yet implemented
+        if (rollbackStatement.getChain() != null) {
+            validateFeature(Feature.transactionChain);
+        }
         return null;
     }
 
@@ -1083,6 +1123,18 @@ public class StatementValidator extends AbstractValidator<Statement>
         if (statement.getType() == CreateAccessMethod.Type.TABLE) {
             validateFeature(Feature.createAccessMethodTable);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchConfiguration statement, S context) {
+        validateFeature(Feature.createTextSearchConfiguration);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchConfiguration statement, S context) {
+        validateFeature(Feature.alterTextSearchConfiguration);
         return null;
     }
 

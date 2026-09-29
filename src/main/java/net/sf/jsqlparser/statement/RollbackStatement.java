@@ -29,21 +29,52 @@ package net.sf.jsqlparser.statement;
  * @author are
  */
 public class RollbackStatement implements Statement {
-    private boolean usingWorkKeyword = false;
+    private TransactionKeyword keyword;
+    private TransactionChain chain;
     private boolean usingSavepointKeyword = false;
     private String savepointName = null;
     private String forceDistributedTransactionIdentifier = null;
 
+    public TransactionKeyword getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(TransactionKeyword keyword) {
+        this.keyword = keyword;
+    }
+
+    public RollbackStatement withKeyword(TransactionKeyword keyword) {
+        setKeyword(keyword);
+        return this;
+    }
+
+    public TransactionChain getChain() {
+        return chain;
+    }
+
+    public void setChain(TransactionChain chain) {
+        this.chain = chain;
+    }
+
+    public RollbackStatement withChain(TransactionChain chain) {
+        setChain(chain);
+        return this;
+    }
+
     public boolean isUsingWorkKeyword() {
-        return usingWorkKeyword;
+        return keyword == TransactionKeyword.WORK;
     }
 
     public void setUsingWorkKeyword(boolean usingWorkKeyword) {
-        this.usingWorkKeyword = usingWorkKeyword;
+        if (usingWorkKeyword) {
+            keyword = TransactionKeyword.WORK;
+        } else if (keyword == TransactionKeyword.WORK) {
+            keyword = null;
+        }
     }
 
     public RollbackStatement withUsingWorkKeyword(boolean usingWorkKeyword) {
-        this.usingWorkKeyword = usingWorkKeyword;
+        setUsingWorkKeyword(usingWorkKeyword);
         return this;
     }
 
@@ -88,22 +119,27 @@ public class RollbackStatement implements Statement {
         return this;
     }
 
+    public StringBuilder appendTo(StringBuilder builder) {
+        builder.append("ROLLBACK");
+        if (keyword != null) {
+            builder.append(' ').append(keyword);
+        }
+        if (savepointName != null && !savepointName.trim().isEmpty()) {
+            builder.append(" TO ").append(usingSavepointKeyword ? "SAVEPOINT " : "")
+                    .append(savepointName);
+        } else if (forceDistributedTransactionIdentifier != null
+                && !forceDistributedTransactionIdentifier.trim().isEmpty()) {
+            builder.append(" FORCE ").append(forceDistributedTransactionIdentifier);
+        }
+        if (chain != null) {
+            builder.append(' ').append(chain);
+        }
+        return builder;
+    }
+
     @Override
     public String toString() {
-        return "ROLLBACK "
-                + (usingWorkKeyword
-                        ? "WORK "
-                        : "")
-                + (savepointName != null && !savepointName.trim().isEmpty()
-                        ? "TO " + (usingSavepointKeyword
-                                ? "SAVEPOINT "
-                                : "") + savepointName
-                        : forceDistributedTransactionIdentifier != null
-                                && !forceDistributedTransactionIdentifier.trim().isEmpty()
-                                        ? "FORCE " + forceDistributedTransactionIdentifier
-                                        : ""
-
-                );
+        return appendTo(new StringBuilder()).toString();
     }
 
     @Override

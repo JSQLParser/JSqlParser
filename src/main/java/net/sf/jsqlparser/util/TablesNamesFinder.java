@@ -17,6 +17,8 @@ import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
@@ -112,6 +114,8 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.StartTransaction;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
@@ -1998,6 +2002,16 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(StartTransaction statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ReleaseSavepointStatement statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> Void visit(Commit commit, S context) {
         return null;
     }
@@ -3017,6 +3031,16 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateAccessMethod statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTextSearchConfiguration statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTextSearchConfiguration statement, S context) {
         return null;
     }
 

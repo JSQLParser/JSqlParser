@@ -582,7 +582,7 @@ public enum Feature {
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
 
-    createCollation, alterCollation,
+    createTextSearchConfiguration, alterTextSearchConfiguration, createCollation, alterCollation,
 
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**
@@ -605,6 +605,18 @@ public enum Feature {
      * @see Commit
      */
     commit,
+    /** START TRANSACTION and dialect-specific BEGIN transaction statements. */
+    startTransaction,
+    /** RELEASE [SAVEPOINT] statements. */
+    releaseSavepoint,
+    /** Explicit AND [NO] CHAIN transaction completion. */
+    transactionChain,
+    /** Isolation level specified directly on BEGIN or START TRANSACTION. */
+    transactionIsolationLevel,
+    /** PostgreSQL [NOT] DEFERRABLE transaction characteristic. */
+    transactionDeferrable,
+    /** MySQL WITH CONSISTENT SNAPSHOT transaction characteristic. */
+    transactionConsistentSnapshot,
     /**
      * SQL "COMMENT ON" statement is allowed
      *
