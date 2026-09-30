@@ -49,10 +49,14 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public Column(List<String> nameParts, List<String> delimiters) {
-        this(
-                nameParts.size() > 1 ? new Table(nameParts.subList(0, nameParts.size() - 1),
-                        delimiters.subList(0, delimiters.size() - 1)) : null,
-                nameParts.get(nameParts.size() - 1));
+        if (nameParts.size() > 1) {
+            setTable(new Table(nameParts.subList(0, nameParts.size() - 1),
+                    delimiters.subList(0, delimiters.size() - 1)));
+            // The final component is already separated from the table name.
+            setName(nameParts.get(nameParts.size() - 1), false);
+        } else {
+            setColumnName(nameParts.get(0));
+        }
         setTableDelimiter(delimiters.isEmpty() ? "." : delimiters.get(delimiters.size() - 1));
     }
 
@@ -149,36 +153,25 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
     }
 
     public void setName(String name, boolean splitNamesOnDelimiter) {
-        if (MultiPartName.isQuoted(name) && name.contains(".") && splitNamesOnDelimiter) {
-            String[] parts = MultiPartName.unquote(name).split("\\.");
-            switch (parts.length) {
-                case 3:
-                    this.table = new Table("\"" + parts[0] + "\".\"" + parts[1] + "\"");
-                    this.columnName = "\"" + parts[2] + "\"";
-                    break;
-                case 2:
-                    this.table = new Table("\"" + parts[0] + "\"");
-                    this.columnName = "\"" + parts[1] + "\"";
-                    break;
-                case 1:
-                    this.columnName = "\"" + parts[0] + "\"";
-                    break;
-                default:
-                    throw new RuntimeException("Invalid column name: " + name);
+        if (name.contains(".") && splitNamesOnDelimiter) {
+            List<String> parts = splitName(name);
+            if (parts.size() == 1 && MultiPartName.isQuoted(name)) {
+                parts.clear();
+                for (String identifier : MultiPartName.unquote(name).split("\\.")) {
+                    parts.add("\"" + identifier + "\"");
+                }
             }
-        } else if (name.contains(".") && splitNamesOnDelimiter) {
-            String[] parts = MultiPartName.unquote(name).split("\\.");
-            switch (parts.length) {
+            switch (parts.size()) {
                 case 3:
-                    this.table = new Table(parts[0] + "." + parts[1]);
-                    this.columnName = parts[2];
+                    this.table = new Table(parts.subList(0, 2));
+                    this.columnName = parts.get(2);
                     break;
                 case 2:
-                    this.table = new Table(parts[0]);
-                    this.columnName = parts[1];
+                    this.table = new Table(parts.get(0), false);
+                    this.columnName = parts.get(1);
                     break;
                 case 1:
-                    this.columnName = parts[0];
+                    this.columnName = parts.get(0);
                     break;
                 default:
                     throw new RuntimeException("Invalid column name: " + name);
@@ -186,6 +179,34 @@ public class Column extends ASTNodeAccessImpl implements Expression, MultiPartNa
         } else {
             this.columnName = name;
         }
+    }
+
+    private static List<String> splitName(String name) {
+        List<String> parts = new ArrayList<>();
+        int start = 0;
+        char quote = 0;
+        for (int i = 0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+            if (quote != 0) {
+                if (ch == quote) {
+                    if (i + 1 < name.length() && name.charAt(i + 1) == quote) {
+                        i++;
+                    } else {
+                        quote = 0;
+                    }
+                }
+            } else if (ch == '"' || ch == '`' || ch == '[') {
+                quote = ch == '[' ? ']' : ch;
+            } else if (ch == '.') {
+                parts.add(name.substring(start, i));
+                start = i + 1;
+            }
+        }
+        parts.add(name.substring(start));
+        while (!parts.isEmpty() && parts.get(parts.size() - 1).isEmpty()) {
+            parts.remove(parts.size() - 1);
+        }
+        return parts;
     }
 
     public String getTableDelimiter() {
