@@ -1128,7 +1128,7 @@ public class AlterExpression implements Serializable {
                 b.append("REORGANIZE PARTITION ")
                         .append(PlainSelect.getStringList(partitions))
                         .append(" INTO (")
-                        .append(partitionDefinitions.stream()
+                        .append(getPartitionDefinitions().stream()
                                 .map(PartitionDefinition::toString)
                                 .collect(Collectors.joining(", ")))
                         .append(")");
@@ -1168,7 +1168,7 @@ public class AlterExpression implements Serializable {
                 } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
                     b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
                 }
-                b.append("(").append(partitionDefinitions.stream()
+                b.append("(").append(getPartitionDefinitions().stream()
                         .map(PartitionDefinition::toString)
                         .collect(Collectors.joining(", ")))
                         .append(")");
