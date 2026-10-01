@@ -272,6 +272,33 @@ class ConstraintInspectionTest {
         assertEquals(before, action.toString());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP PRIMARY KEY", "DROP FOREIGN KEY fk", "DROP CHECK ck"})
+    void distinguishesBaseRenamePrecedenceFromSpecializedDropRendering(String sql)
+            throws Exception {
+        AlterExpression drop = action("ALTER TABLE t " + sql, Dialect.MYSQL);
+        Kind expected = drop.getConstraintKind();
+        String before = drop.toString();
+        Index oldName = new Index().withName("old_name");
+        Index newName = new Index().withName("new_name");
+        drop.setOldIndex(oldName);
+        drop.setIndex(newName);
+        assertEquals(expected, drop.getConstraintKind());
+        assertEquals(before, drop.toString());
+
+        AlterExpression base = new AlterExpression().withOperation(drop.getOperation());
+        base.setOldIndex(oldName);
+        base.setIndex(newName);
+        assertTrue(base.toString().startsWith("RENAME"));
+        assertEquals(Kind.OTHER, base.getConstraintKind());
+
+        base.setOperation(AlterOperation.ALTER);
+        base.setConstraintType("CHECK");
+        base.setConstraintSymbol("ck");
+        assertTrue(base.toString().startsWith("ALTER CHECK ck"));
+        assertEquals(Kind.CHECK, base.getConstraintKind());
+    }
+
     @Test
     void supportsLegacyOnlyKeysWithoutMistakingDropColumnsForPrimaryKeys() {
         AlterExpression legacy = new AlterExpression().withOperation(AlterOperation.ADD)

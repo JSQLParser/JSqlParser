@@ -25,10 +25,13 @@ public class AlterExpressionDrop extends AlterExpression {
         }
         switch (getOperation()) {
             case DROP_PRIMARY_KEY:
+                return Index.Kind.PRIMARY_KEY;
             case DROP_UNIQUE:
+                return Index.Kind.UNIQUE;
             case DROP_FOREIGN_KEY:
+                return Index.Kind.FOREIGN_KEY;
             case DROP_CHECK:
-                return super.getConstraintKind();
+                return Index.Kind.CHECK;
             default:
                 return Index.Kind.OTHER;
         }

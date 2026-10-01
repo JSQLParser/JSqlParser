@@ -600,6 +600,10 @@ public class AlterExpression implements Serializable {
         if (operation == null) {
             return Index.Kind.OTHER;
         }
+        if (isRenameOperation() && !(constraintType != null && constraintSymbol != null
+                && (operation == AlterOperation.ADD || operation == AlterOperation.ALTER))) {
+            return Index.Kind.OTHER;
+        }
         switch (operation) {
             case DROP_PRIMARY_KEY:
             case ALTER_PRIMARY_KEY:
