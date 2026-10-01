@@ -17,6 +17,8 @@ import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
@@ -1124,6 +1126,22 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(AlterTextSearchConfiguration statement, S context) {
         validateFeature(Feature.alterTextSearchConfiguration);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateRule statement, S context) {
+        validateFeature(Feature.createRule);
+        statement.visitExpressions(this::validateOptionalExpression);
+        statement.visitTables(this::validateOptionalFromItem);
+        statement.getActions().forEach(action -> action.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(NotifyStatement statement, S context) {
+        validateFeature(Feature.notifyStatement);
+        statement.visitExpressions(this::validateOptionalExpression);
         return null;
     }
 

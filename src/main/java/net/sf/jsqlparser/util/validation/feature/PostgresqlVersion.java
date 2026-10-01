@@ -31,6 +31,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.exprLike,
                     Feature.exprSimilarTo, // https://www.postgresql.org/docs/current/sql-select.html
                     Feature.select,
+                    Feature.tableStatement,
                     Feature.selectGroupBy, Feature.function, Feature.tableFunction,
                     Feature.lateralSubSelect,
                     Feature.selectHaving, // https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS
@@ -101,6 +102,7 @@ public enum PostgresqlVersion implements Version {
                     Feature.createServer, Feature.alterServer, Feature.createUserMapping,
                     Feature.alterUserMapping,
                     Feature.createTextSearchConfiguration, Feature.alterTextSearchConfiguration,
+                    Feature.createRule, Feature.notifyStatement,
                     Feature.createCollation, Feature.alterCollation,
                     Feature.createPublication, Feature.alterPublication,
                     Feature.createSubscription, Feature.alterSubscription,

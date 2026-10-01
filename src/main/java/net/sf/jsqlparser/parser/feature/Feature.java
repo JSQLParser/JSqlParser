@@ -582,7 +582,7 @@ public enum Feature {
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
 
-    createTextSearchConfiguration, alterTextSearchConfiguration, createCollation, alterCollation,
+    createRule, notifyStatement, createTextSearchConfiguration, alterTextSearchConfiguration, createCollation, alterCollation,
 
     createPublication, alterPublication, createSubscription, alterSubscription,
     /**

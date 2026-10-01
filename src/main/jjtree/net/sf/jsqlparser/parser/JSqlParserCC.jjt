@@ -53,6 +53,8 @@ import net.sf.jsqlparser.statement.create.fdw.*;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
@@ -2611,6 +2613,7 @@ String NonReservedWord() :
       | tk=<K_NONE:"NONE">
       | tk=<K_NOORDER:"NOORDER">
       | tk=<K_NOTHING:"NOTHING">
+      | tk=<K_NOTIFY:"NOTIFY">
       | tk=<K_NOTNULL:"NOTNULL">
       | tk=<K_NOVALIDATE : "NOVALIDATE">
       | tk=<K_NULLS: "NULLS">
@@ -3410,6 +3413,8 @@ Statement SingleStatement() :
             stm = Commit()
             |
             stm = Comment()
+            |
+            LOOKAHEAD({ isKeywordAhead("NOTIFY") }) stm = NotifyStatement()
             |
             stm = Describe()
             |
@@ -19959,6 +19964,8 @@ Statement Create():
                 && "CONFIGURATION".equalsIgnoreCase(getToken(3).image) })
         { requireDdlSyntax(!isUsingOrReplace, "CREATE TEXT SEARCH CONFIGURATION does not support OR REPLACE"); } statement = CreateTextSearchConfiguration()
         |
+        LOOKAHEAD({ isKeywordAhead("RULE") }) statement = CreateRule(isUsingOrReplace)
+        |
         LOOKAHEAD({ isKeywordAhead("COLLATION") }) { requireDdlSyntax(!isUsingOrReplace, "CREATE COLLATION does not support OR REPLACE"); } statement = CreateCollation()
         |
         LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = CreateStatistics()
@@ -21449,6 +21456,58 @@ String TextSearchConfigurationSource():
 {
     ( value=<S_CHAR_LITERAL> { name = value.image; } | name=AccessQualifiedName() )
     { return name; }
+}
+
+CreateRule CreateRule(boolean orReplace):
+{
+    CreateRule statement = new CreateRule(); String name; Table table;
+    Token event; Expression condition; Statement action;
+}
+{
+    ContextualKeyword("RULE") name=RelObjectName()
+    { statement.setName(name); statement.setOrReplace(orReplace); }
+    <K_AS> <K_ON> ( event=<K_SELECT> | event=<K_INSERT> | event=<K_UPDATE> | event=<K_DELETE> )
+    { statement.setEvent(CreateRule.Event.valueOf(event.image.toUpperCase(java.util.Locale.ROOT))); }
+    <K_TO> table=Table() { statement.setTable(table); }
+    [ <K_WHERE> condition=Expression() { statement.setWhereExpression(condition); } ]
+    <K_DO>
+    [ LOOKAHEAD({ isKeywordAhead("ALSO") || isKeywordAhead("INSTEAD") })
+      ( LOOKAHEAD({ isKeywordAhead("ALSO") }) ContextualKeyword("ALSO") { statement.setBehavior(CreateRule.Behavior.ALSO); }
+        | AccessKeyword("INSTEAD") { statement.setBehavior(CreateRule.Behavior.INSTEAD); } ) ]
+    (
+        <K_NOTHING> { statement.setNothing(true); }
+        | LOOKAHEAD(Select()) action=Select() { statement.getActions().add(action); }
+        | LOOKAHEAD("(") "(" { statement.setUseParentheses(true); }
+          [ LOOKAHEAD({ getToken(1).kind != ST_SEMICOLON && !")".equals(getToken(1).image) })
+            action=PostgreSqlRuleAction() { statement.getActions().add(action); } ]
+          ( <ST_SEMICOLON>
+            [ LOOKAHEAD({ getToken(1).kind != ST_SEMICOLON && !")".equals(getToken(1).image) })
+              action=PostgreSqlRuleAction() { statement.getActions().add(action); } ] )*
+          ")"
+        | action=PostgreSqlRuleAction() { statement.getActions().add(action); }
+    )
+    { return statement; }
+}
+
+Statement PostgreSqlRuleAction():
+{ Statement statement; }
+{
+    statement=SingleStatement()
+    {
+        requireDdlSyntax(statement instanceof Select || statement instanceof TableStatement || statement instanceof Insert
+                || statement instanceof Update || statement instanceof Delete
+                || statement instanceof NotifyStatement,
+                "A rule action must be SELECT, INSERT, UPDATE, DELETE or NOTIFY");
+        return statement;
+    }
+}
+
+NotifyStatement NotifyStatement():
+{ NotifyStatement statement = new NotifyStatement(); String channel; Token payload; }
+{
+    <K_NOTIFY> channel=RelObjectName() { statement.setChannel(channel); }
+    [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(new StringValue(payload.image)); } ]
+    { return statement; }
 }
 
 CreateCollation CreateCollation():
