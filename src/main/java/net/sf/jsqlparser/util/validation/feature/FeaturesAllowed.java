@@ -106,6 +106,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.createCollation,
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createForeignDataWrapper, Feature.createServer, Feature.createUserMapping,
+            Feature.createAccessMethod, Feature.createAccessMethodTable,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
             Feature.createTableIfNotExists, Feature.createTableRowMovement,

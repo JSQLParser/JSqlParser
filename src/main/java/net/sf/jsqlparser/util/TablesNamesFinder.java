@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
@@ -3026,6 +3028,11 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(AlterUserMapping statement, S context) {
         statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateAccessMethod statement, S context) {
         return null;
     }
 

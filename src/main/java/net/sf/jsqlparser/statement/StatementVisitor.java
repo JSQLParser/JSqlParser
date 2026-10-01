@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
@@ -807,6 +809,14 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterUserMapping statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateAccessMethod statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateAccessMethod statement) {
         visit(statement, null);
     }
 

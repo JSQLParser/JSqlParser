@@ -578,7 +578,7 @@ public enum Feature {
      *
      * @see CreateSequence
      */
-    createSequence,
+    createSequence, createAccessMethod, createAccessMethodTable,
     /** Publication and subscription definitions. */
     createForeignDataWrapper, alterForeignDataWrapper, createServer, alterServer, createUserMapping, alterUserMapping,
 
