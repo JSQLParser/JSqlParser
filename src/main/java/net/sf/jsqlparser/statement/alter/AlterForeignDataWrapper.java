@@ -16,12 +16,8 @@ import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
 import net.sf.jsqlparser.statement.create.fdw.ForeignDataWrapperFunctions;
 
 public class AlterForeignDataWrapper extends ForeignDataStatement {
-    public enum Action {
-        OPTIONS, OWNER, RENAME
-    }
-
     private String name;
-    private Action action = Action.OPTIONS;
+    private ForeignObjectAlterAction action = ForeignObjectAlterAction.OPTIONS;
     private String newName;
     private String owner;
     private ForeignDataWrapperFunctions functions = new ForeignDataWrapperFunctions();
@@ -34,11 +30,11 @@ public class AlterForeignDataWrapper extends ForeignDataStatement {
         name = value;
     }
 
-    public Action getAction() {
+    public ForeignObjectAlterAction getAction() {
         return action;
     }
 
-    public void setAction(Action value) {
+    public void setAction(ForeignObjectAlterAction value) {
         action = value;
     }
 
@@ -93,7 +89,7 @@ public class AlterForeignDataWrapper extends ForeignDataStatement {
 
     @Override
     public void visitExpressions(Consumer<Expression> visitor) {
-        if (action == Action.OPTIONS) {
+        if (action == ForeignObjectAlterAction.OPTIONS) {
             super.visitExpressions(visitor);
         }
     }
