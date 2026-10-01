@@ -169,12 +169,12 @@ public class AlterExpressionPartition extends AlterExpression {
 
             @Override
             public String set(int index, String column) {
-                return columns.set(index, new Column(column)).getFullyQualifiedName();
+                return columns.set(index, columnWithName(column)).getFullyQualifiedName();
             }
 
             @Override
             public void add(int index, String column) {
-                columns.add(index, new Column(column));
+                columns.add(index, columnWithName(column));
             }
 
             @Override
@@ -192,11 +192,17 @@ public class AlterExpressionPartition extends AlterExpression {
             partitioning.setColumns(null);
         } else {
             ExpressionList<Column> columns = new ExpressionList<>();
-            partitionColumns.forEach(column -> columns.add(new Column(column)));
+            partitionColumns.forEach(column -> columns.add(columnWithName(column)));
             partitioning.setColumns(columns);
             partitioning.setColumnsSyntax(partitioning.getType() == TablePartitioning.Type.RANGE
                     || partitioning.getType() == TablePartitioning.Type.LIST);
         }
+    }
+
+    private static Column columnWithName(String name) {
+        Column column = new Column();
+        column.setName(name, false);
+        return column;
     }
 
     @Override

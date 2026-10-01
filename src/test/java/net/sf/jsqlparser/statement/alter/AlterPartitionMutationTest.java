@@ -196,6 +196,26 @@ class AlterPartitionMutationTest {
                 + "(PARTITION pmax VALUES LESS THAN MAXVALUE)");
     }
 
+    @Test
+    void quotedDotsRemainPartOfTheColumnNameInLegacySettersAndListEdits()
+            throws JSQLParserException {
+        Alter alter = parse("ALTER TABLE sales PARTITION BY KEY (id) PARTITIONS 8");
+        AlterExpressionPartition action = action(alter);
+        action.setPartitionColumns(List.of("`event.date`"));
+        Column column = action.getPartitioning().getColumns().get(0);
+        assertNull(column.getTable());
+        assertEquals("`event.date`", column.getColumnName());
+        assertRendering(alter, "ALTER TABLE sales PARTITION BY KEY (`event.date`) PARTITIONS 8");
+
+        List<String> names = action.getPartitionColumns();
+        assertEquals("`event.date`", names.set(0, "`renamed.value`"));
+        names.add("`other.column`");
+        assertEquals(List.of("`renamed.value`", "`other.column`"), names);
+        action.getPartitioning().getColumns().forEach(item -> assertNull(item.getTable()));
+        assertRendering(alter, "ALTER TABLE sales PARTITION BY KEY "
+                + "(`renamed.value`, `other.column`) PARTITIONS 8");
+    }
+
     private static Alter parse(String sql) throws JSQLParserException {
         return (Alter) CCJSqlParserUtil.parse(sql, parser -> parser.withDialect(Dialect.MYSQL));
     }
@@ -205,10 +225,14 @@ class AlterPartitionMutationTest {
     }
 
     private static void assertRoundTrip(Alter alter, String expected) throws JSQLParserException {
+        assertRendering(alter, expected);
+        assertEquals(expected, parse(alter.toString()).toString());
+    }
+
+    private static void assertRendering(Alter alter, String expected) {
         assertEquals(expected, alter.toString());
         StringBuilder output = new StringBuilder();
         alter.accept(new StatementDeParser(output), null);
         assertEquals(expected, output.toString());
-        assertEquals(expected, parse(output.toString()).toString());
     }
 }
