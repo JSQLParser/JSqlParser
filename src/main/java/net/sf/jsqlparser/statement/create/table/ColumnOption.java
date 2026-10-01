@@ -246,6 +246,29 @@ public class ColumnOption implements Serializable {
         return constraint;
     }
 
+    /**
+     * Returns the constraint kind explicitly represented by this option, including REFERENCES,
+     * DEFAULT and NOT NULL. Returns OTHER for NULL, unrelated or raw options, and options without a
+     * recognized constraint kind. The result is computed from the current AST; it does not infer
+     * constraints implied by other options, such as NOT NULL implied by a primary key.
+     */
+    public Index.Kind getConstraintKind() {
+        switch (kind) {
+            case CONSTRAINT:
+                return constraint != null && constraint.getKind() != null
+                        && constraint.getKind().canDescribeConstraint() ? constraint.getKind()
+                                : Index.Kind.OTHER;
+            case REFERENCE:
+                return foreignKeyReference == null ? Index.Kind.OTHER : Index.Kind.FOREIGN_KEY;
+            case DEFAULT:
+                return defaultExpression == null ? Index.Kind.OTHER : Index.Kind.DEFAULT;
+            case NULLABILITY:
+                return Boolean.FALSE.equals(nullable) ? Index.Kind.NOT_NULL : Index.Kind.OTHER;
+            default:
+                return Index.Kind.OTHER;
+        }
+    }
+
     public static ColumnOption raw(List<String> tokens) {
         ColumnOption option = new ColumnOption();
         option.tokens = tokens;

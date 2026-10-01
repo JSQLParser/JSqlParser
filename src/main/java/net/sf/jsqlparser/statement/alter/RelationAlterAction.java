@@ -217,6 +217,11 @@ public class RelationAlterAction extends AlterExpression {
     }
 
     @Override
+    public Index.Kind getConstraintKind() {
+        return Index.Kind.OTHER;
+    }
+
+    @Override
     protected void appendBody(StringBuilder builder) {
         appendDefinition(builder, builder::append);
     }

@@ -24,7 +24,26 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 public class Index implements TableElement, Serializable {
 
     public enum Kind {
-        PRIMARY_KEY, UNIQUE, INDEX, FULLTEXT, SPATIAL, FOREIGN_KEY, CHECK, EXCLUDE, DEFAULT, NOT_NULL, OTHER
+        PRIMARY_KEY, UNIQUE, INDEX, FULLTEXT, SPATIAL, FOREIGN_KEY, CHECK, EXCLUDE, DEFAULT, NOT_NULL, OTHER;
+
+        /**
+         * Whether this kind can describe a table or column constraint. The containing statement
+         * still matters: UNIQUE also classifies standalone CREATE UNIQUE INDEX statements.
+         */
+        public boolean canDescribeConstraint() {
+            switch (this) {
+                case PRIMARY_KEY:
+                case UNIQUE:
+                case FOREIGN_KEY:
+                case CHECK:
+                case EXCLUDE:
+                case DEFAULT:
+                case NOT_NULL:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 
     public enum Clustering {

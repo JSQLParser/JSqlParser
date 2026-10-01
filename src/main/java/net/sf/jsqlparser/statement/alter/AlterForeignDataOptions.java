@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.create.table.ForeignDataOption;
+import net.sf.jsqlparser.statement.create.table.Index;
 
 /** Foreign table OPTIONS, optionally applied to one column. */
 public class AlterForeignDataOptions extends AlterExpression {
@@ -37,6 +38,11 @@ public class AlterForeignDataOptions extends AlterExpression {
         }
         ForeignDataOption.appendOptionsTo(builder, options, expressionPrinter);
         return builder;
+    }
+
+    @Override
+    public Index.Kind getConstraintKind() {
+        return Index.Kind.OTHER;
     }
 
     @Override

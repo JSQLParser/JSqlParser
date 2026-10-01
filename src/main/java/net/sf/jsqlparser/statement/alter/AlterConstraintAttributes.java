@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.Objects;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
+import net.sf.jsqlparser.statement.create.table.Index;
 
 /** Changes an existing constraint using the attributes shared with CREATE and ADD. */
 public class AlterConstraintAttributes extends AlterExpression {
@@ -47,6 +48,11 @@ public class AlterConstraintAttributes extends AlterExpression {
     @Override
     public void setEnforced(boolean enforced) {
         attributes.setEnforced(enforced);
+    }
+
+    @Override
+    public Index.Kind getConstraintKind() {
+        return Index.Kind.OTHER;
     }
 
     @Override

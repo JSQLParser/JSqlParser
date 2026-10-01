@@ -317,6 +317,62 @@ Ordinary views expose ordered ``ViewOption`` values for ``security_barrier``, ``
 
 Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, storage parameters and ``ConstraintAttributes``. ``ExcludeConstraint`` reuses ``Index.ColumnParams`` for its keys; each key exposes its expression and exclusion operator. Column identity clauses are represented by ``ColumnOption.Kind.IDENTITY`` and ``IdentityDefinition``, with a generation mode and ordered ``Sequence.Parameter`` values. These APIs cover the schema clauses described in `CREATE TABLE <https://www.postgresql.org/docs/18/sql-createtable.html>`_.
 
+Inspect column and table constraints together
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``CreateTable.getConstraints()`` returns ``ConstraintDeclaration`` views of
+explicit column and table constraints in declaration order. Both forms use
+``Index.Kind``: a column's ``PRIMARY KEY`` and a table's ``PRIMARY KEY (id)``
+report ``PRIMARY_KEY``. MySQL table declarations spelled ``UNIQUE``,
+``UNIQUE KEY`` or ``UNIQUE INDEX`` report ``UNIQUE``; ordinary, fulltext and
+spatial indexes are excluded. Explicit ``DEFAULT`` and ``NOT NULL`` options
+are included, but ``NULL``, raw tokens and constraints implied by a primary
+key, ``LIKE``, inheritance or a type are not inferred.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+        "CREATE TABLE t (id INT PRIMARY KEY, label TEXT)");
+    ConstraintDeclaration primary = table.getConstraints().stream()
+        .filter(declaration -> declaration.getKind() == Index.Kind.PRIMARY_KEY)
+        .findFirst().orElseThrow();
+    primary.getColumn().setColumnName("new_id");
+    // CREATE TABLE t (new_id INT PRIMARY KEY, label TEXT)
+
+``getColumn()`` retains the original owner of an inline declaration and is
+null for a table constraint. ``getColumnOption()`` exposes an inline option;
+``getIndex()`` exposes the original table or nested column constraint.
+Inline REFERENCES, DEFAULT and nullability use their original column option
+and have no ``Index`` node. No synthetic key-column list is created for them.
+Edit these source nodes to change the SQL.
+
+The returned list is an unmodifiable membership snapshot. Its views read
+the live source nodes, so a subsequent type edit changes ``getKind()``;
+request a new list after adding, removing or reclassifying declarations.
+When a manually constructed table has only legacy column/index lists,
+columns precede table constraints. ``getIndexes()`` keeps its existing
+table-level-only behavior.
+
+``ColumnOption.getConstraintKind()`` and
+``AlterExpression.getConstraintKind()`` provide the same classification
+without collecting a whole table. The ALTER accessor describes its active
+operation: ``ADD PRIMARY KEY`` and ``DROP PRIMARY KEY`` both report
+``PRIMARY_KEY``, while ``getOperation()`` distinguishes addition and removal.
+For ``ADD COLUMN``, inspect that column's options instead. A named
+``DROP CONSTRAINT pk`` reports ``OTHER`` because SQL alone does not reveal
+whether ``pk`` names a primary key; unrelated or raw options and options
+without a recognized constraint kind also report ``OTHER``. This query does
+not validate the completeness of a constraint definition. Inactive index fields cannot classify a named drop.
+
+These are syntactic declarations, not database catalogue or enforcement
+results. A standalone ``CREATE UNIQUE INDEX`` remains a ``CreateIndex``;
+its ``Index.Kind.UNIQUE`` does not turn it into a table constraint.
+``Index.Kind.canDescribeConstraint()`` identifies possible constraint kinds,
+not the meaning of an enclosing statement. ``Index.getType()`` preserves
+the rendered spelling; ``setType()`` updates its kind, whereas ``setKind()``
+changes classification metadata without rewriting SQL. Existing string and
+PK/UK accessors remain available.
+
 Exclusion keys expose ``getExclusionOperatorReference()`` for structured access
 to an operator's ``schemaName``, ``name`` and ``useOperatorKeyword`` flag. In
 ``Dialect.POSTGRESQL``, both CREATE and ALTER accept ``WITH OPERATOR(pg_catalog.&&)``.

@@ -204,6 +204,49 @@ public class CreateTable implements Statement {
         return indexes;
     }
 
+    /**
+     * Returns column and table constraint declarations in source order, including MySQL UNIQUE
+     * KEY/INDEX declarations and explicit DEFAULT/NOT NULL options. Plain indexes, raw options, and
+     * constraints inherited from LIKE, a type or another table are not inferred.
+     *
+     * The list is an unmodifiable membership snapshot. Each view reads its original editable AST
+     * nodes; call this method again after inserting, removing or reclassifying declarations. For
+     * legacy construction without ordered table elements, columns precede table constraints.
+     */
+    public List<ConstraintDeclaration> getConstraints() {
+        List<ConstraintDeclaration> declarations = new ArrayList<>();
+        if (tableElements != null) {
+            tableElements.forEach(element -> addConstraints(element, declarations));
+        } else {
+            if (columnDefinitions != null) {
+                columnDefinitions.forEach(column -> addConstraints(column, declarations));
+            }
+            if (indexes != null) {
+                indexes.forEach(index -> addConstraints(index, declarations));
+            }
+        }
+        return Collections.unmodifiableList(declarations);
+    }
+
+    private static void addConstraints(TableElement element,
+            List<ConstraintDeclaration> declarations) {
+        if (element instanceof ColumnDefinition) {
+            ColumnDefinition column = (ColumnDefinition) element;
+            if (column.getColumnOptions() != null) {
+                for (ColumnOption option : column.getColumnOptions()) {
+                    if (option.getConstraintKind() != Index.Kind.OTHER) {
+                        declarations.add(new ConstraintDeclaration(column, option));
+                    }
+                }
+            }
+        } else if (element instanceof Index) {
+            Index index = (Index) element;
+            if (index.getKind() != null && index.getKind().canDescribeConstraint()) {
+                declarations.add(new ConstraintDeclaration(index));
+            }
+        }
+    }
+
     public void setIndexes(List<Index> list) {
         if (tableElements == null) {
             indexes = list;

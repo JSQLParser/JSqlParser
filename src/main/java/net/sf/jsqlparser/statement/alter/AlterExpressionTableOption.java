@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.alter;
 
 import net.sf.jsqlparser.statement.create.table.TableOption;
+import net.sf.jsqlparser.statement.create.table.Index;
 
 /**
  * Internal subclass for table-level option operations within ALTER TABLE. Handles ENGINE,
@@ -126,6 +127,11 @@ public class AlterExpressionTableOption extends AlterExpression {
             structuredTableOption.setUseEquals(useEqual);
         }
         super.setUseEqual(useEqual);
+    }
+
+    @Override
+    public Index.Kind getConstraintKind() {
+        return Index.Kind.OTHER;
     }
 
     @Override

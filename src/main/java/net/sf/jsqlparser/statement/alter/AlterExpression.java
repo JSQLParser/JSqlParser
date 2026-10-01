@@ -590,6 +590,56 @@ public class AlterExpression implements Serializable {
         return index;
     }
 
+    /**
+     * Returns the constraint kind explicitly declared or targeted by the active action. Named
+     * DROP/ALTER CONSTRAINT actions return OTHER because their SQL does not identify the kind; no
+     * catalogue lookup or inference from an inactive Index field is performed. Column actions
+     * return OTHER: inspect their ColumnOption nodes for inline constraints.
+     */
+    public Index.Kind getConstraintKind() {
+        if (operation == null) {
+            return Index.Kind.OTHER;
+        }
+        switch (operation) {
+            case DROP_PRIMARY_KEY:
+            case ALTER_PRIMARY_KEY:
+                return Index.Kind.PRIMARY_KEY;
+            case DROP_UNIQUE:
+                return Index.Kind.UNIQUE;
+            case DROP_FOREIGN_KEY:
+                return Index.Kind.FOREIGN_KEY;
+            case DROP_CHECK:
+                return Index.Kind.CHECK;
+            case ADD:
+            case ALTER:
+                if (constraintType != null && constraintSymbol != null) {
+                    Index.Kind declared = new Index().withType(constraintType).getKind();
+                    return declared.canDescribeConstraint() ? declared : Index.Kind.OTHER;
+                }
+                if (operation != AlterOperation.ADD || columnName != null
+                        || colDataTypeList != null || constraintName != null || oldIndex != null
+                        || commentText != null || columnSetNotNullList != null
+                        || columnDropNotNullList != null
+                        || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
+                    return Index.Kind.OTHER;
+                }
+                if (index != null) {
+                    return index.getKind() != null && index.getKind().canDescribeConstraint()
+                            ? index.getKind()
+                            : Index.Kind.OTHER;
+                }
+                if (pkColumns != null) {
+                    return Index.Kind.PRIMARY_KEY;
+                }
+                if (ukColumns != null) {
+                    return Index.Kind.UNIQUE;
+                }
+                return fkColumns != null ? Index.Kind.FOREIGN_KEY : Index.Kind.OTHER;
+            default:
+                return Index.Kind.OTHER;
+        }
+    }
+
     public void setIndex(Index index) {
         this.index = index;
     }

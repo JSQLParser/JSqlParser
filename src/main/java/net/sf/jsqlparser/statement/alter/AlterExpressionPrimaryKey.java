@@ -45,6 +45,11 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
     }
 
     @Override
+    public Index.Kind getConstraintKind() {
+        return Index.Kind.PRIMARY_KEY;
+    }
+
+    @Override
     protected void appendBody(StringBuilder builder) {
         appendDefinition(builder, expression -> builder.append(expression));
     }
