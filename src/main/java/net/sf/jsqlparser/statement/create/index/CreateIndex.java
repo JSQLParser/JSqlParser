@@ -81,6 +81,10 @@ public class CreateIndex implements Statement {
         return options == null ? null : options.getIncludeColumns();
     }
 
+    /**
+     * Copies the supplied list as {@link Index#setIncludeColumns(List)} does; null clears it.
+     * {@link #getIncludeColumns()} returns the live, mutable list held by the index options.
+     */
     public void setIncludeColumns(List<String> includeColumns) {
         getOrCreateOptions().setIncludeColumns(includeColumns);
     }
@@ -99,6 +103,11 @@ public class CreateIndex implements Statement {
         return options == null ? null : options.getStorageParameters();
     }
 
+    /**
+     * Copies the list container as {@link Index#setStorageParameters(List)} does, retaining the
+     * option objects; null clears it. {@link #getStorageParameters()} returns the live, mutable
+     * list held by the index options.
+     */
     public void setStorageParameters(List<Index.Option> storageParameters) {
         getOrCreateOptions().setStorageParameters(storageParameters);
     }
@@ -146,13 +155,20 @@ public class CreateIndex implements Statement {
     /**
      * Replaces the index definition. Options supplied by the new index take precedence; omitted
      * options inherit the current statement options, including those set before an index was
-     * attached. Passing null detaches the definition without discarding its options. Use the option
+     * attached. Passing null detaches the definition without discarding its options. The detached
+     * option lists have independent containers, with their elements retained. Use the option
      * setters with null to clear individual options.
      */
     public void setIndex(Index index) {
         Index previousOptions = getOptions();
         if (index == null) {
-            detachedOptions = previousOptions;
+            if (this.index != null) {
+                detachedOptions = new Index();
+                detachedOptions.setIncludeColumns(previousOptions.getIncludeColumns());
+                detachedOptions.setNullsDistinct(previousOptions.getNullsDistinct());
+                detachedOptions.setStorageParameters(previousOptions.getStorageParameters());
+                detachedOptions.setTableSpace(previousOptions.getTableSpace());
+            }
         } else {
             if (previousOptions != null && previousOptions != index) {
                 if (index.getIncludeColumns() == null) {

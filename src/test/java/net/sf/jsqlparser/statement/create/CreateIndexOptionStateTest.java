@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
@@ -126,6 +127,63 @@ class CreateIndexOptionStateTest {
         assertNull(reattached.getTableSpace());
         assertRoundTrip("CREATE UNIQUE INDEX reattached ON t (id) INCLUDE (extra) "
                 + "NULLS NOT DISTINCT WITH (fillfactor = 90)", statement);
+    }
+
+    @Test
+    void detachedOptionSettersDoNotMutateTheRemovedIndex() throws Exception {
+        CreateIndex statement = parse(SQL);
+        Index removed = statement.getIndex();
+        statement.setIndex(null);
+
+        assertNotSame(removed.getIncludeColumns(), statement.getIncludeColumns());
+        assertNotSame(removed.getStorageParameters(), statement.getStorageParameters());
+        assertSame(removed.getStorageParameters().get(0), statement.getStorageParameters().get(0));
+        List<String> detachedColumns = statement.getIncludeColumns();
+        List<Index.Option> detachedParameters = statement.getStorageParameters();
+        statement.setIndex(null);
+        assertSame(detachedColumns, statement.getIncludeColumns());
+        assertSame(detachedParameters, statement.getStorageParameters());
+        statement.getIncludeColumns().add("extra");
+        assertEquals(List.of("payload", "extra"), statement.getIncludeColumns());
+        assertEquals(List.of("payload"), removed.getIncludeColumns());
+
+        statement.setTableSpace("detached_space");
+        statement.setNullsDistinct(true);
+        statement.setIncludeColumns(List.of("detached_payload"));
+        statement.setStorageParameters(List.of(option(90)));
+        assertEquals("fast_space", removed.getTableSpace());
+        assertEquals(Boolean.FALSE, removed.getNullsDistinct());
+        assertEquals(List.of("payload"), removed.getIncludeColumns());
+        assertEquals("80", removed.getStorageParameters().get(0).getValue().toString());
+
+        removed.setTableSpace("external_space");
+        removed.setNullsDistinct(null);
+        assertEquals("detached_space", statement.getTableSpace());
+        assertEquals(Boolean.TRUE, statement.getNullsDistinct());
+        statement.setIndex(new Index().withType("UNIQUE").withName("reattached")
+                .withColumnsNames(List.of("id")));
+        assertRoundTrip("CREATE UNIQUE INDEX reattached ON t (id) INCLUDE (detached_payload) "
+                + "NULLS DISTINCT WITH (fillfactor = 90) TABLESPACE detached_space", statement);
+    }
+
+    @Test
+    void optionsAreVisitedBeforeAttachmentAndAfterDetachment() throws Exception {
+        for (CreateIndex statement : List.of(new CreateIndex(), parse(SQL))) {
+            statement.setIndex(null);
+            statement.setStorageParameters(List.of(option(80)));
+            List<Long> values = new ArrayList<>();
+            ExpressionVisitorAdapter<Void> expressions = new ExpressionVisitorAdapter<Void>() {
+                @Override
+                public <S> Void visit(LongValue value, S context) {
+                    assertEquals("context", context);
+                    values.add(value.getValue());
+                    return null;
+                }
+            };
+            statement.accept(new StatementVisitorAdapter<>(new SelectVisitorAdapter<>(expressions)),
+                    "context");
+            assertEquals(List.of(80L), values);
+        }
     }
 
     @Test
