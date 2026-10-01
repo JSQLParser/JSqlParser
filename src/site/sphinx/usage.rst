@@ -288,6 +288,32 @@ These named targets do not populate the legacy ``getPkColumns()`` list.
     AlterExpression checkDrop = new AlterExpression()
         .withOperation(AlterOperation.DROP_CHECK).withConstraintName("positive_id");
 
+Edit table and view column renames
+----------------------------------
+
+``AlterExpression.getColumnRename()`` exposes a ``ColumnRenameAction`` with
+``getSourceName()`` and ``getTargetName()``. Their setters update the existing
+AST directly, preserving the optional ``COLUMN`` keyword. Names include their
+written identifier quotes; include quotes in replacement names when needed.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE accounts RENAME COLUMN old_id TO new_id",
+        parser -> parser.withDialect(Dialect.MYSQL));
+    ColumnRenameAction rename = alter.getAlterExpressions().get(0).getColumnRename();
+    rename.getSourceName(); // old_id
+    rename.setTargetName("customer_id");
+    // ALTER TABLE accounts RENAME COLUMN old_id TO customer_id
+    String sql = alter.toString();
+
+Import ``ColumnRenameAction`` from ``net.sf.jsqlparser.statement.alter``.
+PostgreSQL table renames of columns use the same API. With ``Dialect.POSTGRESQL``,
+column renames on views and materialized views expose it through the entries in
+``AlterRelation.getActions()``. The lookup returns ``null`` for other operations,
+including renaming the table, view, index or constraint itself. Existing
+action-specific getters and setters remain available and see the same changes.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
