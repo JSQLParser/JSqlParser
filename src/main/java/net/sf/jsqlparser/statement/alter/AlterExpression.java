@@ -426,6 +426,7 @@ public class AlterExpression implements Serializable {
      */
     public List<ColumnDefaultAction> getColumnDefaults() {
         if (operation != AlterOperation.ALTER || columnSetDefaultList == null
+                || constraintType != null && constraintSymbol != null
                 || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
             return Collections.emptyList();
         }

@@ -130,6 +130,28 @@ class ColumnDefaultActionTest {
     }
 
     @Test
+    void constraintAlterationTakesPrecedenceOverPreviouslySetDefaults() throws JSQLParserException {
+        Alter statement =
+                (Alter) CCJSqlParserUtil.parse("ALTER TABLE t ALTER COLUMN a SET DEFAULT 1");
+        AlterExpression action = statement.getAlterExpressions().get(0);
+        ColumnDefaultAction previousDefault = action.getColumnDefaults().get(0);
+        action.setConstraintType("CHECK");
+        action.setConstraintSymbol("c");
+        action.setEnforced(true);
+
+        assertTrue(action.getColumnDefaults().isEmpty());
+        assertEquals("ALTER TABLE t ALTER CHECK c ENFORCED", statement.toString());
+        StringBuilder sql = new StringBuilder();
+        statement.accept(new StatementDeParser(sql), null);
+        assertEquals(statement.toString(), sql.toString());
+        assertEquals(statement.toString(), CCJSqlParserUtil.parse(sql.toString()).toString());
+
+        action.setConstraintSymbol(null);
+        assertSame(previousDefault, action.getColumnDefaults().get(0));
+        roundTrip(statement);
+    }
+
+    @Test
     void opaqueLegacyConstructorIsNotParsedOrPassedToAnExpressionVisitor() {
         ColumnSetDefault legacy = new ColumnSetDefault("a", "vendor_specific(?)::opaque");
         ColumnDefaultAction column = legacy;
