@@ -25,6 +25,7 @@ import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import net.sf.jsqlparser.util.validation.Validation;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -62,6 +63,25 @@ class DdlVisitorTraversalTest {
                         List.of("7", "9", "before"), List.of("t", "log")));
     }
 
+    @Test
+    void valuesChildrenIncludingWithAndTailKeepTheVisitorContext() throws Exception {
+        Object context = new Object();
+        List<Long> values = new ArrayList<>();
+        ExpressionVisitorAdapter<Void> expressions = new ExpressionVisitorAdapter<Void>() {
+            @Override
+            public <S> Void visit(LongValue value, S actualContext) {
+                assertSame(context, actualContext);
+                values.add(value.getValue());
+                return null;
+            }
+        };
+        Statement statement = CCJSqlParserUtil.parse(
+                "WITH c AS (SELECT 11) VALUES (22) ORDER BY (33 + 0) LIMIT 44 OFFSET 55");
+        statement.accept(new StatementVisitorAdapter<>(new SelectVisitorAdapter<>(expressions)),
+                context);
+        assertEquals(List.of(11L, 22L, 33L, 0L, 44L, 55L), values);
+    }
+
     @ParameterizedTest
     @MethodSource("definitions")
     void visitsAndMutatesChildrenWithContext(String sql, List<String> expectedValues,
@@ -97,7 +117,7 @@ class DdlVisitorTraversalTest {
             }
         };
         SelectVisitorAdapter<Void> selects =
-                new SelectVisitorAdapter<>(expressions, null, null, fromItems);
+                new SelectVisitorAdapter<>(expressions, fromItems);
         statement.accept(new StatementVisitorAdapter<>(selects), context);
         assertEquals(expectedValues, values);
         assertEquals(expectedTables, tables);
