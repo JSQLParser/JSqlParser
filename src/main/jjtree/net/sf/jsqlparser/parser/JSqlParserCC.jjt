@@ -18916,7 +18916,7 @@ RelationAlterAction PostgreSqlRelationAction():
         (
             <K_USING> <K_INDEX> name=RelObjectName()
             { action.setReplicaIdentity(RelationAlterAction.ReplicaIdentity.USING_INDEX); action.setValue(name); }
-            | ( token=<K_DEFAULT> | token=<K_FULL> | token=<S_IDENTIFIER> )
+            | ( token=<K_DEFAULT> | token=<K_FULL> | token=<K_NOTHING> | token=<S_IDENTIFIER> )
             { action.setReplicaIdentity(accessEnum(RelationAlterAction.ReplicaIdentity.class, token.image)); }
         )
         |

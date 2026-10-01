@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +81,7 @@ class PostgreSqlRelationAlterTest {
             "ALTER TABLE t RESET(toast.autovacuum_enabled,fillfactor)",
             "ALTER TABLE t INHERIT p",
             "ALTER TABLE t NO INHERIT p",
+            "ALTER TABLE t REPLICA IDENTITY NOTHING",
             "ALTER TABLE t REPLICA IDENTITY USING INDEX ix",
             "ALTER TABLE t SET ACCESS METHOD heap"})
     void auditedActionsAreStructuredAndRoundTrip(String sql) throws JSQLParserException {
@@ -94,6 +96,24 @@ class PostgreSqlRelationAlterTest {
         assertRoundTrip(statement);
         assertEquals(2, CCJSqlParserUtil.parseStatements(sql + "; SELECT 1",
                 p -> p.withDialect(Dialect.POSTGRESQL)).size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DEFAULT", "FULL", "NOTHING"})
+    void replicaIdentityModesAreStructuredAndEditable(String mode) throws JSQLParserException {
+        Alter statement = (Alter) assertSqlCanBeParsedAndDeparsed(
+                "ALTER TABLE t REPLICA IDENTITY " + mode, false,
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        RelationAlterAction action = assertInstanceOf(RelationAlterAction.class,
+                statement.getAlterExpressions().get(0));
+        assertEquals(RelationAlterAction.Kind.REPLICA_IDENTITY, action.getKind());
+        assertEquals(RelationAlterAction.ReplicaIdentity.valueOf(mode),
+                action.getReplicaIdentity());
+        assertRoundTrip(statement);
+
+        action.setReplicaIdentity(RelationAlterAction.ReplicaIdentity.NOTHING);
+        assertEquals("ALTER TABLE t REPLICA IDENTITY NOTHING", statement.toString());
+        assertRoundTrip(statement);
     }
 
     @Test
