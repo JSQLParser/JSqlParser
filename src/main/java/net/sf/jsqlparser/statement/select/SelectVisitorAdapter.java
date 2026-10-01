@@ -341,7 +341,17 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
     }
 
     @Override
-    public <S> T visit(Values aThis, S context) {
+    public <S> T visit(Values values, S context) {
+        visitWithItems(values.getWithItemsList(), context);
+        expressionVisitor.visitExpression(values.getExpressions(), context);
+        expressionVisitor.visitOrderBy(values.getOrderByElements(), context);
+        expressionVisitor.visitLimit(values.getLimit(), context);
+        if (values.getOffset() != null) {
+            expressionVisitor.visitExpression(values.getOffset().getOffset(), context);
+        }
+        if (values.getFetch() != null) {
+            expressionVisitor.visitExpression(values.getFetch().getExpression(), context);
+        }
         return null;
     }
 

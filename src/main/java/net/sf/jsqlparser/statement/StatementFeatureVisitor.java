@@ -9,6 +9,19 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -1159,4 +1172,68 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     public <S> Void visit(CreateAccessMethod statement, S context) {
         return schemaOnly();
     }
+
+    // These statements store definitions; visiting their children must not make a stored
+    // rule action or policy predicate appear to execute during the DDL statement itself.
+
+    @Override
+    public <S> Void visit(AlterRelation statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterPolicy statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(DropPolicy statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateStatistics statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateForeignDataWrapper statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterForeignDataWrapper statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateServer statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterServer statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateUserMapping statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterUserMapping statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateRule statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateCollation statement, S context) {
+        return schemaOnly();
+    }
+
 }
