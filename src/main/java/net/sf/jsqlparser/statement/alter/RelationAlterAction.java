@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
@@ -17,7 +18,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
-public class RelationAlterAction extends AlterExpression {
+public class RelationAlterAction extends AlterExpression implements ColumnDefaultAction {
     private EnableState enableState;
     private TriggerTarget triggerTarget;
     private Kind kind;
@@ -168,12 +169,21 @@ public class RelationAlterAction extends AlterExpression {
         }
     }
 
+    @Override
     public Expression getDefaultExpression() {
         return defaultExpression;
     }
 
+    @Override
     public void setDefaultExpression(Expression defaultExpression) {
         this.defaultExpression = defaultExpression;
+    }
+
+    @Override
+    public List<ColumnDefaultAction> getColumnDefaults() {
+        return kind == Kind.ALTER_COLUMN && columnAction == ColumnAction.SET_DEFAULT
+                ? Collections.singletonList(this)
+                : Collections.emptyList();
     }
 
     public Table getRelation() {
@@ -315,7 +325,7 @@ public class RelationAlterAction extends AlterExpression {
         switch (columnAction) {
             case SET_DEFAULT:
                 builder.append(" SET DEFAULT ");
-                expressionPrinter.accept(defaultExpression);
+                appendDefaultValueTo(builder, expressionPrinter);
                 break;
             case DROP_DEFAULT:
                 builder.append(" DROP DEFAULT");
