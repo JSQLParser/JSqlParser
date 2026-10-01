@@ -288,6 +288,29 @@ These named targets do not populate the legacy ``getPkColumns()`` list.
     AlterExpression checkDrop = new AlterExpression()
         .withOperation(AlterOperation.DROP_CHECK).withConstraintName("positive_id");
 
+Shared CASCADE and RESTRICT behavior
+------------------------------------
+
+``AlterDomain``, ``AlterType`` (including ``AttributeChange``), ``DropPolicy``,
+``Truncate`` and ``Revoke`` use ``net.sf.jsqlparser.statement.CascadeBehavior``
+for their explicit ``CASCADE`` and ``RESTRICT`` clauses. A null value preserves
+an omitted clause; it does not insert an explicit ``RESTRICT``.
+
+.. code-block:: java
+
+    import net.sf.jsqlparser.statement.CascadeBehavior;
+
+    truncate.setDropBehavior(CascadeBehavior.RESTRICT);
+    revoke.setBehavior(truncate.getDropBehavior());
+    revoke.setBehavior(null); // Omit the clause and leave the server default unchanged.
+
+Migration: the nested enums ``AlterDomain.Behavior``, ``AlterType.Behavior``,
+``DropPolicy.Behavior``, ``Truncate.DropBehavior`` and ``Revoke.Behavior`` have
+been removed. Replace their imports and enum references with ``CascadeBehavior``.
+The existing getter and setter names remain, but their return and parameter types
+have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
+clears the clause. Foreign-key referential actions retain their separate enum.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 

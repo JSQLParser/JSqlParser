@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.alter;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.create.domain.DomainConstraint;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -24,7 +25,7 @@ public class AlterDomain implements Statement {
     private String newName;
     private boolean notValid;
     private boolean ifExists;
-    private Behavior behavior;
+    private CascadeBehavior behavior;
 
     public String getName() {
         return name;
@@ -90,11 +91,11 @@ public class AlterDomain implements Statement {
         this.ifExists = ifExists;
     }
 
-    public Behavior getBehavior() {
+    public CascadeBehavior getBehavior() {
         return behavior;
     }
 
-    public void setBehavior(Behavior behavior) {
+    public void setBehavior(CascadeBehavior behavior) {
         this.behavior = behavior;
     }
 
@@ -105,9 +106,6 @@ public class AlterDomain implements Statement {
 
     public enum Action {
         SET_DEFAULT, DROP_DEFAULT, SET_NOT_NULL, DROP_NOT_NULL, ADD_CONSTRAINT, DROP_CONSTRAINT, RENAME_CONSTRAINT, VALIDATE_CONSTRAINT, OWNER, RENAME, SET_SCHEMA
-    }
-    public enum Behavior {
-        CASCADE, RESTRICT
     }
 
     public void appendTo(StringBuilder sql, Consumer<Expression> expressions) {

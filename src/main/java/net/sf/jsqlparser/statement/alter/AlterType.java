@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.create.type.TypeAttribute;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -27,7 +28,7 @@ public class AlterType implements Statement {
     private StringValue neighborValue;
     private Position position;
     private boolean ifNotExists;
-    private Behavior behavior;
+    private CascadeBehavior behavior;
     private List<AttributeChange> attributeChanges = new ArrayList<>();
 
     public String getName() {
@@ -102,11 +103,11 @@ public class AlterType implements Statement {
         this.ifNotExists = ifNotExists;
     }
 
-    public Behavior getBehavior() {
+    public CascadeBehavior getBehavior() {
         return behavior;
     }
 
-    public void setBehavior(Behavior behavior) {
+    public void setBehavior(CascadeBehavior behavior) {
         this.behavior = behavior;
     }
 
@@ -129,9 +130,6 @@ public class AlterType implements Statement {
     public enum Position {
         BEFORE, AFTER
     }
-    public enum Behavior {
-        CASCADE, RESTRICT
-    }
     public static class AttributeChange implements java.io.Serializable {
         public enum Kind {
             ADD, DROP, ALTER
@@ -141,7 +139,7 @@ public class AlterType implements Statement {
         private TypeAttribute attribute;
         private boolean ifExists;
         private boolean useSetData;
-        private Behavior behavior;
+        private CascadeBehavior behavior;
 
         public Kind getKind() {
             return kind;
@@ -175,11 +173,11 @@ public class AlterType implements Statement {
             this.useSetData = useSetData;
         }
 
-        public Behavior getBehavior() {
+        public CascadeBehavior getBehavior() {
             return behavior;
         }
 
-        public void setBehavior(Behavior behavior) {
+        public void setBehavior(CascadeBehavior behavior) {
             this.behavior = behavior;
         }
 

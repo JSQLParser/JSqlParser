@@ -17064,8 +17064,8 @@ Truncate Truncate():
     [ ( <K_RESTART> { truncate.setIdentityOption(Truncate.IdentityOption.RESTART); }
         | ContextualKeyword("CONTINUE") { truncate.setIdentityOption(Truncate.IdentityOption.CONTINUE); } )
       <K_IDENTITY> ]
-    [ <K_CASCADE> { truncate.setDropBehavior(Truncate.DropBehavior.CASCADE); }
-      | <K_RESTRICT> { truncate.setDropBehavior(Truncate.DropBehavior.RESTRICT); } ]
+    [ <K_CASCADE> { truncate.setDropBehavior(CascadeBehavior.CASCADE); }
+      | <K_RESTRICT> { truncate.setDropBehavior(CascadeBehavior.RESTRICT); } ]
     { return truncate; }
 }
 
@@ -19651,7 +19651,7 @@ Revoke Revoke(boolean defaults):
     clause=AccessClause(true, defaults) { revoke.setClause(clause); }
     [ LOOKAHEAD({ isAccessKeywordAhead("GRANTED") }) AccessKeyword("GRANTED") <K_BY> name=RelObjectName()
       { requireAccessSyntax(!defaults, "GRANTED BY is not part of default privileges"); clause.setGrantedBy(name); } ]
-    [ ( <K_CASCADE> { revoke.setBehavior(Revoke.Behavior.CASCADE); } | <K_RESTRICT> { revoke.setBehavior(Revoke.Behavior.RESTRICT); } ) ]
+    [ ( <K_CASCADE> { revoke.setBehavior(CascadeBehavior.CASCADE); } | <K_RESTRICT> { revoke.setBehavior(CascadeBehavior.RESTRICT); } ) ]
     { requireAccessSyntax(revoke.getOptionFor() == null || (clause.getPrivileges() == null
         ? revoke.getOptionFor() != GrantOption.Kind.GRANT : revoke.getOptionFor() == GrantOption.Kind.GRANT), "Invalid REVOKE option");
       return revoke; }
@@ -20271,11 +20271,11 @@ RangeTypeDefinition.Option RangeTypeOption():
     )
 }
 
-AlterType.Behavior TypeAlterBehavior():
-{ AlterType.Behavior result; }
+CascadeBehavior TypeAlterBehavior():
+{ CascadeBehavior result; }
 {
-    ( <K_CASCADE> { result = AlterType.Behavior.CASCADE; }
-      | <K_RESTRICT> { result = AlterType.Behavior.RESTRICT; } )
+    ( <K_CASCADE> { result = CascadeBehavior.CASCADE; }
+      | <K_RESTRICT> { result = CascadeBehavior.RESTRICT; } )
     { return result; }
 }
 
@@ -20283,7 +20283,7 @@ AlterType.AttributeChange TypeAttributeChange():
 {
     AlterType.AttributeChange result = new AlterType.AttributeChange();
     TypeAttribute attribute = new TypeAttribute();
-    String name; ColDataType type; AlterType.Behavior behavior;
+    String name; ColDataType type; CascadeBehavior behavior;
     boolean useSetData;
 }
 {
@@ -20304,7 +20304,7 @@ AlterType.AttributeChange TypeAttributeChange():
 AlterType AlterType():
 {
     AlterType result = new AlterType(); String name; Token label;
-    AlterType.AttributeChange change; AlterType.Behavior behavior;
+    AlterType.AttributeChange change; CascadeBehavior behavior;
 }
 {
     <K_TYPE> name=TypeDdlName() { result.setName(name); }
@@ -20376,8 +20376,8 @@ AlterDomain AlterDomain():
             | <K_NOT> <K_NULL> { result.setAction(AlterDomain.Action.DROP_NOT_NULL); }
             | <K_CONSTRAINT> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { result.setIfExists(true); } ]
               name=RelObjectName() { result.setAction(AlterDomain.Action.DROP_CONSTRAINT); result.setConstraintName(name); }
-              [ <K_CASCADE> { result.setBehavior(AlterDomain.Behavior.CASCADE); }
-                | <K_RESTRICT> { result.setBehavior(AlterDomain.Behavior.RESTRICT); } ]
+              [ <K_CASCADE> { result.setBehavior(CascadeBehavior.CASCADE); }
+                | <K_RESTRICT> { result.setBehavior(CascadeBehavior.RESTRICT); } ]
         )
         | <K_ADD> constraint=DomainConstraint(false) { result.setAction(AlterDomain.Action.ADD_CONSTRAINT); result.setConstraint(constraint); }
           [ <K_NOT> TypeDdlKeyword("VALID") {
@@ -20794,7 +20794,7 @@ DropPolicy DropPolicy():
     <K_DROP> <K_POLICY> [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { statement.setIfExists(true); } ]
     name=RelObjectName() { statement.setPolicyName(name); }
     <K_ON> table=Table() { statement.setTable(table); }
-    [ (behavior=<K_CASCADE> | behavior=<K_RESTRICT>) { statement.setBehavior(DropPolicy.Behavior.valueOf(behavior.image.toUpperCase(Locale.ROOT))); } ]
+    [ (behavior=<K_CASCADE> | behavior=<K_RESTRICT>) { statement.setBehavior(CascadeBehavior.valueOf(behavior.image.toUpperCase(Locale.ROOT))); } ]
     { return statement; }
 }
 
