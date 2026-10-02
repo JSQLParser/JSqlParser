@@ -192,9 +192,10 @@ class StatementListDeParserTest {
     @Test
     void rendersUnsupportedStatementsWithoutDroppingAdjacentStatements() throws Exception {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "select 1; select from; select 2;", parser -> parser.withUnsupportedStatements());
+                "select 1; shutdown defrag; select 2;",
+                parser -> parser.withUnsupportedStatements());
         assertInstanceOf(UnsupportedStatement.class, statements.get(1));
-        assertEquals("SELECT 1;\nselect from;\nSELECT 2;\n", render(statements));
+        assertEquals("SELECT 1;\nshutdown defrag;\nSELECT 2;\n", render(statements));
     }
 
     @Test
