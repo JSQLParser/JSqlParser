@@ -21,6 +21,7 @@ import net.sf.jsqlparser.expression.Expression;
 public class ForeignKeyConstraint extends NamedConstraint implements KeyColumnSource {
     private List<KeyElement> columns;
     private String indexName;
+    private ForeignKeyReference reference = new ForeignKeyReference();
 
     public ForeignKeyConstraint() {
         setType("FOREIGN KEY");
@@ -48,8 +49,6 @@ public class ForeignKeyConstraint extends NamedConstraint implements KeyColumnSo
     public void setIndexName(String value) {
         indexName = value;
     }
-
-    private ForeignKeyReference reference = new ForeignKeyReference();
 
     /** Returns the mutable reference shared by the structured and legacy accessors. */
     public ForeignKeyReference getReference() {

@@ -614,11 +614,10 @@ public class AlterExpression implements Serializable {
      * return OTHER: inspect their ColumnOption nodes for inline constraints.
      */
     public ConstraintKind getConstraintKind() {
-        if (operation == null) {
-            return ConstraintKind.OTHER;
+        if (hasExplicitConstraintHeader()) {
+            return ConstraintKind.fromType(getConstraintType());
         }
-        if (isRenameOperation() && !(constraintType != null && constraintSymbol != null
-                && (operation == AlterOperation.ADD || operation == AlterOperation.ALTER))) {
+        if (operation == null || isRenameOperation()) {
             return ConstraintKind.OTHER;
         }
         switch (operation) {
@@ -632,34 +631,41 @@ public class AlterExpression implements Serializable {
             case DROP_CHECK:
                 return ConstraintKind.CHECK;
             case ADD:
-            case ALTER:
-                if (constraintType != null && constraintSymbol != null) {
-                    return ConstraintKind.fromType(getConstraintType());
-                }
-                if (operation != AlterOperation.ADD || columnName != null
-                        || colDataTypeList != null || constraintName != null || oldIndex != null
-                        || commentText != null || columnSetNotNullList != null
-                        || columnDropNotNullList != null
-                        || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
-                    return ConstraintKind.OTHER;
-                }
-                if (constraint != null) {
-                    return constraint.getKind() != null ? constraint.getKind()
-                            : ConstraintKind.OTHER;
-                }
-                if (index != null) {
-                    return ConstraintKind.OTHER;
-                }
-                if (pkColumns != null) {
-                    return ConstraintKind.PRIMARY_KEY;
-                }
-                if (ukColumns != null) {
-                    return ConstraintKind.UNIQUE;
-                }
-                return fkColumns != null ? ConstraintKind.FOREIGN_KEY : ConstraintKind.OTHER;
+                return getAddedConstraintKind();
             default:
                 return ConstraintKind.OTHER;
         }
+    }
+
+    private boolean hasExplicitConstraintHeader() {
+        return constraintType != null && constraintSymbol != null
+                && (operation == AlterOperation.ADD || operation == AlterOperation.ALTER);
+    }
+
+    private ConstraintKind getAddedConstraintKind() {
+        if (hasColumnOrNamedTarget()) {
+            return ConstraintKind.OTHER;
+        }
+        if (constraint != null) {
+            return constraint.getKind() != null ? constraint.getKind() : ConstraintKind.OTHER;
+        }
+        if (index != null) {
+            return ConstraintKind.OTHER;
+        }
+        if (pkColumns != null) {
+            return ConstraintKind.PRIMARY_KEY;
+        }
+        if (ukColumns != null) {
+            return ConstraintKind.UNIQUE;
+        }
+        return fkColumns != null ? ConstraintKind.FOREIGN_KEY : ConstraintKind.OTHER;
+    }
+
+    private boolean hasColumnOrNamedTarget() {
+        return columnName != null || colDataTypeList != null || constraintName != null
+                || oldIndex != null || commentText != null || columnSetNotNullList != null
+                || columnDropNotNullList != null
+                || columnDropDefaultList != null && !columnDropDefaultList.isEmpty();
     }
 
     /**
@@ -967,8 +973,7 @@ public class AlterExpression implements Serializable {
     protected void appendBody(StringBuilder b) {
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
-        } else if (constraintType != null && constraintSymbol != null
-                && (operation == AlterOperation.ALTER || operation == AlterOperation.ADD)) {
+        } else if (hasExplicitConstraintHeader()) {
             toStringConstraintAlter(b);
         } else if (operation == AlterOperation.ALTER
                 && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()

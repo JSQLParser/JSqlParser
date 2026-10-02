@@ -26,43 +26,9 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateTable implements Statement {
 
     private boolean tableOptionsAfterPartition;
-
-    public boolean isTableOptionsAfterPartition() {
-        return tableOptionsAfterPartition;
-    }
-
-    public void setTableOptionsAfterPartition(boolean tableOptionsAfterPartition) {
-        this.tableOptionsAfterPartition = tableOptionsAfterPartition;
-    }
-
     private net.sf.jsqlparser.statement.execute.Execute execute;
-
-    /** Prepared statement source of PostgreSQL CREATE TABLE AS EXECUTE. */
-    public net.sf.jsqlparser.statement.execute.Execute getExecute() {
-        return execute;
-    }
-
-    public void setExecute(net.sf.jsqlparser.statement.execute.Execute execute) {
-        this.execute = execute;
-        select = null;
-        selectParenthesis = false;
-    }
-
     private Table table;
     private boolean unlogged = false;
-
-    /** The structured SERVER clause, also present in the shared table-options list. */
-    public ForeignTableOptions getForeignTableOptions() {
-        if (tableOptions != null) {
-            for (TableOption option : tableOptions) {
-                if (option.getForeignTableOptions() != null) {
-                    return option.getForeignTableOptions();
-                }
-            }
-        }
-        return null;
-    }
-
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<TableOption> tableOptions;
@@ -92,6 +58,37 @@ public class CreateTable implements Statement {
 
     public enum DuplicateHandling {
         IGNORE, REPLACE
+    }
+
+    public boolean isTableOptionsAfterPartition() {
+        return tableOptionsAfterPartition;
+    }
+
+    public void setTableOptionsAfterPartition(boolean tableOptionsAfterPartition) {
+        this.tableOptionsAfterPartition = tableOptionsAfterPartition;
+    }
+
+    /** Prepared statement source of PostgreSQL CREATE TABLE AS EXECUTE. */
+    public net.sf.jsqlparser.statement.execute.Execute getExecute() {
+        return execute;
+    }
+
+    public void setExecute(net.sf.jsqlparser.statement.execute.Execute execute) {
+        this.execute = execute;
+        select = null;
+        selectParenthesis = false;
+    }
+
+    /** The structured SERVER clause, also present in the shared table-options list. */
+    public ForeignTableOptions getForeignTableOptions() {
+        if (tableOptions != null) {
+            for (TableOption option : tableOptions) {
+                if (option.getForeignTableOptions() != null) {
+                    return option.getForeignTableOptions();
+                }
+            }
+        }
+        return null;
     }
 
     /** MySQL's duplicate-key handling when creating a table from a query; null if omitted. */

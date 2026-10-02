@@ -31,6 +31,11 @@ public class RelationAlterAction extends AlterExpression {
     private boolean statisticsDefault;
     private Expression defaultExpression;
     private Expression generationExpression;
+    private Table relation;
+    private boolean noInherit;
+    private boolean noDependency;
+    private List<IndexOption> options;
+    private List<String> resetOptions;
 
     public Expression getGenerationExpression() {
         return generationExpression;
@@ -39,12 +44,6 @@ public class RelationAlterAction extends AlterExpression {
     public void setGenerationExpression(Expression expression) {
         generationExpression = expression;
     }
-
-    private Table relation;
-    private boolean noInherit;
-    private boolean noDependency;
-    private List<IndexOption> options;
-    private List<String> resetOptions;
 
     public enum Kind {
         RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE, RULE_STATE

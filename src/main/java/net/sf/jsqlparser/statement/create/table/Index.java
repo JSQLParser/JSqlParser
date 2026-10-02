@@ -211,7 +211,15 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
     }
 
     public void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter) {
-        String spec = PlainSelect.getStringList(getIndexSpec(), false, false);
+        appendDeclarationTo(sql);
+        appendColumnsAndSpecTo(sql, expressionPrinter);
+        appendIndexOptionsTo(sql, expressionPrinter);
+        if (tailParameters != null && !tailParameters.isEmpty()) {
+            sql.append(' ').append(PlainSelect.getStringList(tailParameters, false, false));
+        }
+    }
+
+    private void appendDeclarationTo(StringBuilder sql) {
         String keyword = indexKeyword != null && (type == null
                 || !type.toUpperCase(java.util.Locale.ROOT)
                         .endsWith(indexKeyword.toUpperCase(java.util.Locale.ROOT)))
@@ -225,6 +233,11 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
             sql.append(" USING ").append(getUsing());
         }
         sql.append(nullsDistinctClause()).append(clusteringClause());
+    }
+
+    private void appendColumnsAndSpecTo(StringBuilder sql,
+            Consumer<Expression> expressionPrinter) {
+        String spec = PlainSelect.getStringList(getIndexSpec(), false, false);
         boolean hasColumns = columns != null && !columns.isEmpty();
         if (hasColumns) {
             sql.append(' ');
@@ -232,10 +245,6 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
         }
         if (!spec.isEmpty()) {
             sql.append(hasColumns ? " " : "  ").append(spec);
-        }
-        appendIndexOptionsTo(sql, expressionPrinter);
-        if (tailParameters != null && !tailParameters.isEmpty()) {
-            sql.append(' ').append(PlainSelect.getStringList(tailParameters, false, false));
         }
     }
 }
