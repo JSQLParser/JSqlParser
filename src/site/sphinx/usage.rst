@@ -1269,6 +1269,51 @@ References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html
 `ALTER DEFAULT PRIVILEGES <https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html>`_,
 `CREATE TRIGGER <https://www.postgresql.org/docs/18/sql-createtrigger.html>`_.
 
+Migrating shared ALTER enums
+----------------------------
+
+``AlterServer.Action`` and ``AlterForeignDataWrapper.Action`` have been replaced
+by ``ForeignObjectAlterAction`` in ``net.sf.jsqlparser.statement.alter``. Both
+statements' ``getAction()`` and ``setAction()`` now use this enum, with the same
+``OPTIONS``, ``OWNER`` and ``RENAME`` constants. Update imports and recompile code
+using these APIs; the removed nested enums are not compatibility aliases.
+
+.. code-block:: java
+
+    AlterServer server = (AlterServer) CCJSqlParserUtil.parse(
+        "ALTER SERVER s VERSION NULL");
+    server.setAction(ForeignObjectAlterAction.OWNER);
+    server.setOwner("CURRENT_USER");
+    // ALTER SERVER s OWNER TO CURRENT_USER
+
+    AlterForeignDataWrapper wrapper = (AlterForeignDataWrapper) CCJSqlParserUtil.parse(
+        "ALTER FOREIGN DATA WRAPPER w NO HANDLER");
+    wrapper.setAction(ForeignObjectAlterAction.OWNER);
+    wrapper.setOwner("CURRENT_USER");
+    // ALTER FOREIGN DATA WRAPPER w OWNER TO CURRENT_USER
+
+``OPTIONS`` remains the initial action. It includes server ``VERSION`` changes
+and wrapper handler/validator changes as well as foreign-data options. These
+payloads remain on their respective statement classes. Switching to ``OWNER`` or
+``RENAME`` leaves the inactive payload available for switching back to ``OPTIONS``.
+
+``RelationAlterAction.TriggerState``, ``getTriggerState()`` and
+``setTriggerState()`` have been removed. Use the existing
+``RelationAlterAction.EnableState``, ``getEnableState()`` and ``setEnableState()``
+for both trigger and rewrite-rule actions:
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t ENABLE REPLICA TRIGGER trg",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    RelationAlterAction trigger = (RelationAlterAction) alter.getAlterExpressions().get(0);
+    trigger.setEnableState(RelationAlterAction.EnableState.DISABLE);
+    // ALTER TABLE t DISABLE TRIGGER trg
+
+The action's ``Kind`` still distinguishes ``TRIGGER_STATE`` from ``RULE_STATE``.
+Trigger targets also retain their ``NAME``, ``ALL`` and ``USER`` distinctions.
+
 Oracle anonymous blocks
 -----------------------
 

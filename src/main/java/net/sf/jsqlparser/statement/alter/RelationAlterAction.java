@@ -62,10 +62,6 @@ public class RelationAlterAction extends AlterExpression {
         ENABLE, DISABLE, ENABLE_ALWAYS, ENABLE_REPLICA
     }
 
-    /** Compatibility names for existing trigger clients. */
-    public enum TriggerState {
-        ENABLE, DISABLE, ENABLE_ALWAYS, ENABLE_REPLICA
-    }
     public enum TriggerTarget {
         NAME, ALL, USER
     }
@@ -77,14 +73,6 @@ public class RelationAlterAction extends AlterExpression {
 
     public void setEnableState(EnableState state) {
         enableState = state;
-    }
-
-    public TriggerState getTriggerState() {
-        return enableState == null ? null : TriggerState.valueOf(enableState.name());
-    }
-
-    public void setTriggerState(TriggerState state) {
-        enableState = state == null ? null : EnableState.valueOf(state.name());
     }
 
     public TriggerTarget getTriggerTarget() {

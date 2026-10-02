@@ -21315,9 +21315,9 @@ AlterForeignDataWrapper AlterForeignDataWrapper():
     <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setName(name); }
     (
         <K_RENAME> <K_TO> name=RelObjectName()
-        { statement.setAction(AlterForeignDataWrapper.Action.RENAME); statement.setNewName(name); }
+        { statement.setAction(ForeignObjectAlterAction.RENAME); statement.setNewName(name); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
-        { statement.setAction(AlterForeignDataWrapper.Action.OWNER); statement.setOwner(name); }
+        { statement.setAction(ForeignObjectAlterAction.OWNER); statement.setOwner(name); }
         | functions=ForeignDataWrapperFunctions() { statement.setFunctions(functions); }
           [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
           { requireDdlSyntax(functions.isHandlerSpecified() || functions.isValidatorSpecified()
@@ -21387,9 +21387,9 @@ AlterServer AlterServer():
     ContextualKeyword("SERVER") name=RelObjectName() { statement.setName(name); }
     (
         <K_RENAME> <K_TO> name=RelObjectName()
-        { statement.setAction(AlterServer.Action.RENAME); statement.setNewName(name); }
+        { statement.setAction(ForeignObjectAlterAction.RENAME); statement.setNewName(name); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
-        { statement.setAction(AlterServer.Action.OWNER); statement.setOwner(name); }
+        { statement.setAction(ForeignObjectAlterAction.OWNER); statement.setOwner(name); }
         | [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
           [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(true) { statement.setOptions(options); } ]
           { requireDdlSyntax(statement.getVersion() != null || statement.getOptions() != null,
