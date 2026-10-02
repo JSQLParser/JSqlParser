@@ -190,7 +190,7 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         Analysis analysis = new Analysis(pureFunctions);
         StatementFeatureVisitor visitor = new StatementFeatureVisitor(analysis);
         statement.accept(visitor, null);
-        analysis.failLoudIfSilent(statement.getClass().getSimpleName());
+        analysis.failLoudIfSilent();
         return new StatementFeatures(analysis.certain, analysis.uncertain, analysis.unresolved);
     }
 
@@ -223,7 +223,7 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         Analysis analysis = new Analysis(pureFunctions);
         StatementFeatureVisitor visitor = new StatementFeatureVisitor(analysis);
         statements.accept(visitor, null);
-        analysis.failLoudIfSilent(Statements.class.getSimpleName());
+        analysis.failLoudIfSilent();
         return new StatementFeatures(analysis.certain, analysis.uncertain, analysis.unresolved);
     }
 
@@ -313,10 +313,14 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         }
 
         void opaque(String reference) {
+            opaque();
+            unresolved(reference);
+        }
+
+        void opaque() {
             certain.add(StmtFeature.OPAQUE);
             uncertain.addAll(EnumSet.of(StmtFeature.READS_DATA, StmtFeature.RETURNS_RESULT_SET,
                     StmtFeature.MODIFIES_DATA, StmtFeature.MODIFIES_SCHEMA));
-            unresolved(reference);
         }
 
         /**
@@ -326,9 +330,9 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
          * hand-maintained type table; the price is that a genuinely inert statement is also
          * reported opaque, which is the right direction to be wrong in.
          */
-        void failLoudIfSilent(String label) {
+        void failLoudIfSilent() {
             if (certain.isEmpty()) {
-                opaque(label);
+                opaque();
             }
         }
     }
