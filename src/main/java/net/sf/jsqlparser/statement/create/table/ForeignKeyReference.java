@@ -116,10 +116,8 @@ public class ForeignKeyReference implements Serializable {
     }
 
     public void removeReferentialAction(Type type) {
-        ReferentialAction current = getReferentialAction(type);
-        if (current != null) {
-            referentialActions.remove(current);
-        }
+        // Actions are mutable; their hash code can change after insertion into the set.
+        referentialActions.removeIf(action -> type.equals(action.getType()));
     }
 
     public ForeignKeyReference withTable(Table table) {
