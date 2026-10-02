@@ -15,6 +15,7 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
@@ -39,8 +40,8 @@ class PostgreSqlTruncateTest {
                             : identity.contains("CONTINUE") ? Truncate.IdentityOption.CONTINUE
                                     : null,
                             statement.getIdentityOption());
-                    assertEquals(behavior.contains("CASCADE") ? Truncate.DropBehavior.CASCADE
-                            : behavior.contains("RESTRICT") ? Truncate.DropBehavior.RESTRICT : null,
+                    assertEquals(behavior.contains("CASCADE") ? CascadeBehavior.CASCADE
+                            : behavior.contains("RESTRICT") ? CascadeBehavior.RESTRICT : null,
                             statement.getDropBehavior());
                     roundTrip(statement);
                     assertEquals(2, CCJSqlParserUtil.parseStatements(sql + "; SELECT 1").size());
@@ -61,7 +62,7 @@ class PostgreSqlTruncateTest {
         statement.getTargets().get(2).setOnly(false);
         statement.getTables().add(new Table("z"));
         statement.setCascade(false);
-        statement.setDropBehavior(Truncate.DropBehavior.RESTRICT);
+        statement.setDropBehavior(CascadeBehavior.RESTRICT);
         assertFalse(statement.getCascade());
         assertEquals("TRUNCATE ONLY a, y *, x, z RESTART IDENTITY RESTRICT", statement.toString());
         assertEquals(Set.of("a", "y", "x", "z"), new TablesNamesFinder().getTables(statement));

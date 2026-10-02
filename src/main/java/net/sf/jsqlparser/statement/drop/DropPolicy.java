@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.drop;
 
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -16,7 +17,7 @@ public class DropPolicy implements Statement {
     private String policyName;
     private net.sf.jsqlparser.schema.Table table;
     private boolean ifExists = false;
-    private Behavior behavior;
+    private CascadeBehavior behavior;
 
     public String getPolicyName() {
         return policyName;
@@ -45,17 +46,13 @@ public class DropPolicy implements Statement {
         return this;
     }
 
-    public Behavior getBehavior() {
+    public CascadeBehavior getBehavior() {
         return behavior;
     }
 
-    public DropPolicy setBehavior(Behavior behavior) {
+    public DropPolicy setBehavior(CascadeBehavior behavior) {
         this.behavior = behavior;
         return this;
-    }
-
-    public enum Behavior {
-        CASCADE, RESTRICT
     }
 
     public StringBuilder appendTo(StringBuilder sql) {
