@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
-public class RelationAlterAction extends AlterExpression {
+public class RelationAlterAction extends AlterExpression implements ColumnRenameAction {
     private EnableState enableState;
     private TriggerTarget triggerTarget;
     private Kind kind;
@@ -130,6 +130,31 @@ public class RelationAlterAction extends AlterExpression {
 
     public void setNewName(String newName) {
         this.newName = newName;
+    }
+
+    @Override
+    public ColumnRenameAction getColumnRename() {
+        return kind == Kind.RENAME_COLUMN ? this : null;
+    }
+
+    @Override
+    public String getSourceName() {
+        return getColumnName();
+    }
+
+    @Override
+    public void setSourceName(String name) {
+        setColumnName(name);
+    }
+
+    @Override
+    public String getTargetName() {
+        return getNewName();
+    }
+
+    @Override
+    public void setTargetName(String name) {
+        setNewName(name);
     }
 
     public String getValue() {
