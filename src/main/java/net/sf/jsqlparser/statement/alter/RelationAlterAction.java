@@ -9,11 +9,12 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
@@ -42,7 +43,7 @@ public class RelationAlterAction extends AlterExpression {
     private Table relation;
     private boolean noInherit;
     private boolean noDependency;
-    private List<Index.Option> options;
+    private List<IndexOption> options;
     private List<String> resetOptions;
 
     public enum Kind {
@@ -200,11 +201,11 @@ public class RelationAlterAction extends AlterExpression {
         this.noDependency = noDependency;
     }
 
-    public List<Index.Option> getOptions() {
+    public List<IndexOption> getOptions() {
         return options;
     }
 
-    public void setOptions(List<Index.Option> options) {
+    public void setOptions(List<IndexOption> options) {
         this.options = options;
     }
 
@@ -217,8 +218,13 @@ public class RelationAlterAction extends AlterExpression {
     }
 
     @Override
-    public Index.Kind getConstraintKind() {
-        return Index.Kind.OTHER;
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
     }
 
     @Override
@@ -275,7 +281,7 @@ public class RelationAlterAction extends AlterExpression {
                 break;
             case SET_OPTIONS:
                 builder.append("SET ");
-                Index.Option.appendListTo(builder, options, expressionPrinter);
+                IndexOption.appendListTo(builder, options, expressionPrinter);
                 break;
             case RESET_OPTIONS:
                 builder.append("RESET ")
@@ -331,7 +337,7 @@ public class RelationAlterAction extends AlterExpression {
                 break;
             case SET_OPTIONS:
                 builder.append(" SET ");
-                Index.Option.appendListTo(builder, options, expressionPrinter);
+                IndexOption.appendListTo(builder, options, expressionPrinter);
                 break;
             case RESET_OPTIONS:
                 builder.append(" RESET ")
@@ -367,7 +373,7 @@ public class RelationAlterAction extends AlterExpression {
             visitor.accept(generationExpression);
         } else if ((kind == Kind.SET_OPTIONS || kind == Kind.ALTER_COLUMN
                 && columnAction == ColumnAction.SET_OPTIONS) && options != null) {
-            options.stream().map(Index.Option::getValue).filter(java.util.Objects::nonNull)
+            options.stream().map(IndexOption::getValue).filter(java.util.Objects::nonNull)
                     .forEach(visitor);
         }
     }

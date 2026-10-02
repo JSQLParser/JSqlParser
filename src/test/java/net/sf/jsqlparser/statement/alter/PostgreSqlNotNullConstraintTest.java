@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,6 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.TablesNamesFinder;
@@ -47,7 +47,7 @@ class PostgreSqlNotNullConstraintTest {
             Statement statement = parse(sql);
             assertEquals(sql, statement.toString());
             NotNullConstraint constraint = constraint(statement);
-            assertEquals(Index.Kind.NOT_NULL, constraint.getKind());
+            assertEquals(ConstraintKind.NOT_NULL, constraint.getKind());
             assertNotNull(constraint.getColumn());
             roundTrip(statement);
         }
@@ -68,13 +68,13 @@ class PostgreSqlNotNullConstraintTest {
         roundTrip(alter);
         ConstraintAttributes attributes = new ConstraintAttributes();
         attributes.setNotValid(true);
-        alter.getAlterExpressions().get(0).setIndex(new NotNullConstraint().withName("nn")
+        alter.getAlterExpressions().get(0).setConstraint(new NotNullConstraint().withName("nn")
                 .withColumn(new Column("id")).withNoInherit(true)
                 .withConstraintAttributes(attributes));
         assertEquals("ALTER TABLE t ADD CONSTRAINT nn NOT NULL id NO INHERIT NOT VALID",
                 alter.toString());
         roundTrip(alter);
-        assertEquals(Index.Kind.NOT_NULL, new Index().withType("NOT NULL").getKind());
+        assertEquals(ConstraintKind.NOT_NULL, ConstraintKind.fromType("NOT NULL"));
     }
 
     @Test
@@ -133,8 +133,8 @@ class PostgreSqlNotNullConstraintTest {
 
     private static NotNullConstraint constraint(Statement statement) {
         return (NotNullConstraint) (statement instanceof Alter
-                ? ((Alter) statement).getAlterExpressions().get(0).getIndex()
-                : ((CreateTable) statement).getIndexes().get(0));
+                ? ((Alter) statement).getAlterExpressions().get(0).getConstraint()
+                : ((CreateTable) statement).getTableConstraints().get(0));
     }
 
     private static Statement parse(String sql) throws JSQLParserException {

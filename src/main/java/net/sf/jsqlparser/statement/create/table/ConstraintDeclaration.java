@@ -19,27 +19,29 @@ package net.sf.jsqlparser.statement.create.table;
 public final class ConstraintDeclaration {
     private final ColumnDefinition column;
     private final ColumnOption columnOption;
-    private final Index index;
+    private final NamedConstraint constraint;
 
     ConstraintDeclaration(ColumnDefinition column, ColumnOption columnOption) {
         this.column = column;
         this.columnOption = columnOption;
-        this.index = null;
+        this.constraint = null;
     }
 
-    ConstraintDeclaration(Index index) {
+    ConstraintDeclaration(NamedConstraint constraint) {
         this.column = null;
         this.columnOption = null;
-        this.index = index;
+        this.constraint = constraint;
     }
 
-    /** Returns the current kind, or OTHER if an edit no longer represents a constraint. */
-    public Index.Kind getKind() {
+    /**
+     * Returns the current kind, or OTHER if it is unknown or an option no longer declares a
+     * constraint.
+     */
+    public ConstraintKind getKind() {
         if (columnOption != null) {
             return columnOption.getConstraintKind();
         }
-        return index.getKind() != null && index.getKind().canDescribeConstraint() ? index.getKind()
-                : Index.Kind.OTHER;
+        return constraint.getKind() != null ? constraint.getKind() : ConstraintKind.OTHER;
     }
 
     /** Returns the original owning column, or null for a table-level declaration. */
@@ -53,10 +55,10 @@ public final class ConstraintDeclaration {
     }
 
     /**
-     * Returns the original constraint node, including a column's nested constraint. REFERENCES,
-     * DEFAULT and nullability column options have no Index node; use getColumnOption() for them.
+     * Returns the original constraint node, including a column's nested constraint. REFERENCES and
+     * nullability column options have no NamedConstraint node; use getColumnOption() for them.
      */
-    public Index getIndex() {
-        return columnOption == null ? index : columnOption.getConstraint();
+    public NamedConstraint getConstraint() {
+        return columnOption == null ? constraint : columnOption.getConstraint();
     }
 }

@@ -30,7 +30,10 @@ import net.sf.jsqlparser.statement.create.table.ConstraintDeclaration;
 import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.create.table.Index.Kind;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,17 +57,19 @@ class ConstraintInspectionTest {
                 + "code INT NOT NULL DEFAULT 1)", Dialect.POSTGRESQL);
         String before = table.toString();
         List<ConstraintDeclaration> declarations = table.getConstraints();
-        assertEquals(List.of(Kind.PRIMARY_KEY, Kind.UNIQUE, Kind.FOREIGN_KEY, Kind.CHECK,
-                Kind.NOT_NULL, Kind.DEFAULT), kinds(declarations));
+        assertEquals(List.of(ConstraintKind.PRIMARY_KEY, ConstraintKind.UNIQUE,
+                ConstraintKind.FOREIGN_KEY, ConstraintKind.CHECK,
+                ConstraintKind.NOT_NULL), kinds(declarations));
         assertSame(table.getColumnDefinitions().get(0), declarations.get(0).getColumn());
-        assertEquals("pk", declarations.get(0).getIndex().getName());
-        assertSame(table.getIndexes().get(0), declarations.get(1).getIndex());
+        assertEquals("pk", declarations.get(0).getConstraint().getName());
+        assertSame(table.getTableConstraints().get(0), declarations.get(1).getConstraint());
         assertNull(declarations.get(1).getColumn());
         assertNull(declarations.get(1).getColumnOption());
-        assertNull(declarations.get(2).getIndex());
+        assertNull(declarations.get(2).getConstraint());
         assertEquals("parent", declarations.get(2).getColumnOption().getForeignKeyReference()
                 .getTable().getName());
-        assertEquals(2, table.getIndexes().size());
+        assertEquals(2, table.getTableConstraints().size());
+        assertTrue(table.getIndexes().isEmpty());
         assertEquals(before, table.toString());
         assertRoundTrip(table, Dialect.POSTGRESQL);
     }
@@ -75,8 +80,8 @@ class ConstraintInspectionTest {
             throws Exception {
         CreateTable table = table("CREATE TABLE t (id INT, " + keyword
                 + " uk (id), KEY ix (id), FULLTEXT KEY ft (body), body TEXT)", Dialect.MYSQL);
-        assertEquals(List.of(Kind.UNIQUE), kinds(table.getConstraints()));
-        assertEquals(keyword, table.getConstraints().get(0).getIndex().getType());
+        assertEquals(List.of(ConstraintKind.UNIQUE), kinds(table.getConstraints()));
+        assertEquals(keyword, table.getConstraints().get(0).getConstraint().getType());
         assertRoundTrip(table, Dialect.MYSQL);
     }
 
@@ -85,9 +90,9 @@ class ConstraintInspectionTest {
     void keepsStandaloneUniqueIndexesInTheirStatementContext(Dialect dialect) throws Exception {
         Statement statement = parse("CREATE UNIQUE INDEX uq ON t (id)", dialect);
         CreateIndex index = assertInstanceOf(CreateIndex.class, statement);
-        assertEquals(Kind.UNIQUE, index.getIndex().getKind());
+        assertEquals(Index.Kind.UNIQUE, index.getIndex().getKind());
         AlterExpression drop = action("ALTER TABLE t DROP INDEX uq", Dialect.MYSQL);
-        assertEquals(Kind.OTHER, drop.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, drop.getConstraintKind());
         assertRoundTrip(statement, dialect);
     }
 
@@ -97,7 +102,8 @@ class ConstraintInspectionTest {
             throws Exception {
         CreateTable table = table("CREATE TABLE t (id INT PRIMARY KEY, label TEXT)", dialect);
         ConstraintDeclaration primary = table.getConstraints().stream()
-                .filter(declaration -> declaration.getKind() == Kind.PRIMARY_KEY).findFirst().get();
+                .filter(declaration -> declaration.getKind() == ConstraintKind.PRIMARY_KEY)
+                .findFirst().get();
         primary.getColumn().setColumnName("new_id");
         assertEquals("new_id", table.getColumnDefinitions().get(0).getColumnName());
         assertTrue(table.getIndexes() == null || table.getIndexes().isEmpty());
@@ -110,26 +116,61 @@ class ConstraintInspectionTest {
         CreateTable table = table("CREATE TABLE t (id INT, UNIQUE (id))", Dialect.POSTGRESQL);
         List<ConstraintDeclaration> snapshot = table.getConstraints();
         ConstraintDeclaration declaration = snapshot.get(0);
-        Index index = declaration.getIndex();
+        NamedConstraint index = declaration.getConstraint();
         assertThrows(UnsupportedOperationException.class, snapshot::clear);
         index.setType("PRIMARY KEY");
-        assertEquals(Kind.PRIMARY_KEY, declaration.getKind());
+        assertEquals(ConstraintKind.PRIMARY_KEY, declaration.getKind());
         assertRoundTrip(table, Dialect.POSTGRESQL);
         String type = index.getType();
-        index.setKind(Kind.INDEX);
+        index.setKind(ConstraintKind.OTHER);
         assertEquals(type, index.getType());
-        assertEquals(Kind.OTHER, declaration.getKind());
+        assertEquals(ConstraintKind.OTHER, declaration.getKind());
         assertEquals(1, snapshot.size());
-        assertTrue(table.getConstraints().isEmpty());
+        assertEquals(List.of(ConstraintKind.OTHER), kinds(table.getConstraints()));
+        assertSame(index, table.getTableConstraints().get(0));
         index.setType("UNIQUE");
         ColumnOption notNull = ColumnOption.nullability(false);
         table.getColumnDefinitions().get(0).addColumnOptions(notNull);
         assertEquals(1, snapshot.size());
         List<ConstraintDeclaration> refreshed = table.getConstraints();
-        assertEquals(List.of(Kind.NOT_NULL, Kind.UNIQUE), kinds(refreshed));
+        assertEquals(List.of(ConstraintKind.NOT_NULL, ConstraintKind.UNIQUE), kinds(refreshed));
         notNull.setNullable(true);
-        assertEquals(Kind.OTHER, refreshed.get(0).getKind());
-        assertEquals(List.of(Kind.UNIQUE), kinds(table.getConstraints()));
+        assertEquals(ConstraintKind.OTHER, refreshed.get(0).getKind());
+        assertEquals(List.of(ConstraintKind.UNIQUE), kinds(table.getConstraints()));
+        assertRoundTrip(table, Dialect.POSTGRESQL);
+    }
+
+    @Test
+    void physicalIndexAndConstraintViewsMutateIndependently() throws Exception {
+        CreateTable table = table("CREATE TABLE t (id INT, KEY ix (id), "
+                + "CONSTRAINT uq UNIQUE (id), CONSTRAINT ck CHECK (id > 0))", Dialect.MYSQL);
+        Index index = table.getIndexes().get(0);
+        NamedConstraint check = table.getTableConstraints().get(1);
+        table.getTableConstraints().remove(0);
+        assertSame(index, table.getTableElements().get(1));
+        assertSame(check, table.getTableConstraints().get(0));
+        assertEquals(List.of(ConstraintKind.CHECK), kinds(table.getConstraints()));
+        KeyConstraint primary = new KeyConstraint().withType("PRIMARY KEY")
+                .withColumnsNames(List.of("id"));
+        table.getTableConstraints().add(0, primary);
+        table.setIndexes(table.getIndexes());
+        assertEquals(List.of(ConstraintKind.PRIMARY_KEY, ConstraintKind.CHECK),
+                kinds(table.getConstraints()));
+        assertSame(index, table.getTableElements().get(1));
+        assertSame(primary, table.getTableElements().get(2));
+        assertRoundTrip(table, Dialect.MYSQL);
+        table.getIndexes().clear();
+        assertEquals(2, table.getTableConstraints().size());
+        assertRoundTrip(table, Dialect.MYSQL);
+    }
+
+    @Test
+    void inlineStructuredConstraintsRemainVisibleWithUnknownKind() throws Exception {
+        CreateTable table = table("CREATE TABLE t (id INT PRIMARY KEY)", Dialect.POSTGRESQL);
+        NamedConstraint primary = table.getConstraints().get(0).getConstraint();
+        primary.setKind(ConstraintKind.OTHER);
+        assertEquals(List.of(ConstraintKind.OTHER), kinds(table.getConstraints()));
+        assertSame(primary, table.getConstraints().get(0).getConstraint());
         assertRoundTrip(table, Dialect.POSTGRESQL);
     }
 
@@ -140,44 +181,55 @@ class ConstraintInspectionTest {
         column.setColumnOptions(List.of(ColumnOption.raw("PRIMARY", "KEY"),
                 ColumnOption.nullability(false), ColumnOption.nullability(true)));
         table.setColumnDefinitions(List.of(column));
-        Index primary = new Index().withType("PRIMARY KEY").withColumnsNames(List.of("id"));
-        table.setIndexes(List.of(new Index().withType("SPATIAL INDEX"), primary));
-        assertEquals(List.of(Kind.NOT_NULL, Kind.PRIMARY_KEY), kinds(table.getConstraints()));
+        KeyConstraint primary =
+                new KeyConstraint().withType("PRIMARY KEY").withColumnsNames(List.of("id"));
+        table.setIndexes(List.of(new Index().withType("SPATIAL INDEX")));
+        table.setTableConstraints(List.of(primary));
+        assertEquals(List.of(ConstraintKind.NOT_NULL, ConstraintKind.PRIMARY_KEY),
+                kinds(table.getConstraints()));
         assertSame(column, table.getConstraints().get(0).getColumn());
-        assertSame(primary, table.getConstraints().get(1).getIndex());
-        assertEquals(Kind.OTHER, ColumnOption.constraint(new Index().withType("KEY"))
-                .getConstraintKind());
-        assertEquals(Kind.OTHER, ColumnOption.constraint(null).getConstraintKind());
+        assertSame(primary, table.getConstraints().get(1).getConstraint());
+        assertTrue(!Index.class.isAssignableFrom(KeyConstraint.class));
+        assertTrue(!Index.class.isAssignableFrom(NamedConstraint.class));
+        assertEquals(ConstraintKind.OTHER, ColumnOption.constraint(null).getConstraintKind());
     }
 
     static Stream<Arguments> alterConstraints() {
         return Stream.of(
-                Arguments.of("ADD PRIMARY KEY (id)", Kind.PRIMARY_KEY, Dialect.POSTGRESQL),
-                Arguments.of("ADD UNIQUE (id)", Kind.UNIQUE, Dialect.POSTGRESQL),
-                Arguments.of("ADD UNIQUE KEY uq (id)", Kind.UNIQUE, Dialect.MYSQL),
-                Arguments.of("ADD FOREIGN KEY (id) REFERENCES parent(id)", Kind.FOREIGN_KEY,
+                Arguments.of("ADD PRIMARY KEY (id)", ConstraintKind.PRIMARY_KEY,
                         Dialect.POSTGRESQL),
-                Arguments.of("ADD CHECK (id > 0)", Kind.CHECK, Dialect.POSTGRESQL),
-                Arguments.of("ADD CONSTRAINT pk PRIMARY KEY USING INDEX ix", Kind.PRIMARY_KEY,
+                Arguments.of("ADD UNIQUE (id)", ConstraintKind.UNIQUE, Dialect.POSTGRESQL),
+                Arguments.of("ADD UNIQUE KEY uq (id)", ConstraintKind.UNIQUE, Dialect.MYSQL),
+                Arguments.of("ADD FOREIGN KEY (id) REFERENCES parent(id)",
+                        ConstraintKind.FOREIGN_KEY,
                         Dialect.POSTGRESQL),
-                Arguments.of("ADD CONSTRAINT ex EXCLUDE USING gist (id WITH =)", Kind.EXCLUDE,
+                Arguments.of("ADD CHECK (id > 0)", ConstraintKind.CHECK, Dialect.POSTGRESQL),
+                Arguments.of("ADD CONSTRAINT pk PRIMARY KEY USING INDEX ix",
+                        ConstraintKind.PRIMARY_KEY,
                         Dialect.POSTGRESQL),
-                Arguments.of("DROP PRIMARY KEY", Kind.PRIMARY_KEY, Dialect.MYSQL),
-                Arguments.of("DROP FOREIGN KEY fk", Kind.FOREIGN_KEY, Dialect.MYSQL),
-                Arguments.of("DROP CHECK ck", Kind.CHECK, Dialect.MYSQL),
-                Arguments.of("DROP CONSTRAINT pk", Kind.OTHER, Dialect.POSTGRESQL),
-                Arguments.of("ALTER CONSTRAINT pk DEFERRABLE", Kind.OTHER, Dialect.POSTGRESQL),
-                Arguments.of("ALTER CHECK ck NOT ENFORCED", Kind.CHECK, Dialect.MYSQL),
-                Arguments.of("ALTER CONSTRAINT ck NOT ENFORCED", Kind.OTHER, Dialect.MYSQL),
-                Arguments.of("ADD INDEX ix (id)", Kind.OTHER, Dialect.MYSQL),
-                Arguments.of("DROP INDEX ix", Kind.OTHER, Dialect.MYSQL),
-                Arguments.of("DROP COLUMN id", Kind.OTHER, Dialect.POSTGRESQL),
-                Arguments.of("ADD COLUMN id INT PRIMARY KEY", Kind.OTHER, Dialect.POSTGRESQL));
+                Arguments.of("ADD CONSTRAINT ex EXCLUDE USING gist (id WITH =)",
+                        ConstraintKind.EXCLUDE,
+                        Dialect.POSTGRESQL),
+                Arguments.of("DROP PRIMARY KEY", ConstraintKind.PRIMARY_KEY, Dialect.MYSQL),
+                Arguments.of("DROP FOREIGN KEY fk", ConstraintKind.FOREIGN_KEY, Dialect.MYSQL),
+                Arguments.of("DROP CHECK ck", ConstraintKind.CHECK, Dialect.MYSQL),
+                Arguments.of("DROP CONSTRAINT pk", ConstraintKind.OTHER, Dialect.POSTGRESQL),
+                Arguments.of("ALTER CONSTRAINT pk DEFERRABLE", ConstraintKind.OTHER,
+                        Dialect.POSTGRESQL),
+                Arguments.of("ALTER CHECK ck NOT ENFORCED", ConstraintKind.CHECK, Dialect.MYSQL),
+                Arguments.of("ALTER CONSTRAINT ck NOT ENFORCED", ConstraintKind.OTHER,
+                        Dialect.MYSQL),
+                Arguments.of("ADD INDEX ix (id)", ConstraintKind.OTHER, Dialect.MYSQL),
+                Arguments.of("DROP INDEX ix", ConstraintKind.OTHER, Dialect.MYSQL),
+                Arguments.of("DROP COLUMN id", ConstraintKind.OTHER, Dialect.POSTGRESQL),
+                Arguments.of("ADD COLUMN id INT PRIMARY KEY", ConstraintKind.OTHER,
+                        Dialect.POSTGRESQL));
     }
 
     @ParameterizedTest
     @MethodSource("alterConstraints")
-    void classifiesOnlyTheExplicitKindOfTheActiveAction(String sql, Kind expected, Dialect dialect)
+    void classifiesOnlyTheExplicitKindOfTheActiveAction(String sql, ConstraintKind expected,
+            Dialect dialect)
             throws Exception {
         Alter alter = (Alter) parse("ALTER TABLE t " + sql, dialect);
         String before = alter.toString();
@@ -189,16 +241,16 @@ class ConstraintInspectionTest {
     @Test
     void changingOperationDoesNotGuessANamedDropFromAnOldDefinition() throws Exception {
         AlterExpression action = action("ALTER TABLE t ADD PRIMARY KEY (id)", Dialect.POSTGRESQL);
-        assertEquals(Kind.PRIMARY_KEY, action.getConstraintKind());
+        assertEquals(ConstraintKind.PRIMARY_KEY, action.getConstraintKind());
         action.setOperation(AlterOperation.DROP);
         action.setConstraintName("unrelated_constraint");
-        assertEquals(Kind.OTHER, action.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
         action.setOperation(AlterOperation.DROP_FOREIGN_KEY);
-        assertEquals(Kind.FOREIGN_KEY, action.getConstraintKind());
+        assertEquals(ConstraintKind.FOREIGN_KEY, action.getConstraintKind());
         action.setOperation(AlterOperation.ADD);
         action.setConstraintName(null);
-        action.getIndex().setType("UNIQUE");
-        assertEquals(Kind.UNIQUE, action.getConstraintKind());
+        action.getConstraint().setType("UNIQUE");
+        assertEquals(ConstraintKind.UNIQUE, action.getConstraintKind());
     }
 
     @Test
@@ -212,7 +264,7 @@ class ConstraintInspectionTest {
             AlterExpression action = action("ALTER TABLE t ADD PRIMARY KEY (id)",
                     Dialect.POSTGRESQL);
             edit.accept(action);
-            assertEquals(Kind.OTHER, action.getConstraintKind());
+            assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
             assertTrue(!action.toString().contains("PRIMARY KEY"));
         }
     }
@@ -237,14 +289,15 @@ class ConstraintInspectionTest {
         Alter statement = (Alter) parse(sql, dialect);
         AlterExpression action = statement.getAlterExpressions().get(0);
         assertRoundTrip(statement, dialect);
-        action.setIndex(new Index().withType("PRIMARY KEY").withColumnsNames(List.of("id")));
+        action.setConstraint(
+                new KeyConstraint().withType("PRIMARY KEY").withColumnsNames(List.of("id")));
         action.setConstraintType("CHECK");
         action.setConstraintSymbol("unrelated");
-        assertEquals(Kind.OTHER, action.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
         action.setOperation(AlterOperation.DROP_FOREIGN_KEY);
-        assertEquals(Kind.OTHER, action.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
         action.setOperation(null);
-        assertEquals(Kind.OTHER, action.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
     }
 
     @Test
@@ -253,11 +306,11 @@ class ConstraintInspectionTest {
                 action("ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS (id)", Dialect.COCKROACHDB));
         String before = action.toString();
         action.setOperation(AlterOperation.DROP_FOREIGN_KEY);
-        action.getIndex().setKind(Kind.UNIQUE);
-        assertEquals(Kind.PRIMARY_KEY, action.getConstraintKind());
+        action.getConstraint().setKind(ConstraintKind.UNIQUE);
+        assertEquals(ConstraintKind.PRIMARY_KEY, action.getConstraintKind());
         assertEquals(before, action.toString());
         action.setOperation(null);
-        assertEquals(Kind.PRIMARY_KEY, action.getConstraintKind());
+        assertEquals(ConstraintKind.PRIMARY_KEY, action.getConstraintKind());
         assertEquals(before, action.toString());
     }
 
@@ -266,9 +319,10 @@ class ConstraintInspectionTest {
         AlterExpressionDrop action = assertInstanceOf(AlterExpressionDrop.class,
                 action("ALTER TABLE t DROP COLUMN id", Dialect.POSTGRESQL));
         String before = action.toString();
-        action.setIndex(new Index().withType("PRIMARY KEY").withColumnsNames(List.of("id")));
+        action.setConstraint(
+                new KeyConstraint().withType("PRIMARY KEY").withColumnsNames(List.of("id")));
         action.setOperation(AlterOperation.ADD);
-        assertEquals(Kind.OTHER, action.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
         assertEquals(before, action.toString());
     }
 
@@ -277,7 +331,7 @@ class ConstraintInspectionTest {
     void distinguishesBaseRenamePrecedenceFromSpecializedDropRendering(String sql)
             throws Exception {
         AlterExpression drop = action("ALTER TABLE t " + sql, Dialect.MYSQL);
-        Kind expected = drop.getConstraintKind();
+        ConstraintKind expected = drop.getConstraintKind();
         String before = drop.toString();
         Index oldName = new Index().withName("old_name");
         Index newName = new Index().withName("new_name");
@@ -290,25 +344,25 @@ class ConstraintInspectionTest {
         base.setOldIndex(oldName);
         base.setIndex(newName);
         assertTrue(base.toString().startsWith("RENAME"));
-        assertEquals(Kind.OTHER, base.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, base.getConstraintKind());
 
         base.setOperation(AlterOperation.ALTER);
         base.setConstraintType("CHECK");
         base.setConstraintSymbol("ck");
         assertTrue(base.toString().startsWith("ALTER CHECK ck"));
-        assertEquals(Kind.CHECK, base.getConstraintKind());
+        assertEquals(ConstraintKind.CHECK, base.getConstraintKind());
     }
 
     @Test
     void supportsLegacyOnlyKeysWithoutMistakingDropColumnsForPrimaryKeys() {
         AlterExpression legacy = new AlterExpression().withOperation(AlterOperation.ADD)
                 .withPkColumns(new ArrayList<>(List.of("id")));
-        assertEquals(Kind.PRIMARY_KEY, legacy.getConstraintKind());
+        assertEquals(ConstraintKind.PRIMARY_KEY, legacy.getConstraintKind());
         legacy.setOperation(AlterOperation.DROP);
-        assertEquals(Kind.OTHER, legacy.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, legacy.getConstraintKind());
         legacy.setOperation(AlterOperation.DROP_UNIQUE);
-        assertEquals(Kind.UNIQUE, legacy.getConstraintKind());
-        assertEquals(Kind.OTHER, new AlterExpression().getConstraintKind());
+        assertEquals(ConstraintKind.UNIQUE, legacy.getConstraintKind());
+        assertEquals(ConstraintKind.OTHER, new AlterExpression().getConstraintKind());
     }
 
     @Test
@@ -317,14 +371,14 @@ class ConstraintInspectionTest {
                 action("ALTER TABLE t ADD CONSTRAINT pk PRIMARY KEY USING INDEX ix",
                         Dialect.POSTGRESQL);
         ConstraintUsingIndex constraint = assertInstanceOf(ConstraintUsingIndex.class,
-                action.getIndex());
-        assertEquals(Kind.PRIMARY_KEY, action.getConstraintKind());
-        assertTrue(constraint.getColumns() == null || constraint.getColumns().isEmpty());
+                action.getConstraint());
+        assertEquals(ConstraintKind.PRIMARY_KEY, action.getConstraintKind());
+        assertTrue(!KeyColumnSource.class.isAssignableFrom(ConstraintUsingIndex.class));
         constraint.setExistingIndexName("new_ix");
         assertTrue(action.toString().contains("USING INDEX new_ix"));
     }
 
-    private static List<Kind> kinds(List<ConstraintDeclaration> declarations) {
+    private static List<ConstraintKind> kinds(List<ConstraintDeclaration> declarations) {
         return declarations.stream().map(ConstraintDeclaration::getKind)
                 .collect(Collectors.toList());
     }

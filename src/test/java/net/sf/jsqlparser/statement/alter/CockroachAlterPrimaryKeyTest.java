@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -25,7 +28,6 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
@@ -54,8 +56,8 @@ class CockroachAlterPrimaryKeyTest {
                 parser -> parser.withDialect(Dialect.COCKROACHDB));
         AlterExpressionPrimaryKey action = primaryKey(alter);
         assertEquals(AlterOperation.ALTER_PRIMARY_KEY, action.getOperation());
-        assertEquals(Index.Kind.PRIMARY_KEY, action.getIndex().getKind());
-        assertEquals(List.of("FEATURE_NAME"), action.getIndex().getColumnsNames());
+        assertEquals(ConstraintKind.PRIMARY_KEY, action.getConstraint().getKind());
+        assertEquals(List.of("FEATURE_NAME"), action.getConstraint().getColumnsNames());
         assertTrue(action.isUsingHash());
         assertNull(action.getBucketCount());
         assertEquals(Set.of("FEATURE_SWITCH_CONFIG"), new TablesNamesFinder<>().getTables(alter));
@@ -74,7 +76,7 @@ class CockroachAlterPrimaryKeyTest {
         for (String rendered : List.of(alter.toString(), output.toString())) {
             AlterExpressionPrimaryKey action = primaryKey(parse(rendered));
             assertEquals(List.of("tenant_id ASC", "\"key\" DESC"),
-                    action.getIndex().getColumnsNames());
+                    action.getConstraint().getColumnsNames());
             assertEquals(suffix.contains("USING HASH"), action.isUsingHash());
             if (suffix.contains("BUCKET_COUNT")) {
                 assertEquals(8, ((LongValue) action.getBucketCount()).getValue());
@@ -82,7 +84,7 @@ class CockroachAlterPrimaryKeyTest {
                 assertNull(action.getBucketCount());
             }
             if (suffix.contains("WITH (")) {
-                Index.Option option = action.getIndex().getStorageParameters().get(0);
+                IndexOption option = action.getConstraint().getStorageParameters().get(0);
                 assertEquals(suffix.contains("bucket_count") ? "bucket_count" : "fillfactor",
                         option.getName());
                 assertEquals(suffix.contains("bucket_count") ? 8 : 70,
@@ -96,12 +98,12 @@ class CockroachAlterPrimaryKeyTest {
         Alter alter = parse("ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS "
                 + "(lower(name) text_ops DESC, (id + 1) ASC)");
         AlterExpressionPrimaryKey action = primaryKey(alter);
-        Index.ColumnParams first = action.getIndex().getColumns().get(0);
+        KeyElement first = action.getConstraint().getColumns().get(0);
         assertTrue(first.getExpression() instanceof Function);
         assertFalse(first.isExpressionParenthesized());
         assertEquals("text_ops", first.getOperatorClass());
         assertNull(first.getParams());
-        first.setSortOrder(Index.ColumnParams.SortOrder.ASC);
+        first.setSortOrder(KeyElement.SortOrder.ASC);
         action.setUsingHash(true);
         action.setBucketCount(new LongValue(16));
         String expected = "ALTER TABLE t ALTER PRIMARY KEY USING COLUMNS "

@@ -21,7 +21,7 @@ import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /**
  * Structured model for partition operations within {@code ALTER TABLE}.
@@ -145,6 +145,11 @@ public class AlterExpressionPartition extends AlterExpression {
         if (coalescePartitionCount != null) {
             super.setCoalescePartitionNumber(coalescePartitionCount);
         }
+    }
+
+    @Override
+    public boolean hasActiveTableDefinition() {
+        return false;
     }
 
     @Override
@@ -294,8 +299,8 @@ public class AlterExpressionPartition extends AlterExpression {
     }
 
     @Override
-    public Index.Kind getConstraintKind() {
-        return Index.Kind.OTHER;
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
     }
 
     @Override

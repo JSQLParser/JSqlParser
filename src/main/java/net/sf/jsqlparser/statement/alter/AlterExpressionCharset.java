@@ -9,7 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /**
  * Internal subclass for character set and collation operations within ALTER TABLE. Handles CONVERT
@@ -18,8 +18,13 @@ import net.sf.jsqlparser.statement.create.table.Index;
 public class AlterExpressionCharset extends AlterExpression {
 
     @Override
-    public Index.Kind getConstraintKind() {
-        return Index.Kind.OTHER;
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
     }
 
     @Override

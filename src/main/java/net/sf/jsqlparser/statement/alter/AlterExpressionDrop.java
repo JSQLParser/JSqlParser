@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.alter;
 
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /**
  * Internal subclass for DROP operations within ALTER TABLE. Handles DROP column, DROP CONSTRAINT,
@@ -19,21 +19,26 @@ import net.sf.jsqlparser.statement.create.table.Index;
  */
 public class AlterExpressionDrop extends AlterExpression {
     @Override
-    public Index.Kind getConstraintKind() {
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
         if (getOperation() == null) {
-            return Index.Kind.OTHER;
+            return ConstraintKind.OTHER;
         }
         switch (getOperation()) {
             case DROP_PRIMARY_KEY:
-                return Index.Kind.PRIMARY_KEY;
+                return ConstraintKind.PRIMARY_KEY;
             case DROP_UNIQUE:
-                return Index.Kind.UNIQUE;
+                return ConstraintKind.UNIQUE;
             case DROP_FOREIGN_KEY:
-                return Index.Kind.FOREIGN_KEY;
+                return ConstraintKind.FOREIGN_KEY;
             case DROP_CHECK:
-                return Index.Kind.CHECK;
+                return ConstraintKind.CHECK;
             default:
-                return Index.Kind.OTHER;
+                return ConstraintKind.OTHER;
         }
     }
 

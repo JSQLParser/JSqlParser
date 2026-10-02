@@ -14,7 +14,10 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
+import java.util.List;
 import net.sf.jsqlparser.statement.create.table.TableOption;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
@@ -27,7 +30,7 @@ class IndexOptionBoundaryTest {
     void tablespaceBelongsToConstraintOptions(String key) throws JSQLParserException {
         Alter alter = (Alter) parse("ALTER TABLE t ADD CONSTRAINT k " + key
                 + " (id) USING INDEX TABLESPACE pg_default DEFERRABLE", Dialect.POSTGRESQL);
-        Index index = alter.getAlterExpressions().get(0).getIndex();
+        KeyConstraint index = (KeyConstraint) alter.getAlterExpressions().get(0).getConstraint();
         assertEquals("pg_default", index.getTableSpace());
         assertNull(index.getUsing());
         assertTrue(index.getConstraintAttributes().getDeferrable());
@@ -46,6 +49,24 @@ class IndexOptionBoundaryTest {
         assertEquals("ix", alter.getAlterExpressions().get(0).getIndex().getName());
         assertEquals("ALTER TABLE t ADD  INDEX ix (id) " + options, alter.toString());
         assertRoundTrip(alter, Dialect.MYSQL);
+    }
+
+    @Test
+    void permissiveIndexSuffixRemainsAfterItsStructuredOptions() throws JSQLParserException {
+        String sql = "CREATE TABLE t (id INT, INDEX ix (id) INCLUDE (id) "
+                + "WITH (fillfactor = 70) USING INDEX TABLESPACE fast DEFERRABLE)";
+        CreateTable statement = (CreateTable) CCJSqlParserUtil.parse(sql);
+        Index index = statement.getIndexes().get(0);
+        assertEquals(List.of("id"), index.getIncludeColumns());
+        assertEquals(List.of("DEFERRABLE"), index.getTailParameters());
+        assertEquals(sql, statement.toString());
+        index.setTableSpace("other_space");
+        assertEquals(sql.replace("TABLESPACE fast", "TABLESPACE other_space"),
+                statement.toString());
+        StringBuilder deparsed = new StringBuilder();
+        statement.accept(new StatementDeParser(deparsed));
+        assertEquals(statement.toString(), deparsed.toString());
+        assertEquals(statement.toString(), CCJSqlParserUtil.parse(deparsed.toString()).toString());
     }
 
     @Test

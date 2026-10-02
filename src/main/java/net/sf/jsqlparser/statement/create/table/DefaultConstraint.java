@@ -21,7 +21,12 @@ public class DefaultConstraint extends NamedConstraint {
 
     public DefaultConstraint() {
         setType("DEFAULT");
-        setKind(Kind.DEFAULT);
+
+    }
+
+    @Override
+    public ConstraintKind getKind() {
+        return ConstraintKind.DEFAULT;
     }
 
     public Expression getExpression() {

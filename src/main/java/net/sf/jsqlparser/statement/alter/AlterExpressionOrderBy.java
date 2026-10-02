@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /** MySQL ALTER TABLE ORDER BY, using the same mutable order elements as query ordering. */
 public class AlterExpressionOrderBy extends AlterExpression {
@@ -29,8 +29,13 @@ public class AlterExpressionOrderBy extends AlterExpression {
     }
 
     @Override
-    public Index.Kind getConstraintKind() {
-        return Index.Kind.OTHER;
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
     }
 
     @Override

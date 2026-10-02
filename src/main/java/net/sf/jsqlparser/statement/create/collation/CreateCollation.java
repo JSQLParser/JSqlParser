@@ -14,14 +14,14 @@ import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 
 /** PostgreSQL collation copy or parameter definition, with mutually exclusive forms. */
 public class CreateCollation implements Statement {
     private String name;
     private boolean ifNotExists;
     private String sourceCollation;
-    private List<Index.Option> options;
+    private List<IndexOption> options;
 
     public String getName() {
         return name;
@@ -50,11 +50,11 @@ public class CreateCollation implements Statement {
         }
     }
 
-    public List<Index.Option> getOptions() {
+    public List<IndexOption> getOptions() {
         return options;
     }
 
-    public void setOptions(List<Index.Option> options) {
+    public void setOptions(List<IndexOption> options) {
         this.options = options;
         if (options != null) {
             sourceCollation = null;
@@ -71,14 +71,14 @@ public class CreateCollation implements Statement {
             sql.append(" FROM ").append(sourceCollation);
         } else {
             sql.append(' ');
-            Index.Option.appendListTo(sql, options, printer);
+            IndexOption.appendListTo(sql, options, printer);
         }
         return sql;
     }
 
     public void visitExpressions(Consumer<Expression> visitor) {
         if (sourceCollation == null && options != null) {
-            options.stream().map(Index.Option::getValue).filter(java.util.Objects::nonNull)
+            options.stream().map(IndexOption::getValue).filter(java.util.Objects::nonNull)
                     .forEach(visitor);
         }
     }

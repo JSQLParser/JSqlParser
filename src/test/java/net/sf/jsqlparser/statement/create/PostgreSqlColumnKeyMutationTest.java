@@ -34,7 +34,7 @@ class PostgreSqlColumnKeyMutationTest {
                     ? ((Alter) statement).getAlterExpressions().get(0).getColDataTypeList().get(0)
                     : ((CreateTable) statement).getColumnDefinitions().get(0);
             assertEquals(2, column.getColumnOptions().size());
-            Index constraint = column.getColumnOptions().get(0).getConstraint();
+            NamedConstraint constraint = column.getColumnOptions().get(0).getConstraint();
             assertEquals("old_name", constraint.getName());
             assertTrue(constraint.getConstraintAttributes().getDeferrable());
             constraint.setName("new_name");
@@ -67,7 +67,8 @@ class PostgreSqlColumnKeyMutationTest {
             "NOT VALID NO INHERIT NOT ENFORCED", "NOT ENFORCED NOT VALID NO INHERIT"})
     void tableCheckAllowsInheritanceAmongAttributes(String attributes) throws JSQLParserException {
         Alter alter = (Alter) parse("ALTER TABLE t ADD CHECK (id > 0) " + attributes);
-        CheckConstraint check = (CheckConstraint) alter.getAlterExpressions().get(0).getIndex();
+        CheckConstraint check =
+                (CheckConstraint) alter.getAlterExpressions().get(0).getConstraint();
         assertTrue(check.isNoInherit());
         assertFalse(check.getEnforced());
         assertEquals(attributes.contains("NOT VALID"),

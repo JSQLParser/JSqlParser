@@ -58,7 +58,8 @@ class PostgreSqlColumnNotNullTest {
         assertEquals(ColumnOption.Kind.NULLABILITY, option.getKind());
         assertEquals(false, option.getNullable());
         NotNullConstraint table = (NotNullConstraint) ((CreateTable) parse(
-                "CREATE TABLE t (id INT, CONSTRAINT nn NOT NULL id NO INHERIT)")).getIndexes()
+                "CREATE TABLE t (id INT, CONSTRAINT nn NOT NULL id NO INHERIT)"))
+                .getTableConstraints()
                 .get(0);
         assertFalse(table.isColumnConstraint());
         assertEquals("id", table.getColumn().getColumnName());

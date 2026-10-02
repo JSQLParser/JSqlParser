@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
@@ -27,8 +29,9 @@ import net.sf.jsqlparser.statement.alter.AlterForeignDataOptions;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
+import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
@@ -79,6 +82,9 @@ public final class TableDefinitionTraversal {
         if (action.getColDataTypeList() != null) {
             action.getColDataTypeList().forEach(column -> visit(column, expressions, tables));
         }
+        if (action.getConstraint() != null) {
+            visit(action.getConstraint(), expressions, tables);
+        }
         if (action.getIndex() != null) {
             visit(action.getIndex(), expressions, tables);
         }
@@ -117,6 +123,10 @@ public final class TableDefinitionTraversal {
         } else {
             if (table.getColumnDefinitions() != null) {
                 table.getColumnDefinitions().forEach(column -> visit(column, expressions, tables));
+            }
+            if (table.getTableConstraints() != null) {
+                table.getTableConstraints()
+                        .forEach(constraint -> visit(constraint, expressions, tables));
             }
             if (table.getIndexes() != null) {
                 table.getIndexes().forEach(index -> visit(index, expressions, tables));
@@ -199,36 +209,35 @@ public final class TableDefinitionTraversal {
             if (column instanceof AlterExpression.ColumnDataType) {
                 accept(((AlterExpression.ColumnDataType) column).getUsingExpression(), expressions);
             }
-        } else if (element instanceof Index) {
-            Index index = (Index) element;
-            if (index.getColumns() != null) {
-                for (Index.ColumnParams column : index.getColumns()) {
-                    accept(column.getExpression(), expressions);
-                    visitOptions(column.getOperatorClassParameters(), expressions);
+        } else if (element instanceof NotNullConstraint) {
+            accept(((NotNullConstraint) element).getColumn(), expressions);
+        } else if (element instanceof CheckConstraint) {
+            accept(((CheckConstraint) element).getExpression(), expressions);
+        } else if (element instanceof DefaultConstraint) {
+            DefaultConstraint constraint = (DefaultConstraint) element;
+            accept(constraint.getExpression(), expressions);
+            accept(constraint.getColumn(), expressions);
+        } else if (element instanceof ExcludeConstraint) {
+            accept(((ExcludeConstraint) element).getExpression(), expressions);
+        } else if (element instanceof ForeignKeyConstraint) {
+            accept(((ForeignKeyConstraint) element).getTable(), tables);
+        }
+        if (element instanceof KeyColumnSource) {
+            List<KeyElement> keys = ((KeyColumnSource) element).getColumns();
+            if (keys != null) {
+                for (KeyElement key : keys) {
+                    accept(key.getExpression(), expressions);
+                    visitOptions(key.getOperatorClassParameters(), expressions);
                 }
             }
-            visitOptions(index.getStorageParameters(), expressions);
-            if (index instanceof NotNullConstraint) {
-                accept(((NotNullConstraint) index).getColumn(), expressions);
-            }
-            if (index instanceof CheckConstraint) {
-                accept(((CheckConstraint) index).getExpression(), expressions);
-            }
-            if (index instanceof DefaultConstraint) {
-                DefaultConstraint constraint = (DefaultConstraint) index;
-                accept(constraint.getExpression(), expressions);
-                accept(constraint.getColumn(), expressions);
-            }
-            if (index instanceof ExcludeConstraint) {
-                accept(((ExcludeConstraint) index).getExpression(), expressions);
-            }
-            if (index instanceof ForeignKeyIndex) {
-                accept(((ForeignKeyIndex) index).getTable(), tables);
-            }
+        }
+        if (element instanceof IndexOptionSource) {
+            visitOptions(((IndexOptionSource) element).getIndexOptions().getStorageParameters(),
+                    expressions);
         }
     }
 
-    private static void visitOptions(List<Index.Option> options, Consumer<Expression> expressions) {
+    private static void visitOptions(List<IndexOption> options, Consumer<Expression> expressions) {
         if (options != null) {
             options.forEach(option -> accept(option.getValue(), expressions));
         }
