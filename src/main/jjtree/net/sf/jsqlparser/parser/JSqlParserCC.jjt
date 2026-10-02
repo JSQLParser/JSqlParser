@@ -8252,8 +8252,9 @@ boolean ColumnsTransformerAhead() #void:
 {
       LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
     | LOOKAHEAD( ( <K_APPLY> | <K_REPLACE> ) AliasColumns() ) { return false; }
-    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
-        | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
+        | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
+        | <K_EXCLUDE> ParenthesedColumnList() )
       { return true; }
     | { return false; }
 }
@@ -8271,8 +8272,9 @@ boolean AllColumnsTransformerAhead() #void:
 {
       LOOKAHEAD( <K_APPLY> "(" RelObjectName() ")" ) { return true; }
     | LOOKAHEAD( <K_APPLY> AliasColumns() ) { return false; }
-    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
-        | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
+    | LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
+        | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
+        | <K_EXCLUDE> ParenthesedColumnList() )
       { return true; }
     | { return false; }
 }
@@ -8298,7 +8300,8 @@ Expression SelectItemExpression() #ColumnsExpression(transformers != null):
         ( expression = Condition() { expression = prattExpressionRest(expression, 2); } )
     )
     (
-        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "(" | <K_EXCEPT> ParenthesedColumnList() )
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
+            | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> ) )
         {
             if (!(expression instanceof Function)) {
                 break;
@@ -8330,17 +8333,19 @@ Expression SelectItemExpression() #ColumnsExpression(transformers != null):
 }
 
 /**
- * Parses a single ClickHouse transformer: APPLY(expression), EXCEPT (columns) or
- * REPLACE (selectItems). ClickHouse parses these in a loop, so they may repeat
- * and combine in any order.
+ * Parses a single ClickHouse transformer: APPLY(expression), EXCEPT [STRICT] (columns)
+ * or a pattern, REPLACE [STRICT] (selectItems). ClickHouse parses these in a loop, so
+ * they may repeat and combine in any order.
  */
 ColumnsTransformer ColumnsTransformer():
 {
     Expression applyExpression;
-    ParenthesedExpressionList<Column> exceptColumns;
+    ParenthesedExpressionList<Column> exceptColumns = null;
+    StringValue exceptPattern = null;
     List<SelectItem<?>> replaceItems;
     ColumnsTransformer transformer;
     Token tk;
+    boolean strict;
 }
 {
     (
@@ -8354,16 +8359,32 @@ ColumnsTransformer ColumnsTransformer():
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.APPLY)
                   .setApplyExpression(applyExpression); }
 
-        | ( tk=<K_EXCEPT> | tk=<K_EXCLUDE> ) exceptColumns = ParenthesedColumnList()
-          { transformer = new ColumnsTransformer(
-                  tk.kind == K_EXCLUDE
-                          ? ColumnsTransformer.ColumnsTransformerType.EXCLUDE
-                          : ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+        | <K_EXCEPT>
+          { strict = false; }
+          [ <K_STRICT> { strict = true; } ]
+          (
+              exceptColumns = ParenthesedColumnList()
+              |
+              tk=<S_CHAR_LITERAL> { exceptPattern = new StringValue(tk.image); }
+          )
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+                  .setStrict(strict);
+            if (exceptPattern != null) {
+                transformer.setExceptPattern(exceptPattern);
+            } else {
+                transformer.setExceptColumns(exceptColumns);
+            } }
+
+        | <K_EXCLUDE> exceptColumns = ParenthesedColumnList()
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCLUDE)
                   .setExceptColumns(exceptColumns); }
 
-        | <K_REPLACE> "(" replaceItems = SelectItemsList() ")"
+        | <K_REPLACE>
+          { strict = false; }
+          [ <K_STRICT> { strict = true; } ]
+          "(" replaceItems = SelectItemsList() ")"
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
-                  .setReplaceItems(replaceItems); }
+                  .setStrict(strict).setReplaceItems(replaceItems); }
     )
     { return transformer; }
 }
@@ -8383,8 +8404,9 @@ AllColumns AllColumns(boolean allowAdditions):
     // BigData allows EXCEPT, DuckDB allows EXCLUDE, ClickHouse allows APPLY;
     // they may repeat and combine in any order
     (
-        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> "("
-            | ( <K_EXCEPT> | <K_EXCLUDE> ) ParenthesedColumnList() )
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
+            | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
+            | <K_EXCLUDE> ParenthesedColumnList() )
         {
             if (!allowAdditions || !AllColumnsTransformerAhead()) {
                 break;
