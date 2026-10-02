@@ -1004,7 +1004,8 @@ public class SelectTest {
         assertEquals("mytable2",
                 ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
         assertEquals(3,
-                ((LongValue) setList.getSelects().get(2).getLimit().getOffset()).getValue());
+                ((LongValue) setList.getLimit().getOffset()).getValue());
+        assertNull(setList.getSelects().get(2).getLimit());
 
 
         // with fetch and with ur
@@ -1042,11 +1043,13 @@ public class SelectTest {
         assertEquals("mytable2",
                 ((Table) ((PlainSelect) setList.getSelects().get(2)).getFromItem()).getName());
         assertEquals(3,
-                ((LongValue) setList.getSelects().get(2).getLimit().getRowCount())
+                ((LongValue) setList.getLimit().getRowCount())
                         .getValue());
-        assertNull(setList.getSelects().get(2).getLimit().getOffset());
+        assertNull(setList.getLimit().getOffset());
         assertEquals(new LongValue(4),
-                setList.getSelects().get(2).getOffset().getOffset());
+                setList.getOffset().getOffset());
+        assertNull(setList.getSelects().get(2).getLimit());
+        assertNull(setList.getSelects().get(2).getOffset());
 
     }
 
