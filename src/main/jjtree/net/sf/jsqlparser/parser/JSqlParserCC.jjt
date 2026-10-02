@@ -3269,6 +3269,7 @@ Token KeywordOrIdentifier():
 
 Statement Statement() #Statement:
 {
+    Token statementStart = getToken(0);
     IfElseStatement ifElseStatement = null;
     Statement stm = null;
     Statement stm2 = null;
@@ -3306,7 +3307,8 @@ Statement Statement() #Statement:
             LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
          } catch (ParseException ex) {
             if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
+                stm = recoverUnsupportedStatement(statementStart);
+                ifElseStatement = null;
             } else if ( errorRecovery ) {
                 parseErrors.add(ex);
                 error_skipto(ST_SEMICOLON);
@@ -3607,6 +3609,7 @@ Block Block() #Block : {
 }
 
 Statements Statements() #Statements: {
+    Token statementStart;
     Statements stmts = new Statements();
     IfElseStatement ifElseStatement = null;
     Statement stm = null;
@@ -3617,6 +3620,7 @@ Statements Statements() #Statements: {
     (
         (
              ( <ST_SEMICOLON> )*
+             { statementStart = getToken(0); }
 
              // todo: allow also first statement to be an `UnsupportedStatement`
              try {
@@ -3652,7 +3656,7 @@ Statements Statements() #Statements: {
 
              } catch (ParseException ex) {
                 if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "", error_skipto(ST_SEMICOLON) );
+                    UnsupportedStatement unsupportedStatement = recoverUnsupportedStatement(statementStart);
                     if (!unsupportedStatement.isEmpty()) {
                         stmts.add( unsupportedStatement );
                     }
@@ -3669,6 +3673,7 @@ Statements Statements() #Statements: {
 
         (  LOOKAHEAD(2)
             ( <ST_SEMICOLON> )*
+            { statementStart = getToken(0); }
             try {
                 (
                     <K_IF> condition=Condition()
@@ -3687,7 +3692,7 @@ Statements Statements() #Statements: {
                 ) { stmts.add(stm); stm=null; }
             } catch (ParseException ex) {
                if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "" , error_skipto(ST_SEMICOLON) );
+                   UnsupportedStatement unsupportedStatement = recoverUnsupportedStatement(statementStart);
                    if (!unsupportedStatement.isEmpty()) {
                        stmts.add( unsupportedStatement );
                    }
@@ -3724,6 +3729,18 @@ Statements Statements() #Statements: {
     {
         return stmts;
     }
+}
+
+JAVACODE
+UnsupportedStatement recoverUnsupportedStatement(Token statementStart) {
+  error_skipto(ST_SEMICOLON);
+  List<String> tokenImages = new ArrayList<String>();
+  Token statementEnd = getToken(0);
+  // Include tokens consumed by a failed production, without reserializing a partial AST.
+  for (Token t = statementStart.next; t != statementEnd; t = t.next) {
+    tokenImages.add(t.image);
+  }
+  return new UnsupportedStatement(tokenImages);
 }
 
 JAVACODE
