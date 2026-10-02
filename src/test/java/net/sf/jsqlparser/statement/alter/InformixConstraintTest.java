@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,7 +27,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint.ConstraintNamePosition;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
@@ -51,7 +52,7 @@ class InformixConstraintTest {
             Alter statement = (Alter) TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true,
                     parser -> parser.withDialect(Dialect.INFORMIX));
             NamedConstraint constraint =
-                    (NamedConstraint) statement.getAlterExpressions().get(0).getIndex();
+                    (NamedConstraint) statement.getAlterExpressions().get(0).getConstraint();
             assertEquals(ConstraintNamePosition.AFTER, constraint.getConstraintNamePosition());
             assertTrue(constraint.isUseConstraintKeyword());
             assertEquals(suffix.isEmpty() ? null : suffix.substring(" CONSTRAINT ".length()),
@@ -92,7 +93,7 @@ class InformixConstraintTest {
         String sql = "ALTER TABLE t ADD CONSTRAINT PRIMARY KEY (id)";
         Alter statement = (Alter) CCJSqlParserUtil.parse(sql);
         NamedConstraint constraint =
-                (NamedConstraint) statement.getAlterExpressions().get(0).getIndex();
+                (NamedConstraint) statement.getAlterExpressions().get(0).getConstraint();
         assertEquals("PRIMARY", constraint.getName());
         assertEquals("KEY", constraint.getType());
         assertEquals(ConstraintNamePosition.BEFORE, constraint.getConstraintNamePosition());
@@ -104,7 +105,8 @@ class InformixConstraintTest {
         Alter statement = (Alter) CCJSqlParserUtil.parse(
                 "ALTER TABLE child ADD CONSTRAINT FOREIGN KEY (id) REFERENCES parent(id) CONSTRAINT fk_child",
                 parser -> parser.withDialect(Dialect.INFORMIX));
-        ForeignKeyIndex key = (ForeignKeyIndex) statement.getAlterExpressions().get(0).getIndex();
+        ForeignKeyConstraint key =
+                (ForeignKeyConstraint) statement.getAlterExpressions().get(0).getConstraint();
         assertEquals(List.of("id"), key.getColumnsNames());
         assertEquals("parent", key.getTable().getName());
         assertEquals(List.of("id"), key.getReferencedColumnNames());
@@ -128,7 +130,7 @@ class InformixConstraintTest {
 
     @Test
     void retainsLeadingNamesAndBuilders() throws Exception {
-        NamedConstraint built = new NamedConstraint().withType("PRIMARY KEY").withName("pk_t")
+        NamedConstraint built = new KeyConstraint().withType("PRIMARY KEY").withName("pk_t")
                 .withColumnsNames(List.of("id"));
         assertEquals(ConstraintNamePosition.BEFORE, built.getConstraintNamePosition());
         assertEquals("CONSTRAINT pk_t PRIMARY KEY (id)", built.toString());
@@ -139,7 +141,7 @@ class InformixConstraintTest {
                     (Alter) CCJSqlParserUtil.parse(sql,
                             parser -> parser.withDialect(Dialect.INFORMIX)))) {
                 assertEquals(ConstraintNamePosition.BEFORE,
-                        ((NamedConstraint) statement.getAlterExpressions().get(0).getIndex())
+                        ((NamedConstraint) statement.getAlterExpressions().get(0).getConstraint())
                                 .getConstraintNamePosition());
                 assertTrue(statement.toString().contains("CONSTRAINT c " + definition));
             }
@@ -153,7 +155,7 @@ class InformixConstraintTest {
                         parser -> parser.withDialect(Dialect.INFORMIX));
         CheckConstraint check =
                 (CheckConstraint) statement
-                        .getAlterExpressions().get(0).getIndex();
+                        .getAlterExpressions().get(0).getConstraint();
         StringBuilder builder = new StringBuilder();
         ExpressionDeParser visitor =
                 new ExpressionDeParser() {

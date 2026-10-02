@@ -28,11 +28,11 @@ public class MySQLCreateTableConstraintTest {
 
         CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sql);
 
-        CheckConstraint positive = (CheckConstraint) createTable.getIndexes().get(0);
+        CheckConstraint positive = (CheckConstraint) createTable.getTableConstraints().get(0);
         assertEquals(Boolean.TRUE, positive.getEnforced());
         assertEquals("chk_positive", positive.getName());
 
-        CheckConstraint cap = (CheckConstraint) createTable.getIndexes().get(1);
+        CheckConstraint cap = (CheckConstraint) createTable.getTableConstraints().get(1);
         assertEquals(Boolean.FALSE, cap.getEnforced());
         assertEquals("chk_cap", cap.getName());
     }

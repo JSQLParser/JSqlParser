@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
@@ -21,7 +22,6 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.AlterDeParser;
@@ -55,7 +55,8 @@ class SqlServerDefaultConstraintTest {
         Alter alter = (Alter) TestUtils.assertSqlCanBeParsedAndDeparsed(sql, true,
                 parser -> parser.withSquareBracketQuotation(true));
         assertEquals(alter.toString(), parse(sql).toString());
-        assertInstanceOf(DefaultConstraint.class, alter.getAlterExpressions().get(0).getIndex());
+        assertInstanceOf(DefaultConstraint.class,
+                alter.getAlterExpressions().get(0).getConstraint());
     }
 
     @ParameterizedTest
@@ -77,9 +78,9 @@ class SqlServerDefaultConstraintTest {
     void inspectAndModifyStructuredConstraint() throws JSQLParserException {
         Alter alter = parse("ALTER TABLE t ADD CONSTRAINT df DEFAULT 0 FOR c WITH VALUES");
         AlterExpression action = alter.getAlterExpressions().get(0);
-        DefaultConstraint constraint = (DefaultConstraint) action.getIndex();
+        DefaultConstraint constraint = (DefaultConstraint) action.getConstraint();
         assertEquals(AlterOperation.ADD, action.getOperation());
-        assertEquals(Index.Kind.DEFAULT, constraint.getKind());
+        assertEquals(ConstraintKind.DEFAULT, constraint.getKind());
         assertEquals("DEFAULT", constraint.getType());
         assertEquals("df", constraint.getName());
         assertEquals("c", constraint.getColumn().getColumnName());
@@ -134,7 +135,7 @@ class SqlServerDefaultConstraintTest {
                 "CREATE TABLE t (c INT DEFAULT ((0)), CONSTRAINT pk PRIMARY KEY CLUSTERED (c))");
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ALTER COLUMN c SET DEFAULT 0");
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t ALTER COLUMN c DROP DEFAULT");
-        assertEquals(Index.Kind.DEFAULT, new Index().withType("DEFAULT").getKind());
+        assertEquals(ConstraintKind.DEFAULT, ConstraintKind.fromType("DEFAULT"));
     }
 
     @ParameterizedTest

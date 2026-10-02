@@ -16,9 +16,9 @@ import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPartition;
 import net.sf.jsqlparser.statement.alter.AlterExpressionPrimaryKey;
 import net.sf.jsqlparser.statement.alter.RelationAlterAction;
-import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import java.util.Iterator;
+import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 
 public class AlterDeParser extends AbstractDeParser<Alter> {
     private final ExpressionVisitor<StringBuilder> expressionVisitor;
@@ -70,10 +70,10 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
                     expression -> expression.accept(expressionVisitor, null));
             return;
         }
-        if (action.getOperation() == AlterOperation.ADD && action.getIndex() != null
-                && action.getConstraintType() == null) {
+        if (action.hasActiveTableDefinition()) {
             builder.append(action.getOperation()).append(' ');
-            new TableElementDeParser(builder, expressionVisitor).deParse(action.getIndex());
+            new TableElementDeParser(builder, expressionVisitor).deParse(
+                    action.getConstraint() != null ? action.getConstraint() : action.getIndex());
             if (action.getConstraints() != null && !action.getConstraints().isEmpty()) {
                 builder.append(' ')
                         .append(PlainSelect.getStringList(action.getConstraints(), false, false));
@@ -104,8 +104,11 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
             builder.append(' ')
                     .append(PlainSelect.getStringList(action.getParameters(), false, false));
         }
-        if (action.getIndex() != null && action.getIndex().getCommentText() != null) {
-            builder.append(" COMMENT ").append(action.getIndex().getCommentText());
+        IndexOptionSource options = action.getConstraint() instanceof IndexOptionSource
+                ? (IndexOptionSource) action.getConstraint()
+                : action.getIndex();
+        if (options != null && options.getIndexOptions().getCommentText() != null) {
+            builder.append(" COMMENT ").append(options.getIndexOptions().getCommentText());
         }
     }
 

@@ -28,6 +28,10 @@ import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -58,33 +62,35 @@ public class AlterExpression implements Serializable {
     private String ukName;
     private Index index = null;
     private Index oldIndex = null;
+    private NamedConstraint constraint;
+    private String newConstraintName;
     private String constraintName;
     private boolean usingIfExists;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     private List<String> fkColumns;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     private String fkSourceSchema;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     private String fkSourceTable;
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     private List<String> fkSourceColumns;
@@ -167,8 +173,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getConstraint()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public String getFkSourceSchema() {
@@ -176,8 +182,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceSchema(String fkSourceSchema) {
@@ -220,8 +226,8 @@ public class AlterExpression implements Serializable {
      * @param type
      * @param action
      * @deprecated Standalone FK fields are deprecated. Use a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} via
-     *             {@link #setIndex(Index)} instead.
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} via
+     *             {@link #setConstraint(NamedConstraint)} instead.
      */
     @Deprecated
     public void setReferentialAction(Type type, Action action) {
@@ -333,8 +339,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getConstraint()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkColumns() {
@@ -342,8 +348,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkColumns(List<String> fkColumns) {
@@ -351,8 +357,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getConstraint()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public String getFkSourceTable() {
@@ -360,8 +366,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceTable(String fkSourceTable) {
@@ -431,8 +437,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getIndex()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #getConstraint()} with
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkSourceColumns() {
@@ -440,8 +446,8 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #setIndex(Index)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyIndex} instead.
+     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
+     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceColumns(List<String> fkSourceColumns) {
@@ -527,23 +533,26 @@ public class AlterExpression implements Serializable {
 
     /**
      * Returns a snapshot of the rendered key elements for a structured PRIMARY_KEY, or the legacy
-     * list otherwise. Changing the snapshot does not change the index; use
-     * {@link #setPkColumns(List)} to replace its keys, or {@link Index#getColumns()} for structured
-     * edits.
+     * list otherwise. Changing the snapshot does not change the constraint; use
+     * {@link #setPkColumns(List)} to replace its keys, or {@link KeyConstraint#getColumns()} for
+     * structured edits.
      */
     public List<String> getPkColumns() {
-        return hasKeyIndex(Index.Kind.PRIMARY_KEY) ? index.getColumnsNames() : pkColumns;
+        return hasKeyConstraint(ConstraintKind.PRIMARY_KEY)
+                ? ((KeyConstraint) constraint).getColumnsNames()
+                : pkColumns;
     }
 
     /**
-     * Replaces a structured PRIMARY_KEY's elements using {@link Index#setColumnsNames(List)}. The
-     * strings are not parsed and existing element attributes are not retained, even when the
-     * rendered SQL is unchanged. Use {@link Index#setColumns(List)} to preserve structured
-     * elements. Without a matching index, stores the legacy list.
+     * Replaces a structured PRIMARY_KEY's elements using
+     * {@link KeyConstraint#setColumnsNames(List)}. The strings are not parsed and existing element
+     * attributes are not retained, even when the rendered SQL is unchanged. Use
+     * {@link KeyConstraint#setColumns(List)} to preserve structured elements. Without a matching
+     * constraint, stores the legacy list.
      */
     public void setPkColumns(List<String> pkColumns) {
-        if (hasKeyIndex(Index.Kind.PRIMARY_KEY)) {
-            index.setColumnsNames(pkColumns);
+        if (hasKeyConstraint(ConstraintKind.PRIMARY_KEY)) {
+            ((KeyConstraint) constraint).setColumnsNames(pkColumns);
             this.pkColumns = null;
         } else {
             this.pkColumns = pkColumns;
@@ -552,37 +561,45 @@ public class AlterExpression implements Serializable {
 
     /**
      * Returns a snapshot of the rendered key elements for a structured UNIQUE, or the legacy list
-     * otherwise. Changing the snapshot does not change the index; use {@link #setUkColumns(List)}
-     * to replace its keys, or {@link Index#getColumns()} for structured edits.
+     * otherwise. Changing the snapshot does not change the constraint; use
+     * {@link #setUkColumns(List)} to replace its keys, or {@link KeyConstraint#getColumns()} for
+     * structured edits.
      */
     public List<String> getUkColumns() {
-        return hasKeyIndex(Index.Kind.UNIQUE) ? index.getColumnsNames() : ukColumns;
+        return hasKeyConstraint(ConstraintKind.UNIQUE)
+                ? ((KeyConstraint) constraint).getColumnsNames()
+                : ukColumns;
     }
 
     /**
-     * Replaces a structured UNIQUE's elements using {@link Index#setColumnsNames(List)}. The
-     * strings are not parsed and existing element attributes are not retained, even when the
-     * rendered SQL is unchanged. Use {@link Index#setColumns(List)} to preserve structured
-     * elements. Without a matching index, stores the legacy list.
+     * Replaces a structured UNIQUE's elements using {@link KeyConstraint#setColumnsNames(List)}.
+     * The strings are not parsed and existing element attributes are not retained, even when the
+     * rendered SQL is unchanged. Use {@link KeyConstraint#setColumns(List)} to preserve structured
+     * elements. Without a matching constraint, stores the legacy list.
      */
     public void setUkColumns(List<String> ukColumns) {
-        if (hasKeyIndex(Index.Kind.UNIQUE)) {
-            index.setColumnsNames(ukColumns);
+        if (hasKeyConstraint(ConstraintKind.UNIQUE)) {
+            ((KeyConstraint) constraint).setColumnsNames(ukColumns);
             this.ukColumns = null;
         } else {
             this.ukColumns = ukColumns;
         }
     }
 
-    private boolean hasKeyIndex(Index.Kind kind) {
-        return index != null && index.getKind() == kind;
+    private boolean hasKeyConstraint(ConstraintKind kind) {
+        return constraint instanceof KeyConstraint && constraint.getKind() == kind;
     }
 
     public String getUkName() {
-        return ukName;
+        return hasKeyConstraint(ConstraintKind.UNIQUE)
+                ? ((KeyConstraint) constraint).getIndexName()
+                : ukName;
     }
 
     public void setUkName(String ukName) {
+        if (hasKeyConstraint(ConstraintKind.UNIQUE)) {
+            ((KeyConstraint) constraint).setIndexName(ukName);
+        }
         this.ukName = ukName;
     }
 
@@ -590,8 +607,124 @@ public class AlterExpression implements Serializable {
         return index;
     }
 
+    /**
+     * Returns the constraint kind explicitly declared or targeted by the active action. Named
+     * DROP/ALTER CONSTRAINT actions return OTHER because their SQL does not identify the kind; no
+     * catalogue lookup or inference from an inactive Index field is performed. Column actions
+     * return OTHER: inspect their ColumnOption nodes for inline constraints.
+     */
+    public ConstraintKind getConstraintKind() {
+        if (hasExplicitConstraintHeader()) {
+            return ConstraintKind.fromType(getConstraintType());
+        }
+        if (operation == null || isRenameOperation()) {
+            return ConstraintKind.OTHER;
+        }
+        switch (operation) {
+            case DROP_PRIMARY_KEY:
+            case ALTER_PRIMARY_KEY:
+                return ConstraintKind.PRIMARY_KEY;
+            case DROP_UNIQUE:
+                return ConstraintKind.UNIQUE;
+            case DROP_FOREIGN_KEY:
+                return ConstraintKind.FOREIGN_KEY;
+            case DROP_CHECK:
+                return ConstraintKind.CHECK;
+            case ADD:
+                return getAddedConstraintKind();
+            default:
+                return ConstraintKind.OTHER;
+        }
+    }
+
+    private boolean hasExplicitConstraintHeader() {
+        return constraintType != null && constraintSymbol != null
+                && (operation == AlterOperation.ADD || operation == AlterOperation.ALTER);
+    }
+
+    private ConstraintKind getAddedConstraintKind() {
+        if (hasColumnOrNamedTarget()) {
+            return ConstraintKind.OTHER;
+        }
+        if (constraint != null) {
+            return constraint.getKind() != null ? constraint.getKind() : ConstraintKind.OTHER;
+        }
+        if (index != null) {
+            return ConstraintKind.OTHER;
+        }
+        if (pkColumns != null) {
+            return ConstraintKind.PRIMARY_KEY;
+        }
+        if (ukColumns != null) {
+            return ConstraintKind.UNIQUE;
+        }
+        return fkColumns != null ? ConstraintKind.FOREIGN_KEY : ConstraintKind.OTHER;
+    }
+
+    private boolean hasColumnOrNamedTarget() {
+        return columnName != null || colDataTypeList != null || constraintName != null
+                || oldIndex != null || commentText != null || columnSetNotNullList != null
+                || columnDropNotNullList != null
+                || columnDropDefaultList != null && !columnDropDefaultList.isEmpty();
+    }
+
+    /**
+     * Whether the active ADD body uses the complete table-definition renderer. Legacy constraint
+     * headers and specialized action bodies use their own renderers. Stored definitions remain
+     * accessible even when another payload takes precedence.
+     */
+    public boolean hasActiveTableDefinition() {
+        return operation == AlterOperation.ADD && (constraint != null || index != null)
+                && !(constraintType != null && constraintSymbol != null)
+                && !isRenameOperation() && commentText == null && columnName == null
+                && colDataTypeList == null && columnSetNotNullList == null
+                && columnDropNotNullList == null
+                && (columnDropDefaultList == null || columnDropDefaultList.isEmpty())
+                && constraintName == null;
+    }
+
+    /** Sets an index definition or target; a non-null value replaces any constraint definition. */
     public void setIndex(Index index) {
         this.index = index;
+        if (index != null) {
+            clearReplacedConstraintAliases(null);
+            constraint = null;
+        }
+    }
+
+    /** Returns the constraint definition, distinct from an ordinary index or a named target. */
+    public NamedConstraint getConstraint() {
+        return constraint;
+    }
+
+    /** Sets a constraint definition; a non-null value replaces any ordinary index definition. */
+    public void setConstraint(NamedConstraint constraint) {
+        clearReplacedConstraintAliases(constraint);
+        this.constraint = constraint;
+        if (constraint != null) {
+            index = null;
+        }
+    }
+
+    private void clearReplacedConstraintAliases(NamedConstraint replacement) {
+        if (constraint != replacement && hasLegacyKeyConstraint()) {
+            constraintType = null;
+            constraintSymbol = null;
+        }
+    }
+
+    /** Returns the target name of a RENAME CONSTRAINT operation. */
+    public String getNewConstraintName() {
+        return newConstraintName;
+    }
+
+    public void setNewConstraintName(String newConstraintName) {
+        this.newConstraintName = newConstraintName;
+    }
+
+    public AlterExpression withConstraint(NamedConstraint constraint) {
+        setConstraint(constraint);
+        return this;
     }
 
     public List<ConstraintState> getConstraints() {
@@ -780,10 +913,14 @@ public class AlterExpression implements Serializable {
     }
 
     public String getConstraintSymbol() {
-        return constraintSymbol;
+        return hasLegacyKeyConstraint() ? ((KeyConstraint) constraint).getIndexName()
+                : constraintSymbol;
     }
 
     public void setConstraintSymbol(String constraintSymbol) {
+        if (hasLegacyKeyConstraint()) {
+            ((KeyConstraint) constraint).setIndexName(constraintSymbol);
+        }
         this.constraintSymbol = constraintSymbol;
     }
 
@@ -796,11 +933,19 @@ public class AlterExpression implements Serializable {
     }
 
     public String getConstraintType() {
-        return constraintType;
+        return hasLegacyKeyConstraint() ? constraint.getType() : constraintType;
     }
 
     public void setConstraintType(String constraintType) {
+        if (hasLegacyKeyConstraint()) {
+            constraint.setType(constraintType);
+        }
         this.constraintType = constraintType;
+    }
+
+    private boolean hasLegacyKeyConstraint() {
+        return operation == AlterOperation.ADD && constraint instanceof KeyConstraint
+                && constraintType != null && constraintSymbol != null;
     }
 
     public boolean isInvisible() {
@@ -828,8 +973,7 @@ public class AlterExpression implements Serializable {
     protected void appendBody(StringBuilder b) {
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
-        } else if (constraintType != null && constraintSymbol != null
-                && (operation == AlterOperation.ALTER || operation == AlterOperation.ADD)) {
+        } else if (hasExplicitConstraintHeader()) {
             toStringConstraintAlter(b);
         } else if (operation == AlterOperation.ALTER
                 && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
@@ -858,8 +1002,11 @@ public class AlterExpression implements Serializable {
         if (parameters != null && !parameters.isEmpty()) {
             b.append(' ').append(PlainSelect.getStringList(parameters, false, false));
         }
-        if (index != null && index.getCommentText() != null) {
-            b.append(" COMMENT ").append(index.getCommentText());
+        IndexOptionSource options = constraint instanceof IndexOptionSource
+                ? (IndexOptionSource) constraint
+                : index;
+        if (options != null && options.getCommentText() != null) {
+            b.append(" COMMENT ").append(options.getCommentText());
         }
     }
 
@@ -881,7 +1028,8 @@ public class AlterExpression implements Serializable {
     }
 
     protected boolean isRenameOperation() {
-        return getOldIndex() != null || operation == AlterOperation.RENAME_TABLE;
+        return getOldIndex() != null || operation == AlterOperation.RENAME_CONSTRAINT
+                || operation == AlterOperation.RENAME_TABLE;
     }
 
     protected boolean isDropSpecialOperation() {
@@ -932,11 +1080,13 @@ public class AlterExpression implements Serializable {
                 b.append(" ENFORCED");
             }
         } else {
-            b.append("ADD CONSTRAINT ").append(constraintType).append(" ").append(constraintSymbol)
+            b.append("ADD CONSTRAINT ").append(getConstraintType()).append(" ")
+                    .append(getConstraintSymbol())
                     .append(" ");
-            if (index != null && index.getColumnsNames() != null) {
+            if (constraint instanceof KeyConstraint) {
                 b.append(" ")
-                        .append(PlainSelect.getStringList(index.getColumnsNames(), true, true));
+                        .append(PlainSelect.getStringList(
+                                ((KeyConstraint) constraint).getColumnsNames(), true, true));
             }
         }
     }
@@ -1019,7 +1169,10 @@ public class AlterExpression implements Serializable {
     }
 
     protected void toStringRename(StringBuilder b) {
-        if (getOldIndex() != null) {
+        if (operation == AlterOperation.RENAME_CONSTRAINT) {
+            b.append("RENAME CONSTRAINT ").append(constraintName).append(" TO ")
+                    .append(newConstraintName);
+        } else if (getOldIndex() != null) {
             b.append("RENAME");
             switch (operation) {
                 case RENAME_KEY:
@@ -1272,6 +1425,8 @@ public class AlterExpression implements Serializable {
                 b.append("IF EXISTS ");
             }
             b.append(constraintName);
+        } else if (constraint != null) {
+            b.append(constraint);
         } else if (index != null) {
             // The structured index is canonical. Legacy PK/UK/FK fields may also be populated for
             // source compatibility, but cannot represent names, expressions, or index options.
@@ -1293,9 +1448,9 @@ public class AlterExpression implements Serializable {
                 b.append(ukName);
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
-        } else if (fkColumns != null
-                && !(index instanceof net.sf.jsqlparser.statement.create.table.ForeignKeyIndex)) {
-            // @deprecated path - kept for backward compatibility when ForeignKeyIndex is not set
+        } else if (fkColumns != null) {
+            // @deprecated path - kept for backward compatibility when ForeignKeyConstraint is not
+            // set
             b.append("FOREIGN KEY (")
                     .append(PlainSelect.getStringList(fkColumns))
                     .append(") REFERENCES ")

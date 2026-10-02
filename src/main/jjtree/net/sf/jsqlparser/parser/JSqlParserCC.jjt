@@ -1986,29 +1986,35 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return false;
     }
 
-    /** Attaches the structured index and populates the remaining legacy constraint metadata. */
-    private static void setAlterTableIndex(AlterExpression alterExp, Index index) {
-        alterExp.setIndex(index);
-        if (index.getKind() == Index.Kind.UNIQUE) {
-            alterExp.setUkName(index instanceof NamedConstraint
-                    ? ((NamedConstraint) index).getIndexName() : index.getName());
-            alterExp.setUk(index.getType().toUpperCase(Locale.ROOT).contains("KEY"));
-            alterExp.setUkTypeSpecified(index.getIndexKeyword() != null);
-            // Named constraints render their own options; only legacy indexes need projection.
-            for (String option : index instanceof NamedConstraint ? Collections.<String>emptyList()
-                    : new ArrayList<String>(index.getIndexSpec())) {
-                if (option.toUpperCase(Locale.ROOT).startsWith("USING ")) {
-                    alterExp.addParameters("USING");
-                    alterExp.addParameters(option.substring("USING ".length()));
-                    index.getIndexSpec().remove(option);
-                } else if (option.toUpperCase(Locale.ROOT).startsWith("COMMENT ")) {
-                    index.setCommentText(option.substring("COMMENT ".length()));
-                    index.getIndexSpec().remove(option);
+    /** Attaches the definition to its own AST slot and populates remaining legacy metadata. */
+    private void setAlterTableElement(AlterExpression alterExp, TableElement element) {
+        if (element instanceof Index) {
+            alterExp.setIndex((Index) element);
+            return;
+        }
+        NamedConstraint constraint = (NamedConstraint) element;
+        alterExp.setConstraint(constraint);
+        if (constraint instanceof KeyConstraint && constraint.getKind() == ConstraintKind.UNIQUE) {
+            KeyConstraint key = (KeyConstraint) constraint;
+            alterExp.setUkName(key.getIndexName());
+            alterExp.setUk(key.getType().toUpperCase(Locale.ROOT).contains("KEY"));
+            alterExp.setUkTypeSpecified(key.getIndexKeyword() != null);
+            // Preserve generic ALTER's historical placement of USING and COMMENT options.
+            if (!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
+                    && !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
+                for (String option : new ArrayList<String>(key.getIndexSpec())) {
+                    if (option.toUpperCase(Locale.ROOT).startsWith("USING ")) {
+                        alterExp.addParameters("USING", option.substring("USING ".length()));
+                        key.getIndexSpec().remove(option);
+                    } else if (option.toUpperCase(Locale.ROOT).startsWith("COMMENT ")) {
+                        key.setCommentText(option.substring("COMMENT ".length()));
+                        key.getIndexSpec().remove(option);
+                    }
                 }
             }
         }
-        if (index instanceof ForeignKeyIndex) {
-            ForeignKeyIndex foreignKey = (ForeignKeyIndex) index;
+        if (constraint instanceof ForeignKeyConstraint) {
+            ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) constraint;
             alterExp.setFkColumns(foreignKey.getColumnsNames());
             if (foreignKey.getTable() != null) {
                 alterExp.setFkSourceSchema(foreignKey.getTable().getSchemaName());
@@ -6272,8 +6278,8 @@ List<OracleMultiInsertClause> OracleMultiInsertClauseList():
 InsertConflictTarget InsertConflictTarget():
 {
     InsertConflictTarget target = new InsertConflictTarget();
-    List<Index.ColumnParams> elements = new ArrayList<Index.ColumnParams>();
-    Index.ColumnParams element;
+    List<KeyElement> elements = new ArrayList<KeyElement>();
+    KeyElement element;
     Expression whereExpression;
     String constraintName;
 }
@@ -6290,9 +6296,9 @@ InsertConflictTarget InsertConflictTarget():
     { return target; }
 }
 
-Index.ColumnParams InsertConflictIndexElement():
+KeyElement InsertConflictIndexElement():
 {
-    Index.ColumnParams element;
+    KeyElement element;
     String name;
     Expression expression;
     ObjectNames collation;
@@ -6301,9 +6307,9 @@ Index.ColumnParams InsertConflictIndexElement():
 {
     (
         LOOKAHEAD({ isFunctionAhead() }) expression=Function()
-        { element = new Index.ColumnParams(expression).withExpressionParenthesized(false); }
-        | name=RelObjectNameExt() { element = new Index.ColumnParams(name); }
-        | "(" expression=Expression() ")" { element = new Index.ColumnParams(expression); }
+        { element = new KeyElement(expression).withExpressionParenthesized(false); }
+        | name=RelObjectNameExt() { element = new KeyElement(name); }
+        | "(" expression=Expression() ")" { element = new KeyElement(expression); }
     )
     [ LOOKAHEAD(2) <K_COLLATE> collation=RelObjectNames()
         { element.setCollation(createTable(collation.getNames()).getFullyQualifiedName()); } ]
@@ -14048,8 +14054,8 @@ ColumnDefinition RowsFromColumnDefinition():
     { return column; }
 }
 
-List<Index.ColumnParams> ColumnNamesWithParamsList() : {
-    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
+List<KeyElement> ColumnNamesWithParamsList() : {
+    List<KeyElement> colNames = new ArrayList<KeyElement>();
     String columnName;
     List<String> parameter = null;
 }
@@ -14060,7 +14066,7 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
     { parameter = null; }
     [ parameter = CreateParameter() ]
     {
-        colNames.add(new Index.ColumnParams(columnName,parameter));
+        colNames.add(new KeyElement(columnName,parameter));
     }
 
     (
@@ -14070,7 +14076,7 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
         { parameter = null; }
         [ parameter = CreateParameter() ]
         {
-            colNames.add(new Index.ColumnParams(columnName,parameter));
+            colNames.add(new KeyElement(columnName,parameter));
         }
     )*
 
@@ -14079,17 +14085,17 @@ List<Index.ColumnParams> ColumnNamesWithParamsList() : {
     { return colNames; }
 }
 
-Index.ColumnParams IndexColumnWithParams(): {
+KeyElement IndexColumnWithParams(): {
     String columnName = null;
     List<String> columnParams = new ArrayList<String>();
     List<String> parameter = null;
     Expression expression = null;
     String collation = null;
     String operatorClass = null;
-    List<Index.Option> operatorClassParameters = null;
+    List<IndexOption> operatorClassParameters = null;
     Token sortOrder = null;
     Token nullOrdering = null;
-    Index.ColumnParams column = null;
+    KeyElement column = null;
     boolean postgres = Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
     boolean expressionParenthesized = true;
 }
@@ -14131,9 +14137,9 @@ Index.ColumnParams IndexColumnWithParams(): {
     ( LOOKAHEAD(2, { !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && getToken(1).kind != K_WITH && getToken(1).kind != K_WITHOUT }) parameter=CreateParameter() { columnParams.addAll(parameter); } )*
     {
         column = expression != null
-                ? new Index.ColumnParams(expression,
+                ? new KeyElement(expression,
                         columnParams.isEmpty() ? null : columnParams)
-                : new Index.ColumnParams(columnName,
+                : new KeyElement(columnName,
                         columnParams.isEmpty() ? null : columnParams);
         column.setCollation(collation);
         column.setExpressionParenthesized(expressionParenthesized);
@@ -14142,11 +14148,11 @@ Index.ColumnParams IndexColumnWithParams(): {
             column.setOperatorClassParameters(operatorClassParameters);
         }
         if (sortOrder != null) {
-            column.setSortOrder(Index.ColumnParams.SortOrder.valueOf(
+            column.setSortOrder(KeyElement.SortOrder.valueOf(
                     sortOrder.image.toUpperCase(Locale.ROOT)));
         }
         if (nullOrdering != null) {
-            column.setNullOrdering(Index.ColumnParams.NullOrdering.valueOf(
+            column.setNullOrdering(KeyElement.NullOrdering.valueOf(
                     nullOrdering.image.toUpperCase(Locale.ROOT)));
         }
         return column;
@@ -14167,7 +14173,7 @@ String IndexKeyAttributeName():
     { return name; }
 }
 
-Index.Option PostgreSqlIndexOption(boolean allowBare):
+IndexOption PostgreSqlIndexOption(boolean allowBare):
 {
     String name = null;
     Expression value = null;
@@ -14182,7 +14188,7 @@ Index.Option PostgreSqlIndexOption(boolean allowBare):
         requireDdlSyntax(value == null || useEquals
                 || !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)),
                 "PostgreSQL parameter values require an equals sign");
-        return new Index.Option(name, value, useEquals);
+        return new IndexOption(name, value, useEquals);
     }
 }
 
@@ -14196,14 +14202,14 @@ String PostgreSqlStorageParameterName():
 }
 
 /** Storage parameters allow a bare name; operator-class parameters require a value. */
-List<Index.Option> PostgreSqlIndexOptions():
-{ List<Index.Option> options; }
+List<IndexOption> PostgreSqlIndexOptions():
+{ List<IndexOption> options; }
 { options=PostgreSqlOptions(true) { return options; } }
 
-List<Index.Option> PostgreSqlOptions(boolean allowBare):
+List<IndexOption> PostgreSqlOptions(boolean allowBare):
 {
-    List<Index.Option> options = new ArrayList<Index.Option>();
-    Index.Option option = null;
+    List<IndexOption> options = new ArrayList<IndexOption>();
+    IndexOption option = null;
 }
 {
     "(" option=PostgreSqlIndexOption(allowBare) { options.add(option); }
@@ -14211,13 +14217,13 @@ List<Index.Option> PostgreSqlOptions(boolean allowBare):
     { return options; }
 }
 
-List<Index.ColumnParams> IndexColumnsWithParamsList():
-{ List<Index.ColumnParams> columns; }
+List<KeyElement> IndexColumnsWithParamsList():
+{ List<KeyElement> columns; }
 { columns=IndexKeyColumns(false) { return columns; } }
 
-List<Index.ColumnParams> IndexKeyColumns(boolean temporal) : {
-    List<Index.ColumnParams> colNames = new ArrayList<Index.ColumnParams>();
-    Index.ColumnParams column = null;
+List<KeyElement> IndexKeyColumns(boolean temporal) : {
+    List<KeyElement> colNames = new ArrayList<KeyElement>();
+    KeyElement column = null;
 }
 {
      "("
@@ -14256,7 +14262,7 @@ Index CreateIndexModifiers(CreateIndex statement):
     Index index = new Index();
     Token token;
     List<String> parameter;
-    Index.Clustering clustering;
+    IndexOptions.Clustering clustering;
 }
 {
     (
@@ -14281,10 +14287,10 @@ CreateIndex CreateIndex():
 {
     CreateIndex createIndex = new CreateIndex();
     Table table = null;
-    List<Index.ColumnParams> colNames;
+    List<KeyElement> colNames;
     List<String> includeColumns;
     Boolean nullsDistinct = null;
-    List<Index.Option> storageParameters = null;
+    List<IndexOption> storageParameters = null;
     String tableSpace = null;
     Expression where = null;
     String indexType;
@@ -14547,9 +14553,9 @@ Expression ColumnGenerationExpression():
 }
 
 /** Keeps a column key's name and attributes on the same node in CREATE and ALTER. */
-NamedConstraint ColumnKeyConstraint():
+KeyConstraint ColumnKeyConstraint():
 {
-    NamedConstraint constraint = new NamedConstraint();
+    KeyConstraint constraint = new KeyConstraint();
     String name;
     Boolean nullsDistinct = null;
 }
@@ -15083,33 +15089,33 @@ CreateDatabase CreateDatabase():
 }
 
 /** Shares optional SQL Server constraint modifiers across CREATE and ALTER. */
-Index.Clustering SqlServerIndexClustering():
+IndexOptions.Clustering SqlServerIndexClustering():
 {
     Token token;
-    Index.Clustering clustering = null;
+    IndexOptions.Clustering clustering = null;
 }
 {
     [ LOOKAHEAD({ Dialect.SQLSERVER.name().equals(getAsString(Feature.dialect))
             && (isKeywordAhead("CLUSTERED") || isKeywordAhead("NONCLUSTERED")) })
         token=<S_IDENTIFIER> {
-            clustering = Index.Clustering.valueOf(token.image.toUpperCase(Locale.ROOT));
+            clustering = IndexOptions.Clustering.valueOf(token.image.toUpperCase(Locale.ROOT));
         }
     ]
     { return clustering; }
 }
 
 /** Parses PRIMARY, UNIQUE, plain, FULLTEXT, and SPATIAL indexes for CREATE and ALTER. */
-Index TableIndexSpec(boolean createContext):
+TableElement TableIndexSpec(boolean createContext):
 {
     Token typeToken = null;
     Token keywordToken = null;
     String indexName = null;
     String using = null;
-    List<Index.ColumnParams> columns;
+    List<KeyElement> columns;
     List<String> indexOptions = new ArrayList<String>();
-    Index index;
+    TableElement index;
     Boolean nullsDistinct = null;
-    Index.Clustering clustering = null;
+    IndexOptions.Clustering clustering = null;
 }
 {
     (
@@ -15119,7 +15125,7 @@ Index TableIndexSpec(boolean createContext):
         columns=IndexKeyColumns(true)
         TableIndexOptions(createContext, indexOptions)
         {
-            index = new NamedConstraint()
+            index = new KeyConstraint()
                     .withIndexName(indexName)
                     .withType(typeToken.image + " " + keywordToken.image)
                     .withColumns(columns)
@@ -15141,15 +15147,15 @@ Index TableIndexSpec(boolean createContext):
             // PostgreSQL and MySQL ALTER preserve named constraints separately from index names.
             if (createContext || Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
                     || Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
-                index = new NamedConstraint()
+                index = new KeyConstraint()
                         .withIndexName(indexName)
                         .withType(typeToken.image
                                 + (keywordToken != null ? " " + keywordToken.image : ""))
                         .withUsing(using).withColumns(columns).withIndexSpec(indexOptions);
             } else {
-                index = new Index().withType(typeToken.image)
+                index = new KeyConstraint().withType(typeToken.image)
                         .withIndexKeyword(keywordToken != null ? keywordToken.image : null)
-                        .withName(indexName).withUsing(using).withColumns(columns)
+                        .withIndexName(indexName).withUsing(using).withColumns(columns)
                         .withIndexSpec(indexOptions);
             }
         }
@@ -15194,8 +15200,9 @@ Index TableIndexSpec(boolean createContext):
                     .withName(indexName).withColumns(columns).withIndexSpec(indexOptions);
         }
     )
-    { index.setNullsDistinct(nullsDistinct); index.setClustering(clustering); }
-    PostgreSqlConstraintOptions(index)
+    { ((IndexOptionSource) index).setNullsDistinct(nullsDistinct);
+      ((IndexOptionSource) index).setClustering(clustering); }
+    PostgreSqlConstraintOptions((IndexOptionSource) index)
     { return index; }
 }
 
@@ -15217,7 +15224,7 @@ void TableIndexOptions(boolean createContext, List<String> options):
     )
 }
 
-void PostgreSqlConstraintOptions(Index index):
+void PostgreSqlConstraintOptions(IndexOptionSource index):
 {
     List<String> columns;
 }
@@ -15227,9 +15234,9 @@ void PostgreSqlConstraintOptions(Index index):
 }
 
 /** Column keys share storage/tablespace options, but do not allow INCLUDE. */
-void PostgreSqlIndexStorageOptions(Index index):
+void PostgreSqlIndexStorageOptions(IndexOptionSource index):
 {
-    List<Index.Option> parameters;
+    List<IndexOption> parameters;
     String tableSpace;
 }
 {
@@ -15239,24 +15246,34 @@ void PostgreSqlIndexStorageOptions(Index index):
     } ]
 }
 
-void PostgreSqlConstraintAttributes(Index index):
-{ ConstraintAttributes attributes; }
+void PostgreSqlConstraintAttributes(TableElement element):
 {
-    attributes=PostgreSqlConstraintAttributeList(index.getConstraintAttributes())
+    NamedConstraint constraint = element instanceof NamedConstraint ? (NamedConstraint) element : null;
+    ConstraintAttributes attributes;
+}
+{
+    attributes=PostgreSqlConstraintAttributeList(constraint == null ? null : constraint.getConstraintAttributes())
     ( LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
             && getToken(1).kind == K_NO && "INHERIT".equalsIgnoreCase(getToken(2).image) })
         <K_NO> TypeDdlKeyword("INHERIT") {
-            requireDdlSyntax(index instanceof CheckConstraint && !((CheckConstraint) index).isNoInherit(),
+            requireDdlSyntax(constraint instanceof CheckConstraint && !((CheckConstraint) constraint).isNoInherit(),
                     "NO INHERIT requires a CHECK constraint and cannot be repeated");
-            ((CheckConstraint) index).setNoInherit(true);
+            ((CheckConstraint) constraint).setNoInherit(true);
         }
         attributes=PostgreSqlConstraintAttributeList(attributes)
     )*
     {
         requireDdlSyntax(attributes == null || attributes.getEnforced() == null
-                || index instanceof CheckConstraint || index instanceof ForeignKeyIndex,
+                || constraint instanceof CheckConstraint || constraint instanceof ForeignKeyConstraint,
                 "ENFORCED is supported only for CHECK and foreign key constraints");
-        index.setConstraintAttributes(attributes);
+        if (constraint != null) {
+            constraint.setConstraintAttributes(attributes);
+        } else if (attributes != null) {
+            // Retain permissive legacy index syntax without treating indexes as constraints.
+            StringBuilder suffix = new StringBuilder();
+            attributes.appendTo(suffix);
+            ((Index) element).getTailParameters().add(suffix.toString().trim());
+        }
     }
 }
 
@@ -15310,8 +15327,8 @@ Boolean ConstraintEnforcement():
  * Parses a single table-level constraint inside {@code CREATE TABLE (...)}. Index forms delegate
  * to {@link #TableIndexSpec(boolean)} so CREATE and ALTER expose the same structured AST.
  */
-Index CreateTableConstraint():
-{ Index index; }
+TableElement CreateTableConstraint():
+{ TableElement index; }
 { index=TableConstraint(true) { return index; } }
 
 /** Attaches an existing PostgreSQL index without declaring new index columns. */
@@ -15327,11 +15344,12 @@ ConstraintUsingIndex PostgreSqlConstraintUsingIndex():
 }
 
 /** Shared table-constraint body; index option boundaries depend on CREATE versus ALTER. */
-Index TableConstraint(boolean createContext):
+TableElement TableConstraint(boolean createContext):
 {
     String constraintName = null;
-    Index index = null;
-    ForeignKeyIndex fkIndex = null;
+    TableElement index = null;
+    NamedConstraint namedConstraint;
+    ForeignKeyConstraint fkIndex = null;
     CheckConstraint checkConstraint = null;
 }
 {
@@ -15346,7 +15364,7 @@ Index TableConstraint(boolean createContext):
             LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(createContext) {
                 if (index instanceof NamedConstraint) {
                     ((NamedConstraint) index).setUseConstraintKeyword(true);
-                    index.setName(constraintName);
+                    ((NamedConstraint) index).setName(constraintName);
                 }
             }
             |
@@ -15360,11 +15378,11 @@ Index TableConstraint(boolean createContext):
                 index = checkConstraint;
             }
             |
-            index=PostgreSqlExcludeConstraint() { index.setName(constraintName); }
+            namedConstraint=PostgreSqlExcludeConstraint() { namedConstraint.setName(constraintName); index = namedConstraint; }
             |
             LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                     && getToken(1).kind == K_NOT })
-            index=PostgreSqlNotNullConstraint() { index.setName(constraintName); }
+            namedConstraint=PostgreSqlNotNullConstraint() { namedConstraint.setName(constraintName); index = namedConstraint; }
         )
         |
         fkIndex=ForeignKeySpec(null) { index = fkIndex; }
@@ -15410,8 +15428,8 @@ ExcludeConstraint PostgreSqlExcludeConstraint():
 {
     ExcludeConstraint constraint = new ExcludeConstraint();
     String using;
-    List<Index.ColumnParams> columns = new ArrayList<Index.ColumnParams>();
-    Index.ColumnParams column;
+    List<KeyElement> columns = new ArrayList<KeyElement>();
+    KeyElement column;
     Expression predicate;
 }
 {
@@ -15429,9 +15447,9 @@ ExcludeConstraint PostgreSqlExcludeConstraint():
     }
 }
 
-Index.ColumnParams PostgreSqlExcludeElement():
+KeyElement PostgreSqlExcludeElement():
 {
-    Index.ColumnParams column;
+    KeyElement column;
     Token operator;
     ExclusionOperator reference;
 }
@@ -15695,7 +15713,7 @@ void CreateTableOptions(List<TableOption> options):
 }
 
 TableOption CreateTableOption():
-{ TableOption option; List<String> tokens; List<Index.Option> storageParameters; }
+{ TableOption option; List<String> tokens; List<IndexOption> storageParameters; }
 {
     (
       LOOKAHEAD(<K_WITH> "(") <K_WITH> storageParameters=PostgreSqlIndexOptions() {
@@ -16399,7 +16417,7 @@ CreateView CreateView(boolean isUsingOrReplace):
     Token tk = null;
     List<String> commentTokens = null;
     String name = null;
-    List<Index.Option> storageParameters = null;
+    List<IndexOption> storageParameters = null;
     List<ViewOption> viewOptions = new ArrayList<ViewOption>();
     ViewOption viewOption = null;
     boolean withData;
@@ -16566,10 +16584,10 @@ void ReferentialActionSpec(ForeignKeyReference reference):
 }
 
 /** Shares column/period boundaries on both sides of a foreign key. */
-List<Index.ColumnParams> ForeignKeyColumns(boolean allowParameters):
+List<KeyElement> ForeignKeyColumns(boolean allowParameters):
 {
-    List<Index.ColumnParams> columns = new ArrayList<Index.ColumnParams>();
-    Index.ColumnParams column;
+    List<KeyElement> columns = new ArrayList<KeyElement>();
+    KeyElement column;
 }
 {
     "(" column=ForeignKeyColumn(allowParameters) { columns.add(column); }
@@ -16579,7 +16597,7 @@ List<Index.ColumnParams> ForeignKeyColumns(boolean allowParameters):
     { return columns; }
 }
 
-Index.ColumnParams ForeignKeyColumn(boolean allowParameters):
+KeyElement ForeignKeyColumn(boolean allowParameters):
 {
     boolean period = false;
     String name;
@@ -16593,7 +16611,7 @@ Index.ColumnParams ForeignKeyColumn(boolean allowParameters):
     [ parameters=CreateParameter() {
         requireDdlSyntax(allowParameters && !period, "Expected a foreign key column name");
     } ]
-    { return new Index.ColumnParams(name, parameters).withPeriod(period); }
+    { return new KeyElement(name, parameters).withPeriod(period); }
 }
 
 ForeignKeyReference ForeignKeyReferenceSpec(boolean columnContext):
@@ -16602,14 +16620,14 @@ ForeignKeyReference ForeignKeyReferenceSpec(boolean columnContext):
     ForeignKeyReference.MatchType matchType;
     Token matchToken;
     List<String> refColNames = null;
-    List<Index.ColumnParams> referencedColumns;
+    List<KeyElement> referencedColumns;
     Table fkTable;
 }
 {
     <K_REFERENCES> fkTable=Table()
     [ LOOKAHEAD(2) referencedColumns=ForeignKeyColumns(false) {
         refColNames = new ArrayList<String>();
-        for (Index.ColumnParams column : referencedColumns) {
+        for (KeyElement column : referencedColumns) {
             refColNames.add(column.getColumnName());
         }
         reference.setUsingPeriod(referencedColumns.get(referencedColumns.size() - 1).isPeriod());
@@ -16661,22 +16679,22 @@ CheckConstraint CheckConstraintSpec(String constraintName):
     {
         checkConstraint = new CheckConstraint().withName(constraintName).withExpression(exp)
                 .withEnforced(enforced).withNoInherit(noInherit);
-        checkConstraint.setKind(Index.Kind.CHECK);
+        checkConstraint.setKind(ConstraintKind.CHECK);
         return checkConstraint;
     }
 }
 
 /**
  * Parses: FOREIGN KEY columns REFERENCES table [columns] [referential actions]
- * Returns a populated ForeignKeyIndex. Shared between CREATE TABLE and ALTER TABLE.
+ * Returns a populated ForeignKeyConstraint. Shared between CREATE TABLE and ALTER TABLE.
  */
-ForeignKeyIndex ForeignKeySpec(String constraintName):
+ForeignKeyConstraint ForeignKeySpec(String constraintName):
 {
-    ForeignKeyIndex fkIndex = new ForeignKeyIndex();
+    ForeignKeyConstraint fkIndex = new ForeignKeyConstraint();
     String indexName = null;
     Token tk;
     Token tk2;
-    List<Index.ColumnParams> colNames;
+    List<KeyElement> colNames;
     ForeignKeyReference reference;
 }
 {
@@ -16717,14 +16735,14 @@ void AlterExpressionUsingIndex(AlterExpression alterExp):
  * Parses the common tail after a named constraint in ALTER TABLE:
  * constraint_state [USING [INDEX] name] [COMMENT 'text']
  */
-void AlterExpressionConstraintTail(AlterExpression alterExp, Index index):
+void AlterExpressionConstraintTail(AlterExpression alterExp, KeyConstraint constraint):
 {
     List<ConstraintState> constraints;
 }
 {
     constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
     [ LOOKAHEAD(2) AlterExpressionUsingIndex(alterExp) ]
-    [ LOOKAHEAD(2) index = IndexWithComment(index) { alterExp.setIndex(index); } ]
+    [ LOOKAHEAD(2) IndexWithComment(constraint) ]
 }
 
 AlterView AlterView(boolean useReplace):
@@ -17319,16 +17337,13 @@ List<ConstraintState> AlterExpressionConstraintState():
     }
 }
 
-Index IndexWithComment(Index index):
+void IndexWithComment(IndexOptionSource index):
 {
     Token tk = null;
 }
 {
     <K_COMMENT> tk=<S_CHAR_LITERAL> {
         index.setCommentText(tk.image);
-    }
-    {
-        return index;
     }
 }
 
@@ -17491,7 +17506,7 @@ TablePartitioning PostgreSqlPartitionKey():
 {
     TablePartitioning result;
     Token method;
-    List<Index.ColumnParams> keys;
+    List<KeyElement> keys;
     ExpressionList<Expression> expressions = new ExpressionList<Expression>();
     boolean attributes = false;
 }
@@ -17500,7 +17515,7 @@ TablePartitioning PostgreSqlPartitionKey():
     keys=IndexKeyColumns(false)
     {
         result = new TablePartitioning(TablePartitioning.Type.valueOf(method.image.toUpperCase(Locale.ROOT)));
-        for (Index.ColumnParams key : keys) {
+        for (KeyElement key : keys) {
             requireDdlSyntax(key.getSortOrder() == null && key.getNullOrdering() == null
                     && key.getOperatorClassParameters() == null,
                     "Partition keys do not accept index ordering or operator-class parameters");
@@ -17852,7 +17867,7 @@ NamedConstraint InformixConstraint():
     (
         ( type=<K_PRIMARY> <K_KEY> | type=<K_UNIQUE> )
         columns=ColumnsNamesList() {
-            constraint = new NamedConstraint()
+            constraint = new KeyConstraint()
                     .withType(type.kind == K_PRIMARY ? "PRIMARY KEY" : type.image)
                     .withColumnsNames(columns);
         }
@@ -17880,12 +17895,12 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
     Token tk2 = null;
     String sk3 = null;
     List<String> columnNames = null;
-    ForeignKeyIndex fkIndex = null;
-    Index index = null;
+    ForeignKeyConstraint fkIndex = null;
+    KeyConstraint index = null;
     Table fkTable;
     List<ConstraintState> constraints = null;
     CheckConstraint checkCs = null;
-    Index.Clustering clustering = null;
+    IndexOptions.Clustering clustering = null;
 }
 {
     <K_CONSTRAINT>
@@ -17897,18 +17912,19 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             | { alterExp.setConstraintType("UNIQUE"); } )
             sk3=RelObjectName() {
               alterExp.setConstraintSymbol(sk3);
-              index = new Index();
+              index = new KeyConstraint().withType(alterExp.getConstraintType())
+                      .withIndexName(sk3).withUseConstraintKeyword(true);
             }
             columnNames=ColumnsNamesList() {
               index.setColumnsNames(columnNames);
-              alterExp.setIndex(index);
+              alterExp.setConstraint(index);
             }
         )
         |
         sk3=RelObjectName()
         (
              ( fkIndex=ForeignKeySpec(sk3)
-                { alterExp.setIndex(fkIndex); }
+                { alterExp.setConstraint(fkIndex); }
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
             |
@@ -17916,12 +17932,12 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
                 clustering=SqlServerIndexClustering()
                 columnNames=ColumnsNamesList()
                 {
-                    index = new NamedConstraint()
+                    index = new KeyConstraint()
                         .withName(sk3)
                         .withType(tk.image + " " + tk2.image)
                         .withClustering(clustering)
                         .withColumnsNames(columnNames);
-                    alterExp.setIndex(index);
+                    alterExp.setConstraint(index);
                 }
                 AlterExpressionConstraintTail(alterExp, index)
             )
@@ -17938,7 +17954,7 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             |
             (
                 checkCs = CheckConstraintSpec(sk3)
-                { alterExp.setIndex(checkCs); }
+                { alterExp.setConstraint(checkCs); }
             )
             |
             (
@@ -17946,12 +17962,12 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
                   clustering=SqlServerIndexClustering()
                   columnNames=ColumnsNamesList()
                   {
-                      index = new NamedConstraint()
+                      index = new KeyConstraint()
                         .withName(sk3)
                         .withType(tk.image + (tk2!=null?" " + tk2.image:""))
                         .withClustering(clustering)
                         .withColumnsNames(columnNames);
-                      alterExp.setIndex(index);
+                      alterExp.setConstraint(index);
                   }
                   AlterExpressionConstraintTail(alterExp, index)
             )
@@ -17960,11 +17976,11 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
                 tk=<K_KEY>
                 columnNames=ColumnsNamesList()
                 {
-                    index = new NamedConstraint()
+                    index = new KeyConstraint()
                       .withName(sk3)
                       .withType(tk.image)
                       .withColumnsNames(columnNames);
-                    alterExp.setIndex(index);
+                    alterExp.setConstraint(index);
                 }
                 constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
             )
@@ -18156,9 +18172,11 @@ AlterExpression AlterExpressionAddAlterModify():
     String sk3 = null;
     String sk4 = null;
     List<String> columnNames = null;
-    List<Index.ColumnParams> indexColumnNames = null;
+    List<KeyElement> indexColumnNames = null;
     List<ConstraintState> constraints = null;
     Index index = null;
+    NamedConstraint constraint;
+    TableElement element;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     List<String> indexSpec = new ArrayList<String>();
@@ -18175,10 +18193,10 @@ AlterExpression AlterExpressionAddAlterModify():
 
     (
         LOOKAHEAD({ getToken(1).kind == K_DEFAULT || getToken(1).kind == K_CONSTRAINT
-                && getToken(3).kind == K_DEFAULT }) index=DefaultConstraintSpec() {
+                && getToken(3).kind == K_DEFAULT }) constraint=DefaultConstraintSpec() {
             requireDdlSyntax(alterExp.getOperation() == AlterOperation.ADD,
                     "Table-level DEFAULT constraints require ADD");
-            alterExp.setIndex(index);
+            alterExp.setConstraint(constraint);
         }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ALTER
@@ -18192,17 +18210,17 @@ AlterExpression AlterExpressionAddAlterModify():
         LOOKAHEAD(<K_CONSTRAINT> (<K_PRIMARY> <K_KEY> | <K_FOREIGN> <K_KEY>
                 | <K_UNIQUE> | <K_CHECK>) "(",
                 { Dialect.INFORMIX.name().equals(getAsString(Feature.dialect)) })
-        index=InformixConstraint() {
+        constraint=InformixConstraint() {
             requireDdlSyntax(alterExp.getOperation() == AlterOperation.ADD,
                     "Informix constraint definitions require ADD");
-            alterExp.setIndex(index);
+            alterExp.setConstraint(constraint);
         }
         |
         LOOKAHEAD([ <K_CONSTRAINT> RelObjectName() ]
                 ( <K_UNIQUE> | <K_PRIMARY> <K_KEY> ) <K_USING> <K_INDEX>,
                 { alterExp.getOperation() == AlterOperation.ADD
                     && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
-        index=PostgreSqlConstraintUsingIndex() { alterExp.setIndex(index); }
+        constraint=PostgreSqlConstraintUsingIndex() { alterExp.setConstraint(constraint); }
         |
         LOOKAHEAD({ alterExp.getOperation() == AlterOperation.ADD
                 && (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
@@ -18212,10 +18230,10 @@ AlterExpression AlterExpressionAddAlterModify():
                     || getToken(1).kind == K_CHECK || getToken(1).kind == K_EXCLUDE
                     || getToken(1).kind == K_NOT
                         && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) })
-        index=TableConstraint(false) { setAlterTableIndex(alterExp, index); }
+        element=TableConstraint(false) { setAlterTableElement(alterExp, element); }
         |
-        LOOKAHEAD({ isTableIndexAhead() }) index=TableIndexSpec(false) {
-            setAlterTableIndex(alterExp, index);
+        LOOKAHEAD({ isTableIndexAhead() }) element=TableIndexSpec(false) {
+            setAlterTableElement(alterExp, element);
         }
         constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
         [ AlterExpressionUsingIndex(alterExp) ]
@@ -18264,12 +18282,12 @@ AlterExpression AlterExpressionAddAlterModify():
         |
         LOOKAHEAD(3) AlterExpressionColumnChanges(alterExp)
         |
-        // Standalone FK now uses ForeignKeyIndex, same as CONSTRAINT FK
+        // Standalone FK now uses ForeignKeyConstraint, same as CONSTRAINT FK
         (
-            { ForeignKeyIndex fkIndex; }
+            { ForeignKeyConstraint fkIndex; }
             fkIndex = ForeignKeySpec(null)
             {
-                setAlterTableIndex(alterExp, fkIndex);
+                setAlterTableElement(alterExp, fkIndex);
             }
         )
         |
@@ -18292,9 +18310,9 @@ AlterExpression AlterExpressionAddAlterModify():
 }
 
 /** Parses CockroachDB primary-key elements without legacy raw index parameters. */
-Index.ColumnParams CockroachPrimaryKeyColumn():
+KeyElement CockroachPrimaryKeyColumn():
 {
-    Index.ColumnParams column;
+    KeyElement column;
     String name;
     Expression expression;
     Token token;
@@ -18302,18 +18320,18 @@ Index.ColumnParams CockroachPrimaryKeyColumn():
 {
     (
         LOOKAHEAD({ isFunctionAhead() }) expression=Function()
-        { column = new Index.ColumnParams(expression).withExpressionParenthesized(false); }
+        { column = new KeyElement(expression).withExpressionParenthesized(false); }
         |
-        name=RelObjectName() { column = new Index.ColumnParams(name); }
+        name=RelObjectName() { column = new KeyElement(name); }
         |
-        "(" expression=Expression() ")" { column = new Index.ColumnParams(expression); }
+        "(" expression=Expression() ")" { column = new KeyElement(expression); }
     )
     [ (token=<S_IDENTIFIER> | token=<S_QUOTED_IDENTIFIER>) { column.setOperatorClass(token.image); } ]
     [ (token=<K_ASC> | token=<K_DESC>) {
-        column.setSortOrder(Index.ColumnParams.SortOrder.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        column.setSortOrder(KeyElement.SortOrder.valueOf(token.image.toUpperCase(Locale.ROOT)));
     } ]
     [ <K_NULLS> (token=<K_FIRST> | token=<K_LAST>) {
-        column.setNullOrdering(Index.ColumnParams.NullOrdering.valueOf(token.image.toUpperCase(Locale.ROOT)));
+        column.setNullOrdering(KeyElement.NullOrdering.valueOf(token.image.toUpperCase(Locale.ROOT)));
     } ]
     { return column; }
 }
@@ -18321,9 +18339,9 @@ Index.ColumnParams CockroachPrimaryKeyColumn():
 AlterExpressionPrimaryKey CockroachAlterPrimaryKey():
 {
     AlterExpressionPrimaryKey action = new AlterExpressionPrimaryKey();
-    List<Index.ColumnParams> columns = new ArrayList<Index.ColumnParams>();
-    Index.ColumnParams column;
-    List<Index.Option> options;
+    List<KeyElement> columns = new ArrayList<KeyElement>();
+    KeyElement column;
+    List<IndexOption> options;
     Expression bucketCount;
     Token token;
 }
@@ -18331,7 +18349,7 @@ AlterExpressionPrimaryKey CockroachAlterPrimaryKey():
     <K_ALTER> <K_PRIMARY> <K_KEY> <K_USING> <K_COLUMNS>
     "(" column=CockroachPrimaryKeyColumn() { columns.add(column); }
     ( "," column=CockroachPrimaryKeyColumn() { columns.add(column); } )* ")"
-    { action.getIndex().setColumns(columns); }
+    { action.getConstraint().setColumns(columns); }
     [ <K_USING> <K_HASH> { action.setUsingHash(true); }
         [ LOOKAHEAD(<K_WITH> <S_IDENTIFIER>) <K_WITH> token=<S_IDENTIFIER> {
             requireDdlSyntax("BUCKET_COUNT".equalsIgnoreCase(token.image), "Expected BUCKET_COUNT");
@@ -18339,7 +18357,7 @@ AlterExpressionPrimaryKey CockroachAlterPrimaryKey():
         "=" bucketCount=Expression() { action.setBucketCount(bucketCount); } ]
     ]
     // LOOKAHEAD(2) as in the identical constructs at CreateIndex() and AlterExpression().
-    [ LOOKAHEAD(2) <K_WITH> options=PostgreSqlIndexOptions() { action.getIndex().setStorageParameters(options); } ]
+    [ LOOKAHEAD(2) <K_WITH> options=PostgreSqlIndexOptions() { action.getConstraint().setStorageParameters(options); } ]
     { return action; }
 }
 
@@ -18368,12 +18386,20 @@ AlterExpression AlterExpressionRenameOp():
             <K_CONSTRAINT> { alterExp.setOperation(AlterOperation.RENAME_CONSTRAINT); }
         )
         (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) {
-            alterExp.setOldIndex(new Index().withName(tk.image));
+            if (alterExp.getOperation() == AlterOperation.RENAME_CONSTRAINT) {
+                alterExp.setConstraintName(tk.image);
+            } else {
+                alterExp.setOldIndex(new Index().withName(tk.image));
+            }
         }
         <K_TO>
         (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) {
-            index = new Index().withName(tk2.image);
-            alterExp.setIndex(index);
+            if (alterExp.getOperation() == AlterOperation.RENAME_CONSTRAINT) {
+                alterExp.setNewConstraintName(tk2.image);
+            } else {
+                index = new Index().withName(tk2.image);
+                alterExp.setIndex(index);
+            }
         }
         |
         LOOKAHEAD({ getToken(1).kind == K_TO || getToken(1).kind == K_AS }) (
@@ -18772,7 +18798,7 @@ RelationAlterAction PostgreSqlRelationAction():
     Expression expression;
     Long statistics;
     RelationAlterAction.EnableState enableState;
-    List<Index.Option> options;
+    List<IndexOption> options;
     List<String> names = new ArrayList<String>();
 }
 {
@@ -18872,7 +18898,7 @@ RelationAlterAction PostgreSqlRelationAction():
                   } )
                 |
                 LOOKAHEAD("(") options=PostgreSqlIndexOptions() {
-                    for (Index.Option option : options) {
+                    for (IndexOption option : options) {
                         requireDdlSyntax(option.getValue() != null && option.isUseEquals(),
                                 "Column attributes require a value and an equals sign");
                     }
@@ -21532,7 +21558,7 @@ NotifyStatement NotifyStatement():
 
 CreateCollation CreateCollation():
 {
-    CreateCollation statement = new CreateCollation(); String name; List<Index.Option> options;
+    CreateCollation statement = new CreateCollation(); String name; List<IndexOption> options;
 }
 {
     ContextualKeyword("COLLATION")
@@ -21540,7 +21566,7 @@ CreateCollation CreateCollation():
     name=AccessQualifiedName() { statement.setName(name); }
     ( <K_FROM> name=AccessQualifiedName() { statement.setSourceCollation(name); }
       | options=PostgreSqlOptions(true) {
-          for (Index.Option option : options) {
+          for (IndexOption option : options) {
               requireDdlSyntax(option.getValue() == null || option.isUseEquals(),
                       "Collation parameter values require an equals sign");
           }

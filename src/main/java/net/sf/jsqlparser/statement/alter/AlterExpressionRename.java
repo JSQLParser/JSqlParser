@@ -9,11 +9,23 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
+
 /**
  * Internal subclass for RENAME operations within ALTER TABLE. Handles RENAME COLUMN, RENAME TO
  * (table), RENAME INDEX/KEY/CONSTRAINT.
  */
 public class AlterExpressionRename extends AlterExpression {
+
+    @Override
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
+    }
 
     @Override
     protected void appendBody(StringBuilder b) {

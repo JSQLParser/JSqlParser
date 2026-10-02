@@ -27,7 +27,7 @@ public class TableOption implements Serializable {
     private boolean useEquals;
     private List<String> tokens;
     private List<Table> unionTables;
-    private List<Index.Option> storageParameters;
+    private List<IndexOption> storageParameters;
     private ColumnOption.Storage tablespaceStorage;
 
     public enum Kind {
@@ -56,11 +56,11 @@ public class TableOption implements Serializable {
         tablespaceStorage = storage;
     }
 
-    public List<Index.Option> getStorageParameters() {
+    public List<IndexOption> getStorageParameters() {
         return storageParameters;
     }
 
-    public void setStorageParameters(List<Index.Option> storageParameters) {
+    public void setStorageParameters(List<IndexOption> storageParameters) {
         this.storageParameters = storageParameters;
         foreignTableOptions = null;
         tablespaceStorage = null;
@@ -77,7 +77,7 @@ public class TableOption implements Serializable {
             foreignTableOptions.appendTo(builder, expressionPrinter);
         } else if (storageParameters != null) {
             builder.append("WITH ");
-            Index.Option.appendListTo(builder, storageParameters, expressionPrinter);
+            IndexOption.appendListTo(builder, storageParameters, expressionPrinter);
         } else {
             builder.append(toString());
         }

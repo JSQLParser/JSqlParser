@@ -34,7 +34,7 @@ class TableElementMutationTest {
     void legacyListEditsUpdateOrderedElements() throws JSQLParserException {
         CreateTable table = parse();
         table.getColumnDefinitions().remove(1);
-        table.getIndexes().clear();
+        table.getTableConstraints().clear();
         table.getColumnDefinitions().add(0, column("first"));
         table.getColumnDefinitions().set(1, column("last"));
         assertSql(table, "CREATE TABLE t (LIKE parent INCLUDING DEFAULTS, first INT, last INT)");
@@ -52,7 +52,7 @@ class TableElementMutationTest {
         assertEquals(2, columns.size());
         columns.clear();
         assertEquals(2, table.getTableElements().size());
-        assertEquals(1, table.getIndexes().size());
+        assertEquals(1, table.getTableConstraints().size());
         assertEquals(1, table.getTableElements(LikeClause.class).size());
     }
 
@@ -64,7 +64,7 @@ class TableElementMutationTest {
         table.setColumnDefinitions(Collections.singletonList(column("replacement")));
         assertSql(table, "CREATE TABLE t (LIKE parent INCLUDING DEFAULTS, replacement INT, "
                 + "CONSTRAINT c CHECK (a > 0))");
-        table.setIndexes(null);
+        table.setTableConstraints(null);
         table.setColumnDefinitions(null);
         assertSql(table, "CREATE TABLE t (LIKE parent INCLUDING DEFAULTS)");
     }
@@ -75,8 +75,8 @@ class TableElementMutationTest {
         table.addColumnDefinitions(column("extra"));
         assertEquals(3, table.getColumnDefinitions().size());
         assertEquals(1, table.getTableElements(LikeClause.class).size());
-        table.setIndexes(table.getIndexes());
-        assertEquals(1, table.getIndexes().size());
+        table.setTableConstraints(table.getTableConstraints());
+        assertEquals(1, table.getTableConstraints().size());
         assertSql(table, SQL.substring(0, SQL.length() - 1) + ", extra INT)");
     }
 
@@ -94,7 +94,7 @@ class TableElementMutationTest {
         table.getTableElements().clear();
         assertSql(table, "CREATE TABLE t ()");
         assertTrue(table.getColumnDefinitions().isEmpty());
-        assertTrue(table.getIndexes().isEmpty());
+        assertTrue(table.getTableConstraints().isEmpty());
     }
 
     private static CreateTable parse() throws JSQLParserException {

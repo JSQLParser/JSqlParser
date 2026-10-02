@@ -26,49 +26,16 @@ import net.sf.jsqlparser.statement.select.Select;
 public class CreateTable implements Statement {
 
     private boolean tableOptionsAfterPartition;
-
-    public boolean isTableOptionsAfterPartition() {
-        return tableOptionsAfterPartition;
-    }
-
-    public void setTableOptionsAfterPartition(boolean tableOptionsAfterPartition) {
-        this.tableOptionsAfterPartition = tableOptionsAfterPartition;
-    }
-
     private net.sf.jsqlparser.statement.execute.Execute execute;
-
-    /** Prepared statement source of PostgreSQL CREATE TABLE AS EXECUTE. */
-    public net.sf.jsqlparser.statement.execute.Execute getExecute() {
-        return execute;
-    }
-
-    public void setExecute(net.sf.jsqlparser.statement.execute.Execute execute) {
-        this.execute = execute;
-        select = null;
-        selectParenthesis = false;
-    }
-
     private Table table;
     private boolean unlogged = false;
-
-    /** The structured SERVER clause, also present in the shared table-options list. */
-    public ForeignTableOptions getForeignTableOptions() {
-        if (tableOptions != null) {
-            for (TableOption option : tableOptions) {
-                if (option.getForeignTableOptions() != null) {
-                    return option.getForeignTableOptions();
-                }
-            }
-        }
-        return null;
-    }
-
     private List<String> createOptionsStrings;
     private List<String> tableOptionsStrings;
     private List<TableOption> tableOptions;
     private List<ColumnDefinition> columnDefinitions;
     private List<String> columns;
     private List<Index> indexes;
+    private List<NamedConstraint> tableConstraints;
     private List<TableElement> tableElements;
     private Select select;
     private DuplicateHandling duplicateHandling;
@@ -91,6 +58,37 @@ public class CreateTable implements Statement {
 
     public enum DuplicateHandling {
         IGNORE, REPLACE
+    }
+
+    public boolean isTableOptionsAfterPartition() {
+        return tableOptionsAfterPartition;
+    }
+
+    public void setTableOptionsAfterPartition(boolean tableOptionsAfterPartition) {
+        this.tableOptionsAfterPartition = tableOptionsAfterPartition;
+    }
+
+    /** Prepared statement source of PostgreSQL CREATE TABLE AS EXECUTE. */
+    public net.sf.jsqlparser.statement.execute.Execute getExecute() {
+        return execute;
+    }
+
+    public void setExecute(net.sf.jsqlparser.statement.execute.Execute execute) {
+        this.execute = execute;
+        select = null;
+        selectParenthesis = false;
+    }
+
+    /** The structured SERVER clause, also present in the shared table-options list. */
+    public ForeignTableOptions getForeignTableOptions() {
+        if (tableOptions != null) {
+            for (TableOption option : tableOptions) {
+                if (option.getForeignTableOptions() != null) {
+                    return option.getForeignTableOptions();
+                }
+            }
+        }
+        return null;
     }
 
     /** MySQL's duplicate-key handling when creating a table from a query; null if omitted. */
@@ -195,13 +193,58 @@ public class CreateTable implements Statement {
     }
 
     /**
-     * @return a list of {@link Index}es (for example "PRIMARY KEY") of this table.<br>
-     *         Indexes created with column definitions (as in mycol INT PRIMARY KEY) are not
-     *         inserted into this list. When ordered table elements are present, this is a mutable
-     *         view of their indexes.
+     * Returns index declarations only. Table constraints are available through
+     * {@link #getTableConstraints()}. When ordered table elements are present, this is a mutable
+     * view of their indexes.
      */
     public List<Index> getIndexes() {
         return indexes;
+    }
+
+    /**
+     * Returns column and table constraint declarations in source order, including MySQL UNIQUE
+     * KEY/INDEX declarations, REFERENCES and explicit NOT NULL options. Ordinary DEFAULT column
+     * options are not classified as constraints; explicit {@link DefaultConstraint} nodes are.
+     * Index declarations, raw options, and constraints inherited from LIKE, a type or another table
+     * are not inferred.
+     *
+     * The list is an unmodifiable membership snapshot. Each view reads its original editable AST
+     * nodes; call this method again after inserting or removing declarations or changing a
+     * nullability option between NULL and NOT NULL. Typed constraint nodes remain included even
+     * when their kind is OTHER. For legacy construction without ordered table elements, columns
+     * precede table constraints.
+     */
+    public List<ConstraintDeclaration> getConstraints() {
+        List<ConstraintDeclaration> declarations = new ArrayList<>();
+        if (tableElements != null) {
+            tableElements.forEach(element -> addConstraints(element, declarations));
+        } else {
+            if (columnDefinitions != null) {
+                columnDefinitions.forEach(column -> addConstraints(column, declarations));
+            }
+            if (tableConstraints != null) {
+                tableConstraints.forEach(constraint -> addConstraints(constraint, declarations));
+            }
+        }
+        return Collections.unmodifiableList(declarations);
+    }
+
+    private static void addConstraints(TableElement element,
+            List<ConstraintDeclaration> declarations) {
+        if (element instanceof ColumnDefinition) {
+            ColumnDefinition column = (ColumnDefinition) element;
+            if (column.getColumnOptions() != null) {
+                for (ColumnOption option : column.getColumnOptions()) {
+                    if (option.getKind() == ColumnOption.Kind.CONSTRAINT
+                            && option.getConstraint() != null
+                            || option.getConstraintKind() != ConstraintKind.OTHER) {
+                        declarations.add(new ConstraintDeclaration(column, option));
+                    }
+                }
+            }
+        } else if (element instanceof NamedConstraint) {
+            declarations.add(new ConstraintDeclaration((NamedConstraint) element));
+        }
     }
 
     public void setIndexes(List<Index> list) {
@@ -209,6 +252,23 @@ public class CreateTable implements Statement {
             indexes = list;
         } else {
             TableElementList.replace(tableElements, Index.class, list);
+        }
+    }
+
+    /**
+     * Returns table-level constraint definitions, excluding constraints declared within columns.
+     * When ordered table elements are present, this is a mutable view of their constraints. Use
+     * {@link #getConstraints()} to inspect both column and table declarations.
+     */
+    public List<NamedConstraint> getTableConstraints() {
+        return tableConstraints;
+    }
+
+    public void setTableConstraints(List<NamedConstraint> constraints) {
+        if (tableElements == null) {
+            tableConstraints = constraints;
+        } else {
+            TableElementList.replace(tableElements, NamedConstraint.class, constraints);
         }
     }
 
@@ -224,10 +284,12 @@ public class CreateTable implements Statement {
         if (tableElements == null) {
             columnDefinitions = null;
             indexes = null;
+            tableConstraints = null;
             return;
         }
         columnDefinitions = new TableElementList<>(tableElements, ColumnDefinition.class);
         indexes = new TableElementList<>(tableElements, Index.class);
+        tableConstraints = new TableElementList<>(tableElements, NamedConstraint.class);
     }
 
     /** Returns table elements of a requested AST type while preserving their declaration order. */
@@ -485,14 +547,22 @@ public class CreateTable implements Statement {
             b.append(" (");
             b.append(PlainSelect.getStringList(tableElements, true, false));
             b.append(")");
-        } else if (columnDefinitions != null && !columnDefinitions.isEmpty()) {
-            b.append(" (");
-            b.append(PlainSelect.getStringList(columnDefinitions, true, false));
-            if (indexes != null && !indexes.isEmpty()) {
-                b.append(", ");
-                b.append(PlainSelect.getStringList(indexes));
+        } else {
+            List<TableElement> definitions = new ArrayList<>();
+            if (columnDefinitions != null) {
+                definitions.addAll(columnDefinitions);
             }
-            b.append(")");
+            if (tableConstraints != null) {
+                definitions.addAll(tableConstraints);
+            }
+            if (indexes != null) {
+                definitions.addAll(indexes);
+            }
+            if (!definitions.isEmpty()) {
+                b.append(" (");
+                b.append(PlainSelect.getStringList(definitions, true, false));
+                b.append(")");
+            }
         }
     }
 
@@ -611,6 +681,11 @@ public class CreateTable implements Statement {
         return this;
     }
 
+    public CreateTable withTableConstraints(List<NamedConstraint> constraints) {
+        setTableConstraints(constraints);
+        return this;
+    }
+
     public CreateTable withTableElements(List<TableElement> tableElements) {
         this.setTableElements(tableElements);
         return this;
@@ -667,6 +742,20 @@ public class CreateTable implements Statement {
         List<Index> collection = Optional.ofNullable(getIndexes()).orElseGet(ArrayList::new);
         collection.addAll(indexes);
         return this.withIndexes(collection);
+    }
+
+    public CreateTable addTableConstraints(NamedConstraint... constraints) {
+        List<NamedConstraint> collection =
+                Optional.ofNullable(getTableConstraints()).orElseGet(ArrayList::new);
+        Collections.addAll(collection, constraints);
+        return withTableConstraints(collection);
+    }
+
+    public CreateTable addTableConstraints(Collection<? extends NamedConstraint> constraints) {
+        List<NamedConstraint> collection =
+                Optional.ofNullable(getTableConstraints()).orElseGet(ArrayList::new);
+        collection.addAll(constraints);
+        return withTableConstraints(collection);
     }
 
     public SpannerInterleaveIn getSpannerInterleaveIn() {

@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.Index.Kind;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -27,13 +29,10 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class IndexKindStateTest {
-
     @ParameterizedTest
-    @CsvSource({"PRIMARY KEY, PRIMARY_KEY", "unique key, UNIQUE", "UNIQUE INDEX, UNIQUE",
-            "KEY, INDEX", "INDEX, INDEX", "FULLTEXT KEY, FULLTEXT", "SPATIAL INDEX, SPATIAL",
-            "FOREIGN KEY, FOREIGN_KEY", "CHECK, CHECK", "EXCLUDE, EXCLUDE", "DEFAULT, DEFAULT",
-            "BITMAP INDEX, INDEX"})
-    void replacingTypeRefreshesEveryPreviousClassification(String type, Kind expected) {
+    @CsvSource({"unique key, UNIQUE", "UNIQUE INDEX, UNIQUE", "KEY, INDEX", "INDEX, INDEX",
+            "FULLTEXT KEY, FULLTEXT", "SPATIAL INDEX, SPATIAL", "BITMAP INDEX, INDEX"})
+    void replacingIndexTypeRefreshesEveryPreviousClassification(String type, Kind expected) {
         for (Kind previous : Kind.values()) {
             Index index = new Index().withType("UNIQUE").withKind(previous);
             index.setType(type);
@@ -44,58 +43,63 @@ class IndexKindStateTest {
 
     @ParameterizedTest
     @NullAndEmptySource
-    @ValueSource(strings = {"CUSTOM", "UNIQUE_CUSTOM", "PRIMARY_CUSTOM", "MONKEY", "INDEXED"})
-    void clearingOrReplacingWithCustomTypeClearsStaleKind(String type) {
+    @ValueSource(strings = {"CUSTOM", "UNIQUE_CUSTOM", "PRIMARY_CUSTOM", "MONKEY", "INDEXED",
+            "PRIMARY KEY", "FOREIGN KEY", "CHECK", "EXCLUDE", "DEFAULT", "NOT NULL"})
+    void constraintAndUnknownTypesAreNotPhysicalIndexKinds(String type) {
         Index index = new Index().withType("UNIQUE").withType(type);
         assertEquals(type, index.getType());
         assertEquals(Kind.OTHER, index.getKind());
     }
 
     @Test
-    void classificationDoesNotRewriteSpellingOrDependOnLeadingWhitespace() {
+    void classificationDoesNotRewriteSpelling() {
         Index index = new Index().withType("  unique\tkey  ");
         assertEquals(Kind.UNIQUE, index.getKind());
         assertEquals("  unique\tkey  ", index.getType());
+        KeyConstraint constraint = new KeyConstraint().withType("  unique\tkey  ");
+        assertEquals(ConstraintKind.UNIQUE, constraint.getKind());
+        constraint.setKind(ConstraintKind.PRIMARY_KEY);
+        assertEquals("  unique\tkey  ", constraint.getType());
+        constraint.setType("PRIMARY KEY");
+        assertEquals(ConstraintKind.PRIMARY_KEY, constraint.getKind());
     }
 
     @Test
-    void explicitMetadataSupportsOmittedTypeAndSpecializedConstraints() {
+    void metadataAndFixedConstraintKindsRemainSeparate() {
         Index index = new Index().withKind(Kind.INDEX);
         assertNull(index.getType());
         assertEquals(Kind.INDEX, index.getKind());
-        index.setType("UNIQUE");
-        assertEquals(Kind.UNIQUE, index.getKind());
-        assertEquals(Kind.CHECK, new CheckConstraint().getKind());
-        assertEquals(Kind.EXCLUDE, new ExcludeConstraint().getKind());
-        assertEquals(Kind.DEFAULT, new DefaultConstraint().getKind());
+        assertEquals(ConstraintKind.CHECK, new CheckConstraint().getKind());
+        assertEquals(ConstraintKind.EXCLUDE, new ExcludeConstraint().getKind());
+        assertEquals(ConstraintKind.DEFAULT, new DefaultConstraint().getKind());
     }
 
-    // Both the original and rewritten SQL execute on MySQL 8.4 and PostgreSQL 18.
     @ParameterizedTest
     @CsvSource({"UNIQUE, PRIMARY KEY, PRIMARY_KEY", "PRIMARY KEY, UNIQUE, UNIQUE"})
-    void rewritingPostgreSqlConstraintPreservesKindThroughDeparsing(String before, String after,
-            Kind expected) throws JSQLParserException {
+    void rewritingConstraintPreservesKindThroughDeparsing(String before, String after,
+            ConstraintKind expected) throws JSQLParserException {
         CreateTable table = (CreateTable) assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE index_state (id INT, CONSTRAINT key_state " + before + " (id))");
-        Index index = table.getIndexes().get(0);
-        index.setType(after);
-        assertEquals(expected, index.getKind());
+        KeyConstraint constraint = (KeyConstraint) table.getTableConstraints().get(0);
+        constraint.setType(after);
+        assertEquals(expected, constraint.getKind());
         CreateTable reparsed = (CreateTable) assertSqlCanBeParsedAndDeparsed(table.toString());
-        assertEquals(expected, reparsed.getIndexes().get(0).getKind());
-        assertEquals("key_state", reparsed.getIndexes().get(0).getName());
+        assertEquals(expected, reparsed.getTableConstraints().get(0).getKind());
+        assertEquals("key_state", reparsed.getTableConstraints().get(0).getName());
+        assertEquals(0, reparsed.getIndexes().size());
     }
 
-    // MySQL KEY and INDEX are aliases; UNIQUE changes the constraint's meaning.
     @ParameterizedTest
-    @CsvSource({"UNIQUE KEY, KEY, INDEX", "KEY, UNIQUE KEY, UNIQUE",
-            "UNIQUE INDEX, INDEX, INDEX", "INDEX, UNIQUE INDEX, UNIQUE"})
-    void rewritingMySqlIndexPreservesKindThroughDeparsing(String before, String after,
-            Kind expected) throws JSQLParserException {
+    @ValueSource(strings = {"UNIQUE", "UNIQUE KEY", "UNIQUE INDEX"})
+    void tableUniquenessRequiresAConstraintNodeRatherThanChangingAnIndexType(String type)
+            throws JSQLParserException {
         CreateTable table = (CreateTable) assertSqlCanBeParsedAndDeparsed(
-                "CREATE TABLE index_state (id INT, " + before + " key_state (id))");
-        table.getIndexes().get(0).setType(after);
-        assertEquals(expected, table.getIndexes().get(0).getKind());
+                "CREATE TABLE index_state (id INT, KEY key_state (id))");
+        table.getIndexes().clear();
+        table.getTableConstraints().add(new KeyConstraint().withType(type)
+                .withIndexName("key_state").withColumnsNames(java.util.List.of("id")));
         CreateTable reparsed = (CreateTable) assertSqlCanBeParsedAndDeparsed(table.toString());
-        assertEquals(expected, reparsed.getIndexes().get(0).getKind());
+        assertEquals(0, reparsed.getIndexes().size());
+        assertEquals(ConstraintKind.UNIQUE, reparsed.getTableConstraints().get(0).getKind());
     }
 }

@@ -9,7 +9,6 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -25,7 +24,12 @@ public class CheckConstraint extends NamedConstraint {
     private boolean noInherit;
 
     public CheckConstraint() {
-        setKind(Kind.CHECK);
+        setType("CHECK");
+    }
+
+    @Override
+    public ConstraintKind getKind() {
+        return ConstraintKind.CHECK;
     }
 
     public Table getTable() {
@@ -116,11 +120,6 @@ public class CheckConstraint extends NamedConstraint {
     }
 
     @Override
-    public CheckConstraint withUsing(String using) {
-        return (CheckConstraint) super.withUsing(using);
-    }
-
-    @Override
     public CheckConstraint withUseConstraintKeyword(boolean useConstraintKeyword) {
         return (CheckConstraint) super.withUseConstraintKeyword(useConstraintKeyword);
     }
@@ -135,33 +134,4 @@ public class CheckConstraint extends NamedConstraint {
         return (CheckConstraint) super.withName(name);
     }
 
-    @Override
-    public CheckConstraint withColumnsNames(List<String> list) {
-        return (CheckConstraint) super.withColumnsNames(list);
-    }
-
-    @Override
-    public CheckConstraint withColumns(List<ColumnParams> columns) {
-        return (CheckConstraint) super.withColumns(columns);
-    }
-
-    @Override
-    public CheckConstraint addColumns(ColumnParams... functionDeclarationParts) {
-        return (CheckConstraint) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public CheckConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
-        return (CheckConstraint) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public CheckConstraint withIndexSpec(List<String> idxSpec) {
-        return (CheckConstraint) super.withIndexSpec(idxSpec);
-    }
-
-    @Override
-    public CheckConstraint withIndexKeyword(String indexKeyword) {
-        return (CheckConstraint) super.withIndexKeyword(indexKeyword);
-    }
 }

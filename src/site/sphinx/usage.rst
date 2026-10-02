@@ -315,7 +315,93 @@ Ordinary views expose ordered ``ViewOption`` values for ``security_barrier``, ``
 
 ``getTableElements()`` preserves the order of columns, constraints and ``LIKE`` clauses, including multiple source tables. The three legacy nullable ``LikeClause`` getters report explicit options of that kind; ``isIncluding(OptionKind)`` also resolves ``ALL`` in declaration order. A typed table's ``OF`` type is available through ``CreateTable.getOfType()``.
 
-Table constraints expose ``Index.getNullsDistinct()``, ``getIncludeColumns()``, storage parameters and ``ConstraintAttributes``. ``ExcludeConstraint`` reuses ``Index.ColumnParams`` for its keys; each key exposes its expression and exclusion operator. Column identity clauses are represented by ``ColumnOption.Kind.IDENTITY`` and ``IdentityDefinition``, with a generation mode and ordered ``Sequence.Parameter`` values. These APIs cover the schema clauses described in `CREATE TABLE <https://www.postgresql.org/docs/18/sql-createtable.html>`_.
+Table constraints expose their names and ``ConstraintAttributes`` independently from indexes. ``KeyConstraint`` and ``ExcludeConstraint`` expose ``IndexOptions`` for null treatment, INCLUDE columns, storage parameters and tablespace options. Their ``KeyElement`` nodes expose key expressions, ordering and exclusion operators. Column identity clauses are represented by ``ColumnOption.Kind.IDENTITY`` and ``IdentityDefinition``, with a generation mode and ordered ``Sequence.Parameter`` values. These APIs cover the schema clauses described in `CREATE TABLE <https://www.postgresql.org/docs/18/sql-createtable.html>`_.
+
+Inspect indexes and constraints separately
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Index`` represents index declarations. Constraints are independent
+``NamedConstraint`` nodes: ``KeyConstraint`` for PRIMARY KEY/UNIQUE,
+``ForeignKeyConstraint``, ``CheckConstraint``, ``ExcludeConstraint``,
+``DefaultConstraint``, ``NotNullConstraint`` and ``ConstraintUsingIndex``.
+Constraint nodes do not extend ``Index``. Their ``ConstraintKind`` is separate
+from the physical index classification ``Index.Kind``.
+
+``CreateTable.getIndexes()`` returns only indexes, while
+``getTableConstraints()`` returns table-level constraints. Both are mutable
+views of ``getTableElements()`` when ordered elements are present; removing a
+constraint preserves indexes and their source positions. To inspect column
+and table constraints together, use ``getConstraints()``. This returns
+``ConstraintDeclaration`` views in declaration order.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+        "CREATE TABLE t (id INT PRIMARY KEY, label TEXT)");
+    ConstraintDeclaration primary = table.getConstraints().stream()
+        .filter(declaration -> declaration.getKind() == ConstraintKind.PRIMARY_KEY)
+        .findFirst().orElseThrow();
+    primary.getColumn().setColumnName("new_id");
+    // CREATE TABLE t (new_id INT PRIMARY KEY, label TEXT)
+
+``getColumn()`` retains the owner of an inline declaration and is null for a
+table constraint. ``getColumnOption()`` exposes an inline option;
+``getConstraint()`` exposes its original ``NamedConstraint`` when one exists.
+Column REFERENCES and nullability options retain their own payloads instead
+of manufacturing a table constraint or a key-column list. Edit the original
+source nodes to change SQL. Explicit NOT NULL and REFERENCES are classified;
+ordinary column DEFAULT values are options, while explicit
+``DefaultConstraint`` nodes are classified as DEFAULT. NULL, raw tokens and implied constraints are not
+inferred.
+
+The declaration list is an unmodifiable membership snapshot. Its views read
+live source nodes, so type edits change ``getKind()``. Request a new list after
+adding, removing or changing column options. Structured constraint nodes
+remain included when their kind is OTHER. Without ordered table elements,
+manually constructed columns precede table constraints and indexes.
+
+``ColumnOption.getConstraintKind()`` and
+``AlterExpression.getConstraintKind()`` also return ``ConstraintKind``.
+``getOperation()`` distinguishes addition from removal. ALTER ADD constraints
+use ``getConstraint()``; ADD INDEX uses ``getIndex()``. These getters expose
+stored definitions; after changing an action, ``getConstraintKind()`` describes
+the active syntax rather than an inactive stored definition. Column actions
+retain constraints on their column options. RENAME CONSTRAINT uses
+``getConstraintName()`` for the source and ``getNewConstraintName()`` for the
+target; it does not manufacture index nodes. A named ``DROP CONSTRAINT pk`` reports
+``OTHER`` because SQL alone does not reveal what ``pk`` names. This query does
+not validate a definition's completeness or consult the database catalogue.
+
+MySQL table-level ``UNIQUE``, ``UNIQUE KEY`` and ``UNIQUE INDEX`` declarations
+are ``KeyConstraint`` nodes. A standalone ``CREATE UNIQUE INDEX`` remains
+``CreateIndex`` with an ``Index`` payload. The parser does not invent backing
+index nodes for PRIMARY KEY/UNIQUE constraints. PostgreSQL ``USING INDEX``
+retains the existing index name on ``ConstraintUsingIndex`` rather than
+creating key elements or an index definition.
+
+Migration from the former combined model:
+
+* Replace table-constraint reads from ``getIndexes()`` with
+  ``getTableConstraints()`` and ALTER constraint reads from ``getIndex()``
+  with ``getConstraint()``. ``ConstraintDeclaration.getIndex()`` is replaced
+  by ``getConstraint()``.
+* Replace ``ForeignKeyIndex`` with ``ForeignKeyConstraint`` and concrete
+  ``new NamedConstraint()`` construction with the appropriate constraint
+  class, usually ``KeyConstraint``. ``NamedConstraint`` is now abstract.
+* Constraint enum values move from ``Index.Kind`` to ``ConstraintKind``;
+  ``Index.Kind`` retains only UNIQUE, INDEX, FULLTEXT, SPATIAL and OTHER.
+* Shared key and option values are now ``KeyElement`` (formerly
+  ``Index.ColumnParams``), ``IndexOption`` (formerly ``Index.Option``) and
+  ``IndexOptions.Clustering`` (formerly ``Index.Clustering``). These are
+  standalone shared components, not aliases to nested index types. Replace
+  ``getColumnWithParams()``/``setColumnNamesWithParams()`` with
+  ``getColumns()``/``setColumns()`` using ``KeyElement`` values.
+
+``getType()`` preserves the rendered spelling. ``setType()`` refreshes kind
+metadata for indexes and key constraints; ``setKind()`` does not rewrite SQL.
+Constraints with a fixed renderer, such as CHECK, always report their actual
+constraint kind. Replacing an index with a table constraint requires replacing
+the AST node; changing an index's type string cannot change its Java type.
 
 Exclusion keys expose ``getExclusionOperatorReference()`` for structured access
 to an operator's ``schemaName``, ``name`` and ``useOperatorKeyword`` flag. In
@@ -954,7 +1040,7 @@ both the position and the brackets around a Doris hint.
 
 CockroachDB primary-key changes require ``parser.withDialect(Dialect.COCKROACHDB)``.
 Their action is an ``AlterExpressionPrimaryKey`` with key elements and storage
-parameters in ``getIndex()``. ``isUsingHash()`` preserves ``USING HASH``, while
+parameters in ``getConstraint()``. ``isUsingHash()`` preserves ``USING HASH``, while
 ``getBucketCount()`` holds the legacy ``WITH BUCKET_COUNT = expression`` value.
 The newer ``WITH (bucket_count = expression)`` form uses the index storage parameters.
 
@@ -1044,7 +1130,7 @@ operator-class names, for example ``name COLLATE pg_catalog."C"
 pg_catalog.text_ops ASC NULLS LAST``. Function keys such as ``lower(name)`` are
 stored as expressions. Key attributes are available through ``getCollation()``,
 ``getOperatorClass()``, ``getOperatorClassParameters()``, ``getSortOrder()`` and
-``getNullOrdering()`` on ``Index.ColumnParams``. Under this dialect these
+``getNullOrdering()`` on ``KeyElement``. Under this dialect these
 attributes are not duplicated in the legacy ``getParams()`` list, so changing
 or removing them is reflected when rendering SQL. Other dialects retain the
 legacy parameter representation, including MySQL prefix lengths.
@@ -1320,7 +1406,7 @@ ALTER ``NOT VALID`` clause when present.
         "ALTER TABLE t ADD CONSTRAINT nn NOT NULL id NOT VALID",
         parser -> parser.withDialect(Dialect.POSTGRESQL));
     NotNullConstraint constraint = (NotNullConstraint)
-        alter.getAlterExpressions().get(0).getIndex();
+        alter.getAlterExpressions().get(0).getConstraint();
     constraint.getColumn().setColumnName("other_id");
     constraint.setName("other_nn");
 
@@ -1431,7 +1517,7 @@ Attach a PostgreSQL constraint to an existing index
 
 With ``Dialect.POSTGRESQL``, ``ALTER TABLE ... ADD UNIQUE USING INDEX`` and
 ``ADD PRIMARY KEY USING INDEX`` expose a ``ConstraintUsingIndex`` through
-``AlterExpression.getIndex()``. Its ``getName()`` is the optional new constraint
+``AlterExpression.getConstraint()``. Its ``getName()`` is the optional new constraint
 name, while ``getExistingIndexName()`` identifies the existing index. This is
 separate from an index declaration's name, columns and access method.
 
@@ -1441,7 +1527,7 @@ separate from an index declaration's name, columns and access method.
         "ALTER TABLE t ADD CONSTRAINT uq UNIQUE USING INDEX i",
         parser -> parser.withDialect(Dialect.POSTGRESQL));
     ConstraintUsingIndex constraint = (ConstraintUsingIndex)
-        alter.getAlterExpressions().get(0).getIndex();
+        alter.getAlterExpressions().get(0).getConstraint();
     constraint.setExistingIndexName("replacement_index");
     constraint.setName("replacement_constraint");
 

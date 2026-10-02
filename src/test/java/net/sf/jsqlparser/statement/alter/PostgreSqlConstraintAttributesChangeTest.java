@@ -42,10 +42,11 @@ class PostgreSqlConstraintAttributesChangeTest {
         CreateTable create = (CreateTable) parse("CREATE TABLE t(id INT, "
                 + declaration + ")");
         Alter add = (Alter) parse("ALTER TABLE t ADD " + declaration);
-        assertEquals(create.getIndexes().get(0).getConstraintAttributes().toString(),
+        assertEquals(create.getTableConstraints().get(0).getConstraintAttributes().toString(),
                 change.getAttributes().toString());
         assertEquals(
-                add.getAlterExpressions().get(0).getIndex().getConstraintAttributes().toString(),
+                add.getAlterExpressions().get(0).getConstraint().getConstraintAttributes()
+                        .toString(),
                 change.getAttributes().toString());
         assertEquals(2, table.getAlterExpressions().size());
         roundTrip(table);

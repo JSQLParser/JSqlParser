@@ -31,7 +31,7 @@ import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.IdentityDefinition;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -47,7 +47,7 @@ class PostgreSqlSchemaDdlTest {
                 "CREATE TABLE reservations (room integer, during tsrange,"
                         + " CONSTRAINT no_overlap EXCLUDE USING gist (room WITH =, during WITH &&)"
                         + " WHERE (room > 0) DEFERRABLE INITIALLY DEFERRED)");
-        ExcludeConstraint constraint = (ExcludeConstraint) table.getIndexes().get(0);
+        ExcludeConstraint constraint = (ExcludeConstraint) table.getTableConstraints().get(0);
         assertThat(constraint.getName()).isEqualTo("no_overlap");
         assertThat(constraint.getUsing()).isEqualTo("gist");
         assertThat(constraint.getColumns().get(0).getExclusionOperator()).isEqualTo("=");
@@ -63,7 +63,7 @@ class PostgreSqlSchemaDdlTest {
         CreateTable table = (CreateTable) assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE reservations (room text, EXCLUDE USING gist ((lower(room)) WITH =)"
                         + " INCLUDE (room) WITH (fillfactor = 70) USING INDEX TABLESPACE archive)");
-        Index constraint = table.getIndexes().get(0);
+        ExcludeConstraint constraint = (ExcludeConstraint) table.getTableConstraints().get(0);
         assertThat(constraint.getColumns().get(0).isExpression()).isTrue();
         assertThat(constraint.getIncludeColumns()).containsExactly("room");
         assertThat(constraint.getStorageParameters()).hasSize(1);
@@ -77,18 +77,21 @@ class PostgreSqlSchemaDdlTest {
                         + " CONSTRAINT contact_email UNIQUE NULLS DISTINCT (email))");
         ColumnOption option = table.getColumnDefinitions().get(0).getColumnOptions().get(0);
         assertThat(option.getKind()).isEqualTo(ColumnOption.Kind.CONSTRAINT);
-        assertThat(option.getConstraint().getNullsDistinct()).isFalse();
-        assertThat(table.getIndexes().get(0).getNullsDistinct()).isTrue();
+        assertThat(((KeyConstraint) option.getConstraint()).getNullsDistinct()).isFalse();
+        assertThat(((KeyConstraint) table.getTableConstraints().get(0)).getNullsDistinct())
+                .isTrue();
     }
 
     @Test
     void testPrimaryKeyInclude() throws JSQLParserException {
         CreateTable table = (CreateTable) assertSqlCanBeParsedAndDeparsed(
                 "CREATE TABLE contacts (id integer, email text, PRIMARY KEY (id) INCLUDE (email))");
-        assertThat(table.getIndexes().get(0).getIncludeColumns()).containsExactly("email");
+        assertThat(((KeyConstraint) table.getTableConstraints().get(0)).getIncludeColumns())
+                .containsExactly("email");
         Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(
                 "ALTER TABLE contacts ADD PRIMARY KEY (id) INCLUDE (email)");
-        assertThat(alter.getAlterExpressions().get(0).getIndex().getIncludeColumns())
+        assertThat(((KeyConstraint) alter.getAlterExpressions().get(0).getConstraint())
+                .getIncludeColumns())
                 .containsExactly("email");
     }
 
@@ -141,7 +144,7 @@ class PostgreSqlSchemaDdlTest {
         assertThat(table.getOfType().getDataType()).isEqualTo("employee_type");
         assertThat(table.getColumnDefinitions().get(0).isWithOptions()).isTrue();
         assertThat(table.getColumnDefinitions().get(0).getColDataType()).isNull();
-        assertThat(table.getTableElements().get(0)).isInstanceOf(Index.class);
+        assertThat(table.getTableElements().get(0)).isInstanceOf(KeyConstraint.class);
     }
 
     @Test

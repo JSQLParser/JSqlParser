@@ -9,173 +9,153 @@
  */
 package net.sf.jsqlparser.statement.create.table;
 
-import java.util.Collection;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 
-import net.sf.jsqlparser.statement.select.PlainSelect;
-
-public class NamedConstraint extends Index {
-
-    private String indexName;
-    private boolean useConstraintKeyword;
-    private ConstraintNamePosition constraintNamePosition = ConstraintNamePosition.BEFORE;
-
-    /** Position of the constraint symbol relative to its definition. */
+/** Common syntax and attributes of a constraint; a constraint is not an index. */
+public abstract class NamedConstraint implements TableElement, Serializable {
     public enum ConstraintNamePosition {
         BEFORE, AFTER
     }
 
-    public ConstraintNamePosition getConstraintNamePosition() {
-        return constraintNamePosition;
+    private final List<String> name = new ArrayList<>();
+    private String type;
+    private ConstraintKind kind = ConstraintKind.OTHER;
+    private ConstraintAttributes constraintAttributes;
+    private boolean useConstraintKeyword;
+    private ConstraintNamePosition constraintNamePosition = ConstraintNamePosition.BEFORE;
+
+    public String getName() {
+        return name.isEmpty() ? null : String.join(".", name);
     }
 
-    public void setConstraintNamePosition(ConstraintNamePosition position) {
-        constraintNamePosition = java.util.Objects.requireNonNull(position, "position");
-    }
-
-    public NamedConstraint withConstraintNamePosition(ConstraintNamePosition position) {
-        setConstraintNamePosition(position);
-        return this;
-    }
-
-    /** Appends the leading keyword and, for the usual syntax, the constraint name. */
-    public void appendConstraintPrefixTo(StringBuilder builder) {
-        boolean leadingName = getName() != null
-                && constraintNamePosition == ConstraintNamePosition.BEFORE;
-        if (useConstraintKeyword || leadingName) {
-            builder.append("CONSTRAINT");
-            if (leadingName) {
-                builder.append(' ').append(getName());
-            }
-            builder.append(' ');
+    public void setName(String value) {
+        name.clear();
+        if (value != null) {
+            name.add(value);
         }
     }
 
-    /** Appends an Informix constraint name after the complete constraint definition. */
-    public void appendConstraintSuffixTo(StringBuilder builder) {
-        if (constraintNamePosition == ConstraintNamePosition.AFTER && getName() != null) {
-            builder.append(" CONSTRAINT ").append(getName());
-        }
+    public void setName(List<String> value) {
+        name.clear();
+        name.addAll(value);
     }
 
-    /**
-     * Returns the optional index name declared after the constraint type. This is distinct from
-     * {@link #getName()}, which represents the optional constraint symbol.
-     *
-     * @return the index name, or {@code null} when it was omitted
-     */
-    public String getIndexName() {
-        return indexName;
+    public List<String> getNameParts() {
+        return Collections.unmodifiableList(name);
     }
 
-    public void setIndexName(String indexName) {
-        this.indexName = indexName;
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String value) {
+        type = value;
+        kind = ConstraintKind.fromType(value);
+    }
+
+    public ConstraintKind getKind() {
+        return kind;
+    }
+
+    public void setKind(ConstraintKind value) {
+        kind = value;
+    }
+
+    public ConstraintAttributes getConstraintAttributes() {
+        return constraintAttributes;
+    }
+
+    public void setConstraintAttributes(ConstraintAttributes value) {
+        constraintAttributes = value;
     }
 
     public boolean isUseConstraintKeyword() {
         return useConstraintKeyword;
     }
 
-    public void setUseConstraintKeyword(boolean useConstraintKeyword) {
-        this.useConstraintKeyword = useConstraintKeyword;
+    public void setUseConstraintKeyword(boolean value) {
+        useConstraintKeyword = value;
     }
 
-    @Override
-    public void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter) {
-        String idxSpecText = PlainSelect.getStringList(getIndexSpec(), false, false);
-        String keyword = getIndexKeyword() != null
-                && !getType().toUpperCase(java.util.Locale.ROOT)
-                        .endsWith(getIndexKeyword().toUpperCase(java.util.Locale.ROOT))
-                                ? " " + getIndexKeyword()
-                                : "";
-        appendConstraintPrefixTo(sql);
-        sql.append(getType()).append(nullsDistinctClause()).append(keyword)
-                .append(clusteringClause());
-        if (indexName != null) {
-            sql.append(' ').append(indexName);
-        }
-        if (getUsing() != null) {
-            sql.append(" USING ").append(getUsing());
-        }
-        if (getColumns() != null) {
+    public ConstraintNamePosition getConstraintNamePosition() {
+        return constraintNamePosition;
+    }
+
+    public void setConstraintNamePosition(ConstraintNamePosition value) {
+        constraintNamePosition = Objects.requireNonNull(value, "constraintNamePosition");
+    }
+
+    public NamedConstraint withConstraintNamePosition(ConstraintNamePosition value) {
+        setConstraintNamePosition(value);
+        return this;
+    }
+
+    public NamedConstraint withUseConstraintKeyword(boolean value) {
+        setUseConstraintKeyword(value);
+        return this;
+    }
+
+    public NamedConstraint withKind(ConstraintKind value) {
+        setKind(value);
+        return this;
+    }
+
+    public NamedConstraint withConstraintAttributes(ConstraintAttributes value) {
+        setConstraintAttributes(value);
+        return this;
+    }
+
+    public NamedConstraint withType(String value) {
+        setType(value);
+        return this;
+    }
+
+    public NamedConstraint withName(String value) {
+        setName(value);
+        return this;
+    }
+
+    public NamedConstraint withName(List<String> value) {
+        setName(value);
+        return this;
+    }
+
+    public void appendConstraintPrefixTo(StringBuilder sql) {
+        boolean leadingName =
+                getName() != null && constraintNamePosition == ConstraintNamePosition.BEFORE;
+        if (useConstraintKeyword || leadingName) {
+            sql.append("CONSTRAINT");
+            if (leadingName) {
+                sql.append(' ').append(getName());
+            }
             sql.append(' ');
-            appendColumnsTo(sql, expressionPrinter);
-        }
-        if (!idxSpecText.isEmpty()) {
-            sql.append(' ').append(idxSpecText);
-        }
-        appendConstraintOptionsTo(sql, expressionPrinter);
-        if (getKind() != Kind.FOREIGN_KEY) {
-            appendConstraintSuffixTo(sql);
-            appendConstraintAttributesTo(sql);
         }
     }
 
-    public NamedConstraint withIndexName(String indexName) {
-        setIndexName(indexName);
-        return this;
+    public void appendConstraintSuffixTo(StringBuilder sql) {
+        if (constraintNamePosition == ConstraintNamePosition.AFTER && getName() != null) {
+            sql.append(" CONSTRAINT ").append(getName());
+        }
     }
+
+    public void appendConstraintAttributesTo(StringBuilder sql) {
+        if (constraintAttributes != null) {
+            constraintAttributes.appendTo(sql);
+        }
+    }
+
+    public abstract void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter);
 
     @Override
-    public NamedConstraint withClustering(Clustering clustering) {
-        setClustering(clustering);
-        return this;
-    }
-
-    public NamedConstraint withUseConstraintKeyword(boolean useConstraintKeyword) {
-        setUseConstraintKeyword(useConstraintKeyword);
-        return this;
-    }
-
-    @Override
-    public NamedConstraint withName(List<String> name) {
-        return (NamedConstraint) super.withName(name);
-    }
-
-    @Override
-    public NamedConstraint withName(String name) {
-        return (NamedConstraint) super.withName(name);
-    }
-
-    @Override
-    public NamedConstraint withType(String type) {
-        return (NamedConstraint) super.withType(type);
-    }
-
-    @Override
-    public NamedConstraint withUsing(String using) {
-        return (NamedConstraint) super.withUsing(using);
-    }
-
-    @Override
-    public NamedConstraint withColumnsNames(List<String> list) {
-        return (NamedConstraint) super.withColumnsNames(list);
-    }
-
-    @Override
-    public NamedConstraint withColumns(List<ColumnParams> columns) {
-        return (NamedConstraint) super.withColumns(columns);
-    }
-
-    @Override
-    public NamedConstraint addColumns(ColumnParams... functionDeclarationParts) {
-        return (NamedConstraint) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public NamedConstraint addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
-        return (NamedConstraint) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public NamedConstraint withIndexSpec(List<String> idxSpec) {
-        return (NamedConstraint) super.withIndexSpec(idxSpec);
-    }
-
-    @Override
-    public NamedConstraint withIndexKeyword(String indexKeyword) {
-        return (NamedConstraint) super.withIndexKeyword(indexKeyword);
+    public String toString() {
+        StringBuilder sql = new StringBuilder();
+        appendTo(sql, sql::append);
+        return sql.toString();
     }
 }
