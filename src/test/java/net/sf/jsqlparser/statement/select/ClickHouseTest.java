@@ -21,9 +21,11 @@ import net.sf.jsqlparser.expression.ColumnsTransformer;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -356,6 +358,228 @@ public class ClickHouseTest {
         // ClickHouse parses the transformers in a loop, so they may repeat after '*'
         String sql = "SELECT * APPLY(sum) EXCEPT (a) FROM t";
         assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testAllColumnsExceptStrictIssue2636() throws JSQLParserException {
+        // STRICT sits between the EXCEPT keyword and its column list
+        // (ClickHouse ExpressionElementParsers.cpp, ParserColumnsTransformers)
+        String sql = "SELECT * EXCEPT STRICT (a, b) FROM t";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        SelectItem<?> selectItem = plainSelect.getSelectItems().get(0);
+        AllColumns allColumns =
+                Assertions.assertInstanceOf(AllColumns.class, selectItem.getExpression());
+        ColumnsTransformer transformer = allColumns.getTransformers().get(0);
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.EXCEPT,
+                transformer.getType());
+        Assertions.assertTrue(transformer.isStrict());
+        Assertions.assertInstanceOf(ParenthesedExpressionList.class,
+                transformer.getExceptColumns());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the qualified '*' shares the same transformer production
+        sql = "SELECT t.* EXCEPT STRICT (a) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        AllTableColumns allTableColumns = Assertions.assertInstanceOf(AllTableColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertTrue(allTableColumns.getTransformers().get(0).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the flag belongs to one transformer of the chain only
+        sql = "SELECT * EXCEPT STRICT (a) REPLACE(x AS a) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        allColumns = Assertions.assertInstanceOf(AllColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(2, allColumns.getTransformers().size());
+        Assertions.assertTrue(allColumns.getTransformers().get(0).isStrict());
+        Assertions.assertFalse(allColumns.getTransformers().get(1).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the transformer survives as the second leg of a set operation
+        sql = "SELECT 1 UNION SELECT * EXCEPT STRICT (a) FROM t";
+        SetOperationList union = (SetOperationList) ((Select) CCJSqlParserUtil.parse(sql))
+                .getSelectBody();
+        PlainSelect rightLeg = (PlainSelect) union.getSelects().get(1);
+        AllColumns legColumns = Assertions.assertInstanceOf(AllColumns.class,
+                rightLeg.getSelectItems().get(0).getExpression());
+        Assertions.assertTrue(legColumns.getTransformers().get(0).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the COLUMNS(...) matcher accepts the same STRICT form
+        sql = "SELECT COLUMNS('m') EXCEPT STRICT (a) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertTrue(columnsExpression.getTransformers().get(0).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testAllColumnsReplaceStrictIssue2636() throws JSQLParserException {
+        String sql = "SELECT * REPLACE STRICT(1 AS a, 2 AS b) FROM t";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        AllColumns allColumns = Assertions.assertInstanceOf(AllColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        ColumnsTransformer transformer = allColumns.getTransformers().get(0);
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.REPLACE,
+                transformer.getType());
+        Assertions.assertTrue(transformer.isStrict());
+        Assertions.assertEquals(2, transformer.getReplaceItems().size());
+        Assertions.assertEquals("a", transformer.getReplaceItems().get(0).getAlias().getName());
+        Assertions.assertEquals(sql, select.toString());
+        StatementDeParser statementDeParser = new StatementDeParser(new StringBuilder());
+        select.accept(statementDeParser, null);
+        Assertions.assertEquals(sql, statementDeParser.getBuilder().toString());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        sql = "SELECT COLUMNS('m') REPLACE STRICT(x + 1 AS x) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the qualified '*' copies the transformers through its own constructor
+        sql = "SELECT t.* REPLACE STRICT(x AS x) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        AllTableColumns qualifiedStar = Assertions.assertInstanceOf(AllTableColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertTrue(qualifiedStar.getTransformers().get(0).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // each transformer of the chain carries its own flag
+        sql = "SELECT * REPLACE STRICT(x AS x) REPLACE(y AS y) FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        allColumns = Assertions.assertInstanceOf(AllColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals(2, allColumns.getTransformers().size());
+        Assertions.assertTrue(allColumns.getTransformers().get(0).isStrict());
+        Assertions.assertFalse(allColumns.getTransformers().get(1).isStrict());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        sql = "SELECT * EXCEPT (a) REPLACE STRICT(x AS a) APPLY(sum) FROM t";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+    }
+
+    @Test
+    public void testAllColumnsExceptPatternIssue2636() throws JSQLParserException {
+        // ClickHouse accepts a re2 pattern string instead of the column list and always
+        // prints it without brackets (ASTColumnsTransformers.cpp)
+        String sql = "SELECT * EXCEPT '^tmp_' FROM t";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        AllColumns allColumns = Assertions.assertInstanceOf(AllColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        ColumnsTransformer transformer = allColumns.getTransformers().get(0);
+        Assertions.assertEquals(ColumnsTransformer.ColumnsTransformerType.EXCEPT,
+                transformer.getType());
+        Assertions.assertNull(transformer.getExceptColumns());
+        Assertions.assertEquals("^tmp_", transformer.getExceptPattern().getValue());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        sql = "SELECT t.* EXCEPT '^tmp_' FROM t";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        sql = "SELECT COLUMNS('m') EXCEPT '^tmp_' FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        ColumnsExpression columnsExpression = Assertions.assertInstanceOf(ColumnsExpression.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertEquals("^tmp_",
+                columnsExpression.getTransformers().get(0).getExceptPattern().getValue());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // ClickHouse parses STRICT before a pattern as well (it drops the flag only
+        // during analysis), so the parser keeps it on the AST
+        sql = "SELECT * EXCEPT STRICT '^tmp_' FROM t";
+        select = (Select) CCJSqlParserUtil.parse(sql);
+        plainSelect = (PlainSelect) select.getSelectBody();
+        allColumns = Assertions.assertInstanceOf(AllColumns.class,
+                plainSelect.getSelectItems().get(0).getExpression());
+        Assertions.assertTrue(allColumns.getTransformers().get(0).isStrict());
+        Assertions.assertEquals("^tmp_",
+                allColumns.getTransformers().get(0).getExceptPattern().getValue());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the same combination reaches the COLUMNS(...) path through its own gate
+        sql = "SELECT COLUMNS('m') EXCEPT STRICT '^tmp2_' FROM t";
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // the pattern participates in the expression traversal of the COLUMNS side
+        // (getAllExpressions -> ExpressionVisitorAdapter), like the other payloads
+        List<String> visitedValues = new ArrayList<>();
+        ExpressionVisitorAdapter adapter = new ExpressionVisitorAdapter() {
+            @Override
+            public Void visit(StringValue stringValue, Object context) {
+                visitedValues.add(stringValue.getValue());
+                return null;
+            }
+        };
+        select = (Select) CCJSqlParserUtil.parse("SELECT COLUMNS('m') EXCEPT '^tmp_' FROM t");
+        plainSelect = (PlainSelect) select.getSelectBody();
+        plainSelect.getSelectItems().get(0).getExpression().accept(adapter, null);
+        Assertions.assertTrue(visitedValues.contains("^tmp_"),
+                "the EXCEPT pattern must be reachable for expression visitors");
+
+        // programmatic construction round-trips through the same output paths
+        AllColumns built = new AllColumns();
+        built.addTransformer(
+                new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
+                        .setStrict(true).setExceptPattern(new StringValue("'inner_.*'")));
+        Assertions.assertEquals("* EXCEPT STRICT 'inner_.*'", built.toString());
+    }
+
+    @Test
+    public void testStrictKeywordStaysIdentifierAndAliasIssue2636() throws JSQLParserException {
+        // STRICT is a non-reserved keyword, so plain identifier uses must keep parsing
+        assertSqlCanBeParsedAndDeparsed("SELECT strict FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * AS strict FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.strict FROM t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * EXCEPT (strict) FROM t", true);
+
+        // a trailing STRICT is not part of a transformer: it stays the alias of '*'
+        String sql = "SELECT * REPLACE(x AS y) STRICT FROM t";
+        Select select = (Select) CCJSqlParserUtil.parse(sql);
+        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+        SelectItem<?> selectItem = plainSelect.getSelectItems().get(0);
+        Assertions.assertEquals("STRICT", selectItem.getAlias().getName());
+        Assertions.assertInstanceOf(AllColumns.class, selectItem.getExpression());
+        assertSqlCanBeParsedAndDeparsed(sql, true);
+
+        // a column named strict and a trailing STRICT alias coexist on one item
+        assertSqlCanBeParsedAndDeparsed("SELECT * EXCEPT (strict) STRICT FROM t", true);
+
+        // the parenthesized set operation after '*' is unchanged
+        assertSqlCanBeParsedAndDeparsed("SELECT * EXCEPT (SELECT b FROM u)", true);
+    }
+
+    @Test
+    public void testStrictTransformerFormsRejectedIssue2636() {
+        assertThrowsParseException("SELECT * EXCEPT STRICT FROM t");
+        assertThrowsParseException("SELECT * REPLACE STRICT FROM t");
+        assertThrowsParseException("SELECT * EXCEPT STRICT a FROM t");
+        assertThrowsParseException("SELECT * EXCEPT ('^tmp_') FROM t");
+        assertThrowsParseException("SELECT * EXCEPT 5 FROM t");
+        // neither APPLY nor EXCLUDE has a STRICT variant
+        assertThrowsParseException("SELECT * APPLY STRICT (x) FROM t");
+        assertThrowsParseException("SELECT * EXCLUDE STRICT (a) FROM t");
+        assertThrowsParseException("SELECT COLUMNS('m') EXCEPT STRICT a FROM t");
+        assertThrowsParseException("SELECT a EXCEPT STRICT FROM t");
+        // the pattern and the parenthesized column list are mutually exclusive payloads
+        assertThrowsParseException("SELECT * EXCEPT STRICT '^x' (a) FROM t");
+        assertThrowsParseException("SELECT * REPLACE STRICT () FROM t");
+    }
+
+    private static void assertThrowsParseException(String sql) {
+        Assertions.assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql),
+                "Expected a parse failure for: " + sql);
     }
 
     @Test

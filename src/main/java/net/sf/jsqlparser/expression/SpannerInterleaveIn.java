@@ -9,13 +9,13 @@
  */
 package net.sf.jsqlparser.expression;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import net.sf.jsqlparser.schema.Table;
 
-import java.util.Collections;
-import java.util.List;
-
-public class SpannerInterleaveIn {
+public class SpannerInterleaveIn implements Serializable {
 
     private Table table;
     private OnDelete onDelete;

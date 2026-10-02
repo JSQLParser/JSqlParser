@@ -9,16 +9,17 @@
  */
 package net.sf.jsqlparser.statement;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.statement.select.Select;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -93,7 +94,7 @@ public class StatementsTest {
     @Test
     public void testStatementsErrorRecovery4() throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(
-                "select * from mytable; select from; select * from mytable2; select 4 from dual;",
+                "select * from mytable; shutdown defrag; select * from mytable2; select 4 from dual;",
                 parser -> parser.withUnsupportedStatements());
 
         assertEquals(4, statements.size());
@@ -103,6 +104,14 @@ public class StatementsTest {
         assertInstanceOf(Select.class, statements.get(2));
         assertInstanceOf(Select.class, statements.get(3));
 
-        TestUtils.assertStatementCanBeDeparsedAs(statements.get(1), "select from", true);
+        TestUtils.assertStatementCanBeDeparsedAs(statements.get(1), "shutdown defrag", true);
     }
+
+    @Test
+    void malformedKnownStatementDoesNotUseUnsupportedCapture() {
+        assertThrowsExactly(JSQLParserException.class, () -> CCJSqlParserUtil.parseStatements(
+                "select * from mytable; select from; select * from mytable2; select 4 from dual;",
+                parser -> parser.withUnsupportedStatements()));
+    }
+
 }

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -19,7 +20,7 @@ import java.util.Objects;
  *       (Transact-SQL) - Join</a>
  */
 
-public class JoinHint {
+public class JoinHint implements Serializable {
     public enum Position {
         BEFORE_JOIN, AFTER_JOIN
     }

@@ -1870,11 +1870,23 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
                     builder.append(")");
                     break;
                 case EXCEPT:
-                    builder.append(" EXCEPT ");
-                    transformer.getExceptColumns().accept(this, context);
+                    builder.append(" EXCEPT");
+                    if (transformer.isStrict()) {
+                        builder.append(" STRICT");
+                    }
+                    builder.append(" ");
+                    if (transformer.getExceptPattern() != null) {
+                        transformer.getExceptPattern().accept(this, context);
+                    } else {
+                        transformer.getExceptColumns().accept(this, context);
+                    }
                     break;
                 case REPLACE:
-                    builder.append(" REPLACE(");
+                    builder.append(" REPLACE");
+                    if (transformer.isStrict()) {
+                        builder.append(" STRICT");
+                    }
+                    builder.append("(");
                     boolean first = true;
                     for (SelectItem<?> item : transformer.getReplaceItems()) {
                         if (!first) {
