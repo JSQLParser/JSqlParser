@@ -5890,8 +5890,7 @@ List<UpdateSet> UpdateSets():
     )
 
     (
-        LOOKAHEAD(2) (
-            ","
+        LOOKAHEAD(2) "," (
             tableColumn=Column() "=" valueExpression=Expression()
             { updateSets.add( new UpdateSet (tableColumn, valueExpression)); }
             |
