@@ -9,18 +9,17 @@
  */
 package net.sf.jsqlparser.expression;
 
-import java.util.Locale;
-import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
-import net.sf.jsqlparser.statement.create.table.ColDataType;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.select.Select;
-
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.select.Select;
 
 public class CastExpression extends ASTNodeAccessImpl implements Expression {
     private final static Pattern PATTERN =
@@ -204,7 +203,7 @@ public class CastExpression extends ASTNodeAccessImpl implements Expression {
         if (isImplicitCast) {
             return colDataType + " " + leftExpression;
         } else if (keyword != null && !keyword.isEmpty()) {
-            return columnDefinitions.size() > 1
+            return !columnDefinitions.isEmpty()
                     ? keyword + "(" + leftExpression + " AS ROW("
                             + Select.getStringList(columnDefinitions) + ")" + formatStr + ")"
                     : keyword + "(" + leftExpression + " AS " + colDataType.toString() + formatStr

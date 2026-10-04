@@ -9,13 +9,12 @@
  */
 package net.sf.jsqlparser.util.deparser;
 
-import net.sf.jsqlparser.expression.AliasedExpression;
-
 import static java.util.stream.Collectors.joining;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import net.sf.jsqlparser.expression.AliasedExpression;
 import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnalyticType;
@@ -42,7 +41,6 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.HighExpression;
 import net.sf.jsqlparser.expression.IntervalExpression;
-import net.sf.jsqlparser.expression.RowPatternFunction;
 import net.sf.jsqlparser.expression.Inverse;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -56,6 +54,7 @@ import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MapExpression;
+import net.sf.jsqlparser.expression.MethodCallExpression;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
@@ -69,7 +68,7 @@ import net.sf.jsqlparser.expression.PostgresNamedFunctionParameter;
 import net.sf.jsqlparser.expression.RangeExpression;
 import net.sf.jsqlparser.expression.RowConstructor;
 import net.sf.jsqlparser.expression.RowGetExpression;
-import net.sf.jsqlparser.expression.MethodCallExpression;
+import net.sf.jsqlparser.expression.RowPatternFunction;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.StructType;
@@ -119,9 +118,9 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -1181,7 +1180,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             cast.getLeftExpression().accept(this, context);
             builder.append(" AS ");
             builder.append(
-                    cast.getColumnDefinitions().size() > 1
+                    !cast.getColumnDefinitions().isEmpty()
                             ? "ROW(" + Select.getStringList(cast.getColumnDefinitions()) + ")"
                             : cast.getColDataType().toString());
             builder.append(formatStr);
