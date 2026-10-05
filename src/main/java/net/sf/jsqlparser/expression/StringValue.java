@@ -123,14 +123,14 @@ public final class StringValue extends ASTNodeAccessImpl implements Expression {
         if (quoteStr != null && quoteStr.startsWith("$")) {
             return value;
         }
-        StringBuilder buffer = new StringBuilder(value);
-        int index = 0;
-        int deletesNum = 0;
-        while ((index = value.indexOf("''", index)) != -1) {
-            buffer.deleteCharAt(index - deletesNum);
-            index += 2;
-            deletesNum++;
+        StringBuilder buffer = new StringBuilder(value.length());
+        int from = 0;
+        int index;
+        while ((index = value.indexOf("''", from)) != -1) {
+            buffer.append(value, from, index + 1);
+            from = index + 2;
         }
+        buffer.append(value, from, value.length());
         return buffer.toString();
     }
 

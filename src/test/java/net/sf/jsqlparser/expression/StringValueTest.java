@@ -10,7 +10,9 @@
 package net.sf.jsqlparser.expression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
+import java.time.Duration;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
@@ -48,6 +50,28 @@ public class StringValueTest {
         String expResult = "*'*";
         String result = instance.getNotExcapedValue();
         assertEquals(expResult, result);
+    }
+
+    @Test
+    public void testGetNotExcapedValueLargeInputIsLinear() {
+        // a string literal made of many escaped single quotes used to be unescaped with a
+        // deleteCharAt() per pair, which is quadratic and lets a modest literal burn CPU
+        int pairs = 1_000_000;
+        StringBuilder sb = new StringBuilder(2 * pairs + 2);
+        sb.append('\'');
+        for (int i = 0; i < pairs; i++) {
+            sb.append("''");
+        }
+        sb.append('\'');
+        StringValue instance = new StringValue(sb.toString());
+
+        String result = assertTimeoutPreemptively(Duration.ofSeconds(2),
+                instance::getNotExcapedValue);
+
+        assertEquals(pairs, result.length());
+        for (int i = 0; i < result.length(); i++) {
+            assertEquals('\'', result.charAt(i));
+        }
     }
 
     @Test
