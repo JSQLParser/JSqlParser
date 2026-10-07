@@ -43,8 +43,9 @@ public final class TableDefinitionTraversal {
         accept(createIndex.getTable(), tables);
         if (createIndex.getIndex() != null) {
             visit(createIndex.getIndex(), expressions, tables);
+        } else {
+            visitOptions(createIndex.getStorageParameters(), expressions);
         }
-        visitOptions(createIndex.getStorageParameters(), expressions);
         accept(createIndex.getWhere(), expressions);
     }
 
