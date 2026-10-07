@@ -84,9 +84,7 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
             deParseTail(action);
             return;
         }
-        if (action.getOperation() == net.sf.jsqlparser.statement.alter.AlterOperation.ALTER
-                && action.getColumnSetDefaultList() != null
-                && !action.getColumnSetDefaultList().isEmpty()) {
+        if (!action.getColumnDefaults().isEmpty()) {
             action.appendColumnActionTo(builder,
                     expression -> expression.accept(expressionVisitor, null));
             return;
