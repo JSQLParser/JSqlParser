@@ -786,7 +786,12 @@ open. These empty-input results replace the previous null returns of these metho
 By default a syntax error aborts the whole parse. Two features let a script survive one bad statement:
 
 - ``parser.withErrorRecovery(true)`` skips to the next statement separator and returns an empty statement.
-- ``parser.withUnsupportedStatements(true)`` returns an ``UnsupportedStatement`` holding the raw text instead — though the **first** statement must be a regular one.
+- ``parser.withUnsupportedStatements(true)`` captures an unrecognised statement root as
+  ``UnsupportedStatement``; it may be the first statement. Failures in recognised statement
+  grammar still throw, or use ``withErrorRecovery(true)`` and record the error. Thus
+  ``SELECT * FROM``, ``INSERT INTO t (a`` and ``UPDATE t SET`` do not become opaque statements.
+  The two options serve different purposes; enabling unsupported capture does not suppress
+  recognised syntax errors.
 
 .. code-block:: java
     :caption: Error Recovery
@@ -806,18 +811,26 @@ By default a syntax error aborts the whole parse. Two features let a script surv
     :caption: Unsupported Statement
 
     Statements statements = CCJSqlParserUtil.parseStatements(
-            "select * from mytable; select from; select * from mytable2; select 4;"
+            "select * from mytable; shutdown defrag; select * from mytable2; select 4;"
             , parser -> parser.withUnsupportedStatements() );
 
     // 4 statements with one Unsupported Statement holding the content
     assertEquals(4, statements.size());
     assertInstanceOf(UnsupportedStatement.class, statements.get(1));
-    assertEquals("select from", statements.get(1).toString());
+    assertEquals("shutdown defrag", statements.get(1).toString());
 
     // no errors records, because a statement has been returned
     assertEquals(0, parser.getParseErrors().size());
 
 .. note::
+
+    Opaque capture is not SQL validation. An unrecognised root or an existing opaque
+    grammar branch cannot establish validity in an unknown dialect. Callers that need
+    validity must validate against that dialect. Recognised syntax failures formerly
+    captured by the generic fallback now throw or produce an error-recovery placeholder;
+    partial IF results and typed prefixes with invalid trailing clauses are not published
+    as successful statements. ``SingleStatement()`` remains an incremental entry point;
+    use ``Statement()`` or ``Statements()`` to check complete statement boundaries.
 
     An ``UnsupportedStatement`` is reported as ``OPAQUE`` by :ref:`Classify a Statement` — nothing about its effects is knowable.
 

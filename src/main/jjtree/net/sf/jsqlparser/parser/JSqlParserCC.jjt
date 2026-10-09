@@ -140,6 +140,65 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // then-branch closes the ternary and must not be taken as the JSON path operator
     private int ternaryThenBranchDepth = 0;
 
+    // Keep this routing check aligned with SingleStatement, including aliases and dialect gates.
+    // It does not validate syntax that the grammar captures as opaque.
+    private boolean isStatementStartAhead() {
+        Token next = getToken(1);
+        switch (next.kind) {
+            case K_SELECT: case K_WITH: case K_VALUES: case K_VALUE: case K_FROM:
+            case K_PIVOT: case K_UNPIVOT: case OPENING_BRACKET:
+            case K_INSERT: case K_UPDATE: case K_DELETE: case K_MERGE:
+            case K_UPSERT: case K_REPLACE: case K_ALTER: case K_RENAME:
+            case K_CREATE: case K_DROP: case K_ANALYZE: case K_TRUNCATE:
+            case K_EXEC: case K_EXECUTE: case K_CALL: case K_SET: case K_RESET:
+            case K_SHOW: case K_REFRESH: case K_USE: case K_BEGIN: case K_START:
+            case K_SAVEPOINT: case K_ROLLBACK: case K_COMMIT: case K_COMMENT:
+            case K_DESCRIBE: case K_DESC: case K_EXPLAIN: case K_SUMMARIZE: case K_DECLARE: case K_GRANT:
+            case K_PRAGMA: case K_INSTALL: case K_LOAD: case K_FORCE:
+            case K_ATTACH: case K_DETACH: case K_CONNECT: case K_DISCONNECT:
+            case K_PREPARE: case K_DEALLOCATE: case K_COPY: case K_ASSERT:
+            case K_PURGE: case K_SESSION: case K_BRANCH: case K_LOCK: case K_IF: case K_TABLE:
+                return true;
+            case K_DO:
+                return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+            case K_IMPORT: case K_EXPORT:
+                return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
+                    || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
+            default:
+                return "NOTIFY".equalsIgnoreCase(next.image)
+                    || "REVOKE".equalsIgnoreCase(next.image)
+                    || "RELEASE".equalsIgnoreCase(next.image);
+        }
+    }
+
+    private boolean isInformixIsolationLevel(Token token) {
+        return "DIRTY".equalsIgnoreCase(token.image) || "COMMITTED".equalsIgnoreCase(token.image)
+            || "CURSOR".equalsIgnoreCase(token.image) || token.kind == K_REPEATABLE;
+    }
+
+    private boolean isOpaqueStatementAhead() {
+        int kind = getToken(1).kind;
+        return kind != EOF && kind != ST_SEMICOLON && kind != K_END && !isStatementStartAhead();
+    }
+
+    private void captureOpaqueStatements(Statements statements) throws ParseException {
+        while (getAsBoolean(Feature.allowUnsupportedStatements) && isOpaqueStatementAhead()) {
+            statements.add(UnsupportedStatement());
+            while (getToken(1).kind == ST_SEMICOLON) {
+                getNextToken();
+            }
+        }
+    }
+
+    private void requireStatementBoundary() throws ParseException {
+        int kind = getToken(1).kind;
+        if (kind != EOF && kind != ST_SEMICOLON
+                && (kind == K_FROM || kind == K_PIVOT || kind == K_UNPIVOT || !isStatementStartAhead())) {
+            throw new ParseException("Unexpected token after a supported statement: " + getToken(1).image);
+        }
+    }
+
+
     // depth of DuckDB MAP keys: the following ":" separates a key from its value
     // and must not be taken as the JSON path operator
     private int mapKeyDepth = 0;
@@ -3303,11 +3362,11 @@ Statement Statement() #Statement:
                 ( <ST_SEMICOLON> )* <EOF>
             )
             |
-            LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) } ) stm = UnsupportedStatement()
+            LOOKAHEAD( { stm==null && getAsBoolean(Feature.allowUnsupportedStatements) && isOpaqueStatementAhead() } )
+            stm = UnsupportedStatement() ( <ST_SEMICOLON> )* <EOF>
          } catch (ParseException ex) {
-            if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                stm = new UnsupportedStatement( stm.toString(), error_skipto(ST_SEMICOLON) );
-            } else if ( errorRecovery ) {
+            if ( errorRecovery ) {
+                ifElseStatement = null;
                 parseErrors.add(ex);
                 error_skipto(ST_SEMICOLON);
                 stm = null;
@@ -3391,6 +3450,16 @@ Statement SingleStatement() :
                 && "IDENTITY_INSERT".equalsIgnoreCase(getToken(2).image)
                 && !"=".equals(getToken(3).image) && !".".equals(getToken(3).image) })
             stm = SetIdentityInsert()
+            |
+            LOOKAHEAD({ getAsBoolean(Feature.allowUnsupportedStatements)
+                && getToken(1).kind == K_SET && getToken(2).kind == S_IDENTIFIER
+                && !"=".equals(getToken(3).image) && !".".equals(getToken(3).image)
+                && !":=".equals(getToken(3).image)
+                && ("IDENTITY_INSERT".equalsIgnoreCase(getToken(2).image)
+                    || "ISOLATION".equalsIgnoreCase(getToken(2).image)
+                        && (isInformixIsolationLevel(getToken(3))
+                            || getToken(3).kind == K_TO && isInformixIsolationLevel(getToken(4)))) })
+            stm = OpaqueSetStatement()
             |
             stm = Set()
             |
@@ -3614,11 +3683,28 @@ Statements Statements() #Statements: {
     Expression condition;
 }
 {
+    {
+        // Opaque roots can be first; capture them before known grammar lookahead.
+        while (getToken(1).kind == ST_SEMICOLON) {
+            getNextToken();
+        }
+        captureOpaqueStatements(stmts);
+        if (getToken(1).kind == EOF) {
+            getNextToken();
+            return stmts;
+        }
+    }
     (
         (
              ( <ST_SEMICOLON> )*
+             {
+                 captureOpaqueStatements(stmts);
+                 if (getToken(1).kind == EOF) {
+                     getNextToken();
+                     return stmts;
+                 }
+             }
 
-             // todo: allow also first statement to be an `UnsupportedStatement`
              try {
                 (
                      <K_IF> condition=Condition()
@@ -3628,7 +3714,7 @@ Statements Statements() #Statements: {
                          <K_ELSE> ( stm2 = SingleStatement() |  stm2 =  Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                      ]
 
-                     { stmts.add( ifElseStatement ); }
+                     { requireStatementBoundary(); stmts.add( ifElseStatement ); }
 
                      [
                          LOOKAHEAD(2) <ST_SEMICOLON>
@@ -3651,12 +3737,7 @@ Statements Statements() #Statements: {
                 }
 
              } catch (ParseException ex) {
-                if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                    UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "", error_skipto(ST_SEMICOLON) );
-                    if (!unsupportedStatement.isEmpty()) {
-                        stmts.add( unsupportedStatement );
-                    }
-                } else if ( errorRecovery ) {
+                if ( errorRecovery ) {
                     parseErrors.add(ex);
                     error_skipto(ST_SEMICOLON);
                     stmts.add( null );
@@ -3669,6 +3750,13 @@ Statements Statements() #Statements: {
 
         (  LOOKAHEAD(2)
             ( <ST_SEMICOLON> )*
+            {
+                captureOpaqueStatements(stmts);
+                if (getToken(1).kind == EOF) {
+                    getNextToken();
+                    return stmts;
+                }
+            }
             try {
                 (
                     <K_IF> condition=Condition()
@@ -3678,20 +3766,15 @@ Statements Statements() #Statements: {
                         <K_ELSE> ( stm2 = SingleStatement() | stm2 = Block() ) {  ifElseStatement.setElseStatement(stm2);  }
                     ]
 
-                    { stmts.add( ifElseStatement ); }
+                    { requireStatementBoundary(); stmts.add( ifElseStatement ); }
                )
                |
                 (
                     stm = SingleStatement()
                     | stm = Block()
-                ) { stmts.add(stm); stm=null; }
+                ) { requireStatementBoundary(); stmts.add(stm); stm=null; }
             } catch (ParseException ex) {
-               if ( getAsBoolean(Feature.allowUnsupportedStatements) ) {
-                   UnsupportedStatement unsupportedStatement = new UnsupportedStatement( stm!=null ? stm.toString() : "" , error_skipto(ST_SEMICOLON) );
-                   if (!unsupportedStatement.isEmpty()) {
-                       stmts.add( unsupportedStatement );
-                   }
-               } else if ( errorRecovery ) {
+               if ( errorRecovery ) {
                    parseErrors.add(ex);
                    error_skipto(ST_SEMICOLON);
                    stmts.add( null );
@@ -3709,7 +3792,7 @@ Statements Statements() #Statements: {
         )*
 
         [
-            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) } )
+            LOOKAHEAD( { getAsBoolean(Feature.allowUnsupportedStatements) && isOpaqueStatementAhead() } )
             stm = UnsupportedStatement()
             {
                 if (!( (UnsupportedStatement) stm).isEmpty()) {
@@ -3724,6 +3807,19 @@ Statements Statements() #Statements: {
     {
         return stmts;
     }
+}
+
+JAVACODE
+UnsupportedStatement captureStatementTokens(Token statementStart) {
+    List<String> tokenImages = new ArrayList<String>();
+    Token statementEnd = getToken(0);
+    for (Token t = statementStart.next; ; t = t.next) {
+        tokenImages.add(t.image);
+        if (t == statementEnd) {
+            break;
+        }
+    }
+    return new UnsupportedStatement(tokenImages);
 }
 
 JAVACODE
@@ -4752,6 +4848,33 @@ SessionStatement SessionStatement():
         //linkAST(sessionsStatement,jjtThis);
         return sessionsStatement;
     }
+}
+
+/** Preserves existing opaque SET forms while requiring their complete syntax. */
+private UnsupportedStatement OpaqueSetStatement(): {
+    Token statementStart = getToken(0);
+    SetIdentityInsertStatement identityInsert;
+    boolean repeatableRead = false;
+}
+{
+    (
+        LOOKAHEAD({ "IDENTITY_INSERT".equalsIgnoreCase(getToken(2).image) })
+        identityInsert = SetIdentityInsert()
+        |
+        <K_SET> AccessKeyword("ISOLATION") [ <K_TO> ]
+        (
+            LOOKAHEAD({ isKeywordAhead("DIRTY") }) AccessKeyword("DIRTY") <K_READ>
+                [ LOOKAHEAD({ getToken(1).kind == K_WITH && "WARNING".equalsIgnoreCase(getToken(2).image) })
+                  <K_WITH> AccessKeyword("WARNING") ]
+            | LOOKAHEAD({ isKeywordAhead("COMMITTED") }) AccessKeyword("COMMITTED") <K_READ>
+                [ <K_LAST> AccessKeyword("COMMITTED") ]
+            | LOOKAHEAD({ isKeywordAhead("CURSOR") }) AccessKeyword("CURSOR") AccessKeyword("STABILITY")
+            | <K_REPEATABLE> <K_READ> { repeatableRead = true; }
+        )
+        [ LOOKAHEAD({ isKeywordAhead("RETAIN") }) AccessKeyword("RETAIN") <K_UPDATE> AccessKeyword("LOCKS")
+          { requireAccessSyntax(!repeatableRead, "REPEATABLE READ cannot retain update locks"); } ]
+    )
+    { return captureStatementTokens(statementStart); }
 }
 
 SetStatement Set(): {
