@@ -21,6 +21,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -497,5 +499,93 @@ class StatementFeatureVisitorTest {
         StatementFeatures f = analyse("EXPLAIN DELETE FROM t");
         assertThat(f.returnsResultSet()).isTrue();
         assertThat(f.mayModifyData()).isTrue();
+    }
+
+    /**
+     * Every expression position has to be traversed, otherwise a function call placed there escapes
+     * the purity check and a subquery placed there escapes the lock and write checks.
+     */
+    @Nested
+    @DisplayName("every expression position is traversed")
+    class ExpressionPositions {
+
+        private StatementFeatures analyseAllPureExcept(String sql, String impure)
+                throws JSQLParserException {
+            return StatementFeatureVisitor.analyse(CCJSqlParserUtil.parse(sql),
+                    name -> !name.equals(impure));
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SELECT substring(pg_read_file('x') FROM 2 FOR 3)",
+                "SELECT trim(LEADING 'x' FROM pg_read_file('x'))",
+                "SELECT position(pg_read_file('x') IN a) FROM t",
+                "SELECT overlay(a PLACING pg_read_file('x') FROM 2) FROM t",
+                "SELECT a FROM t WHERE a = ANY (SELECT pg_read_file('x'))",
+                "SELECT a FROM t WHERE a > ALL (SELECT pg_read_file('x'))",
+                "SELECT a FROM t WHERE a = SOME (SELECT pg_read_file('x'))",
+                "VALUES (pg_read_file('x'))",
+                "SELECT a FROM t WHERE a IN (VALUES (pg_read_file('x')))",
+                "SELECT a FROM t LIMIT length(pg_read_file('x'))",
+                "SELECT a FROM t WHERE a LIKE 'a' ESCAPE pg_read_file('x')",
+                "SELECT d AT TIME ZONE pg_read_file('x') FROM t",
+                "SELECT j -> pg_read_file('x') FROM t",
+                "SELECT json_objectagg(a : pg_read_file('x')) FROM t",
+                "SELECT a FROM t WHERE pg_read_file('x') MEMBER OF (j)",
+                "SELECT a FROM t START WITH a = pg_read_file('x') CONNECT BY PRIOR a = b",
+                "SELECT a FROM t LIMIT 1 BY pg_read_file('x')",
+                "WITH c AS (SELECT pg_read_file('x')) SELECT a FROM c UNION SELECT b FROM u",
+                "SELECT a FROM t UNION SELECT b FROM u ORDER BY pg_read_file('x')",
+                "SELECT a FROM t UNION SELECT b FROM u LIMIT length(pg_read_file('x'))",
+                "SELECT j ->> pg_read_file('x') FROM t",
+                "SELECT j #> ARRAY[pg_read_file('x')] FROM t",
+                "SELECT j #>> ARRAY[pg_read_file('x')] FROM t",
+                "SELECT a[length(pg_read_file('x'))] FROM t",
+                "SELECT t.a[length(pg_read_file('x'))] FROM t",
+                "SELECT a[1:length(pg_read_file('x'))] FROM t",
+                "SELECT a FROM t WHERE a[length(pg_read_file('x'))] = 1",
+                "SELECT 1 UNION SELECT 2 LIMIT length(pg_read_file('x'))",
+                "SELECT 1 UNION SELECT 2 FETCH FIRST length(pg_read_file('x')) ROWS ONLY"})
+        void functionIsChecked(String sql) throws JSQLParserException {
+            StatementFeatures impure = analyseAllPureExcept(sql, "pg_read_file");
+            assertThat(impure.getUnresolvedReferences()).containsExactly("pg_read_file");
+            assertThat(impure.getUncertain()).contains(StmtFeature.MODIFIES_DATA,
+                    StmtFeature.MODIFIES_SCHEMA);
+
+            StatementFeatures pure = analyseAllPureExcept(sql, "");
+            assertThat(pure.mayModifyData()).isFalse();
+            assertThat(pure.getUnresolvedReferences()).isEmpty();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SELECT a FROM t WHERE a = ANY (SELECT b FROM u FOR UPDATE)",
+                "SELECT a FROM t WHERE a > ALL (SELECT b FROM u FOR UPDATE)",
+                "VALUES ((SELECT b FROM u FOR UPDATE))",
+                "SELECT a FROM t WHERE a IN (VALUES ((SELECT b FROM u FOR UPDATE)))",
+                "SELECT a FROM t LIMIT (SELECT b FROM u FOR UPDATE)"})
+        void rowLockIsSeen(String sql) throws JSQLParserException {
+            StatementFeatures f = analyse(sql);
+            assertThat(f.is(StmtFeature.MODIFIES_TRANSACTION)).isTrue();
+            assertThat(f.is(StmtFeature.READS_DATA)).isTrue();
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @ValueSource(strings = {
+                "SELECT a FROM t WHERE a = ANY (WITH c AS (DELETE FROM u RETURNING b) SELECT b FROM c)",
+                "VALUES ((WITH c AS (DELETE FROM u RETURNING b) SELECT b FROM c))"})
+        void nestedWriteIsSeen(String sql) throws JSQLParserException {
+            StatementFeatures f = analyse(sql);
+            assertThat(f.modifiesData()).isTrue();
+            assertThat(f.returnsResultSet()).isTrue();
+        }
+
+        @Test
+        void topLevelValuesReturnsRowsWithoutReading() throws JSQLParserException {
+            StatementFeatures f = analyse("VALUES (1, 2)");
+            assertThat(f.returnsResultSet()).isTrue();
+            assertThat(f.is(StmtFeature.READS_DATA)).isFalse();
+            assertThat(f.mayModifyData()).isFalse();
+        }
     }
 }
