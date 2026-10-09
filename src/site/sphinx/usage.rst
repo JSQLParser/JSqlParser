@@ -574,7 +574,7 @@ Convenience methods wrap the common combinations:
     features.modifiesSchema();     // is(MODIFIES_SCHEMA)
     features.isOpaque();           // CALL, EXECUTE, dynamic SQL
 
-When something is merely *possible*, the analysis tells you **why**, so you can resolve it against your own catalogue or allow-list rather than guessing:
+When the analysis identifies an unresolved function, procedure or dynamic SQL marker, it records the reference so you can consult your own catalogue or allow-list:
 
 .. code-block:: java
     :caption: Safeguarding a read-only connection
@@ -586,6 +586,10 @@ When something is merely *possible*, the analysis tells you **why**, so you can 
                 "rejected, unresolved: " + features.getUnresolvedReferences());
         // e.g. [nextval]
     }
+
+The generic fallback for an unclassified statement preserves ``OPAQUE`` and the possible effects ``READS_DATA``, ``RETURNS_RESULT_SET``, ``MODIFIES_DATA`` and ``MODIFIES_SCHEMA``, but does not add a Java statement or container class name to ``getUnresolvedReferences()``. The reference set can therefore be empty while the effects remain unknown. Check ``isOpaque()`` and ``may(..)``; an empty reference set alone does not establish safety.
+
+Existing explicit references and markers remain, including procedure and function names, ``do``, ``unsupported`` and ``explain``. Stored routine declarations also retain their existing statement-type markers, such as ``createfunction``; these are independent of the generic fallback.
 
 If you can prove some functions side-effect free, hand in a predicate and the uncertainty collapses:
 
