@@ -1018,11 +1018,18 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
             this.analysis = analysis;
         }
 
-        /** The inherited implementation is empty, so table functions escape the purity check. */
+        /**
+         * The inherited implementation is empty, so table functions escape the purity check.
+         * {@link TableFunction#getFunctions()} also covers {@code ROWS FROM (..)}, where
+         * {@link TableFunction#getFunction()} is null.
+         */
         @Override
         public <S> Void visit(TableFunction tableFunction, S context) {
-            if (tableFunction.getFunction() != null) {
-                tableFunction.getFunction().accept(analysis.expressions, context);
+            List<Function> functions = tableFunction.getFunctions();
+            if (functions != null) {
+                for (Function function : functions) {
+                    function.accept(analysis.expressions, context);
+                }
             }
             return super.visit(tableFunction, context);
         }
