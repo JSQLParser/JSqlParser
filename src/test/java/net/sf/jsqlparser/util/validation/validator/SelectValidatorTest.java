@@ -17,8 +17,18 @@ import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import net.sf.jsqlparser.util.validation.feature.FeaturesAllowed;
 import net.sf.jsqlparser.util.validation.feature.MariaDbVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class SelectValidatorTest extends ValidationTestAsserts {
+
+    /**
+     * {@link FeaturesAllowed#SELECT} does not allow {@link Feature#jdbcParameter}, so a {@code ?}
+     * argument must be reported wherever the function is written.
+     */
+    private static final FeaturesAllowed SELECT_WITH_TABLE_FUNCTIONS =
+            new FeaturesAllowed("SELECT + tableFunction", Feature.tableFunction)
+                    .add(FeaturesAllowed.SELECT);
 
     @Test
     public void testValidationSelectNotAllowed() throws JSQLParserException {
@@ -204,6 +214,20 @@ public class SelectValidatorTest extends ValidationTestAsserts {
             validateNoErrors(sql, 1, DatabaseType.POSTGRESQL, DatabaseType.H2,
                     DatabaseType.SQLSERVER);
         }
+    }
+
+    @Test
+    public void testValidateFunctionArgumentInWhere() {
+        validateNotAllowed("SELECT * FROM t WHERE a = f(?)", 1, 1, SELECT_WITH_TABLE_FUNCTIONS,
+                Feature.jdbcParameter);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT * FROM f(?)",
+            "SELECT * FROM ROWS FROM (f(1), g(?))",
+            "SELECT * FROM ROWS FROM (f(1), g(?)) WITH ORDINALITY"})
+    public void testValidateTableFunctionArguments(String sql) {
+        validateNotAllowed(sql, 1, 1, SELECT_WITH_TABLE_FUNCTIONS, Feature.jdbcParameter);
     }
 
     @Test
