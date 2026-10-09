@@ -464,6 +464,7 @@ public class SelectValidator extends AbstractValidator<SelectItem<?>>
     @Override
     public <S> Void visit(TableFunction tableFunction, S context) {
         validateFeature(Feature.tableFunction);
+        validateOptionalExpressions(tableFunction.getFunctions());
 
         validateOptional(tableFunction.getPivot(), p -> p.accept(this, context));
         validateOptional(tableFunction.getUnPivot(), up -> up.accept(this, context));

@@ -329,6 +329,88 @@ class StatementFeatureVisitorTest {
         }
     }
 
+    /**
+     * {@code ROWS FROM (..)} keeps its functions in {@code getRowsFromFunctions()} and leaves
+     * {@code getFunction()} null, so a check against the single function alone lets every one of
+     * them through as harmless.
+     */
+    @Nested
+    @DisplayName("table functions in the FROM clause")
+    class TableFunctions {
+
+        private StatementFeatures analyseNothingPure(String sql) throws JSQLParserException {
+            Predicate<String> nothingIsPure = name -> false;
+            return StatementFeatureVisitor.analyse(CCJSqlParserUtil.parse(sql), nothingIsPure);
+        }
+
+        @Test
+        void singleTableFunctionIsChecked() throws JSQLParserException {
+            String sql = "SELECT * FROM pg_ls_dir('.')";
+
+            StatementFeatures impure = analyseNothingPure(sql);
+            assertThat(impure.returnsResultSet()).isTrue();
+            assertThat(impure.modifiesData()).isFalse();
+            assertThat(impure.getUncertain()).contains(StmtFeature.MODIFIES_DATA,
+                    StmtFeature.MODIFIES_SCHEMA);
+            assertThat(impure.getUnresolvedReferences()).containsExactly("pg_ls_dir");
+
+            StatementFeatures pure = analyse(sql, "pg_ls_dir");
+            assertThat(pure.mayModifyData()).isFalse();
+            assertThat(pure.getUnresolvedReferences()).isEmpty();
+        }
+
+        @Test
+        void rowsFromWithOneFunctionIsChecked() throws JSQLParserException {
+            String sql = "SELECT * FROM ROWS FROM (pg_ls_dir('.'))";
+
+            StatementFeatures impure = analyseNothingPure(sql);
+            assertThat(impure.returnsResultSet()).isTrue();
+            assertThat(impure.modifiesData()).isFalse();
+            assertThat(impure.getUncertain()).contains(StmtFeature.MODIFIES_DATA,
+                    StmtFeature.MODIFIES_SCHEMA);
+            assertThat(impure.getUnresolvedReferences()).containsExactly("pg_ls_dir");
+
+            StatementFeatures pure = analyse(sql, "pg_ls_dir");
+            assertThat(pure.mayModifyData()).isFalse();
+            assertThat(pure.getUnresolvedReferences()).isEmpty();
+        }
+
+        @Test
+        void rowsFromChecksEveryFunction() throws JSQLParserException {
+            String sql = "SELECT * FROM ROWS FROM (generate_series(1, 2), pg_ls_dir('.'))";
+
+            StatementFeatures impure = analyseNothingPure(sql);
+            assertThat(impure.mayModifyData()).isTrue();
+            assertThat(impure.getUnresolvedReferences())
+                    .containsExactlyInAnyOrder("generate_series", "pg_ls_dir");
+
+            StatementFeatures onlyFirstPure = analyse(sql, "generate_series");
+            assertThat(onlyFirstPure.mayModifyData())
+                    .as("a pure first function must not hide the second")
+                    .isTrue();
+            assertThat(onlyFirstPure.getUnresolvedReferences()).containsExactly("pg_ls_dir");
+
+            StatementFeatures pure = analyse(sql, "generate_series", "pg_ls_dir");
+            assertThat(pure.mayModifyData()).isFalse();
+            assertThat(pure.getUnresolvedReferences()).isEmpty();
+        }
+
+        @Test
+        void rowsFromWithOrdinalityIsChecked() throws JSQLParserException {
+            String sql = "SELECT * FROM ROWS FROM (generate_series(1, 2), pg_ls_dir('.')) "
+                    + "WITH ORDINALITY AS r(n, name, ord)";
+
+            StatementFeatures impure = analyseNothingPure(sql);
+            assertThat(impure.mayModifyData()).isTrue();
+            assertThat(impure.getUnresolvedReferences())
+                    .containsExactlyInAnyOrder("generate_series", "pg_ls_dir");
+
+            StatementFeatures pure = analyse(sql, "generate_series", "pg_ls_dir");
+            assertThat(pure.mayModifyData()).isFalse();
+            assertThat(pure.getUnresolvedReferences()).isEmpty();
+        }
+    }
+
     @Nested
     @DisplayName("DDL and opaque statements")
     class PendingStatementOverrides {
