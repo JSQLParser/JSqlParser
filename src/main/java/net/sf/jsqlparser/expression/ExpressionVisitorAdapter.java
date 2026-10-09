@@ -113,8 +113,16 @@ public class ExpressionVisitorAdapter<T>
         if (function.getParameters() != null) {
             subExpressions.addAll(function.getParameters());
         }
+        if (function.getNamedParameters() != null) {
+            subExpressions.addAll(function.getNamedParameters());
+        }
         if (function.getChainedParameters() != null) {
             subExpressions.addAll(function.getChainedParameters());
+        }
+        // an attribute name is not a column reference, only an attribute expression is visited
+        if (function.getAttribute() instanceof Expression
+                && function.getAttribute() != function.getAttributeColumn()) {
+            subExpressions.add((Expression) function.getAttribute());
         }
         if (function.getKeep() != null) {
             subExpressions.add(function.getKeep());
@@ -284,7 +292,8 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(LikeExpression likeExpression, S context) {
-        return visitBinaryExpression(likeExpression, context);
+        return visitExpressions(likeExpression, context, likeExpression.getLeftExpression(),
+                likeExpression.getRightExpression(), likeExpression.getEscape());
     }
 
     @Override
@@ -319,7 +328,11 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(Column column, S context) {
-        return applyExpression(column, context);
+        T result = applyExpression(column, context);
+        if (column.getArrayConstructor() != null) {
+            column.getArrayConstructor().accept(this, context);
+        }
+        return result;
     }
 
     @Override
@@ -358,12 +371,14 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(MemberOfExpression memberOfExpression, S context) {
-        return memberOfExpression.getRightExpression().accept(this, context);
+        return visitExpressions(memberOfExpression, context,
+                memberOfExpression.getLeftExpression(), memberOfExpression.getRightExpression());
     }
 
     @Override
     public <S> T visit(AnyComparisonExpression anyComparisonExpression, S context) {
-        return applyExpression(anyComparisonExpression, context);
+        return visitExpressions(anyComparisonExpression, context,
+                anyComparisonExpression.getSelect());
     }
 
     @Override
@@ -535,7 +550,10 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(JsonExpression jsonExpr, S context) {
-        return jsonExpr.getExpression().accept(this, context);
+        ArrayList<Expression> subExpressions = new ArrayList<>();
+        subExpressions.add(jsonExpr.getExpression());
+        subExpressions.addAll(jsonExpr.getIdents());
+        return visitExpressions(jsonExpr, context, subExpressions);
     }
 
     @Override
@@ -728,13 +746,28 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(TimezoneExpression timezoneExpression, S context) {
-        return timezoneExpression.getLeftExpression().accept(this, context);
+        ArrayList<Expression> subExpressions = new ArrayList<>();
+        subExpressions.add(timezoneExpression.getLeftExpression());
+        subExpressions.addAll(timezoneExpression.getTimezoneExpressions());
+        return visitExpressions(timezoneExpression, context, subExpressions);
     }
 
     @Override
     public <S> T visit(JsonAggregateFunction jsonAggregateFunction, S context) {
-        return visitExpressions(jsonAggregateFunction, context,
-                jsonAggregateFunction.getExpression(), jsonAggregateFunction.getFilterExpression());
+        ArrayList<Expression> subExpressions = new ArrayList<>();
+        subExpressions.add(jsonAggregateFunction.getExpression());
+        if (jsonAggregateFunction.getKey() instanceof Expression) {
+            subExpressions.add((Expression) jsonAggregateFunction.getKey());
+        }
+        if (jsonAggregateFunction.getValue() instanceof Expression) {
+            subExpressions.add((Expression) jsonAggregateFunction.getValue());
+        }
+        addOrderByExpressions(subExpressions,
+                jsonAggregateFunction.getExpressionOrderByElements());
+        subExpressions.add(jsonAggregateFunction.getFilterExpression());
+        subExpressions.addAll(jsonAggregateFunction.getPartitionExpressionList());
+        addOrderByExpressions(subExpressions, jsonAggregateFunction.getOrderByElements());
+        return visitExpressions(jsonAggregateFunction, context, subExpressions);
     }
 
     @Override
@@ -834,7 +867,8 @@ public class ExpressionVisitorAdapter<T>
 
     @Override
     public <S> T visit(TrimFunction trimFunction, S context) {
-        return trimFunction.getExpression().accept(this, context);
+        return visitExpressions(trimFunction, context, trimFunction.getExpression(),
+                trimFunction.getFromExpression());
     }
 
     @Override
