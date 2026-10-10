@@ -86,7 +86,7 @@ public class ColumnOption implements Serializable {
     private List<String> tokens;
     private ForeignKeyReference foreignKeyReference;
     private IdentityDefinition identityDefinition;
-    private Index constraint;
+    private NamedConstraint constraint;
     private Expression defaultExpression;
     private Boolean nullable;
     private Boolean visible;
@@ -231,7 +231,7 @@ public class ColumnOption implements Serializable {
         return option;
     }
 
-    public static ColumnOption constraint(Index constraint) {
+    public static ColumnOption constraint(NamedConstraint constraint) {
         ColumnOption option = new ColumnOption();
         option.kind = Kind.CONSTRAINT;
         option.constraint = constraint;
@@ -242,8 +242,30 @@ public class ColumnOption implements Serializable {
         return identityDefinition;
     }
 
-    public Index getConstraint() {
+    public NamedConstraint getConstraint() {
         return constraint;
+    }
+
+    /**
+     * Returns the constraint kind explicitly represented by this option, including REFERENCES and
+     * NOT NULL. Ordinary DEFAULT options remain column options; an explicit DefaultConstraint node
+     * has kind DEFAULT. Returns OTHER for NULL, unrelated or raw options. No implicit constraints,
+     * such as NOT NULL implied by a primary key, or catalogue objects are inferred.
+     */
+    public ConstraintKind getConstraintKind() {
+        switch (kind) {
+            case CONSTRAINT:
+                return constraint != null && constraint.getKind() != null ? constraint.getKind()
+                        : ConstraintKind.OTHER;
+            case REFERENCE:
+                return foreignKeyReference == null ? ConstraintKind.OTHER
+                        : ConstraintKind.FOREIGN_KEY;
+            case NULLABILITY:
+                return Boolean.FALSE.equals(nullable) ? ConstraintKind.NOT_NULL
+                        : ConstraintKind.OTHER;
+            default:
+                return ConstraintKind.OTHER;
+        }
     }
 
     public static ColumnOption raw(List<String> tokens) {

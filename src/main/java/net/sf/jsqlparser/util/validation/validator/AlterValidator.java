@@ -19,8 +19,9 @@ import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnSetNotNull;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
-import net.sf.jsqlparser.statement.create.table.NotNullConstraint;
-import net.sf.jsqlparser.statement.create.table.DefaultConstraint;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
@@ -69,6 +70,8 @@ public class AlterValidator extends AbstractValidator<Alter> {
             }
 
             validateOptionalName(c, NamedObject.constraint, e.getConstraintName());
+            validateOptionalName(c, NamedObject.constraint, e.getNewConstraintName(), null, false,
+                    NamedObject.table);
             if (e.getPkColumns() != null) {
                 validateOptionalColumnNames(c, e.getPkColumns());
             }
@@ -84,28 +87,29 @@ public class AlterValidator extends AbstractValidator<Alter> {
                 validateOptionalColumnNames(c, e.getUkColumns(), NamedObject.uniqueConstraint);
             }
 
-            if (e.getIndex() instanceof ConstraintUsingIndex) {
-                ConstraintUsingIndex constraint = (ConstraintUsingIndex) e.getIndex();
+            NamedConstraint constraint = e.getConstraint();
+            if (constraint != null) {
                 validateOptionalName(c, NamedObject.constraint, constraint.getName(), null, false,
                         NamedObject.table);
-                validateName(c, NamedObject.index, constraint.getExistingIndexName());
-            } else if (e.getIndex() instanceof DefaultConstraint) {
-                validateOptionalName(c, NamedObject.constraint, e.getIndex().getName(), null, false,
-                        NamedObject.table);
-            } else if (e.getIndex() != null) {
-                if (e.getIndex() instanceof NotNullConstraint) {
-                    validateOptionalName(c, NamedObject.constraint, e.getIndex().getName(), null,
-                            false, NamedObject.table);
-                } else {
-                    validateName(c, NamedObject.index, e.getIndex().getName());
+                if (constraint instanceof ConstraintUsingIndex) {
+                    validateName(c, NamedObject.index,
+                            ((ConstraintUsingIndex) constraint).getExistingIndexName());
                 }
+                if (constraint instanceof KeyColumnSource) {
+                    KeyColumnSource keys = (KeyColumnSource) constraint;
+                    if (keys.getColumns() != null) {
+                        validateOptionalColumnNames(c, keys.getColumns().stream()
+                                .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
+                                .collect(toList()), NamedObject.constraint);
+                    }
+                }
+            }
+            if (e.getIndex() != null) {
+                validateName(c, NamedObject.index, e.getIndex().getName());
                 if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(c,
-                            e.getIndex().getColumns().stream()
-                                    .filter(cp -> !cp.isExpression())
-                                    .map(cp -> cp.getColumnName())
-                                    .collect(toList()),
-                            NamedObject.index);
+                    validateOptionalColumnNames(c, e.getIndex().getColumns().stream()
+                            .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
+                            .collect(toList()), NamedObject.index);
                 }
             }
         }

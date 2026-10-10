@@ -35,9 +35,9 @@ class PostgreSqlConstraintEnforcementTest {
                     parse(prefix + "CONSTRAINT fk FOREIGN KEY (id) REFERENCES public.p (id) "
                             + "MATCH SIMPLE ON DELETE CASCADE " + attributes
                             + (prefix.startsWith("CREATE") ? ")" : ", ADD COLUMN extra INT"));
-            ForeignKeyIndex fk = (ForeignKeyIndex) (statement instanceof CreateTable
-                    ? ((CreateTable) statement).getIndexes().get(0)
-                    : ((Alter) statement).getAlterExpressions().get(0).getIndex());
+            ForeignKeyConstraint fk = (ForeignKeyConstraint) (statement instanceof CreateTable
+                    ? ((CreateTable) statement).getTableConstraints().get(0)
+                    : ((Alter) statement).getAlterExpressions().get(0).getConstraint());
             assertEquals(!attributes.contains("NOT ENFORCED"),
                     fk.getConstraintAttributes().getEnforced());
             roundTrip(statement);
@@ -79,8 +79,8 @@ class PostgreSqlConstraintEnforcementTest {
             Statement statement = parse(prefix + "CHECK (id > 0) NOT ENFORCED"
                     + (prefix.startsWith("CREATE") ? ")" : " NOT VALID"));
             CheckConstraint check = (CheckConstraint) (statement instanceof CreateTable
-                    ? ((CreateTable) statement).getIndexes().get(0)
-                    : ((Alter) statement).getAlterExpressions().get(0).getIndex());
+                    ? ((CreateTable) statement).getTableConstraints().get(0)
+                    : ((Alter) statement).getAlterExpressions().get(0).getConstraint());
             assertEquals(false, check.getConstraintAttributes().getEnforced());
             check.getConstraintAttributes().setEnforced(true);
             assertEquals(true, check.getEnforced());

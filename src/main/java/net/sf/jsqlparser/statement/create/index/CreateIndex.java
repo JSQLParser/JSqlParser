@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.*;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
@@ -28,7 +30,7 @@ public class CreateIndex implements Statement {
     private boolean nullFiltered;
     private List<String> includeColumns;
     private Boolean nullsDistinct;
-    private List<Index.Option> storageParameters;
+    private List<IndexOption> storageParameters;
     private String tableSpace;
     private Expression where;
 
@@ -95,11 +97,11 @@ public class CreateIndex implements Statement {
         this.nullsDistinct = nullsDistinct;
     }
 
-    public List<Index.Option> getStorageParameters() {
+    public List<IndexOption> getStorageParameters() {
         return storageParameters;
     }
 
-    public void setStorageParameters(List<Index.Option> storageParameters) {
+    public void setStorageParameters(List<IndexOption> storageParameters) {
         this.storageParameters = storageParameters;
     }
 
@@ -212,7 +214,7 @@ public class CreateIndex implements Statement {
     private void appendIndexColumns(StringBuilder buffer, Consumer<Expression> expressionPrinter) {
         if (index.getColumns() != null) {
             buffer.append(" (");
-            for (Iterator<Index.ColumnParams> columns = index.getColumns().iterator(); columns
+            for (Iterator<KeyElement> columns = index.getColumns().iterator(); columns
                     .hasNext();) {
                 columns.next().appendTo(buffer, expressionPrinter);
                 if (columns.hasNext()) {
@@ -233,7 +235,7 @@ public class CreateIndex implements Statement {
         }
         if (storageParameters != null) {
             buffer.append(" WITH ");
-            Index.Option.appendListTo(buffer, storageParameters, expressionPrinter);
+            IndexOption.appendListTo(buffer, storageParameters, expressionPrinter);
         }
         if (tableSpace != null) {
             buffer.append(" TABLESPACE ").append(tableSpace);
@@ -279,7 +281,7 @@ public class CreateIndex implements Statement {
         return this;
     }
 
-    public CreateIndex withStorageParameters(List<Index.Option> storageParameters) {
+    public CreateIndex withStorageParameters(List<IndexOption> storageParameters) {
         setStorageParameters(storageParameters);
         return this;
     }

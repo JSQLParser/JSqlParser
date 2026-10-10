@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
@@ -18,7 +19,6 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
@@ -58,7 +58,7 @@ class PartitionKeyMutationTest {
                 Dialect.POSTGRESQL);
         TablePartitioning partition = table.getPartitioning();
         partition.setKeyColumns(
-                List.of(new Index.ColumnParams("other").withOperatorClass("int4_ops")));
+                List.of(new KeyElement("other").withOperatorClass("int4_ops")));
         assertNull(partition.getExpressionList());
         assertRoundTrip(table,
                 "CREATE TABLE t (id INT, other INT) PARTITION BY RANGE (other int4_ops)",

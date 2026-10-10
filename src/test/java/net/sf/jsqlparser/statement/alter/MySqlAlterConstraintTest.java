@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,7 +23,6 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
@@ -50,9 +51,9 @@ class MySqlAlterConstraintTest {
         CreateTable create = (CreateTable) CCJSqlParserUtil.parse(
                 "CREATE TABLE t (id INT, " + definition + ")", p -> p.withDialect(Dialect.MYSQL));
         Alter alter = parse("ALTER TABLE t ADD " + definition + ", ADD COLUMN other INT");
-        Index actual = alter.getAlterExpressions().get(0).getIndex();
-        assertEquals(create.getIndexes().get(0).getClass(), actual.getClass());
-        assertEquals(create.getIndexes().get(0).toString(), actual.toString());
+        NamedConstraint actual = alter.getAlterExpressions().get(0).getConstraint();
+        assertEquals(create.getTableConstraints().get(0).getClass(), actual.getClass());
+        assertEquals(create.getTableConstraints().get(0).toString(), actual.toString());
         assertEquals(2, alter.getAlterExpressions().size());
         assertRoundTrip(alter);
     }
@@ -60,11 +61,11 @@ class MySqlAlterConstraintTest {
     @Test
     void constraintAndIndexNamesCanBeEditedIndependently() throws JSQLParserException {
         Alter alter = parse("ALTER TABLE t ADD CONSTRAINT uq UNIQUE KEY idx (id)");
-        NamedConstraint unique = assertInstanceOf(NamedConstraint.class,
-                alter.getAlterExpressions().get(0).getIndex());
+        KeyConstraint unique = assertInstanceOf(KeyConstraint.class,
+                alter.getAlterExpressions().get(0).getConstraint());
         assertEquals("uq", unique.getName());
         assertEquals("idx", unique.getIndexName());
-        assertEquals(Index.Kind.UNIQUE, unique.getKind());
+        assertEquals(ConstraintKind.UNIQUE, unique.getKind());
         unique.setName("new_constraint");
         unique.setIndexName("new_index");
         assertEquals("ALTER TABLE t ADD CONSTRAINT new_constraint UNIQUE KEY new_index (id)",
@@ -76,7 +77,7 @@ class MySqlAlterConstraintTest {
     void unnamedCheckRetainsKeywordEnforcementAndExpressionVisitor() throws JSQLParserException {
         Alter alter = parse("ALTER TABLE t ADD CONSTRAINT CHECK (id > 0) NOT ENFORCED");
         CheckConstraint check = assertInstanceOf(CheckConstraint.class,
-                alter.getAlterExpressions().get(0).getIndex());
+                alter.getAlterExpressions().get(0).getConstraint());
         assertTrue(check.isUseConstraintKeyword());
         assertEquals(Boolean.FALSE, check.getEnforced());
         StringBuilder buffer = new StringBuilder();
