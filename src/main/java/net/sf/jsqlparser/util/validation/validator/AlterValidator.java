@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -80,14 +81,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
             }
 
             validateConstraint(c, e.getConstraint());
-            if (e.getIndex() != null) {
-                validateName(c, NamedObject.index, e.getIndex().getName());
-                if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(c, e.getIndex().getColumns().stream()
-                            .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
-                            .collect(toList()), NamedObject.index);
-                }
-            }
+            validateIndex(c, e);
         }
     }
 
@@ -135,5 +129,23 @@ public class AlterValidator extends AbstractValidator<Alter> {
         }
     }
 
+    private void validateIndex(ValidationCapability capability, AlterExpression expression) {
+        Index index = expression.getIndex();
+        if (index == null) {
+            return;
+        }
+        boolean rename = expression.getOperation() == AlterOperation.RENAME_INDEX
+                || expression.getOperation() == AlterOperation.RENAME_KEY;
+        if (rename && expression.getOldIndex() != null) {
+            validateName(capability, NamedObject.index, expression.getOldIndex().getName());
+        }
+        boolean introducedName = expression.getOperation() == AlterOperation.ADD || rename;
+        validateOptionalName(capability, NamedObject.index, index.getName(), null, !introducedName);
+        if (index.getColumns() != null) {
+            validateOptionalColumnNames(capability, index.getColumns().stream()
+                    .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
+                    .collect(toList()), NamedObject.index);
+        }
+    }
 
 }
