@@ -9,6 +9,11 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
@@ -1168,4 +1173,42 @@ public class StatementValidator extends AbstractValidator<Statement>
         validateFeature(Feature.alterCollation);
         return null;
     }
+
+    @Override
+    public <S> Void visit(AlterRelation statement, S context) {
+        boolean index = statement.getObjectType() == AlterRelation.ObjectType.INDEX;
+        validateFeature(index ? Feature.alterIndex : Feature.alterView);
+        if (!index) {
+            validateOptionalFromItem(statement.getRelation());
+        }
+        statement.getActions().forEach(action -> {
+            action.visitExpressions(this::validateOptionalExpression);
+            action.visitTables(this::validateOptionalFromItem);
+        });
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterPolicy statement, S context) {
+        validateOptionalFromItem(statement.getTable());
+        if (statement.getNewName() == null) {
+            statement.getOptions().visitExpressions(this::validateOptionalExpression);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(DropPolicy statement, S context) {
+        validateFeature(Feature.drop);
+        validateOptionalFromItem(statement.getTable());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateStatistics statement, S context) {
+        validateOptionalFromItem(statement.getTable());
+        validateOptionalExpression(statement.getExpressions());
+        return null;
+    }
+
 }

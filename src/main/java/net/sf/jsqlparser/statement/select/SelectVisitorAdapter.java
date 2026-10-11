@@ -333,7 +333,10 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(Values values, S context) {
+        visitWithItems(values.getWithItemsList(), context);
         expressionVisitor.visitExpressions(values.getExpressions(), context);
+        expressionVisitor.visitOrderBy(values.getOrderByElements(), context);
+        visitLimitOffsetFetch(values, context);
         return null;
     }
 

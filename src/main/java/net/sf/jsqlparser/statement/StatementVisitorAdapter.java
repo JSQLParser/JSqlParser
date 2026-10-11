@@ -9,6 +9,21 @@
  */
 package net.sf.jsqlparser.statement;
 
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.alter.AlterServer;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
+import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
+
 import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
 
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
@@ -305,7 +320,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         selectVisitor.visitOutputClause(insert.getOutputClause(), context);
 
         if (insert.getSelect() != null) {
-            insert.getSelect().accept(selectVisitor, null);
+            insert.getSelect().accept(selectVisitor, context);
         }
 
         expressionVisitor.visitUpdateSets(insert.getSetUpdateSets(), context);
@@ -904,4 +919,95 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     public <S> T visit(CreateAccessMethod statement, S context) {
         return null;
     }
+
+    @Override
+    public <S> T visit(AlterRelation statement, S context) {
+        if (statement.getObjectType() != AlterRelation.ObjectType.INDEX) {
+            fromItemVisitor.visitFromItem(statement.getRelation(), context);
+        }
+        statement.getActions().forEach(action -> {
+            action.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+            action.visitTables(table -> table.accept(fromItemVisitor, context));
+        });
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterPolicy statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
+        if (statement.getNewName() == null) {
+            statement.getOptions()
+                    .visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(DropPolicy statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateStatistics statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
+        expressionVisitor.visitExpression(statement.getExpressions(), context);
+        return null;
+    }
+
+    private <S> T visitForeignDataStatement(ForeignDataStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateForeignDataWrapper statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(AlterForeignDataWrapper statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(CreateServer statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(AlterServer statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(CreateUserMapping statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(AlterUserMapping statement, S context) {
+        return visitForeignDataStatement(statement, context);
+    }
+
+    @Override
+    public <S> T visit(CreateRule statement, S context) {
+        statement.visitTables(table -> table.accept(fromItemVisitor, context));
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        statement.getActions().forEach(action -> action.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(NotifyStatement statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateCollation statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
 }
