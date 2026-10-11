@@ -390,7 +390,8 @@ public class AlterExpression implements Serializable {
     private ForeignKeyConstraint foreignKeyForUpdate(boolean create) {
         ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
         if (foreignKey == null && create) {
-            if (constraint != null || index != null || pkColumns != null || ukColumns != null) {
+            if (constraint != null || index != null || getPkColumns() != null
+                    || getUkColumns() != null) {
                 throw new IllegalStateException(
                         "Foreign-key setters cannot replace an existing definition; use setConstraint");
             }
