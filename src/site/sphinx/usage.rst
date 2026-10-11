@@ -337,6 +337,41 @@ The existing getter and setter names remain, but their return and parameter type
 have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
 clears the clause. Foreign-key referential actions retain their separate enum.
 
+Edit shared table options
+-------------------------
+
+``CreateTable.getTableOptions()`` and
+``AlterExpressionTableOption.getStructuredTableOption()`` use the same mutable
+``TableOption`` model. Structured values and opaque tokens are alternative
+representations. ``setTokens(nonNullList)`` discards the previous kind, name,
+value and child nodes: the option becomes ``Kind.OTHER`` without parsing the
+tokens. Raw token lists remain mutable; ``getTokens()`` on a structured option
+returns an unmodifiable snapshot.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT) ENGINE=InnoDB");
+    TableOption option = table.getTableOption(TableOption.Kind.ENGINE).orElseThrow();
+    option.setTokens(List.of("ROW_FORMAT", "=", "DYNAMIC"));
+    table.getTableOption(TableOption.Kind.ENGINE).isEmpty(); // true
+
+    // Supply structured properties explicitly; the old tokens are discarded.
+    option.withKind(TableOption.Kind.COMMENT).withName("COMMENT")
+            .withValue("'new'").withUseEquals(true);
+    // CREATE TABLE t (id INT) COMMENT = 'new'
+
+Any structured setter leaves the opaque representation; it never recovers
+previous values from those tokens. ``setTokens(null)`` clears opaque tokens
+without restoring discarded properties, and leaves structured options alone.
+``setUnionTables``, ``setStorageParameters`` and ``setForeignTableOptions``
+replace the current contents with their respective structured payloads. Their
+lists and child nodes remain editable. An empty UNION list means ``UNION ()``;
+a null payload omits its value. A non-null ``setTablespaceStorage`` also selects
+TABLESPACE; supply its tablespace name with ``setValue``. Choose the new kind and spelling explicitly
+when using the scalar setters. These methods edit the AST rather than checking
+database-specific DDL validity.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
