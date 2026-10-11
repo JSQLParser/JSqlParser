@@ -2080,15 +2080,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    private static boolean hasStructuredColumnOption(List<ColumnOption> options) {
-        for (ColumnOption option : options) {
-            if (option.getKind() != ColumnOption.Kind.OTHER) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
     protected Table createTable(List<String> names) {
         return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) && names.size() == 1
@@ -14538,7 +14529,6 @@ ColumnDefinition ColumnDefinition(): {
     ColumnDefinition coldef;
     String columnName;
     ColDataType colDataType;
-    List<String> columnSpecs = new ArrayList<String>();
     List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
     ColumnOption option;
 } {
@@ -14546,15 +14536,12 @@ ColumnDefinition ColumnDefinition(): {
     colDataType=ColDataType()
     ( LOOKAHEAD(2) option=ColumnDefinitionOption() {
         columnOptions.add(option);
-        columnSpecs.addAll(option.getTokens());
     } )*
     {
         coldef = new ColumnDefinition();
         coldef.setColumnName(columnName);
         coldef.setColDataType(colDataType);
-        if (columnSpecs.size() > 0)
-            coldef.setColumnSpecs(columnSpecs);
-        if (hasStructuredColumnOption(columnOptions))
+        if (!columnOptions.isEmpty())
             coldef.setColumnOptions(columnOptions);
         return coldef;
     }
@@ -17271,7 +17258,6 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     boolean withType = false;
     boolean useSetData = false;
     ColDataType dataType = null;
-    List<String> columnSpecs = new ArrayList<String>();
     List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
     ColumnOption option = null;
     AlterExpression.ColumnDataType result;
@@ -17293,19 +17279,16 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING) }) option = ColumnDefinitionOption() {
         columnOptions.add(option);
-        columnSpecs.addAll(option.getTokens());
     } )*
     [ LOOKAHEAD({ withType && getToken(1).kind == K_USING }) <K_USING> usingExpression=Expression() ]
     )
     {
         requireDdlSyntax(!withType || dataType != null, "TYPE requires a data type");
-        result = new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
+        result = new AlterExpression.ColumnDataType(columnName, withType, dataType, null);
         result.setUseSetData(useSetData);
         result.setUsingExpression(usingExpression);
         result.setIdentityAlterations(identityAlterations);
-        if (hasStructuredColumnOption(columnOptions)) {
-            result.setColumnOptions(columnOptions);
-        }
+        result.setColumnOptions(columnOptions);
         return result;
     }
 }

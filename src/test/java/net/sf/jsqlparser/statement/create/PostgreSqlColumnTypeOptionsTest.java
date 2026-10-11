@@ -36,7 +36,11 @@ class PostgreSqlColumnTypeOptionsTest {
                 assertTrue(dataType.isUsingArrayKeyword());
                 assertEquals(dimensions.isEmpty() ? Arrays.asList((Integer) null) : List.of(4),
                         dataType.getArrayData());
-                assertNull(column.getColumnOptions());
+                if (alter) {
+                    assertTrue(column.getColumnOptions().isEmpty());
+                } else {
+                    assertNull(column.getColumnOptions());
+                }
                 dataType.setArrayData(List.of(8));
                 assertTrue(statement.toString().contains(" ARRAY[8]"));
                 assertRoundTrip(statement);
