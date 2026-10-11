@@ -134,6 +134,11 @@ public class AlterExpression implements Serializable {
     private String constraintType;
     private boolean invisible;
 
+    /** Returns the active structured column rename, or null when no such action is exposed. */
+    public ColumnRenameAction getColumnRename() {
+        return null;
+    }
+
     public Index getOldIndex() {
         return oldIndex;
     }

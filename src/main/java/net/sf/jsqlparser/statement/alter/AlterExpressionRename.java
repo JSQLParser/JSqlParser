@@ -13,7 +13,32 @@ package net.sf.jsqlparser.statement.alter;
  * Internal subclass for RENAME operations within ALTER TABLE. Handles RENAME COLUMN, RENAME TO
  * (table), RENAME INDEX/KEY/CONSTRAINT.
  */
-public class AlterExpressionRename extends AlterExpression {
+public class AlterExpressionRename extends AlterExpression implements ColumnRenameAction {
+
+    @Override
+    public ColumnRenameAction getColumnRename() {
+        return getOperation() == AlterOperation.RENAME ? this : null;
+    }
+
+    @Override
+    public String getSourceName() {
+        return getColumnOldName();
+    }
+
+    @Override
+    public void setSourceName(String name) {
+        setColumnOldName(name);
+    }
+
+    @Override
+    public String getTargetName() {
+        return getColumnName();
+    }
+
+    @Override
+    public void setTargetName(String name) {
+        setColumnName(name);
+    }
 
     @Override
     protected void appendBody(StringBuilder b) {
