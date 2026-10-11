@@ -31,7 +31,9 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
     private ColumnsTransformerType type;
     private Expression applyExpression;
     private ParenthesedExpressionList<Column> exceptColumns;
+    private StringValue exceptPattern;
     private List<SelectItem<?>> replaceItems;
+    private boolean strict;
 
     public ColumnsTransformer(ColumnsTransformerType type) {
         this.type = type;
@@ -61,6 +63,39 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
 
     public ColumnsTransformer setExceptColumns(ParenthesedExpressionList<Column> exceptColumns) {
         this.exceptColumns = exceptColumns;
+        if (exceptColumns != null) {
+            this.exceptPattern = null;
+        }
+        return this;
+    }
+
+    /**
+     * The re2 pattern of the ClickHouse {@code EXCEPT 'pattern'} form, mutually exclusive with
+     * {@link #getExceptColumns()}.
+     */
+    public StringValue getExceptPattern() {
+        return exceptPattern;
+    }
+
+    public ColumnsTransformer setExceptPattern(StringValue exceptPattern) {
+        this.exceptPattern = exceptPattern;
+        if (exceptPattern != null) {
+            this.exceptColumns = null;
+        }
+        return this;
+    }
+
+    /**
+     * The {@code STRICT} modifier of ClickHouse {@code EXCEPT}/{@code REPLACE} transformers: named
+     * columns must exist, otherwise the database rejects the query. Meaningless for {@code APPLY}
+     * and {@code EXCLUDE}.
+     */
+    public boolean isStrict() {
+        return strict;
+    }
+
+    public ColumnsTransformer setStrict(boolean strict) {
+        this.strict = strict;
         return this;
     }
 
@@ -81,6 +116,13 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
                 }
                 break;
             case EXCEPT:
+                if (exceptPattern != null) {
+                    expressions.add(exceptPattern);
+                }
+                if (exceptColumns != null) {
+                    expressions.addAll(exceptColumns);
+                }
+                break;
             case EXCLUDE:
                 if (exceptColumns != null) {
                     expressions.addAll(exceptColumns);
@@ -104,13 +146,15 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
                 builder.append("APPLY(").append(applyExpression).append(")");
                 break;
             case EXCEPT:
-                builder.append("EXCEPT ").append(exceptColumns);
+                builder.append("EXCEPT").append(strict ? " STRICT" : "").append(" ")
+                        .append(exceptPattern != null ? exceptPattern : exceptColumns);
                 break;
             case EXCLUDE:
                 builder.append("EXCLUDE ").append(exceptColumns);
                 break;
             case REPLACE:
-                builder.append("REPLACE(").append(Select.getStringList(replaceItems)).append(")");
+                builder.append("REPLACE").append(strict ? " STRICT" : "").append("(")
+                        .append(Select.getStringList(replaceItems)).append(")");
                 break;
             default:
                 throw new IllegalStateException("Unhandled ColumnsTransformerType: " + type);

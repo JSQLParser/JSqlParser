@@ -9,52 +9,6 @@
  */
 package net.sf.jsqlparser.util;
 
-import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
-
-import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
-import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
-import net.sf.jsqlparser.statement.create.server.CreateServer;
-import net.sf.jsqlparser.statement.alter.AlterServer;
-import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
-import net.sf.jsqlparser.statement.alter.AlterUserMapping;
-import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
-import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
-import net.sf.jsqlparser.statement.create.rule.CreateRule;
-import net.sf.jsqlparser.statement.notify.NotifyStatement;
-import net.sf.jsqlparser.statement.create.collation.CreateCollation;
-import net.sf.jsqlparser.statement.alter.AlterCollation;
-import net.sf.jsqlparser.statement.alter.AlterPolicy;
-import net.sf.jsqlparser.statement.drop.DropPolicy;
-import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
-import net.sf.jsqlparser.statement.alter.AlterStatistics;
-import net.sf.jsqlparser.statement.alter.AlterRelation;
-import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
-import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
-import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
-import net.sf.jsqlparser.statement.select.MatchRecognize;
-import net.sf.jsqlparser.expression.RowPatternFunction;
-
-import net.sf.jsqlparser.expression.AliasedExpression;
-
-import net.sf.jsqlparser.statement.oracle.OracleBlock;
-import net.sf.jsqlparser.statement.oracle.OracleAssignment;
-import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
-
-import net.sf.jsqlparser.statement.role.CreateRole;
-import net.sf.jsqlparser.statement.role.AlterRole;
-import net.sf.jsqlparser.statement.grant.Revoke;
-import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
-import net.sf.jsqlparser.statement.create.type.CreateType;
-import net.sf.jsqlparser.statement.alter.AlterType;
-import net.sf.jsqlparser.statement.create.domain.CreateDomain;
-import net.sf.jsqlparser.statement.alter.AlterDomain;
-import net.sf.jsqlparser.statement.create.extension.CreateExtension;
-import net.sf.jsqlparser.statement.alter.AlterExtension;
-import net.sf.jsqlparser.statement.create.publication.CreatePublication;
-import net.sf.jsqlparser.statement.alter.AlterPublication;
-import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
-import net.sf.jsqlparser.statement.alter.AlterSubscription;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.AliasedExpression;
+import net.sf.jsqlparser.expression.RowPatternFunction;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -95,9 +51,9 @@ import net.sf.jsqlparser.expression.operators.relational.IncludesExpression;
 import net.sf.jsqlparser.expression.operators.relational.Intersects;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsUnknownExpression;
-import net.sf.jsqlparser.expression.operators.relational.IsJsonExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.Matches;
@@ -114,60 +70,105 @@ import net.sf.jsqlparser.expression.operators.relational.TSQLRightJoin;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.AssertStatement;
+import net.sf.jsqlparser.statement.AttachStatement;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
-import net.sf.jsqlparser.statement.StartTransaction;
-import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
+import net.sf.jsqlparser.statement.ConnectStatement;
+import net.sf.jsqlparser.statement.CopyStatement;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
+import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.DetachStatement;
+import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.DoStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.ExtensionStatement;
 import net.sf.jsqlparser.statement.IfElseStatement;
 import net.sf.jsqlparser.statement.OutputClause;
+import net.sf.jsqlparser.statement.PragmaStatement;
+import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.PurgeObjectType;
 import net.sf.jsqlparser.statement.PurgeStatement;
+import net.sf.jsqlparser.statement.ReleaseSavepointStatement;
 import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.ReturningClause;
 import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
+import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.StartTransaction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
-import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterDomain;
+import net.sf.jsqlparser.statement.alter.AlterExtension;
+import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
+import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.alter.AlterPublication;
+import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterStatistics;
+import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
+import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterType;
+import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
+import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.create.accessmethod.CreateAccessMethod;
+import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.create.domain.CreateDomain;
 import net.sf.jsqlparser.statement.create.event.AlterEvent;
 import net.sf.jsqlparser.statement.create.event.CreateEvent;
+import net.sf.jsqlparser.statement.create.extension.CreateExtension;
+import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
+import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
+import net.sf.jsqlparser.statement.create.publication.CreatePublication;
+import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.server.CreateServer;
+import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
+import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
+import net.sf.jsqlparser.statement.create.type.CreateType;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
+import net.sf.jsqlparser.statement.create.usermapping.CreateUserMapping;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.delete.ParenthesedDelete;
 import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.execute.ExecuteArgument;
 import net.sf.jsqlparser.statement.export.Export;
+import net.sf.jsqlparser.statement.export.ExportDataStatement;
+import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
 import net.sf.jsqlparser.statement.grant.Grant;
+import net.sf.jsqlparser.statement.grant.Revoke;
 import net.sf.jsqlparser.statement.imprt.Import;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.insert.InsertBulk;
@@ -176,6 +177,7 @@ import net.sf.jsqlparser.statement.insert.InsertDuplicateAction;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertBranch;
 import net.sf.jsqlparser.statement.insert.OracleMultiInsertClause;
 import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
+import net.sf.jsqlparser.statement.load.LoadDataStatement;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeDelete;
@@ -183,6 +185,10 @@ import net.sf.jsqlparser.statement.merge.MergeInsert;
 import net.sf.jsqlparser.statement.merge.MergeOperation;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeUpdate;
+import net.sf.jsqlparser.statement.notify.NotifyStatement;
+import net.sf.jsqlparser.statement.oracle.OracleAssignment;
+import net.sf.jsqlparser.statement.oracle.OracleBlock;
+import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 import net.sf.jsqlparser.statement.piped.AggregatePipeOperator;
 import net.sf.jsqlparser.statement.piped.AsPipeOperator;
 import net.sf.jsqlparser.statement.piped.CallPipeOperator;
@@ -204,6 +210,8 @@ import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
 import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.role.AlterRole;
+import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -212,12 +220,12 @@ import net.sf.jsqlparser.statement.select.FunctionAllColumns;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.LateralView;
+import net.sf.jsqlparser.statement.select.MatchRecognize;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Pivot;
 import net.sf.jsqlparser.statement.select.PivotQuery;
-import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
 import net.sf.jsqlparser.statement.select.PivotXml;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -227,8 +235,9 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.TableFunction;
-import net.sf.jsqlparser.statement.select.UnPivot;
 import net.sf.jsqlparser.statement.select.TableStatement;
+import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.select.UnPivotQuery;
 import net.sf.jsqlparser.statement.select.Values;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -238,20 +247,6 @@ import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.PragmaStatement;
-import net.sf.jsqlparser.statement.ExtensionStatement;
-import net.sf.jsqlparser.statement.AttachStatement;
-import net.sf.jsqlparser.statement.DetachStatement;
-import net.sf.jsqlparser.statement.ConnectStatement;
-import net.sf.jsqlparser.statement.DisconnectStatement;
-import net.sf.jsqlparser.statement.PrepareStatement;
-import net.sf.jsqlparser.statement.DeallocateStatement;
-import net.sf.jsqlparser.statement.CopyStatement;
-import net.sf.jsqlparser.statement.create.macro.CreateMacro;
-import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
-import net.sf.jsqlparser.statement.AssertStatement;
-import net.sf.jsqlparser.statement.export.ExportDataStatement;
-import net.sf.jsqlparser.statement.load.LoadDataStatement;
 
 
 /**
@@ -649,6 +644,9 @@ public class TablesNamesFinder<Void>
                         MatchRecognize.normalizeVariableName(tableColumn.getTable().getName()))) {
             visit(tableColumn.getTable(), context);
         }
+        if (tableColumn.getArrayConstructor() != null) {
+            tableColumn.getArrayConstructor().accept(this, context);
+        }
         return null;
     }
 
@@ -683,6 +681,10 @@ public class TablesNamesFinder<Void>
             visit(exprList, context);
         }
         exprList = function.getChainedParameters();
+        if (exprList != null) {
+            visit(exprList, context);
+        }
+        exprList = function.getNamedParameters();
         if (exprList != null) {
             visit(exprList, context);
         }
@@ -1020,6 +1022,9 @@ public class TablesNamesFinder<Void>
         if (analytic.getFilterExpression() != null) {
             analytic.getFilterExpression().accept(this, context);
         }
+        if (analytic.getPartitionExpressionList() != null) {
+            visit(analytic.getPartitionExpressionList(), context);
+        }
         if (analytic.getFuncOrderBy() != null) {
             for (OrderByElement element : analytic.getFuncOrderBy()) {
                 element.getExpression().accept(this, context);
@@ -1126,6 +1131,12 @@ public class TablesNamesFinder<Void>
         if (fromQuery.getFromItem() != null) {
             fromQuery.getFromItem().accept(this, context);
         }
+        if (fromQuery.getLateralViews() != null) {
+            for (LateralView lateralView : fromQuery.getLateralViews()) {
+                lateralView.getGeneratorFunction().accept(this, context);
+            }
+        }
+        visitJoins(fromQuery.getJoins(), context);
         for (PipeOperator pipeOperator : fromQuery.getPipeOperators()) {
             pipeOperator.accept(this, null);
         }
@@ -1578,9 +1589,17 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visitOutputClause(OutputClause outputClause, S context) {
-        if (outputClause != null && outputClause.getSelectItemList() != null) {
-            for (SelectItem<?> selectItem : outputClause.getSelectItemList()) {
-                selectItem.accept(this, context);
+        if (outputClause != null) {
+            if (outputClause.getSelectItemList() != null) {
+                for (SelectItem<?> selectItem : outputClause.getSelectItemList()) {
+                    selectItem.accept(this, context);
+                }
+            }
+            if (outputClause.getOutputTable() != null) {
+                visit(outputClause.getOutputTable(), context);
+            }
+            if (outputClause.getTableVariable() != null) {
+                outputClause.getTableVariable().accept(this, context);
             }
         }
         return null;
@@ -1902,6 +1921,7 @@ public class TablesNamesFinder<Void>
                 operation.accept(this, context);
             }
         }
+        visitOutputClause(merge.getOutputClause(), context);
         visitReturningClause(merge.getReturningClause(), context);
         return null;
     }
@@ -2031,6 +2051,9 @@ public class TablesNamesFinder<Void>
         }
         if (upsert.getSelect() != null) {
             visit(upsert.getSelect(), context);
+        }
+        if (upsert.getDuplicateAction() != null) {
+            visitInsertAction(upsert.getDuplicateAction(), context);
         }
         return null;
     }
@@ -2207,7 +2230,7 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(ArrayExpression array, S context) {
         array.getObjExpression().accept(this, context);
-        if (array.getStartIndexExpression() != null) {
+        if (array.getIndexExpression() != null) {
             array.getIndexExpression().accept(this, context);
         }
         if (array.getStartIndexExpression() != null) {
@@ -2520,6 +2543,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(IfElseStatement ifElseStatement, S context) {
+        ifElseStatement.getCondition().accept(this, context);
         ifElseStatement.getIfStatement().accept(this, context);
         if (ifElseStatement.getElseStatement() != null) {
             ifElseStatement.getElseStatement().accept(this, context);

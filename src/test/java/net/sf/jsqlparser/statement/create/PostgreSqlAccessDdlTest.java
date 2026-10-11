@@ -32,6 +32,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.RoutineReference;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.StmtFeature;
@@ -173,7 +174,7 @@ class PostgreSqlAccessDdlTest {
         assertThat(revoke.getOptionFor()).isEqualTo(GrantOption.Kind.ADMIN);
         assertThat(revoke.getClause().getRoles()).containsExactly("reader", "writer");
         assertThat(revoke.getClause().getGrantedBy()).isEqualTo("owner");
-        assertThat(revoke.getBehavior()).isEqualTo(Revoke.Behavior.CASCADE);
+        assertThat(revoke.getBehavior()).isEqualTo(CascadeBehavior.CASCADE);
         AlterDefaultPrivileges defaults = (AlterDefaultPrivileges) CCJSqlParserUtil.parse(
                 "ALTER DEFAULT PRIVILEGES FOR USER owner IN SCHEMA app GRANT SELECT ON TABLES TO reader");
         assertThat(defaults.getRoleKeyword()).isEqualTo(AlterDefaultPrivileges.RoleKeyword.USER);

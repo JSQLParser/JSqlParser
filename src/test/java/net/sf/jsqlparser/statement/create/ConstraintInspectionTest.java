@@ -316,14 +316,24 @@ class ConstraintInspectionTest {
 
     @Test
     void dropColumnActionDoesNotBecomeAPrimaryKeyDeclarationFromStaleFields() throws Exception {
+        Alter statement = (Alter) parse("ALTER TABLE t DROP COLUMN id", Dialect.POSTGRESQL);
         AlterExpressionDrop action = assertInstanceOf(AlterExpressionDrop.class,
-                action("ALTER TABLE t DROP COLUMN id", Dialect.POSTGRESQL));
+                statement.getAlterExpressions().get(0));
         String before = action.toString();
         action.setConstraint(
                 new KeyConstraint().withType("PRIMARY KEY").withColumnsNames(List.of("id")));
-        action.setOperation(AlterOperation.ADD);
         assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
         assertEquals(before, action.toString());
+        assertRoundTrip(statement, Dialect.POSTGRESQL);
+
+        // The shared renderer follows an explicitly changed operation; the active payload is
+        // still a column action rather than the stale PRIMARY KEY definition.
+        action.setOperation(AlterOperation.ADD);
+        assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
+        assertEquals("ADD COLUMN id", action.toString());
+        StringBuilder sql = new StringBuilder();
+        statement.accept(new StatementDeParser(sql), null);
+        assertEquals("ALTER TABLE t ADD COLUMN id", sql.toString());
     }
 
     @ParameterizedTest

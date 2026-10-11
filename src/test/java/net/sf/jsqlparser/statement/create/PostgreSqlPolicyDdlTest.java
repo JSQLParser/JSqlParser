@@ -15,6 +15,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.create.policy.CreatePolicy;
@@ -83,7 +84,7 @@ class PostgreSqlPolicyDdlTest {
         DropPolicy drop = (DropPolicy) parse("DROP POLICY IF EXISTS pol ON t CASCADE");
         assertTrue(drop.isIfExists());
         drop.setPolicyName("new_pol").setTable(new Table("new_t"))
-                .setBehavior(DropPolicy.Behavior.RESTRICT);
+                .setBehavior(CascadeBehavior.RESTRICT);
         assertEquals("DROP POLICY IF EXISTS new_pol ON new_t RESTRICT", drop.toString());
         assertRoundTrip(drop);
     }

@@ -425,6 +425,20 @@ public class AlterExpression implements Serializable {
         return columnSetDefaultList;
     }
 
+    /**
+     * Returns this action's active SET DEFAULT entries through the same API used by ALTER VIEW. The
+     * list is read-only; its entries are the original mutable AST objects, not copies. Use the
+     * existing action-specific API to add or remove entries.
+     */
+    public List<ColumnDefaultAction> getColumnDefaults() {
+        if (operation != AlterOperation.ALTER || columnSetDefaultList == null
+                || constraintType != null && constraintSymbol != null
+                || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(columnSetDefaultList);
+    }
+
     public void addColSetVisibility(ColumnSetVisibility columnSetVisibility) {
         if (columnSetVisibilityList == null) {
             columnSetVisibilityList = new ArrayList<>();
@@ -1187,7 +1201,11 @@ public class AlterExpression implements Serializable {
             }
             b.append(getOldIndex().getName()).append(" TO ").append(getIndex().getName());
         } else {
-            b.append("RENAME TO ").append(getNewTableName());
+            b.append("RENAME");
+            if (getTableRenameKeyword() != TableRenameKeyword.NONE) {
+                b.append(" ").append(getTableRenameKeyword());
+            }
+            b.append(" ").append(getNewTableName());
         }
     }
 
@@ -1281,7 +1299,7 @@ public class AlterExpression implements Serializable {
                 b.append("REORGANIZE PARTITION ")
                         .append(PlainSelect.getStringList(partitions))
                         .append(" INTO (")
-                        .append(partitionDefinitions.stream()
+                        .append(getPartitionDefinitions().stream()
                                 .map(PartitionDefinition::toString)
                                 .collect(Collectors.joining(", ")))
                         .append(")");
@@ -1321,7 +1339,7 @@ public class AlterExpression implements Serializable {
                 } else if (partitionColumns != null && !partitionColumns.isEmpty()) {
                     b.append("COLUMNS(").append(String.join(", ", partitionColumns)).append(") ");
                 }
-                b.append("(").append(partitionDefinitions.stream()
+                b.append("(").append(getPartitionDefinitions().stream()
                         .map(PartitionDefinition::toString)
                         .collect(Collectors.joining(", ")))
                         .append(")");
@@ -1851,8 +1869,8 @@ public class AlterExpression implements Serializable {
         }
     }
 
-    public static final class ColumnSetDefault implements Serializable {
-        private final String columnName;
+    public static final class ColumnSetDefault implements ColumnDefaultAction, Serializable {
+        private String columnName;
         private String defaultValue;
         private Expression defaultExpression;
 
@@ -1861,8 +1879,14 @@ public class AlterExpression implements Serializable {
             this.defaultValue = defaultValue;
         }
 
+        @Override
         public String getColumnName() {
             return columnName;
+        }
+
+        @Override
+        public void setColumnName(String columnName) {
+            this.columnName = columnName;
         }
 
         /** Constructs a structured default without overloading the legacy nullable String API. */
@@ -1872,26 +1896,25 @@ public class AlterExpression implements Serializable {
             return result;
         }
 
+        @Override
         public Expression getDefaultExpression() {
             return defaultExpression;
         }
 
+        @Override
         public void setDefaultExpression(Expression defaultExpression) {
             this.defaultExpression = defaultExpression;
             this.defaultValue = null;
         }
 
+        @Override
         public String getDefaultValue() {
             return defaultExpression == null ? defaultValue : defaultExpression.toString();
         }
 
         public void appendTo(StringBuilder sql, Consumer<Expression> expressionPrinter) {
             sql.append(columnName).append(" SET DEFAULT ");
-            if (defaultExpression == null) {
-                sql.append(defaultValue);
-            } else {
-                expressionPrinter.accept(defaultExpression);
-            }
+            appendDefaultValueTo(sql, expressionPrinter);
         }
 
         @Override

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.schema.TableReference;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
@@ -21,15 +22,12 @@ public class Truncate implements Statement {
     public enum IdentityOption {
         RESTART, CONTINUE
     }
-    public enum DropBehavior {
-        CASCADE, RESTRICT
-    }
 
     private boolean tableToken;
     private boolean only;
     private final List<TableReference> targets = new ArrayList<>();
     private IdentityOption identityOption;
-    private DropBehavior dropBehavior;
+    private CascadeBehavior dropBehavior;
 
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
@@ -109,20 +107,20 @@ public class Truncate implements Statement {
         identityOption = option;
     }
 
-    public DropBehavior getDropBehavior() {
+    public CascadeBehavior getDropBehavior() {
         return dropBehavior;
     }
 
-    public void setDropBehavior(DropBehavior behavior) {
+    public void setDropBehavior(CascadeBehavior behavior) {
         dropBehavior = behavior;
     }
 
     public boolean getCascade() {
-        return dropBehavior == DropBehavior.CASCADE;
+        return dropBehavior == CascadeBehavior.CASCADE;
     }
 
     public void setCascade(boolean cascade) {
-        dropBehavior = cascade ? DropBehavior.CASCADE : null;
+        dropBehavior = cascade ? CascadeBehavior.CASCADE : null;
     }
 
     public boolean isTableToken() {

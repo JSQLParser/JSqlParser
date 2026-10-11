@@ -22,6 +22,7 @@ import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.alter.AlterForeignDataWrapper;
 import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
+import net.sf.jsqlparser.statement.alter.ForeignObjectAlterAction;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
 import net.sf.jsqlparser.statement.create.server.CreateServer;
 import net.sf.jsqlparser.statement.create.table.ForeignDataOption;
@@ -102,12 +103,77 @@ class PostgreSqlForeignDataObjectsTest {
         roundTrip(create);
         AlterServer alter = (AlterServer) CCJSqlParserUtil.parse("ALTER SERVER s VERSION NULL");
         assertInstanceOf(NullValue.class, alter.getVersion());
-        alter.setAction(AlterServer.Action.RENAME);
+        alter.setAction(ForeignObjectAlterAction.RENAME);
         alter.setNewName("new_server");
         visited.clear();
         alter.visitExpressions(visited::add);
         assertTrue(visited.isEmpty());
         assertEquals("ALTER SERVER s RENAME TO new_server", alter.toString());
+    }
+
+    @Test
+    void sharedActionsKeepObjectSpecificOptionsInactiveAndRestorable() throws JSQLParserException {
+        AlterServer server = (AlterServer) CCJSqlParserUtil.parse(
+                "ALTER SERVER s VERSION NULL OPTIONS(SET host 'remote')");
+        AlterForeignDataWrapper wrapper = (AlterForeignDataWrapper) CCJSqlParserUtil.parse(
+                "ALTER FOREIGN DATA WRAPPER w NO HANDLER VALIDATOR public.validator "
+                        + "OPTIONS(SET x 'y')");
+        assertEquals(ForeignObjectAlterAction.OPTIONS, server.getAction());
+        assertSame(server.getAction(), wrapper.getAction());
+        String serverOptions = server.toString();
+        String wrapperOptions = wrapper.toString();
+
+        server.setOwner("CURRENT_ROLE");
+        wrapper.setOwner("CURRENT_USER");
+        server.setAction(ForeignObjectAlterAction.OWNER);
+        wrapper.setAction(ForeignObjectAlterAction.OWNER);
+        assertEquals("ALTER SERVER s OWNER TO CURRENT_ROLE", server.toString());
+        assertEquals("ALTER FOREIGN DATA WRAPPER w OWNER TO CURRENT_USER", wrapper.toString());
+        roundTrip(server);
+        roundTrip(wrapper);
+
+        server.setNewName("\"new server\"");
+        wrapper.setNewName("\"new wrapper\"");
+        server.setAction(ForeignObjectAlterAction.RENAME);
+        wrapper.setAction(ForeignObjectAlterAction.RENAME);
+        assertEquals("ALTER SERVER s RENAME TO \"new server\"", server.toString());
+        assertEquals("ALTER FOREIGN DATA WRAPPER w RENAME TO \"new wrapper\"", wrapper.toString());
+        roundTrip(server);
+        roundTrip(wrapper);
+
+        List<Expression> visited = new ArrayList<>();
+        server.visitExpressions(visited::add);
+        wrapper.visitExpressions(visited::add);
+        assertTrue(visited.isEmpty());
+        server.setAction(null);
+        wrapper.setAction(null);
+        assertNull(server.getAction());
+        assertNull(wrapper.getAction());
+        server.visitExpressions(visited::add);
+        wrapper.visitExpressions(visited::add);
+        assertTrue(visited.isEmpty());
+
+        server.setAction(ForeignObjectAlterAction.OPTIONS);
+        wrapper.setAction(ForeignObjectAlterAction.OPTIONS);
+        assertEquals(serverOptions, server.toString());
+        assertEquals(wrapperOptions, wrapper.toString());
+        server.visitExpressions(visited::add);
+        wrapper.visitExpressions(visited::add);
+        assertEquals(List.of(server.getOptions().get(0).getValue(), server.getVersion(),
+                wrapper.getOptions().get(0).getValue()), visited);
+        assertInstanceOf(NullValue.class, server.getVersion());
+        assertTrue(wrapper.getFunctions().isHandlerSpecified());
+        assertNull(wrapper.getFunctions().getHandler());
+        roundTrip(server);
+        roundTrip(wrapper);
+
+        server.setVersion(null);
+        wrapper.getFunctions().clearHandler();
+        assertEquals("ALTER SERVER s OPTIONS (SET host 'remote')", server.toString());
+        assertEquals("ALTER FOREIGN DATA WRAPPER w VALIDATOR public.validator OPTIONS (SET x 'y')",
+                wrapper.toString());
+        roundTrip(server);
+        roundTrip(wrapper);
     }
 
     @Test

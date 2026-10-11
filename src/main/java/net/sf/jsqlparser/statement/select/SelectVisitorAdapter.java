@@ -135,16 +135,19 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
             unpivot.accept(pivotVisitor, context);
         }
 
-        expressionVisitor.visitLimit(select.getLimit(), context);
+        visitLimitOffsetFetch(select, context);
+        return null;
+    }
 
+    private <S> void visitLimitOffsetFetch(Select select, S context) {
+        expressionVisitor.visitLimit(select.getLimitBy(), context);
+        expressionVisitor.visitLimit(select.getLimit(), context);
         if (select.getOffset() != null) {
-            expressionVisitor.visitExpression(select.getOffset().getOffset(), null);
+            expressionVisitor.visitExpression(select.getOffset().getOffset(), context);
         }
         if (select.getFetch() != null) {
-            expressionVisitor.visitExpression(select.getFetch().getExpression(), null);
+            expressionVisitor.visitExpression(select.getFetch().getExpression(), context);
         }
-
-        return null;
     }
 
     @Override
@@ -190,11 +193,7 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
         expressionVisitor.visitExpression(plainSelect.getPreWhere(), context);
         expressionVisitor.visitExpression(plainSelect.getWhere(), context);
-
-        // if (plainSelect.getOracleHierarchical() != null) {
-        // //@todo: implement
-        // }
-        //
+        expressionVisitor.visitExpression(plainSelect.getOracleHierarchical(), context);
 
         expressionVisitor.visitPreferringClause(plainSelect.getPreferringClause(), context);
         expressionVisitor.visit(plainSelect.getGroupBy(), context);
@@ -219,24 +218,13 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
         }
 
         expressionVisitor.visitOrderBy(plainSelect.getOrderByElements(), context);
+        visitLimitOffsetFetch(plainSelect, context);
 
-        // if (plainSelect.getLimitBy() != null) {
-        // //@todo: implement
-        // }
-        // if (plainSelect.getLimit() != null) {
-        // //@todo: implement
-        // }
-        if (plainSelect.getOffset() != null) {
-            expressionVisitor.visitExpression(plainSelect.getOffset().getOffset(), context);
-        }
         if (plainSelect.getMySqlProcedureAnalyse() != null) {
             expressionVisitor.visitExpression(
                     plainSelect.getMySqlProcedureAnalyse().getMaxElements(), context);
             expressionVisitor.visitExpression(
                     plainSelect.getMySqlProcedureAnalyse().getMaxMemory(), context);
-        }
-        if (plainSelect.getFetch() != null) {
-            expressionVisitor.visitExpression(plainSelect.getFetch().getExpression(), context);
         }
         // if (plainSelect.getForMode() != null) {
         // //@todo: implement
@@ -289,9 +277,12 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
 
     @Override
     public <S> T visit(SetOperationList setOpList, S context) {
+        visitWithItems(setOpList.getWithItemsList(), context);
         for (Select select : setOpList.getSelects()) {
             select.accept(this, context);
         }
+        expressionVisitor.visitOrderBy(setOpList.getOrderByElements(), context);
+        visitLimitOffsetFetch(setOpList, context);
         return null;
     }
 
@@ -341,7 +332,8 @@ public class SelectVisitorAdapter<T> implements SelectVisitor<T> {
     }
 
     @Override
-    public <S> T visit(Values aThis, S context) {
+    public <S> T visit(Values values, S context) {
+        expressionVisitor.visitExpressions(values.getExpressions(), context);
         return null;
     }
 

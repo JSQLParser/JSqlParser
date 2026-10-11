@@ -26,6 +26,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.StmtFeature;
@@ -124,7 +125,7 @@ class PostgreSqlTypeDdlTest {
         assertThat(attributes.getAttributeChanges()).hasSize(2);
         assertThat(attributes.getAttributeChanges().get(1).isIfExists()).isTrue();
         assertThat(attributes.getAttributeChanges().get(1).getBehavior())
-                .isEqualTo(AlterType.Behavior.CASCADE);
+                .isEqualTo(CascadeBehavior.CASCADE);
     }
 
     @Test
