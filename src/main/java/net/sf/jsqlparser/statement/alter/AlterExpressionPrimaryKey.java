@@ -9,15 +9,18 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /**
  * CockroachDB's ALTER PRIMARY KEY USING COLUMNS operation. Key elements and storage options are
- * available through {@link #getIndex()}; hash sharding and the legacy WITH BUCKET_COUNT expression
- * are represented separately.
+ * available through {@link #getConstraint()}; hash sharding and the legacy WITH BUCKET_COUNT
+ * expression are represented separately.
  */
 public class AlterExpressionPrimaryKey extends AlterExpression {
     private boolean usingHash;
@@ -25,7 +28,17 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
 
     public AlterExpressionPrimaryKey() {
         setOperation(AlterOperation.ALTER_PRIMARY_KEY);
-        setIndex(new Index().withType("PRIMARY KEY"));
+        setConstraint(new KeyConstraint().withType("PRIMARY KEY"));
+    }
+
+    @Override
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public KeyConstraint getConstraint() {
+        return (KeyConstraint) super.getConstraint();
     }
 
     public boolean isUsingHash() {
@@ -45,6 +58,11 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
     }
 
     @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.PRIMARY_KEY;
+    }
+
+    @Override
     protected void appendBody(StringBuilder builder) {
         appendDefinition(builder, expression -> builder.append(expression));
     }
@@ -58,8 +76,8 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
 
     private void appendDefinition(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         builder.append("ALTER PRIMARY KEY USING COLUMNS (");
-        if (getIndex().getColumns() != null) {
-            for (Iterator<Index.ColumnParams> columns = getIndex().getColumns().iterator(); columns
+        if (getConstraint().getColumns() != null) {
+            for (Iterator<KeyElement> columns = getConstraint().getColumns().iterator(); columns
                     .hasNext();) {
                 columns.next().appendTo(builder, expressionPrinter);
                 if (columns.hasNext()) {
@@ -84,10 +102,10 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
 
     private void appendStorageOptions(StringBuilder builder,
             Consumer<Expression> expressionPrinter) {
-        if (getIndex().getStorageParameters() != null) {
+        if (getConstraint().getStorageParameters() != null) {
             builder.append(" WITH (");
-            for (Iterator<Index.Option> options =
-                    getIndex().getStorageParameters().iterator(); options.hasNext();) {
+            for (Iterator<IndexOption> options =
+                    getConstraint().getStorageParameters().iterator(); options.hasNext();) {
                 options.next().appendTo(builder, expressionPrinter);
                 if (options.hasNext()) {
                     builder.append(", ");

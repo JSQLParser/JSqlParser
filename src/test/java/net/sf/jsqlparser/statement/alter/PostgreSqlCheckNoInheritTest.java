@@ -45,7 +45,7 @@ class PostgreSqlCheckNoInheritTest {
         Alter alter = (Alter) parse(
                 "ALTER TABLE t ADD CONSTRAINT ck CHECK (id > 0) NO INHERIT NOT VALID");
         CheckConstraint constraint =
-                (CheckConstraint) alter.getAlterExpressions().get(0).getIndex();
+                (CheckConstraint) alter.getAlterExpressions().get(0).getConstraint();
         assertTrue(constraint.isNoInherit());
         assertTrue(constraint.getConstraintAttributes().isNotValid());
         constraint.setNoInherit(false);
@@ -56,7 +56,7 @@ class PostgreSqlCheckNoInheritTest {
         TableDefinitionTraversal.visit(alter.getAlterExpressions().get(0), visited::add, table -> {
         });
         assertEquals(List.of(constraint.getExpression()), visited);
-        alter.getAlterExpressions().get(0).setIndex(new CheckConstraint().withName("new_ck")
+        alter.getAlterExpressions().get(0).setConstraint(new CheckConstraint().withName("new_ck")
                 .withExpression(CCJSqlParserUtil.parseExpression("id > 20")).withNoInherit(true));
         assertEquals("ALTER TABLE t ADD CONSTRAINT new_ck CHECK (id > 20) NO INHERIT",
                 alter.toString());
@@ -66,7 +66,7 @@ class PostgreSqlCheckNoInheritTest {
     @Test
     void preservesExistingCheckOptions() throws JSQLParserException {
         CreateTable table = (CreateTable) parse("CREATE TABLE t (id INT, CHECK (id > 0))");
-        assertFalse(((CheckConstraint) table.getIndexes().get(0)).isNoInherit());
+        assertFalse(((CheckConstraint) table.getTableConstraints().get(0)).isNoInherit());
         for (String suffix : new String[] {"", " ENFORCED", " NOT ENFORCED"}) {
             String sql = "CREATE TABLE t (id INT, CHECK (id > 0)" + suffix + ")";
             assertEquals(sql, CCJSqlParserUtil.parse(sql).toString());

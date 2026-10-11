@@ -101,7 +101,7 @@ class AlterActionRenderingTest {
 
     @ParameterizedTest
     @EnumSource(value = AlterOperation.class,
-            names = {"RENAME_INDEX", "RENAME_KEY", "RENAME_CONSTRAINT"})
+            names = {"RENAME_INDEX", "RENAME_KEY"})
     void legacyAndTypedIndexRenamesShareRendering(AlterOperation operation)
             throws JSQLParserException {
         for (AlterExpression action : List.of(new AlterExpression(), new AlterExpressionRename())) {
@@ -110,6 +110,17 @@ class AlterActionRenderingTest {
             action.setIndex(new Index().withName("new_name"));
             assertRoundTrip(action, operation.toString().replace('_', ' ')
                     + " old_name TO new_name", AlterExpressionRename.class);
+        }
+    }
+
+    @Test
+    void legacyAndTypedConstraintRenamesShareRendering() throws JSQLParserException {
+        for (AlterExpression action : List.of(new AlterExpression(), new AlterExpressionRename())) {
+            action.setOperation(AlterOperation.RENAME_CONSTRAINT);
+            action.setConstraintName("old_name");
+            action.setNewConstraintName("new_name");
+            assertRoundTrip(action, "RENAME CONSTRAINT old_name TO new_name",
+                    AlterExpressionRename.class);
         }
     }
 

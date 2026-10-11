@@ -39,9 +39,10 @@ import net.sf.jsqlparser.statement.create.table.ColDataType.Signedness;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.RowMovementMode;
 import net.sf.jsqlparser.statement.create.table.TablePartitioning;
@@ -95,8 +96,9 @@ public class CreateTableTest {
         assertFalse(createTable.isUnlogged());
         assertEquals("mycol", createTable.getColumnDefinitions().get(0).getColumnName());
         assertEquals("mycol2", createTable.getColumnDefinitions().get(1).getColumnName());
-        assertEquals("PRIMARY KEY", createTable.getIndexes().get(0).getType());
-        assertEquals("mycol", createTable.getIndexes().get(0).getColumnsNames().get(1));
+        assertEquals("PRIMARY KEY", createTable.getTableConstraints().get(0).getType());
+        assertEquals("mycol", ((KeyConstraint) createTable.getTableConstraints().get(0))
+                .getColumnsNames().get(1));
         assertEquals(statement, "" + createTable);
     }
 
@@ -110,8 +112,9 @@ public class CreateTableTest {
         assertTrue(createTable.isUnlogged());
         assertEquals("mycol", createTable.getColumnDefinitions().get(0).getColumnName());
         assertEquals("mycol2", createTable.getColumnDefinitions().get(1).getColumnName());
-        assertEquals("PRIMARY KEY", createTable.getIndexes().get(0).getType());
-        assertEquals("mycol", createTable.getIndexes().get(0).getColumnsNames().get(1));
+        assertEquals("PRIMARY KEY", createTable.getTableConstraints().get(0).getType());
+        assertEquals("mycol", ((KeyConstraint) createTable.getTableConstraints().get(0))
+                .getColumnsNames().get(1));
         assertEquals(statement, "" + createTable);
     }
 
@@ -211,9 +214,9 @@ public class CreateTableTest {
         CreateTable createTable =
                 (CreateTable) CCJSqlParserUtil.parseStatements(sqlStr).getStatements().get(0);
 
-        assertEquals("PRIMARY KEY", createTable.getIndexes().get(0).getType());
-        assertEquals("UNIQUE", createTable.getIndexes().get(1).getType());
-        assertEquals("FOREIGN KEY", createTable.getIndexes().get(2).getType());
+        assertEquals("PRIMARY KEY", createTable.getTableConstraints().get(0).getType());
+        assertEquals("UNIQUE", createTable.getTableConstraints().get(1).getType());
+        assertEquals("FOREIGN KEY", createTable.getTableConstraints().get(2).getType());
     }
 
     @Test
@@ -475,7 +478,7 @@ public class CreateTableTest {
         assertDeparse(
                 new CreateTable()
                         .withTable(new Table("foo"))
-                        .addIndexes(
+                        .addTableConstraints(
                                 new ExcludeConstraint()
                                         .withExpression(
                                                 new GreaterThan()
@@ -635,11 +638,15 @@ public class CreateTableTest {
                                 .getColumnDefinitions()) {
                             String colName = columnDefinition.getColumnName();
                             boolean unique = false;
-                            if (createTable.getIndexes() != null) {
-                                for (Index index : createTable.getIndexes()) {
-                                    if (index.getType().equals("PRIMARY KEY")
-                                            && index.getColumnsNames().size() == 1
-                                            && index.getColumnsNames().get(0).equals(colName)) {
+                            if (createTable.getTableConstraints() != null) {
+                                for (NamedConstraint constraint : createTable
+                                        .getTableConstraints()) {
+                                    if (constraint instanceof KeyConstraint
+                                            && constraint.getKind() == ConstraintKind.PRIMARY_KEY
+                                            && ((KeyConstraint) constraint).getColumnsNames()
+                                                    .size() == 1
+                                            && ((KeyConstraint) constraint).getColumnsNames().get(0)
+                                                    .equals(colName)) {
                                         unique = true;
                                     }
                                 }
@@ -1183,8 +1190,9 @@ public class CreateTableTest {
                 ") ENGINE = InnoDB";
         CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        assertEquals(Arrays.asList("INVISIBLE"), createTable.getIndexes().get(1).getIndexSpec());
-        assertEquals(Arrays.asList("VISIBLE"), createTable.getIndexes().get(2).getIndexSpec());
+        assertEquals(Arrays.asList("INVISIBLE"), createTable.getIndexes().get(0).getIndexSpec());
+        assertEquals(Arrays.asList("VISIBLE"),
+                ((KeyConstraint) createTable.getTableConstraints().get(1)).getIndexSpec());
     }
 
     @Test
@@ -1283,7 +1291,7 @@ public class CreateTableTest {
         String uniqueSql = "CREATE TABLE table1 (col1 INT, col2 INT UNIQUE, "
                 + "CONSTRAINT my_constraint UNIQUE KEY index_name (col1))";
         CreateTable uniqueTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(uniqueSql, true);
-        NamedConstraint unique = (NamedConstraint) uniqueTable.getIndexes().get(0);
+        KeyConstraint unique = (KeyConstraint) uniqueTable.getTableConstraints().get(0);
 
         assertEquals("my_constraint", unique.getName());
         assertEquals("index_name", unique.getIndexName());
@@ -1294,7 +1302,8 @@ public class CreateTableTest {
                 + "REFERENCES parent (id))";
         CreateTable foreignKeyTable =
                 (CreateTable) assertSqlCanBeParsedAndDeparsed(foreignKeySql, true);
-        ForeignKeyIndex foreignKey = (ForeignKeyIndex) foreignKeyTable.getIndexes().get(0);
+        ForeignKeyConstraint foreignKey =
+                (ForeignKeyConstraint) foreignKeyTable.getTableConstraints().get(0);
 
         assertEquals("fk_parent", foreignKey.getName());
         assertEquals("fk_parent_idx", foreignKey.getIndexName());
@@ -1310,7 +1319,7 @@ public class CreateTableTest {
                 + "pay_way VARCHAR (32), UNIQUE uniq_platform_payway USING BTREE "
                 + "(platform_code, pay_way) COMMENT 'should be unique')";
         CreateTable createTable = (CreateTable) assertSqlCanBeParsedAndDeparsed(sql, true);
-        NamedConstraint unique = (NamedConstraint) createTable.getIndexes().get(0);
+        KeyConstraint unique = (KeyConstraint) createTable.getTableConstraints().get(0);
 
         assertNull(unique.getName());
         assertEquals("uniq_platform_payway", unique.getIndexName());

@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,6 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import net.sf.jsqlparser.util.validation.ValidationContext;
@@ -40,10 +40,10 @@ class PostgreSqlConstraintUsingIndexTest {
         String sql = "ALTER TABLE t ADD " + body;
         Alter alter = parse(sql);
         ConstraintUsingIndex constraint = assertInstanceOf(ConstraintUsingIndex.class,
-                alter.getAlterExpressions().get(0).getIndex());
-        assertNull(constraint.getColumns());
-        assertNull(constraint.getIndexName());
-        assertNull(constraint.getUsing());
+                alter.getAlterExpressions().get(0).getConstraint());
+        assertNull(alter.getAlterExpressions().get(0).getIndex());
+        assertEquals(body.endsWith("\"Index Name\"") ? "\"Index Name\"" : "i",
+                constraint.getExistingIndexName());
         assertEquals(sql, alter.toString());
         roundTrip(alter);
     }
@@ -52,19 +52,20 @@ class PostgreSqlConstraintUsingIndexTest {
     void supportsMutationAndConstruction() throws JSQLParserException {
         Alter alter = parse("ALTER TABLE t ADD CONSTRAINT uq UNIQUE USING INDEX i DEFERRABLE");
         ConstraintUsingIndex constraint =
-                (ConstraintUsingIndex) alter.getAlterExpressions().get(0).getIndex();
+                (ConstraintUsingIndex) alter.getAlterExpressions().get(0).getConstraint();
         assertEquals(Boolean.TRUE, constraint.getConstraintAttributes().getDeferrable());
         constraint.setName("pk");
         constraint.setType("PRIMARY KEY");
         constraint.setExistingIndexName("other_index");
-        assertEquals(Index.Kind.PRIMARY_KEY, constraint.getKind());
+        assertEquals(ConstraintKind.PRIMARY_KEY, constraint.getKind());
         assertEquals(
                 "ALTER TABLE t ADD CONSTRAINT pk PRIMARY KEY USING INDEX other_index DEFERRABLE",
                 alter.toString());
         roundTrip(alter);
         Alter created = new Alter().withTable(new Table("t"));
         created.addAlterExpressions(new AlterExpression().withOperation(AlterOperation.ADD)
-                .withIndex(new ConstraintUsingIndex().withName("uq").withExistingIndexName("i")));
+                .withConstraint(
+                        new ConstraintUsingIndex().withName("uq").withExistingIndexName("i")));
         assertEquals("ALTER TABLE t ADD CONSTRAINT uq UNIQUE USING INDEX i", created.toString());
         roundTrip(created);
     }

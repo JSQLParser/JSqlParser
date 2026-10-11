@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.insert;
 
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.ArrayList;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
@@ -18,7 +19,6 @@ import net.sf.jsqlparser.util.deparser.SelectDeParser;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
@@ -54,7 +54,7 @@ class PostgreSQLConflictTargetTest {
         Insert insert = (Insert) TestUtils.assertSqlCanBeParsedAndDeparsed(
                 "INSERT INTO users VALUES (1) ON CONFLICT (lower(email), (abs(region))) DO NOTHING",
                 true);
-        List<Index.ColumnParams> keys = insert.getConflictTarget().getIndexElements();
+        List<KeyElement> keys = insert.getConflictTarget().getIndexElements();
         assertInstanceOf(Function.class, keys.get(0).getExpression());
         assertFalse(keys.get(0).isExpressionParenthesized());
         assertTrue(keys.get(1).isExpressionParenthesized());
@@ -82,7 +82,7 @@ class PostgreSQLConflictTargetTest {
                 + "ON CONFLICT (id, (lower(email)) COLLATE pg_catalog.\"C\" "
                 + "pg_catalog.text_pattern_ops, region) WHERE active DO NOTHING");
         InsertConflictTarget target = insert.getConflictTarget();
-        List<Index.ColumnParams> keys = target.getIndexElements();
+        List<KeyElement> keys = target.getIndexElements();
         assertEquals(3, keys.size());
         assertEquals("id", keys.get(0).getColumnName());
         assertInstanceOf(Function.class, keys.get(1).getExpression());

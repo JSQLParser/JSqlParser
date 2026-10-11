@@ -9,12 +9,42 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import net.sf.jsqlparser.util.validation.Validation;
+import net.sf.jsqlparser.util.validation.ValidationError;
+import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
+import net.sf.jsqlparser.util.validation.metadata.Named;
+import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import org.junit.jupiter.api.Test;
 
 public class AlterValidatorTest extends ValidationTestAsserts {
+
+    @Test
+    void validatesRenamedConstraintTargetAsANewConstraint() {
+        List<Named> names = new ArrayList<>();
+        DatabaseMetaDataValidation metadata = name -> {
+            names.add(name);
+            return !"replacement".equals(name.getFqn());
+        };
+        List<ValidationError> errors = new Validation(List.of(metadata),
+                "ALTER TABLE t RENAME CONSTRAINT original TO replacement").validate();
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(List.of(new Named(NamedObject.table, "t"),
+                new Named(NamedObject.constraint, "original"),
+                new Named(NamedObject.constraint, "replacement")), names);
+        DatabaseMetaDataValidation allExist = name -> true;
+        errors = new Validation(List.of(allExist),
+                "ALTER TABLE t RENAME CONSTRAINT original TO replacement").validate();
+        assertEquals(1, errors.size());
+        assertTrue(errors.toString().contains("replacement does exist"), errors.toString());
+    }
 
     @Test
     public void testAlterTableAddColumn() throws JSQLParserException {

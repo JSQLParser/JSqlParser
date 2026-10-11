@@ -27,7 +27,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyReference;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ForeignKeyReferenceMutationTest {
     @Test
     void keepsLegacyAndStructuredAccessOnTheSameValues() {
-        ForeignKeyIndex index = new ForeignKeyIndex();
+        ForeignKeyConstraint index = new ForeignKeyConstraint();
         Table table = new Table("parent");
         List<String> columns = new ArrayList<>(List.of("id"));
         index.setTable(table);
@@ -69,7 +69,7 @@ class ForeignKeyReferenceMutationTest {
 
     @Test
     void preservesNullableLegacyFieldsAndAnEmptyReference() {
-        ForeignKeyIndex index = new ForeignKeyIndex();
+        ForeignKeyConstraint index = new ForeignKeyConstraint();
         index.setReference(null);
         assertNull(index.getTable());
         assertNull(index.getReferencedColumnNames());
@@ -93,7 +93,7 @@ class ForeignKeyReferenceMutationTest {
                 .withReferentialAction(Type.DELETE, Action.CASCADE);
         reference.setConstraintName("column_fk");
         reference.setConstraintAttributes(new ConstraintAttributes());
-        ForeignKeyIndex index = new ForeignKeyIndex().withReference(reference);
+        ForeignKeyConstraint index = new ForeignKeyConstraint().withReference(reference);
 
         index.setReference(null);
 
@@ -113,7 +113,7 @@ class ForeignKeyReferenceMutationTest {
         ForeignKeyReference reference = new ForeignKeyReference()
                 .withTable(new Table("parent"))
                 .withReferencedColumnNames(new ArrayList<>(List.of("id")));
-        ForeignKeyIndex index = new ForeignKeyIndex().withReference(reference);
+        ForeignKeyConstraint index = new ForeignKeyConstraint().withReference(reference);
         Table replacement = new Table("other_parent");
         List<String> columns = new ArrayList<>(List.of("other_id"));
         reference.setTable(replacement);
@@ -132,7 +132,7 @@ class ForeignKeyReferenceMutationTest {
 
     @Test
     void accessingReferenceDoesNotReplaceActionsOrDiscardTheirColumns() {
-        ForeignKeyIndex index = new ForeignKeyIndex();
+        ForeignKeyConstraint index = new ForeignKeyConstraint();
         index.setReferentialAction(Type.DELETE, Action.SET_NULL);
         ReferentialAction action = index.getReferentialAction(Type.DELETE);
         action.setColumnNames(List.of("child_id"));
@@ -147,7 +147,7 @@ class ForeignKeyReferenceMutationTest {
     @Test
     @SuppressWarnings("deprecation")
     void deprecatedActionSettersUpdateStructuredReference() {
-        ForeignKeyIndex index = new ForeignKeyIndex();
+        ForeignKeyConstraint index = new ForeignKeyConstraint();
         ForeignKeyReference reference = index.getReference();
         index.setOnDeleteReferenceOption("CASCADE");
         index.setOnUpdateReferenceOption("RESTRICT");
@@ -168,7 +168,7 @@ class ForeignKeyReferenceMutationTest {
         Statement statement = CCJSqlParserUtil.parse(prefix
                 + "CONSTRAINT fk FOREIGN KEY (parent_id) REFERENCES parent (id) ON DELETE CASCADE"
                 + (create ? ")" : ""));
-        ForeignKeyIndex index = foreignKey(statement);
+        ForeignKeyConstraint index = foreignKey(statement);
         ForeignKeyReference reference = index.getReference();
         reference.setTable(new Table("other_parent"));
         reference.getReferencedColumnNames().set(0, "other_id");
@@ -181,7 +181,7 @@ class ForeignKeyReferenceMutationTest {
         assertEquals(statement.toString(), deparsed.toString());
         Statement reparsed = CCJSqlParserUtil.parse(deparsed.toString());
         assertEquals(deparsed.toString(), reparsed.toString());
-        ForeignKeyIndex result = foreignKey(reparsed);
+        ForeignKeyConstraint result = foreignKey(reparsed);
         assertEquals("other_parent", result.getTable().getName());
         assertEquals(List.of("other_id"), result.getReferencedColumnNames());
         assertEquals(List.of("parent_id"),
@@ -189,9 +189,9 @@ class ForeignKeyReferenceMutationTest {
         assertEquals(ForeignKeyReference.MatchType.SIMPLE, result.getMatchType());
     }
 
-    private static ForeignKeyIndex foreignKey(Statement statement) {
-        return (ForeignKeyIndex) (statement instanceof CreateTable
-                ? ((CreateTable) statement).getIndexes().get(0)
-                : ((Alter) statement).getAlterExpressions().get(0).getIndex());
+    private static ForeignKeyConstraint foreignKey(Statement statement) {
+        return (ForeignKeyConstraint) (statement instanceof CreateTable
+                ? ((CreateTable) statement).getTableConstraints().get(0)
+                : ((Alter) statement).getAlterExpressions().get(0).getConstraint());
     }
 }

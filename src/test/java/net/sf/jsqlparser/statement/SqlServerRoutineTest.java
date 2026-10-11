@@ -21,7 +21,7 @@ import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
@@ -74,7 +74,7 @@ class SqlServerRoutineTest {
         List<ColumnDefinition> columns =
                 statement.getReturnType().getTableElements(ColumnDefinition.class);
         assertEquals(2, columns.size());
-        assertEquals(2, statement.getReturnType().getTableElements(Index.class).size());
+        assertEquals(2, statement.getReturnType().getTableElements(NamedConstraint.class).size());
         assertEquals("id", columns.get(0).getColumnName());
         List<Long> visited = new ArrayList<>();
         ExpressionVisitorAdapter<Void> expressions = new ExpressionVisitorAdapter<Void>() {

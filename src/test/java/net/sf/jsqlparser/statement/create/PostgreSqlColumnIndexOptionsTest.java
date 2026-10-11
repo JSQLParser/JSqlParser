@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
@@ -21,7 +22,7 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.ColumnOption;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,13 +43,13 @@ class PostgreSqlColumnIndexOptionsTest {
             assertEquals(1, column.getColumnOptions().size());
             ColumnOption option = column.getColumnOptions().get(0);
             assertEquals(ColumnOption.Kind.CONSTRAINT, option.getKind());
-            Index key = option.getConstraint();
+            KeyConstraint key = (KeyConstraint) option.getConstraint();
             assertEquals("uq", key.getName());
             assertEquals("old_space", key.getTableSpace());
             assertEquals("70", key.getStorageParameters().get(0).getValue().toString());
             assertNotNull(key.getConstraintAttributes());
             key.setStorageParameters(
-                    List.of(new Index.Option("fillfactor", new LongValue(80), true)));
+                    List.of(new IndexOption("fillfactor", new LongValue(80), true)));
             key.setTableSpace("new_space");
             String sql = statement.toString();
             assertTrue(sql.contains("WITH (fillfactor = 80) USING INDEX TABLESPACE new_space"));
@@ -76,7 +77,7 @@ class PostgreSqlColumnIndexOptionsTest {
     @Test
     void bareOptionsCanBeAssignedAndCleared() throws JSQLParserException {
         CreateIndex index = (CreateIndex) parse("CREATE INDEX ix ON t(id) WITH(deduplicate_items)");
-        Index.Option option = index.getStorageParameters().get(0);
+        IndexOption option = index.getStorageParameters().get(0);
         assertNull(option.getValue());
         assertFalse(option.isUseEquals());
         option.setName("fillfactor");

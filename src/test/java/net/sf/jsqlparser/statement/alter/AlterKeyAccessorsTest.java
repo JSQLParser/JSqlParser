@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +48,7 @@ class AlterKeyAccessorsTest {
         String prefix = "ALTER TABLE t ADD " + (primary ? "PRIMARY KEY" : "UNIQUE");
         Alter statement = (Alter) CCJSqlParserUtil.parse(prefix + " (a)");
         AlterExpression action = statement.getAlterExpressions().get(0);
-        Index originalIndex = action.getIndex();
+        KeyConstraint originalIndex = (KeyConstraint) action.getConstraint();
         originalIndex.setColumnsNames(List.of("b"));
         List<String> snapshot = columns(action, primary);
         assertEquals(List.of("b"), snapshot);
@@ -61,7 +63,7 @@ class AlterKeyAccessorsTest {
             action.addUkColumns("d").addUkColumns(List.of("e"));
         }
         assertEquals(List.of("c", "d", "e"), columns(action, primary));
-        assertSame(originalIndex, action.getIndex());
+        assertSame(originalIndex, action.getConstraint());
         assertDeparsed(statement, prefix + " (c, d, e)");
         setColumns(action, primary, null);
         assertTrue(columns(action, primary).isEmpty());
@@ -76,15 +78,15 @@ class AlterKeyAccessorsTest {
                 + (primary ? "PRIMARY KEY" : "UNIQUE");
         Alter statement = (Alter) CCJSqlParserUtil.parse(prefix + " (a DESC, b) DEFERRABLE");
         AlterExpression action = statement.getAlterExpressions().get(0);
-        Index index = action.getIndex();
-        Index.ColumnParams first = index.getColumns().get(0);
+        KeyConstraint index = (KeyConstraint) action.getConstraint();
+        KeyElement first = index.getColumns().get(0);
         assertEquals("a DESC", first.toString());
         setColumns(action, primary, List.of("b", "a"));
         assertEquals(List.of("b", "a"), columns(action, primary));
         assertNull(index.getColumns().get(1).getSortOrder());
         assertNull(index.getColumns().get(1).getParams());
         assertNotSame(first, index.getColumns().get(1));
-        assertSame(index, action.getIndex());
+        assertSame(index, action.getConstraint());
         assertEquals("key_t", index.getName());
         assertDeparsed(statement, prefix + " (b, a) DEFERRABLE");
     }
@@ -96,13 +98,13 @@ class AlterKeyAccessorsTest {
         String prefix = "ALTER TABLE t ADD " + (primary ? "PRIMARY KEY" : "UNIQUE");
         Alter statement = (Alter) CCJSqlParserUtil.parse(prefix + " (a DESC, b)");
         AlterExpression action = statement.getAlterExpressions().get(0);
-        Index index = action.getIndex();
-        Index.ColumnParams expression = new Index.ColumnParams(new Column("a"))
+        KeyConstraint index = (KeyConstraint) action.getConstraint();
+        KeyElement expression = new KeyElement(new Column("a"))
                 .withExpressionParenthesized(false)
-                .withSortOrder(Index.ColumnParams.SortOrder.DESC);
+                .withSortOrder(KeyElement.SortOrder.DESC);
         index.getColumns().set(0, expression);
         setColumns(action, primary, new ArrayList<>(columns(action, primary)));
-        Index.ColumnParams replacement = index.getColumns().get(0);
+        KeyElement replacement = index.getColumns().get(0);
         assertNotSame(expression, replacement);
         assertEquals("a DESC", replacement.getColumnName());
         assertNull(replacement.getExpression());
@@ -116,13 +118,13 @@ class AlterKeyAccessorsTest {
         String prefix = "ALTER TABLE t ADD " + (primary ? "PRIMARY KEY" : "UNIQUE");
         Alter statement = (Alter) CCJSqlParserUtil.parse(prefix + " (a DESC, b)");
         AlterExpression action = statement.getAlterExpressions().get(0);
-        Index index = action.getIndex();
-        Index.ColumnParams first = index.getColumns().get(0);
-        Index.ColumnParams second = index.getColumns().get(1);
+        KeyConstraint index = (KeyConstraint) action.getConstraint();
+        KeyElement first = index.getColumns().get(0);
+        KeyElement second = index.getColumns().get(1);
         index.setColumns(List.of(second, first));
         assertSame(first, index.getColumns().get(1));
         assertSame(second, index.getColumns().get(0));
-        assertEquals(Index.ColumnParams.SortOrder.DESC, first.getSortOrder());
+        assertEquals(KeyElement.SortOrder.DESC, first.getSortOrder());
         assertEquals(List.of("b", "a DESC"), columns(action, primary));
         assertDeparsed(statement, prefix + " (b, a DESC)");
     }
@@ -130,9 +132,9 @@ class AlterKeyAccessorsTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void supportsAnIndexWithoutColumnsAndFluentPopulation(boolean primary) {
-        Index index = new Index().withType(primary ? "PRIMARY KEY" : "UNIQUE");
+        KeyConstraint index = new KeyConstraint().withType(primary ? "PRIMARY KEY" : "UNIQUE");
         AlterExpression action = new AlterExpression().withOperation(AlterOperation.ADD)
-                .withIndex(index);
+                .withConstraint(index);
         assertTrue(index.getColumnsNames().isEmpty());
         assertTrue(columns(action, primary).isEmpty());
         index.getColumnsNames().add("detached");

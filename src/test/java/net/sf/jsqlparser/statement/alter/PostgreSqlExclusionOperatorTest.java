@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static org.junit.jupiter.api.Assertions.*;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
@@ -17,7 +18,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
 import net.sf.jsqlparser.statement.create.table.ExclusionOperator;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,7 +44,7 @@ class PostgreSqlExclusionOperatorTest {
     void exposesEditableSchemaAndSymbolAndSupportsLegacySetter() throws JSQLParserException {
         Statement statement = parse(
                 "ALTER TABLE t ADD CONSTRAINT ex EXCLUDE USING gist (c WITH OPERATOR(pg_catalog.&&))");
-        Index.ColumnParams key = constraint(statement).getColumns().get(0);
+        KeyElement key = constraint(statement).getColumns().get(0);
         ExclusionOperator operator = key.getExclusionOperatorReference();
         assertEquals("pg_catalog", operator.getSchemaName());
         assertEquals("&&", operator.getName());
@@ -77,8 +77,8 @@ class PostgreSqlExclusionOperatorTest {
 
     private static ExcludeConstraint constraint(Statement statement) {
         return (ExcludeConstraint) (statement instanceof Alter
-                ? ((Alter) statement).getAlterExpressions().get(0).getIndex()
-                : ((CreateTable) statement).getIndexes().get(0));
+                ? ((Alter) statement).getAlterExpressions().get(0).getConstraint()
+                : ((CreateTable) statement).getTableConstraints().get(0));
     }
 
     private static Statement parse(String sql) throws JSQLParserException {

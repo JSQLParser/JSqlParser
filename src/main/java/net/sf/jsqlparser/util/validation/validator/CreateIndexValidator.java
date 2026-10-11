@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.util.validation.validator;
 
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static java.util.stream.Collectors.toList;
 
 import net.sf.jsqlparser.parser.feature.Feature;
@@ -34,7 +35,7 @@ public class CreateIndexValidator extends AbstractValidator<CreateIndex> {
                 validateOptionalColumnNames(c,
                         index.getColumns().stream()
                                 .filter(cp -> !cp.isExpression())
-                                .map(Index.ColumnParams::getColumnName)
+                                .map(KeyElement::getColumnName)
                                 .collect(toList()),
                         NamedObject.table);
             }

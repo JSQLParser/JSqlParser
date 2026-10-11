@@ -23,6 +23,11 @@ public class NotNullConstraint extends NamedConstraint {
         setType("NOT NULL");
     }
 
+    @Override
+    public ConstraintKind getKind() {
+        return ConstraintKind.NOT_NULL;
+    }
+
     /** Whether the target is implicit in the enclosing column definition. */
     public boolean isColumnConstraint() {
         return columnConstraint;

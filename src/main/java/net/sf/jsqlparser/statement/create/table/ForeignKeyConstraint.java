@@ -2,7 +2,7 @@
  * #%L
  * JSQLParser library
  * %%
- * Copyright (C) 2004 - 2019 JSQLParser
+ * Copyright (C) 2004 - 2026 JSQLParser
  * %%
  * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
  * #L%
@@ -18,9 +18,37 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 
-public class ForeignKeyIndex extends NamedConstraint {
-
+public class ForeignKeyConstraint extends NamedConstraint implements KeyColumnSource {
+    private List<KeyElement> columns;
+    private String indexName;
     private ForeignKeyReference reference = new ForeignKeyReference();
+
+    public ForeignKeyConstraint() {
+        setType("FOREIGN KEY");
+    }
+
+    @Override
+    public ConstraintKind getKind() {
+        return ConstraintKind.FOREIGN_KEY;
+    }
+
+    @Override
+    public List<KeyElement> getColumns() {
+        return columns;
+    }
+
+    @Override
+    public void setColumns(List<KeyElement> columns) {
+        this.columns = columns;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String value) {
+        indexName = value;
+    }
 
     /** Returns the mutable reference shared by the structured and legacy accessors. */
     public ForeignKeyReference getReference() {
@@ -76,7 +104,7 @@ public class ForeignKeyIndex extends NamedConstraint {
         reference.setReferentialAction(type, action);
     }
 
-    public ForeignKeyIndex withReferentialAction(Type type, Action action) {
+    public ForeignKeyConstraint withReferentialAction(Type type, Action action) {
         setReferentialAction(type, action);
         return this;
     }
@@ -128,109 +156,104 @@ public class ForeignKeyIndex extends NamedConstraint {
 
     @Override
     public void appendTo(StringBuilder b, Consumer<Expression> expressionPrinter) {
-        super.appendTo(b, expressionPrinter);
+        appendConstraintPrefixTo(b);
+        b.append(getType());
+        if (indexName != null) {
+            b.append(' ').append(indexName);
+        }
+        if (columns != null) {
+            b.append(' ');
+            appendColumnsTo(b, expressionPrinter);
+        }
         b.append(' ').append(reference);
         appendConstraintSuffixTo(b);
         appendConstraintAttributesTo(b);
     }
 
-    public ForeignKeyIndex withTable(Table table) {
+    public ForeignKeyConstraint withTable(Table table) {
         this.setTable(table);
         return this;
     }
 
-    public ForeignKeyIndex withReferencedColumnNames(List<String> referencedColumnNames) {
+    public ForeignKeyConstraint withReferencedColumnNames(List<String> referencedColumnNames) {
         this.setReferencedColumnNames(referencedColumnNames);
         return this;
     }
 
-    public ForeignKeyIndex withReference(ForeignKeyReference reference) {
+    public ForeignKeyConstraint withReference(ForeignKeyReference reference) {
         setReference(reference);
         return this;
     }
 
-    public ForeignKeyIndex withMatchType(ForeignKeyReference.MatchType matchType) {
+    public ForeignKeyConstraint withMatchType(ForeignKeyReference.MatchType matchType) {
         setMatchType(matchType);
         return this;
     }
 
-    public ForeignKeyIndex withOnDeleteReferenceOption(String onDeleteReferenceOption) {
+    public ForeignKeyConstraint withOnDeleteReferenceOption(String onDeleteReferenceOption) {
         this.setOnDeleteReferenceOption(onDeleteReferenceOption);
         return this;
     }
 
-    public ForeignKeyIndex withOnUpdateReferenceOption(String onUpdateReferenceOption) {
+    public ForeignKeyConstraint withOnUpdateReferenceOption(String onUpdateReferenceOption) {
         this.setOnUpdateReferenceOption(onUpdateReferenceOption);
         return this;
     }
 
-    public ForeignKeyIndex addReferencedColumnNames(String... referencedColumnNames) {
+    public ForeignKeyConstraint addReferencedColumnNames(String... referencedColumnNames) {
         reference.addReferencedColumnNames(referencedColumnNames);
         return this;
     }
 
-    public ForeignKeyIndex addReferencedColumnNames(Collection<String> referencedColumnNames) {
+    public ForeignKeyConstraint addReferencedColumnNames(Collection<String> referencedColumnNames) {
         reference.addReferencedColumnNames(referencedColumnNames);
         return this;
     }
 
     @Override
-    public ForeignKeyIndex withType(String type) {
-        return (ForeignKeyIndex) super.withType(type);
+    public ForeignKeyConstraint withType(String type) {
+        return (ForeignKeyConstraint) super.withType(type);
     }
 
     @Override
-    public ForeignKeyIndex withUsing(String using) {
-        return (ForeignKeyIndex) super.withUsing(using);
+    public ForeignKeyConstraint withUseConstraintKeyword(boolean useConstraintKeyword) {
+        return (ForeignKeyConstraint) super.withUseConstraintKeyword(useConstraintKeyword);
     }
 
     @Override
-    public ForeignKeyIndex withIndexName(String indexName) {
-        return (ForeignKeyIndex) super.withIndexName(indexName);
+    public ForeignKeyConstraint withName(List<String> name) {
+        return (ForeignKeyConstraint) super.withName(name);
     }
 
     @Override
-    public ForeignKeyIndex withUseConstraintKeyword(boolean useConstraintKeyword) {
-        return (ForeignKeyIndex) super.withUseConstraintKeyword(useConstraintKeyword);
+    public ForeignKeyConstraint withName(String name) {
+        return (ForeignKeyConstraint) super.withName(name);
     }
 
-    @Override
-    public ForeignKeyIndex withName(List<String> name) {
-        return (ForeignKeyIndex) super.withName(name);
+    public ForeignKeyConstraint withIndexName(String value) {
+        setIndexName(value);
+        return this;
     }
 
-    @Override
-    public ForeignKeyIndex withName(String name) {
-        return (ForeignKeyIndex) super.withName(name);
+    public ForeignKeyConstraint withColumnsNames(List<String> value) {
+        setColumnsNames(value);
+        return this;
     }
 
-    @Override
-    public ForeignKeyIndex withColumnsNames(List<String> list) {
-        return (ForeignKeyIndex) super.withColumnsNames(list);
+    public ForeignKeyConstraint withColumns(List<KeyElement> value) {
+        setColumns(value);
+        return this;
     }
 
-    @Override
-    public ForeignKeyIndex withColumns(List<ColumnParams> columns) {
-        return (ForeignKeyIndex) super.withColumns(columns);
+    public ForeignKeyConstraint addColumns(KeyElement... values) {
+        return addColumns(java.util.Arrays.asList(values));
     }
 
-    @Override
-    public ForeignKeyIndex addColumns(ColumnParams... functionDeclarationParts) {
-        return (ForeignKeyIndex) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public ForeignKeyIndex addColumns(Collection<? extends ColumnParams> functionDeclarationParts) {
-        return (ForeignKeyIndex) super.addColumns(functionDeclarationParts);
-    }
-
-    @Override
-    public ForeignKeyIndex withIndexSpec(List<String> idxSpec) {
-        return (ForeignKeyIndex) super.withIndexSpec(idxSpec);
-    }
-
-    @Override
-    public ForeignKeyIndex withIndexKeyword(String indexKeyword) {
-        return (ForeignKeyIndex) super.withIndexKeyword(indexKeyword);
+    public ForeignKeyConstraint addColumns(Collection<? extends KeyElement> values) {
+        if (columns == null) {
+            columns = new java.util.ArrayList<>();
+        }
+        columns.addAll(values);
+        return this;
     }
 }

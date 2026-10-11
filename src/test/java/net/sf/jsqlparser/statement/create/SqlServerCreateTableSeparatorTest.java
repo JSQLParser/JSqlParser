@@ -9,12 +9,13 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.IndexOptions;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,9 +53,10 @@ class SqlServerCreateTableSeparatorTest {
                 + "title VARCHAR(255) NOT NULL, description TEXT, PRIMARY KEY NONCLUSTERED (film_id),)");
         assertEquals(4, table.getTableElements().size());
         assertInstanceOf(ColumnDefinition.class, table.getTableElements().get(0));
-        Index primaryKey = assertInstanceOf(Index.class, table.getTableElements().get(3));
+        KeyConstraint primaryKey =
+                assertInstanceOf(KeyConstraint.class, table.getTableElements().get(3));
         assertEquals("PRIMARY KEY", primaryKey.getType());
-        assertEquals(Index.Clustering.NONCLUSTERED, primaryKey.getClustering());
+        assertEquals(IndexOptions.Clustering.NONCLUSTERED, primaryKey.getClustering());
         assertEquals(3, table.getColumnDefinitions().size());
         table.getColumnDefinitions().get(0).setColumnName("renamed_id");
         assertTrue(table.toString().contains("renamed_id INT"));

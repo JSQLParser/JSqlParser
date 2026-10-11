@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create.index;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.*;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
@@ -20,7 +22,7 @@ public class CreateIndex implements Statement {
 
     private Table table;
     private Index index;
-    private Index detachedOptions;
+    private IndexOptions detachedOptions;
     private List<String> tailParameters;
     private boolean indexTypeBeforeOn = false;
     private boolean usingIfNotExists = false;
@@ -77,20 +79,20 @@ public class CreateIndex implements Statement {
     }
 
     public List<String> getIncludeColumns() {
-        Index options = getOptions();
+        IndexOptions options = getOptions();
         return options == null ? null : options.getIncludeColumns();
     }
 
     /**
-     * Copies the supplied list as {@link Index#setIncludeColumns(List)} does; null clears it.
-     * {@link #getIncludeColumns()} returns the live, mutable list held by the index options.
+     * Copies the supplied list as {@link IndexOptions#setIncludeColumns(List)} does; null clears
+     * it. {@link #getIncludeColumns()} returns the live, mutable list held by the index options.
      */
     public void setIncludeColumns(List<String> includeColumns) {
         getOrCreateOptions().setIncludeColumns(includeColumns);
     }
 
     public Boolean getNullsDistinct() {
-        Index options = getOptions();
+        IndexOptions options = getOptions();
         return options == null ? null : options.getNullsDistinct();
     }
 
@@ -98,22 +100,22 @@ public class CreateIndex implements Statement {
         getOrCreateOptions().setNullsDistinct(nullsDistinct);
     }
 
-    public List<Index.Option> getStorageParameters() {
-        Index options = getOptions();
+    public List<IndexOption> getStorageParameters() {
+        IndexOptions options = getOptions();
         return options == null ? null : options.getStorageParameters();
     }
 
     /**
-     * Copies the list container as {@link Index#setStorageParameters(List)} does, retaining the
-     * option objects; null clears it. {@link #getStorageParameters()} returns the live, mutable
+     * Copies the list container as {@link IndexOptions#setStorageParameters(List)} does, retaining
+     * the option objects; null clears it. {@link #getStorageParameters()} returns the live, mutable
      * list held by the index options.
      */
-    public void setStorageParameters(List<Index.Option> storageParameters) {
+    public void setStorageParameters(List<IndexOption> storageParameters) {
         getOrCreateOptions().setStorageParameters(storageParameters);
     }
 
     public String getTableSpace() {
-        Index options = getOptions();
+        IndexOptions options = getOptions();
         return options == null ? null : options.getTableSpace();
     }
 
@@ -121,16 +123,16 @@ public class CreateIndex implements Statement {
         getOrCreateOptions().setTableSpace(tableSpace);
     }
 
-    private Index getOptions() {
-        return index == null ? detachedOptions : index;
+    private IndexOptions getOptions() {
+        return index == null ? detachedOptions : index.getIndexOptions();
     }
 
-    private Index getOrCreateOptions() {
+    private IndexOptions getOrCreateOptions() {
         if (index != null) {
-            return index;
+            return index.getIndexOptions();
         }
         if (detachedOptions == null) {
-            detachedOptions = new Index();
+            detachedOptions = new IndexOptions();
         }
         return detachedOptions;
     }
@@ -160,17 +162,17 @@ public class CreateIndex implements Statement {
      * setters with null to clear individual options.
      */
     public void setIndex(Index index) {
-        Index previousOptions = getOptions();
+        IndexOptions previousOptions = getOptions();
         if (index == null) {
             if (this.index != null) {
-                detachedOptions = new Index();
+                detachedOptions = new IndexOptions();
                 detachedOptions.setIncludeColumns(previousOptions.getIncludeColumns());
                 detachedOptions.setNullsDistinct(previousOptions.getNullsDistinct());
                 detachedOptions.setStorageParameters(previousOptions.getStorageParameters());
                 detachedOptions.setTableSpace(previousOptions.getTableSpace());
             }
         } else {
-            if (previousOptions != null && previousOptions != index) {
+            if (previousOptions != null && previousOptions != index.getIndexOptions()) {
                 if (index.getIncludeColumns() == null) {
                     index.setIncludeColumns(previousOptions.getIncludeColumns());
                 }
@@ -269,7 +271,7 @@ public class CreateIndex implements Statement {
     private void appendIndexColumns(StringBuilder buffer, Consumer<Expression> expressionPrinter) {
         if (index.getColumns() != null) {
             buffer.append(" (");
-            for (Iterator<Index.ColumnParams> columns = index.getColumns().iterator(); columns
+            for (Iterator<KeyElement> columns = index.getColumns().iterator(); columns
                     .hasNext();) {
                 columns.next().appendTo(buffer, expressionPrinter);
                 if (columns.hasNext()) {
@@ -290,7 +292,7 @@ public class CreateIndex implements Statement {
         }
         if (getStorageParameters() != null) {
             buffer.append(" WITH ");
-            Index.Option.appendListTo(buffer, getStorageParameters(), expressionPrinter);
+            IndexOption.appendListTo(buffer, getStorageParameters(), expressionPrinter);
         }
         if (getTableSpace() != null) {
             buffer.append(" TABLESPACE ").append(getTableSpace());
@@ -336,7 +338,7 @@ public class CreateIndex implements Statement {
         return this;
     }
 
-    public CreateIndex withStorageParameters(List<Index.Option> storageParameters) {
+    public CreateIndex withStorageParameters(List<IndexOption> storageParameters) {
         setStorageParameters(storageParameters);
         return this;
     }

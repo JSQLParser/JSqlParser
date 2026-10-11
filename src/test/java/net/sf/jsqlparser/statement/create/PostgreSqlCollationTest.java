@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import net.sf.jsqlparser.util.validation.Validation;
@@ -53,7 +53,7 @@ class PostgreSqlCollationTest {
         CreateCollation statement =
                 (CreateCollation) CCJSqlParserUtil.parse("CREATE COLLATION c FROM \"C\"");
         statement.setOptions(
-                new ArrayList<>(List.of(new Index.Option("locale", new StringValue("C"), true))));
+                new ArrayList<>(List.of(new IndexOption("locale", new StringValue("C"), true))));
         assertNull(statement.getSourceCollation());
         statement.getOptions().get(0).setValue(new StringValue("C.UTF-8"));
         List<Expression> expressions = new ArrayList<>();

@@ -15,8 +15,8 @@ import java.io.Serializable;
  * A column or table constraint/index declared inside a {@code CREATE TABLE} definition.
  *
  * <p>
- * This common type lets callers inspect table elements in their source order without merging the
- * legacy column and index lists themselves.
+ * This common type lets callers inspect columns, constraints and indexes in their source order
+ * without merging the separate typed lists themselves.
  */
 public interface TableElement extends Serializable {
 }

@@ -38,10 +38,10 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.create.table.Index.ColumnParams;
-import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.test.TestUtils;
@@ -288,7 +288,8 @@ public class AlterTest {
         AlterExpression alterExpression = ((Alter) stmt).getAlterExpressions().get(0);
         assertNull(alterExpression.getConstraintName());
         // TODO: should this pass? ==> assertEquals(alterExpression.getPkColumns().get(0), "ID");
-        assertEquals(alterExpression.getIndex().getColumnsNames().get(0), "`ID`");
+        assertEquals(((KeyConstraint) alterExpression.getConstraint()).getColumnsNames().get(0),
+                "`ID`");
     }
 
     @Test
@@ -311,7 +312,7 @@ public class AlterTest {
         Alter created = new Alter().withTable(new Table("`Author`"))
                 .addAlterExpressions(Collections.singleton(
                         new AlterExpression().withOperation(AlterOperation.ADD)
-                                .withIndex(new CheckConstraint()
+                                .withConstraint(new CheckConstraint()
                                         .withName("name_not_empty")
                                         .withExpression(new NotEqualsTo()
                                                 .withLeftExpression(new Column("`NAME`"))
@@ -607,12 +608,12 @@ public class AlterTest {
 
         Alter alter = (Alter) assertSqlCanBeParsedAndDeparsed(sql);
         AlterExpression alterExpression = alter.getAlterExpressions().get(0);
-        Index index = alterExpression.getIndex();
+        KeyConstraint index = (KeyConstraint) alterExpression.getConstraint();
 
         assertNotNull(index);
         assertEquals("UNIQUE", index.getType());
         assertEquals("INDEX", index.getIndexKeyword());
-        assertEquals("`index2`", index.getName());
+        assertEquals("`index2`", index.getIndexName());
         assertEquals(List.of("`report_name` ASC"), index.getColumnsNames());
         assertEquals("'唯一索引'", index.getCommentText());
 
@@ -637,7 +638,7 @@ public class AlterTest {
                 .withTable(new Table("american_football_action_plays"))
                 .withIndex(
                         new Index().withName("idx_american_football_action_plays_1")
-                                .addColumns(new ColumnParams("play_type", null))
+                                .addColumns(new KeyElement("play_type", null))
                                 .withUsing("btree"));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
@@ -651,11 +652,11 @@ public class AlterTest {
         Alter created = new Alter().withUseOnly(true).withTable(new Table("categories"))
                 .addAlterExpressions(
                         new AlterExpression().withOperation(AlterOperation.ADD)
-                                .withIndex(new NamedConstraint()
+                                .withConstraint(new KeyConstraint()
                                         .withName(Collections.singletonList(
                                                 "pk_categories"))
                                         .withType("PRIMARY KEY")
-                                        .addColumns(new ColumnParams("category_id"))));
+                                        .addColumns(new KeyElement("category_id"))));
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -977,7 +978,7 @@ public class AlterTest {
     private void assertReferentialActionOnConstraint(Alter parsed, Action onUpdate,
             Action onDelete) {
         AlterExpression alterExpression = parsed.getAlterExpressions().get(0);
-        ForeignKeyIndex index = (ForeignKeyIndex) alterExpression.getIndex();
+        ForeignKeyConstraint index = (ForeignKeyConstraint) alterExpression.getConstraint();
 
         // remove line if deprecated methods are removed.
         index.setOnDeleteReferenceOption(index.getOnDeleteReferenceOption());
@@ -2425,7 +2426,7 @@ public class AlterTest {
 
         AlterExpression alterExp = alterExpressions.get(0);
         assertEquals(AlterOperation.ADD, alterExp.getOperation());
-        assertNotNull(alterExp.getIndex());
+        assertNotNull(alterExp.getConstraint());
         assertEquals(Arrays.asList("USING", "INDEX", "PK_TNWAV"), alterExp.getParameters());
 
         assertSqlCanBeParsedAndDeparsed(sql);

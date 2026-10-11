@@ -24,6 +24,7 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
@@ -139,7 +140,7 @@ class CreateIndexOptionStateTest {
         assertNotSame(removed.getStorageParameters(), statement.getStorageParameters());
         assertSame(removed.getStorageParameters().get(0), statement.getStorageParameters().get(0));
         List<String> detachedColumns = statement.getIncludeColumns();
-        List<Index.Option> detachedParameters = statement.getStorageParameters();
+        List<IndexOption> detachedParameters = statement.getStorageParameters();
         statement.setIndex(null);
         assertSame(detachedColumns, statement.getIncludeColumns());
         assertSame(detachedParameters, statement.getStorageParameters());
@@ -216,8 +217,8 @@ class CreateIndexOptionStateTest {
         assertEquals(SQL.replace("80", "90"), statement.toString());
     }
 
-    private static Index.Option option(long value) {
-        return new Index.Option("fillfactor", new LongValue(value), true);
+    private static IndexOption option(long value) {
+        return new IndexOption("fillfactor", new LongValue(value), true);
     }
 
     private static CreateIndex parse(String sql) throws Exception {

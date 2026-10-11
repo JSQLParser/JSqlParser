@@ -17,7 +17,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyReference;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
@@ -40,9 +40,11 @@ class PostgreSqlForeignKeyActionColumnsTest {
                             + "REFERENCES users (tenant_id, id) MATCH SIMPLE " + actions
                             + (prefix.startsWith("CREATE") ? ")" : "");
                     Statement statement = CCJSqlParserUtil.parse(sql);
-                    ForeignKeyIndex index = (ForeignKeyIndex) (statement instanceof CreateTable
-                            ? ((CreateTable) statement).getIndexes().get(0)
-                            : ((Alter) statement).getAlterExpressions().get(0).getIndex());
+                    ForeignKeyConstraint index =
+                            (ForeignKeyConstraint) (statement instanceof CreateTable
+                                    ? ((CreateTable) statement).getTableConstraints().get(0)
+                                    : ((Alter) statement).getAlterExpressions().get(0)
+                                            .getConstraint());
                     ReferentialAction action =
                             index.getReferentialAction(ReferentialAction.Type.DELETE);
                     assertEquals(List.of(columns.split(", ")), action.getColumnNames());

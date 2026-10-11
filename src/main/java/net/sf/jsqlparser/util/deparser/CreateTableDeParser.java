@@ -10,11 +10,11 @@
 package net.sf.jsqlparser.util.deparser;
 
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
@@ -74,35 +74,27 @@ public class CreateTableDeParser extends AbstractDeParser<CreateTable> {
             }
             builder.append(")");
         }
-        if (createTable.getTableElements() != null) {
+        List<TableElement> definitions = createTable.getTableElements();
+        if (definitions == null) {
+            definitions = new ArrayList<>();
+            if (createTable.getColumnDefinitions() != null) {
+                definitions.addAll(createTable.getColumnDefinitions());
+            }
+            if (createTable.getTableConstraints() != null) {
+                definitions.addAll(createTable.getTableConstraints());
+            }
+            if (createTable.getIndexes() != null) {
+                definitions.addAll(createTable.getIndexes());
+            }
+        }
+        if (createTable.getTableElements() != null || !definitions.isEmpty()) {
             builder.append(" (");
-            for (Iterator<TableElement> iter = createTable.getTableElements().iterator(); iter
-                    .hasNext();) {
+            for (Iterator<TableElement> iter = definitions.iterator(); iter.hasNext();) {
                 elements.deParse(iter.next());
                 if (iter.hasNext()) {
                     builder.append(", ");
                 }
             }
-            builder.append(")");
-        } else if (createTable.getColumnDefinitions() != null) {
-            builder.append(" (");
-            for (Iterator<ColumnDefinition> iter =
-                    createTable.getColumnDefinitions().iterator(); iter.hasNext();) {
-                ColumnDefinition columnDefinition = iter.next();
-                elements.deParse(columnDefinition);
-
-                if (iter.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-
-            if (createTable.getIndexes() != null) {
-                for (Index index : createTable.getIndexes()) {
-                    builder.append(", ");
-                    elements.deParse(index);
-                }
-            }
-
             builder.append(")");
         }
 

@@ -11,7 +11,7 @@ package net.sf.jsqlparser.statement.insert;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.function.Consumer;
 
 import java.io.Serializable;
@@ -28,7 +28,7 @@ import java.util.*;
  * </pre>
  */
 public class InsertConflictTarget implements Serializable {
-    private final List<Index.ColumnParams> indexElements = new ArrayList<>();
+    private final List<KeyElement> indexElements = new ArrayList<>();
     private Expression whereExpression;
     private String constraintName;
 
@@ -53,17 +53,17 @@ public class InsertConflictTarget implements Serializable {
     }
 
     /** Ordered column and expression keys, including their collation and operator class. */
-    public List<Index.ColumnParams> getIndexElements() {
+    public List<KeyElement> getIndexElements() {
         return indexElements;
     }
 
-    public void setIndexElements(List<Index.ColumnParams> elements) {
-        List<Index.ColumnParams> copy = new ArrayList<>(elements);
+    public void setIndexElements(List<KeyElement> elements) {
+        List<KeyElement> copy = new ArrayList<>(elements);
         indexElements.clear();
         indexElements.addAll(copy);
     }
 
-    public InsertConflictTarget withIndexElements(List<Index.ColumnParams> elements) {
+    public InsertConflictTarget withIndexElements(List<KeyElement> elements) {
         setIndexElements(elements);
         return this;
     }
@@ -93,14 +93,14 @@ public class InsertConflictTarget implements Serializable {
 
             @Override
             public String set(int index, String name) {
-                return indexElements.set(elementIndex(index), new Index.ColumnParams(name))
+                return indexElements.set(elementIndex(index), new KeyElement(name))
                         .getColumnName();
             }
 
             @Override
             public void add(int index, String name) {
                 indexElements.add(index == size() ? indexElements.size() : elementIndex(index),
-                        new Index.ColumnParams(name));
+                        new KeyElement(name));
             }
 
             @Override
@@ -111,9 +111,9 @@ public class InsertConflictTarget implements Serializable {
             @Override
             public boolean addAll(int index, Collection<? extends String> names) {
                 int insertionIndex = index == size() ? indexElements.size() : elementIndex(index);
-                List<Index.ColumnParams> additions = new ArrayList<>();
+                List<KeyElement> additions = new ArrayList<>();
                 for (String name : names) {
-                    additions.add(new Index.ColumnParams(name));
+                    additions.add(new KeyElement(name));
                 }
                 return indexElements.addAll(insertionIndex, additions);
             }
@@ -136,8 +136,8 @@ public class InsertConflictTarget implements Serializable {
     }
 
     public boolean addIndexColumnName(String name) {
-        indexElements.removeIf(Index.ColumnParams::isExpression);
-        return indexElements.add(new Index.ColumnParams(name));
+        indexElements.removeIf(KeyElement::isExpression);
+        return indexElements.add(new KeyElement(name));
     }
 
     public InsertConflictTarget withIndexColumnName(String name) {
@@ -146,20 +146,20 @@ public class InsertConflictTarget implements Serializable {
     }
 
     public boolean addAllIndexColumnNames(Collection<String> names) {
-        indexElements.removeIf(Index.ColumnParams::isExpression);
+        indexElements.removeIf(KeyElement::isExpression);
         return getIndexColumnNames().addAll(names);
     }
 
     /** Returns the first expression key, or null for a column-only target. */
     public Expression getIndexExpression() {
-        return indexElements.stream().filter(Index.ColumnParams::isExpression)
-                .map(Index.ColumnParams::getExpression).findFirst().orElse(null);
+        return indexElements.stream().filter(KeyElement::isExpression)
+                .map(KeyElement::getExpression).findFirst().orElse(null);
     }
 
     public void setIndexExpression(Expression expression) {
         indexElements.clear();
         if (expression != null) {
-            indexElements.add(new Index.ColumnParams(expression));
+            indexElements.add(new KeyElement(expression));
         }
     }
 
@@ -196,7 +196,7 @@ public class InsertConflictTarget implements Serializable {
 
     /** Visits expression keys and the optional index predicate. */
     public <S> void accept(ExpressionVisitor<?> visitor, S context) {
-        for (Index.ColumnParams element : indexElements) {
+        for (KeyElement element : indexElements) {
             if (element.getExpression() != null) {
                 element.getExpression().accept(visitor, context);
             }

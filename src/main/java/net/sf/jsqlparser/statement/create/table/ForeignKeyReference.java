@@ -48,7 +48,8 @@ public class ForeignKeyReference implements Serializable {
     private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
 
     /**
-     * Attributes of a column REFERENCES clause; table constraints own their attributes on Index.
+     * Attributes of a column REFERENCES clause; table constraints own their attributes on
+     * NamedConstraint.
      */
     public ConstraintAttributes getConstraintAttributes() {
         return constraintAttributes;

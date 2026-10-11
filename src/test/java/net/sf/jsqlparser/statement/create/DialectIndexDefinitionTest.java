@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.IndexOptions;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static net.sf.jsqlparser.test.TestUtils.assertDeparse;
 import static net.sf.jsqlparser.test.TestUtils.assertSqlCanBeParsedAndDeparsed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,8 +45,8 @@ class DialectIndexDefinitionTest {
                 parser -> parser.withDialect(Dialect.SQLSERVER));
         Index index = statement.getIndex();
         assertEquals(modifiers.contains("UNIQUE") ? "UNIQUE" : null, index.getType());
-        assertEquals(modifiers.contains("NONCLUSTERED") ? Index.Clustering.NONCLUSTERED
-                : modifiers.contains("CLUSTERED") ? Index.Clustering.CLUSTERED : null,
+        assertEquals(modifiers.contains("NONCLUSTERED") ? IndexOptions.Clustering.NONCLUSTERED
+                : modifiers.contains("CLUSTERED") ? IndexOptions.Clustering.CLUSTERED : null,
                 index.getClustering());
         assertFalse(statement.isNullFiltered());
         assertEquals(index.getClustering(), parse(statement.toString(), Dialect.SQLSERVER)
@@ -108,7 +110,7 @@ class DialectIndexDefinitionTest {
     void rendersModifiedClusteringAndNullFiltering() throws Exception {
         CreateIndex sqlServer = parse("CREATE UNIQUE NONCLUSTERED INDEX ix ON t (id)",
                 Dialect.SQLSERVER);
-        sqlServer.getIndex().setClustering(Index.Clustering.CLUSTERED);
+        sqlServer.getIndex().setClustering(IndexOptions.Clustering.CLUSTERED);
         assertDeparse(sqlServer, "CREATE UNIQUE CLUSTERED INDEX ix ON t (id)");
         sqlServer.getIndex().setClustering(null);
         assertDeparse(sqlServer, "CREATE UNIQUE INDEX ix ON t (id)");
@@ -128,7 +130,7 @@ class DialectIndexDefinitionTest {
         Statements statements = CCJSqlParserUtil.parseStatements(sql + "\nGO\nSELECT 1;",
                 parser -> parser.withDialect(Dialect.SQLSERVER));
         assertEquals(2, statements.size());
-        assertEquals(Index.Clustering.NONCLUSTERED,
+        assertEquals(IndexOptions.Clustering.NONCLUSTERED,
                 ((CreateIndex) statements.get(0)).getIndex().getClustering());
         assertEquals("SELECT 1", statements.get(1).toString());
     }
@@ -139,17 +141,17 @@ class DialectIndexDefinitionTest {
                 + "(\"keyword\" COLLATE \"pg_catalog\".\"default\" \"pg_catalog\".\"text_ops\" ASC NULLS LAST)";
         CreateIndex statement = (CreateIndex) assertSqlCanBeParsedAndDeparsed(sql, true,
                 parser -> parser.withDialect(Dialect.POSTGRESQL));
-        Index.ColumnParams key = statement.getIndex().getColumns().get(0);
+        KeyElement key = statement.getIndex().getColumns().get(0);
         assertEquals("\"pg_catalog\".\"default\"", key.getCollation());
         assertEquals("\"pg_catalog\".\"text_ops\"", key.getOperatorClass());
-        assertEquals(Index.ColumnParams.SortOrder.ASC, key.getSortOrder());
-        assertEquals(Index.ColumnParams.NullOrdering.LAST, key.getNullOrdering());
+        assertEquals(KeyElement.SortOrder.ASC, key.getSortOrder());
+        assertEquals(KeyElement.NullOrdering.LAST, key.getNullOrdering());
         assertNull(key.getParams());
 
         key.setCollation("public.\"C\"");
         key.setOperatorClass("public.text_pattern_ops");
-        key.setSortOrder(Index.ColumnParams.SortOrder.DESC);
-        key.setNullOrdering(Index.ColumnParams.NullOrdering.FIRST);
+        key.setSortOrder(KeyElement.SortOrder.DESC);
+        key.setNullOrdering(KeyElement.NullOrdering.FIRST);
         assertDeparse(statement,
                 "CREATE INDEX \"index_keyword\" ON \"inter\".\"inter_ti_rec\" USING btree "
                         + "(\"keyword\" COLLATE public.\"C\" public.text_pattern_ops DESC NULLS FIRST)");
@@ -169,7 +171,7 @@ class DialectIndexDefinitionTest {
                 + "\"schema\".\"op\"\"class\" DESC NULLS FIRST)";
         CreateIndex statement = (CreateIndex) assertSqlCanBeParsedAndDeparsed(sql, true,
                 parser -> parser.withDialect(Dialect.POSTGRESQL));
-        Index.ColumnParams key = statement.getIndex().getColumns().get(0);
+        KeyElement key = statement.getIndex().getColumns().get(0);
         assertTrue(key.isExpression());
         assertFalse(key.isExpressionParenthesized());
         assertEquals("\"schema.with.dot\".\"C\"", key.getCollation());

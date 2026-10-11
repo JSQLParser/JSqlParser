@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -21,7 +22,6 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.table.CheckConstraint;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.statement.create.table.ExcludeConstraint;
-import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Test;
@@ -58,15 +58,15 @@ class PostgreSqlAlterConstraintTest {
         Alter alter = parse("ALTER TABLE t ADD CONSTRAINT c CHECK (id > 0) NOT VALID, "
                 + "ADD CONSTRAINT u UNIQUE (id) DEFERRABLE INITIALLY DEFERRED");
         CheckConstraint check = assertInstanceOf(CheckConstraint.class,
-                alter.getAlterExpressions().get(0).getIndex());
+                alter.getAlterExpressions().get(0).getConstraint());
         assertTrue(check.getConstraintAttributes().isNotValid());
-        Index unique = alter.getAlterExpressions().get(1).getIndex();
+        NamedConstraint unique = alter.getAlterExpressions().get(1).getConstraint();
         assertEquals(ConstraintAttributes.Initially.DEFERRED,
                 unique.getConstraintAttributes().getInitially());
         assertEquals(Boolean.TRUE, unique.getConstraintAttributes().getDeferrable());
         ExcludeConstraint exclude = assertInstanceOf(ExcludeConstraint.class,
                 parse("ALTER TABLE t ADD EXCLUDE USING gist ((id + 1) WITH =) WHERE (id > 0)")
-                        .getAlterExpressions().get(0).getIndex());
+                        .getAlterExpressions().get(0).getConstraint());
         assertEquals("id > 0", exclude.getExpression().toString());
     }
 

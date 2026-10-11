@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
+import net.sf.jsqlparser.statement.create.table.IndexOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 /** Structured PostgreSQL property actions shared by tables, indexes and views. */
@@ -32,6 +33,11 @@ public class RelationAlterAction extends AlterExpression
     private boolean statisticsDefault;
     private Expression defaultExpression;
     private Expression generationExpression;
+    private Table relation;
+    private boolean noInherit;
+    private boolean noDependency;
+    private List<IndexOption> options;
+    private List<String> resetOptions;
 
     public Expression getGenerationExpression() {
         return generationExpression;
@@ -40,12 +46,6 @@ public class RelationAlterAction extends AlterExpression
     public void setGenerationExpression(Expression expression) {
         generationExpression = expression;
     }
-
-    private Table relation;
-    private boolean noInherit;
-    private boolean noDependency;
-    private List<Index.Option> options;
-    private List<String> resetOptions;
 
     public enum Kind {
         RENAME, RENAME_COLUMN, OWNER, SET_SCHEMA, SET_TABLESPACE, SET_ACCESS_METHOD, SET_OPTIONS, RESET_OPTIONS, ALTER_COLUMN, ATTACH_PARTITION, DEPENDS_ON_EXTENSION, VALIDATE_CONSTRAINT, INHERIT, ALTER_CONSTRAINT_INHERIT, REPLICA_IDENTITY, CLUSTER_ON, SET_WITHOUT_CLUSTER, SET_WITHOUT_OIDS, SET_LOGGED, SET_UNLOGGED, OF, NOT_OF, TRIGGER_STATE, RULE_STATE
@@ -224,11 +224,11 @@ public class RelationAlterAction extends AlterExpression
         this.noDependency = noDependency;
     }
 
-    public List<Index.Option> getOptions() {
+    public List<IndexOption> getOptions() {
         return options;
     }
 
-    public void setOptions(List<Index.Option> options) {
+    public void setOptions(List<IndexOption> options) {
         this.options = options;
     }
 
@@ -238,6 +238,16 @@ public class RelationAlterAction extends AlterExpression
 
     public void setResetOptions(List<String> resetOptions) {
         this.resetOptions = resetOptions;
+    }
+
+    @Override
+    public boolean hasActiveTableDefinition() {
+        return false;
+    }
+
+    @Override
+    public ConstraintKind getConstraintKind() {
+        return ConstraintKind.OTHER;
     }
 
     @Override
@@ -294,7 +304,7 @@ public class RelationAlterAction extends AlterExpression
                 break;
             case SET_OPTIONS:
                 builder.append("SET ");
-                Index.Option.appendListTo(builder, options, expressionPrinter);
+                IndexOption.appendListTo(builder, options, expressionPrinter);
                 break;
             case RESET_OPTIONS:
                 builder.append("RESET ")
@@ -350,7 +360,7 @@ public class RelationAlterAction extends AlterExpression
                 break;
             case SET_OPTIONS:
                 builder.append(" SET ");
-                Index.Option.appendListTo(builder, options, expressionPrinter);
+                IndexOption.appendListTo(builder, options, expressionPrinter);
                 break;
             case RESET_OPTIONS:
                 builder.append(" RESET ")
@@ -386,7 +396,7 @@ public class RelationAlterAction extends AlterExpression
             visitor.accept(generationExpression);
         } else if ((kind == Kind.SET_OPTIONS || kind == Kind.ALTER_COLUMN
                 && columnAction == ColumnAction.SET_OPTIONS) && options != null) {
-            options.stream().map(Index.Option::getValue).filter(java.util.Objects::nonNull)
+            options.stream().map(IndexOption::getValue).filter(java.util.Objects::nonNull)
                     .forEach(visitor);
         }
     }

@@ -24,9 +24,10 @@ import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyReference;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.create.table.NamedConstraint;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.TableOption;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +40,9 @@ public class MySqlTableDefinitionTest {
                 parseMySql("CREATE TABLE inventory (PRIMARY KEY (id), id INT NOT NULL)");
 
         assertEquals(2, table.getTableElements().size());
-        assertInstanceOf(Index.class, table.getTableElements().get(0));
+        assertInstanceOf(KeyConstraint.class, table.getTableElements().get(0));
         assertInstanceOf(ColumnDefinition.class, table.getTableElements().get(1));
-        assertEquals("PRIMARY KEY", table.getIndexes().get(0).getType());
+        assertEquals("PRIMARY KEY", table.getTableConstraints().get(0).getType());
         assertReparse(table);
     }
 
@@ -51,11 +52,11 @@ public class MySqlTableDefinitionTest {
                 + "PRIMARY KEY pk_documents (id), FULLTEXT INDEX ft_body (body), "
                 + "INDEX ((CAST(data AS CHAR(30)))))");
 
-        NamedConstraint primary = (NamedConstraint) table.getIndexes().get(0);
+        KeyConstraint primary = (KeyConstraint) table.getTableConstraints().get(0);
         assertEquals("pk_documents", primary.getIndexName());
-        assertEquals(Index.Kind.PRIMARY_KEY, primary.getKind());
-        assertEquals(Index.Kind.FULLTEXT, table.getIndexes().get(1).getKind());
-        assertTrue(table.getIndexes().get(2).getColumns().get(0).isExpression());
+        assertEquals(ConstraintKind.PRIMARY_KEY, primary.getKind());
+        assertEquals(Index.Kind.FULLTEXT, table.getIndexes().get(0).getKind());
+        assertTrue(table.getIndexes().get(1).getColumns().get(0).isExpression());
         assertReparse(table);
     }
 
@@ -168,8 +169,8 @@ public class MySqlTableDefinitionTest {
                 + "CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES customer(id) "
                 + "MATCH FULL ON DELETE CASCADE)");
 
-        ForeignKeyIndex foreignKey = (ForeignKeyIndex) table.getIndexes().get(0);
-        assertEquals(Index.Kind.FOREIGN_KEY, foreignKey.getKind());
+        ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) table.getTableConstraints().get(0);
+        assertEquals(ConstraintKind.FOREIGN_KEY, foreignKey.getKind());
         assertEquals("customer", foreignKey.getReference().getTable().getName());
         assertEquals(ForeignKeyReference.MatchType.FULL, foreignKey.getMatchType());
         assertReparse(table);
@@ -198,13 +199,13 @@ public class MySqlTableDefinitionTest {
                         + "ADD FULLTEXT INDEX ft_body (body)",
                 parser -> parser.withDialect(Dialect.MYSQL));
 
-        assertEquals(create.getIndexes().get(0).getClass(),
-                alter.getAlterExpressions().get(0).getIndex().getClass());
-        assertEquals(create.getIndexes().get(0).getKind(),
-                alter.getAlterExpressions().get(0).getIndex().getKind());
+        assertEquals(create.getTableConstraints().get(0).getClass(),
+                alter.getAlterExpressions().get(0).getConstraint().getClass());
+        assertEquals(create.getTableConstraints().get(0).getKind(),
+                alter.getAlterExpressions().get(0).getConstraint().getKind());
+        assertEquals(create.getTableConstraints().get(0).toString(),
+                alter.getAlterExpressions().get(0).getConstraint().toString());
         assertEquals(create.getIndexes().get(0).toString(),
-                alter.getAlterExpressions().get(0).getIndex().toString());
-        assertEquals(create.getIndexes().get(1).toString(),
                 alter.getAlterExpressions().get(1).getIndex().toString());
         CCJSqlParserUtil.parse(alter.toString(), parser -> parser.withDialect(Dialect.MYSQL));
     }

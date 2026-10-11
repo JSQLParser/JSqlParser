@@ -35,14 +35,14 @@ public class TablePartitioning implements Serializable {
         EXPRESSION
     }
 
-    private List<Index.ColumnParams> keyColumns;
+    private List<KeyElement> keyColumns;
 
     /** PostgreSQL keys carrying collation/operator-class attributes, otherwise null. */
-    public List<Index.ColumnParams> getKeyColumns() {
+    public List<KeyElement> getKeyColumns() {
         return keyColumns;
     }
 
-    public void setKeyColumns(List<Index.ColumnParams> keyColumns) {
+    public void setKeyColumns(List<KeyElement> keyColumns) {
         if (keyColumns != null) {
             clearKeyRepresentation();
         }

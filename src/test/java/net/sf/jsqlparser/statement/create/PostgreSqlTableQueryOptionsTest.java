@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.create;
 
+import net.sf.jsqlparser.statement.create.table.IndexOption;
+import net.sf.jsqlparser.statement.create.table.KeyElement;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,7 @@ class PostgreSqlTableQueryOptionsTest {
         CreateTable table = parse("CREATE TABLE t (id INT) WITH (toast.autovacuum_enabled=false)");
         TableOption option =
                 table.getTableOption(TableOption.Kind.STORAGE_PARAMETERS).orElseThrow();
-        Index.Option parameter = option.getStorageParameters().get(0);
+        IndexOption parameter = option.getStorageParameters().get(0);
         assertEquals("toast.autovacuum_enabled", parameter.getName());
         parameter.setName("fillfactor");
         parameter.setValue(new LongValue(70));
@@ -69,10 +71,10 @@ class PostgreSqlTableQueryOptionsTest {
     void partitionAttributesShareIndexKeyNodes() throws JSQLParserException {
         CreateTable table = parse(
                 "CREATE TABLE t (id INT, other_id INT) PARTITION BY RANGE (id pg_catalog.int4_ops)");
-        Index.ColumnParams key = table.getPartitioning().getKeyColumns().get(0);
+        KeyElement key = table.getPartitioning().getKeyColumns().get(0);
         assertEquals("pg_catalog.int4_ops", key.getOperatorClass());
         table.getPartitioning().getKeyColumns().set(0,
-                new Index.ColumnParams("other_id").withOperatorClass("int4_ops"));
+                new KeyElement("other_id").withOperatorClass("int4_ops"));
         assertTrue(table.toString().endsWith("PARTITION BY RANGE (other_id int4_ops)"));
         assertRoundTrip(table);
     }
