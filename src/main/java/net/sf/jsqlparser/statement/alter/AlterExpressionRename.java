@@ -19,19 +19,9 @@ public class AlterExpressionRename extends AlterExpression {
     protected void appendBody(StringBuilder b) {
         switch (getOperation()) {
             case RENAME:
-                b.append("RENAME ");
-                if (hasColumn()) {
-                    b.append("COLUMN ");
-                }
-                b.append(getColumnOldName()).append(" TO ").append(getColumnName());
+                toStringGeneral(b);
                 break;
             case RENAME_TABLE:
-                b.append("RENAME");
-                if (getTableRenameKeyword() != TableRenameKeyword.NONE) {
-                    b.append(" ").append(getTableRenameKeyword());
-                }
-                b.append(" ").append(getNewTableName());
-                break;
             case RENAME_INDEX:
             case RENAME_KEY:
             case RENAME_CONSTRAINT:

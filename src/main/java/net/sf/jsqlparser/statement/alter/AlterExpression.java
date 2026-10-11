@@ -1048,7 +1048,11 @@ public class AlterExpression implements Serializable {
             }
             b.append(getOldIndex().getName()).append(" TO ").append(getIndex().getName());
         } else {
-            b.append("RENAME TO ").append(getNewTableName());
+            b.append("RENAME");
+            if (getTableRenameKeyword() != TableRenameKeyword.NONE) {
+                b.append(" ").append(getTableRenameKeyword());
+            }
+            b.append(" ").append(getNewTableName());
         }
     }
 
