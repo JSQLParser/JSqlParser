@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+import java.util.List;
+
 import net.sf.jsqlparser.statement.create.table.IndexOption;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import java.util.Iterator;
@@ -29,6 +32,11 @@ public class AlterExpressionPrimaryKey extends AlterExpression {
     public AlterExpressionPrimaryKey() {
         setOperation(AlterOperation.ALTER_PRIMARY_KEY);
         setConstraint(new KeyConstraint().withType("PRIMARY KEY"));
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
     }
 
     @Override

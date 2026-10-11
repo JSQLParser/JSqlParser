@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -262,6 +263,11 @@ public class AlterExpressionPartition extends AlterExpression {
         if (coalescePartitionCount != null) {
             super.setCoalescePartitionNumber(coalescePartitionCount);
         }
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
     }
 
     @Override

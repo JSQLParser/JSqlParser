@@ -490,6 +490,35 @@ public class AlterExpression implements Serializable {
         return Collections.unmodifiableList(columnSetDefaultList);
     }
 
+    /**
+     * Returns active ALTER COLUMN identity actions without treating them as data-type changes. The
+     * list is an unmodifiable membership snapshot; its entries are the original mutable column
+     * nodes. Request a new list after adding, removing or changing actions. Subclasses that render
+     * a different body override this method to exclude inactive inherited column definitions.
+     */
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        if (hasExplicitConstraintHeader() || isRenameOperation() || hasAlterColumnValueActions()) {
+            return Collections.emptyList();
+        }
+        return getColumnIdentityActionsFromDefinitions();
+    }
+
+    /** Returns identity actions when this body's general column-definition branch is active. */
+    protected List<ColumnIdentityAction> getColumnIdentityActionsFromDefinitions() {
+        if (operation != AlterOperation.ALTER || colDataTypeList == null
+                || columnName != null || commentText != null) {
+            return Collections.emptyList();
+        }
+        List<ColumnIdentityAction> actions = new ArrayList<>();
+        for (ColumnDataType column : colDataTypeList) {
+            if (column.getIdentityAlterations() != null
+                    && !column.getIdentityAlterations().isEmpty()) {
+                actions.add(column);
+            }
+        }
+        return Collections.unmodifiableList(actions);
+    }
+
     public void addColSetVisibility(ColumnSetVisibility columnSetVisibility) {
         if (columnSetVisibilityList == null) {
             columnSetVisibilityList = new ArrayList<>();
@@ -1048,10 +1077,7 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (hasExplicitConstraintHeader()) {
             toStringConstraintAlter(b);
-        } else if (operation == AlterOperation.ALTER
-                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
-                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
-                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty())) {
+        } else if (hasAlterColumnValueActions()) {
             toStringAlterColumn(b);
         } else if (isSimpleKeywordOperation()) {
             toStringSimpleKeyword(b);
@@ -1066,6 +1092,13 @@ public class AlterExpression implements Serializable {
         } else {
             toStringGeneral(b);
         }
+    }
+
+    private boolean hasAlterColumnValueActions() {
+        return operation == AlterOperation.ALTER
+                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
+                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
+                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty());
     }
 
     /**
@@ -1752,7 +1785,8 @@ public class AlterExpression implements Serializable {
         this.hasEqualForCollate = hasEqualForCollate;
     }
 
-    public static final class ColumnDataType extends ColumnDefinition {
+    public static final class ColumnDataType extends ColumnDefinition
+            implements ColumnIdentityAction {
 
         private final boolean withType;
         private boolean useSetData;
@@ -1780,10 +1814,12 @@ public class AlterExpression implements Serializable {
             this.usingExpression = usingExpression;
         }
 
+        @Override
         public List<IdentityAlteration> getIdentityAlterations() {
             return identityAlterations;
         }
 
+        @Override
         public void setIdentityAlterations(List<IdentityAlteration> identityAlterations) {
             this.identityAlterations =
                     identityAlterations == null ? null : new ArrayList<>(identityAlterations);

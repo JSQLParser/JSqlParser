@@ -45,20 +45,60 @@ public class IdentityAlteration implements Serializable {
         this.identityDefinition = identityDefinition;
     }
 
+    /**
+     * Returns ADD's definition mode or SET GENERATED's mode. An ADD without a definition returns
+     * null; no definition is created by reading it.
+     */
     public IdentityDefinition.GenerationMode getGenerationMode() {
-        return generationMode;
+        return kind == Kind.ADD
+                ? identityDefinition == null ? null : identityDefinition.getGenerationMode()
+                : generationMode;
     }
 
+    /**
+     * Updates ADD's existing definition or SET GENERATED's mode. A non-null ADD mode creates a
+     * definition when absent; a null mode never creates one. Other kinds retain the value as
+     * inactive metadata and do not render it.
+     */
     public void setGenerationMode(IdentityDefinition.GenerationMode generationMode) {
-        this.generationMode = generationMode;
+        if (kind == Kind.ADD) {
+            if (identityDefinition != null) {
+                identityDefinition.setGenerationMode(generationMode);
+            } else if (generationMode != null) {
+                identityDefinition = new IdentityDefinition(generationMode);
+            }
+        } else {
+            this.generationMode = generationMode;
+        }
     }
 
+    /**
+     * Returns ADD's definition parameters or SET_PARAMETER's parameters. The returned list belongs
+     * to the active payload and can be edited directly; an omitted list is null.
+     */
     public List<Sequence.Parameter> getParameters() {
-        return parameters;
+        return kind == Kind.ADD
+                ? identityDefinition == null ? null : identityDefinition.getParameters()
+                : parameters;
     }
 
+    /**
+     * Updates ADD's definition parameters or SET_PARAMETER's parameters. A non-null ADD list
+     * creates a BY DEFAULT definition when absent; a null list never creates one. Other kinds
+     * retain the value as inactive metadata and do not render it.
+     */
     public void setParameters(List<Sequence.Parameter> parameters) {
-        this.parameters = parameters == null ? null : new ArrayList<>(parameters);
+        if (kind == Kind.ADD) {
+            if (identityDefinition == null && parameters != null) {
+                identityDefinition =
+                        new IdentityDefinition(IdentityDefinition.GenerationMode.BY_DEFAULT);
+            }
+            if (identityDefinition != null) {
+                identityDefinition.setParameters(parameters);
+            }
+        } else {
+            this.parameters = parameters == null ? null : new ArrayList<>(parameters);
+        }
     }
 
     /** Returns the restart value, or null for a bare RESTART using the sequence start value. */

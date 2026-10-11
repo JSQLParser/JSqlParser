@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+import java.util.List;
+
 import net.sf.jsqlparser.statement.create.table.TableOption;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
@@ -31,6 +34,11 @@ public class AlterExpressionTableOption extends AlterExpression {
         setOperation(AlterOperation.SET_TABLE_OPTION);
         super.setTableOption(null);
         super.setUseEqual(false);
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
     }
 
     @Override
