@@ -1736,14 +1736,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(JsonFunction expression, S context) {
-        expression.append(builder);
-        return builder;
+        return expression.appendTo(builder, child -> child.accept(this, context));
     }
 
     @Override
     public <S> StringBuilder visit(JsonTableFunction expression, S context) {
-        builder.append(expression);
-        return builder;
+        return expression.appendTo(builder, child -> child.accept(this, context));
     }
 
     @Override
