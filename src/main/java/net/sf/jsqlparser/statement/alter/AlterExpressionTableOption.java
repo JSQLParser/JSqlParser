@@ -42,6 +42,16 @@ public class AlterExpressionTableOption extends AlterExpression {
     }
 
     @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return false;
+    }
+
+    @Override
     public boolean hasActiveTableDefinition() {
         return false;
     }

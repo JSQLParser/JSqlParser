@@ -25,6 +25,17 @@ public class AlterExpressionDrop extends AlterExpression {
     }
 
     @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return hasColumnDefinitionPayload() && !isDropSpecialOperation()
+                && getOperation() != AlterOperation.DROP_PARTITION;
+    }
+
+    @Override
     public boolean hasActiveTableDefinition() {
         return false;
     }
