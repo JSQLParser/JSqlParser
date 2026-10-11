@@ -20,16 +20,13 @@ public class CreateIndex implements Statement {
 
     private Table table;
     private Index index;
+    private Index detachedOptions;
     private List<String> tailParameters;
     private boolean indexTypeBeforeOn = false;
     private boolean usingIfNotExists = false;
     private boolean concurrently;
     private boolean only;
     private boolean nullFiltered;
-    private List<String> includeColumns;
-    private Boolean nullsDistinct;
-    private List<Index.Option> storageParameters;
-    private String tableSpace;
     private Expression where;
 
     public boolean isIndexTypeBeforeOn() {
@@ -80,35 +77,62 @@ public class CreateIndex implements Statement {
     }
 
     public List<String> getIncludeColumns() {
-        return includeColumns;
+        Index options = getOptions();
+        return options == null ? null : options.getIncludeColumns();
     }
 
+    /**
+     * Copies the supplied list as {@link Index#setIncludeColumns(List)} does; null clears it.
+     * {@link #getIncludeColumns()} returns the live, mutable list held by the index options.
+     */
     public void setIncludeColumns(List<String> includeColumns) {
-        this.includeColumns = includeColumns;
+        getOrCreateOptions().setIncludeColumns(includeColumns);
     }
 
     public Boolean getNullsDistinct() {
-        return nullsDistinct;
+        Index options = getOptions();
+        return options == null ? null : options.getNullsDistinct();
     }
 
     public void setNullsDistinct(Boolean nullsDistinct) {
-        this.nullsDistinct = nullsDistinct;
+        getOrCreateOptions().setNullsDistinct(nullsDistinct);
     }
 
     public List<Index.Option> getStorageParameters() {
-        return storageParameters;
+        Index options = getOptions();
+        return options == null ? null : options.getStorageParameters();
     }
 
+    /**
+     * Copies the list container as {@link Index#setStorageParameters(List)} does, retaining the
+     * option objects; null clears it. {@link #getStorageParameters()} returns the live, mutable
+     * list held by the index options.
+     */
     public void setStorageParameters(List<Index.Option> storageParameters) {
-        this.storageParameters = storageParameters;
+        getOrCreateOptions().setStorageParameters(storageParameters);
     }
 
     public String getTableSpace() {
-        return tableSpace;
+        Index options = getOptions();
+        return options == null ? null : options.getTableSpace();
     }
 
     public void setTableSpace(String tableSpace) {
-        this.tableSpace = tableSpace;
+        getOrCreateOptions().setTableSpace(tableSpace);
+    }
+
+    private Index getOptions() {
+        return index == null ? detachedOptions : index;
+    }
+
+    private Index getOrCreateOptions() {
+        if (index != null) {
+            return index;
+        }
+        if (detachedOptions == null) {
+            detachedOptions = new Index();
+        }
+        return detachedOptions;
     }
 
     public Expression getWhere() {
@@ -128,7 +152,40 @@ public class CreateIndex implements Statement {
         return index;
     }
 
+    /**
+     * Replaces the index definition. Options supplied by the new index take precedence; omitted
+     * options inherit the current statement options, including those set before an index was
+     * attached. Passing null detaches the definition without discarding its options. The detached
+     * option lists have independent containers, with their elements retained. Use the option
+     * setters with null to clear individual options.
+     */
     public void setIndex(Index index) {
+        Index previousOptions = getOptions();
+        if (index == null) {
+            if (this.index != null) {
+                detachedOptions = new Index();
+                detachedOptions.setIncludeColumns(previousOptions.getIncludeColumns());
+                detachedOptions.setNullsDistinct(previousOptions.getNullsDistinct());
+                detachedOptions.setStorageParameters(previousOptions.getStorageParameters());
+                detachedOptions.setTableSpace(previousOptions.getTableSpace());
+            }
+        } else {
+            if (previousOptions != null && previousOptions != index) {
+                if (index.getIncludeColumns() == null) {
+                    index.setIncludeColumns(previousOptions.getIncludeColumns());
+                }
+                if (index.getNullsDistinct() == null) {
+                    index.setNullsDistinct(previousOptions.getNullsDistinct());
+                }
+                if (index.getStorageParameters() == null) {
+                    index.setStorageParameters(previousOptions.getStorageParameters());
+                }
+                if (index.getTableSpace() == null) {
+                    index.setTableSpace(previousOptions.getTableSpace());
+                }
+            }
+            detachedOptions = null;
+        }
         this.index = index;
     }
 
@@ -225,18 +282,18 @@ public class CreateIndex implements Statement {
 
     private void appendPostgreSqlTail(StringBuilder buffer,
             Consumer<Expression> expressionPrinter) {
-        if (includeColumns != null) {
-            buffer.append(" INCLUDE (").append(String.join(", ", includeColumns)).append(")");
+        if (getIncludeColumns() != null) {
+            buffer.append(" INCLUDE (").append(String.join(", ", getIncludeColumns())).append(")");
         }
-        if (nullsDistinct != null) {
-            buffer.append(" NULLS ").append(nullsDistinct ? "DISTINCT" : "NOT DISTINCT");
+        if (getNullsDistinct() != null) {
+            buffer.append(" NULLS ").append(getNullsDistinct() ? "DISTINCT" : "NOT DISTINCT");
         }
-        if (storageParameters != null) {
+        if (getStorageParameters() != null) {
             buffer.append(" WITH ");
-            Index.Option.appendListTo(buffer, storageParameters, expressionPrinter);
+            Index.Option.appendListTo(buffer, getStorageParameters(), expressionPrinter);
         }
-        if (tableSpace != null) {
-            buffer.append(" TABLESPACE ").append(tableSpace);
+        if (getTableSpace() != null) {
+            buffer.append(" TABLESPACE ").append(getTableSpace());
         }
         if (where != null) {
             buffer.append(" WHERE ");
