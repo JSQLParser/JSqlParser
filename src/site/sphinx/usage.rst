@@ -537,11 +537,36 @@ Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
 COLLATE option. Consumers can map both directly without reconstructing tokens.
 StringValue comment bodies retain their SQL escape representation.
 
-The legacy ``getColumnSpecs()`` returns a token snapshot when options are
-structured; expression fragments may occupy one token and structured keywords
-use canonical capitalization. Mutate the option objects to change the AST.
-``addColumnSpecs`` preserves existing options; ``setColumnSpecs`` explicitly
-replaces them with raw specifications.
+``ColumnDefinition`` stores all options in one ordered list, including opaque
+``ColumnOption.Kind.OTHER`` nodes. ``getColumnOptions()`` returns that mutable
+list. ``getColumnSpecs()`` returns an **unmodifiable snapshot** for both raw and
+structured options; expression fragments may occupy one token and structured
+keywords use canonical capitalization. Unset options return null; an explicitly
+empty list returns an empty snapshot.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT DEFAULT 1)");
+    ColumnDefinition column = table.getColumnDefinitions().get(0);
+    column.getColumnOptions().get(0).setDefaultExpression(new LongValue(2));
+    column.addColumnSpecs("NOT", "NULL"); // keeps the structured DEFAULT node
+    // CREATE TABLE t (id INT DEFAULT 2 NOT NULL)
+
+Migration: calls such as ``getColumnSpecs().add(...)`` or ``.set(...)`` now throw
+``UnsupportedOperationException`` instead of sometimes changing the AST and
+sometimes editing a discarded copy. Use ``addColumnSpecs`` to append raw tokens,
+edit the option nodes directly, or pass a modified token-list copy to
+``setColumnSpecs`` to replace every option with opaque text. Raw tokens are never
+automatically parsed. Consequently ``getColumnOptions()`` is also non-null for
+raw specifications; inspect ``Kind`` to distinguish them.
+
+The constructor and ``setColumnSpecs`` copy supplied tokens. ``setColumnOptions``
+copies list membership but retains the mutable child nodes; later changes to the
+caller's list do not change the column. Both getters return null after either
+setter receives null. Appending preserves the current nodes and accepts an
+immutable input list. An empty append preserves existing options and creates an
+empty option list when none was set.
 
 Inspect logical replication statements
 ======================================

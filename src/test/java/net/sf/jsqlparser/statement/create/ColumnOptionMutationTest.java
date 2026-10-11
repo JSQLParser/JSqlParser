@@ -52,7 +52,7 @@ class ColumnOptionMutationTest {
         CreateTable table = parse("id INT");
         ColumnDefinition column = table.getColumnDefinitions().get(0);
         column.setColumnSpecs(Arrays.asList("NOT", "NULL"));
-        assertNull(column.getColumnOptions());
+        assertEquals(ColumnOption.Kind.OTHER, column.getColumnOptions().get(0).getKind());
         ForeignKeyReference reference = parse("id INT REFERENCES parent(id)")
                 .getColumnDefinitions().get(0).getForeignKeyReference();
         column.addColumnOptions(ColumnOption.reference(reference));

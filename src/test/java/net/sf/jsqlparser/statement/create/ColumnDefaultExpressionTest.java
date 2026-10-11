@@ -130,7 +130,7 @@ class ColumnDefaultExpressionTest {
         assertNotNull(defaultOption(column).getDefaultExpression());
         assertRoundTrip(statement);
         column.setColumnSpecs(Arrays.asList("DEFAULT", "9"));
-        assertNull(column.getColumnOptions());
+        assertEquals(ColumnOption.Kind.OTHER, column.getColumnOptions().get(0).getKind());
         assertEquals(sql.replace("(1 + 2) NOT NULL", "9"), statement.toString());
         assertRoundTrip(statement);
     }

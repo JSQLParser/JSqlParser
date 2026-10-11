@@ -156,7 +156,8 @@ class ColumnAttributeTest {
         column(statement).addColumnSpecs("CUSTOM");
         assertEquals(ColumnOption.Kind.OTHER, options.get(options.size() - 1).getKind());
         column(statement).setColumnSpecs(List.of("NOT", "NULL"));
-        assertNull(column(statement).getColumnOptions());
+        assertEquals(ColumnOption.Kind.OTHER,
+                column(statement).getColumnOptions().get(0).getKind());
         assertEquals("CREATE TABLE t (c INT NOT NULL)", statement.toString());
     }
 
