@@ -9,9 +9,10 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 import java.util.Locale;
 
-public class SampleClause {
+public class SampleClause implements Serializable {
     private SampleKeyword keyword;
     private SampleMethod method;
     private Number percentageArgument;

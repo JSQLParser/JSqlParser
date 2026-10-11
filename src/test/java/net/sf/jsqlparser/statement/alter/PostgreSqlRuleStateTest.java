@@ -43,9 +43,20 @@ class PostgreSqlRuleStateTest {
                 p -> p.withDialect(Dialect.POSTGRESQL));
         RelationAlterAction triggerAction =
                 (RelationAlterAction) trigger.getAlterExpressions().get(0);
-        assertEquals(state.replace(' ', '_'), triggerAction.getTriggerState().name());
-        triggerAction.setTriggerState(RelationAlterAction.TriggerState.ENABLE_ALWAYS);
+        assertEquals(state.replace(' ', '_'), triggerAction.getEnableState().name());
+        triggerAction.setEnableState(null);
+        assertNull(triggerAction.getEnableState());
+        assertEquals(RelationAlterAction.Kind.TRIGGER_STATE, triggerAction.getKind());
+        assertEquals(RelationAlterAction.TriggerTarget.NAME, triggerAction.getTriggerTarget());
+        assertEquals("trg", triggerAction.getValue());
+        triggerAction.setEnableState(RelationAlterAction.EnableState.ENABLE_ALWAYS);
         assertEquals(RelationAlterAction.EnableState.ENABLE_ALWAYS, triggerAction.getEnableState());
+        StringBuilder triggerSql = new StringBuilder();
+        trigger.accept(new StatementDeParser(triggerSql));
+        assertEquals("ALTER TABLE t ENABLE ALWAYS TRIGGER trg", triggerSql.toString());
+        assertEquals(trigger.toString(), triggerSql.toString());
+        assertEquals(triggerSql.toString(), CCJSqlParserUtil.parse(triggerSql.toString(),
+                p -> p.withDialect(Dialect.POSTGRESQL)).toString());
         assertEquals(2, CCJSqlParserUtil.parseStatements(rule + "; SELECT 1").size());
     }
 

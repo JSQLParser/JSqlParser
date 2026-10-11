@@ -15,12 +15,8 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.foreign.ForeignDataStatement;
 
 public class AlterServer extends ForeignDataStatement {
-    public enum Action {
-        OPTIONS, OWNER, RENAME
-    }
-
     private String name;
-    private Action action = Action.OPTIONS;
+    private ForeignObjectAlterAction action = ForeignObjectAlterAction.OPTIONS;
     private String newName;
     private String owner;
     private Expression version;
@@ -33,11 +29,11 @@ public class AlterServer extends ForeignDataStatement {
         name = value;
     }
 
-    public Action getAction() {
+    public ForeignObjectAlterAction getAction() {
         return action;
     }
 
-    public void setAction(Action value) {
+    public void setAction(ForeignObjectAlterAction value) {
         action = value;
     }
 
@@ -95,7 +91,7 @@ public class AlterServer extends ForeignDataStatement {
 
     @Override
     public void visitExpressions(Consumer<Expression> visitor) {
-        if (action != Action.OPTIONS) {
+        if (action != ForeignObjectAlterAction.OPTIONS) {
             return;
         }
         super.visitExpressions(visitor);

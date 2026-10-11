@@ -29,32 +29,9 @@ public class AlterExpressionDrop extends AlterExpression {
                         .append(PlainSelect.getStringList(getPartitions()));
                 break;
             default:
-                toStringDropDefault(b);
+                toStringGeneral(b);
                 break;
         }
     }
 
-    private void toStringDropDefault(StringBuilder b) {
-        b.append("DROP ");
-        if (getColumnName() == null && getPkColumns() != null && !getPkColumns().isEmpty()) {
-            // Oracle Multi Column Drop
-            b.append("(").append(PlainSelect.getStringList(getPkColumns())).append(')');
-        } else if (getConstraintName() != null) {
-            b.append("CONSTRAINT ");
-            if (isUsingIfExists()) {
-                b.append("IF EXISTS ");
-            }
-            b.append(getConstraintName());
-        } else if (getColumnName() != null) {
-            if (hasColumn()) {
-                b.append("COLUMN ");
-            }
-            if (isUsingIfExists()) {
-                b.append("IF EXISTS ");
-            }
-            b.append(getColumnName());
-        } else if (getIndex() != null) {
-            b.append(getIndex());
-        }
-    }
 }

@@ -73,6 +73,12 @@ public final class StatementFeatures {
     /**
      * Why the analysis is uncertain: unresolved function names, dynamic SQL markers, called
      * procedure names. Resolve these against your own catalogue or allow-list.
+     *
+     * <p>
+     * The generic fallback for an unclassified statement adds no Java type name. It can report
+     * {@link StmtFeature#OPAQUE} with an empty reference set; an empty set does not prove safety.
+     * Use {@link #isOpaque()} and {@link #may(StmtFeature)} to inspect the verdict. Explicit
+     * markers remain, including the statement-type markers for stored routine declarations.
      */
     public Set<String> getUnresolvedReferences() {
         return unresolved;

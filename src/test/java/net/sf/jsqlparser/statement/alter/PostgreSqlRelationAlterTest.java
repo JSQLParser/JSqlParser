@@ -193,8 +193,8 @@ class PostgreSqlRelationAlterTest {
     void triggerTargetsAndTypeNamesAreMutableWithoutInventingTables() throws JSQLParserException {
         Alter statement = (Alter) parse("ALTER TABLE t ENABLE REPLICA TRIGGER trg");
         RelationAlterAction action = (RelationAlterAction) statement.getAlterExpressions().get(0);
-        assertEquals(RelationAlterAction.TriggerState.ENABLE_REPLICA, action.getTriggerState());
-        action.setTriggerState(RelationAlterAction.TriggerState.DISABLE);
+        assertEquals(RelationAlterAction.EnableState.ENABLE_REPLICA, action.getEnableState());
+        action.setEnableState(RelationAlterAction.EnableState.DISABLE);
         action.setTriggerTarget(RelationAlterAction.TriggerTarget.USER);
         assertEquals("ALTER TABLE t DISABLE TRIGGER USER", statement.toString());
         assertRoundTrip(statement);

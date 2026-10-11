@@ -107,12 +107,16 @@ class SqlRoutineBodyBoundaryTest {
     }
 
     @Test
-    void directStatementParserLeavesFollowingStatementAvailable() throws Exception {
+    void directSingleStatementParserLeavesFollowingStatementAvailable() throws Exception {
+        // walking a script statement by statement is SingleStatement()'s job; Statement() reads
+        // the input as exactly one statement and rejects whatever is left over
         CCJSqlParser parser = parser("CREATE FUNCTION f() RETURNS int LANGUAGE SQL RETURN 1; "
                 + FOLLOWING + ";", Dialect.POSTGRESQL);
-        assertThat(parser.Statement()).isInstanceOf(CreateFunction.class);
+        assertThat(parser.SingleStatement()).isInstanceOf(CreateFunction.class);
+        assertThat(parser.getNextToken().kind).isEqualTo(CCJSqlParserConstants.ST_SEMICOLON);
         assertThat(parser.getToken(1).kind).isEqualTo(CCJSqlParserConstants.K_SELECT);
-        assertThat(parser.Statement().toString()).isEqualTo(FOLLOWING);
+        assertThat(parser.SingleStatement().toString()).isEqualTo(FOLLOWING);
+        assertThat(parser.getNextToken().kind).isEqualTo(CCJSqlParserConstants.ST_SEMICOLON);
         assertThat(parser.getToken(1).kind).isEqualTo(CCJSqlParserConstants.EOF);
     }
 

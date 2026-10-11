@@ -16,6 +16,7 @@ import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionLi
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.deparser.StatementDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,27 @@ import org.junit.jupiter.api.Test;
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
  */
 public class CastExpressionTest {
+
+    @Test
+    void testCastToSingleFieldRow() throws JSQLParserException {
+        String sql = "SELECT CAST(ROW(1) AS ROW(x BIGINT))";
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(sql);
+        CastExpression cast = Assertions.assertInstanceOf(CastExpression.class,
+                select.getSelectItem(0).getExpression());
+        Assertions.assertEquals(1, cast.getColumnDefinitions().size());
+        Assertions.assertEquals("x", cast.getColumnDefinitions().get(0).getColumnName());
+        Assertions.assertEquals("BIGINT",
+                cast.getColumnDefinitions().get(0).getColDataType().getDataType());
+
+        Assertions.assertAll(
+                () -> assertSqlCanBeParsedAndDeparsed(sql),
+                () -> {
+                    StringBuilder builder = new StringBuilder();
+                    select.accept(new StatementDeParser(builder));
+                    Assertions.assertEquals(sql, builder.toString());
+                });
+        assertSqlCanBeParsedAndDeparsed("SELECT TRY_CAST(ROW(1) AS ROW(x BIGINT))");
+    }
 
     @Test
     public void testCastToRowConstructorIssue1267() throws JSQLParserException {
