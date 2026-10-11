@@ -14,10 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
@@ -27,6 +25,7 @@ import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
@@ -42,7 +41,6 @@ public class AlterExpression implements Serializable {
         NONE, TO, AS
     }
 
-    private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
     private AlterOperation operation;
     private String optionalSpecifier;
     private Table newTable;
@@ -67,33 +65,6 @@ public class AlterExpression implements Serializable {
     private String constraintName;
     private boolean usingIfExists;
 
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private List<String> fkColumns;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private String fkSourceSchema;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private String fkSourceTable;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private List<String> fkSourceColumns;
     private boolean uk;
     private boolean ukTypeSpecified;
     private boolean useEqual;
@@ -183,16 +154,20 @@ public class AlterExpression implements Serializable {
      */
     @Deprecated
     public String getFkSourceSchema() {
-        return fkSourceSchema;
+        Table table = getForeignKeyTable();
+        return table == null ? null : table.getSchemaName();
     }
 
     /**
+     * Updates only the referenced schema identifier, preserving its quoting and the table's other
+     * name parts. Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceSchema(String fkSourceSchema) {
-        this.fkSourceSchema = fkSourceSchema;
+        setForeignKeyTablePart(fkSourceSchema, 1);
     }
 
     public String getCommentText() {
@@ -228,8 +203,13 @@ public class AlterExpression implements Serializable {
     }
 
     /**
+     * Updates the stored foreign key's referential action without replacing its object or column
+     * list. A null action removes it. Uses the creation and replacement policy of
+     * {@link #setFkColumns(List)}.
+     *
      * @param type
      * @param action
+     * @throws IllegalStateException if a non-null action would replace a different definition
      * @deprecated Standalone FK fields are deprecated. Use a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} via
      *             {@link #setConstraint(NamedConstraint)} instead.
@@ -258,28 +238,27 @@ public class AlterExpression implements Serializable {
     }
 
     /**
+     * Returns the action owned by the stored foreign key, or null when absent. Changes to the
+     * returned object are reflected in the constraint.
+     *
      * @param type
      * @return
      * @deprecated Standalone FK fields are deprecated.
      */
     @Deprecated
     public ReferentialAction getReferentialAction(Type type) {
-        return referentialActions.stream()
-                .filter(ra -> type.equals(ra.getType()))
-                .findFirst()
-                .orElse(null);
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getReferentialAction(type);
     }
 
     private void setReferentialAction(Type type, Action action, boolean set) {
-        ReferentialAction found = getReferentialAction(type);
-        if (set) {
-            if (found == null) {
-                referentialActions.add(new ReferentialAction(type, action));
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(set && action != null);
+        if (foreignKey != null) {
+            if (set && action != null) {
+                foreignKey.setReferentialAction(type, action);
             } else {
-                found.setAction(action);
+                foreignKey.removeReferentialAction(type);
             }
-        } else if (found != null) {
-            referentialActions.remove(found);
         }
     }
 
@@ -344,21 +323,41 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getConstraint()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
+     * Returns a rendered snapshot of the stored foreign key's elements, or null when absent.
+     * Changing the snapshot does not change the constraint; use {@link #setFkColumns(List)} to
+     * replace its keys, or {@link ForeignKeyConstraint#getColumns()} for structured edits.
+     *
+     * @deprecated Use {@link #getConstraint()} with a {@link ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkColumns() {
-        return fkColumns;
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null || foreignKey.getColumns() == null ? null
+                : foreignKey.getColumnsNames();
     }
 
     /**
+     * Replaces the stored foreign key's elements with opaque names without parsing or retaining
+     * element attributes. A non-null value creates a foreign key when no definition exists, but
+     * never replaces a different constraint or an ordinary index; use
+     * {@link #setConstraint(NamedConstraint)} to replace a definition explicitly. A null value
+     * clears existing foreign-key elements without creating a constraint. Other actions and their
+     * rendering precedence are unchanged.
+     *
+     * @throws IllegalStateException if a non-null value would replace a different definition
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkColumns(List<String> fkColumns) {
-        this.fkColumns = fkColumns;
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(fkColumns != null);
+        if (foreignKey != null) {
+            if (fkColumns == null) {
+                foreignKey.setColumns(null);
+            } else {
+                foreignKey.setColumnsNames(fkColumns);
+            }
+        }
     }
 
     /**
@@ -367,16 +366,62 @@ public class AlterExpression implements Serializable {
      */
     @Deprecated
     public String getFkSourceTable() {
-        return fkSourceTable;
+        Table table = getForeignKeyTable();
+        return table == null ? null : table.getName();
     }
 
     /**
+     * Updates only the referenced table identifier, preserving its quoting and the table's other
+     * name parts. Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceTable(String fkSourceTable) {
-        this.fkSourceTable = fkSourceTable;
+        setForeignKeyTablePart(fkSourceTable, 0);
+    }
+
+    private ForeignKeyConstraint getForeignKeyConstraint() {
+        return constraint instanceof ForeignKeyConstraint ? (ForeignKeyConstraint) constraint
+                : null;
+    }
+
+    private ForeignKeyConstraint foreignKeyForUpdate(boolean create) {
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        if (foreignKey == null && create) {
+            if (constraint != null || index != null || pkColumns != null || ukColumns != null) {
+                throw new IllegalStateException(
+                        "Foreign-key setters cannot replace an existing definition; use setConstraint");
+            }
+            foreignKey = new ForeignKeyConstraint();
+            setConstraint(foreignKey);
+        }
+        return foreignKey;
+    }
+
+    private Table getForeignKeyTable() {
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getTable();
+    }
+
+    private void setForeignKeyTablePart(String value, int partIndex) {
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(value != null);
+        if (foreignKey == null || foreignKey.getTable() == null && value == null) {
+            return;
+        }
+        if (foreignKey.getTable() == null) {
+            foreignKey.setTable(new Table());
+        }
+        Table table = foreignKey.getTable();
+        // Table stores identifier parts in name-first order. Updating raw parts avoids splitting
+        // quoted identifiers containing dots and leaves the existing Table object attached.
+        List<String> parts = new ArrayList<>(table.getNameParts());
+        while (parts.size() <= partIndex) {
+            parts.add(null);
+        }
+        parts.set(partIndex, value);
+        table.setNameParts(parts);
     }
 
     public List<ColumnDataType> getColDataTypeList() {
@@ -456,21 +501,29 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getConstraint()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
+     * Returns the referenced-column list owned by the stored foreign key, or null when absent.
+     * Changes to the returned list are reflected in the constraint.
+     *
+     * @deprecated Use {@link #getConstraint()} with a {@link ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkSourceColumns() {
-        return fkSourceColumns;
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getReferencedColumnNames();
     }
 
     /**
+     * Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceColumns(List<String> fkSourceColumns) {
-        this.fkSourceColumns = fkSourceColumns;
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(fkSourceColumns != null);
+        if (foreignKey != null) {
+            foreignKey.setReferencedColumnNames(fkSourceColumns);
+        }
     }
 
     public String getNewTableName() {
@@ -677,7 +730,7 @@ public class AlterExpression implements Serializable {
         if (ukColumns != null) {
             return ConstraintKind.UNIQUE;
         }
-        return fkColumns != null ? ConstraintKind.FOREIGN_KEY : ConstraintKind.OTHER;
+        return ConstraintKind.OTHER;
     }
 
     private boolean hasColumnOrNamedTarget() {
@@ -1451,7 +1504,7 @@ public class AlterExpression implements Serializable {
         } else if (constraint != null) {
             b.append(constraint);
         } else if (index != null) {
-            // The structured index is canonical. Legacy PK/UK/FK fields may also be populated for
+            // The structured index is canonical. Legacy PK/UK fields may also be populated for
             // source compatibility, but cannot represent names, expressions, or index options.
             b.append(index);
         } else if (pkColumns != null) {
@@ -1471,21 +1524,6 @@ public class AlterExpression implements Serializable {
                 b.append(ukName);
             }
             b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
-        } else if (fkColumns != null) {
-            // @deprecated path - kept for backward compatibility when ForeignKeyConstraint is not
-            // set
-            b.append("FOREIGN KEY (")
-                    .append(PlainSelect.getStringList(fkColumns))
-                    .append(") REFERENCES ")
-                    .append(
-                            fkSourceSchema != null && fkSourceSchema.trim().length() > 0
-                                    ? fkSourceSchema + "."
-                                    : "")
-                    .append(fkSourceTable)
-                    .append(" (")
-                    .append(PlainSelect.getStringList(fkSourceColumns))
-                    .append(")");
-            referentialActions.forEach(b::append);
         }
 
         if (getConstraints() != null && !getConstraints().isEmpty()) {
@@ -1574,7 +1612,7 @@ public class AlterExpression implements Serializable {
 
     @Deprecated
     public AlterExpression withFkSourceSchema(String fkSourceSchema) {
-        this.setFkSourceTable(fkSourceSchema);
+        this.setFkSourceSchema(fkSourceSchema);
         return this;
     }
 
@@ -1643,6 +1681,7 @@ public class AlterExpression implements Serializable {
         return this.withUkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setFkColumns(List)}. */
     @Deprecated
     public AlterExpression addFkColumns(String... fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
@@ -1650,6 +1689,7 @@ public class AlterExpression implements Serializable {
         return this.withFkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setFkColumns(List)}. */
     @Deprecated
     public AlterExpression addFkColumns(Collection<String> fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);

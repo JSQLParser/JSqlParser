@@ -2072,21 +2072,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 }
             }
         }
-        if (constraint instanceof ForeignKeyConstraint) {
-            ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) constraint;
-            alterExp.setFkColumns(foreignKey.getColumnsNames());
-            if (foreignKey.getTable() != null) {
-                alterExp.setFkSourceSchema(foreignKey.getTable().getSchemaName());
-                alterExp.setFkSourceTable(foreignKey.getTable().getName());
-            }
-            alterExp.setFkSourceColumns(foreignKey.getReferencedColumnNames());
-            for (ReferentialAction.Type type : ReferentialAction.Type.values()) {
-                ReferentialAction action = foreignKey.getReferentialAction(type);
-                if (action != null) {
-                    alterExp.setReferentialAction(action.getType(), action.getAction());
-                }
-            }
-        }
     }
 
     private void requireNoDropIndexOwner(Table owner) throws ParseException {

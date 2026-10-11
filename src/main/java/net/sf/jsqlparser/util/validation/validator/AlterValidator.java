@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -76,12 +77,6 @@ public class AlterValidator extends AbstractValidator<Alter> {
                 validateOptionalColumnNames(c, e.getPkColumns());
             }
 
-            if (e.getFkColumns() != null) {
-                validateName(c, NamedObject.table, e.getFkSourceTable());
-                validateOptionalColumnNames(c, e.getFkColumns());
-                validateOptionalColumnNames(c, e.getFkSourceColumns());
-            }
-
             if (e.getUk()) {
                 validateName(c, NamedObject.uniqueConstraint, e.getUkName());
                 validateOptionalColumnNames(c, e.getUkColumns(), NamedObject.uniqueConstraint);
@@ -91,6 +86,10 @@ public class AlterValidator extends AbstractValidator<Alter> {
             if (constraint != null) {
                 validateOptionalName(c, NamedObject.constraint, constraint.getName(), null, false,
                         NamedObject.table);
+                if (constraint instanceof ForeignKeyConstraint) {
+                    validateOptionalColumnNames(c,
+                            ((ForeignKeyConstraint) constraint).getReferencedColumnNames());
+                }
                 if (constraint instanceof ConstraintUsingIndex) {
                     validateName(c, NamedObject.index,
                             ((ConstraintUsingIndex) constraint).getExistingIndexName());

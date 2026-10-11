@@ -428,6 +428,38 @@ index nodes for PRIMARY KEY/UNIQUE constraints. PostgreSQL ``USING INDEX``
 retains the existing index name on ``ConstraintUsingIndex`` rather than
 creating key elements or an index definition.
 
+An ALTER foreign key owns one ``ForeignKeyConstraint`` and its mutable
+``ForeignKeyReference``. The legacy ``getFk*``/``setFk*`` accessors and
+referential-action helpers delegate to these same nodes, so edits through
+either API affect both SQL renderers.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE child ADD FOREIGN KEY (parent_id) REFERENCES parent (id)");
+    AlterExpression action = alter.getAlterExpressions().get(0);
+    ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) action.getConstraint();
+    foreignKey.getReference().getTable().setSchemaName("archive");
+    action.setFkSourceTable("parent_history");
+    // Both APIs now refer to archive.parent_history.
+    foreignKey.setReferentialAction(ReferentialAction.Type.DELETE,
+        ReferentialAction.Action.CASCADE);
+
+New code should use the structured constraint API. ``getFkColumns()`` returns
+a rendered snapshot, like ``getPkColumns()`` and ``getUkColumns()``; use
+``setFkColumns()``/``addFkColumns()`` to replace or append names, or edit
+``foreignKey.getColumns()`` directly. Referenced-column lists and
+referential-action objects are live objects on the shared reference.
+
+A non-null legacy FK setter creates a foreign-key definition when none is
+present. It rejects an existing non-FK constraint or index with
+``IllegalStateException`` instead of retaining a second hidden definition;
+replace the definition explicitly with ``setConstraint()`` first. Reading,
+clearing or removing absent FK properties does not create a definition.
+Replacing or clearing ``setConstraint()`` also replaces or clears what the
+legacy FK accessors expose. These accessors inspect stored definitions; use
+``getOperation()``/``getConstraintKind()`` to identify the active action.
+
 Migration from the former combined model:
 
 * Replace table-constraint reads from ``getIndexes()`` with

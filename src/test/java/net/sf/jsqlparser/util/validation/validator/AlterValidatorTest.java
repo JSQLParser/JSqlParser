@@ -20,11 +20,39 @@ import net.sf.jsqlparser.util.validation.metadata.DatabaseMetaDataValidation;
 import net.sf.jsqlparser.util.validation.metadata.Named;
 import net.sf.jsqlparser.util.validation.metadata.NamedObject;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import org.junit.jupiter.api.Test;
 
 public class AlterValidatorTest extends ValidationTestAsserts {
+
+    @Test
+    void validatesForeignKeysFromTheirCurrentStructuredDefinition() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse(
+                "ALTER TABLE child ADD FOREIGN KEY (parent_id) REFERENCES old_parent (id)");
+        ForeignKeyConstraint foreignKey =
+                (ForeignKeyConstraint) alter.getAlterExpressions().get(0).getConstraint();
+        foreignKey.setTable(new Table("app", "new_parent"));
+        foreignKey.setColumnsNames(List.of("new_parent_id"));
+        foreignKey.setReferencedColumnNames(List.of("new_id"));
+        List<Named> names = new ArrayList<>();
+        DatabaseMetaDataValidation metadata = name -> {
+            names.add(name);
+            return true;
+        };
+
+        assertTrue(Validation.validate(alter, Validation.createValidationContext(
+                new FeatureConfiguration(), List.of(metadata))).isEmpty());
+        assertEquals(List.of(new Named(NamedObject.table, "child"),
+                new Named(NamedObject.table, "app.new_parent"),
+                new Named(NamedObject.column, "new_id"),
+                new Named(NamedObject.column, "new_parent_id")), names);
+    }
 
     @Test
     void validatesRenamedConstraintTargetAsANewConstraint() {
