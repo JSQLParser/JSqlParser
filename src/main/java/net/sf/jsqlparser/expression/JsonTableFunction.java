@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -93,7 +94,14 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
-            return valueExpression + " AS " + parameterName;
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            printExpression(builder, valueExpression, expressionPrinter);
+            return builder.append(" AS ").append(parameterName);
         }
     }
 
@@ -305,13 +313,22 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
             if (nestedPlanExpression != null) {
-                return "(" + nestedPlanExpression + ")";
+                builder.append("(");
+                nestedPlanExpression.appendTo(builder, expressionPrinter);
+                builder.append(")");
+            } else if (name != null) {
+                builder.append(name);
+            } else if (expression != null) {
+                expressionPrinter.accept(expression);
             }
-            if (name != null) {
-                return name;
-            }
-            return expression != null ? expression.toString() : "";
+            return builder;
         }
     }
 
@@ -348,13 +365,28 @@ public class JsonTableFunction extends Function {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
             if (!terms.isEmpty()) {
-                builder.append(terms.get(0));
+                appendTerm(builder, terms.get(0), expressionPrinter);
             }
             for (int i = 0; i < operators.size() && i + 1 < terms.size(); i++) {
-                builder.append(operators.get(i).getDisplay()).append(terms.get(i + 1));
+                builder.append(operators.get(i).getDisplay());
+                appendTerm(builder, terms.get(i + 1), expressionPrinter);
             }
-            return builder.toString();
+            return builder;
+        }
+
+        private static void appendTerm(StringBuilder builder, JsonTablePlanTerm term,
+                Consumer<Expression> expressionPrinter) {
+            if (term == null) {
+                builder.append("null");
+            } else {
+                term.appendTo(builder, expressionPrinter);
+            }
         }
     }
 
@@ -388,18 +420,36 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder("PLAN");
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            builder.append("PLAN");
             if (defaultPlan) {
                 builder.append(" DEFAULT");
             }
-            builder.append(" (").append(planExpression).append(")");
-            return builder.toString();
+            builder.append(" (");
+            if (planExpression == null) {
+                builder.append("null");
+            } else {
+                planExpression.appendTo(builder, expressionPrinter);
+            }
+            builder.append(")");
+            return builder;
         }
     }
 
     public abstract static class JsonTableColumnDefinition extends ASTNodeAccessImpl
             implements Serializable {
         public abstract void collectExpressions(List<Expression> expressions);
+
+        /** Custom column definitions retain their existing SQL renderer by default. */
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            return builder.append(this);
+        }
     }
 
     public static class JsonTableNestedColumnDefinition extends JsonTableColumnDefinition {
@@ -457,16 +507,28 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder("NESTED");
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            builder.append("NESTED");
             if (pathKeyword) {
                 builder.append(" PATH");
             }
-            builder.append(" ").append(pathExpression);
+            builder.append(" ");
+            printExpression(builder, pathExpression, expressionPrinter);
             if (pathName != null) {
                 builder.append(" AS ").append(pathName);
             }
-            builder.append(" ").append(columnsClause);
-            return builder.toString();
+            builder.append(" ");
+            if (columnsClause == null) {
+                builder.append("null");
+            } else {
+                columnsClause.appendTo(builder, expressionPrinter);
+            }
+            return builder;
         }
     }
 
@@ -626,10 +688,16 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder(columnName);
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            builder.append(columnName);
             if (forOrdinality) {
                 builder.append(" FOR ORDINALITY");
-                return builder.toString();
+                return builder;
             }
             if (dataType != null) {
                 builder.append(" ").append(dataType);
@@ -655,7 +723,8 @@ public class JsonTableFunction extends Function {
                 builder.append(" ").append(wrapperClause);
             }
             if (pathExpression != null) {
-                builder.append(" PATH ").append(pathExpression);
+                builder.append(" PATH ");
+                expressionPrinter.accept(pathExpression);
             }
             if (wrapperClause != null && !wrapperClause.isBeforePathExpression()) {
                 builder.append(" ").append(wrapperClause);
@@ -664,15 +733,21 @@ public class JsonTableFunction extends Function {
                 builder.append(" ").append(quotesClause);
             }
             if (onEmptyBehavior != null && !onEmptyAfterOnError) {
-                builder.append(" ").append(onEmptyBehavior).append(" ON EMPTY");
+                builder.append(" ");
+                onEmptyBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON EMPTY");
             }
             if (onErrorBehavior != null) {
-                builder.append(" ").append(onErrorBehavior).append(" ON ERROR");
+                builder.append(" ");
+                onErrorBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON ERROR");
             }
             if (onEmptyBehavior != null && onEmptyAfterOnError) {
-                builder.append(" ").append(onEmptyBehavior).append(" ON EMPTY");
+                builder.append(" ");
+                onEmptyBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON EMPTY");
             }
-            return builder.toString();
+            return builder;
         }
     }
 
@@ -699,17 +774,27 @@ public class JsonTableFunction extends Function {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder("COLUMNS (");
+            StringBuilder builder = new StringBuilder();
+            return appendTo(builder, builder::append).toString();
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
+            builder.append("COLUMNS (");
             boolean first = true;
             for (JsonTableColumnDefinition columnDefinition : columnDefinitions) {
                 if (!first) {
                     builder.append(", ");
                 }
-                builder.append(columnDefinition);
+                if (columnDefinition == null) {
+                    builder.append("null");
+                } else {
+                    columnDefinition.appendTo(builder, expressionPrinter);
+                }
                 first = false;
             }
             builder.append(")");
-            return builder.toString();
+            return builder;
         }
     }
 
@@ -834,13 +919,19 @@ public class JsonTableFunction extends Function {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("JSON_TABLE(");
-        builder.append(jsonInputExpression);
+        StringBuilder builder = new StringBuilder();
+        return appendTo(builder, builder::append).toString();
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        builder.append("JSON_TABLE(");
+        printExpression(builder, jsonInputExpression, expressionPrinter);
         if (formatJson) {
             builder.append(" FORMAT JSON");
         }
         if (jsonPathExpression != null) {
-            builder.append(", ").append(jsonPathExpression);
+            builder.append(", ");
+            expressionPrinter.accept(jsonPathExpression);
         }
         if (pathName != null) {
             builder.append(" AS ").append(pathName);
@@ -852,7 +943,11 @@ public class JsonTableFunction extends Function {
                 if (!first) {
                     builder.append(", ");
                 }
-                builder.append(passingClause);
+                if (passingClause == null) {
+                    builder.append("null");
+                } else {
+                    passingClause.appendTo(builder, expressionPrinter);
+                }
                 first = false;
             }
         }
@@ -865,14 +960,30 @@ public class JsonTableFunction extends Function {
         if (onEmptyClause != null) {
             builder.append(" ").append(onEmptyClause);
         }
-        builder.append(" ").append(columnsClause);
+        builder.append(" ");
+        if (columnsClause == null) {
+            builder.append("null");
+        } else {
+            columnsClause.appendTo(builder, expressionPrinter);
+        }
         if (planClause != null) {
-            builder.append(" ").append(planClause);
+            builder.append(" ");
+            planClause.appendTo(builder, expressionPrinter);
         }
         if (onErrorClause != null && !onErrorClause.isBeforeColumns()) {
             builder.append(" ").append(onErrorClause);
         }
         builder.append(")");
-        return builder.toString();
+        return builder;
     }
+
+    private static void printExpression(StringBuilder builder, Expression expression,
+            Consumer<Expression> expressionPrinter) {
+        if (expression == null) {
+            builder.append("null");
+        } else {
+            expressionPrinter.accept(expression);
+        }
+    }
+
 }

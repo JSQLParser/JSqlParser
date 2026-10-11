@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
@@ -153,14 +154,18 @@ public class JsonKeyValuePair implements Serializable {
     }
 
     public StringBuilder append(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         if (isUsingKeyKeyword() && getSeparator() == JsonKeyValuePairSeparator.VALUE) {
             builder.append("KEY ");
         }
-        builder.append(getKey());
+        appendValue(builder, getKey(), expressionPrinter);
 
         if (getValue() != null) {
             builder.append(getSeparator().getSeparatorString());
-            builder.append(getValue());
+            appendValue(builder, getValue(), expressionPrinter);
         }
 
         if (isUsingFormatJson()) {
@@ -171,6 +176,15 @@ public class JsonKeyValuePair implements Serializable {
         }
 
         return builder;
+    }
+
+    private static void appendValue(StringBuilder builder, Object value,
+            Consumer<Expression> expressionPrinter) {
+        if (value instanceof Expression) {
+            expressionPrinter.accept((Expression) value);
+        } else {
+            builder.append(value);
+        }
     }
 
     @Override

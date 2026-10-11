@@ -926,6 +926,49 @@ Statement lists and nested blocks share the separator policy used by
 semicolon settings. Custom deparsers receive each child statement and the
 ``IF/ELSE`` condition through the visitor API, with the supplied context.
 
+Customize JSON expression output
+--------------------------------
+
+``ExpressionDeParser`` visits structured children of ``JsonFunction`` and
+``JsonTableFunction`` while rendering them. A custom expression printer can
+rewrite inputs, paths, PASSING values and DEFAULT expressions, including nested
+JSON_TABLE columns, without changing the AST. JSON object keys and values are
+visited when they are ``Expression`` objects; opaque objects and additional
+query-path strings retain their existing rendering.
+
+.. code-block:: java
+
+    Statement statement = CCJSqlParserUtil.parse(
+            "SELECT JSON_VALUE((SELECT doc FROM source_table), '$.a')");
+    ExpressionDeParser expressions = new ExpressionDeParser() {
+        @Override
+        public <S> StringBuilder visit(Column column, S context) {
+            return getBuilder().append("payload");
+        }
+    };
+    statement.accept(new StatementDeParser(expressions, new SelectDeParser(),
+            expressions.getBuilder()), null);
+    // SELECT JSON_VALUE((SELECT payload FROM source_table), '$.a')
+
+``StatementDeParser`` connects the select and expression printers, so subqueries
+inside JSON expressions use the same printer. For expression-only use with
+subqueries, connect an appropriate ``SelectDeParser`` explicitly.
+
+JSON nodes also expose ``appendTo(StringBuilder, Consumer<Expression>)`` for
+direct rendering. The consumer prints each child into the same builder;
+``ExpressionDeParser`` forwards the visitor context through that callback.
+``JsonFunction`` additionally has consumer overloads of ``appendObject``,
+``appendArray``, ``appendValue``, ``appendQuery`` and ``appendExists``.
+
+Subclass migration: override these consumer overloads or ``appendTo`` to
+customize both default and visitor output. The deparser enters through ``appendTo``;
+overriding only a legacy single-argument ``append*`` or ``toString()`` method does
+not customize that path. ``JsonFunction`` also uses the consumer overloads for
+type-specific default rendering. Subclasses of concrete JSON_TABLE column
+definitions should move ``toString()`` customization
+to ``appendTo``. Direct subclasses of the abstract ``JsonTableColumnDefinition``
+retain their opaque ``toString()`` fallback until they override ``appendTo``.
+
 
 ODBC timestamp intervals
 ==============================

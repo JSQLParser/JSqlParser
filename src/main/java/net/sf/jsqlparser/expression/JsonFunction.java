@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
@@ -77,6 +78,11 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         }
 
         public StringBuilder append(StringBuilder builder) {
+            return appendTo(builder, builder::append);
+        }
+
+        public StringBuilder appendTo(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
             switch (type) {
                 case ERROR:
                     builder.append("ERROR");
@@ -85,7 +91,12 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                     builder.append("NULL");
                     break;
                 case DEFAULT:
-                    builder.append("DEFAULT ").append(expression);
+                    builder.append("DEFAULT ");
+                    if (expression == null) {
+                        builder.append("null");
+                    } else {
+                        expressionPrinter.accept(expression);
+                    }
                     break;
                 case EMPTY:
                     builder.append("EMPTY ");
@@ -389,23 +400,28 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
 
     // avoid countless Builder --> String conversion
     public StringBuilder append(StringBuilder builder) {
+        return appendTo(builder, builder::append);
+    }
+
+    /** Renders structured children through the supplied expression printer. */
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         switch (functionType) {
             case OBJECT:
             case POSTGRES_OBJECT:
             case MYSQL_OBJECT:
-                appendObject(builder);
+                appendObject(builder, expressionPrinter);
                 break;
             case ARRAY:
-                appendArray(builder);
+                appendArray(builder, expressionPrinter);
                 break;
             case VALUE:
-                appendValue(builder);
+                appendValue(builder, expressionPrinter);
                 break;
             case QUERY:
-                appendQuery(builder);
+                appendQuery(builder, expressionPrinter);
                 break;
             case EXISTS:
-                appendExists(builder);
+                appendExists(builder, expressionPrinter);
                 break;
             default:
                 // this should never happen really
@@ -413,15 +429,20 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendObject(StringBuilder builder) {
+        return appendObject(builder, builder::append);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendObject(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         builder.append("JSON_OBJECT( ");
         int i = 0;
         for (JsonKeyValuePair keyValuePair : keyValuePairs) {
             if (i > 0) {
                 builder.append(", ");
             }
-            keyValuePair.append(builder);
+            keyValuePair.appendTo(builder, expressionPrinter);
             i++;
         }
 
@@ -467,8 +488,13 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         }
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendArray(StringBuilder builder) {
+        return appendArray(builder, builder::append);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendArray(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         builder.append("JSON_ARRAY( ");
         int i = 0;
 
@@ -476,7 +502,7 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
             if (i > 0) {
                 builder.append(", ");
             }
-            expr.append(builder);
+            expr.appendTo(builder, expressionPrinter);
             i++;
         }
 
@@ -487,33 +513,43 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendValue(StringBuilder builder) {
+        return appendValue(builder, builder::append);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendValue(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         builder.append("JSON_VALUE(");
-        appendValueOrQueryPrefix(builder);
+        appendValueOrQueryPrefix(builder, expressionPrinter);
 
         if (returningType != null) {
             builder.append(" RETURNING ").append(returningType);
         }
 
-        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY");
-        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY", expressionPrinter);
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR", expressionPrinter);
 
         builder.append(")");
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendQuery(StringBuilder builder) {
+        return appendQuery(builder, builder::append);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendQuery(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         builder.append("JSON_QUERY(");
-        appendValueOrQueryPrefix(builder);
+        appendValueOrQueryPrefix(builder, expressionPrinter);
 
         appendReturningClause(builder, true);
 
         appendWrapperClause(builder);
         appendQuotesClause(builder);
-        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY");
-        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+        appendOnResponseClause(builder, onEmptyBehavior, "EMPTY", expressionPrinter);
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR", expressionPrinter);
 
         for (String additionalQueryPathArgument : additionalQueryPathArguments) {
             builder.append(", ").append(additionalQueryPathArgument);
@@ -523,25 +559,31 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public StringBuilder appendExists(StringBuilder builder) {
+        return appendExists(builder, builder::append);
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public StringBuilder appendExists(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         builder.append("JSON_EXISTS(");
-        appendValueOrQueryPrefix(builder);
-        appendOnResponseClause(builder, onErrorBehavior, "ERROR");
+        appendValueOrQueryPrefix(builder, expressionPrinter);
+        appendOnResponseClause(builder, onErrorBehavior, "ERROR", expressionPrinter);
         builder.append(")");
         return builder;
     }
 
-    private void appendValueOrQueryPrefix(StringBuilder builder) {
+    private void appendValueOrQueryPrefix(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
         if (inputExpression != null) {
-            inputExpression.append(builder);
+            inputExpression.appendTo(builder, expressionPrinter);
         }
 
         if (jsonPathExpression != null) {
             if (inputExpression != null) {
                 builder.append(", ");
             }
-            builder.append(jsonPathExpression);
+            expressionPrinter.accept(jsonPathExpression);
         }
 
         if (!passingExpressions.isEmpty()) {
@@ -553,16 +595,20 @@ public class JsonFunction extends ASTNodeAccessImpl implements Expression {
                 } else {
                     comma = true;
                 }
-                builder.append(passingExpression);
+                if (passingExpression == null) {
+                    builder.append("null");
+                } else {
+                    expressionPrinter.accept(passingExpression);
+                }
             }
         }
     }
 
     private void appendOnResponseClause(StringBuilder builder, JsonOnResponseBehavior behavior,
-            String clause) {
+            String clause, Consumer<Expression> expressionPrinter) {
         if (behavior != null) {
             builder.append(" ");
-            behavior.append(builder);
+            behavior.appendTo(builder, expressionPrinter);
             builder.append(" ON ").append(clause);
         }
     }
