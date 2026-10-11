@@ -2055,9 +2055,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         alterExp.setConstraint(constraint);
         if (constraint instanceof KeyConstraint && constraint.getKind() == ConstraintKind.UNIQUE) {
             KeyConstraint key = (KeyConstraint) constraint;
-            alterExp.setUkName(key.getIndexName());
-            alterExp.setUk(key.getType().toUpperCase(Locale.ROOT).contains("KEY"));
-            alterExp.setUkTypeSpecified(key.getIndexKeyword() != null);
             // Preserve generic ALTER's historical placement of USING and COMMENT options.
             if (!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
                     && !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
@@ -18074,7 +18071,7 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             )
             |
             (
-                tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
+                tk=<K_UNIQUE> (tk2=<K_KEY> | tk2=<K_INDEX>)?
                   clustering=SqlServerIndexClustering()
                   columnNames=ColumnsNamesList()
                   {
@@ -18138,7 +18135,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
             // Oracle Multi Column Drop
-            columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+            columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
             [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
             [
                 "CASCADE" { alterExp.addParameters("CASCADE"); }
@@ -18167,7 +18164,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
            tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
-           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
         )
         |
@@ -18178,7 +18175,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
            tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
-           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
         )
         |

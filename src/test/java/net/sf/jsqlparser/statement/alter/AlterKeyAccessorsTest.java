@@ -152,17 +152,20 @@ class AlterKeyAccessorsTest {
     }
 
     @Test
-    void retainsLegacyOnlyConstructionAndIgnoresUnrelatedIndexes() {
+    void legacyConstructionUsesASingleDefinitionAndRejectsUnrelatedIndexes() {
         AlterExpression action = new AlterExpression().withOperation(AlterOperation.ADD)
                 .withPkColumns(new ArrayList<>(List.of("a")));
         action.getPkColumns().add("b");
+        assertEquals("ADD PRIMARY KEY (a)", action.toString());
+        action.addPkColumns("b");
         assertEquals("ADD PRIMARY KEY (a, b)", action.toString());
+        assertSame(action.getConstraint(), action.getKeyConstraint());
         Index unrelated = new Index().withType("INDEX").withColumnsNames(List.of("other"));
         action.setIndex(unrelated);
-        action.setPkColumns(List.of("pk"));
-        action.setUkColumns(List.of("uk"));
-        assertEquals(List.of("pk"), action.getPkColumns());
-        assertEquals(List.of("uk"), action.getUkColumns());
+        assertThrows(IllegalStateException.class, () -> action.setPkColumns(List.of("pk")));
+        assertThrows(IllegalStateException.class, () -> action.setUkColumns(List.of("uk")));
+        assertNull(action.getPkColumns());
+        assertNull(action.getUkColumns());
         assertEquals(List.of("other"), unrelated.getColumnsNames());
     }
 }
