@@ -699,6 +699,27 @@ public class JsonTableFunction extends Function {
                 builder.append(" FOR ORDINALITY");
                 return builder;
             }
+            appendTypeOptions(builder);
+            appendPathOptions(builder, expressionPrinter);
+            if (onEmptyBehavior != null && !onEmptyAfterOnError) {
+                builder.append(" ");
+                onEmptyBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON EMPTY");
+            }
+            if (onErrorBehavior != null) {
+                builder.append(" ");
+                onErrorBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON ERROR");
+            }
+            if (onEmptyBehavior != null && onEmptyAfterOnError) {
+                builder.append(" ");
+                onEmptyBehavior.appendTo(builder, expressionPrinter);
+                builder.append(" ON EMPTY");
+            }
+            return builder;
+        }
+
+        private void appendTypeOptions(StringBuilder builder) {
             if (dataType != null) {
                 builder.append(" ").append(dataType);
             }
@@ -719,6 +740,10 @@ public class JsonTableFunction extends Function {
             if (exists) {
                 builder.append(" EXISTS");
             }
+        }
+
+        private void appendPathOptions(StringBuilder builder,
+                Consumer<Expression> expressionPrinter) {
             if (wrapperClause != null && wrapperClause.isBeforePathExpression()) {
                 builder.append(" ").append(wrapperClause);
             }
@@ -732,22 +757,6 @@ public class JsonTableFunction extends Function {
             if (quotesClause != null) {
                 builder.append(" ").append(quotesClause);
             }
-            if (onEmptyBehavior != null && !onEmptyAfterOnError) {
-                builder.append(" ");
-                onEmptyBehavior.appendTo(builder, expressionPrinter);
-                builder.append(" ON EMPTY");
-            }
-            if (onErrorBehavior != null) {
-                builder.append(" ");
-                onErrorBehavior.appendTo(builder, expressionPrinter);
-                builder.append(" ON ERROR");
-            }
-            if (onEmptyBehavior != null && onEmptyAfterOnError) {
-                builder.append(" ");
-                onEmptyBehavior.appendTo(builder, expressionPrinter);
-                builder.append(" ON EMPTY");
-            }
-            return builder;
         }
     }
 
@@ -925,32 +934,8 @@ public class JsonTableFunction extends Function {
 
     public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         builder.append("JSON_TABLE(");
-        printExpression(builder, jsonInputExpression, expressionPrinter);
-        if (formatJson) {
-            builder.append(" FORMAT JSON");
-        }
-        if (jsonPathExpression != null) {
-            builder.append(", ");
-            expressionPrinter.accept(jsonPathExpression);
-        }
-        if (pathName != null) {
-            builder.append(" AS ").append(pathName);
-        }
-        if (!passingClauses.isEmpty()) {
-            builder.append(" PASSING ");
-            boolean first = true;
-            for (JsonTablePassingClause passingClause : passingClauses) {
-                if (!first) {
-                    builder.append(", ");
-                }
-                if (passingClause == null) {
-                    builder.append("null");
-                } else {
-                    passingClause.appendTo(builder, expressionPrinter);
-                }
-                first = false;
-            }
-        }
+        appendInputAndPath(builder, expressionPrinter);
+        appendPassingClauses(builder, expressionPrinter);
         if (onErrorClause != null && onErrorClause.isBeforeColumns()) {
             builder.append(" ").append(onErrorClause);
         }
@@ -975,6 +960,40 @@ public class JsonTableFunction extends Function {
         }
         builder.append(")");
         return builder;
+    }
+
+    private void appendInputAndPath(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
+        printExpression(builder, jsonInputExpression, expressionPrinter);
+        if (formatJson) {
+            builder.append(" FORMAT JSON");
+        }
+        if (jsonPathExpression != null) {
+            builder.append(", ");
+            expressionPrinter.accept(jsonPathExpression);
+        }
+        if (pathName != null) {
+            builder.append(" AS ").append(pathName);
+        }
+    }
+
+    private void appendPassingClauses(StringBuilder builder,
+            Consumer<Expression> expressionPrinter) {
+        if (!passingClauses.isEmpty()) {
+            builder.append(" PASSING ");
+            boolean first = true;
+            for (JsonTablePassingClause passingClause : passingClauses) {
+                if (!first) {
+                    builder.append(", ");
+                }
+                if (passingClause == null) {
+                    builder.append("null");
+                } else {
+                    passingClause.appendTo(builder, expressionPrinter);
+                }
+                first = false;
+            }
+        }
     }
 
     private static void printExpression(StringBuilder builder, Expression expression,
