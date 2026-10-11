@@ -14,8 +14,10 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -1060,6 +1062,34 @@ public class TablesNamesFinderTest {
                 "UPDATE MY_TABLE1 SET A = 1 ORDER BY (SELECT B FROM MY_TABLE2) LIMIT 2";
         assertThat(TablesNamesFinder.findTables(sqlStr)).containsExactlyInAnyOrder("MY_TABLE1",
                 "MY_TABLE2");
+    }
+
+    @Test
+    void testManyDerivedNamesDoNotScaleQuadratically() throws JSQLParserException {
+        // Each aliased WITH item is remembered in otherItemNames and every plain table
+        // reference used to be matched against it with a linear ArrayList.contains, so a
+        // statement with n CTE aliases and n tables cost O(n^2) to walk.
+        final int n = 30000;
+        final StringBuilder sb = new StringBuilder("WITH ");
+        for (int i = 0; i < n; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append("a").append(i).append(" AS (SELECT 1)");
+        }
+        sb.append(" SELECT * FROM ");
+        for (int i = 0; i < n; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append("t").append(i);
+        }
+
+        // Parsing is linear and left outside the timed region; only the table walk is measured.
+        final Statement statement = CCJSqlParserUtil.parse(sb.toString());
+        final Set<String> tables = assertTimeoutPreemptively(Duration.ofSeconds(2),
+                () -> new TablesNamesFinder<>().getTables(statement));
+        assertEquals(n, tables.size());
     }
 
 }

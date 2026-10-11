@@ -15,8 +15,10 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 public class AddAliasesVisitorTest {
 
@@ -67,5 +69,25 @@ public class AddAliasesVisitorTest {
 
         assertEquals("SELECT 3 + 4 AS A1 FROM test UNION SELECT 7 + 8 AS A1 FROM test2",
                 setOpList.toString());
+    }
+
+    @Test
+    public void testManySelectItemsDoNotScaleQuadratically() throws JSQLParserException {
+        // Generated aliases were checked against the already-used ones with a linear
+        // LinkedList.contains, so adding aliases to a select with m items cost O(m^2).
+        final int m = 50000;
+        final StringBuilder sb = new StringBuilder("SELECT ");
+        for (int i = 0; i < m; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append("c").append(i);
+        }
+        sb.append(" FROM t");
+
+        // Parsing is left outside the timed region; only the alias walk is measured.
+        final Select select = (Select) parserManager.parse(new StringReader(sb.toString()));
+        assertTimeoutPreemptively(Duration.ofSeconds(2),
+                () -> select.accept(new AddAliasesVisitor<>(), null));
     }
 }

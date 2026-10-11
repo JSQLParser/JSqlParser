@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -265,7 +266,7 @@ public class TablesNamesFinder<Void>
     private boolean allowColumnProcessing = false;
     private Set<String> rowPatternVariables = java.util.Collections.emptySet();
 
-    private List<String> otherItemNames;
+    private Set<String> otherItemNames;
 
     public static Set<String> findTables(String sqlStr) throws JSQLParserException {
         TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
@@ -1309,7 +1310,7 @@ public class TablesNamesFinder<Void>
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
-        otherItemNames = new ArrayList<String>();
+        otherItemNames = new LinkedHashSet<String>();
         tables = new HashSet<>();
         this.allowColumnProcessing = allowColumnProcessing;
         this.rowPatternVariables = java.util.Collections.emptySet();
