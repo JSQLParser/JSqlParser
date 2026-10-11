@@ -526,6 +526,36 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    void testParseRejectsUnconsumedInput() throws Exception {
+        // "\n\n\n" separates statements exactly like ";" does, so both inputs below hold
+        // two statements; a single statement parse must not silently return the first only
+        String newlineSeparated = "SELECT a FROM dual WHERE x = ?\n\n\n AND y = ?";
+        String semicolonSeparated = "SELECT a FROM dual; SELECT b FROM dual";
+
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(newlineSeparated));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(semicolonSeparated));
+        assertThrows(ParseException.class,
+                () -> CCJSqlParserUtil.newParser(newlineSeparated).Statement());
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                .parse(new ByteArrayInputStream(
+                        newlineSeparated.getBytes(StandardCharsets.UTF_8))));
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parseAST(newlineSeparated));
+
+        // trailing separators and comments do not make a statement incomplete
+        assertEquals("SELECT a FROM dual",
+                CCJSqlParserUtil.parse("SELECT a FROM dual;").toString());
+        assertEquals("SELECT a FROM dual",
+                CCJSqlParserUtil.parse("SELECT a FROM dual\n\n\n").toString());
+        assertEquals("SELECT a FROM dual",
+                CCJSqlParserUtil.parse("SELECT a FROM dual -- done").toString());
+
+        // the multi statement API keeps working
+        assertEquals(2, CCJSqlParserUtil.parseStatements(semicolonSeparated).size());
+        assertEquals(3, CCJSqlParserUtil.parseStatements(
+                "SELECT * FROM DUAL\n\n\nSELECT * FROM DUAL\n\n\n\nSELECT * FROM dual").size());
+    }
+
+    @Test
     void testSingleStatementWithEmptyLines() throws JSQLParserException {
         String sqlStr = "update shop_info set title=?,\n"
                 + "\n"

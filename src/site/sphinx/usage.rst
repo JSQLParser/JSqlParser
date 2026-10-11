@@ -288,6 +288,29 @@ These named targets do not populate the legacy ``getPkColumns()`` list.
     AlterExpression checkDrop = new AlterExpression()
         .withOperation(AlterOperation.DROP_CHECK).withConstraintName("positive_id");
 
+Shared CASCADE and RESTRICT behavior
+------------------------------------
+
+``AlterDomain``, ``AlterType`` (including ``AttributeChange``), ``DropPolicy``,
+``Truncate`` and ``Revoke`` use ``net.sf.jsqlparser.statement.CascadeBehavior``
+for their explicit ``CASCADE`` and ``RESTRICT`` clauses. A null value preserves
+an omitted clause; it does not insert an explicit ``RESTRICT``.
+
+.. code-block:: java
+
+    import net.sf.jsqlparser.statement.CascadeBehavior;
+
+    truncate.setDropBehavior(CascadeBehavior.RESTRICT);
+    revoke.setBehavior(truncate.getDropBehavior());
+    revoke.setBehavior(null); // Omit the clause and leave the server default unchanged.
+
+Migration: the nested enums ``AlterDomain.Behavior``, ``AlterType.Behavior``,
+``DropPolicy.Behavior``, ``Truncate.DropBehavior`` and ``Revoke.Behavior`` have
+been removed. Replace their imports and enum references with ``CascadeBehavior``.
+The existing getter and setter names remain, but their return and parameter types
+have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
+clears the clause. Foreign-key referential actions retain their separate enum.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
@@ -345,6 +368,37 @@ bare ``RESTART``, which uses the sequence's configured start value. Call
 ``setRestartWith`` to edit a parsed action or construct one with
 ``new IdentityAlteration(Kind.RESTART).withRestartWith(20L)``.
 
+
+Column defaults on tables and views
+-----------------------------------
+
+``AlterExpression.getColumnDefaults()`` exposes active ``SET DEFAULT`` actions
+through ``ColumnDefaultAction`` for both tables and views. The returned list is
+read-only, but its entries are the original mutable AST objects:
+
+.. code-block:: java
+
+    for (String objectType : List.of("TABLE", "VIEW")) {
+        Statement statement = CCJSqlParserUtil.parse(
+                "ALTER " + objectType + " t ALTER COLUMN a SET DEFAULT 1",
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        List<? extends AlterExpression> actions = statement instanceof Alter
+                ? ((Alter) statement).getAlterExpressions()
+                : ((AlterRelation) statement).getActions();
+        for (AlterExpression action : actions) {
+            for (ColumnDefaultAction column : action.getColumnDefaults()) {
+                column.setDefaultExpression(new LongValue(42));
+            }
+        }
+        System.out.println(statement); // SET DEFAULT 42 for either object type
+    }
+
+``getColumnName()`` and ``setColumnName()`` access the affected column.
+``getDefaultExpression()`` exposes parsed expressions; ``getDefaultValue()``
+returns their SQL text. Existing ``ColumnSetDefault`` constructors still accept
+opaque strings, for which ``getDefaultExpression()`` returns ``null``.
+Replacing an expression also replaces any opaque value. Unrelated actions
+return an empty list.
 
 Structured column attributes
 ============================
@@ -574,7 +628,7 @@ Convenience methods wrap the common combinations:
     features.modifiesSchema();     // is(MODIFIES_SCHEMA)
     features.isOpaque();           // CALL, EXECUTE, dynamic SQL
 
-When something is merely *possible*, the analysis tells you **why**, so you can resolve it against your own catalogue or allow-list rather than guessing:
+When the analysis identifies an unresolved function, procedure or dynamic SQL marker, it records the reference so you can consult your own catalogue or allow-list:
 
 .. code-block:: java
     :caption: Safeguarding a read-only connection
@@ -586,6 +640,10 @@ When something is merely *possible*, the analysis tells you **why**, so you can 
                 "rejected, unresolved: " + features.getUnresolvedReferences());
         // e.g. [nextval]
     }
+
+The generic fallback for an unclassified statement preserves ``OPAQUE`` and the possible effects ``READS_DATA``, ``RETURNS_RESULT_SET``, ``MODIFIES_DATA`` and ``MODIFIES_SCHEMA``, but does not add a Java statement or container class name to ``getUnresolvedReferences()``. The reference set can therefore be empty while the effects remain unknown. Check ``isOpaque()`` and ``may(..)``; an empty reference set alone does not establish safety.
+
+Existing explicit references and markers remain, including procedure and function names, ``do``, ``unsupported`` and ``explain``. Stored routine declarations also retain their existing statement-type markers, such as ``createfunction``; these are independent of the generic fallback.
 
 If you can prove some functions side-effect free, hand in a predicate and the uncertainty collapses:
 
@@ -782,7 +840,12 @@ open. These empty-input results replace the previous null returns of these metho
 By default a syntax error aborts the whole parse. Two features let a script survive one bad statement:
 
 - ``parser.withErrorRecovery(true)`` skips to the next statement separator and returns an empty statement.
-- ``parser.withUnsupportedStatements(true)`` returns an ``UnsupportedStatement`` holding the raw text instead — though the **first** statement must be a regular one.
+- ``parser.withUnsupportedStatements(true)`` captures an unrecognised statement root as
+  ``UnsupportedStatement``; it may be the first statement. Failures in recognised statement
+  grammar still throw, or use ``withErrorRecovery(true)`` and record the error. Thus
+  ``SELECT * FROM``, ``INSERT INTO t (a`` and ``UPDATE t SET`` do not become opaque statements.
+  The two options serve different purposes; enabling unsupported capture does not suppress
+  recognised syntax errors.
 
 .. code-block:: java
     :caption: Error Recovery
@@ -802,18 +865,26 @@ By default a syntax error aborts the whole parse. Two features let a script surv
     :caption: Unsupported Statement
 
     Statements statements = CCJSqlParserUtil.parseStatements(
-            "select * from mytable; select from; select * from mytable2; select 4;"
+            "select * from mytable; shutdown defrag; select * from mytable2; select 4;"
             , parser -> parser.withUnsupportedStatements() );
 
     // 4 statements with one Unsupported Statement holding the content
     assertEquals(4, statements.size());
     assertInstanceOf(UnsupportedStatement.class, statements.get(1));
-    assertEquals("select from", statements.get(1).toString());
+    assertEquals("shutdown defrag", statements.get(1).toString());
 
     // no errors records, because a statement has been returned
     assertEquals(0, parser.getParseErrors().size());
 
 .. note::
+
+    Opaque capture is not SQL validation. An unrecognised root or an existing opaque
+    grammar branch cannot establish validity in an unknown dialect. Callers that need
+    validity must validate against that dialect. Recognised syntax failures formerly
+    captured by the generic fallback now throw or produce an error-recovery placeholder;
+    partial IF results and typed prefixes with invalid trailing clauses are not published
+    as successful statements. ``SingleStatement()`` remains an incremental entry point;
+    use ``Statement()`` or ``Statements()`` to check complete statement boundaries.
 
     An ``UnsupportedStatement`` is reported as ``OPAQUE`` by :ref:`Classify a Statement` — nothing about its effects is knowable.
 
@@ -1268,6 +1339,51 @@ References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html
 `REVOKE <https://www.postgresql.org/docs/18/sql-revoke.html>`_,
 `ALTER DEFAULT PRIVILEGES <https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html>`_,
 `CREATE TRIGGER <https://www.postgresql.org/docs/18/sql-createtrigger.html>`_.
+
+Migrating shared ALTER enums
+----------------------------
+
+``AlterServer.Action`` and ``AlterForeignDataWrapper.Action`` have been replaced
+by ``ForeignObjectAlterAction`` in ``net.sf.jsqlparser.statement.alter``. Both
+statements' ``getAction()`` and ``setAction()`` now use this enum, with the same
+``OPTIONS``, ``OWNER`` and ``RENAME`` constants. Update imports and recompile code
+using these APIs; the removed nested enums are not compatibility aliases.
+
+.. code-block:: java
+
+    AlterServer server = (AlterServer) CCJSqlParserUtil.parse(
+        "ALTER SERVER s VERSION NULL");
+    server.setAction(ForeignObjectAlterAction.OWNER);
+    server.setOwner("CURRENT_USER");
+    // ALTER SERVER s OWNER TO CURRENT_USER
+
+    AlterForeignDataWrapper wrapper = (AlterForeignDataWrapper) CCJSqlParserUtil.parse(
+        "ALTER FOREIGN DATA WRAPPER w NO HANDLER");
+    wrapper.setAction(ForeignObjectAlterAction.OWNER);
+    wrapper.setOwner("CURRENT_USER");
+    // ALTER FOREIGN DATA WRAPPER w OWNER TO CURRENT_USER
+
+``OPTIONS`` remains the initial action. It includes server ``VERSION`` changes
+and wrapper handler/validator changes as well as foreign-data options. These
+payloads remain on their respective statement classes. Switching to ``OWNER`` or
+``RENAME`` leaves the inactive payload available for switching back to ``OPTIONS``.
+
+``RelationAlterAction.TriggerState``, ``getTriggerState()`` and
+``setTriggerState()`` have been removed. Use the existing
+``RelationAlterAction.EnableState``, ``getEnableState()`` and ``setEnableState()``
+for both trigger and rewrite-rule actions:
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE t ENABLE REPLICA TRIGGER trg",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    RelationAlterAction trigger = (RelationAlterAction) alter.getAlterExpressions().get(0);
+    trigger.setEnableState(RelationAlterAction.EnableState.DISABLE);
+    // ALTER TABLE t DISABLE TRIGGER trg
+
+The action's ``Kind`` still distinguishes ``TRIGGER_STATE`` from ``RULE_STATE``.
+Trigger targets also retain their ``NAME``, ``ALL`` and ``USER`` distinctions.
 
 Oracle anonymous blocks
 -----------------------

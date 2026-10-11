@@ -9,13 +9,17 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.PartitionBound;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
@@ -82,24 +86,137 @@ public class AlterExpressionPartition extends AlterExpression {
         return partitioning;
     }
 
+    /**
+     * Replaces the complete partitioning clause. Legacy partition-key accessors delegate to this
+     * object while it is present. Passing {@code null} clears the clause and its legacy values.
+     */
     public void setPartitioning(TablePartitioning partitioning) {
         this.partitioning = partitioning;
-        if (partitioning != null) {
-            setPartitionType(partitioning.getType() != null
-                    ? partitioning.getType().toString()
+        super.setPartitionType(null);
+        super.setPartitionExpression(null);
+        super.setPartitionColumns(null);
+        super.setPartitionDefinitions(null);
+    }
+
+    @Override
+    public String getPartitionType() {
+        if (partitioning == null) {
+            return super.getPartitionType();
+        }
+        return partitioning.getType() != null ? partitioning.getType().toString() : null;
+    }
+
+    @Override
+    public void setPartitionType(String partitionType) {
+        if (partitioning == null) {
+            super.setPartitionType(partitionType);
+        } else {
+            partitioning.setType(partitionType != null
+                    ? TablePartitioning.Type.valueOf(partitionType.toUpperCase(Locale.ROOT))
                     : null);
-            setPartitionExpression(partitioning.getExpression() != null
-                    ? partitioning.getExpression()
-                    : partitioning.getExpressionList());
-            if (partitioning.getColumns() != null) {
-                List<String> partitionColumns = new ArrayList<>();
-                partitioning.getColumns().forEach(
-                        column -> partitionColumns.add(column.getFullyQualifiedName()));
-                setPartitionColumns(partitionColumns);
+        }
+    }
+
+    @Override
+    public Expression getPartitionExpression() {
+        if (partitioning == null) {
+            return super.getPartitionExpression();
+        }
+        return partitioning.getExpression() != null ? partitioning.getExpression()
+                : partitioning.getExpressionList();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setPartitionExpression(Expression partitionExpression) {
+        if (partitioning == null) {
+            super.setPartitionExpression(partitionExpression);
+        } else if (partitionExpression instanceof ExpressionList) {
+            partitioning.setExpressionList((ExpressionList<Expression>) partitionExpression);
+            partitioning.setColumnsSyntax(false);
+        } else {
+            partitioning.setExpression(partitionExpression);
+            if (partitionExpression == null) {
+                partitioning.setExpressionList(null);
             } else {
-                setPartitionColumns(null);
+                partitioning.setColumnsSyntax(false);
             }
-            setPartitionDefinitions(partitioning.getPartitionDefinitions());
+        }
+    }
+
+    /**
+     * Returns a mutable view of the structured column names when a partitioning clause is set.
+     */
+    @Override
+    public List<String> getPartitionColumns() {
+        if (partitioning == null) {
+            return super.getPartitionColumns();
+        }
+        ExpressionList<Column> columns = partitioning.getColumns();
+        if (columns == null) {
+            return null;
+        }
+        return new AbstractList<String>() {
+            @Override
+            public String get(int index) {
+                return columns.get(index).getFullyQualifiedName();
+            }
+
+            @Override
+            public int size() {
+                return columns.size();
+            }
+
+            @Override
+            public String set(int index, String column) {
+                return columns.set(index, columnWithName(column)).getFullyQualifiedName();
+            }
+
+            @Override
+            public void add(int index, String column) {
+                columns.add(index, columnWithName(column));
+            }
+
+            @Override
+            public String remove(int index) {
+                return columns.remove(index).getFullyQualifiedName();
+            }
+        };
+    }
+
+    @Override
+    public void setPartitionColumns(List<String> partitionColumns) {
+        if (partitioning == null) {
+            super.setPartitionColumns(partitionColumns);
+        } else if (partitionColumns == null) {
+            partitioning.setColumns(null);
+        } else {
+            ExpressionList<Column> columns = new ExpressionList<>();
+            partitionColumns.forEach(column -> columns.add(columnWithName(column)));
+            partitioning.setColumns(columns);
+            partitioning.setColumnsSyntax(partitioning.getType() == TablePartitioning.Type.RANGE
+                    || partitioning.getType() == TablePartitioning.Type.LIST);
+        }
+    }
+
+    private static Column columnWithName(String name) {
+        Column column = new Column();
+        column.setName(name, false);
+        return column;
+    }
+
+    @Override
+    public List<PartitionDefinition> getPartitionDefinitions() {
+        return partitioning != null ? partitioning.getPartitionDefinitions()
+                : super.getPartitionDefinitions();
+    }
+
+    @Override
+    public void setPartitionDefinitions(List<PartitionDefinition> partitionDefinitions) {
+        if (partitioning == null) {
+            super.setPartitionDefinitions(partitionDefinitions);
+        } else {
+            partitioning.setPartitionDefinitions(partitionDefinitions);
         }
     }
 

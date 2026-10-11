@@ -11,17 +11,14 @@ package net.sf.jsqlparser.statement.grant;
 
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
 public class Revoke implements Statement {
-    public enum Behavior {
-        CASCADE, RESTRICT
-    }
-
     private PrivilegeClause clause = new PrivilegeClause();
     private GrantOption.Kind optionFor;
-    private Behavior behavior;
+    private CascadeBehavior behavior;
 
     public PrivilegeClause getClause() {
         return clause;
@@ -39,11 +36,11 @@ public class Revoke implements Statement {
         this.optionFor = optionFor;
     }
 
-    public Behavior getBehavior() {
+    public CascadeBehavior getBehavior() {
         return behavior;
     }
 
-    public void setBehavior(Behavior behavior) {
+    public void setBehavior(CascadeBehavior behavior) {
         this.behavior = behavior;
     }
 
