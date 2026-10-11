@@ -346,6 +346,37 @@ bare ``RESTART``, which uses the sequence's configured start value. Call
 ``new IdentityAlteration(Kind.RESTART).withRestartWith(20L)``.
 
 
+Column defaults on tables and views
+-----------------------------------
+
+``AlterExpression.getColumnDefaults()`` exposes active ``SET DEFAULT`` actions
+through ``ColumnDefaultAction`` for both tables and views. The returned list is
+read-only, but its entries are the original mutable AST objects:
+
+.. code-block:: java
+
+    for (String objectType : List.of("TABLE", "VIEW")) {
+        Statement statement = CCJSqlParserUtil.parse(
+                "ALTER " + objectType + " t ALTER COLUMN a SET DEFAULT 1",
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        List<? extends AlterExpression> actions = statement instanceof Alter
+                ? ((Alter) statement).getAlterExpressions()
+                : ((AlterRelation) statement).getActions();
+        for (AlterExpression action : actions) {
+            for (ColumnDefaultAction column : action.getColumnDefaults()) {
+                column.setDefaultExpression(new LongValue(42));
+            }
+        }
+        System.out.println(statement); // SET DEFAULT 42 for either object type
+    }
+
+``getColumnName()`` and ``setColumnName()`` access the affected column.
+``getDefaultExpression()`` exposes parsed expressions; ``getDefaultValue()``
+returns their SQL text. Existing ``ColumnSetDefault`` constructors still accept
+opaque strings, for which ``getDefaultExpression()`` returns ``null``.
+Replacing an expression also replaces any opaque value. Unrelated actions
+return an empty list.
+
 Structured column attributes
 ============================
 
