@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -238,6 +239,11 @@ public class RelationAlterAction extends AlterExpression
 
     public void setResetOptions(List<String> resetOptions) {
         this.resetOptions = resetOptions;
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
     }
 
     @Override

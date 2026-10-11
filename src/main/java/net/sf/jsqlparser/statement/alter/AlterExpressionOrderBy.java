@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -26,6 +28,11 @@ public class AlterExpressionOrderBy extends AlterExpression {
 
     public List<OrderByElement> getOrderByElements() {
         return orderByElements;
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
     }
 
     @Override
