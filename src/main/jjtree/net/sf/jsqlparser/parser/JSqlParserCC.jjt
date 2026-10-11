@@ -2178,6 +2178,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Checks for IS [NOT] TRUE/FALSE/UNKNOWN using at most three tokens.
+     */
+    protected boolean isTruthValueTestAhead() {
+        if (getToken(1).kind != K_IS) {
+            return false;
+        }
+        int offset = getToken(2).kind == K_NOT ? 3 : 2;
+        int kind = getToken(offset).kind;
+        return kind == K_TRUE || kind == K_FALSE || kind == K_UNKNOWN;
+    }
+
+    /**
      * Checks if the next token can start a condition suffix
      * (comparison, IN, BETWEEN, LIKE, IS NULL, etc.)
      *
@@ -2195,6 +2207,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         if ("?".equals(t.image) && isTernaryAhead()) return false;
         if (isComparisonOperator(t)) return true;
         switch (t.kind) {
+            case K_IS:
+                // Truth tests are consumed after the complete predicate in Condition().
+                return !isTruthValueTestAhead();
             // Each suffix's start token:
             case K_OVERLAPS:          // OVERLAPS
             case K_IN:                // IN
@@ -2203,7 +2218,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_INCLUDES:          // INCLUDES (...)
             case K_BETWEEN:           // BETWEEN
             case K_MEMBER:            // MEMBER OF
-            case K_IS:                // IS [NOT] NULL / TRUE / FALSE / UNKNOWN / DISTINCT
             case K_ISNULL:            // ISNULL
             case K_NOTNULL:           // NOTNULL
             case K_LIKE:              // LIKE
@@ -10482,15 +10496,18 @@ Expression Condition():
                     | LOOKAHEAD(2) result=Between(left)
                     | LOOKAHEAD(2) result = MemberOfExpression(left)
                     | LOOKAHEAD(3) result=IsNullExpression(left)
-                    | LOOKAHEAD(3) result=IsBooleanExpression(left)
                     | LOOKAHEAD(3) result=IsJsonExpression(left)
-                    | LOOKAHEAD(3) result=IsUnknownExpression(left)
                     | LOOKAHEAD(2) result=LikeExpression(left)
                     | LOOKAHEAD(3) result=IsDistinctExpression(left)
                     | result=SimilarToExpression(left)
                 )
             ]
     )
+    // Truth tests wrap the complete predicate and bind before leading NOT.
+    [
+        LOOKAHEAD({ getToken(1).kind == K_IS && isTruthValueTestAhead() })
+        result=TruthValueTest(result)
+    ]
     {
         if (oraclePrior == EqualsTo.ORACLE_PRIOR_START
                 && result instanceof SupportsOldOracleJoinSyntax) {
@@ -10859,6 +10876,23 @@ Expression IsNullExpression(Expression leftExpression):
     {
         result.setLeftExpression(leftExpression);
         return result;
+    }
+}
+
+Expression TruthValueTest(Expression leftExpression):
+{
+    Token truthValue;
+    boolean not = false;
+}
+{
+    <K_IS> [<K_NOT> { not = true; }]
+    (truthValue=<K_TRUE> | truthValue=<K_FALSE> | truthValue=<K_UNKNOWN>)
+    {
+        if (truthValue.kind == K_UNKNOWN) {
+            return new IsUnknownExpression().withLeftExpression(leftExpression).withNot(not);
+        }
+        return new IsBooleanExpression().withLeftExpression(leftExpression).withNot(not)
+                .withIsTrue(truthValue.kind == K_TRUE);
     }
 }
 
