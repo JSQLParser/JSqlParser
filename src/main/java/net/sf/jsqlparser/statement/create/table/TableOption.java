@@ -17,7 +17,11 @@ import java.util.List;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.schema.Table;
 
-/** A structured option following a {@code CREATE TABLE} definition. */
+/**
+ * A shared CREATE/ALTER TABLE option with either opaque tokens or structured properties. Setting
+ * non-null tokens discards all structured properties. A structured setter discards the tokens;
+ * their contents are never parsed or restored by a later setter.
+ */
 public class TableOption implements Serializable {
 
     private ForeignTableOptions foreignTableOptions;
@@ -38,9 +42,17 @@ public class TableOption implements Serializable {
         return foreignTableOptions;
     }
 
+    /** Replaces the current contents with a structured PostgreSQL SERVER clause. */
+    public void setForeignTableOptions(ForeignTableOptions options) {
+        clearContents();
+        kind = Kind.FOREIGN_SERVER;
+        name = "SERVER";
+        foreignTableOptions = options;
+    }
+
     public static TableOption foreignServer(ForeignTableOptions options) {
-        TableOption option = new TableOption(Kind.FOREIGN_SERVER, "SERVER", null, false);
-        option.foreignTableOptions = options;
+        TableOption option = new TableOption();
+        option.setForeignTableOptions(options);
         return option;
     }
 
@@ -48,11 +60,21 @@ public class TableOption implements Serializable {
         return tablespaceStorage;
     }
 
+    /**
+     * Sets the TABLESPACE storage modifier. A non-null modifier selects TABLESPACE and discards
+     * another option's contents; an existing TABLESPACE keeps its name, value and equals spelling.
+     */
     public void setTablespaceStorage(ColumnOption.Storage storage) {
         if (storage != null && storage != ColumnOption.Storage.DISK
                 && storage != ColumnOption.Storage.MEMORY) {
             throw new IllegalArgumentException("TABLESPACE storage must be DISK or MEMORY");
         }
+        if (storage != null && kind != Kind.TABLESPACE) {
+            clearContents();
+            kind = Kind.TABLESPACE;
+            name = "TABLESPACE";
+        }
+        tokens = null;
         tablespaceStorage = storage;
     }
 
@@ -61,14 +83,10 @@ public class TableOption implements Serializable {
     }
 
     public void setStorageParameters(List<IndexOption> storageParameters) {
+        clearContents();
         this.storageParameters = storageParameters;
-        foreignTableOptions = null;
-        tablespaceStorage = null;
         kind = Kind.STORAGE_PARAMETERS;
         name = "WITH";
-        value = null;
-        tokens = null;
-        unionTables = null;
     }
 
     public void appendTo(StringBuilder builder,
@@ -76,7 +94,7 @@ public class TableOption implements Serializable {
         if (foreignTableOptions != null) {
             foreignTableOptions.appendTo(builder, expressionPrinter);
         } else if (storageParameters != null) {
-            builder.append("WITH ");
+            builder.append(name).append(useEquals ? " = " : " ");
             IndexOption.appendListTo(builder, storageParameters, expressionPrinter);
         } else {
             builder.append(toString());
@@ -108,6 +126,7 @@ public class TableOption implements Serializable {
     }
 
     public void setKind(Kind kind) {
+        tokens = null;
         this.kind = kind;
         if (kind != Kind.TABLESPACE) {
             tablespaceStorage = null;
@@ -128,6 +147,7 @@ public class TableOption implements Serializable {
     }
 
     public void setName(String name) {
+        tokens = null;
         this.name = name;
     }
 
@@ -142,6 +162,7 @@ public class TableOption implements Serializable {
     }
 
     public void setValue(String value) {
+        tokens = null;
         this.value = value;
         foreignTableOptions = null;
         unionTables = null;
@@ -155,14 +176,12 @@ public class TableOption implements Serializable {
 
     /** Replaces raw option contents with structured UNION table references. */
     public void setUnionTables(List<Table> unionTables) {
+        boolean equals = useEquals;
+        clearContents();
         this.unionTables = unionTables;
-        foreignTableOptions = null;
-        tablespaceStorage = null;
         kind = Kind.UNION;
         name = "UNION";
-        value = null;
-        tokens = null;
-        storageParameters = null;
+        useEquals = equals;
     }
 
     public TableOption withUnionTables(List<Table> unionTables) {
@@ -175,10 +194,14 @@ public class TableOption implements Serializable {
     }
 
     public void setUseEquals(boolean useEquals) {
+        tokens = null;
         this.useEquals = useEquals;
     }
 
-    /** Returns the original token groups used by the legacy table-options API. */
+    /**
+     * Returns the original, mutable token list for an opaque option, or an unmodifiable snapshot of
+     * the current structured properties. Editing tokens does not classify or parse them.
+     */
     public List<String> getTokens() {
         if (tokens != null) {
             return tokens;
@@ -201,14 +224,27 @@ public class TableOption implements Serializable {
         return Collections.unmodifiableList(result);
     }
 
+    /**
+     * Replaces all structured properties with opaque tokens and {@link Kind#OTHER}. Null clears
+     * opaque tokens without restoring discarded properties; it leaves structured options alone.
+     */
     public void setTokens(List<String> tokens) {
-        this.tokens = tokens;
         if (tokens != null) {
-            tablespaceStorage = null;
-            foreignTableOptions = null;
-            unionTables = null;
-            storageParameters = null;
+            clearContents();
         }
+        this.tokens = tokens;
+    }
+
+    private void clearContents() {
+        kind = Kind.OTHER;
+        name = null;
+        value = null;
+        useEquals = false;
+        tokens = null;
+        tablespaceStorage = null;
+        foreignTableOptions = null;
+        unionTables = null;
+        storageParameters = null;
     }
 
     public TableOption withKind(Kind kind) {
