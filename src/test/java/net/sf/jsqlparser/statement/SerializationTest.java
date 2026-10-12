@@ -12,9 +12,11 @@ package net.sf.jsqlparser.statement;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.SpannerInterleaveIn;
@@ -34,6 +36,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class SerializationTest {
+    @Test
+    void deserializeSelectFromBeforeLeadingCommentsAccessor() throws Exception {
+        try (InputStream serialized = getClass().getResourceAsStream(
+                "/net/sf/jsqlparser/parser/plain-select-066f581e.ser")) {
+            Assertions.assertNotNull(serialized);
+            try (ObjectInputStream in = new ObjectInputStream(serialized)) {
+                PlainSelect select =
+                        Assertions.assertInstanceOf(PlainSelect.class, in.readObject());
+                Assertions.assertNull(select.getASTNode());
+                Assertions.assertEquals(List.of(), select.getLeadingComments());
+            }
+        }
+    }
+
     @Test
     void serializeWithItem() throws JSQLParserException, IOException, ClassNotFoundException {
         String sqlStr =
