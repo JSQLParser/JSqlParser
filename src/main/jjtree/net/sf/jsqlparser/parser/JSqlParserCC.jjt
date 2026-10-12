@@ -2601,6 +2601,7 @@ String NonReservedWord() :
       | tk=<K_KEYS:"KEYS">
       | tk=<K_KILL:"KILL">
       | tk=<K_FN:"FN">
+      | tk=<K_LAMBDA: "LAMBDA">
       | tk=<K_LAST: "LAST">
       | tk=<K_LEADING:"LEADING">
       | tk=<K_LESS:"LESS">
@@ -11430,6 +11431,10 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD({ !interrupted && isCharacterSetIntroducedStringAhead() })
                   retval=CharacterSetIntroducedString()
 
+        // DuckDB's lambda x, y : expr, before Column() which would take LAMBDA as a column name
+        | LOOKAHEAD( <K_LAMBDA> RelObjectName() ( "," RelObjectName() )* ":", {!interrupted} )
+                  retval=DuckDBLambdaExpression()
+
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
             [
                 LOOKAHEAD( "(" "+" ")" ("," | ")") )
@@ -13258,6 +13263,28 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     expression = Expression()
     {
         lambdaExpression = LambdaExpression.from(columns, expression);
+        linkAST(lambdaExpression,jjtThis);
+        return lambdaExpression;
+    }
+}
+
+/**
+ * DuckDB's lambda syntax, lambda x, y : expr, equivalent to (x, y) -> expr.
+ */
+LambdaExpression DuckDBLambdaExpression() #LambdaExpression:
+{
+    List<String> identifiers = new ArrayList<String>();
+    String s;
+    Expression expression;
+    LambdaExpression lambdaExpression;
+}
+{
+    <K_LAMBDA> s = RelObjectName() { identifiers.add(s); }
+    ( "," s = RelObjectName() { identifiers.add(s); } )*
+    ":"
+    expression = Expression()
+    {
+        lambdaExpression = new LambdaExpression(identifiers, expression).setLambdaKeyword(true);
         linkAST(lambdaExpression,jjtThis);
         return lambdaExpression;
     }
