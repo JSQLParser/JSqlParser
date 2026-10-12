@@ -91,6 +91,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 @Execution(ExecutionMode.CONCURRENT)
 public class SelectTest {
 
+    private static final String LONG_CONDITION = "B = 1 AND ".repeat(150) + "B = 1";
+
     private final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
     @Test
@@ -5360,6 +5362,18 @@ public class SelectTest {
     public void testSetOperationWithParenthesisIssue1094() throws JSQLParserException {
         assertSqlCanBeParsedAndDeparsed(
                 "SELECT * FROM ((SELECT A FROM tbl) UNION DISTINCT (SELECT B FROM tbl2)) AS union1");
+    }
+
+    @Test
+    public void testSetOperationWithParenthesisAndLongFirstBranch() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM ((SELECT A FROM tbl WHERE " + LONG_CONDITION
+                + ") UNION ALL (SELECT A FROM tbl2)) AS union1");
+    }
+
+    @Test
+    public void testSetOperationInExpressionWithLongFirstBranch() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM tbl WHERE A IN ((SELECT A FROM tbl2 WHERE "
+                + LONG_CONDITION + ") UNION ALL (SELECT A FROM tbl3))");
     }
 
     @Test

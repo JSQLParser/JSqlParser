@@ -765,27 +765,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             if (getToken(2).kind != OPENING_BRACKET) return false;
             // Skip any run of opening brackets: ( ( ( ... ( SELECT
-            int i = 3;
-            while (getToken(i).kind == OPENING_BRACKET) i++;
-            int k = getToken(i).kind;
-            if (k != K_SELECT && k != K_WITH && k != K_VALUES) return false;
-            // Scan forward counting brackets to find the matching ) for token(2)
-            // We are now inside all the opening brackets; depth = number of brackets skipped - 1
-            // (token(1) is the outer one, token(2..i-1) are the inner ones we scanned)
-            int depth = i - 2; // brackets from position 2 to i-1 inclusive
-            i++;
-            while (i <= 500) {
-                Token t; try { t = getToken(i); } catch (TokenMgrException e) { return false; }
-                if (t == null || t.kind == 0) return false;
-                if (t.kind == OPENING_BRACKET) depth++;
-                else if (t.kind == CLOSING_BRACKET) {
-                    if (--depth == 0) break;
-                }
-                i++;
-            }
-            if (i > 500) return false;
-            // Token at position i+1 follows the innermost closing )
-            Token next; try { next = getToken(i + 1); } catch (TokenMgrException e) { return false; }
+            Token innerOpen = getToken(2);
+            Token t = innerOpen;
+            while (t.kind == OPENING_BRACKET) t = nextWithItemToken(t);
+            if (t.kind != K_SELECT && t.kind != K_WITH && t.kind != K_VALUES) return false;
+            // Follow the token chain directly; repeated getToken(i) calls rescan from the start each time
+            Token next = skipBalancedBracketGroup(innerOpen);
             if (next == null) return false;
             return next.kind == K_UNION || next.kind == K_INTERSECT ||
                    next.kind == K_EXCEPT || next.kind == K_MINUS;
