@@ -62,4 +62,14 @@ public class KeywordsTest {
         assertSqlCanBeParsedAndDeparsed("SELECT a groups FROM mytable", true);
         assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (groups INT)", true);
     }
+
+    // ERRORS introduces Exasol's IMPORT/EXPORT error clauses but is an ordinary name elsewhere,
+    // e.g. a DuckDB column holding the errors of an upstream step.
+    @Test
+    public void testErrorsAsIdentifier() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT errors FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.errors AS errors FROM mytable t", true);
+        assertSqlCanBeParsedAndDeparsed("WITH errors AS (SELECT 1) SELECT * FROM errors", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (errors VARCHAR)", true);
+    }
 }
