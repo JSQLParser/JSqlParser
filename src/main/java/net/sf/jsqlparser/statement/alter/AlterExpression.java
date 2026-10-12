@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.TableElement;
 import net.sf.jsqlparser.statement.create.table.IndexOptionSource;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 import net.sf.jsqlparser.statement.create.table.PartitionDefinition;
@@ -822,8 +823,12 @@ public class AlterExpression implements Serializable {
     }
 
     private boolean hasColumnOrNamedTarget() {
+        return oldIndex != null || hasGeneralBodyTarget();
+    }
+
+    private boolean hasGeneralBodyTarget() {
         return columnName != null || colDataTypeList != null || constraintName != null
-                || oldIndex != null || commentText != null || columnSetNotNullList != null
+                || commentText != null || columnSetNotNullList != null
                 || columnDropNotNullList != null
                 || columnDropDefaultList != null && !columnDropDefaultList.isEmpty();
     }
@@ -835,12 +840,30 @@ public class AlterExpression implements Serializable {
      */
     public boolean hasActiveTableDefinition() {
         return operation == AlterOperation.ADD && (constraint != null || index != null)
-                && !(constraintType != null && constraintSymbol != null)
-                && !isRenameOperation() && commentText == null && columnName == null
-                && colDataTypeList == null && columnSetNotNullList == null
-                && columnDropNotNullList == null
-                && (columnDropDefaultList == null || columnDropDefaultList.isEmpty())
-                && constraintName == null;
+                && usesGeneralBody() && !hasGeneralBodyTarget();
+    }
+
+    /**
+     * Returns the original definition contributing to the current body, or null when another
+     * payload takes precedence. A legacy constraint header renders only its key elements, not every
+     * option of the returned definition. Stored definitions remain available through
+     * {@link #getConstraint()} and {@link #getIndex()}.
+     */
+    public TableElement getActiveTableDefinition() {
+        if (hasActiveConstraintHeader()) {
+            return operation == AlterOperation.ADD && constraint instanceof KeyConstraint
+                    ? constraint
+                    : null;
+        }
+        if (!usesGeneralBody() || hasGeneralBodyTarget()) {
+            return null;
+        }
+        return constraint != null ? constraint : index;
+    }
+
+    /** Whether the selected body renders the legacy constraint header. */
+    public boolean hasActiveConstraintHeader() {
+        return hasExplicitConstraintHeader();
     }
 
     /** Sets an index definition or target; a non-null value replaces any constraint definition. */
@@ -1166,7 +1189,7 @@ public class AlterExpression implements Serializable {
     protected void appendBody(StringBuilder b) {
         if (operation == AlterOperation.UNSPECIFIC) {
             b.append(optionalSpecifier);
-        } else if (hasExplicitConstraintHeader()) {
+        } else if (hasActiveConstraintHeader()) {
             toStringConstraintAlter(b);
         } else if (usesColumnActionBody()) {
             toStringAlterColumn(b);
@@ -1197,7 +1220,7 @@ public class AlterExpression implements Serializable {
      * overriding {@link #appendBody(StringBuilder)} must reflect their dispatch here as well.
      */
     protected boolean usesColumnActionBody() {
-        return hasAlterColumnValueActions() && !hasExplicitConstraintHeader();
+        return hasAlterColumnValueActions() && !hasActiveConstraintHeader();
     }
 
     /**
@@ -1206,8 +1229,13 @@ public class AlterExpression implements Serializable {
      * deparsing. Subclasses with their own body dispatch override this method accordingly.
      */
     public boolean hasActiveColumnDefinitions() {
-        return hasColumnDefinitionPayload() && operation != AlterOperation.UNSPECIFIC
-                && !hasExplicitConstraintHeader() && !usesColumnActionBody()
+        return hasColumnDefinitionPayload() && usesGeneralBody();
+    }
+
+    /** Whether this action selects the general body, before choosing its active payload. */
+    protected boolean usesGeneralBody() {
+        return operation != AlterOperation.UNSPECIFIC
+                && !hasActiveConstraintHeader() && !usesColumnActionBody()
                 && !isSimpleKeywordOperation() && !isRenameOperation() && !isDropSpecialOperation()
                 && operation != AlterOperation.CONVERT && operation != AlterOperation.COLLATE
                 && !isPartitionOperation();
