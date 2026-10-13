@@ -27,30 +27,30 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
 
     public <S> void deParse(Limit limit, S context) {
         builder.append(" LIMIT ");
-        if (limit.isLimitNull()) {
-            builder.append("NULL");
+        if (limit.isLimitNull() || limit.isLimitAll()) {
+            builder.append(limit.isLimitNull() ? "NULL" : "ALL");
+            appendPercentUnit(limit);
         } else {
-            if (limit.isLimitAll()) {
-                builder.append("ALL");
-            } else {
-                if (null != limit.getOffset()) {
-                    limit.getOffset().accept(expressionVisitor, context);
-                    builder.append(", ");
-                }
+            if (null != limit.getOffset()) {
+                limit.getOffset().accept(expressionVisitor, context);
+                builder.append(", ");
+            }
 
-                if (null != limit.getRowCount()) {
-                    limit.getRowCount().accept(expressionVisitor, context);
-                    if (limit.getPercentUnit() != null) {
-                        builder.append("%".equals(limit.getPercentUnit()) ? "%"
-                                : " " + limit.getPercentUnit());
-                    }
-                }
+            if (null != limit.getRowCount()) {
+                limit.getRowCount().accept(expressionVisitor, context);
+                appendPercentUnit(limit);
             }
         }
 
         if (limit.getByExpressions() != null) {
             builder.append(" BY ");
             limit.getByExpressions().accept(expressionVisitor, context);
+        }
+    }
+
+    private void appendPercentUnit(Limit limit) {
+        if (limit.getPercentUnit() != null) {
+            builder.append("%".equals(limit.getPercentUnit()) ? "%" : " " + limit.getPercentUnit());
         }
     }
 

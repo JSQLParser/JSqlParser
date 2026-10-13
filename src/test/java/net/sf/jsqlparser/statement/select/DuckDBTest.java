@@ -872,13 +872,20 @@ public class DuckDBTest {
                 "SELECT a FROM t LIMIT 10.5%", "SELECT a FROM t LIMIT 40 PERCENT",
                 "SELECT a FROM t LIMIT 50% OFFSET 2", "SELECT a FROM t LIMIT (SELECT 10)%",
                 "SELECT * FROM (SELECT a FROM t LIMIT 10%) x",
+                "SELECT a FROM t LIMIT (SELECT a FROM u LIMIT 5%)", "SELECT a FROM t LIMIT NULL%",
                 // modulo and a column named offset are unchanged
-                "SELECT a FROM t LIMIT 10 % 3", "SELECT a FROM t LIMIT a % offset"}) {
+                "SELECT a FROM t LIMIT 10 % 3", "SELECT a FROM t LIMIT a % offset",
+                "SELECT a FROM t LIMIT a % offset + 1", "SELECT a FROM t LIMIT a % offset OFFSET 2",
+                "SELECT a FROM t LIMIT (SELECT a % offset + 1 FROM u)"}) {
             TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         }
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse("SELECT a FROM t LIMIT 10%");
         Assertions.assertEquals("%", select.getLimit().getPercentUnit());
         Assertions.assertEquals("10", select.getLimit().getRowCount().toString());
+
+        select = (PlainSelect) CCJSqlParserUtil.parse("SELECT a FROM t LIMIT a % offset + 1");
+        Assertions.assertNull(select.getLimit().getPercentUnit());
+        Assertions.assertNull(select.getOffset());
     }
 
     @Test
@@ -891,5 +898,9 @@ public class DuckDBTest {
                 "SELECT a FROM range(10) r USING SAMPLE 10%"}) {
             TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
         }
+        // after DuckDB's TABLESAMPLE n, OFFSET belongs to the query
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT a FROM t TABLESAMPLE 10 OFFSET 3");
+        Assertions.assertEquals("3", select.getOffset().getOffset().toString());
     }
 }

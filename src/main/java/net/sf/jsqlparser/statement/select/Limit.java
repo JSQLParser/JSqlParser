@@ -100,7 +100,7 @@ public class Limit extends ASTNodeAccessImpl {
 
         if (rowCount instanceof AllValue || rowCount instanceof NullValue) {
             // no offset allowed
-            retVal += rowCount;
+            retVal += rowCount + percentUnitToString();
         } else {
             if (null != offset) {
                 retVal += offset + ", ";
