@@ -687,6 +687,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else {
                 // Handle unnamed tokens by image
                 String img = t.image;
+                // DuckDB's LIMIT 10%: the % ends the row count instead of starting a modulo
+                if (t == limitPercentToken) break;
                 if      ("*".equals(img) || "%".equals(img))                  prec = 6;
                 else if ("+".equals(img) || "-".equals(img) || "&".equals(img)) prec = 5;
                 else break; // not an arithmetic operator
@@ -1527,6 +1529,51 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || "OPTIONS".equalsIgnoreCase(token.image))) {
                 return false;
             }
+        }
+    }
+
+    // the % of DuckDB's LIMIT 10% in the LIMIT clause being parsed, which ends its row count
+    private Token limitPercentToken = null;
+
+    /**
+     * Finds the % that ends the row count of the LIMIT clause starting after the current token:
+     * at its top level and directly followed by the end of the clause, as in LIMIT 10% OFFSET 2.
+     */
+    private Token findLimitPercentToken() {
+        int depth = 0;
+        for (Token token = nextWithItemToken(getToken(0));; token = nextWithItemToken(token)) {
+            if (token.kind == EOF || token.kind == ST_SEMICOLON) {
+                return null;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)) {
+                if (--depth < 0) {
+                    return null;
+                }
+            } else if (depth == 0 && "%".equals(token.image)
+                    && isLimitClauseEnd(nextWithItemToken(token))) {
+                return token;
+            }
+        }
+    }
+
+    /** Whether the token ends a LIMIT clause; OFFSET and FETCH only when they start a clause. */
+    private boolean isLimitClauseEnd(Token token) {
+        switch (token.kind) {
+            case EOF: case ST_SEMICOLON: case CLOSING_BRACKET:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+                return true;
+            case K_OFFSET:
+                // not a column named offset, as in LIMIT a % offset + 1
+                Token value = nextWithItemToken(token);
+                return value.kind == S_LONG || value.kind == OPENING_BRACKET
+                        || "?".equals(value.image) || ":".equals(value.image);
+            case K_FETCH:
+                Token next = nextWithItemToken(token);
+                return next.kind == K_FIRST || next.kind == K_NEXT;
+            default:
+                return false;
         }
     }
 
@@ -7146,9 +7193,13 @@ SampleClause SampleClause():
         )
         |
         (
-            // SQL:2016 compliant
+            // SQL:2016 compliant; DuckDB: the method is optional and may be reservoir
             token = <K_TABLESAMPLE> { keyword = token.image; }
-            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+            [
+                LOOKAHEAD({ isSampleMethod(getToken(1)) })
+                ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+                { method = token.image; }
+            ]
         )
         |
         (
@@ -7189,7 +7240,8 @@ SampleClause SampleClause():
                 <K_ROWS> { percentageUnit="ROWS"; }
             )
         ]
-        [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
+        // ClickHouse's SAMPLE k OFFSET m; after DuckDB's TABLESAMPLE n, OFFSET belongs to the query
+        [ LOOKAHEAD(2, { !"TABLESAMPLE".equalsIgnoreCase(keyword) }) <K_OFFSET> offsetArgument = Number() ]
     )
 
     // DuckDB: USING SAMPLE 10 PERCENT (bernoulli[, seed])
@@ -10311,11 +10363,17 @@ Limit LimitWithOffset() #LimitWithOffset:
 }
 {
     <K_LIMIT>
-    (
-        LOOKAHEAD(3) firstExpression = ParenthesedSelect()
-        |
-        firstExpression = Expression()
-    )
+    { Token outerLimitPercentToken = limitPercentToken; }
+    try {
+        { limitPercentToken = findLimitPercentToken(); }
+        (
+            LOOKAHEAD(3) firstExpression = ParenthesedSelect()
+            |
+            firstExpression = Expression()
+        )
+    } finally {
+        limitPercentToken = outerLimitPercentToken;
+    }
     (
         // MySQL: LIMIT offset, row_count
         ","
@@ -10325,10 +10383,15 @@ Limit LimitWithOffset() #LimitWithOffset:
             limit.setRowCount(secondExpression);
         }
         |
-        // PostgreSQL: LIMIT row_count
+        // PostgreSQL: LIMIT row_count; DuckDB: LIMIT 10% or LIMIT 10 PERCENT
         {
             limit.setRowCount(firstExpression);
         }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_PERCENT
+                    || "%".equals(getToken(1).image) && isLimitClauseEnd(getToken(2)) })
+            ( "%" { limit.setPercentUnit("%"); } | <K_PERCENT> { limit.setPercentUnit("PERCENT"); } )
+        ]
     )
     {
         linkAST(limit, jjtThis);
