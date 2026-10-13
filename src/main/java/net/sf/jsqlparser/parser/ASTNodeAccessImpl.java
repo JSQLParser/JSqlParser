@@ -17,8 +17,6 @@ import java.util.TreeSet;
 
 public class ASTNodeAccessImpl implements ASTNodeAccess {
 
-    private static final long serialVersionUID = 3920262240331742793L;
-
     private transient Node node;
 
     @Override
