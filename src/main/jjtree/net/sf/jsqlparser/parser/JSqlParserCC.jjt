@@ -331,6 +331,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** DuckDB's and PostgreSQL's {@code ~~}, {@code ~~*}, {@code !~~}, {@code !~~*} and {@code ~~~}. */
+    protected static boolean isLikeOperator(Token token) {
+        return token.image != null
+                && (token.image.startsWith("~~") || token.image.startsWith("!~~"));
+    }
+
     protected static boolean isComparisonOperator(Token token) {
         if (token.image == null || token.image.isEmpty()) {
             return false;
@@ -339,12 +345,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case '>': // >, >=
             case '=': // =, =* but not => Oracle/PostgreSQL named parameter syntax
                 return !token.image.equals("=>");
-            case '~': // ~, ~*
-                return true;
+            case '~': // ~, ~* but not the ~~ LIKE operators
+                return !token.image.startsWith("~~");
             case '<': // <, <=, <>, <@, <->, <#>, <=>, <&
                 return true;
             case '*': return token.image.equals("*=");
-            case '!': return token.image.startsWith("!~") || token.image.startsWith("!=");
+            case '!': return (token.image.startsWith("!~") && !token.image.startsWith("!~~"))
+                    || token.image.startsWith("!=");
             case '@': return token.image.equals("@@") || token.image.equals("@>");
             case '?': return true;  // ?, ?|, ?&
             case '-': return true;  // -, -#
@@ -681,6 +688,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || (op == OP_CONCAT && Dialect.POSTGRESQL.name()
                             .equals(getAsString(Feature.dialect))))          prec = 4;
             else if (op == OP_SLASH || op == OP_CARET || op == K_DIV)         prec = 6;
+            else if (op == OP_POWER)                                          prec = 7;
             else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
@@ -721,6 +729,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == S_HASH_OPERATOR) { Intersects r = new Intersects(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CARET)  { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == K_DIV)     { IntegerDivision  r = new IntegerDivision();  r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+            else if (op == OP_POWER)  { left = new Exponentiation(left, right); }
             else if (op == OP_CONCAT) { Concat           r = new Concat();           r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_PIPE)   { BitwiseOr        r = new BitwiseOr();        r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_LSHIFT) { BitwiseLeftShift r = new BitwiseLeftShift(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -2324,6 +2333,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected boolean isConditionSuffixAhead() {
         Token t = getToken(1);
+        if (isLikeOperator(t)) return true;
         // Inline isComparisonOperatorAhead for single getToken(1) call
         if (t.kind == OPENING_BRACKET && getToken(2).image.equals("+")) {
             return isComparisonOperator(getToken(4));
@@ -3171,6 +3181,7 @@ TOKEN : /* Operators */
 |   <OP_CONCAT: "||">
 |   <OP_PIPE: "|">
 |   <OP_CARET: "^">
+|   <OP_POWER: "**">
 |   <OP_SLASH: "/">
 |   <OP_LSHIFT: "<<">
 |   <OP_RSHIFT: ">>">
@@ -10750,6 +10761,7 @@ Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #
         ">" { result = new GreaterThan(); }
         | "<" { result = new MinorThan(); }
         | "=" { result = new EqualsTo(); }
+        | "==" { result = new EqualsTo("=="); }
         | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
         | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
         | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
@@ -10992,8 +11004,13 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     Token token;
 }
 {
-    [<K_NOT> { result.setNot(true); } ]
     (
+        (
+            token = "~~" | token = "~~*" | token = "~~~" | token = "!~~" | token = "!~~*"
+        ) { result.setLikeOperator(token.image); }
+        |
+        [<K_NOT> { result.setNot(true); } ]
+        (
         token = <K_LIKE>
         | token = <K_ILIKE>
         | token = <K_RLIKE>
@@ -11006,7 +11023,8 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_MATCH_PHRASE>
         | token = <K_MATCH_PHRASE_PREFIX>
         | token = <K_MATCH_REGEXP>
-    ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
+        ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
+    )
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
     rightExpression=SimpleExpression()
     [
@@ -11585,6 +11603,8 @@ Expression PrimaryExpression() #PrimaryExpression:
     Expression timezoneRightExpr = null;
     Token token = null;
     Token sign = null;
+    Token innerSign;
+    List<Token> innerSigns = new ArrayList<Token>();
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
@@ -11595,7 +11615,11 @@ Expression PrimaryExpression() #PrimaryExpression:
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-    [sign="+" | sign="-" | sign="~"]
+    [
+        ( sign="+" | sign="-" | sign="~" )
+        // DuckDB's chained signs, e.g. - -1 or +-+1
+        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
+    ]
     (
         <K_NULL> { retval = new NullValue(); }
 
@@ -11807,6 +11831,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
+        }
+        for (int i = innerSigns.size() - 1; i >= 0; i--) {
+            retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
         }
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);

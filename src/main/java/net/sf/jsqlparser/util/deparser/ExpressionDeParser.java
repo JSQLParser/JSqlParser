@@ -93,6 +93,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -225,7 +226,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(EqualsTo equalsTo, S context) {
-        deparse(equalsTo, " = ", context);
+        deparse(equalsTo, " " + equalsTo.getStringExpression() + " ", context);
         return builder;
     }
 
@@ -238,6 +239,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(IntegerDivision division, S context) {
         deparse(division, " DIV ", context);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(Exponentiation exponentiation, S context) {
+        deparse(exponentiation, " ** ", context);
         return builder;
     }
 
@@ -425,7 +432,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(SignedExpression signedExpression, S context) {
         builder.append(signedExpression.getSign());
+        int operandStart = builder.length();
         signedExpression.getExpression().accept(this, context);
+        if (builder.length() > operandStart
+                && signedExpression.needsSpaceBefore(builder.charAt(operandStart))) {
+            builder.insert(operandStart, ' ');
+        }
         return builder;
     }
 
@@ -519,10 +531,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         likeExpression.getLeftExpression().accept(this, context);
         builder.append(" ");
-        if (likeExpression.isNot()) {
-            builder.append("NOT ");
+        if (likeExpression.getLikeOperator() != null) {
+            builder.append(likeExpression.getLikeOperator()).append(" ");
+        } else {
+            if (likeExpression.isNot()) {
+                builder.append("NOT ");
+            }
+            builder.append(keywordStr).append(" ");
         }
-        builder.append(keywordStr).append(" ");
         if (likeExpression.isUseBinary()) {
             builder.append("BINARY ");
         }
