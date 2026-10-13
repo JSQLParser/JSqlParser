@@ -688,7 +688,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || (op == OP_CONCAT && Dialect.POSTGRESQL.name()
                             .equals(getAsString(Feature.dialect))))          prec = 4;
             else if (op == OP_SLASH || op == OP_CARET || op == K_DIV)         prec = 6;
-            else if ("**".equals(t.image))                                     prec = 7;
+            else if (op == OP_POWER)                                          prec = 7;
             else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
@@ -729,7 +729,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == S_HASH_OPERATOR) { Intersects r = new Intersects(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CARET)  { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == K_DIV)     { IntegerDivision  r = new IntegerDivision();  r.setLeftExpression(left); r.setRightExpression(right); left = r; }
-            else if ("**".equals(t.image)) { left = new Exponentiation(left, right); }
+            else if (op == OP_POWER)  { left = new Exponentiation(left, right); }
             else if (op == OP_CONCAT) { Concat           r = new Concat();           r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_PIPE)   { BitwiseOr        r = new BitwiseOr();        r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_LSHIFT) { BitwiseLeftShift r = new BitwiseLeftShift(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -3181,6 +3181,7 @@ TOKEN : /* Operators */
 |   <OP_CONCAT: "||">
 |   <OP_PIPE: "|">
 |   <OP_CARET: "^">
+|   <OP_POWER: "**">
 |   <OP_SLASH: "/">
 |   <OP_LSHIFT: "<<">
 |   <OP_RSHIFT: ">>">
@@ -11458,33 +11459,21 @@ Expression MulChain():
     Expression right;
 }
 {
-    retval=PowerChain()
+    retval=PrimaryExpression()
     (
         LOOKAHEAD(2)
         (
-            "*"          right=PowerChain() {{ Multiplication r = new Multiplication(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
+            "*"          right=PrimaryExpression() {{ Multiplication r = new Multiplication(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
             |
-            <OP_SLASH>   right=PowerChain() {{ Division r = new Division(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
+            <OP_SLASH>   right=PrimaryExpression() {{ Division r = new Division(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
             |
-            "%"          right=PowerChain() {{ Modulo r = new Modulo(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
+            "%"          right=PrimaryExpression() {{ Modulo r = new Modulo(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
             |
-            <OP_CARET>   right=PowerChain() {{ net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
+            <OP_CARET>   right=PrimaryExpression() {{ net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
             |
-            <K_DIV>      right=PowerChain() {{ IntegerDivision r = new IntegerDivision(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
+            <K_DIV>      right=PrimaryExpression() {{ IntegerDivision r = new IntegerDivision(); r.setLeftExpression(retval); r.setRightExpression(right); retval = r; }}
         )
     )*
-    { return retval; }
-}
-
-/** DuckDB's exponentiation, above the multiplicative operators */
-Expression PowerChain():
-{
-    Expression retval;
-    Expression right;
-}
-{
-    retval=PrimaryExpression()
-    ( LOOKAHEAD(2) "**" right=PrimaryExpression() { retval = new Exponentiation(retval, right); } )*
     { return retval; }
 }
 

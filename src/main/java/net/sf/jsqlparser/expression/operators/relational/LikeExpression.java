@@ -18,7 +18,7 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
     private boolean not = false;
     private boolean useBinary = false;
     private Expression escapeExpression = null;
-    private String likeOperator = null;
+    private boolean useOperator = false;
     private KeyWord likeKeyWord = KeyWord.LIKE;
 
     public boolean isNot() {
@@ -49,23 +49,42 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
         return likeKeyWord.toString();
     }
 
-    /** DuckDB's and PostgreSQL's operator spelling, e.g. {@code !~~} for {@code NOT LIKE}. */
+    /**
+     * The operator spelling of this condition when it was written as one and has one, e.g.
+     * {@code !~~} for {@code NOT LIKE}; otherwise {@code null} and the keyword form is used.
+     */
     public String getLikeOperator() {
-        return likeOperator;
+        if (!useOperator) {
+            return null;
+        }
+        switch (likeKeyWord) {
+            case LIKE:
+                return not ? "!~~" : "~~";
+            case ILIKE:
+                return not ? "!~~*" : "~~*";
+            case GLOB:
+                return not ? null : "~~~";
+            default:
+                return null;
+        }
     }
 
     /**
-     * Sets the operator spelling and the matching keyword: {@code ~~} is {@code LIKE}, {@code ~~*}
-     * {@code ILIKE}, {@code ~~~} {@code GLOB}, and a leading {@code !} negates.
+     * Sets the keyword and {@code NOT} from DuckDB's and PostgreSQL's operator spelling: {@code ~~}
+     * is {@code LIKE}, {@code ~~*} {@code ILIKE}, {@code ~~~} {@code GLOB}, and a leading {@code !}
+     * negates the first two. The operator is printed while it matches the keyword and {@code NOT}.
      */
     public LikeExpression setLikeOperator(String likeOperator) {
-        boolean negated = likeOperator.startsWith("!");
-        String operator = negated ? likeOperator.substring(1) : likeOperator;
-        switch (operator) {
+        if (likeOperator == null) {
+            throw new IllegalArgumentException("The LIKE operator must not be null");
+        }
+        switch (likeOperator) {
             case "~~":
+            case "!~~":
                 likeKeyWord = KeyWord.LIKE;
                 break;
             case "~~*":
+            case "!~~*":
                 likeKeyWord = KeyWord.ILIKE;
                 break;
             case "~~~":
@@ -74,21 +93,20 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
             default:
                 throw new IllegalArgumentException("Unknown LIKE operator: " + likeOperator);
         }
-        this.not = negated;
-        this.likeOperator = likeOperator;
+        this.not = likeOperator.startsWith("!");
+        this.useOperator = true;
         return this;
     }
 
     @Override
     public String toString() {
-        if (likeOperator != null) {
-            return getLeftExpression() + " " + likeOperator + " " + getRightExpression()
-                    + (escapeExpression != null ? " ESCAPE " + escapeExpression : "");
-        }
+        String likeOperator = getLikeOperator();
         String retval = (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
-                + getLeftExpression() + " " + (not ? "NOT " : "")
-                + (likeKeyWord == KeyWord.SIMILAR_TO ? "SIMILAR TO" : likeKeyWord) + " "
-                + (useBinary ? "BINARY " : "") + getRightExpression();
+                + getLeftExpression() + " "
+                + (likeOperator != null ? likeOperator
+                        : (not ? "NOT " : "")
+                                + (likeKeyWord == KeyWord.SIMILAR_TO ? "SIMILAR TO" : likeKeyWord))
+                + " " + (useBinary ? "BINARY " : "") + getRightExpression();
         if (escapeExpression != null) {
             retval += " ESCAPE " + escapeExpression;
         }

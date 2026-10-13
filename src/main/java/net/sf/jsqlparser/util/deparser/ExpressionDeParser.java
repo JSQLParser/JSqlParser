@@ -521,16 +521,6 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(LikeExpression likeExpression, S context) {
-        if (likeExpression.getLikeOperator() != null) {
-            likeExpression.getLeftExpression().accept(this, context);
-            builder.append(" ").append(likeExpression.getLikeOperator()).append(" ");
-            likeExpression.getRightExpression().accept(this, context);
-            if (likeExpression.getEscape() != null) {
-                builder.append(" ESCAPE ");
-                likeExpression.getEscape().accept(this, context);
-            }
-            return builder;
-        }
         String keywordStr = likeExpression.getLikeKeyWord() == LikeExpression.KeyWord.SIMILAR_TO
                 ? " SIMILAR TO"
                 : likeExpression.getLikeKeyWord().toString();
@@ -541,10 +531,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         likeExpression.getLeftExpression().accept(this, context);
         builder.append(" ");
-        if (likeExpression.isNot()) {
-            builder.append("NOT ");
+        if (likeExpression.getLikeOperator() != null) {
+            builder.append(likeExpression.getLikeOperator()).append(" ");
+        } else {
+            if (likeExpression.isNot()) {
+                builder.append("NOT ");
+            }
+            builder.append(keywordStr).append(" ");
         }
-        builder.append(keywordStr).append(" ");
         if (likeExpression.isUseBinary()) {
             builder.append("BINARY ");
         }

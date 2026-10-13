@@ -951,6 +951,32 @@ public class DuckDBTest {
         Assertions.assertEquals("- - -a", CCJSqlParserUtil.parseExpression("- - -a").toString());
     }
 
+    @Test
+    void testLikeOperatorFollowsTheModel() throws JSQLParserException {
+        net.sf.jsqlparser.expression.operators.relational.LikeExpression like =
+                (net.sf.jsqlparser.expression.operators.relational.LikeExpression) CCJSqlParserUtil
+                        .parseCondExpression("a ~~ 'x'");
+        like.setNot(true);
+        Assertions.assertEquals("a !~~ 'x'", like.toString());
+        like.setLikeKeyWord(
+                net.sf.jsqlparser.expression.operators.relational.LikeExpression.KeyWord.SIMILAR_TO);
+        Assertions.assertEquals("a NOT SIMILAR TO 'x'", like.toString());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> like.setLikeOperator("!~~~"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> like.setLikeOperator(null));
+    }
+
+    @Test
+    void testMixedSignsStaySeparate() throws JSQLParserException {
+        for (String expression : new String[] {"- ~1", "~ -1", "~ - ~a", "- ~ -a", "+ ~a"}) {
+            String deparsed = CCJSqlParserUtil.parseExpression(expression).toString();
+            Assertions.assertEquals(expression.replace(" ", ""),
+                    deparsed.replace(" ", ""));
+            Assertions.assertFalse(deparsed.contains("-~") || deparsed.contains("~-")
+                    || deparsed.contains("~~") || deparsed.contains("+~"), deparsed);
+        }
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT - ~1, ~ -1, -+1", true);
+    }
+
     private static String tree(net.sf.jsqlparser.expression.Expression expression) {
         if (expression instanceof net.sf.jsqlparser.expression.BinaryExpression) {
             net.sf.jsqlparser.expression.BinaryExpression binary =

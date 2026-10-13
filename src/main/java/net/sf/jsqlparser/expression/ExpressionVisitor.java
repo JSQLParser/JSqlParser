@@ -272,7 +272,10 @@ public interface ExpressionVisitor<T> {
 
     <S> T visit(IntegerDivision integerDivision, S context);
 
-    <S> T visit(Exponentiation exponentiation, S context);
+    default <S> T visit(Exponentiation exponentiation, S context) {
+        visitExpression(exponentiation.getLeftExpression(), context);
+        return visitExpression(exponentiation.getRightExpression(), context);
+    }
 
     default void visit(Exponentiation exponentiation) {
         this.visit(exponentiation, null);
