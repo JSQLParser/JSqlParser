@@ -1021,4 +1021,55 @@ public class DuckDBTest {
         }
         CCJSqlParserUtil.parse(sql.append("]").toString());
     }
+
+    @Test
+    void testStarRenameAndUnparenthesizedModifiers() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT * RENAME (i AS x, j AS y) FROM t",
+                "SELECT * RENAME i AS x FROM t", "SELECT * EXCLUDE i FROM t",
+                "SELECT * EXCLUDE t.i FROM t", "SELECT * REPLACE i + 1 AS i FROM t",
+                "SELECT * EXCLUDE (k) RENAME (i AS x) FROM t",
+                "SELECT t.* RENAME t.i AS x FROM t",
+                "SELECT COLUMNS(* REPLACE i + 1 AS i) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * RENAME (i AS x) FROM t");
+        net.sf.jsqlparser.expression.ColumnsTransformer rename =
+                ((AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0);
+        Assertions.assertEquals(
+                net.sf.jsqlparser.expression.ColumnsTransformer.ColumnsTransformerType.RENAME,
+                rename.getType());
+        Assertions.assertEquals("i AS x", rename.getRenameItems().get(0).toString());
+
+        // a star aliased rename or replace keeps parsing
+        for (String sqlStr : new String[] {"SELECT * rename FROM t", "SELECT * replace FROM t",
+                "SELECT t.* rename, b FROM t", "SELECT * rename(a, b) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        // DuckDB reads a parenthesized expression followed by AS as the single item
+        select = (PlainSelect) CCJSqlParserUtil.parse("SELECT * REPLACE (a + 1) AS a FROM t");
+        Assertions.assertEquals("(a + 1) AS a",
+                ((AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0).getReplaceItems().get(0)
+                        .toString());
+    }
+
+    @Test
+    void testTrailingCommaInSelectList() throws JSQLParserException {
+        Assertions.assertEquals("SELECT i, j FROM t WHERE i > 0",
+                CCJSqlParserUtil.parse("SELECT i, j, FROM t WHERE i > 0").toString());
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT * RENAME i FROM t"));
+        Assertions.assertEquals("SELECT 1 LIMIT 1",
+                CCJSqlParserUtil.parse("SELECT 1, LIMIT 1").toString());
+        Assertions.assertEquals("SELECT (SELECT 1)",
+                CCJSqlParserUtil.parse("SELECT (SELECT 1,)").toString());
+        // keywords that may name a column or a function still do
+        for (String item : new String[] {"limit", "offset", "group", "order", "qualify",
+                "limit(1)", "offset(1)", "group by", "order by"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + item + " FROM t", true);
+        }
+    }
 }
