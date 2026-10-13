@@ -519,6 +519,57 @@ Constraints with a fixed renderer, such as CHECK, always report their actual
 constraint kind. Replacing an index with a table constraint requires replacing
 the AST node; changing an index's type string cannot change its Java type.
 
+ALTER key definitions use ``getKeyConstraint()`` for typed access to the same
+object returned by ``getConstraint()``. PRIMARY KEY and UNIQUE builder setters
+also create this canonical definition; they no longer keep separate column,
+name or KEY/INDEX state:
+
+.. code-block:: java
+
+    Alter add = (Alter) CCJSqlParserUtil.parse(
+            "ALTER TABLE t ADD UNIQUE KEY uq (id)",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    KeyConstraint key = add.getAlterExpressions().get(0).getKeyConstraint();
+    key.setColumns(List.of(new KeyElement("account_id")));
+    key.setIndexName("uq_account");
+    System.out.println(add); // ALTER TABLE t ADD UNIQUE KEY uq_account (account_id)
+
+Parenthesized deletion targets have their own ``getDropColumns()`` and
+``setDropColumns()`` API. It covers multi-column ``DROP (...)``, ``DROP UNIQUE
+(...)`` and the parser's legacy parenthesized ``DROP FOREIGN KEY (...)`` form.
+Named constraint drops continue to use ``getConstraintName()``. No key
+definition is manufactured for a drop:
+
+.. code-block:: java
+
+    Alter drop = (Alter) CCJSqlParserUtil.parse("ALTER TABLE t DROP (old_a, old_b)");
+    drop.getAlterExpressions().get(0).getDropColumns().set(0, "obsolete_a");
+    System.out.println(drop); // ALTER TABLE t DROP (obsolete_a, old_b)
+
+``setDropColumns`` copies its input; ``getDropColumns`` returns the owned mutable
+list. ``withDropColumns`` and ``addDropColumns`` also work before selecting the
+operation. Stored drop targets and key definitions remain independent when an
+operation changes.
+
+Migration of older ALTER builders:
+
+* ``getPkColumns()`` and ``getUkColumns()`` now consistently return snapshots,
+  including manually built keys. Use their setters/adders or edit
+  ``getKeyConstraint().getColumns()`` to change SQL. The string setters replace
+  elements without retaining expression or ordering attributes.
+* The legacy PK accessor remains a DROP-target alias when DROP, DROP UNIQUE or
+  DROP FOREIGN KEY is already selected. Replace builders that set PK columns
+  before selecting DROP with ``withDropColumns(...)``; changing the operation
+  does not transfer a key definition into deletion targets.
+* ``getUkName`` accesses the UNIQUE definition's index name; the constraint
+  symbol remains ``getKeyConstraint().getName()``. KEY/INDEX flags read that same
+  definition. ``setUkTypeSpecified(false)`` removes the spelling; re-enabling it
+  without a spelling selects INDEX.
+* Non-null key setters create a definition only when none exists. They throw
+  ``IllegalStateException`` for a competing constraint or index; use
+  ``setConstraint`` for an explicit replacement. Reads and null clears never
+  create a definition or restore values from a replaced one.
+
 Exclusion keys expose ``getExclusionOperatorReference()`` for structured access
 to an operator's ``schemaName``, ``name`` and ``useOperatorKeyword`` flag. In
 ``Dialect.POSTGRESQL``, both CREATE and ALTER accept ``WITH OPERATOR(pg_catalog.&&)``.

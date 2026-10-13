@@ -25,11 +25,57 @@ import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
+import net.sf.jsqlparser.util.validation.ValidationContext;
 import net.sf.jsqlparser.util.validation.ValidationTestAsserts;
 import net.sf.jsqlparser.util.validation.feature.DatabaseType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class AlterValidatorTest extends ValidationTestAsserts {
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ADD PRIMARY KEY (id)", "DROP FOREIGN KEY fk_name", "DROP COLUMN id"})
+    void ignoresStoredDropColumnsWhenTheRenderedActionUsesAnotherTarget(String action)
+            throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse("ALTER TABLE t " + action,
+                parser -> parser.withDialect(Dialect.MYSQL));
+        alter.getAlterExpressions().get(0).setDropColumns(List.of("old_id"));
+        assertEquals("ALTER TABLE t " + action, alter.toString());
+        List<Named> names = new ArrayList<>();
+        DatabaseMetaDataValidation metadata = name -> {
+            names.add(name);
+            return !"old_id".equals(name.getFqn());
+        };
+        AlterValidator validator = new AlterValidator();
+        validator.setContext(new ValidationContext().setCapabilities(List.of(metadata)));
+        validator.validate(alter);
+        assertTrue(validator.getValidationErrors().isEmpty(),
+                validator.getValidationErrors().toString());
+        assertTrue(names.stream().noneMatch(name -> "old_id".equals(name.getFqn())));
+    }
+
+    @Test
+    void validatesKeyDefinitionsAndDropTargetsWithoutDuplicateKeyColumnChecks() {
+        List<Named> names = new ArrayList<>();
+        DatabaseMetaDataValidation metadata = name -> {
+            names.add(name);
+            return !"uq".equals(name.getFqn());
+        };
+        List<ValidationError> errors = new Validation(List.of(metadata),
+                "ALTER TABLE t ADD UNIQUE KEY uq (id)").validate();
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, names.stream().filter(name -> "id".equals(name.getFqn())).count());
+        assertEquals(1, names.stream().filter(name -> "uq".equals(name.getFqn())).count());
+
+        names.clear();
+        errors = new Validation(List.of(metadata), "ALTER TABLE t DROP (old_a, old_b)").validate();
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(List.of(new Named(NamedObject.table, "t"),
+                new Named(NamedObject.column, "old_a"),
+                new Named(NamedObject.column, "old_b")), names);
+    }
 
     @Test
     void validatesForeignKeysFromTheirCurrentStructuredDefinition() throws JSQLParserException {
