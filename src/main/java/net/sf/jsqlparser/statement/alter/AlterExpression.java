@@ -482,8 +482,7 @@ public class AlterExpression implements Serializable {
      * existing action-specific API to add or remove entries.
      */
     public List<ColumnDefaultAction> getColumnDefaults() {
-        if (operation != AlterOperation.ALTER || columnSetDefaultList == null
-                || constraintType != null && constraintSymbol != null
+        if (!usesColumnActionBody() || columnSetDefaultList == null
                 || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1077,7 +1076,7 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (hasExplicitConstraintHeader()) {
             toStringConstraintAlter(b);
-        } else if (hasAlterColumnValueActions()) {
+        } else if (usesColumnActionBody()) {
             toStringAlterColumn(b);
         } else if (isSimpleKeywordOperation()) {
             toStringSimpleKeyword(b);
@@ -1099,6 +1098,32 @@ public class AlterExpression implements Serializable {
                 && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
                         || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
                         || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty());
+    }
+
+    /**
+     * Whether the selected body renders ALTER COLUMN default or visibility actions. Subclasses
+     * overriding {@link #appendBody(StringBuilder)} must reflect their dispatch here as well.
+     */
+    protected boolean usesColumnActionBody() {
+        return hasAlterColumnValueActions() && !hasExplicitConstraintHeader();
+    }
+
+    /**
+     * Whether this action currently renders its column definitions through the general body.
+     * Inactive column metadata is retained in the AST but must not select a different body when
+     * deparsing. Subclasses with their own body dispatch override this method accordingly.
+     */
+    public boolean hasActiveColumnDefinitions() {
+        return hasColumnDefinitionPayload() && operation != AlterOperation.UNSPECIFIC
+                && !hasExplicitConstraintHeader() && !usesColumnActionBody()
+                && !isSimpleKeywordOperation() && !isRenameOperation() && !isDropSpecialOperation()
+                && operation != AlterOperation.CONVERT && operation != AlterOperation.COLLATE
+                && !isPartitionOperation();
+    }
+
+    /** Whether column definitions take precedence within the general body. */
+    protected boolean hasColumnDefinitionPayload() {
+        return commentText == null && columnName == null && colDataTypeList != null;
     }
 
     /**

@@ -625,7 +625,18 @@ read-only, but its entries are the original mutable AST objects:
 returns their SQL text. Existing ``ColumnSetDefault`` constructors still accept
 opaque strings, for which ``getDefaultExpression()`` returns ``null``.
 Replacing an expression also replaces any opaque value. Unrelated actions
-return an empty list.
+return an empty list. This lookup follows the action's current rendering path:
+changing an operation or retaining unused metadata does not make a fixed-body
+action expose ``SET DEFAULT`` entries it will not render.
+
+``hasActiveColumnDefinitions()`` reports whether the action currently renders
+its column definitions through the general ALTER body. ``getColDataTypeList()``
+continues to expose stored metadata even when another body takes precedence.
+``AlterDeParser`` uses the active path, so expression visitors rewrite the
+selected default or column expressions without rendering inactive metadata.
+Custom ``AlterExpression`` subclasses overriding ``appendBody`` should also
+override ``usesColumnActionBody()`` and ``hasActiveColumnDefinitions()`` when
+they change those dispatch rules.
 
 Structured column attributes
 ============================

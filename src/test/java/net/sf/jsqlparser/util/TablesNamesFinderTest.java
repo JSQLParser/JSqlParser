@@ -18,10 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.OracleHint;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -29,7 +32,12 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.comment.Comment;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Test;
 
@@ -1065,30 +1073,31 @@ public class TablesNamesFinderTest {
     }
 
     @Test
-    void testManyDerivedNamesDoNotScaleQuadratically() throws JSQLParserException {
-        // Each aliased WITH item is remembered in otherItemNames and every plain table
-        // reference used to be matched against it with a linear ArrayList.contains, so a
-        // statement with n CTE aliases and n tables cost O(n^2) to walk.
+    void testManyDerivedNamesDoNotScaleQuadratically() {
+        // Every plain table reference used to be matched against the CTE aliases with
+        // ArrayList.contains, so n aliases and n tables cost O(n^2) to walk.
         final int n = 30000;
-        final StringBuilder sb = new StringBuilder("WITH ");
+        final PlainSelect statement = new PlainSelect()
+                .withSelectItems(new SelectItem<>(new AllColumns()))
+                .withFromItem(new Table("t0"));
+        final List<WithItem<?>> withItems = new ArrayList<>(n);
+        final List<Join> joins = new ArrayList<>(n - 1);
         for (int i = 0; i < n; i++) {
+            PlainSelect body =
+                    new PlainSelect().withSelectItems(new SelectItem<>(new LongValue(1)));
+            withItems.add(new WithItem<>(new ParenthesedSelect().withSelect(body),
+                    new Alias("a" + i)));
             if (i > 0) {
-                sb.append(", ");
+                joins.add(new Join().withSimple(true).withRightItem(new Table("t" + i)));
             }
-            sb.append("a").append(i).append(" AS (SELECT 1)");
         }
-        sb.append(" SELECT * FROM ");
-        for (int i = 0; i < n; i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append("t").append(i);
-        }
+        statement.setWithItemsList(withItems);
+        statement.setJoins(joins);
 
-        // Parsing is linear and left outside the timed region; only the table walk is measured.
-        final Statement statement = CCJSqlParserUtil.parse(sb.toString());
+        // Build the AST directly: this tests table traversal, and parsing a large SQL
+        // fixture can hit the parser's independent timeout before traversal even starts.
         final Set<String> tables = assertTimeoutPreemptively(Duration.ofSeconds(2),
-                () -> new TablesNamesFinder<>().getTables(statement));
+                () -> new TablesNamesFinder<>().getTables((Statement) statement));
         assertEquals(n, tables.size());
     }
 
