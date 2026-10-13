@@ -1041,6 +1041,9 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         if (array.getStopIndexExpression() != null) {
             array.getStopIndexExpression().accept(this, context);
         }
+        if (array.getStepExpression() != null) {
+            array.getStepExpression().accept(this, context);
+        }
         return null;
     }
 
@@ -1207,8 +1210,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(RangeExpression rangeExpression, S context) {
-        rangeExpression.getStartExpression().accept(this, context);
-        rangeExpression.getEndExpression().accept(this, context);
+        for (Expression bound : new Expression[] {rangeExpression.getStartExpression(),
+                rangeExpression.getEndExpression(), rangeExpression.getStepExpression()}) {
+            if (bound != null) {
+                bound.accept(this, context);
+            }
+        }
         return null;
     }
 
