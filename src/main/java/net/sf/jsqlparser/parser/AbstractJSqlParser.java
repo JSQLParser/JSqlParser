@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.parser;
 
+import net.sf.jsqlparser.parser.dialect.DuckDbKeywordPolicy;
+import net.sf.jsqlparser.parser.dialect.KeywordPolicy;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 
@@ -47,7 +49,9 @@ public abstract class AbstractJSqlParser<P> {
                                                         AdjacentStringLiterals.WHITESPACE,
                                                         Feature.allowDoubleQuotedStrings,
                                                         Feature.allowBackslashEscapeCharacter), SNOWFLAKE(
-                                                                Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA;
+                                                                Feature.allowBackslashEscapeCharacter), INFORMIX, SPANNER, DORIS, COCKROACHDB, TERADATA, DUCKDB(
+                                                                        AdjacentStringLiterals.NEWLINE,
+                                                                        Feature.allowDollarQuotedStringTags);
 
         private final Set<Feature> lexerFeatures;
         private final AdjacentStringLiterals adjacentStringLiterals;
@@ -69,6 +73,14 @@ public abstract class AbstractJSqlParser<P> {
 
         public AdjacentStringLiterals getAdjacentStringLiterals() {
             return adjacentStringLiterals;
+        }
+
+        /**
+         * The dialect's own reserved-keyword rules, or {@code null} for the default ones (see
+         * {@code keywords.rst}).
+         */
+        public KeywordPolicy getKeywordPolicy() {
+            return this == DUCKDB ? DuckDbKeywordPolicy.INSTANCE : null;
         }
     }
 

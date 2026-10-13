@@ -22,6 +22,7 @@ import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserConstants;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.parser.StreamProvider;
 import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Column;
@@ -94,7 +95,9 @@ class TaggedDollarStringTest {
                 },
                         parser -> parser.withDialect(Dialect.POSTGRESQL)
                                 .withDollarQuotedStringTags(false)),
-                Stream.of(Dialect.values()).filter(dialect -> dialect != Dialect.POSTGRESQL)
+                Stream.of(Dialect.values())
+                        .filter(dialect -> !dialect.getLexerFeatures()
+                                .contains(Feature.allowDollarQuotedStringTags))
                         .map(dialect -> parser -> parser.withDialect(dialect)));
     }
 

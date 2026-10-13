@@ -18,6 +18,7 @@ module net.sf.jsqlparser {
     exports net.sf.jsqlparser.expression.operators.conditional;
     exports net.sf.jsqlparser.expression.operators.relational;
     exports net.sf.jsqlparser.parser;
+    exports net.sf.jsqlparser.parser.dialect;
     exports net.sf.jsqlparser.parser.feature;
     exports net.sf.jsqlparser.schema;
     exports net.sf.jsqlparser.statement;
