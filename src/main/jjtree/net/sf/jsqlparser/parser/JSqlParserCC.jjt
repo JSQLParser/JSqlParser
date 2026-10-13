@@ -2275,26 +2275,33 @@ TOKEN_MGR_DECLS : {
         }
     }
 
-    // Finds first occurrence of "\\'"
-    public static int indexOfSequence(String s, String target) {
-        int len = s.length();
-        for (int i = 0; i < len - 1; i++) {
-            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'') {
-                return i;
+    // Returns the length up to the closing quote of a quoted literal starting at open, or -1 when
+    // the image is unterminated. A doubled quote is literal; a backslash escapes the next character
+    // only if requested.
+    public static int closingQuote(String s, int open, char quote, boolean backslashEscapes) {
+        int i = open + 1;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (backslashEscapes && c == '\\' && i + 1 < s.length()) {
+                i += 2;
+            } else if (c == quote && i + 1 < s.length() && s.charAt(i + 1) == quote) {
+                i += 2;
+            } else if (c == quote) {
+                return i + 1;
+            } else {
+                i++;
             }
         }
         return -1;
     }
 
-    // Finds last occurrence of "\\''"
-    public static int lastIndexOfSequence(String s, String target) {
-        int len = s.length();
-        for (int i = len - 3; i >= 0; i--) {
-            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'' && s.charAt(i + 2) == '\'') {
-                return i;
-            }
+    // Like closingQuote for a single-quoted literal after its optional prefix. Oracle q'..'
+    // literals have their own delimiters and are left unchanged.
+    public static int closingSingleQuote(String s, boolean backslashEscapes) {
+        if (s.length() > 1 && (s.charAt(0) == 'q' || s.charAt(0) == 'Q') && s.charAt(1) == '\'') {
+            return -1;
         }
-        return -1;
+        return closingQuote(s, s.indexOf('\''), '\'', backslashEscapes);
     }
 
     private RowPatternTokenContext rowPatternContext;
@@ -3222,12 +3229,11 @@ TOKEN:
 // CJK Unified Ideographs block according to https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
 | <#CJK: ["\uAC00"-"\uD7A3", "\u4E00"-"\u9FFF"]>
 
-| < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
-| < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
 | < S_CHAR_LITERAL: (
                         (["U","E","N","R","B"]|"RB"|"_utf8")?
                         (
-                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
+                            // Backslash escapes and doubled quotes; trimmed below to the rules in effect
+                            ("'" ( "\\" ~[] | "''" | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
                             // Alternative Oracle Escape Modes
                             | ("q'{" (~[])* "}'")
                             | ("q'(" (~[])* ")'")
@@ -3237,36 +3243,36 @@ TOKEN:
                         )
                      ) >
     {
-        // <S_CHAR_LITERAL> contains the <SPECIAL_ESC> token and always the longest match is returned
-        // So when Backslash is explicitly not allowed as an Escape Character and a <S_CHAR_LITERAL> is found
-        // which contains the <SPECIAL_ESC>, then we will need to
-        // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
-        // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
-        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+        // The longest match may run past the closing quote of the active rules. A backslash
+        // escapes the next character only with backslash escapes or in a PostgreSQL E'' string;
+        // otherwise the literal ends at the first quote that is not doubled, so LIKE ... ESCAPE '\\'
+        // still works.
+        boolean backslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
                 || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
                     && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
-                String img = matchedToken.image;
-                int pos;
-                if (!allowEscape) {
-                    pos = indexOfSequence(img, "\\'");
-                    if (pos > 0) {
-                        matchedToken.image = image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
-                        // `charLiteralIndex` defined in TokenManagerDeclaration above
-                        matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() - matchedToken.image.length());
-                    }
-                } else {
-                    pos = lastIndexOfSequence(img, "\\''");
-                    if (pos > 0) {
-                        matchedToken.image = image.substring( 0, image.lastIndexOf("\\'") + 3);
-                        // `charLiteralIndex` defined in TokenManagerDeclaration above
-                        matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() - matchedToken.image.length() );
-                    }
-                }
+        int end = closingSingleQuote(matchedToken.image, backslashEscapes);
+        if (end > 0 && end < matchedToken.image.length()) {
+            matchedToken.image = image.substring(0, end);
+            input_stream.backup(image.length() - end);
+        }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\""
+        // MySQL double-quoted string with backslash escapes; trimmed below when not enabled
+        | "\"" ( "\"\"" | "\\" ~["\n","\r"] | ~["\n","\r","\"","\\"])* "\""
+        | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
+        if ( matchedToken.image.charAt(0) == '"' ) {
+            // Both alternatives above compete for the longest match. Keep the closing quote of
+            // the active quoting rules: a backslash escapes the next character only in
+            // double-quoted strings with backslash escapes, as in MySQL.
+            int end = closingQuote(matchedToken.image, 0, '"',
+                    configuration.getAsBoolean(Feature.allowDoubleQuotedStrings)
+                    && configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter));
+            if (end > 0 && end < matchedToken.image.length()) {
+                matchedToken.image = image.substring(0, end);
+                input_stream.backup(image.length() - end);
+            }
+        }
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
             && matchedToken.image.charAt(0) == '[' ) {
 
