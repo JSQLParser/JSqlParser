@@ -220,19 +220,29 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
     }
 
     private void appendDeclarationTo(StringBuilder sql) {
-        String keyword = indexKeyword != null && (type == null
-                || !type.toUpperCase(java.util.Locale.ROOT)
-                        .endsWith(indexKeyword.toUpperCase(java.util.Locale.ROOT)))
-                                ? " " + indexKeyword
-                                : "";
-        sql.append(type != null ? type : "").append(keyword);
+        int start = sql.length();
+        if (type != null) {
+            sql.append(type);
+        }
+        if (indexKeyword != null && (type == null || !type.toUpperCase(java.util.Locale.ROOT)
+                .endsWith(indexKeyword.toUpperCase(java.util.Locale.ROOT)))) {
+            appendWord(sql, start, indexKeyword);
+        }
         if (!name.isEmpty()) {
-            sql.append(' ').append(getName());
+            appendWord(sql, start, getName());
         }
         if (getUsing() != null) {
-            sql.append(" USING ").append(getUsing());
+            appendWord(sql, start, "USING " + getUsing());
         }
         sql.append(nullsDistinctClause()).append(clusteringClause());
+    }
+
+    /** Separates {@code word} from earlier declaration words, without a leading space. */
+    private static void appendWord(StringBuilder sql, int start, String word) {
+        if (sql.length() > start) {
+            sql.append(' ');
+        }
+        sql.append(word);
     }
 
     private void appendColumnsAndSpecTo(StringBuilder sql,

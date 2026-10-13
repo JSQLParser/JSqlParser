@@ -1421,7 +1421,7 @@ public class AlterExpression implements Serializable {
     protected void toStringDropSpecial(StringBuilder b) {
         switch (operation) {
             case DROP_PRIMARY_KEY:
-                b.append("DROP PRIMARY KEY ");
+                b.append("DROP PRIMARY KEY");
                 break;
             case DROP_UNIQUE:
                 b.append("DROP UNIQUE (").append(PlainSelect.getStringList(dropColumns))
