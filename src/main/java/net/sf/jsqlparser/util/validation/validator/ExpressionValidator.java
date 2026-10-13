@@ -48,6 +48,7 @@ import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.ListComprehension;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MapExpression;
@@ -90,6 +91,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -196,6 +198,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(IntegerDivision division, S context) {
         visitBinaryExpression(division, " DIV ");
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Exponentiation exponentiation, S context) {
+        visitBinaryExpression(exponentiation, " ** ");
         return null;
     }
 
@@ -1034,6 +1042,9 @@ public class ExpressionValidator extends AbstractValidator<Expression>
         if (array.getStopIndexExpression() != null) {
             array.getStopIndexExpression().accept(this, context);
         }
+        if (array.getStepExpression() != null) {
+            array.getStepExpression().accept(this, context);
+        }
         return null;
     }
 
@@ -1200,8 +1211,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
 
     @Override
     public <S> Void visit(RangeExpression rangeExpression, S context) {
-        rangeExpression.getStartExpression().accept(this, context);
-        rangeExpression.getEndExpression().accept(this, context);
+        for (Expression bound : new Expression[] {rangeExpression.getStartExpression(),
+                rangeExpression.getEndExpression(), rangeExpression.getStepExpression()}) {
+            if (bound != null) {
+                bound.accept(this, context);
+            }
+        }
         return null;
     }
 
@@ -1240,6 +1255,16 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ListComprehension listComprehension, S context) {
+        listComprehension.getExpression().accept(this, context);
+        listComprehension.getList().accept(this, context);
+        if (listComprehension.getCondition() != null) {
+            listComprehension.getCondition().accept(this, context);
+        }
         return null;
     }
 

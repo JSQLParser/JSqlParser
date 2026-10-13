@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -268,9 +269,10 @@ public class ColumnOption implements Serializable {
         }
     }
 
+    /** Creates an opaque option with its own copy of the supplied tokens, without parsing them. */
     public static ColumnOption raw(List<String> tokens) {
         ColumnOption option = new ColumnOption();
-        option.tokens = tokens;
+        option.setTokens(tokens);
         return option;
     }
 
@@ -295,31 +297,58 @@ public class ColumnOption implements Serializable {
         return kind;
     }
 
+    /**
+     * Returns an unmodifiable, detached token snapshot for both raw and structured options. An
+     * unset raw option returns null; an explicitly empty raw option returns an empty snapshot. Use
+     * {@link #setTokens(List)} to edit an opaque option, or the typed setters and mutable child
+     * nodes to edit structured options. Later changes to the option do not change this snapshot.
+     */
     public List<String> getTokens() {
         switch (kind) {
             case DEFAULT:
-                return Arrays.asList("DEFAULT", String.valueOf(defaultExpression));
+                return Collections.unmodifiableList(
+                        Arrays.asList("DEFAULT", String.valueOf(defaultExpression)));
             case NULLABILITY:
-                return nullable ? Collections.singletonList("NULL") : Arrays.asList("NOT", "NULL");
+                return nullable ? Collections.singletonList("NULL")
+                        : Collections.unmodifiableList(Arrays.asList("NOT", "NULL"));
             case COLLATE:
-                return Arrays.asList("COLLATE", collation);
+                return Collections.unmodifiableList(Arrays.asList("COLLATE", collation));
             case COMMENT:
-                return Arrays.asList("COMMENT", comment.toString());
+                return Collections.unmodifiableList(Arrays.asList("COMMENT", comment.toString()));
             case ON_UPDATE:
-                return Arrays.asList("ON", "UPDATE", onUpdateExpression.toString());
+                return Collections.unmodifiableList(
+                        Arrays.asList("ON", "UPDATE", onUpdateExpression.toString()));
             case GENERATED:
                 return generatedDefinition.getTokens();
             case CONSTRAINT:
                 if ("PRIMARY KEY".equals(constraint.toString())) {
-                    return Arrays.asList("PRIMARY", "KEY");
+                    return Collections.unmodifiableList(Arrays.asList("PRIMARY", "KEY"));
                 }
                 return Collections.singletonList(toString());
             case OTHER:
             case SERIAL_DEFAULT_VALUE:
-                return tokens;
+                return tokens == null ? null
+                        : Collections.unmodifiableList(new ArrayList<>(tokens));
             default:
                 return Collections.singletonList(toString());
         }
+    }
+
+    /**
+     * Replaces the tokens of an opaque {@link Kind#OTHER} option with a copy of the supplied list.
+     * Null unsets the tokens; an empty list retains an explicitly empty option. Tokens are never
+     * parsed or classified. To replace a structured option, including SERIAL DEFAULT VALUE, with
+     * raw text, replace its node in {@link ColumnDefinition#getColumnOptions()} using
+     * {@link #raw(List)} instead.
+     *
+     * @throws IllegalStateException if this is a structured option
+     */
+    public void setTokens(List<String> tokens) {
+        if (kind != Kind.OTHER) {
+            throw new IllegalStateException(
+                    "Only opaque options accept tokens; use typed setters or replace the option");
+        }
+        this.tokens = tokens == null ? null : new ArrayList<>(tokens);
     }
 
     public ForeignKeyReference getForeignKeyReference() {

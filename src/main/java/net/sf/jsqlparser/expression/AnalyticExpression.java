@@ -41,6 +41,7 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     private boolean unique = false;
     private boolean ignoreNullsOutside = false; // IGNORE NULLS outside function parameters
     private Expression filterExpression = null;
+    private boolean filterWhereKeyword = true;
     private List<OrderByElement> funcOrderBy = null;
     private String onOverflowTruncate = null;
 
@@ -391,10 +392,20 @@ public class AnalyticExpression extends ASTNodeAccessImpl implements Expression 
     /** Renders the filter using the caller's expression writer. */
     public void appendFilterTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
         if (filterExpression != null) {
-            builder.append("FILTER (WHERE ");
+            builder.append(filterWhereKeyword ? "FILTER (WHERE " : "FILTER (");
             expressionPrinter.accept(filterExpression);
             builder.append(')');
         }
+    }
+
+    /** Whether the FILTER clause has WHERE, which DuckDB allows to leave out. */
+    public boolean isFilterWhereKeyword() {
+        return filterWhereKeyword;
+    }
+
+    public AnalyticExpression setFilterWhereKeyword(boolean filterWhereKeyword) {
+        this.filterWhereKeyword = filterWhereKeyword;
+        return this;
     }
 
     public boolean isAllColumns() {

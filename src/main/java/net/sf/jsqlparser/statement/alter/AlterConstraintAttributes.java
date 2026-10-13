@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+import java.util.List;
+
 import java.util.Objects;
 import net.sf.jsqlparser.statement.create.table.ConstraintAttributes;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
@@ -28,6 +31,21 @@ public class AlterConstraintAttributes extends AlterExpression {
 
     public void setAttributes(ConstraintAttributes attributes) {
         this.attributes = Objects.requireNonNull(attributes, "attributes");
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return false;
     }
 
     @Override

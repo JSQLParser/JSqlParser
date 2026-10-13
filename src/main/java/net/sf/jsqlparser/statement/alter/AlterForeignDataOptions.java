@@ -9,6 +9,8 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+
 import java.util.List;
 import java.util.function.Consumer;
 import net.sf.jsqlparser.expression.Expression;
@@ -38,6 +40,21 @@ public class AlterForeignDataOptions extends AlterExpression {
         }
         ForeignDataOption.appendOptionsTo(builder, options, expressionPrinter);
         return builder;
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return false;
     }
 
     @Override

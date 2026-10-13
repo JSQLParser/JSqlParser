@@ -233,7 +233,7 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" HAVING ");
             plainSelect.getHaving().accept(expressionVisitor, context);
         }
-        if (plainSelect.getQualify() != null) {
+        if (plainSelect.getQualify() != null && !plainSelect.isQualifyAfterWindow()) {
             builder.append(" QUALIFY ");
             plainSelect.getQualify().accept(expressionVisitor, context);
         }
@@ -241,6 +241,10 @@ public class SelectDeParser extends AbstractDeParser<PlainSelect>
             builder.append(" WINDOW ");
             builder.append(plainSelect.getWindowDefinitions().stream()
                     .map(WindowDefinition::toString).collect(joining(", ")));
+        }
+        if (plainSelect.getQualify() != null && plainSelect.isQualifyAfterWindow()) {
+            builder.append(" QUALIFY ");
+            plainSelect.getQualify().accept(expressionVisitor, context);
         }
         Alias alias = plainSelect.getAlias();
         if (alias != null) {

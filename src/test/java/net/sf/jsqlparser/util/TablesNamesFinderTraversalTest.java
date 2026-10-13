@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -193,11 +192,13 @@ class TablesNamesFinderTraversalTest {
     }
 
     @Test
-    void preservesJsonArrayIndexTraversal() throws JSQLParserException {
+    void traversesSliceBounds() throws JSQLParserException {
         Expression expression = CCJSqlParserUtil.parseExpression("f()[1:2]");
         assertThat(expression).isInstanceOf(ArrayExpression.class);
-        assertThat(((ArrayExpression) expression).getIndexExpression())
-                .isInstanceOf(JsonExpression.class);
+        ArrayExpression slice = (ArrayExpression) expression;
+        assertThat(slice.getIndexExpression()).isNull();
+        assertThat(slice.getStartIndexExpression()).hasToString("1");
+        assertThat(slice.getStopIndexExpression()).hasToString("2");
         assertThat(new TablesNamesFinder<>().getTables(expression)).isEmpty();
     }
 

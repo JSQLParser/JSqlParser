@@ -18,6 +18,8 @@ import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionLi
 
 @SuppressWarnings({"PMD.UncommentedEmptyMethodBody"})
 public class TableFunction extends Function implements FromItem {
+    private SampleClause sampleClause;
+
     private String prefix = null;
     private Alias alias = null;
     private Pivot pivot = null;
@@ -220,12 +222,13 @@ public class TableFunction extends Function implements FromItem {
 
     @Override
     public SampleClause getSampleClause() {
-        return null;
+        return sampleClause;
     }
 
     @Override
-    public FromItem setSampleClause(SampleClause sampleClause) {
-        return null;
+    public TableFunction setSampleClause(SampleClause sampleClause) {
+        this.sampleClause = sampleClause;
+        return this;
     }
 
     public StringBuilder appendTo(StringBuilder builder) {
@@ -262,6 +265,9 @@ public class TableFunction extends Function implements FromItem {
             if (offsetAlias != null) {
                 builder.append(offsetAlias);
             }
+        }
+        if (sampleClause != null) {
+            sampleClause.appendTo(builder);
         }
         return builder;
     }

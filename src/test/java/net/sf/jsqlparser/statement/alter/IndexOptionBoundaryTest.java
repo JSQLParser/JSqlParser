@@ -47,7 +47,7 @@ class IndexOptionBoundaryTest {
     void mysqlAddIndexAttributes(String options) throws JSQLParserException {
         Alter alter = (Alter) parse("ALTER TABLE t ADD INDEX ix (id) " + options, Dialect.MYSQL);
         assertEquals("ix", alter.getAlterExpressions().get(0).getIndex().getName());
-        assertEquals("ALTER TABLE t ADD  INDEX ix (id) " + options, alter.toString());
+        assertEquals("ALTER TABLE t ADD INDEX ix (id) " + options, alter.toString());
         assertRoundTrip(alter, Dialect.MYSQL);
     }
 

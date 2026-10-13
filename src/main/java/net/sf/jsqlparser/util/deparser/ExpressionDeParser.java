@@ -51,6 +51,7 @@ import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.ListComprehension;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MapExpression;
@@ -93,6 +94,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -225,7 +227,7 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(EqualsTo equalsTo, S context) {
-        deparse(equalsTo, " = ", context);
+        deparse(equalsTo, " " + equalsTo.getStringExpression() + " ", context);
         return builder;
     }
 
@@ -238,6 +240,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(IntegerDivision division, S context) {
         deparse(division, " DIV ", context);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(Exponentiation exponentiation, S context) {
+        deparse(exponentiation, " ** ", context);
         return builder;
     }
 
@@ -425,7 +433,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(SignedExpression signedExpression, S context) {
         builder.append(signedExpression.getSign());
+        int operandStart = builder.length();
         signedExpression.getExpression().accept(this, context);
+        if (builder.length() > operandStart
+                && signedExpression.needsSpaceBefore(builder.charAt(operandStart))) {
+            builder.insert(operandStart, ' ');
+        }
         return builder;
     }
 
@@ -519,10 +532,14 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         }
         likeExpression.getLeftExpression().accept(this, context);
         builder.append(" ");
-        if (likeExpression.isNot()) {
-            builder.append("NOT ");
+        if (likeExpression.getLikeOperator() != null) {
+            builder.append(likeExpression.getLikeOperator()).append(" ");
+        } else {
+            if (likeExpression.isNot()) {
+                builder.append("NOT ");
+            }
+            builder.append(keywordStr).append(" ");
         }
-        builder.append(keywordStr).append(" ");
         if (likeExpression.isUseBinary()) {
             builder.append("BINARY ");
         }
@@ -843,10 +860,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(RangeExpression rangeExpression, S context) {
-        rangeExpression.getStartExpression().accept(this, context);
-        builder.append(":");
-        rangeExpression.getEndExpression().accept(this, context);
+        appendSlice(rangeExpression.getStartExpression(), rangeExpression.getEndExpression(),
+                rangeExpression.getStepExpression(), context);
         return builder;
+    }
+
+    private <S> void appendSlice(Expression start, Expression end, Expression step, S context) {
+        if (start != null) {
+            start.accept(this, context);
+        }
+        builder.append(":");
+        if (end != null) {
+            end.accept(this, context);
+        } else if (step != null) {
+            builder.append("-");
+        }
+        if (step != null) {
+            builder.append(":");
+            step.accept(this, context);
+        }
     }
 
     @Override
@@ -1314,6 +1346,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             builder.append(" ").append(analyticExpression.getWindowName());
         } else if (analyticExpression.getType() != AnalyticType.WITHIN_GROUP_OVER) {
             builder.append(" (");
+            if (analyticExpression.getWindowDefinition() != null) {
+                analyticExpression.getWindowDefinition().appendBaseWindowNameTo(builder);
+            }
 
             if (partitionExpressionList != null
                     && !partitionExpressionList.isEmpty()) {
@@ -1645,13 +1680,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (array.getIndexExpression() != null) {
             array.getIndexExpression().accept(this, context);
         } else {
-            if (array.getStartIndexExpression() != null) {
-                array.getStartIndexExpression().accept(this, context);
-            }
-            builder.append(":");
-            if (array.getStopIndexExpression() != null) {
-                array.getStopIndexExpression().accept(this, context);
-            }
+            appendSlice(array.getStartIndexExpression(), array.getStopIndexExpression(),
+                    array.getStepExpression(), context);
         }
 
         builder.append("]");
@@ -1736,14 +1766,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(JsonFunction expression, S context) {
-        expression.append(builder);
-        return builder;
+        return expression.appendTo(builder, child -> child.accept(this, context));
     }
 
     @Override
     public <S> StringBuilder visit(JsonTableFunction expression, S context) {
-        builder.append(expression);
-        return builder;
+        return expression.appendTo(builder, child -> child.accept(this, context));
     }
 
     @Override
@@ -1856,6 +1884,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(LambdaExpression lambdaExpression, S context) {
         return lambdaExpression.appendTo(builder, expression -> expression.accept(this, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ListComprehension listComprehension, S context) {
+        return listComprehension.appendTo(builder,
+                expression -> expression.accept(this, context));
     }
 
     @Override

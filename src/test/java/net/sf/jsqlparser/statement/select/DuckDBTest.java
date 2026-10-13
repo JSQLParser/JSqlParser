@@ -10,6 +10,9 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -23,12 +26,18 @@ import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class DuckDBTest {
 
@@ -503,6 +512,82 @@ public class DuckDBTest {
     }
 
     @Test
+    void testCreateMacroIfNotExists() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO IF NOT EXISTS add(a, b) AS a + b";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(createMacro.isIfNotExists());
+        Assertions.assertEquals("add", createMacro.getName());
+    }
+
+    @Test
+    void testCreateMacroWithTypedParameters() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO add(a INTEGER, b DOUBLE, c := 5) AS a + b + c";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("INTEGER", createMacro.getParameters().get(0).getType().toString());
+        Assertions.assertEquals("DOUBLE", createMacro.getParameters().get(1).getType().toString());
+        Assertions.assertNull(createMacro.getParameters().get(2).getType());
+        Assertions.assertEquals("5",
+                createMacro.getParameters().get(2).getDefaultValue().toString());
+    }
+
+    @Test
+    void testCreateOverloadedMacro() throws JSQLParserException {
+        String sqlStr = "CREATE OR REPLACE MACRO is_maximal(a TINYINT) AS a = 127, "
+                + "(a INT) AS a = 2147483647";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
+        Assertions.assertEquals("TINYINT",
+                createMacro.getOverloads().get(0).getParameters().get(0).getType().toString());
+        Assertions.assertEquals("a = 2147483647",
+                createMacro.getOverloads().get(1).getExpression().toString());
+    }
+
+    @Test
+    void testCreateOverloadedTableMacro() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO get_t(i) AS TABLE SELECT * FROM t WHERE id = i, "
+                + "(i, j) AS TABLE SELECT * FROM u WHERE id = i AND x = j";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
+        Assertions.assertTrue(createMacro.getOverloads().get(1).isTable());
+        Assertions.assertEquals(2, createMacro.getOverloads().get(1).getParameters().size());
+        Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
+                TablesNamesFinder.findTables(sqlStr));
+    }
+
+    @Test
+    void testCreateFunctionAsMacro() throws JSQLParserException {
+        for (String sqlStr : Arrays.asList(
+                "CREATE FUNCTION add(a, b) AS a + b",
+                "CREATE OR REPLACE TEMPORARY FUNCTION IF NOT EXISTS add(a INTEGER) AS a + 1",
+                "CREATE FUNCTION get_t(i) AS TABLE SELECT * FROM t WHERE id = i")) {
+            CreateMacro createMacro =
+                    (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+            Assertions.assertTrue(createMacro.isFunctionKeyword());
+        }
+    }
+
+    @Test
+    void testCreateFunctionOfOtherDialectsIsNotAMacro() throws JSQLParserException {
+        for (String sqlStr : Arrays.asList(
+                "CREATE FUNCTION add(a integer, b integer) RETURNS integer AS 'select $1 + $2' LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS 'select $1 + 1' LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $$ select $1 + 1 $$ LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $function$ select $1 + 1 $function$ LANGUAGE SQL",
+                "CREATE OR REPLACE FUNCTION ds.add(x INT64) AS (x + 1) OPTIONS (description = 'd')")) {
+            Assertions.assertInstanceOf(CreateFunction.class, CCJSqlParserUtil.parse(sqlStr));
+        }
+    }
+
+    @Test
     void testCreateExtensionRepository() throws JSQLParserException {
         String sqlStr =
                 "CREATE EXTENSION REPOSITORY my_repo WITH PREFIX 'https://extensions.example.org'";
@@ -688,5 +773,337 @@ public class DuckDBTest {
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Assertions.assertNull(select.getWithItemsList().get(0).getUsingKeyExpressions());
+    }
+
+    @Test
+    void testLambdaKeyword() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_transform(l, lambda x : x + 1) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT list_filter(l, lambda x : x > 0) FROM t",
+                true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_filter(l, lambda x : x IS NOT NULL AND x <> 'a') FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_reduce(l, lambda acc, x : acc + x) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_filter([(CASE WHEN a THEN 1 END)], lambda x : x IS NOT NULL) FROM t",
+                true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_transform(l, lambda x : list_filter(x, lambda y : y > 1)) FROM t",
+                true);
+    }
+
+    @Test
+    void testLambdaKeywordExpression() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_reduce(l, lambda acc, x : acc + x) FROM t", true);
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+        LambdaExpression lambda = (LambdaExpression) function.getParameters().get(1);
+
+        Assertions.assertTrue(lambda.isLambdaKeyword());
+        Assertions.assertEquals(Arrays.asList("acc", "x"), lambda.getIdentifiers());
+    }
+
+    @Test
+    void testLambdaKeywordFollowedByArguments() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT f(l, lambda x : x + 1, 2) FROM t", true);
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+
+        Assertions.assertEquals(3, function.getParameters().size());
+        Assertions.assertEquals("x + 1",
+                ((LambdaExpression) function.getParameters().get(1)).getExpression().toString());
+    }
+
+    @Test
+    void testLambdaAsIdentifier() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda x, y FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT t.lambda FROM lambda t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT CAST(a AS lambda) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 'a' COLLATE lambda FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a lambda)", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t DROP COLUMN lambda", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t RENAME lambda TO x", true);
+    }
+
+    @Test
+    void testFromFirstAndTableAsQueryOperands() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT * FROM (FROM t)",
+                "SELECT * FROM (FROM t WHERE a > 1) x JOIN (SELECT 1) y ON true",
+                "SELECT * FROM t WHERE a IN (FROM u)", "SELECT (FROM u SELECT max(a))",
+                "FROM a UNION ALL FROM b", "FROM a WHERE x > 1 UNION ALL SELECT 1",
+                "SELECT 1 EXCEPT FROM b WHERE x", "FROM a SELECT x UNION FROM b SELECT x",
+                "WITH t AS (SELECT 1), u AS (SELECT 2) TABLE t", "TABLE a UNION TABLE b",
+                "SELECT 1 UNION TABLE b", "(TABLE a EXCEPT ALL TABLE b)",
+                "SELECT * FROM TABLE(f(1))"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        SetOperationList union = (SetOperationList) CCJSqlParserUtil
+                .parse("TABLE a UNION TABLE b ORDER BY 1 LIMIT 2");
+        Assertions.assertEquals("1", union.getOrderByElements().get(0).toString());
+        Assertions.assertNotNull(union.getLimit());
+        Assertions.assertNull(((TableStatement) union.getSelect(1)).getOrderByElements());
+
+        union = (SetOperationList) CCJSqlParserUtil.parse("FROM a UNION FROM b ORDER BY 1");
+        Assertions.assertTrue(((PlainSelect) union.getSelect(0)).isFromFirst());
+        Assertions.assertEquals("1", union.getOrderByElements().get(0).toString());
+    }
+
+    @Test
+    void testTableQueryKeepsTableColumnsAndTrailingClauses() throws JSQLParserException {
+        // TABLE also names columns, e.g. in ClickHouse's system.parts
+        for (String sqlStr : new String[] {
+                "SELECT database, table FROM system.parts WHERE (database = 'default') AND (table = 'hits')",
+                "SELECT (table), (table.a), (table + 1) FROM t",
+                "SELECT a FROM t WHERE (table, b) IN ((1, 2))",
+                "SELECT * FROM (TABLE s.t) x", "TABLE t FETCH FIRST 1 ROWS ONLY",
+                "WITH a AS (SELECT 1) TABLE a FETCH FIRST 1 ROWS ONLY",
+                "CREATE TABLE x AS TABLE a UNION TABLE b"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        Assertions.assertInstanceOf(net.sf.jsqlparser.statement.piped.FromQuery.class,
+                ((ParenthesedSelect) CCJSqlParserUtil.parse("(FROM t)")).getSelect());
+    }
+
+    @Test
+    void testLimitPercent() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT a FROM t LIMIT 10%",
+                "SELECT a FROM t LIMIT 10.5%", "SELECT a FROM t LIMIT 40 PERCENT",
+                "SELECT a FROM t LIMIT 50% OFFSET 2", "SELECT a FROM t LIMIT (SELECT 10)%",
+                "SELECT * FROM (SELECT a FROM t LIMIT 10%) x",
+                "SELECT a FROM t LIMIT (SELECT a FROM u LIMIT 5%)", "SELECT a FROM t LIMIT NULL%",
+                // modulo and a column named offset are unchanged
+                "SELECT a FROM t LIMIT 10 % 3", "SELECT a FROM t LIMIT a % offset",
+                "SELECT a FROM t LIMIT a % offset + 1", "SELECT a FROM t LIMIT a % offset OFFSET 2",
+                "SELECT a FROM t LIMIT (SELECT a % offset + 1 FROM u)"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse("SELECT a FROM t LIMIT 10%");
+        Assertions.assertEquals("%", select.getLimit().getPercentUnit());
+        Assertions.assertEquals("10", select.getLimit().getRowCount().toString());
+
+        select = (PlainSelect) CCJSqlParserUtil.parse("SELECT a FROM t LIMIT a % offset + 1");
+        Assertions.assertNull(select.getLimit().getPercentUnit());
+        Assertions.assertNull(select.getOffset());
+    }
+
+    @Test
+    void testTableSampleWithoutOrWithReservoirMethod() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT a FROM t TABLESAMPLE 10%",
+                "SELECT a FROM t TABLESAMPLE 10 ROWS", "SELECT a FROM t t1 TABLESAMPLE 10 PERCENT",
+                "SELECT a FROM t TABLESAMPLE RESERVOIR (10 ROWS) REPEATABLE (1)",
+                "SELECT a FROM (SELECT 1) TABLESAMPLE 10%",
+                "SELECT a FROM read_csv('x') TABLESAMPLE 10%",
+                "SELECT a FROM range(10) r USING SAMPLE 10%"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        // after DuckDB's TABLESAMPLE n, OFFSET belongs to the query
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT a FROM t TABLESAMPLE 10 OFFSET 3");
+        Assertions.assertEquals("3", select.getOffset().getOffset().toString());
+    }
+
+    @Test
+    void testDoubleEqualsOperator() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a FROM t WHERE a == 1 AND b = 2", true);
+        Assertions.assertEquals("==",
+                ((net.sf.jsqlparser.expression.operators.relational.EqualsTo) CCJSqlParserUtil
+                        .parseCondExpression("a == 1")).getStringExpression());
+    }
+
+    @Test
+    void testExponentiationOperator() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 2 ** 3, 2 * 3 ** 2, -2 ** 2", true);
+        // above the multiplicative operators, left-associative, below the unary sign
+        Assertions.assertEquals("Multiplication(2, Exponentiation(3, 2))",
+                tree(CCJSqlParserUtil.parseExpression("2 * 3 ** 2")));
+        Assertions.assertEquals("Exponentiation(Exponentiation(2, 3), 2)",
+                tree(CCJSqlParserUtil.parseExpression("2 ** 3 ** 2")));
+        Assertions.assertEquals("Exponentiation(-2, 2)",
+                tree(CCJSqlParserUtil.parseExpression("-2 ** 2")));
+    }
+
+    @Test
+    void testLikeOperators() throws JSQLParserException {
+        for (String operator : new String[] {"~~", "~~*", "~~~", "!~~", "!~~*"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(
+                    "SELECT a FROM t WHERE a " + operator + " 'x%'", true);
+        }
+        net.sf.jsqlparser.expression.operators.relational.LikeExpression like =
+                (net.sf.jsqlparser.expression.operators.relational.LikeExpression) CCJSqlParserUtil
+                        .parseCondExpression("a !~~* 'x%'");
+        Assertions.assertEquals(
+                net.sf.jsqlparser.expression.operators.relational.LikeExpression.KeyWord.ILIKE,
+                like.getLikeKeyWord());
+        Assertions.assertTrue(like.isNot());
+        // the regular expression operators are unchanged
+        Assertions.assertInstanceOf(
+                net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator.class,
+                CCJSqlParserUtil.parseCondExpression("a !~* 'x'"));
+    }
+
+    @Test
+    void testChainedSigns() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT - -1, +-+1, ++-++-+i, ~ ~a, x - -1 FROM t",
+                true);
+        Assertions.assertEquals("- - -a", CCJSqlParserUtil.parseExpression("- - -a").toString());
+    }
+
+    @Test
+    void testLikeOperatorFollowsTheModel() throws JSQLParserException {
+        net.sf.jsqlparser.expression.operators.relational.LikeExpression like =
+                (net.sf.jsqlparser.expression.operators.relational.LikeExpression) CCJSqlParserUtil
+                        .parseCondExpression("a ~~ 'x'");
+        like.setNot(true);
+        Assertions.assertEquals("a !~~ 'x'", like.toString());
+        like.setLikeKeyWord(
+                net.sf.jsqlparser.expression.operators.relational.LikeExpression.KeyWord.SIMILAR_TO);
+        Assertions.assertEquals("a NOT SIMILAR TO 'x'", like.toString());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> like.setLikeOperator("!~~~"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> like.setLikeOperator(null));
+    }
+
+    @Test
+    void testMixedSignsStaySeparate() throws JSQLParserException {
+        for (String expression : new String[] {"- ~1", "~ -1", "~ - ~a", "- ~ -a", "+ ~a"}) {
+            String deparsed = CCJSqlParserUtil.parseExpression(expression).toString();
+            Assertions.assertEquals(expression.replace(" ", ""),
+                    deparsed.replace(" ", ""));
+            Assertions.assertFalse(deparsed.contains("-~") || deparsed.contains("~-")
+                    || deparsed.contains("~~") || deparsed.contains("+~"), deparsed);
+        }
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT - ~1, ~ -1, -+1", true);
+    }
+
+    private static String tree(net.sf.jsqlparser.expression.Expression expression) {
+        if (expression instanceof net.sf.jsqlparser.expression.BinaryExpression) {
+            net.sf.jsqlparser.expression.BinaryExpression binary =
+                    (net.sf.jsqlparser.expression.BinaryExpression) expression;
+            return expression.getClass().getSimpleName() + "(" + tree(binary.getLeftExpression())
+                    + ", " + tree(binary.getRightExpression()) + ")";
+        }
+        return expression.toString();
+    }
+
+    @Test
+    void testListComprehension() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT [x * 2 FOR x IN l] FROM t",
+                "SELECT [x FOR x IN l IF x > 1] FROM t", "SELECT [x + i FOR x, i IN l] FROM t",
+                "SELECT [[y FOR y IN x] FOR x IN [[1], [2]]]",
+                "SELECT [x FOR x IN l IF x IN (1, 2)] FROM t",
+                "SELECT [x FOR x IN (SELECT list(a) FROM t)]",
+                "SELECT [x FOR x IN l][1] FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        net.sf.jsqlparser.expression.ListComprehension comprehension =
+                (net.sf.jsqlparser.expression.ListComprehension) CCJSqlParserUtil
+                        .parseExpression("[x + i FOR x, i IN l IF x > 1]");
+        Assertions.assertEquals("x + i", comprehension.getExpression().toString());
+        Assertions.assertEquals(Arrays.asList("x", "i"), comprehension.getVariables());
+        Assertions.assertEquals("l", comprehension.getList().toString());
+        Assertions.assertEquals("x > 1", comprehension.getCondition().toString());
+
+        Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
+                new HashSet<>(new TablesNamesFinder<>().getTables(CCJSqlParserUtil.parse(
+                        "SELECT [x FOR x IN (SELECT list(a) FROM u)] FROM t"))));
+    }
+
+    @Test
+    @Timeout(10)
+    void testLargeArrayIsScannedOnce() throws JSQLParserException {
+        StringBuilder sql = new StringBuilder("SELECT [0");
+        for (int i = 1; i < 20000; i++) {
+            sql.append(", ").append(i);
+        }
+        CCJSqlParserUtil.parse(sql.append("]").toString());
+    }
+
+    @Test
+    void testStarRenameAndUnparenthesizedModifiers() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT * RENAME (i AS x, j AS y) FROM t",
+                "SELECT * RENAME i AS x FROM t", "SELECT * EXCLUDE i FROM t",
+                "SELECT * EXCLUDE t.i FROM t", "SELECT * REPLACE i + 1 AS i FROM t",
+                "SELECT * EXCLUDE (k) RENAME (i AS x) FROM t",
+                "SELECT t.* RENAME t.i AS x FROM t",
+                "SELECT COLUMNS(* REPLACE i + 1 AS i) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * RENAME (i AS x) FROM t");
+        net.sf.jsqlparser.expression.ColumnsTransformer rename =
+                ((AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0);
+        Assertions.assertEquals(
+                net.sf.jsqlparser.expression.ColumnsTransformer.ColumnsTransformerType.RENAME,
+                rename.getType());
+        Assertions.assertEquals("i AS x", rename.getRenameItems().get(0).toString());
+
+        // a star aliased rename or replace keeps parsing
+        for (String sqlStr : new String[] {"SELECT * rename FROM t", "SELECT * replace FROM t",
+                "SELECT t.* rename, b FROM t", "SELECT * rename(a, b) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        // DuckDB reads a parenthesized expression followed by AS as the single item
+        select = (PlainSelect) CCJSqlParserUtil.parse("SELECT * REPLACE (a + 1) AS a FROM t");
+        Assertions.assertEquals("(a + 1) AS a",
+                ((AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0).getReplaceItems().get(0)
+                        .toString());
+    }
+
+    @Test
+    void testTrailingCommaInSelectList() throws JSQLParserException {
+        Assertions.assertEquals("SELECT i, j FROM t WHERE i > 0",
+                CCJSqlParserUtil.parse("SELECT i, j, FROM t WHERE i > 0").toString());
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT * RENAME i FROM t"));
+        Assertions.assertEquals("SELECT 1 LIMIT 1",
+                CCJSqlParserUtil.parse("SELECT 1, LIMIT 1").toString());
+        Assertions.assertEquals("SELECT (SELECT 1)",
+                CCJSqlParserUtil.parse("SELECT (SELECT 1,)").toString());
+        // keywords that may name a column or a function still do
+        for (String item : new String[] {"limit", "offset", "group", "order", "qualify",
+                "limit(1)", "offset(1)", "group by", "order by"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + item + " FROM t", true);
+        }
+    }
+
+    @Test
+    void testWindowAndFilterForms() throws JSQLParserException {
+        for (String sqlStr : new String[] {
+                "SELECT a FROM t WINDOW w AS (ORDER BY a) QUALIFY row_number() OVER w = 1",
+                "SELECT a FROM t QUALIFY row_number() OVER w = 1 WINDOW w AS (ORDER BY a)",
+                "SELECT sum(a) OVER (w ROWS 2 PRECEDING) FROM t WINDOW w AS (ORDER BY b)",
+                "SELECT sum(a) OVER (w) FROM t WINDOW w AS (ORDER BY b)",
+                "SELECT sum(a) OVER w2 FROM t WINDOW w AS (PARTITION BY c), w2 AS (w ORDER BY b)",
+                "SELECT sum(a) OVER (ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM t",
+                "SELECT sum(a) FILTER (b > 1) FROM t",
+                "SELECT count(*) FILTER (b > 1) OVER () FROM t",
+                // window specifications inside syntactic lookahead
+                "SELECT JSON_VALUE(j, '$.a' DEFAULT sum(a) OVER (PARTITION BY b) ON EMPTY) FROM t",
+                "SELECT JSON_VALUE(j, '$.a' DEFAULT sum(a) OVER (w ORDER BY b) ON EMPTY) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+                "SELECT sum(a) FILTER (b > 1) OVER (w ORDER BY c) FROM t WINDOW w AS (PARTITION BY d)");
+        net.sf.jsqlparser.expression.AnalyticExpression sum =
+                (net.sf.jsqlparser.expression.AnalyticExpression) select.getSelectItem(0)
+                        .getExpression();
+        Assertions.assertFalse(sum.isFilterWhereKeyword());
+        Assertions.assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(
+                "SELECT percentile_cont(0.5) WITHIN GROUP (w ORDER BY a) FROM t"));
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT a FROM t ORDER SIBLINGS BY a QUALIFY x = 1"));
+        // PostgreSQL requires WHERE
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT sum(a) FILTER (b > 1) FROM t",
+                        parser -> parser.withDialect(
+                                net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect.POSTGRESQL)));
+        Assertions.assertEquals("w", sum.getWindowDefinition().getBaseWindowName());
     }
 }

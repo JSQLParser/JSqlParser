@@ -15,6 +15,14 @@ import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.MapExpression;
+import net.sf.jsqlparser.expression.JdbcNamedParameter;
+import net.sf.jsqlparser.expression.TernaryExpression;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.SupportsOldOracleJoinSyntax;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParserKeywordsUtils;
 import net.sf.jsqlparser.schema.Column;
@@ -94,6 +102,36 @@ public class KeywordsTest {
     @ParameterizedTest
     @ValueSource(strings = {"sample", "extend", "SaMpLe", "ExTeNd"})
     void testSampleExtendImplicitAliases(String keyword) throws JSQLParserException {
+    // exists is a non-reserved keyword in the common dialects and reaches the
+    // parser as an ordinary column name in downstream rewriting tools.
+    @Test
+    public void testExistsAsIdentifier() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT exists FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT mytable.exists FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE exists = 1", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable ORDER BY exists", true);
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET exists = 1 WHERE id = 1", true);
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (exists) VALUES (1)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a AS exists FROM mytable", true);
+    }
+
+    // the guarded keyword form keeps its operator meaning
+    @Test
+    public void testExistsPredicateStaysPredicate() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT EXISTS (SELECT 1 FROM x) FROM mytable", true);
+        assertInstanceOf(ExistsExpression.class, select.getSelectItem(0).getExpression());
+        PlainSelect negated = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM mytable WHERE NOT EXISTS (SELECT 1 FROM x)", true);
+        assertInstanceOf(ExistsExpression.class,
+                assertInstanceOf(NotExpression.class, negated.getWhere()).getExpression());
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE EXISTS (SELECT 1 FROM x)",
+                true);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"exists", "ExIsTs"})
+    void testExistsImplicitAliases(String keyword) throws JSQLParserException {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
                 "SELECT a " + keyword + " FROM mytable " + keyword, true);
         assertEquals(keyword, select.getSelectItem(0).getAlias().getName());
@@ -103,8 +141,8 @@ public class KeywordsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sample", "extend", "SaMpLe", "ExTeNd"})
-    void testSampleExtendCte(String keyword) throws JSQLParserException {
+    @ValueSource(strings = {"exists", "ExIsTs", "sample", "extend", "SaMpLe", "ExTeNd"})
+    void testExistsCte(String keyword) throws JSQLParserException {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
                 "WITH " + keyword + "(x) AS (SELECT 1) SELECT x FROM " + keyword, true);
         WithItem<?> withItem = select.getWithItemsList().get(0);
@@ -117,8 +155,8 @@ public class KeywordsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sample", "extend", "SaMpLe", "ExTeNd"})
-    void testSampleExtendExpressionContexts(String keyword) throws JSQLParserException {
+    @ValueSource(strings = {"exists", "ExIsTs", "sample", "extend", "SaMpLe", "ExTeNd"})
+    void testExistsExpressionContexts(String keyword) throws JSQLParserException {
         PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
                 "SELECT ALL " + keyword + " FROM mytable");
         assertEquals(keyword, assertInstanceOf(Column.class,
@@ -129,8 +167,8 @@ public class KeywordsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sample", "extend", "SaMpLe", "ExTeNd"})
-    void testSampleExtendTernaryOperand(String keyword) throws JSQLParserException {
+    @ValueSource(strings = {"exists", "ExIsTs", "sample", "extend", "SaMpLe", "ExTeNd"})
+    void testExistsTernaryOperand(String keyword) throws JSQLParserException {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
                 "SELECT flag ? " + keyword + " : 0 FROM mytable", true);
         TernaryExpression ternary = assertInstanceOf(TernaryExpression.class,
@@ -169,5 +207,137 @@ public class KeywordsTest {
                 "SELECT ALL " + keyword + "(x) FROM mytable");
         assertEquals(keyword, assertInstanceOf(Function.class,
                 select.getSelectItem(0).getExpression()).getName());
+    }
+      
+    @Test
+    void testExistsColumnWithOracleJoin() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM mytable WHERE exists(+) = 1", true);
+        EqualsTo equals = assertInstanceOf(EqualsTo.class, select.getWhere());
+        assertEquals("exists", assertInstanceOf(Column.class, equals.getLeftExpression())
+                .getColumnName());
+        assertEquals(SupportsOldOracleJoinSyntax.ORACLE_JOIN_RIGHT,
+                ((Column) equals.getLeftExpression()).getOldOracleJoinSyntax());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"SELECT 1", "VALUES (1)"})
+    void testExistsUnparenthesizedSubSelect(String query) throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT EXISTS " + query, true, p -> p.withUnparenthesizedSubSelects(true));
+        assertInstanceOf(ExistsExpression.class, select.getSelectItem(0).getExpression());
+        PlainSelect where = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM mytable WHERE EXISTS " + query, true,
+                p -> p.withUnparenthesizedSubSelects(true));
+        assertInstanceOf(ExistsExpression.class, where.getWhere());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"a", "t.a", "[1]", "+1", "(1)", "(+1)", ":arr", "limit", "offset"})
+    void testExistsBareOperandStaysPredicate(String operand) throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT EXISTS " + operand + " FROM t", true);
+        ExistsExpression exists = assertInstanceOf(ExistsExpression.class,
+                select.getSelectItem(0).getExpression());
+        assertEquals(operand, exists.getRightExpression().toString());
+        PlainSelect where = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t WHERE EXISTS " + operand, true);
+        assertInstanceOf(ExistsExpression.class, where.getWhere());
+    }
+
+    @Test
+    void testExistsNamedParameterInTernary() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT flag ? EXISTS :arr : 0 FROM t", true);
+        TernaryExpression ternary = assertInstanceOf(TernaryExpression.class,
+                select.getSelectItem(0).getExpression());
+        ExistsExpression exists = assertInstanceOf(ExistsExpression.class,
+                ternary.getThenExpression());
+        assertEquals("arr", assertInstanceOf(JdbcNamedParameter.class,
+                exists.getRightExpression()).getName());
+    }
+
+    @Test
+    void testExistsMapKey() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT MAP {exists: 1}", true);
+        MapExpression map = assertInstanceOf(MapExpression.class,
+                select.getSelectItem(0).getExpression());
+        assertEquals("exists", assertInstanceOf(Column.class, map.getEntries().get(0).getKey())
+                .getColumnName());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"IN (1, 2)", "NOT IN (1, 2)"})
+    void testExistsColumnInCondition(String suffix) throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t WHERE exists " + suffix, true);
+        InExpression in = assertInstanceOf(InExpression.class, select.getWhere());
+        assertEquals("exists", assertInstanceOf(Column.class, in.getLeftExpression())
+                .getColumnName());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ORDER BY id", "ORDER SIBLINGS BY id", "GROUP BY id", "LIMIT 1",
+            "LIMIT 1.0", "LIMIT ALL", "LIMIT NULL", "LIMIT ?", "LIMIT $1", "LIMIT :n", "LIMIT &n",
+            "OFFSET 1", "OFFSET 1.0", "OFFSET ?", "OFFSET $1", "OFFSET :n", "OFFSET &n"})
+    void testExistsColumnBeforeClause(String suffix) throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT * FROM t WHERE exists " + suffix, true);
+        assertEquals("exists", assertInstanceOf(Column.class, select.getWhere()).getColumnName());
+        if (suffix.startsWith("LIMIT")) {
+            assertNotNull(select.getLimit());
+            assertEquals(suffix, select.getLimit().toString().trim());
+        } else if (suffix.startsWith("OFFSET")) {
+            assertNotNull(select.getOffset());
+            assertEquals(suffix, select.getOffset().toString().trim());
+        }
+    }
+
+    @Test
+    void testExistsBeforeNestedTernary() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT flag ? exists : b ? c : d FROM t", true);
+        TernaryExpression ternary = assertInstanceOf(TernaryExpression.class,
+                select.getSelectItem(0).getExpression());
+        assertEquals("exists", assertInstanceOf(Column.class, ternary.getThenExpression())
+                .getColumnName());
+        assertInstanceOf(TernaryExpression.class, ternary.getElseExpression());
+        PlainSelect mapSelect = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
+                "SELECT MAP {exists: b ? c : d}", true);
+        MapExpression map = assertInstanceOf(MapExpression.class,
+                mapSelect.getSelectItem(0).getExpression());
+        assertEquals("exists", assertInstanceOf(Column.class, map.getEntries().get(0).getKey())
+                .getColumnName());
+        assertInstanceOf(TernaryExpression.class, map.getEntries().get(0).getValue());
+    }
+      
+    // ERRORS introduces Exasol's IMPORT/EXPORT error clauses but is an ordinary name elsewhere,
+    // e.g. a DuckDB column holding the errors of an upstream step.
+    @Test
+    public void testErrorsAsIdentifier() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT errors FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.errors AS errors FROM mytable t", true);
+        assertSqlCanBeParsedAndDeparsed("WITH errors AS (SELECT 1) SELECT * FROM errors", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (errors VARCHAR)", true);
+    }
+
+    // Dialect-specific clause words (Exasol IMPORT/EXPORT, ClickHouse PREWHERE/SETTINGS, CREATE
+    // FUNCTION ... RETURNS) are ordinary names in other dialects, e.g. PostgreSQL or DuckDB.
+    @Test
+    public void testDialectClauseWordsAsIdentifiers() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT csv, fbv, file, prewhere, returns, script, settings, verify FROM mytable",
+                true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.file, t.settings FROM mytable t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM settings", true);
+        assertSqlCanBeParsedAndDeparsed("WITH file AS (SELECT 1) SELECT * FROM file", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (csv VARCHAR, settings JSON)", true);
+    }
+
+    @Test
+    public void testClickHouseClausesAfterTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable PREWHERE b = 1 WHERE c = 2", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable SETTINGS max_threads = 8", true);
     }
 }

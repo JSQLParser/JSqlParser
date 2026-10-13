@@ -14,6 +14,7 @@ import java.util.Collection;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.imprt.Import;
@@ -117,7 +118,11 @@ public class FromItemVisitorAdapter<T> implements FromItemVisitor<T> {
 
     @Override
     public <S> T visit(TableFunction tableFunction, S context) {
-
+        if (tableFunction.getFunctions() != null) {
+            for (Function function : tableFunction.getFunctions()) {
+                function.accept(expressionVisitor, context);
+            }
+        }
         return null;
     }
 

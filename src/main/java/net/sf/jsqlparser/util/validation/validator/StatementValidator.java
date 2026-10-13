@@ -76,6 +76,7 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
@@ -510,6 +511,12 @@ public class StatementValidator extends AbstractValidator<Statement>
     }
 
     @Override
+    public <S> Void visit(TableMaintenanceStatement statement, S context) {
+        getValidator(TableMaintenanceValidator.class).validate(statement);
+        return null;
+    }
+
+    @Override
     public <S> Void visit(SavepointStatement savepointStatement, S context) {
         // TODO: not yet implemented
         return null;
@@ -821,6 +828,11 @@ public class StatementValidator extends AbstractValidator<Statement>
 
     public void visit(Analyze analyze) {
         visit(analyze, null);
+    }
+
+    @Override
+    public void visit(TableMaintenanceStatement statement) {
+        visit(statement, null);
     }
 
     public void visit(SavepointStatement savepointStatement) {

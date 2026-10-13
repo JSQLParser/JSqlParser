@@ -14,10 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.expression.Expression;
@@ -27,6 +25,7 @@ import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyConstraint;
@@ -42,7 +41,6 @@ public class AlterExpression implements Serializable {
         NONE, TO, AS
     }
 
-    private final Set<ReferentialAction> referentialActions = new LinkedHashSet<>(2);
     private AlterOperation operation;
     private String optionalSpecifier;
     private Table newTable;
@@ -57,9 +55,7 @@ public class AlterExpression implements Serializable {
     private List<ColumnSetDefault> columnSetDefaultList;
     private List<ColumnSetVisibility> columnSetVisibilityList;
 
-    private List<String> pkColumns;
-    private List<String> ukColumns;
-    private String ukName;
+    private List<String> dropColumns;
     private Index index = null;
     private Index oldIndex = null;
     private NamedConstraint constraint;
@@ -67,35 +63,6 @@ public class AlterExpression implements Serializable {
     private String constraintName;
     private boolean usingIfExists;
 
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private List<String> fkColumns;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private String fkSourceSchema;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private String fkSourceTable;
-
-    /**
-     * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
-     */
-    @Deprecated
-    private List<String> fkSourceColumns;
-    private boolean uk;
-    private boolean ukTypeSpecified;
     private boolean useEqual;
 
     private List<String> partitions;
@@ -183,16 +150,20 @@ public class AlterExpression implements Serializable {
      */
     @Deprecated
     public String getFkSourceSchema() {
-        return fkSourceSchema;
+        Table table = getForeignKeyTable();
+        return table == null ? null : table.getSchemaName();
     }
 
     /**
+     * Updates only the referenced schema identifier, preserving its quoting and the table's other
+     * name parts. Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceSchema(String fkSourceSchema) {
-        this.fkSourceSchema = fkSourceSchema;
+        setForeignKeyTablePart(fkSourceSchema, 1);
     }
 
     public String getCommentText() {
@@ -228,8 +199,13 @@ public class AlterExpression implements Serializable {
     }
 
     /**
+     * Updates the stored foreign key's referential action without replacing its object or column
+     * list. A null action removes it. Uses the creation and replacement policy of
+     * {@link #setFkColumns(List)}.
+     *
      * @param type
      * @param action
+     * @throws IllegalStateException if a non-null action would replace a different definition
      * @deprecated Standalone FK fields are deprecated. Use a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} via
      *             {@link #setConstraint(NamedConstraint)} instead.
@@ -258,28 +234,27 @@ public class AlterExpression implements Serializable {
     }
 
     /**
+     * Returns the action owned by the stored foreign key, or null when absent. Changes to the
+     * returned object are reflected in the constraint.
+     *
      * @param type
      * @return
      * @deprecated Standalone FK fields are deprecated.
      */
     @Deprecated
     public ReferentialAction getReferentialAction(Type type) {
-        return referentialActions.stream()
-                .filter(ra -> type.equals(ra.getType()))
-                .findFirst()
-                .orElse(null);
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getReferentialAction(type);
     }
 
     private void setReferentialAction(Type type, Action action, boolean set) {
-        ReferentialAction found = getReferentialAction(type);
-        if (set) {
-            if (found == null) {
-                referentialActions.add(new ReferentialAction(type, action));
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(set && action != null);
+        if (foreignKey != null) {
+            if (set && action != null) {
+                foreignKey.setReferentialAction(type, action);
             } else {
-                found.setAction(action);
+                foreignKey.removeReferentialAction(type);
             }
-        } else if (found != null) {
-            referentialActions.remove(found);
         }
     }
 
@@ -344,21 +319,41 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getConstraint()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
+     * Returns a rendered snapshot of the stored foreign key's elements, or null when absent.
+     * Changing the snapshot does not change the constraint; use {@link #setFkColumns(List)} to
+     * replace its keys, or {@link ForeignKeyConstraint#getColumns()} for structured edits.
+     *
+     * @deprecated Use {@link #getConstraint()} with a {@link ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkColumns() {
-        return fkColumns;
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null || foreignKey.getColumns() == null ? null
+                : foreignKey.getColumnsNames();
     }
 
     /**
+     * Replaces the stored foreign key's elements with opaque names without parsing or retaining
+     * element attributes. A non-null value creates a foreign key when no definition exists, but
+     * never replaces a different constraint or an ordinary index; use
+     * {@link #setConstraint(NamedConstraint)} to replace a definition explicitly. A null value
+     * clears existing foreign-key elements without creating a constraint. Other actions and their
+     * rendering precedence are unchanged.
+     *
+     * @throws IllegalStateException if a non-null value would replace a different definition
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkColumns(List<String> fkColumns) {
-        this.fkColumns = fkColumns;
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(fkColumns != null);
+        if (foreignKey != null) {
+            if (fkColumns == null) {
+                foreignKey.setColumns(null);
+            } else {
+                foreignKey.setColumnsNames(fkColumns);
+            }
+        }
     }
 
     /**
@@ -367,16 +362,63 @@ public class AlterExpression implements Serializable {
      */
     @Deprecated
     public String getFkSourceTable() {
-        return fkSourceTable;
+        Table table = getForeignKeyTable();
+        return table == null ? null : table.getName();
     }
 
     /**
+     * Updates only the referenced table identifier, preserving its quoting and the table's other
+     * name parts. Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceTable(String fkSourceTable) {
-        this.fkSourceTable = fkSourceTable;
+        setForeignKeyTablePart(fkSourceTable, 0);
+    }
+
+    private ForeignKeyConstraint getForeignKeyConstraint() {
+        return constraint instanceof ForeignKeyConstraint ? (ForeignKeyConstraint) constraint
+                : null;
+    }
+
+    private ForeignKeyConstraint foreignKeyForUpdate(boolean create) {
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        if (foreignKey == null && create) {
+            if (constraint != null || index != null || getPkColumns() != null
+                    || getUkColumns() != null) {
+                throw new IllegalStateException(
+                        "Foreign-key setters cannot replace an existing definition; use setConstraint");
+            }
+            foreignKey = new ForeignKeyConstraint();
+            setConstraint(foreignKey);
+        }
+        return foreignKey;
+    }
+
+    private Table getForeignKeyTable() {
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getTable();
+    }
+
+    private void setForeignKeyTablePart(String value, int partIndex) {
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(value != null);
+        if (foreignKey == null || foreignKey.getTable() == null && value == null) {
+            return;
+        }
+        if (foreignKey.getTable() == null) {
+            foreignKey.setTable(new Table());
+        }
+        Table table = foreignKey.getTable();
+        // Table stores identifier parts in name-first order. Updating raw parts avoids splitting
+        // quoted identifiers containing dots and leaves the existing Table object attached.
+        List<String> parts = new ArrayList<>(table.getNameParts());
+        while (parts.size() <= partIndex) {
+            parts.add(null);
+        }
+        parts.set(partIndex, value);
+        table.setNameParts(parts);
     }
 
     public List<ColumnDataType> getColDataTypeList() {
@@ -436,12 +478,40 @@ public class AlterExpression implements Serializable {
      * existing action-specific API to add or remove entries.
      */
     public List<ColumnDefaultAction> getColumnDefaults() {
-        if (operation != AlterOperation.ALTER || columnSetDefaultList == null
-                || constraintType != null && constraintSymbol != null
+        if (!usesColumnActionBody() || columnSetDefaultList == null
                 || columnDropDefaultList != null && !columnDropDefaultList.isEmpty()) {
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(columnSetDefaultList);
+    }
+
+    /**
+     * Returns active ALTER COLUMN identity actions without treating them as data-type changes. The
+     * list is an unmodifiable membership snapshot; its entries are the original mutable column
+     * nodes. Request a new list after adding, removing or changing actions. Subclasses that render
+     * a different body override this method to exclude inactive inherited column definitions.
+     */
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        if (hasExplicitConstraintHeader() || isRenameOperation() || hasAlterColumnValueActions()) {
+            return Collections.emptyList();
+        }
+        return getColumnIdentityActionsFromDefinitions();
+    }
+
+    /** Returns identity actions when this body's general column-definition branch is active. */
+    protected List<ColumnIdentityAction> getColumnIdentityActionsFromDefinitions() {
+        if (operation != AlterOperation.ALTER || colDataTypeList == null
+                || columnName != null || commentText != null) {
+            return Collections.emptyList();
+        }
+        List<ColumnIdentityAction> actions = new ArrayList<>();
+        for (ColumnDataType column : colDataTypeList) {
+            if (column.getIdentityAlterations() != null
+                    && !column.getIdentityAlterations().isEmpty()) {
+                actions.add(column);
+            }
+        }
+        return Collections.unmodifiableList(actions);
     }
 
     public void addColSetVisibility(ColumnSetVisibility columnSetVisibility) {
@@ -456,21 +526,29 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * @deprecated Use {@link #getConstraint()} with
-     *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
+     * Returns the referenced-column list owned by the stored foreign key, or null when absent.
+     * Changes to the returned list are reflected in the constraint.
+     *
+     * @deprecated Use {@link #getConstraint()} with a {@link ForeignKeyConstraint} instead.
      */
     @Deprecated
     public List<String> getFkSourceColumns() {
-        return fkSourceColumns;
+        ForeignKeyConstraint foreignKey = getForeignKeyConstraint();
+        return foreignKey == null ? null : foreignKey.getReferencedColumnNames();
     }
 
     /**
+     * Uses the creation and replacement policy of {@link #setFkColumns(List)}.
+     *
      * @deprecated Use {@link #setConstraint(NamedConstraint)} with a
      *             {@link net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint} instead.
      */
     @Deprecated
     public void setFkSourceColumns(List<String> fkSourceColumns) {
-        this.fkSourceColumns = fkSourceColumns;
+        ForeignKeyConstraint foreignKey = foreignKeyForUpdate(fkSourceColumns != null);
+        if (foreignKey != null) {
+            foreignKey.setReferencedColumnNames(fkSourceColumns);
+        }
     }
 
     public String getNewTableName() {
@@ -551,75 +629,144 @@ public class AlterExpression implements Serializable {
     }
 
     /**
-     * Returns a snapshot of the rendered key elements for a structured PRIMARY_KEY, or the legacy
-     * list otherwise. Changing the snapshot does not change the constraint; use
-     * {@link #setPkColumns(List)} to replace its keys, or {@link KeyConstraint#getColumns()} for
-     * structured edits.
+     * Returns the stored key definition, or null for another definition. The returned object is
+     * shared with {@link #getConstraint()} and can be edited directly.
      */
-    public List<String> getPkColumns() {
-        return hasKeyConstraint(ConstraintKind.PRIMARY_KEY)
-                ? ((KeyConstraint) constraint).getColumnsNames()
-                : pkColumns;
+    public KeyConstraint getKeyConstraint() {
+        return constraint instanceof KeyConstraint ? (KeyConstraint) constraint : null;
     }
 
     /**
-     * Replaces a structured PRIMARY_KEY's elements using
-     * {@link KeyConstraint#setColumnsNames(List)}. The strings are not parsed and existing element
-     * attributes are not retained, even when the rendered SQL is unchanged. Use
-     * {@link KeyConstraint#setColumns(List)} to preserve structured elements. Without a matching
-     * constraint, stores the legacy list.
+     * Returns the owned mutable column targets for parenthesized DROP, DROP UNIQUE or DROP FOREIGN
+     * KEY syntax, or null when omitted. Stored targets are independent of any ADD definition.
+     */
+    public List<String> getDropColumns() {
+        return dropColumns;
+    }
+
+    /** Copies the supplied targets without changing the operation or any stored definition. */
+    public void setDropColumns(List<String> dropColumns) {
+        this.dropColumns = dropColumns == null ? null : new ArrayList<>(dropColumns);
+    }
+
+    public AlterExpression withDropColumns(List<String> dropColumns) {
+        setDropColumns(dropColumns);
+        return this;
+    }
+
+    public AlterExpression addDropColumns(String... columns) {
+        return addDropColumns(Arrays.asList(columns));
+    }
+
+    public AlterExpression addDropColumns(Collection<String> columns) {
+        if (dropColumns == null) {
+            dropColumns = new ArrayList<>();
+        }
+        dropColumns.addAll(columns);
+        return this;
+    }
+
+    /**
+     * Returns a rendered snapshot of the stored PRIMARY KEY's elements, or null when absent. For
+     * DROP, DROP UNIQUE and DROP FOREIGN KEY operations this legacy accessor instead returns a
+     * snapshot of {@link #getDropColumns()}. Snapshot edits never change the AST. New code should
+     * use {@link #getKeyConstraint()} or {@link #getDropColumns()} explicitly.
+     */
+    public List<String> getPkColumns() {
+        if (usesLegacyDropColumns()) {
+            return dropColumns == null ? null : new ArrayList<>(dropColumns);
+        }
+        return hasKeyConstraint(ConstraintKind.PRIMARY_KEY)
+                ? ((KeyConstraint) constraint).getColumnsNames()
+                : null;
+    }
+
+    /**
+     * Replaces PRIMARY KEY elements with opaque names, without parsing or retaining element
+     * attributes. A non-null list creates a definition when none exists; a competing definition
+     * must be replaced explicitly using {@link #setConstraint(NamedConstraint)}. Null clears only
+     * an existing PRIMARY KEY's elements and does not create a definition. With DROP, DROP UNIQUE
+     * or DROP FOREIGN KEY already selected, delegates to {@link #setDropColumns(List)} instead. Set
+     * the operation first for this legacy DROP alias; new builders should use setDropColumns.
+     *
+     * @throws IllegalStateException if a non-null list would replace another definition
      */
     public void setPkColumns(List<String> pkColumns) {
-        if (hasKeyConstraint(ConstraintKind.PRIMARY_KEY)) {
-            ((KeyConstraint) constraint).setColumnsNames(pkColumns);
-            this.pkColumns = null;
-        } else {
-            this.pkColumns = pkColumns;
+        if (usesLegacyDropColumns()) {
+            setDropColumns(pkColumns);
+            return;
+        }
+        KeyConstraint key = keyForUpdate(ConstraintKind.PRIMARY_KEY, pkColumns != null);
+        if (key != null) {
+            key.setColumnsNames(pkColumns);
         }
     }
 
     /**
-     * Returns a snapshot of the rendered key elements for a structured UNIQUE, or the legacy list
-     * otherwise. Changing the snapshot does not change the constraint; use
-     * {@link #setUkColumns(List)} to replace its keys, or {@link KeyConstraint#getColumns()} for
-     * structured edits.
+     * Returns a snapshot of the stored UNIQUE's elements, or null when absent. Changing the
+     * snapshot does not change the constraint; use {@link #setUkColumns(List)} to replace its keys,
+     * or {@link KeyConstraint#getColumns()} for structured edits.
      */
     public List<String> getUkColumns() {
         return hasKeyConstraint(ConstraintKind.UNIQUE)
                 ? ((KeyConstraint) constraint).getColumnsNames()
-                : ukColumns;
+                : null;
     }
 
     /**
      * Replaces a structured UNIQUE's elements using {@link KeyConstraint#setColumnsNames(List)}.
      * The strings are not parsed and existing element attributes are not retained, even when the
      * rendered SQL is unchanged. Use {@link KeyConstraint#setColumns(List)} to preserve structured
-     * elements. Without a matching constraint, stores the legacy list.
+     * elements. A non-null list creates a UNIQUE definition only when none exists; a competing
+     * definition must be replaced explicitly. Null clears only an existing UNIQUE's elements.
+     *
+     * @throws IllegalStateException if a non-null list would replace another definition
      */
     public void setUkColumns(List<String> ukColumns) {
-        if (hasKeyConstraint(ConstraintKind.UNIQUE)) {
-            ((KeyConstraint) constraint).setColumnsNames(ukColumns);
-            this.ukColumns = null;
-        } else {
-            this.ukColumns = ukColumns;
+        KeyConstraint key = keyForUpdate(ConstraintKind.UNIQUE, ukColumns != null);
+        if (key != null) {
+            key.setColumnsNames(ukColumns);
         }
+    }
+
+    private boolean usesLegacyDropColumns() {
+        return operation == AlterOperation.DROP || operation == AlterOperation.DROP_UNIQUE
+                || operation == AlterOperation.DROP_FOREIGN_KEY;
     }
 
     private boolean hasKeyConstraint(ConstraintKind kind) {
         return constraint instanceof KeyConstraint && constraint.getKind() == kind;
     }
 
+    private KeyConstraint keyForUpdate(ConstraintKind kind, boolean create) {
+        if (hasKeyConstraint(kind)) {
+            return (KeyConstraint) constraint;
+        }
+        if (!create) {
+            return null;
+        }
+        if (constraint != null || index != null || getFkColumns() != null) {
+            throw new IllegalStateException(
+                    "Key setters cannot replace an existing definition; use setConstraint");
+        }
+        KeyConstraint key = new KeyConstraint()
+                .withType(kind == ConstraintKind.PRIMARY_KEY ? "PRIMARY KEY" : "UNIQUE");
+        setConstraint(key);
+        return key;
+    }
+
     public String getUkName() {
         return hasKeyConstraint(ConstraintKind.UNIQUE)
                 ? ((KeyConstraint) constraint).getIndexName()
-                : ukName;
+                : null;
     }
 
+    /** Uses the creation and replacement policy of {@link #setUkColumns(List)}. */
     public void setUkName(String ukName) {
-        if (hasKeyConstraint(ConstraintKind.UNIQUE)) {
-            ((KeyConstraint) constraint).setIndexName(ukName);
+        KeyConstraint key = keyForUpdate(ConstraintKind.UNIQUE, ukName != null);
+        if (key != null) {
+            key.setIndexName(ukName);
         }
-        this.ukName = ukName;
     }
 
     public Index getIndex() {
@@ -671,13 +818,7 @@ public class AlterExpression implements Serializable {
         if (index != null) {
             return ConstraintKind.OTHER;
         }
-        if (pkColumns != null) {
-            return ConstraintKind.PRIMARY_KEY;
-        }
-        if (ukColumns != null) {
-            return ConstraintKind.UNIQUE;
-        }
-        return fkColumns != null ? ConstraintKind.FOREIGN_KEY : ConstraintKind.OTHER;
+        return ConstraintKind.OTHER;
     }
 
     private boolean hasColumnOrNamedTarget() {
@@ -838,20 +979,53 @@ public class AlterExpression implements Serializable {
     }
 
     public boolean getUk() {
-        return uk;
+        return "KEY".equalsIgnoreCase(getUniqueIndexKeyword());
     }
 
+    /** Selects KEY when true or INDEX when false on the stored UNIQUE definition. */
     public void setUk(boolean uk) {
-        this.uk = uk;
-        this.ukTypeSpecified = true;
+        setUniqueIndexKeyword(keyForUpdate(ConstraintKind.UNIQUE, true), uk ? "KEY" : "INDEX");
     }
 
     public boolean isUkTypeSpecified() {
-        return ukTypeSpecified;
+        return getUniqueIndexKeyword() != null;
     }
 
+    /**
+     * Removes the explicit KEY/INDEX spelling when false. When true, retains an existing spelling
+     * or selects INDEX. Clearing an absent UNIQUE definition does not create one.
+     */
     public void setUkTypeSpecified(boolean ukTypeSpecified) {
-        this.ukTypeSpecified = ukTypeSpecified;
+        KeyConstraint key = keyForUpdate(ConstraintKind.UNIQUE, ukTypeSpecified);
+        if (key != null) {
+            String keyword = getUniqueIndexKeyword();
+            setUniqueIndexKeyword(key,
+                    ukTypeSpecified ? keyword == null ? "INDEX" : keyword : null);
+        }
+    }
+
+    private String getUniqueIndexKeyword() {
+        KeyConstraint key = keyForUpdate(ConstraintKind.UNIQUE, false);
+        if (key == null) {
+            return null;
+        }
+        if (key.getIndexKeyword() != null) {
+            return key.getIndexKeyword();
+        }
+        if ("UNIQUE KEY".equalsIgnoreCase(key.getType())) {
+            return "KEY";
+        }
+        return "UNIQUE INDEX".equalsIgnoreCase(key.getType()) ? "INDEX" : null;
+    }
+
+    private void setUniqueIndexKeyword(KeyConstraint key, String keyword) {
+        if (hasLegacyKeyConstraint() || "UNIQUE KEY".equalsIgnoreCase(key.getType())
+                || "UNIQUE INDEX".equalsIgnoreCase(key.getType())) {
+            key.setType("UNIQUE" + (keyword == null ? "" : " " + keyword));
+            key.setIndexKeyword(null);
+        } else {
+            key.setIndexKeyword(keyword);
+        }
     }
 
     public boolean isUseIfNotExists() {
@@ -994,10 +1168,7 @@ public class AlterExpression implements Serializable {
             b.append(optionalSpecifier);
         } else if (hasExplicitConstraintHeader()) {
             toStringConstraintAlter(b);
-        } else if (operation == AlterOperation.ALTER
-                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
-                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
-                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty())) {
+        } else if (usesColumnActionBody()) {
             toStringAlterColumn(b);
         } else if (isSimpleKeywordOperation()) {
             toStringSimpleKeyword(b);
@@ -1012,6 +1183,39 @@ public class AlterExpression implements Serializable {
         } else {
             toStringGeneral(b);
         }
+    }
+
+    private boolean hasAlterColumnValueActions() {
+        return operation == AlterOperation.ALTER
+                && (columnDropDefaultList != null && !columnDropDefaultList.isEmpty()
+                        || columnSetDefaultList != null && !columnSetDefaultList.isEmpty()
+                        || columnSetVisibilityList != null && !columnSetVisibilityList.isEmpty());
+    }
+
+    /**
+     * Whether the selected body renders ALTER COLUMN default or visibility actions. Subclasses
+     * overriding {@link #appendBody(StringBuilder)} must reflect their dispatch here as well.
+     */
+    protected boolean usesColumnActionBody() {
+        return hasAlterColumnValueActions() && !hasExplicitConstraintHeader();
+    }
+
+    /**
+     * Whether this action currently renders its column definitions through the general body.
+     * Inactive column metadata is retained in the AST but must not select a different body when
+     * deparsing. Subclasses with their own body dispatch override this method accordingly.
+     */
+    public boolean hasActiveColumnDefinitions() {
+        return hasColumnDefinitionPayload() && operation != AlterOperation.UNSPECIFIC
+                && !hasExplicitConstraintHeader() && !usesColumnActionBody()
+                && !isSimpleKeywordOperation() && !isRenameOperation() && !isDropSpecialOperation()
+                && operation != AlterOperation.CONVERT && operation != AlterOperation.COLLATE
+                && !isPartitionOperation();
+    }
+
+    /** Whether column definitions take precedence within the general body. */
+    protected boolean hasColumnDefinitionPayload() {
+        return commentText == null && columnName == null && colDataTypeList != null;
     }
 
     /**
@@ -1059,7 +1263,7 @@ public class AlterExpression implements Serializable {
             case DROP_CHECK:
                 return true;
             case DROP:
-                return columnName == null && pkColumns != null && !pkColumns.isEmpty();
+                return columnName == null && dropColumns != null && !dropColumns.isEmpty();
             default:
                 return false;
         }
@@ -1217,17 +1421,18 @@ public class AlterExpression implements Serializable {
     protected void toStringDropSpecial(StringBuilder b) {
         switch (operation) {
             case DROP_PRIMARY_KEY:
-                b.append("DROP PRIMARY KEY ");
+                b.append("DROP PRIMARY KEY");
                 break;
             case DROP_UNIQUE:
-                b.append("DROP UNIQUE (").append(PlainSelect.getStringList(pkColumns)).append(')');
+                b.append("DROP UNIQUE (").append(PlainSelect.getStringList(dropColumns))
+                        .append(')');
                 break;
             case DROP_FOREIGN_KEY:
                 b.append("DROP FOREIGN KEY ");
                 if (constraintName != null) {
                     b.append(constraintName);
                 } else {
-                    b.append('(').append(PlainSelect.getStringList(pkColumns)).append(')');
+                    b.append('(').append(PlainSelect.getStringList(dropColumns)).append(')');
                 }
                 break;
             case DROP_CHECK:
@@ -1235,7 +1440,7 @@ public class AlterExpression implements Serializable {
                 break;
             default:
                 // Oracle Multi Column Drop
-                b.append("DROP (").append(PlainSelect.getStringList(pkColumns)).append(')');
+                b.append("DROP (").append(PlainSelect.getStringList(dropColumns)).append(')');
                 break;
         }
     }
@@ -1451,41 +1656,7 @@ public class AlterExpression implements Serializable {
         } else if (constraint != null) {
             b.append(constraint);
         } else if (index != null) {
-            // The structured index is canonical. Legacy PK/UK/FK fields may also be populated for
-            // source compatibility, but cannot represent names, expressions, or index options.
             b.append(index);
-        } else if (pkColumns != null) {
-            b.append("PRIMARY KEY (").append(PlainSelect.getStringList(pkColumns)).append(')');
-        } else if (ukColumns != null) {
-            b.append("UNIQUE");
-            if (ukName != null) {
-                if (isUkTypeSpecified()) {
-                    if (getUk()) {
-                        b.append(" KEY ");
-                    } else {
-                        b.append(" INDEX ");
-                    }
-                } else {
-                    b.append(" ");
-                }
-                b.append(ukName);
-            }
-            b.append(" (").append(PlainSelect.getStringList(ukColumns)).append(")");
-        } else if (fkColumns != null) {
-            // @deprecated path - kept for backward compatibility when ForeignKeyConstraint is not
-            // set
-            b.append("FOREIGN KEY (")
-                    .append(PlainSelect.getStringList(fkColumns))
-                    .append(") REFERENCES ")
-                    .append(
-                            fkSourceSchema != null && fkSourceSchema.trim().length() > 0
-                                    ? fkSourceSchema + "."
-                                    : "")
-                    .append(fkSourceTable)
-                    .append(" (")
-                    .append(PlainSelect.getStringList(fkSourceColumns))
-                    .append(")");
-            referentialActions.forEach(b::append);
         }
 
         if (getConstraints() != null && !getConstraints().isEmpty()) {
@@ -1574,7 +1745,7 @@ public class AlterExpression implements Serializable {
 
     @Deprecated
     public AlterExpression withFkSourceSchema(String fkSourceSchema) {
-        this.setFkSourceTable(fkSourceSchema);
+        this.setFkSourceSchema(fkSourceSchema);
         return this;
     }
 
@@ -1643,6 +1814,7 @@ public class AlterExpression implements Serializable {
         return this.withUkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setFkColumns(List)}. */
     @Deprecated
     public AlterExpression addFkColumns(String... fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
@@ -1650,6 +1822,7 @@ public class AlterExpression implements Serializable {
         return this.withFkColumns(collection);
     }
 
+    /** Adds strings using the replacement semantics of {@link #setFkColumns(List)}. */
     @Deprecated
     public AlterExpression addFkColumns(Collection<String> fkColumns) {
         List<String> collection = Optional.ofNullable(getFkColumns()).orElseGet(ArrayList::new);
@@ -1711,7 +1884,8 @@ public class AlterExpression implements Serializable {
         this.hasEqualForCollate = hasEqualForCollate;
     }
 
-    public static final class ColumnDataType extends ColumnDefinition {
+    public static final class ColumnDataType extends ColumnDefinition
+            implements ColumnIdentityAction {
 
         private final boolean withType;
         private boolean useSetData;
@@ -1739,10 +1913,12 @@ public class AlterExpression implements Serializable {
             this.usingExpression = usingExpression;
         }
 
+        @Override
         public List<IdentityAlteration> getIdentityAlterations() {
             return identityAlterations;
         }
 
+        @Override
         public void setIdentityAlterations(List<IdentityAlteration> identityAlterations) {
             this.identityAlterations =
                     identityAlterations == null ? null : new ArrayList<>(identityAlterations);

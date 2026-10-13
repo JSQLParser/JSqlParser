@@ -22,6 +22,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -196,6 +197,11 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(IntegerDivision integerDivision, S context) {
         return visitBinaryExpression(integerDivision, context);
+    }
+
+    @Override
+    public <S> T visit(Exponentiation exponentiation, S context) {
+        return visitBinaryExpression(exponentiation, context);
     }
 
     @Override
@@ -715,6 +721,9 @@ public class ExpressionVisitorAdapter<T>
         if (arrayExpression.getStopIndexExpression() != null) {
             subExpressions.add(arrayExpression.getStopIndexExpression());
         }
+        if (arrayExpression.getStepExpression() != null) {
+            subExpressions.add(arrayExpression.getStepExpression());
+        }
         return visitExpressions(arrayExpression, context, subExpressions);
     }
 
@@ -874,7 +883,7 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(RangeExpression rangeExpression, S context) {
         return visitExpressions(rangeExpression, context, rangeExpression.getStartExpression(),
-                rangeExpression.getEndExpression());
+                rangeExpression.getEndExpression(), rangeExpression.getStepExpression());
     }
 
     @Override
@@ -907,6 +916,12 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(LambdaExpression lambdaExpression, S context) {
         return lambdaExpression.getExpression().accept(this, context);
+    }
+
+    @Override
+    public <S> T visit(ListComprehension listComprehension, S context) {
+        return visitExpressions(listComprehension, context, listComprehension.getExpression(),
+                listComprehension.getList(), listComprehension.getCondition());
     }
 
     @Override

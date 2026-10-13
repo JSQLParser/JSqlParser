@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -29,9 +28,12 @@ public interface KeyColumnSource {
                         .map(KeyElement::toString).collect(Collectors.toList());
     }
 
-    /** Replaces keys with opaque names, without parsing or retaining expression options. */
+    /**
+     * Replaces keys with opaque names, without parsing or retaining expression options. A null or
+     * empty list clears the keys and leaves the structured list editable.
+     */
     default void setColumnsNames(List<String> names) {
-        setColumns(names == null ? Collections.emptyList()
+        setColumns(names == null ? new ArrayList<>()
                 : names.stream()
                         .map(KeyElement::new).collect(Collectors.toList()));
     }

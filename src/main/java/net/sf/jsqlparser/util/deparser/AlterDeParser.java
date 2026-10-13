@@ -89,7 +89,7 @@ public class AlterDeParser extends AbstractDeParser<Alter> {
                     expression -> expression.accept(expressionVisitor, null));
             return;
         }
-        if (action.getColDataTypeList() != null) {
+        if (action.hasActiveColumnDefinitions()) {
             action.appendColumnDefinitionsTo(builder,
                     expression -> expression.accept(expressionVisitor, null));
         } else {

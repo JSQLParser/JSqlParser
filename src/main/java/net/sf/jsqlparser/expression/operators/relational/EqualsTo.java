@@ -18,6 +18,11 @@ public class EqualsTo extends ComparisonOperator {
         super("=");
     }
 
+    /** {@code operator} is {@code =} or DuckDB's {@code ==}. */
+    public EqualsTo(String operator) {
+        super(operator);
+    }
+
     public EqualsTo(Expression left, Expression right) {
         this();
         setLeftExpression(left);

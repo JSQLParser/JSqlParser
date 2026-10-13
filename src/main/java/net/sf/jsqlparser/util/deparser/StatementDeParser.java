@@ -77,6 +77,7 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
@@ -331,6 +332,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     public <S> StringBuilder visit(Analyze analyzer, S context) {
         builder.append(analyzer);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(TableMaintenanceStatement statement, S context) {
+        builder.append(statement);
         return builder;
     }
 

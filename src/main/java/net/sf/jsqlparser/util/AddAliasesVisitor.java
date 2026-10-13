@@ -9,8 +9,8 @@
  */
 package net.sf.jsqlparser.util;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import java.util.Locale;
 import net.sf.jsqlparser.expression.Alias;
@@ -37,7 +37,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 public class AddAliasesVisitor<T> implements SelectVisitor<T>, SelectItemVisitor<T> {
 
     private static final String NOT_SUPPORTED_YET = "Not supported yet.";
-    private final List<String> aliases = new LinkedList<String>();
+    private final Set<String> aliases = new LinkedHashSet<String>();
     private boolean firstRun = true;
     private int counter = 0;
     private String prefix = "A";

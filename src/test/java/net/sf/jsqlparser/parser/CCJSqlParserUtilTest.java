@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -579,6 +580,44 @@ public class CCJSqlParserUtilTest {
     }
 
     @Test
+    void testBlankLinesAsSeparatorDisabled() throws JSQLParserException {
+        Consumer<CCJSqlParser> blankLinesAsWhitespace = p -> p.withBlankLinesAsSeparator(false);
+
+        assertEquals("SELECT a FROM dual WHERE x = ? AND y = ?",
+                CCJSqlParserUtil.parse("SELECT a FROM dual WHERE x = ?\n\n\n AND y = ?",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a, b FROM t",
+                CCJSqlParserUtil.parse("SELECT a,\n\n\n\nb FROM t", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT a FROM t WHERE a > 1",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\nWHERE a > 1", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT a FROM t UNION SELECT a FROM u",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\n\n\nUNION\n\n\nSELECT a FROM u",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a FROM t JOIN u ON t.id = u.id",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\nJOIN u ON t.id = u.id",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a FROM dual",
+                CCJSqlParserUtil.parse("SELECT a FROM dual\n\n\n", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT 'a\n\n\nb' FROM dual",
+                CCJSqlParserUtil.parse("SELECT 'a\n\n\nb' FROM dual", blankLinesAsWhitespace)
+                        .toString());
+
+        assertEquals(1, CCJSqlParserUtil.parseStatements(
+                "SELECT a FROM t\n\n\nWHERE a > 1", blankLinesAsWhitespace).size());
+        assertEquals(3, CCJSqlParserUtil.parseStatements(
+                "SELECT 1 FROM dual;\n\n\nSELECT 2 FROM dual\ngo\nSELECT 3 FROM dual\n/\n",
+                blankLinesAsWhitespace).size());
+
+        JSQLParserException exception = assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT a\n\n\n\nFROM", blankLinesAsWhitespace));
+        assertTrue(exception.getCause().getMessage().contains("at line 5, column 1"),
+                exception.getCause().getMessage());
+    }
+
+    @Test
     public void testHashLineCommentsFeature() throws Exception {
         // with the flag: MySQL line comments, `#` to end of line,
         // unconditional like MySQL itself (no blank needed, `42#24` is a
@@ -746,6 +785,75 @@ public class CCJSqlParserUtilTest {
                     p -> p.withDialect(dialect))).getSelectBody();
             assertTrue(select.getSelectItems().get(0).getExpression() instanceof Column);
         }
+    }
+
+    @Test
+    public void testDoubleQuotedStringsWithBackslashEscapes() throws Exception {
+        // MySQL reads "it\"s" as it"s; the escaped quote must not end the literal
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.MARIADB,
+                AbstractJSqlParser.Dialect.BIGQUERY, AbstractJSqlParser.Dialect.DATABRICKS}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse(
+                    "SELECT \"it\\\"s\", \"a\\\\\"", p -> p.withDialect(dialect)))
+                    .getSelectBody();
+            assertEquals("it\\\"s",
+                    ((StringValue) select.getSelectItems().get(0).getExpression()).getValue());
+            assertEquals("a\\\\",
+                    ((StringValue) select.getSelectItems().get(1).getExpression()).getValue());
+            assertEquals("SELECT \"it\\\"s\", \"a\\\\\"", select.toString());
+        }
+        // a doubled quote still continues a MySQL literal
+        assertEquals("SELECT \"b\"\"c\\\"d\"", CCJSqlParserUtil.parse("SELECT \"b\"\"c\\\"d\"",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL)).toString());
+        String alter = "ALTER TABLE t ADD COLUMN s VARCHAR (10) DEFAULT \"it\\\"s\"";
+        assertEquals(alter, CCJSqlParserUtil
+                .parse(alter, p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL)).toString());
+        // the same escape needs both features
+        assertEquals("SELECT \"it\\\"s\"", CCJSqlParserUtil.parse("SELECT \"it\\\"s\"",
+                p -> p.withDoubleQuotedStrings(true).withBackslashEscapeCharacter(true))
+                .toString());
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                .parse("SELECT \"it\\\"s\"", p -> p.withDoubleQuotedStrings(true)));
+        // MySQL closes "a\"" before b, so the rest is unterminated as on the server
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(
+                "SELECT \"a\\\"\"b\"", p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL)));
+        // quoted identifiers keep a trailing backslash
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {null,
+                AbstractJSqlParser.Dialect.POSTGRESQL, AbstractJSqlParser.Dialect.SNOWFLAKE}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse(
+                    "SELECT \"col\\\" FROM \"t\"", p -> {
+                        if (dialect != null) {
+                            p.withDialect(dialect);
+                        }
+                    })).getSelectBody();
+            assertEquals("\"col\\\"",
+                    ((Column) select.getSelectItems().get(0).getExpression()).getColumnName());
+            assertEquals("SELECT \"col\\\" FROM \"t\"", select.toString());
+        }
+    }
+
+    @Test
+    public void testSingleQuotedStringsMixBackslashEscapesAndDoubledQuotes() throws Exception {
+        // each is one MySQL string; the first used to split into a string and an alias
+        for (String literal : new String[] {"'it\\'s ''x'''", "'a\\0b\\'c'", "'\\Z\\''",
+                "'a''b\\'c'", "'x\\%\\'y'", "N'it\\'s'"}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse(
+                    "SELECT " + literal + " FROM t",
+                    p -> p.withDialect(AbstractJSqlParser.Dialect.MYSQL))).getSelectBody();
+            assertEquals(1, select.getSelectItems().size(), literal);
+            assertNull(select.getSelectItems().get(0).getAlias(), literal);
+            assertInstanceOf(StringValue.class, select.getSelectItems().get(0).getExpression());
+            assertEquals("SELECT " + literal + " FROM t", select.toString());
+        }
+        // PostgreSQL E'' strings escape quotes; standard strings keep a literal backslash
+        assertEquals("SELECT E'it\\'s ''x'''", CCJSqlParserUtil.parse("SELECT E'it\\'s ''x'''",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL)).toString());
+        assertEquals("SELECT 'a\\', 'b'", CCJSqlParserUtil.parse("SELECT 'a\\', 'b'",
+                p -> p.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL)).toString());
+        // without backslash escapes the literal still ends at the escaped-looking quote
+        assertEquals("SELECT 'a\\' AS x", CCJSqlParserUtil.parse("SELECT 'a\\' AS x").toString());
+        assertEquals("SELECT * FROM t WHERE a LIKE 'x\\_%' ESCAPE '\\'", CCJSqlParserUtil
+                .parse("SELECT * FROM t WHERE a LIKE 'x\\_%' ESCAPE '\\'").toString());
     }
 
     @Test
