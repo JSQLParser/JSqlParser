@@ -204,6 +204,7 @@ For several statements at once, use ``CCJSqlParserUtil.parseStatements()``, whic
 .. note::
 
     Supported statement separators are semicolon ``;``, ``GO``, slash ``/`` and two empty lines ``\n\n\n``.
+    Use ``withBlankLinesAsSeparator(false)`` to treat empty lines as plain whitespace instead.
 
 If parsing fails on syntax JSQLParser does not know, see :ref:`Handle Parse Errors` — and please `open an issue <https://github.com/JSQLParser/JSqlParser/issues>`_, missing syntax gets added on demand.
 
@@ -268,8 +269,11 @@ MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
 MySQL named constraint drops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With ``Dialect.MYSQL``, ``DROP FOREIGN KEY name`` and ``DROP CHECK name``
-expose the target through ``AlterExpression.getConstraintName()``. Inspect
+Without a dialect and with ``Dialect.MYSQL``, ``DROP FOREIGN KEY name`` and
+``DROP CHECK name`` expose the target through ``AlterExpression.getConstraintName()``.
+``Dialect.MARIADB`` accepts the named FOREIGN KEY form; MariaDB has no ``DROP CHECK``.
+Other dialects drop constraints with ``DROP CONSTRAINT``. A parenthesized
+``DROP FOREIGN KEY (...)`` keeps the legacy column-list form. Inspect
 ``getOperation()`` for ``DROP_FOREIGN_KEY`` or ``DROP_CHECK``. Identifier
 quotes are preserved, and changing the name changes both SQL renderers.
 These named targets do not populate the legacy ``getPkColumns()`` list.
@@ -336,6 +340,41 @@ been removed. Replace their imports and enum references with ``CascadeBehavior``
 The existing getter and setter names remain, but their return and parameter types
 have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
 clears the clause. Foreign-key referential actions retain their separate enum.
+
+Edit shared table options
+-------------------------
+
+``CreateTable.getTableOptions()`` and
+``AlterExpressionTableOption.getStructuredTableOption()`` use the same mutable
+``TableOption`` model. Structured values and opaque tokens are alternative
+representations. ``setTokens(nonNullList)`` discards the previous kind, name,
+value and child nodes: the option becomes ``Kind.OTHER`` without parsing the
+tokens. Raw token lists remain mutable; ``getTokens()`` on a structured option
+returns an unmodifiable snapshot.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT) ENGINE=InnoDB");
+    TableOption option = table.getTableOption(TableOption.Kind.ENGINE).orElseThrow();
+    option.setTokens(List.of("ROW_FORMAT", "=", "DYNAMIC"));
+    table.getTableOption(TableOption.Kind.ENGINE).isEmpty(); // true
+
+    // Supply structured properties explicitly; the old tokens are discarded.
+    option.withKind(TableOption.Kind.COMMENT).withName("COMMENT")
+            .withValue("'new'").withUseEquals(true);
+    // CREATE TABLE t (id INT) COMMENT = 'new'
+
+Any structured setter leaves the opaque representation; it never recovers
+previous values from those tokens. ``setTokens(null)`` clears opaque tokens
+without restoring discarded properties, and leaves structured options alone.
+``setUnionTables``, ``setStorageParameters`` and ``setForeignTableOptions``
+replace the current contents with their respective structured payloads. Their
+lists and child nodes remain editable. An empty UNION list means ``UNION ()``;
+a null payload omits its value. A non-null ``setTablespaceStorage`` also selects
+TABLESPACE; supply its tablespace name with ``setValue``. Choose the new kind and spelling explicitly
+when using the scalar setters. These methods edit the AST rather than checking
+database-specific DDL validity.
 
 Inspect PostgreSQL schema statements
 ------------------------------------
@@ -428,6 +467,38 @@ index nodes for PRIMARY KEY/UNIQUE constraints. PostgreSQL ``USING INDEX``
 retains the existing index name on ``ConstraintUsingIndex`` rather than
 creating key elements or an index definition.
 
+An ALTER foreign key owns one ``ForeignKeyConstraint`` and its mutable
+``ForeignKeyReference``. The legacy ``getFk*``/``setFk*`` accessors and
+referential-action helpers delegate to these same nodes, so edits through
+either API affect both SQL renderers.
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+        "ALTER TABLE child ADD FOREIGN KEY (parent_id) REFERENCES parent (id)");
+    AlterExpression action = alter.getAlterExpressions().get(0);
+    ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) action.getConstraint();
+    foreignKey.getReference().getTable().setSchemaName("archive");
+    action.setFkSourceTable("parent_history");
+    // Both APIs now refer to archive.parent_history.
+    foreignKey.setReferentialAction(ReferentialAction.Type.DELETE,
+        ReferentialAction.Action.CASCADE);
+
+New code should use the structured constraint API. ``getFkColumns()`` returns
+a rendered snapshot, like ``getPkColumns()`` and ``getUkColumns()``; use
+``setFkColumns()``/``addFkColumns()`` to replace or append names, or edit
+``foreignKey.getColumns()`` directly. Referenced-column lists and
+referential-action objects are live objects on the shared reference.
+
+A non-null legacy FK setter creates a foreign-key definition when none is
+present. It rejects an existing non-FK constraint or index with
+``IllegalStateException`` instead of retaining a second hidden definition;
+replace the definition explicitly with ``setConstraint()`` first. Reading,
+clearing or removing absent FK properties does not create a definition.
+Replacing or clearing ``setConstraint()`` also replaces or clears what the
+legacy FK accessors expose. These accessors inspect stored definitions; use
+``getOperation()``/``getConstraintKind()`` to identify the active action.
+
 Migration from the former combined model:
 
 * Replace table-constraint reads from ``getIndexes()`` with
@@ -452,6 +523,57 @@ Constraints with a fixed renderer, such as CHECK, always report their actual
 constraint kind. Replacing an index with a table constraint requires replacing
 the AST node; changing an index's type string cannot change its Java type.
 
+ALTER key definitions use ``getKeyConstraint()`` for typed access to the same
+object returned by ``getConstraint()``. PRIMARY KEY and UNIQUE builder setters
+also create this canonical definition; they no longer keep separate column,
+name or KEY/INDEX state:
+
+.. code-block:: java
+
+    Alter add = (Alter) CCJSqlParserUtil.parse(
+            "ALTER TABLE t ADD UNIQUE KEY uq (id)",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    KeyConstraint key = add.getAlterExpressions().get(0).getKeyConstraint();
+    key.setColumns(List.of(new KeyElement("account_id")));
+    key.setIndexName("uq_account");
+    System.out.println(add); // ALTER TABLE t ADD UNIQUE KEY uq_account (account_id)
+
+Parenthesized deletion targets have their own ``getDropColumns()`` and
+``setDropColumns()`` API. It covers multi-column ``DROP (...)``, ``DROP UNIQUE
+(...)`` and the parser's legacy parenthesized ``DROP FOREIGN KEY (...)`` form.
+Named constraint drops continue to use ``getConstraintName()``. No key
+definition is manufactured for a drop:
+
+.. code-block:: java
+
+    Alter drop = (Alter) CCJSqlParserUtil.parse("ALTER TABLE t DROP (old_a, old_b)");
+    drop.getAlterExpressions().get(0).getDropColumns().set(0, "obsolete_a");
+    System.out.println(drop); // ALTER TABLE t DROP (obsolete_a, old_b)
+
+``setDropColumns`` copies its input; ``getDropColumns`` returns the owned mutable
+list. ``withDropColumns`` and ``addDropColumns`` also work before selecting the
+operation. Stored drop targets and key definitions remain independent when an
+operation changes.
+
+Migration of older ALTER builders:
+
+* ``getPkColumns()`` and ``getUkColumns()`` now consistently return snapshots,
+  including manually built keys. Use their setters/adders or edit
+  ``getKeyConstraint().getColumns()`` to change SQL. The string setters replace
+  elements without retaining expression or ordering attributes.
+* The legacy PK accessor remains a DROP-target alias when DROP, DROP UNIQUE or
+  DROP FOREIGN KEY is already selected. Replace builders that set PK columns
+  before selecting DROP with ``withDropColumns(...)``; changing the operation
+  does not transfer a key definition into deletion targets.
+* ``getUkName`` accesses the UNIQUE definition's index name; the constraint
+  symbol remains ``getKeyConstraint().getName()``. KEY/INDEX flags read that same
+  definition. ``setUkTypeSpecified(false)`` removes the spelling; re-enabling it
+  without a spelling selects INDEX.
+* Non-null key setters create a definition only when none exists. They throw
+  ``IllegalStateException`` for a competing constraint or index; use
+  ``setConstraint`` for an explicit replacement. Reads and null clears never
+  create a definition or restore values from a replaced one.
+
 Exclusion keys expose ``getExclusionOperatorReference()`` for structured access
 to an operator's ``schemaName``, ``name`` and ``useOperatorKeyword`` flag. In
 ``Dialect.POSTGRESQL``, both CREATE and ALTER accept ``WITH OPERATOR(pg_catalog.&&)``.
@@ -471,7 +593,9 @@ with ``new ExclusionOperator().withSchemaName("pg_catalog").withName("&&")
     column.setUsingExpression(CCJSqlParserUtil.parseExpression("id * 10"));
     String updatedSql = alter.toString();
 
-Identity alterations are available as ``ColumnDataType.getIdentityAlterations()``. Sequence ownership is shared by ``CreateSequence`` and ``AlterSequence`` through ``Sequence.getOwnership()``: ``null`` means omitted, ``isNone()`` means explicit ``OWNED BY NONE``, and ``getColumn()`` identifies an owner. ``TablesNamesFinder`` includes ``LIKE`` sources and sequence owners without treating sequence or type names as tables. See `ALTER TABLE <https://www.postgresql.org/docs/18/sql-altertable.html>`_ and `ALTER SEQUENCE <https://www.postgresql.org/docs/18/sql-altersequence.html>`_.
+Identity alterations are directly accessible through ``AlterExpression.getColumnIdentityActions()``;
+the existing ``ColumnDataType.getIdentityAlterations()`` API remains available.
+Sequence ownership is shared by ``CreateSequence`` and ``AlterSequence`` through ``Sequence.getOwnership()``: ``null`` means omitted, ``isNone()`` means explicit ``OWNED BY NONE``, and ``getColumn()`` identifies an owner. ``TablesNamesFinder`` includes ``LIKE`` sources and sequence owners without treating sequence or type names as tables. See `ALTER TABLE <https://www.postgresql.org/docs/18/sql-altertable.html>`_ and `ALTER SEQUENCE <https://www.postgresql.org/docs/18/sql-altersequence.html>`_.
 
 For identity columns, ``RESTART 20`` and ``RESTART WITH 20`` produce the same
 ``IdentityAlteration`` with kind ``RESTART`` and ``getRestartWith() == 20L``.
@@ -479,6 +603,52 @@ The renderer consistently uses ``RESTART WITH 20``. A null restart value means
 bare ``RESTART``, which uses the sequence's configured start value. Call
 ``setRestartWith`` to edit a parsed action or construct one with
 ``new IdentityAlteration(Kind.RESTART).withRestartWith(20L)``.
+
+
+Edit column identity actions
+----------------------------
+
+``getColumnIdentityActions()`` returns active ``ALTER COLUMN`` identity actions
+as ``ColumnIdentityAction`` entries. Each entry exposes the editable column name
+and its ordered ``IdentityAlteration`` list, without requiring a data-type cast:
+
+.. code-block:: java
+
+    Alter alter = (Alter) CCJSqlParserUtil.parse(
+            "ALTER TABLE accounts ALTER COLUMN id "
+            + "ADD GENERATED BY DEFAULT AS IDENTITY (CACHE 10)",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    ColumnIdentityAction column = alter.getAlterExpressions().get(0)
+            .getColumnIdentityActions().get(0);
+    column.setColumnName("account_id");
+    IdentityAlteration identity = column.getIdentityAlterations().get(0);
+    identity.setGenerationMode(IdentityDefinition.GenerationMode.ALWAYS);
+    identity.getParameters().get(0).setValue(20L);
+    System.out.println(alter);
+    // ALTER TABLE accounts ALTER COLUMN account_id
+    // ADD GENERATED ALWAYS AS IDENTITY (CACHE 20)
+
+The outer list has unmodifiable membership; its entries are the original AST
+nodes. Request a new list after changing action membership or switching the
+outer ALTER operation. The inner alteration list is mutable: replace an entry
+to change its kind, or use ``setIdentityAlterations`` to replace the ordered
+actions for a column. Unrelated actions and inactive inherited payloads are
+excluded. An inline identity declaration in ``ADD COLUMN`` remains a
+``ColumnOption`` rather than an identity alteration.
+
+``getGenerationMode``/``setGenerationMode`` work for both ``ADD`` and
+``SET_GENERATED``. ``getParameters``/``setParameters`` work for ``ADD`` and
+``SET_PARAMETER``. ADD access delegates to its existing ``IdentityDefinition``;
+replacing or clearing that definition immediately changes both views. Parameters
+are ordered mutable ``Sequence.Parameter`` values, with null meaning omitted.
+RESTART and DROP retain their distinct ``getRestartWith`` and ``isIfExists``
+properties. A sequence such as ``SET CACHE 10 RESTART WITH 20`` remains two
+ordered alterations.
+
+For a newly constructed ADD action without a definition, mode and parameter
+getters return null. Non-null setters create the definition; setting parameters
+first uses BY DEFAULT. Null setters do not create one. This does not change the
+SQL grammar or validate whether a column already has an identity in a database.
 
 
 Column defaults on tables and views
@@ -510,7 +680,18 @@ read-only, but its entries are the original mutable AST objects:
 returns their SQL text. Existing ``ColumnSetDefault`` constructors still accept
 opaque strings, for which ``getDefaultExpression()`` returns ``null``.
 Replacing an expression also replaces any opaque value. Unrelated actions
-return an empty list.
+return an empty list. This lookup follows the action's current rendering path:
+changing an operation or retaining unused metadata does not make a fixed-body
+action expose ``SET DEFAULT`` entries it will not render.
+
+``hasActiveColumnDefinitions()`` reports whether the action currently renders
+its column definitions through the general ALTER body. ``getColDataTypeList()``
+continues to expose stored metadata even when another body takes precedence.
+``AlterDeParser`` uses the active path, so expression visitors rewrite the
+selected default or column expressions without rendering inactive metadata.
+Custom ``AlterExpression`` subclasses overriding ``appendBody`` should also
+override ``usesColumnActionBody()`` and ``hasActiveColumnDefinitions()`` when
+they change those dispatch rules.
 
 Structured column attributes
 ============================
@@ -537,11 +718,65 @@ Charset remains in ``ColDataType.getCharacterSet()``; column collation is in its
 COLLATE option. Consumers can map both directly without reconstructing tokens.
 StringValue comment bodies retain their SQL escape representation.
 
-The legacy ``getColumnSpecs()`` returns a token snapshot when options are
-structured; expression fragments may occupy one token and structured keywords
-use canonical capitalization. Mutate the option objects to change the AST.
-``addColumnSpecs`` preserves existing options; ``setColumnSpecs`` explicitly
-replaces them with raw specifications.
+``ColumnDefinition`` stores all options in one ordered list, including opaque
+``ColumnOption.Kind.OTHER`` nodes. ``getColumnOptions()`` returns that mutable
+list. ``getColumnSpecs()`` returns an **unmodifiable snapshot** for both raw and
+structured options; expression fragments may occupy one token and structured
+keywords use canonical capitalization. Unset options return null; an explicitly
+empty list returns an empty snapshot.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT DEFAULT 1)");
+    ColumnDefinition column = table.getColumnDefinitions().get(0);
+    column.getColumnOptions().get(0).setDefaultExpression(new LongValue(2));
+    column.addColumnSpecs("NOT", "NULL"); // keeps the structured DEFAULT node
+    // CREATE TABLE t (id INT DEFAULT 2 NOT NULL)
+
+Migration: calls such as ``getColumnSpecs().add(...)`` or ``.set(...)`` now throw
+``UnsupportedOperationException`` instead of sometimes changing the AST and
+sometimes editing a discarded copy. Use ``addColumnSpecs`` to append raw tokens,
+edit the option nodes directly, or pass a modified token-list copy to
+``setColumnSpecs`` to replace every option with opaque text. Raw tokens are never
+automatically parsed. Consequently ``getColumnOptions()`` is also non-null for
+raw specifications; inspect ``Kind`` to distinguish them.
+
+The constructor and ``setColumnSpecs`` copy supplied tokens. ``setColumnOptions``
+copies list membership but retains the mutable child nodes; later changes to the
+caller's list do not change the column. Both getters return null after either
+setter receives null. Appending preserves the current nodes and accepts an
+immutable input list. An empty append preserves existing options and creates an
+empty option list when none was set.
+
+``ColumnOption.getTokens()`` and ``GeneratedColumnDefinition.getTokens()`` also
+return unmodifiable, detached snapshots. Reading tokens does not detach the
+underlying expressions or other child nodes: their setters and direct edits
+remain visible in SQL output, visitors and newly requested snapshots.
+
+For opaque ``Kind.OTHER`` options, copy the tokens, edit the copy, then call
+``setTokens``. The setter and both ``ColumnOption.raw`` factories copy their
+inputs; subsequent changes to the supplied list or array do not edit the AST.
+Null raw tokens remain unset and return null; an empty list returns an empty
+snapshot. Raw tokens are never parsed or classified.
+
+.. code-block:: java
+
+    ColumnOption raw = ColumnOption.raw("COLUMN_FORMAT", "DYNAMIC");
+    List<String> tokens = new ArrayList<>(raw.getTokens());
+    tokens.set(1, "FIXED");
+    raw.setTokens(tokens); // COLUMN_FORMAT FIXED
+
+Migration: raw token getter edits now throw ``UnsupportedOperationException``,
+as do edits to structured token snapshots that previously changed a discarded
+copy. ``setTokens`` only accepts opaque options; it throws
+``IllegalStateException`` for structured options, including SERIAL DEFAULT
+VALUE. Use typed setters for structured edits. To explicitly replace a
+structured option with raw text, replace its node in the column's option list:
+
+.. code-block:: java
+
+    column.getColumnOptions().set(0, ColumnOption.raw("DEFAULT", "8"));
 
 Inspect logical replication statements
 ======================================
@@ -926,6 +1161,49 @@ Statement lists and nested blocks share the separator policy used by
 semicolon settings. Custom deparsers receive each child statement and the
 ``IF/ELSE`` condition through the visitor API, with the supplied context.
 
+Customize JSON expression output
+--------------------------------
+
+``ExpressionDeParser`` visits structured children of ``JsonFunction`` and
+``JsonTableFunction`` while rendering them. A custom expression printer can
+rewrite inputs, paths, PASSING values and DEFAULT expressions, including nested
+JSON_TABLE columns, without changing the AST. JSON object keys and values are
+visited when they are ``Expression`` objects; opaque objects and additional
+query-path strings retain their existing rendering.
+
+.. code-block:: java
+
+    Statement statement = CCJSqlParserUtil.parse(
+            "SELECT JSON_VALUE((SELECT doc FROM source_table), '$.a')");
+    ExpressionDeParser expressions = new ExpressionDeParser() {
+        @Override
+        public <S> StringBuilder visit(Column column, S context) {
+            return getBuilder().append("payload");
+        }
+    };
+    statement.accept(new StatementDeParser(expressions, new SelectDeParser(),
+            expressions.getBuilder()), null);
+    // SELECT JSON_VALUE((SELECT payload FROM source_table), '$.a')
+
+``StatementDeParser`` connects the select and expression printers, so subqueries
+inside JSON expressions use the same printer. For expression-only use with
+subqueries, connect an appropriate ``SelectDeParser`` explicitly.
+
+JSON nodes also expose ``appendTo(StringBuilder, Consumer<Expression>)`` for
+direct rendering. The consumer prints each child into the same builder;
+``ExpressionDeParser`` forwards the visitor context through that callback.
+``JsonFunction`` additionally has consumer overloads of ``appendObject``,
+``appendArray``, ``appendValue``, ``appendQuery`` and ``appendExists``.
+
+Subclass migration: override these consumer overloads or ``appendTo`` to
+customize both default and visitor output. The deparser enters through ``appendTo``;
+overriding only a legacy single-argument ``append*`` or ``toString()`` method does
+not customize that path. ``JsonFunction`` also uses the consumer overloads for
+type-specific default rendering. Subclasses of concrete JSON_TABLE column
+definitions should move ``toString()`` customization
+to ``appendTo``. Direct subclasses of the abstract ``JsonTableColumnDefinition``
+retain their opaque ``toString()`` fallback until they override ``appendTo``.
+
 
 ODBC timestamp intervals
 ==============================
@@ -1120,6 +1398,26 @@ responsibility. When constructing a ``ColDataType`` directly,
 ``ColDataType.fromNumericParameters("numeric", 2, -3)`` accepts negative scales;
 use ``null`` for omitted parameters. The legacy ``int``
 constructor continues to treat negative arguments as omitted parameters.
+
+String literal values
+~~~~~~~~~~~~~~~~~~~~~
+
+``StringValue.getValue()`` returns the literal body as written, and ``toString()``
+renders it unchanged. ``getNotExcapedValue()`` returns the characters it denotes.
+A doubled quote of the literal's own quote character is resolved, so
+``"it""s"`` yields ``it"s``. ``getEscaping()`` records how the parser read
+backslashes:
+
+* ``MYSQL_BACKSLASH`` without a dialect or with ``Dialect.MYSQL``/``MARIADB`` when
+  backslash escapes are enabled: ``'it\'s'`` yields ``it's``, ``\n``, ``\t``,
+  ``\0`` and ``\Z`` become their characters, and ``\%`` and ``\_`` keep their backslash.
+* ``POSTGRESQL_ESCAPE_STRING`` for ``E'...'`` with ``Dialect.POSTGRESQL``, including
+  ``\x``, octal and ``\u`` escapes; octal and hexadecimal escapes are UTF-8 bytes.
+* ``STANDARD`` otherwise, including dollar-quoted strings and constructed values;
+  backslashes stay literal. Other dialects with backslash escapes keep this reading.
+
+``setEscaping()`` selects the reading for a constructed value. Escaping is not
+part of ``equals()``, like the quote character.
 
 Other dialect-specific syntax
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1323,9 +1621,11 @@ The individual features
     * - ``withBackslashEscapeCharacter``
       - ``\\..`` escaping inside string literals, in addition to the standard ``'..`` doubling
     * - ``withDoubleQuotedStrings``
-      - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``)
+      - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``); combined with ``withBackslashEscapeCharacter``, ``\\"`` does not end the literal, as in MySQL ``"it\\"s"``
     * - ``withHashLineComments``
       - ``#`` starts a line comment
+    * - ``withBlankLinesAsSeparator``
+      - ``false`` stops two empty lines (``\n\n\n``) ending a statement, so they read as plain whitespace
     * - ``withAdjacentStringLiterals``
       - adjacent string literals concatenate: ``NEWLINE`` (SQL standard, PostgreSQL) or ``WHITESPACE`` (GoogleSQL, Spark/Databricks); ``true`` selects ``NEWLINE``, ``false`` switches it off
     * - ``withAllowComplexParsing``
@@ -1567,6 +1867,30 @@ database and schema, including SQL Server bracket-quoted identifiers. Table
 visitors, both SQL renderers and metadata validation use this structured target.
 Feature analysis reports ``MODIFIES_SESSION``; the directive itself inserts no rows.
 The dedicated validation capability is ``setIdentityInsert``.
+
+MySQL table maintenance statements
+----------------------------------
+
+``CHECK TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
+``TableMaintenanceStatement`` in every dialect; ``ANALYZE TABLE`` remains ``Analyze``.
+``getOperation()`` identifies the statement, ``getModifier()`` returns
+``NO_WRITE_TO_BINLOG`` or ``LOCAL`` for OPTIMIZE and REPAIR, and ``isTablesKeyword()``
+records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in source
+order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
+``CHANGED``; REPAIR accepts ``QUICK``, ``EXTENDED`` and ``USE_FRM``. Other combinations
+are rejected, and the option words remain ordinary identifiers elsewhere.
+
+.. code-block:: java
+
+    TableMaintenanceStatement repair = (TableMaintenanceStatement) CCJSqlParserUtil.parse(
+        "REPAIR NO_WRITE_TO_BINLOG TABLE t1, t2 QUICK");
+    repair.getTables();   // [t1, t2]
+    repair.getOptions();  // [QUICK]
+
+Table visitors and metadata validation use the table list. Validators report the
+``tableMaintenance`` feature, which the MySQL and MariaDB capabilities enable. Feature
+analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
+report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
 
 Legacy MySQL GROUP BY ordering
 ==============================

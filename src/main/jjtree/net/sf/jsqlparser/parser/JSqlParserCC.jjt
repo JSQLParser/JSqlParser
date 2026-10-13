@@ -203,6 +203,32 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // and must not be taken as the JSON path operator
     private int mapKeyDepth = 0;
 
+    // opening brackets of the enclosing subscripts: a ":" at the top level of a subscript
+    // separates the bounds of a slice such as l[1:3] and is not the JSON path operator
+    private final Deque<Token> subscriptOpenings = new ArrayDeque<Token>();
+
+    /**
+     * Whether the pending ":" is at the top level of the innermost subscript, i.e. not nested
+     * in brackets, braces, parentheses or a CASE expression opened inside that subscript.
+     */
+    private boolean isSliceColonAhead() {
+        Token colon = getToken(1);
+        if (subscriptOpenings.isEmpty() || !":".equals(colon.image)) {
+            return false;
+        }
+        int depth = 0;
+        for (Token t = subscriptOpenings.peek().next; t != null && t != colon; t = t.next) {
+            if (t.kind == K_CASE || "(".equals(t.image) || "[".equals(t.image)
+                    || "{".equals(t.image)) {
+                depth++;
+            } else if (t.kind == K_END || ")".equals(t.image) || "]".equals(t.image)
+                    || "}".equals(t.image)) {
+                depth--;
+            }
+        }
+        return depth == 0;
+    }
+
     private Expression createOutputArgument(Expression argument) throws ParseException {
         Expression value = argument;
         if (argument instanceof VariableAssignment) {
@@ -331,6 +357,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** DuckDB's and PostgreSQL's {@code ~~}, {@code ~~*}, {@code !~~}, {@code !~~*} and {@code ~~~}. */
+    protected static boolean isLikeOperator(Token token) {
+        return token.image != null
+                && (token.image.startsWith("~~") || token.image.startsWith("!~~"));
+    }
+
     protected static boolean isComparisonOperator(Token token) {
         if (token.image == null || token.image.isEmpty()) {
             return false;
@@ -339,12 +371,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case '>': // >, >=
             case '=': // =, =* but not => Oracle/PostgreSQL named parameter syntax
                 return !token.image.equals("=>");
-            case '~': // ~, ~*
-                return true;
+            case '~': // ~, ~* but not the ~~ LIKE operators
+                return !token.image.startsWith("~~");
             case '<': // <, <=, <>, <@, <->, <#>, <=>, <&
                 return true;
             case '*': return token.image.equals("*=");
-            case '!': return token.image.startsWith("!~") || token.image.startsWith("!=");
+            case '!': return (token.image.startsWith("!~") && !token.image.startsWith("!~~"))
+                    || token.image.startsWith("!=");
             case '@': return token.image.equals("@@") || token.image.equals("@>");
             case '?': return true;  // ?, ?|, ?&
             case '-': return true;  // -, -#
@@ -681,12 +714,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || (op == OP_CONCAT && Dialect.POSTGRESQL.name()
                             .equals(getAsString(Feature.dialect))))          prec = 4;
             else if (op == OP_SLASH || op == OP_CARET || op == K_DIV)         prec = 6;
+            else if (op == OP_POWER)                                          prec = 7;
             else if (op == S_HASH_OPERATOR)                                   prec = 5;
             else if (op == OP_CONCAT || op == OP_PIPE
                   || op == OP_LSHIFT || op == OP_RSHIFT)                      prec = 5;
             else {
                 // Handle unnamed tokens by image
                 String img = t.image;
+                // DuckDB's LIMIT 10%: the % ends the row count instead of starting a modulo
+                if (t == limitPercentToken) break;
                 if      ("*".equals(img) || "%".equals(img))                  prec = 6;
                 else if ("+".equals(img) || "-".equals(img) || "&".equals(img)) prec = 5;
                 else break; // not an arithmetic operator
@@ -719,6 +755,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else if (op == S_HASH_OPERATOR) { Intersects r = new Intersects(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_CARET)  { net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor r = new net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == K_DIV)     { IntegerDivision  r = new IntegerDivision();  r.setLeftExpression(left); r.setRightExpression(right); left = r; }
+            else if (op == OP_POWER)  { left = new Exponentiation(left, right); }
             else if (op == OP_CONCAT) { Concat           r = new Concat();           r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_PIPE)   { BitwiseOr        r = new BitwiseOr();        r.setLeftExpression(left); r.setRightExpression(right); left = r; }
             else if (op == OP_LSHIFT) { BitwiseLeftShift r = new BitwiseLeftShift(); r.setLeftExpression(left); r.setRightExpression(right); left = r; }
@@ -745,7 +782,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // Direct subquery: ( SELECT/WITH/PIVOT ) → ParenthesedSelect handles it
             // ( VALUES ) can be ParenthesedFromItem(Values) or ParenthesedSelect;
             // ParenthesedFromItem is checked first so Values-as-FROM-item works
-            if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT) return false;
+            if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT || k2 == K_FROM) return false;
+            if (k2 == K_TABLE && isTableQueryAhead(2)) return false;
             // ( ( SELECT ) UNION ( SELECT ) ) → isNestedSetOperationAhead handles it
             // Other (( patterns: ( (SELECT...) JOIN ... ) or ( (table) ) → ParenthesedFromItem
             if (k2 == K_LATERAL) return false; // handled by LateralSubSelect
@@ -765,38 +803,47 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             if (getToken(2).kind != OPENING_BRACKET) return false;
             // Skip any run of opening brackets: ( ( ( ... ( SELECT
-            int i = 3;
-            while (getToken(i).kind == OPENING_BRACKET) i++;
-            int k = getToken(i).kind;
-            if (k != K_SELECT && k != K_WITH && k != K_VALUES) return false;
-            // Scan forward counting brackets to find the matching ) for token(2)
-            // We are now inside all the opening brackets; depth = number of brackets skipped - 1
-            // (token(1) is the outer one, token(2..i-1) are the inner ones we scanned)
-            int depth = i - 2; // brackets from position 2 to i-1 inclusive
-            i++;
-            while (i <= 500) {
-                Token t; try { t = getToken(i); } catch (TokenMgrException e) { return false; }
-                if (t == null || t.kind == 0) return false;
-                if (t.kind == OPENING_BRACKET) depth++;
-                else if (t.kind == CLOSING_BRACKET) {
-                    if (--depth == 0) break;
-                }
-                i++;
-            }
-            if (i > 500) return false;
-            // Token at position i+1 follows the innermost closing )
-            Token next; try { next = getToken(i + 1); } catch (TokenMgrException e) { return false; }
+            Token innerOpen = getToken(2);
+            Token t = innerOpen;
+            while (t.kind == OPENING_BRACKET) t = nextWithItemToken(t);
+            if (t.kind != K_SELECT && t.kind != K_WITH && t.kind != K_VALUES) return false;
+            // Follow the token chain directly; repeated getToken(i) calls rescan from the start each time
+            Token next = skipBalancedBracketGroup(innerOpen);
             if (next == null) return false;
             return next.kind == K_UNION || next.kind == K_INTERSECT ||
                    next.kind == K_EXCEPT || next.kind == K_MINUS;
         } catch (TokenMgrException e) { return false; }
     }
 
+    /**
+     * Whether the TABLE at {@code offset} starts DuckDB's TABLE t query rather than naming a
+     * column, as in (table = 'x'): a table name follows, and then the end of the query.
+     */
+    private boolean isTableQueryAhead(int offset) {
+        Token token = getToken(offset);
+        do {
+            token = nextWithItemToken(token);
+            if (!isIdentifierishNameToken(token)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+        } while (".".equals(token.image));
+        switch (token.kind) {
+            case CLOSING_BRACKET: case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+            case K_ORDER: case K_LIMIT: case K_OFFSET: case K_FETCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     protected boolean isParenthesedSelectAhead() {
         try {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             int k = getToken(2).kind;
-            return k == K_SELECT || k == K_WITH || k == K_VALUES;
+            // DuckDB's (FROM t ...) and (TABLE t ...)
+            return k == K_SELECT || k == K_WITH || k == K_VALUES || k == K_FROM
+                    || k == K_TABLE && isTableQueryAhead(2);
         } catch (TokenMgrException e) {
             return false;
         }
@@ -821,7 +868,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL: case K_LEFT:
             case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_OPTIMIZE:
             case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
-            case K_FILE: case K_SET: case K_SOME: case K_START: case K_TABLES:
+            case K_SET: case K_SOME: case K_START: case K_TABLES:
             case K_TOP: case K_VALUE: case K_VALUES:
                 return true;
             default:
@@ -1433,22 +1480,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * nested in brackets (a sub-select, for instance) do not count.
      */
     private boolean isFromFirstSelectAhead() {
-        if (getToken(1).kind != K_FROM) {
+        Token token = getToken(1);
+        if (token.kind != K_FROM) {
             return false;
         }
         int depth = 0;
-        for (int i = 2;; i++) {
-            Token token = getToken(i);
-            if (token == null || token.kind == EOF || ";".equals(token.image)
-                    || "|>".equals(token.image)) {
+        while (true) {
+            token = nextWithItemToken(token);
+            if (token.kind == EOF || ";".equals(token.image) || "|>".equals(token.image)) {
                 return false;
             }
             if ("(".equals(token.image)) {
                 depth++;
             } else if (")".equals(token.image)) {
-                depth--;
+                // the end of the parenthesized query this FROM starts
+                if (--depth < 0) {
+                    return false;
+                }
             } else if (depth == 0) {
                 switch (token.kind) {
+                    case K_UNION:
+                    case K_EXCEPT:
+                    case K_INTERSECT:
+                    case K_MINUS:
                     case K_SELECT:
                     case K_WHERE:
                     case K_GROUP:
@@ -1473,6 +1527,114 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             offset++;
         }
         return getToken(offset).kind == K_MACRO;
+    }
+
+    /**
+     * DuckDB's FUNCTION alias of MACRO: FUNCTION [IF NOT EXISTS] name (parameters) AS body, where
+     * AS directly follows the parameters, the body is not a string and no LANGUAGE or OPTIONS
+     * clause follows it, unlike other dialects' CREATE FUNCTION (RETURNS ..., PostgreSQL's
+     * AS $tag$ ... $tag$ LANGUAGE ..., BigQuery's AS (expr) OPTIONS (...)).
+     */
+    private boolean isCreateFunctionMacroAhead() {
+        int offset = 1;
+        int kind = getToken(offset).kind;
+        if (kind == K_TEMP || kind == K_TEMPORARY) {
+            offset++;
+        }
+        if (getToken(offset).kind != K_FUNCTION) {
+            return false;
+        }
+        // IF NOT EXISTS and a qualified name, at most 8 tokens, up to the parameter list
+        int nameEnd = offset + 8;
+        offset++;
+        while (getToken(offset).kind != OPENING_BRACKET) {
+            kind = getToken(offset).kind;
+            if (offset > nameEnd || kind == EOF || kind == ST_SEMICOLON) {
+                return false;
+            }
+            offset++;
+        }
+        int depth = 0;
+        do {
+            kind = getToken(offset).kind;
+            if (kind == OPENING_BRACKET) {
+                depth++;
+            } else if (kind == CLOSING_BRACKET) {
+                depth--;
+            } else if (kind == EOF) {
+                return false;
+            }
+            offset++;
+        } while (depth > 0);
+        if (getToken(offset).kind != K_AS) {
+            return false;
+        }
+        Token body = getToken(offset + 1);
+        if (body.kind == S_CHAR_LITERAL || body.kind == S_DOLLAR_QUOTED_STRING
+                || body.image.length() > 1 && body.image.startsWith("$") && body.image.endsWith("$")) {
+            return false;
+        }
+        // no LANGUAGE or OPTIONS clause outside parentheses up to the end of the statement
+        depth = 0;
+        for (offset++;; offset++) {
+            Token token = getToken(offset);
+            if (token.kind == EOF || depth == 0 && token.kind == ST_SEMICOLON) {
+                return true;
+            }
+            if (token.kind == OPENING_BRACKET) {
+                depth++;
+            } else if (token.kind == CLOSING_BRACKET) {
+                depth--;
+            } else if (depth == 0 && ("LANGUAGE".equalsIgnoreCase(token.image)
+                    || "OPTIONS".equalsIgnoreCase(token.image))) {
+                return false;
+            }
+        }
+    }
+
+    // the % of DuckDB's LIMIT 10% in the LIMIT clause being parsed, which ends its row count
+    private Token limitPercentToken = null;
+
+    /**
+     * Finds the % that ends the row count of the LIMIT clause starting after the current token:
+     * at its top level and directly followed by the end of the clause, as in LIMIT 10% OFFSET 2.
+     */
+    private Token findLimitPercentToken() {
+        int depth = 0;
+        for (Token token = nextWithItemToken(getToken(0));; token = nextWithItemToken(token)) {
+            if (token.kind == EOF || token.kind == ST_SEMICOLON) {
+                return null;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)) {
+                if (--depth < 0) {
+                    return null;
+                }
+            } else if (depth == 0 && "%".equals(token.image)
+                    && isLimitClauseEnd(nextWithItemToken(token))) {
+                return token;
+            }
+        }
+    }
+
+    /** Whether the token ends a LIMIT clause; OFFSET and FETCH only when they start a clause. */
+    private boolean isLimitClauseEnd(Token token) {
+        switch (token.kind) {
+            case EOF: case ST_SEMICOLON: case CLOSING_BRACKET:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+                return true;
+            case K_OFFSET:
+                // not a column named offset, as in LIMIT a % offset + 1
+                Token value = nextWithItemToken(token);
+                return value.kind == S_LONG || value.kind == OPENING_BRACKET
+                        || "?".equals(value.image) || ":".equals(value.image);
+            case K_FETCH:
+                Token next = nextWithItemToken(token);
+                return next.kind == K_FIRST || next.kind == K_NEXT;
+            default:
+                return false;
+        }
     }
 
     /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
@@ -1548,6 +1710,165 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || next.kind >= MIN_NON_RESERVED_WORD && next.kind <= MAX_NON_RESERVED_WORD;
     }
 
+    private static boolean isSliceDelimiter(Token token) {
+        return ":".equals(token.image) || "]".equals(token.image) || ",".equals(token.image);
+    }
+
+    /** Whether a {@code [} opens DuckDB's {@code [expr FOR x IN list]}: FOR at its top level. */
+    private boolean isListComprehensionAhead() {
+        Token token = getToken(1);
+        if (!"[".equals(token.image)) {
+            return false;
+        }
+        int depth = 0;
+        for (;; token = nextWithItemToken(token)) {
+            if (token.kind == EOF || ";".equals(token.image)) {
+                return false;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image) || "{".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)
+                    || "}".equals(token.image)) {
+                if (--depth == 0) {
+                    return false;
+                }
+            } else if (depth == 1 && token.kind == K_FOR) {
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Whether the pending "," ends a select item list, as DuckDB allows: it is followed by a
+     * closing parenthesis or by a clause that cannot be read as a column such as limit or "group".
+     */
+    private boolean isTrailingSelectItemCommaAhead() {
+        if (!",".equals(getToken(1).image)) {
+            return false;
+        }
+        Token next = getToken(2);
+        int following = getToken(3).kind;
+        switch (next.kind) {
+            case CLOSING_BRACKET:
+            case K_FROM: case K_WHERE: case K_HAVING: case K_WINDOW: case K_INTO:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+                return true;
+            case K_GROUP: case K_ORDER:
+                // not a column named group aliased by: SELECT a, group by FROM t
+                int afterBy = getToken(4).kind;
+                return following == K_BY && afterBy != K_FROM && afterBy != EOF
+                        && afterBy != CLOSING_BRACKET && afterBy != ST_SEMICOLON
+                        && !",".equals(getToken(4).image);
+            case K_LIMIT: case K_OFFSET:
+                return following == S_LONG || "?".equals(getToken(3).image);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Whether the REPLACE at {@code offset} is DuckDB's unparenthesized {@code REPLACE expr AS name}:
+     * an AS follows at the top level before the end of the select item, so that a star aliased
+     * "replace" keeps parsing. With {@code offset} 0, the REPLACE has been consumed.
+     */
+    private boolean isUnparenthesizedReplaceAhead(int offset) {
+        Token token = getToken(offset);
+        if (offset > 0 && token.kind != K_REPLACE) {
+            return false;
+        }
+        int depth = 0;
+        while (true) {
+            token = nextWithItemToken(token);
+            if (token.kind == EOF || ";".equals(token.image)) {
+                return false;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image) || "{".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)
+                    || "}".equals(token.image)) {
+                if (--depth < 0) {
+                    return false;
+                }
+            } else if (depth == 0) {
+                if (token.kind == K_AS) {
+                    return true;
+                }
+                if (token.kind == K_FROM || ",".equals(token.image)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    private boolean isUnparenthesizedReplaceAhead() {
+        return isUnparenthesizedReplaceAhead(1);
+    }
+
+    /**
+     * Whether DuckDB's {@code RENAME (column AS name, ...)} or {@code RENAME column AS name}
+     * follows, every column being renamed with AS, so that a star aliased "rename" keeps parsing.
+     */
+    private boolean isRenameAhead() {
+        Token token = getToken(1);
+        if (token.kind != K_RENAME) {
+            return false;
+        }
+        token = nextWithItemToken(token);
+        boolean parenthesized = "(".equals(token.image);
+        if (parenthesized) {
+            token = nextWithItemToken(token);
+        }
+        while (true) {
+            // column [. column]* AS name
+            while (true) {
+                if (!isIdentifierishNameToken(token)) {
+                    return false;
+                }
+                token = nextWithItemToken(token);
+                if (!".".equals(token.image)) {
+                    break;
+                }
+                token = nextWithItemToken(token);
+            }
+            if (token.kind != K_AS) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+            if (!isIdentifierishNameToken(token)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+            if (!parenthesized) {
+                return true;
+            }
+            if (")".equals(token.image)) {
+                return true;
+            }
+            if (!",".equals(token.image)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+        }
+    }
+
+    /** DuckDB's unparenthesized REPLACE and RENAME name their single item: * RENAME i AS x. */
+    private static void requireTransformerAlias(SelectItem<?> item) throws ParseException {
+        if (item.getAlias() == null) {
+            throw new ParseException("Expected AS and a name after " + item);
+        }
+    }
+
+    /** Whether a window specification starts with the name of the window it extends. */
+    private boolean isBaseWindowNameAhead() {
+        Token token = getToken(1);
+        switch (token.kind) {
+            case K_PARTITION: case K_ORDER: case K_ROWS: case K_RANGE: case K_GROUPS:
+                return false;
+            default:
+                return isIdentifierishNameToken(token);
+        }
+    }
+
     private boolean isAliasAhead() {
         if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
@@ -1569,6 +1890,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         // OPTION (...) introduces a query hint clause, not an alias
         if (kind == K_OPTION && getToken(2).kind == OPENING_BRACKET) {
+            return false;
+        }
+
+        // ClickHouse's PREWHERE and SETTINGS clauses, not aliases
+        if (kind == K_PREWHERE || kind == K_SETTINGS) {
             return false;
         }
 
@@ -1624,9 +1950,73 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         catch (IllegalArgumentException exception) { throw new ParseException("Unknown " + type.getSimpleName() + ": " + value); }
     }
 
+    /**
+     * DuckDB's lambda x, y : expr. LAMBDA stays a plain identifier, so a column, type or alias
+     * named lambda keeps parsing: only LAMBDA followed by names separated by commas and a ":" is
+     * a lambda.
+     */
+    private boolean isDuckDBLambdaAhead() {
+        if (getToken(1).kind != S_IDENTIFIER || !isKeywordAhead("LAMBDA")) {
+            return false;
+        }
+        int offset = 2;
+        while (true) {
+            int kind = getToken(offset).kind;
+            if (kind != S_IDENTIFIER && kind != S_QUOTED_IDENTIFIER && kind != DATA_TYPE
+                    && (kind < MIN_NON_RESERVED_WORD || kind > MAX_NON_RESERVED_WORD)) {
+                return false;
+            }
+            String next = getToken(offset + 1).image;
+            if (":".equals(next)) {
+                return true;
+            }
+            if (!",".equals(next)) {
+                return false;
+            }
+            offset += 2;
+        }
+    }
+
     private boolean isKeywordAhead(String keyword) {
         Token token = getToken(1);
         return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
+    }
+
+    /**
+     * Whether a MySQL CHECK, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or TABLES must
+     * follow, so other uses of these words are unaffected.
+     */
+    private boolean isTableMaintenanceAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_CHECK && kind != K_OPTIMIZE && kind != K_REPAIR) {
+            return false;
+        }
+        int offset = 2;
+        int modifier = getToken(2).kind;
+        if (kind != K_CHECK && (modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL)) {
+            offset = 3;
+        }
+        int table = getToken(offset).kind;
+        return table == K_TABLE || table == K_TABLES;
+    }
+
+    /** Whether the next tokens spell an option accepted by this table maintenance operation. */
+    private boolean isTableMaintenanceOptionAhead(TableMaintenanceStatement.Operation operation) {
+        Token token = getToken(1);
+        TableMaintenanceStatement.Option option = null;
+        if (token.kind == K_FOR) {
+            Token next = getToken(2);
+            if (next.kind == S_IDENTIFIER && "UPGRADE".equalsIgnoreCase(next.image)) {
+                option = TableMaintenanceStatement.Option.FOR_UPGRADE;
+            }
+        } else if (token.kind == K_QUICK) {
+            option = TableMaintenanceStatement.Option.QUICK;
+        } else if (token.kind == K_EXTENDED) {
+            option = TableMaintenanceStatement.Option.EXTENDED;
+        } else if (token.kind == S_IDENTIFIER) {
+            option = TableMaintenanceStatement.Option.fromKeyword(token.image);
+        }
+        return option != null && operation.allows(option);
     }
 
     private boolean isXmlTypeName(String name) {
@@ -1856,6 +2246,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    /**
+     * Whether ALTER TABLE DROP names a MySQL FOREIGN KEY or CHECK constraint. The default
+     * configuration accepts both like MySQL; MariaDB has no DROP CHECK. A parenthesized FOREIGN KEY
+     * column list keeps the legacy form, and other dialects use DROP CONSTRAINT.
+     */
+    private boolean isNamedConstraintDropAhead() {
+        String dialect = getAsString(Feature.dialect);
+        boolean namedForeignKey = getToken(1).kind == K_FOREIGN && getToken(2).kind == K_KEY
+                && getToken(3).kind != OPENING_BRACKET;
+        if (dialect == null || Dialect.MYSQL.name().equals(dialect)) {
+            return namedForeignKey || getToken(1).kind == K_CHECK;
+        }
+        return Dialect.MARIADB.name().equals(dialect) && namedForeignKey;
+    }
+
     private boolean isBeginTransactionAhead() {
         String dialect = getAsString(Feature.dialect);
         if (getToken(1).kind != K_BEGIN || !(isMySqlDialect()
@@ -2080,9 +2485,6 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         alterExp.setConstraint(constraint);
         if (constraint instanceof KeyConstraint && constraint.getKind() == ConstraintKind.UNIQUE) {
             KeyConstraint key = (KeyConstraint) constraint;
-            alterExp.setUkName(key.getIndexName());
-            alterExp.setUk(key.getType().toUpperCase(Locale.ROOT).contains("KEY"));
-            alterExp.setUkTypeSpecified(key.getIndexKeyword() != null);
             // Preserve generic ALTER's historical placement of USING and COMMENT options.
             if (!Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
                     && !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))) {
@@ -2097,36 +2499,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 }
             }
         }
-        if (constraint instanceof ForeignKeyConstraint) {
-            ForeignKeyConstraint foreignKey = (ForeignKeyConstraint) constraint;
-            alterExp.setFkColumns(foreignKey.getColumnsNames());
-            if (foreignKey.getTable() != null) {
-                alterExp.setFkSourceSchema(foreignKey.getTable().getSchemaName());
-                alterExp.setFkSourceTable(foreignKey.getTable().getName());
-            }
-            alterExp.setFkSourceColumns(foreignKey.getReferencedColumnNames());
-            for (ReferentialAction.Type type : ReferentialAction.Type.values()) {
-                ReferentialAction action = foreignKey.getReferentialAction(type);
-                if (action != null) {
-                    alterExp.setReferentialAction(action.getType(), action.getAction());
-                }
-            }
-        }
     }
 
     private void requireNoDropIndexOwner(Table owner) throws ParseException {
         if (owner != null) {
             throw new ParseException("Duplicate DROP INDEX ON clause");
         }
-    }
-
-    private static boolean hasStructuredColumnOption(List<ColumnOption> options) {
-        for (ColumnOption option : options) {
-            if (option.getKind() != ColumnOption.Kind.OTHER) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
@@ -2185,6 +2563,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Creates a string literal that remembers how this configuration lexed its backslashes. */
+    private StringValue stringValue(Token token) {
+        StringValue value = new StringValue(token.image);
+        if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")) {
+            return value;
+        }
+        String dialect = getAsString(Feature.dialect);
+        boolean backslashes = getAsBoolean(Feature.allowBackslashEscapeCharacter);
+        if (Dialect.POSTGRESQL.name().equals(dialect)) {
+            if (backslashes || "E".equalsIgnoreCase(value.getPrefix())) {
+                value.setEscaping(StringValue.Escaping.POSTGRESQL_ESCAPE_STRING);
+            }
+        } else if (backslashes && (dialect == null || isMySqlDialect())) {
+            value.setEscaping(StringValue.Escaping.MYSQL_BACKSLASH);
+        }
+        return value;
+    }
+
     /**
      * Semantic lookahead for the adjacent string literal concatenation in PrimaryExpression:
      * true when Feature.adjacentStringLiterals is on and the next token is a string literal
@@ -2217,6 +2613,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      */
     protected boolean isConditionSuffixAhead() {
         Token t = getToken(1);
+        if (isLikeOperator(t)) return true;
         // Inline isComparisonOperatorAhead for single getToken(1) call
         if (t.kind == OPENING_BRACKET && getToken(2).image.equals("+")) {
             return isComparisonOperator(getToken(4));
@@ -2319,26 +2716,33 @@ TOKEN_MGR_DECLS : {
         }
     }
 
-    // Finds first occurrence of "\\'"
-    public static int indexOfSequence(String s, String target) {
-        int len = s.length();
-        for (int i = 0; i < len - 1; i++) {
-            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'') {
-                return i;
+    // Returns the length up to the closing quote of a quoted literal starting at open, or -1 when
+    // the image is unterminated. A doubled quote is literal; a backslash escapes the next character
+    // only if requested.
+    public static int closingQuote(String s, int open, char quote, boolean backslashEscapes) {
+        int i = open + 1;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (backslashEscapes && c == '\\' && i + 1 < s.length()) {
+                i += 2;
+            } else if (c == quote && i + 1 < s.length() && s.charAt(i + 1) == quote) {
+                i += 2;
+            } else if (c == quote) {
+                return i + 1;
+            } else {
+                i++;
             }
         }
         return -1;
     }
 
-    // Finds last occurrence of "\\''"
-    public static int lastIndexOfSequence(String s, String target) {
-        int len = s.length();
-        for (int i = len - 3; i >= 0; i--) {
-            if (s.charAt(i) == '\\' && s.charAt(i + 1) == '\'' && s.charAt(i + 2) == '\'') {
-                return i;
-            }
+    // Like closingQuote for a single-quoted literal after its optional prefix. Oracle q'..'
+    // literals have their own delimiters and are left unchanged.
+    public static int closingSingleQuote(String s, boolean backslashEscapes) {
+        if (s.length() > 1 && (s.charAt(0) == 'q' || s.charAt(0) == 'Q') && s.charAt(1) == '\'') {
+            return -1;
         }
-        return -1;
+        return closingQuote(s, s.indexOf('\''), '\'', backslashEscapes);
     }
 
     private RowPatternTokenContext rowPatternContext;
@@ -2409,6 +2813,38 @@ TOKEN_MGR_DECLS : {
         token.kind = charLiteralIndex;
         token.endLine = input_stream.getEndLine();
         token.endColumn = input_stream.getEndColumn();
+    }
+
+    /**
+     * DuckDB's and PostgreSQL's digit separators, as in {@code 1_000_000}.  Under
+     * Feature.allowDigitSeparators they are dropped from the image.  Otherwise the token is
+     * lexed as without separators: the longer of the number before the first {@code _} and the
+     * identifier starting there, so that MySQL's {@code 2024_01} stays an identifier.
+     */
+    private void lexDigitSeparators(Token token) {
+        int separator = token.image.indexOf('_');
+        if (separator < 0) {
+            return;
+        }
+        if (input_stream.featureConfiguration != null
+                && Boolean.TRUE.equals(configuration.getValue(Feature.allowDigitSeparators))) {
+            token.image = token.image.replace("_", "");
+            return;
+        }
+        int identifierLength = 0;
+        while (identifierLength < token.image.length()
+                && (Character.isLetterOrDigit(token.image.charAt(identifierLength))
+                        || token.image.charAt(identifierLength) == '_')) {
+            identifierLength++;
+        }
+        if (identifierLength > separator) {
+            truncateIdentifierToken(token, identifierLength);
+            token.kind = S_IDENTIFIER;
+        } else {
+            truncateIdentifierToken(token, separator);
+            token.kind = token.image.indexOf('.') >= 0 || token.image.indexOf('e') >= 0
+                    || token.image.indexOf('E') >= 0 ? S_DOUBLE : S_LONG;
+        }
     }
 
     /** Splits a longest-match identifier without losing token positions. */
@@ -2545,6 +2981,7 @@ String NonReservedWord() :
       | tk=<K_COSTS: "COSTS">
       | tk=<K_COUNT: "COUNT">
       | tk=<K_CREATED:"CREATED">
+      | tk=<K_CSV: "CSV">
       | tk=<K_CYCLE:"CYCLE">
       | tk=<K_DATABASE:"DATABASE">
       | tk=<K_DATA:"DATA">
@@ -2588,6 +3025,7 @@ String NonReservedWord() :
       | tk=<K_ENFORCED: "ENFORCED">
       | tk=<K_ENGINE: "ENGINE">
       | tk=<K_ERROR: "ERROR">
+      | tk=<K_ERRORS: "ERRORS">
       | tk=<K_ESCAPE: "ESCAPE">
       | tk=<K_EVENT: "EVENT">
       | tk=<K_EVERY: "EVERY">
@@ -2604,6 +3042,8 @@ String NonReservedWord() :
       | tk=<K_EXTENDED:"EXTENDED">
       | tk=<K_EXTRACT:"EXTRACT">
       | tk=<K_EXPORT:"EXPORT">
+      | tk=<K_FBV: "FBV">
+      | tk=<K_FILE: "FILE">
       | tk=<K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
       | tk=<K_FILTER: "FILTER">
       | tk=<K_FIELDS: "FIELDS">
@@ -2743,6 +3183,7 @@ String NonReservedWord() :
       | tk=<K_PRAGMA: "PRAGMA">
       | tk=<K_PREPARE: "PREPARE">
       | tk=<K_PRECEDING: "PRECEDING">
+      | tk=<K_PREWHERE: "PREWHERE">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
       | tk=<K_PURGE:"PURGE">
@@ -2761,6 +3202,7 @@ String NonReservedWord() :
       | tk=<K_REGEXP: "REGEXP">
       | tk=<K_REJECT: "REJECT">
       | tk=<K_RESPECT: "RESPECT">
+      | tk=<K_RETURNS: "RETURNS">
       | tk=<K_RLIKE: "RLIKE">
       | tk=<K_REGEXP_LIKE: "REGEXP_LIKE">
       | tk=<K_REGISTER: "REGISTER">
@@ -2792,6 +3234,7 @@ String NonReservedWord() :
       | tk=<K_SAVEPOINT: "SAVEPOINT">
       | tk=<K_SCHEDULE: "SCHEDULE">
       | tk=<K_SCHEMA: "SCHEMA">
+      | tk=<K_SCRIPT: "SCRIPT">
       | tk=<K_SEARCH:"SEARCH">
       | tk=<K_SECURE: "SECURE">
       | tk=<K_SECURITY:"SECURITY">
@@ -2800,6 +3243,7 @@ String NonReservedWord() :
       | tk=<K_SEPARATOR:"SEPARATOR">
       | tk=<K_SESSION:"SESSION">
       | tk=<K_SETS:"SETS">
+      | tk=<K_SETTINGS: "SETTINGS">
       | tk=<K_SHOW : "SHOW">
       | tk=<K_SHUTDOWN : "SHUTDOWN">
       | tk=<K_SHARE : "SHARE">
@@ -2862,6 +3306,7 @@ String NonReservedWord() :
       | tk=<K_VALIDATE : "VALIDATE">
       | tk=<K_VALIDATION: "VALIDATION">
       | tk=<K_VERBOSE: "VERBOSE">
+      | tk=<K_VERIFY: "VERIFY">
       | tk=<K_VERSION: "VERSION">
       | tk=<K_VIEW:"VIEW">
       | tk=<K_VISIBLE: "VISIBLE">
@@ -2912,7 +3357,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
-|   <K_CSV:"CSV">
 |   <K_CURRENT: "CURRENT">
 |   <K_DATETIMELITERAL : "DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ" >
 |   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
@@ -2920,13 +3364,10 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DISTINCTROW:"DISTINCTROW">
 |   <K_ELSE:"ELSE">
-|   <K_ERRORS: "ERRORS">
 |   <K_EXCEPT: "EXCEPT">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
 |   <K_EXTEND:"EXTEND">
-|   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
-|   <K_FILE: "FILE">
 |   <K_FINAL: "FINAL">
 |   <K_FALSE: "FALSE">
 |   <K_FOR:"FOR">
@@ -2973,20 +3414,16 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PIVOT:"PIVOT">
 |   <K_PREFERRING: "PREFERRING">
-|   <K_PREWHERE: "PREWHERE">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
 |   <K_QUALIFY: "QUALIFY">
-|   <K_RETURNS: "RETURNS">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
 |   <K_SAMPLE: "SAMPLE">
-|   <K_SCRIPT: "SCRIPT">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SET:"SET">
-|   <K_SETTINGS:"SETTINGS">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
 |   <K_TABLES:"TABLES">
@@ -3006,7 +3443,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
-|   <K_VERIFY: "VERIFY">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
@@ -3036,6 +3472,7 @@ TOKEN : /* Operators */
 |   <OP_CONCAT: "||">
 |   <OP_PIPE: "|">
 |   <OP_CARET: "^">
+|   <OP_POWER: "**">
 |   <OP_SLASH: "/">
 |   <OP_LSHIFT: "<<">
 |   <OP_RSHIFT: ">>">
@@ -3107,8 +3544,8 @@ TOKEN : /* Numeric Constants */
             <S_LONG> "." (["e","E"] (["+", "-"])? <S_LONG>)?
             |
             <S_LONG> ["e","E"] (["+", "-"])? <S_LONG>
-            )>
-  |     < S_LONG: ( <DIGIT> )+ >
+            )> { lexDigitSeparators(matchedToken); }
+  |     < S_LONG: ( <DIGIT> )+ ( "_" ( <DIGIT> )+ )* > { lexDigitSeparators(matchedToken); }
   |     < #DIGIT: ["0" - "9"] >
   |     < S_HEX: ("X" <QUOTED_HEX> ( (" ")* <QUOTED_HEX> )* | "0x" ( <HEX_DIGIT> )+ ) >
   |     < #QUOTED_HEX: "'" ( <HEX_VALUE> )* "'" >
@@ -3266,12 +3703,11 @@ TOKEN:
 // CJK Unified Ideographs block according to https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
 | <#CJK: ["\uAC00"-"\uD7A3", "\u4E00"-"\u9FFF"]>
 
-| < #SPECIAL_ESC: "\\'" > /* Allowing this will break LIKE ... ESCAPE ...  */
-| < #ESC: "\\" ["n","t","b","r","f","\\","\""] >
 | < S_CHAR_LITERAL: (
                         (["U","E","N","R","B"]|"RB"|"_utf8")?
                         (
-                            ("'" ( <ESC> | <SPECIAL_ESC> | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
+                            // Backslash escapes and doubled quotes; trimmed below to the rules in effect
+                            ("'" ( "\\" ~[] | "''" | ~["'", "\\"] )* "'") | ("'" ("''" | ~["'"])* "'")
                             // Alternative Oracle Escape Modes
                             | ("q'{" (~[])* "}'")
                             | ("q'(" (~[])* ")'")
@@ -3281,36 +3717,36 @@ TOKEN:
                         )
                      ) >
     {
-        // <S_CHAR_LITERAL> contains the <SPECIAL_ESC> token and always the longest match is returned
-        // So when Backslash is explicitly not allowed as an Escape Character and a <S_CHAR_LITERAL> is found
-        // which contains the <SPECIAL_ESC>, then we will need to
-        // 1) break the <S_CHAR_LITERAL> at <SPECIAL_ESC> close it with a "'"
-        // 2) continue tokenizing after that <SPECIAL_ESC> with a new <S_CHAR_LITERAL> or any other Token
-        boolean allowEscape = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
+        // The longest match may run past the closing quote of the active rules. A backslash
+        // escapes the next character only with backslash escapes or in a PostgreSQL E'' string;
+        // otherwise the literal ends at the first quote that is not doubled, so LIKE ... ESCAPE '\\'
+        // still works.
+        boolean backslashEscapes = configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter)
                 || (AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))
                     && matchedToken.image.regionMatches(true, 0, "E'", 0, 2));
-                String img = matchedToken.image;
-                int pos;
-                if (!allowEscape) {
-                    pos = indexOfSequence(img, "\\'");
-                    if (pos > 0) {
-                        matchedToken.image = image.substring( 0, image.indexOf("\\'") + 1 ) + "'";
-                        // `charLiteralIndex` defined in TokenManagerDeclaration above
-                        matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() - matchedToken.image.length());
-                    }
-                } else {
-                    pos = lastIndexOfSequence(img, "\\''");
-                    if (pos > 0) {
-                        matchedToken.image = image.substring( 0, image.lastIndexOf("\\'") + 3);
-                        // `charLiteralIndex` defined in TokenManagerDeclaration above
-                        matchedToken.kind = charLiteralIndex;
-                        input_stream.backup(image.length() - matchedToken.image.length() );
-                    }
-                }
+        int end = closingSingleQuote(matchedToken.image, backslashEscapes);
+        if (end > 0 && end < matchedToken.image.length()) {
+            matchedToken.image = image.substring(0, end);
+            input_stream.backup(image.length() - end);
+        }
     }
-| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\"" | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
+| < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\""
+        // MySQL double-quoted string with backslash escapes; trimmed below when not enabled
+        | "\"" ( "\"\"" | "\\" ~["\n","\r"] | ~["\n","\r","\"","\\"])* "\""
+        | ("`" ("``" | ~["\n","\r","`"])* "`") | ( "[" (~["\n","\r","]"])* "]" ) >
     {
+        if ( matchedToken.image.charAt(0) == '"' ) {
+            // Both alternatives above compete for the longest match. Keep the closing quote of
+            // the active quoting rules: a backslash escapes the next character only in
+            // double-quoted strings with backslash escapes, as in MySQL.
+            int end = closingQuote(matchedToken.image, 0, '"',
+                    configuration.getAsBoolean(Feature.allowDoubleQuotedStrings)
+                    && configuration.getAsBoolean(Feature.allowBackslashEscapeCharacter));
+            if (end > 0 && end < matchedToken.image.length()) {
+                matchedToken.image = image.substring(0, end);
+                input_stream.backup(image.length() - end);
+            }
+        }
         if ( !configuration.getAsBoolean(Feature.allowSquareBracketQuotation)
             && matchedToken.image.charAt(0) == '[' ) {
 
@@ -3456,8 +3892,6 @@ Statement SingleStatement() :
             |
             stm = Select()
             |
-            stm = TableStatement()
-            |
             LOOKAHEAD(3) stm = Upsert()
             |
             LOOKAHEAD(2) stm = Alter()
@@ -3472,6 +3906,8 @@ Statement SingleStatement() :
             stm = Drop()
             |
             stm = Analyze()
+            |
+            LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
             |
             stm = Truncate()
             |
@@ -3669,7 +4105,7 @@ DoStatement DoStatement():
         [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
             language=RelObjectName() { statement.setLanguage(language); } ]
     )
-    { statement.setCode(new StringValue(code.image)); return statement; }
+    { statement.setCode(stringValue(code)); return statement; }
 }
 
 Block Block() #Block : {
@@ -4129,7 +4565,7 @@ DBMSTableDestinationOption DBMSTableDestinationOption(): {
               token = <K_REPLACE>
             | token = <K_TRUNCATE>
             ) { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image); }
-        | token = <K_CREATED> token2 = <K_BY> token3 = <S_CHAR_LITERAL> { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        | token = <K_CREATED> token2 = <K_BY> token3 = <S_CHAR_LITERAL> { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image + " " + token2.image, stringValue(token3)); }
     )
 
     {
@@ -4203,7 +4639,7 @@ StringValue ImportExportStatement() #ImportExportStatement: {
 } {
     <K_STATEMENT> token = <S_CHAR_LITERAL>
     {
-      statement = new StringValue(token.image);
+      statement = stringValue(token);
       linkAST(statement, jjtThis);
       return statement;
     }
@@ -4225,7 +4661,7 @@ StringValue File() #File: {
 } {
     <K_FILE> token = <S_CHAR_LITERAL>
     {
-        StringValue file = new StringValue(token.image);
+        StringValue file = stringValue(token);
         linkAST(file, jjtThis);
         return file;
     }
@@ -4272,7 +4708,7 @@ CSVColumn CSVDestinationColumn(): {
           LOOKAHEAD(2)
           token=<S_LONG> ".." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
         | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
+          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(stringValue(token)); }]
           [
             <K_DELIMIT>
             "="
@@ -4310,7 +4746,7 @@ CSVColumn CSVSourceColumn(): {
           LOOKAHEAD(2)
           token=<S_LONG> ".." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
         | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
+          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(stringValue(token)); }]
     )
     {
         return csvColumn;
@@ -4336,7 +4772,7 @@ FBVColumn FBVDestinationColumn(): {
 } {
     (
           token=<K_SIZE> "=" token2=<S_LONG> { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, stringValue(token2)); }
         | token=<K_ALIGN> "=" ( token2=<K_LEFT> | token2=<K_RIGHT> ) { fbvColumn = new FBVColumn(token.image, token2.image); }
     )
     {
@@ -4368,7 +4804,7 @@ FBVColumn FBVSourceColumn(): {
 } {
     (
           ( token=<K_SIZE> | token=<K_START> ) "=" token2=<S_LONG> { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, stringValue(token2)); }
         | token=<K_ALIGN> "=" ( token2=<K_LEFT> | token2=<K_RIGHT> ) { fbvColumn = new FBVColumn(token.image, token2.image); }
     )
     {
@@ -4402,12 +4838,12 @@ FileOption FileDestinationOption(): {
     (
         ( token=<K_REPLACE> | token=<K_TRUNCATE> ) { fileOption = new FileOption(token.image); }
       | token=<K_WITH> token2=<K_COLUMN> token3=<K_NAMES> { fileOption = new FileOption(token.image + " " + token2.image + " " + token3.image); }
-      | ( token=<K_ENCODING> | token=<K_NULL> | token=<K_BOOLEAN> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+      | ( token=<K_ENCODING> | token=<K_NULL> | token=<K_BOOLEAN> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, stringValue(token2)); }
       | (
             token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
           | token=<K_COLUMN> ( token2=<K_SEPARATOR> | token2=<K_DELIMITER> ) "=" token3=<S_CHAR_LITERAL>
         )
-        { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        { fileOption = new FileOption(token.image + " " + token2.image, stringValue(token3)); }
       | token=<K_DELIMIT> "=" ( token2=<K_ALWAYS> | token2=<K_NEVER> | token2=<K_AUTO> ) { fileOption = new FileOption(token.image, token2.image); }
     )
     {
@@ -4435,7 +4871,7 @@ FileOption FileSourceOption(): {
     (
         ( token=<K_TRIM> | token=<K_LTRIM> | token=<K_RTRIM> ) { fileOption = new FileOption(token.image); }
       | (
-            ( token=<K_ENCODING> | token=<K_NULL> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+            ( token=<K_ENCODING> | token=<K_NULL> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, stringValue(token2)); }
           | token=<K_SKIP> "=" token2=<S_LONG> { fileOption = new FileOption(token.image, new LongValue(token2.image)); }
         )
       | LOOKAHEAD(2)
@@ -4443,7 +4879,7 @@ FileOption FileSourceOption(): {
             token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
           | token=<K_COLUMN> ( token2=<K_SEPARATOR> | token2=<K_DELIMITER> ) "=" token3=<S_CHAR_LITERAL>
         )
-        { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        { fileOption = new FileOption(token.image + " " + token2.image, stringValue(token3)); }
       | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
         { fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
     )
@@ -4563,10 +4999,10 @@ CertificateVerification CertificateVerification(): {
           [
             LOOKAHEAD(2)
             <K_PUBLIC> <K_KEY>
-            token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+            token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(stringValue(token)); }
           ]
         | <K_PUBLIC> <K_KEY>
-          token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+          token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(stringValue(token)); }
     )
     {
         return certificateVerification;
@@ -4599,7 +5035,7 @@ ScriptSourceDestination ScriptSourceDestination(): {
         <K_WITH>
         (
             LOOKAHEAD(2)
-            property = RelObjectName() "=" token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
+            property = RelObjectName() "=" token = <S_CHAR_LITERAL> { value = stringValue(token); }
             {
                 properties.add(property);
                 values.add(value);
@@ -4617,9 +5053,9 @@ UserIdentification UserIdentification(): {
     Token token;
 } {
     <K_USER>
-    token=<S_CHAR_LITERAL> { userIdentification.setUser(new StringValue(token.image)); }
+    token=<S_CHAR_LITERAL> { userIdentification.setUser(stringValue(token)); }
     <K_IDENTIFIED> <K_BY>
-    token=<S_CHAR_LITERAL> { userIdentification.setPassword(new StringValue(token.image)); }
+    token=<S_CHAR_LITERAL> { userIdentification.setPassword(stringValue(token)); }
 
     {
         return userIdentification;
@@ -4637,7 +5073,7 @@ ConnectionDefinition ConnectionDefinition(): {
   <K_AT>
   (
       connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
-    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
+    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(stringValue(token)); }
   )
 
   [ LOOKAHEAD(2) userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -4665,7 +5101,7 @@ ConnectionDefinition CloudConnectionDefinition(): {
 
   (
       connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
-    | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
+    | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(stringValue(token)); }
   )
 
   [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -5007,7 +5443,7 @@ void SetCharacterSet(SetStatement set):
 {
     ( <K_CHARACTER> <K_SET> { name = "CHARACTER SET"; }
       | <S_IDENTIFIER> { name = "CHARSET"; } )
-    ( value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+    ( value=<S_CHAR_LITERAL> { expression = stringValue(value); }
       | (value=<S_IDENTIFIER> | value=<S_QUOTED_IDENTIFIER> | value=<K_DEFAULT>)
         { expression = new Column(value.image); } )
     { set.add(name, new ExpressionList<Expression>(expression), false); }
@@ -5092,41 +5528,66 @@ RenameTableStatement RenameTableStatement(): {
 }
 
 /**
- * DuckDB's CREATE [OR REPLACE] [TEMPORARY] MACRO name (parameters) AS [TABLE] body.
+ * DuckDB's CREATE [OR REPLACE] [TEMPORARY] {MACRO | FUNCTION} [IF NOT EXISTS] name
+ * (parameters) AS [TABLE] body [, (parameters) AS [TABLE] body ...].
  */
 CreateMacro CreateMacro(boolean isUsingOrReplace) #CreateMacro:
 {
     CreateMacro createMacro = new CreateMacro();
-    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    List<CreateMacro.Overload> overloads = new ArrayList<CreateMacro.Overload>();
     ObjectNames name;
-    Expression expression;
-    Select select;
-    String parameterName;
-    Expression defaultValue;
+    CreateMacro.Overload overload;
 }
 {
     { createMacro.setOrReplace(isUsingOrReplace); }
     [ ( <K_TEMP> | <K_TEMPORARY> ) { createMacro.setTemporary(true); } ]
-    <K_MACRO> name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    ( <K_MACRO> | <K_FUNCTION> { createMacro.setFunctionKeyword(true); } )
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createMacro.setIfNotExists(true); } ]
+    name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    overload=MacroOverload() { overloads.add(overload); }
+    ( LOOKAHEAD(2) "," overload=MacroOverload() { overloads.add(overload); } )*
+    { createMacro.setOverloads(overloads); }
+    { return createMacro; }
+}
+
+/**
+ * One (parameters) AS [TABLE] body of a DuckDB macro, a parameter being name [type] [:= default].
+ */
+CreateMacro.Overload MacroOverload():
+{
+    CreateMacro.Overload overload = new CreateMacro.Overload();
+    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    CreateMacro.Parameter parameter;
+    Expression expression;
+    Select select;
+}
+{
     "("
     [
-        parameterName=RelObjectName() { defaultValue = null; }
-        [ ":=" defaultValue=Expression() ]
-        { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
-        (
-            "," parameterName=RelObjectName() { defaultValue = null; }
-            [ ":=" defaultValue=Expression() ]
-            { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
-        )*
+        parameter=MacroParameter() { parameters.add(parameter); }
+        ( "," parameter=MacroParameter() { parameters.add(parameter); } )*
     ]
-    ")" { createMacro.setParameters(parameters); }
+    ")" { overload.setParameters(parameters); }
     <K_AS>
     (
-        LOOKAHEAD(2) <K_TABLE> select=Select() { createMacro.setSelect(select); }
+        LOOKAHEAD(2) <K_TABLE> select=Select() { overload.setSelect(select); }
         |
-        expression=Expression() { createMacro.setExpression(expression); }
+        expression=Expression() { overload.setExpression(expression); }
     )
-    { return createMacro; }
+    { return overload; }
+}
+
+CreateMacro.Parameter MacroParameter():
+{
+    String name;
+    ColDataType type = null;
+    Expression defaultValue = null;
+}
+{
+    name=RelObjectName()
+    [ LOOKAHEAD({ getToken(1).kind != K_COMMA && getToken(1).kind != CLOSING_BRACKET && !":=".equals(getToken(1).image) }) type=ColDataType() ]
+    [ ":=" defaultValue=Expression() ]
+    { return new CreateMacro.Parameter(name, type, defaultValue); }
 }
 
 /**
@@ -5474,7 +5935,7 @@ AssertStatement AssertStatement() #AssertStatement:
 {
     <K_ASSERT> expression=Expression() { assertStatement.setExpression(expression); }
     [ <K_AS> token=<S_CHAR_LITERAL>
-        { assertStatement.setDescription(new StringValue(token.image)); } ]
+        { assertStatement.setDescription(stringValue(token)); } ]
     { return assertStatement; }
 }
 
@@ -6840,7 +7301,7 @@ Column Column() #Column :
     // @todo: we better should return a SEQUENCE instead of a COLUMN
     [  LOOKAHEAD(2) "." <K_NEXTVAL> { data.getNames().add("nextval"); } ]
 
-    [ LOOKAHEAD(2) arrayConstructor = ArrayConstructor(false) ]
+    [ LOOKAHEAD(2) arrayConstructor = Subscript() ]
     {
         Column col = createColumn(data.getNames(), data.getDelimiters());
         if (tk != null) { col.withCommentText(tk.image); }
@@ -6890,7 +7351,7 @@ String RelObjectName() :
           | tk=<K_IIF> | tk=<K_IGNORE> | tk=<K_IN> | tk=<K_INTERVAL>
           | tk=<K_LEFT> | tk=<K_LIMIT> | tk=<K_NEXTVAL> | tk=<K_OFFSET>
           | tk=<K_ON> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
-          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT> | tk=<K_FILE>
+          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT>
           | tk=<K_SET> | tk=<K_SOME> | tk=<K_START> | tk=<K_TABLES>
           | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
     )
@@ -7035,9 +7496,13 @@ SampleClause SampleClause():
         )
         |
         (
-            // SQL:2016 compliant
+            // SQL:2016 compliant; DuckDB: the method is optional and may be reservoir
             token = <K_TABLESAMPLE> { keyword = token.image; }
-            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+            [
+                LOOKAHEAD({ isSampleMethod(getToken(1)) })
+                ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+                { method = token.image; }
+            ]
         )
         |
         (
@@ -7078,7 +7543,8 @@ SampleClause SampleClause():
                 <K_ROWS> { percentageUnit="ROWS"; }
             )
         ]
-        [ LOOKAHEAD(2) <K_OFFSET> offsetArgument = Number() ]
+        // ClickHouse's SAMPLE k OFFSET m; after DuckDB's TABLESAMPLE n, OFFSET belongs to the query
+        [ LOOKAHEAD(2, { !"TABLESAMPLE".equalsIgnoreCase(keyword) }) <K_OFFSET> offsetArgument = Number() ]
     )
 
     // DuckDB: USING SAMPLE 10 PERCENT (bernoulli[, seed])
@@ -7126,12 +7592,15 @@ Select Select() #Select:
 {
     [ with=WithList() ]
     (
-        LOOKAHEAD({ isFromFirstSelectAhead() }) select = FromFirstSelect()
-        |
-        LOOKAHEAD(3) select = FromQuery()
+        LOOKAHEAD(3, { !isFromFirstSelectAhead() }) select = FromQuery()
         |
         (
             (
+                LOOKAHEAD({ isFromFirstSelectAhead() }) select = FromFirstSelect()
+                |
+                // DuckDB's TABLE t, also as a set operation operand
+                LOOKAHEAD({ getToken(1).kind == K_TABLE }) select = TableStatement()
+                |
                 LOOKAHEAD(2) select = PivotQuery()
                 |
                 LOOKAHEAD(2) select = UnPivotQuery()
@@ -7979,6 +8448,9 @@ PlainSelect PlainSelect() #PlainSelect:
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
+        // DuckDB: QUALIFY after WINDOW
+        [ LOOKAHEAD(2, { plainSelect.getQualify() == null }) qualify=Qualify()
+            { plainSelect.setQualify(qualify); plainSelect.setQualifyAfterWindow(true); } ]
     ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
@@ -8097,6 +8569,10 @@ Select SetOperationList(Select select) #SetOperationList: {
         )
 
         (
+            LOOKAHEAD({ getToken(1).kind == K_FROM }) select = FromFirstSelect()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_TABLE }) select = TableStatement()
+            |
             select = PlainSelect()
             |
             select = Values()
@@ -8146,6 +8622,20 @@ Select SetOperationList(Select select) #SetOperationList: {
             if (ps.getIsolation() != null) {
                 list.setIsolation(ps.getIsolation());
                 ps.setIsolation(null);
+            }
+        } else if (selects.get(selects.size() - 1) instanceof TableStatement) {
+            TableStatement table = (TableStatement) selects.get(selects.size() - 1);
+            if (table.getOrderByElements() != null) {
+                list.setOrderByElements(table.getOrderByElements());
+                table.setOrderByElements(null);
+            }
+            if (table.getLimit() != null) {
+                list.setLimit(table.getLimit());
+                table.setLimit(null);
+            }
+            if (table.getOffset() != null) {
+                list.setOffset(table.getOffset());
+                table.setOffset(null);
             }
         }
         list.setBracketsOpsAndSelects(selects,operations);
@@ -8367,11 +8857,13 @@ List<SelectItem<?>> SelectItemsList():
 {
     selectItem=SelectItem() {  selectItemsList = new ArrayList<SelectItem<?>>(); selectItemsList.add(selectItem); }
     (
-        LOOKAHEAD(2) "," selectItem=SelectItem()
+        LOOKAHEAD(2, { !isTrailingSelectItemCommaAhead() }) "," selectItem=SelectItem()
         {
             selectItemsList.add(selectItem);
         }
     )*
+    // DuckDB's trailing comma: SELECT a, b, FROM t
+    [ LOOKAHEAD({ isTrailingSelectItemCommaAhead() }) "," ]
 
     { return selectItemsList; }
 }
@@ -8437,6 +8929,9 @@ boolean AllColumnsTransformerAhead() #void:
         | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
         | <K_EXCLUDE> ParenthesedColumnList() )
       { return true; }
+      // DuckDB: * EXCLUDE i, * REPLACE expr AS i, * RENAME [(]i AS x[)]
+    | LOOKAHEAD( <K_EXCLUDE> Column() ) { return true; }
+    | LOOKAHEAD({ isUnparenthesizedReplaceAhead() || isRenameAhead() }) { return true; }
     | { return false; }
 }
 
@@ -8504,6 +8999,8 @@ ColumnsTransformer ColumnsTransformer():
     ParenthesedExpressionList<Column> exceptColumns = null;
     StringValue exceptPattern = null;
     List<SelectItem<?>> replaceItems;
+    SelectItem<?> item;
+    Column column;
     ColumnsTransformer transformer;
     Token tk;
     boolean strict;
@@ -8526,7 +9023,7 @@ ColumnsTransformer ColumnsTransformer():
           (
               exceptColumns = ParenthesedColumnList()
               |
-              tk=<S_CHAR_LITERAL> { exceptPattern = new StringValue(tk.image); }
+              tk=<S_CHAR_LITERAL> { exceptPattern = stringValue(tk); }
           )
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
                   .setStrict(strict);
@@ -8536,16 +9033,53 @@ ColumnsTransformer ColumnsTransformer():
                 transformer.setExceptColumns(exceptColumns);
             } }
 
-        | <K_EXCLUDE> exceptColumns = ParenthesedColumnList()
-          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCLUDE)
-                  .setExceptColumns(exceptColumns); }
+        | <K_EXCLUDE>
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCLUDE); }
+          (
+              exceptColumns = ParenthesedColumnList()
+              |
+              column = Column()
+              {
+                  exceptColumns = new ParenthesedExpressionList<Column>(column);
+                  transformer.setParenthesized(false);
+              }
+          )
+          { transformer.setExceptColumns(exceptColumns); }
 
         | <K_REPLACE>
           { strict = false; }
-          [ <K_STRICT> { strict = true; } ]
-          "(" replaceItems = SelectItemsList() ")"
+          [ LOOKAHEAD({ getToken(1).kind == K_STRICT && "(".equals(getToken(2).image) })
+            <K_STRICT> { strict = true; } ]
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
-                  .setStrict(strict).setReplaceItems(replaceItems); }
+                  .setStrict(strict); }
+          (
+              LOOKAHEAD({ "(".equals(getToken(1).image) && !isUnparenthesizedReplaceAhead(0) })
+              "(" replaceItems = SelectItemsList() ")"
+              |
+              item = SelectItem()
+              {
+                  requireTransformerAlias(item);
+                  replaceItems = new ArrayList<SelectItem<?>>();
+                  replaceItems.add(item);
+                  transformer.setParenthesized(false);
+              }
+          )
+          { transformer.setReplaceItems(replaceItems); }
+
+        | <K_RENAME>
+          { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.RENAME); }
+          (
+              LOOKAHEAD("(") "(" replaceItems = SelectItemsList() ")"
+              |
+              item = SelectItem()
+              {
+                  requireTransformerAlias(item);
+                  replaceItems = new ArrayList<SelectItem<?>>();
+                  replaceItems.add(item);
+                  transformer.setParenthesized(false);
+              }
+          )
+          { transformer.setRenameItems(replaceItems); }
     )
     { return transformer; }
 }
@@ -8562,12 +9096,13 @@ AllColumns AllColumns(boolean allowAdditions):
 }
 {
     "*"
-    // BigData allows EXCEPT, DuckDB allows EXCLUDE, ClickHouse allows APPLY;
+    // BigData allows EXCEPT, DuckDB allows EXCLUDE and RENAME, ClickHouse allows APPLY;
     // they may repeat and combine in any order
     (
-        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> [ <K_STRICT> ] "("
+        // AllColumnsTransformerAhead() tells DuckDB's REPLACE and RENAME from an alias of the star
+        LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> | <K_RENAME>
             | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
-            | <K_EXCLUDE> ParenthesedColumnList() )
+            | <K_EXCLUDE> ( ParenthesedColumnList() | Column() ) )
         {
             if (!allowAdditions || !AllColumnsTransformerAhead()) {
                 break;
@@ -8939,11 +9474,11 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
     <K_INTO>
     (
           <K_OUTFILE> { intoClause.setType(MySqlSelectIntoClause.Type.OUTFILE); }
-          token=<S_CHAR_LITERAL> { intoClause.setFileName(new StringValue(token.image)); }
+          token=<S_CHAR_LITERAL> { intoClause.setFileName(stringValue(token)); }
           MySqlSelectIntoOutfileTail(intoClause)
         |
           <K_DUMPFILE> { intoClause.setType(MySqlSelectIntoClause.Type.DUMPFILE); }
-          token=<S_CHAR_LITERAL> { intoClause.setFileName(new StringValue(token.image)); }
+          token=<S_CHAR_LITERAL> { intoClause.setFileName(stringValue(token)); }
         |
           LOOKAHEAD({ isMySqlDialect() })
           variable=MySqlIntoVariable() { variables.add(variable); }
@@ -9040,20 +9575,20 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
     (
           LOOKAHEAD(<K_TERMINATED> <K_BY>)
           <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsTerminatedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsTerminatedBy(stringValue(token)); }
           (
                 LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
                 [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
                 <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEnclosedBy(new StringValue(token.image)); }
+                { intoClause.setFieldsEnclosedBy(stringValue(token)); }
                 [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
                     <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                    { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+                    { intoClause.setFieldsEscapedBy(stringValue(token)); }
                 ]
               |
                 LOOKAHEAD(<K_ESCAPED> <K_BY>)
                 <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+                { intoClause.setFieldsEscapedBy(stringValue(token)); }
               |
                 { }
           )
@@ -9061,15 +9596,15 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
           LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
           [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
           <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEnclosedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsEnclosedBy(stringValue(token)); }
           [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
               <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+              { intoClause.setFieldsEscapedBy(stringValue(token)); }
           ]
         |
           LOOKAHEAD(<K_ESCAPED> <K_BY>)
           <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsEscapedBy(stringValue(token)); }
         |
           { }
     )
@@ -9084,15 +9619,15 @@ void MySqlSelectIntoLinesClause(MySqlSelectIntoClause intoClause):
     (
           LOOKAHEAD(<K_STARTING> <K_BY>)
           <K_STARTING> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesStartingBy(new StringValue(token.image)); }
+          { intoClause.setLinesStartingBy(stringValue(token)); }
           [ LOOKAHEAD(<K_TERMINATED> <K_BY>)
               <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setLinesTerminatedBy(new StringValue(token.image)); }
+              { intoClause.setLinesTerminatedBy(stringValue(token)); }
           ]
         |
           LOOKAHEAD(<K_TERMINATED> <K_BY>)
           <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesTerminatedBy(new StringValue(token.image)); }
+          { intoClause.setLinesTerminatedBy(stringValue(token)); }
         |
           { }
     )
@@ -10179,11 +10714,17 @@ Limit LimitWithOffset() #LimitWithOffset:
 }
 {
     <K_LIMIT>
-    (
-        LOOKAHEAD(3) firstExpression = ParenthesedSelect()
-        |
-        firstExpression = Expression()
-    )
+    { Token outerLimitPercentToken = limitPercentToken; }
+    try {
+        { limitPercentToken = findLimitPercentToken(); }
+        (
+            LOOKAHEAD(3) firstExpression = ParenthesedSelect()
+            |
+            firstExpression = Expression()
+        )
+    } finally {
+        limitPercentToken = outerLimitPercentToken;
+    }
     (
         // MySQL: LIMIT offset, row_count
         ","
@@ -10193,10 +10734,15 @@ Limit LimitWithOffset() #LimitWithOffset:
             limit.setRowCount(secondExpression);
         }
         |
-        // PostgreSQL: LIMIT row_count
+        // PostgreSQL: LIMIT row_count; DuckDB: LIMIT 10% or LIMIT 10 PERCENT
         {
             limit.setRowCount(firstExpression);
         }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_PERCENT
+                    || "%".equals(getToken(1).image) && isLimitClauseEnd(getToken(2)) })
+            ( "%" { limit.setPercentUnit("%"); } | <K_PERCENT> { limit.setPercentUnit("PERCENT"); } )
+        ]
     )
     {
         linkAST(limit, jjtThis);
@@ -10561,6 +11107,7 @@ Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #
         ">" { result = new GreaterThan(); }
         | "<" { result = new MinorThan(); }
         | "=" { result = new EqualsTo(); }
+        | "==" { result = new EqualsTo("=="); }
         | token=<OP_GREATERTHANEQUALS> { result = new GreaterThanEquals(token.image); }
         | token=<OP_MINORTHANEQUALS> { result = new MinorThanEquals(token.image); }
         | token=<OP_NOTEQUALSSTANDARD> { result = new NotEqualsTo(token.image); }
@@ -10692,7 +11239,7 @@ Expression InExpression(Expression leftExpression) #InExpression :
     [<K_NOT> { usingNot=true; } ]
     <K_IN>
     (
-        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
+        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = stringValue(token); }
         |
         LOOKAHEAD({ isNestedSetOperationAhead() }) rightExpression = ParenthesedSelect()
         |
@@ -10809,8 +11356,13 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     Token token;
 }
 {
-    [<K_NOT> { result.setNot(true); } ]
     (
+        (
+            token = "~~" | token = "~~*" | token = "~~~" | token = "!~~" | token = "!~~*"
+        ) { result.setLikeOperator(token.image); }
+        |
+        [<K_NOT> { result.setNot(true); } ]
+        (
         token = <K_LIKE>
         | token = <K_ILIKE>
         | token = <K_RLIKE>
@@ -10823,7 +11375,8 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
         | token = <K_MATCH_PHRASE>
         | token = <K_MATCH_PHRASE_PREFIX>
         | token = <K_MATCH_REGEXP>
-    ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
+        ) { result.setLikeKeyWord( LikeExpression.KeyWord.from(token.image)); }
+    )
     [ LOOKAHEAD(2) <K_BINARY> {result.setUseBinary(true); } ]
     rightExpression=SimpleExpression()
     [
@@ -10837,7 +11390,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     ]
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
-            LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }
+            LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( stringValue(token) ); }
             |
             escape=Expression() { result.setEscape(escape); }
         )
@@ -10868,7 +11421,7 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
             }
         }
     ]
-    [ LOOKAHEAD(2) <K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    [ LOOKAHEAD(2) <K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((stringValue(token)).getValue()); }]
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
@@ -11247,7 +11800,7 @@ StringValue CharacterSetIntroducedString():
 {
     introducer=<S_IDENTIFIER> literal=<S_CHAR_LITERAL>
     {
-        return new StringValue(literal.image).withPrefix(introducer.image);
+        return stringValue(literal).withPrefix(introducer.image);
     }
 }
 
@@ -11309,29 +11862,85 @@ Expression AddChain():
 
 Expression ArrayExpression(Expression obj): {
     Expression expr;
-    Expression idxExpr = null;
-    Expression startExpr = null;
-    Expression stopExpr = null;
 } {
-    "["
-        [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
-        [
-          (":" { startExpr=idxExpr; idxExpr=null; })
-          [stopExpr = SimpleExpression()]
-        ]
-    "]"
-    { expr =  new ArrayExpression(obj, idxExpr, startExpr, stopExpr); }
-    (
-        LOOKAHEAD(2) "["
-            [LOOKAHEAD(3) idxExpr = ArrayIndexExpression()]
-            [
-              (":" { startExpr=idxExpr; idxExpr=null; })
-              [stopExpr = SimpleExpression()]
-            ]
-        "]"
-        { expr =  new ArrayExpression(expr, idxExpr, startExpr, stopExpr); }
-    )*
+    expr = ArraySubscript(obj)
+    ( LOOKAHEAD(2) expr = ArraySubscript(expr) )*
     { return expr; }
+}
+
+ArrayExpression ArraySubscript(Expression obj): {
+    Expression idxExpr = null;
+    RangeExpression slice = null;
+    Token opening;
+} {
+    opening="["
+    try {
+        { subscriptOpenings.push(opening); }
+        [ LOOKAHEAD(3, { !":".equals(getToken(1).image) }) idxExpr = ArrayIndexExpression() ]
+        [ slice = SliceTail(idxExpr) ]
+    } finally {
+        subscriptOpenings.pop();
+    }
+    "]"
+    {
+        return slice == null
+                ? new ArrayExpression(obj, idxExpr, null, null)
+                : new ArrayExpression(obj, null, slice.getStartExpression(),
+                        slice.getEndExpression()).withStepExpression(slice.getStepExpression());
+    }
+}
+
+/**
+ * The rest of a slice after its optional start: {@code :[stop][:[step]]}.  As in DuckDB, a
+ * {@code -} stop before a step stands for the end of the list, as in {@code l[1:-:2]}.
+ */
+RangeExpression SliceTail(Expression start): {
+    Expression stop = null;
+    Expression step = null;
+} {
+    ":"
+    [
+        LOOKAHEAD("-" ":") "-"
+        |
+        LOOKAHEAD({ !isSliceDelimiter(getToken(1)) }) stop = Expression()
+    ]
+    [
+        ":" [ LOOKAHEAD({ !isSliceDelimiter(getToken(1)) }) step = Expression() ]
+    ]
+    { return new RangeExpression(start, stop).withStepExpression(step); }
+}
+
+/** A subscript of a column, such as {@code col[1]}, {@code col[1, 2]} or {@code col[1:3]}. */
+ArrayConstructor Subscript() : {
+    ExpressionList<Expression> expList = new ExpressionList<Expression>();
+    Expression exp;
+    Token opening;
+} {
+    opening="["
+    try {
+        { subscriptOpenings.push(opening); }
+        [
+            exp=SubscriptElement() { expList.add(exp); }
+            ( "," exp=SubscriptElement() { expList.add(exp); } )*
+        ]
+    } finally {
+        subscriptOpenings.pop();
+    }
+    "]"
+    { return new ArrayConstructor(expList, false); }
+}
+
+Expression SubscriptElement():
+{
+    Expression expression = null;
+}
+{
+    (
+        LOOKAHEAD({ ":".equals(getToken(1).image) }) expression=SliceTail(null)
+        |
+        expression=Expression() [ expression=SliceTail(expression) ]
+    )
+    { return expression; }
 }
 
 /**
@@ -11384,10 +11993,10 @@ StringValue CharacterLiteral():
     StringValue value;
 }
 {
-    literal=<S_CHAR_LITERAL> { value = new StringValue(literal.image); }
+    literal=<S_CHAR_LITERAL> { value = stringValue(literal); }
     ( LOOKAHEAD({ isAdjacentStringConcat() })
         literal=<S_CHAR_LITERAL>
-        { value.setValue(value.getValue() + new StringValue(literal.image).getValue()); }
+        { value.setValue(value.getValue() + stringValue(literal).getValue()); }
     )*
     { return value; }
 }
@@ -11402,6 +12011,8 @@ Expression PrimaryExpression() #PrimaryExpression:
     Expression timezoneRightExpr = null;
     Token token = null;
     Token sign = null;
+    Token innerSign;
+    List<Token> innerSigns = new ArrayList<Token>();
     ColDataType type = null;
     boolean not = false;
     boolean exclamationMarkNot = false;
@@ -11412,7 +12023,11 @@ Expression PrimaryExpression() #PrimaryExpression:
 }
 {
     [ <K_NOT> { not=true; } | "!" { not=true; exclamationMarkNot=true; } ]
-    [sign="+" | sign="-" | sign="~"]
+    [
+        ( sign="+" | sign="-" | sign="~" )
+        // DuckDB's chained signs, e.g. - -1 or +-+1
+        ( LOOKAHEAD(1) ( innerSign="+" | innerSign="-" | innerSign="~" ) { innerSigns.add(innerSign); } )*
+    ]
     (
         <K_NULL> { retval = new NullValue(); }
 
@@ -11480,6 +12095,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) <K_ARRAY_LITERAL> [ "<" type=ColDataType() ">" ] retval=ArrayConstructor(true) { if (type!=null) ((ArrayConstructor) retval).setDataType(type); }
 
+        | LOOKAHEAD({ !interrupted && isListComprehensionAhead() }) retval=ListComprehension()
+
         | LOOKAHEAD(1, {!interrupted}) retval=ArrayConstructor(false)
 
         | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
@@ -11494,6 +12111,9 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD({ !interrupted && isCharacterSetIntroducedStringAhead() })
                   retval=CharacterSetIntroducedString()
+
+        // DuckDB's lambda x, y : expr, before Column() which would take LAMBDA as a column name
+        | LOOKAHEAD({ !interrupted && isDuckDBLambdaAhead() }) retval=DuckDBLambdaExpression()
 
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
             [
@@ -11583,7 +12203,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     // Check for JSON operands
     [
         LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
-                && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && !isSliceColonAhead())
                     || !":".equals(getToken(1).image)) }) (
             LOOKAHEAD(2) (
                 token="->"
@@ -11621,6 +12241,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         if (timezoneExpr != null && !timezoneExpr.getTimezoneExpressions().isEmpty()) {
             timezoneExpr.setLeftExpression(retval);
             retval=timezoneExpr;
+        }
+        for (int i = innerSigns.size() - 1; i >= 0; i--) {
+            retval = new SignedExpression(innerSigns.get(i).image.charAt(0), retval);
         }
         if (sign != null) {
             retval = new SignedExpression(sign.image.charAt(0), retval);
@@ -11780,6 +12403,24 @@ RangeExpression RangeExpression(Expression startExpression):
     {
         return new RangeExpression(startExpression, endExpression);
     }
+}
+
+/** DuckDB's list comprehension {@code [expr FOR x[, i] IN list [IF condition]]}. */
+ListComprehension ListComprehension() : {
+    Expression expression;
+    List<String> variables = new ArrayList<String>();
+    String variable;
+    Expression list;
+    Expression condition = null;
+} {
+    "["
+    expression=Expression()
+    <K_FOR> variable=RelObjectName() { variables.add(variable); }
+    [ "," variable=RelObjectName() { variables.add(variable); } ]
+    <K_IN> list=Expression()
+    [ <K_IF> condition=Expression() ]
+    "]"
+    { return new ListComprehension(expression, variables, list, condition); }
 }
 
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {
@@ -11948,7 +12589,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
 
         (
             LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
-                    && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0)
+                    && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && !isSliceColonAhead())
                         || !":".equals(getToken(1).image)) }) (
                 token="->"
                 |
@@ -12893,7 +13534,13 @@ void windowFun(AnalyticExpression retval):{
     (
         windowName = RelObjectName() { retval.setWindowName(windowName); }
         |
-        winDef = windowDefinition() { retval.setWindowDefinition(winDef); }
+        winDef = windowDefinition()
+        {
+            if (winDef.getBaseWindowName() != null && retval.getType() != AnalyticType.OVER) {
+                throw new ParseException("Only an OVER window may extend a named window");
+            }
+            retval.setWindowDefinition(winDef);
+        }
 
         [
             LOOKAHEAD(2) <K_OVER> "("
@@ -12912,8 +13559,17 @@ WindowDefinition windowDefinition() : {
     WindowElement windowElement = null;
     boolean partitionByBrackets = false;
     WindowDefinition winDef = new WindowDefinition();
+    String baseWindowName;
 } {
     "("
+    // DuckDB: (w ORDER BY b) extends the named window w. A choice, not an optional, so that
+    // lookahead scans through a window specification keep the check
+    (
+        LOOKAHEAD({ isBaseWindowNameAhead() }) baseWindowName=RelObjectName()
+        { winDef.setBaseWindowName(baseWindowName); }
+        |
+        {}
+    )
     [<K_PARTITION> <K_BY>
         (LOOKAHEAD(3) expressionList=ComplexExpressionList()
         | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
@@ -12937,7 +13593,7 @@ AnalyticExpression AnalyticExpression(Function function) :
 {
     (
         (
-            filter=AggregateFilter() { retval.setType(AnalyticType.FILTER_ONLY); }
+            filter=AggregateFilter(retval) { retval.setType(AnalyticType.FILTER_ONLY); }
             [ LOOKAHEAD(2) windowFun(retval) ]
             {
                 if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
@@ -12949,7 +13605,7 @@ AnalyticExpression AnalyticExpression(Function function) :
         )
         | windowFun(retval)
           [ LOOKAHEAD({ retval.getType() == AnalyticType.WITHIN_GROUP
-                  && getToken(1).kind == K_FILTER }) filter=AggregateFilter() ]
+                  && getToken(1).kind == K_FILTER }) filter=AggregateFilter(retval) ]
     )
     {
         retval.setFilterExpression(filter);
@@ -12957,11 +13613,21 @@ AnalyticExpression AnalyticExpression(Function function) :
     }
 }
 
-/** Shared FILTER predicate for ordinary, window, and ordered-set aggregates. */
-Expression AggregateFilter():
+/**
+ * Shared FILTER predicate for ordinary, window, and ordered-set aggregates. DuckDB also accepts
+ * it without WHERE, FILTER (x > 1), but PostgreSQL does not.
+ */
+Expression AggregateFilter(AnalyticExpression analyticExpression):
 { Expression filter; }
 {
-    <K_FILTER> "(" <K_WHERE> filter=Expression() ")"
+    <K_FILTER> "("
+    (
+        <K_WHERE>
+        |
+        LOOKAHEAD({ !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        { analyticExpression.setFilterWhereKeyword(false); }
+    )
+    filter=Expression() ")"
     { return filter; }
 }
 
@@ -13328,6 +13994,28 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     }
 }
 
+/**
+ * DuckDB's lambda syntax, lambda x, y : expr, equivalent to (x, y) -> expr.
+ */
+LambdaExpression DuckDBLambdaExpression() #LambdaExpression:
+{
+    List<String> identifiers = new ArrayList<String>();
+    String s;
+    Expression expression;
+    LambdaExpression lambdaExpression;
+}
+{
+    <S_IDENTIFIER> s = RelObjectName() { identifiers.add(s); }
+    ( "," s = RelObjectName() { identifiers.add(s); } )*
+    ":"
+    expression = Expression()
+    {
+        lambdaExpression = new LambdaExpression(identifiers, expression).setLambdaKeyword(true);
+        linkAST(lambdaExpression,jjtThis);
+        return lambdaExpression;
+    }
+}
+
 RowPatternFunction RowPatternFunction() #RowPatternFunction:
 {
     RowPatternFunction.EvaluationMode mode;
@@ -13612,8 +14300,8 @@ XMLSerializeExpr XMLSerializeExpr(): {
         { result.setSerializationMode(XMLSerializeExpr.SerializationMode.valueOf(token.image.toUpperCase(Locale.ROOT))); }
         expression=Expression() { result.setExpression(expression); }
         [ <K_AS> dataType=ColDataType() { result.setDataType(dataType); } ]
-        [ <K_ENCODING> token=<S_CHAR_LITERAL> { result.setEncoding(new StringValue(token.image)); } ]
-        [ <K_VERSION> token=<S_CHAR_LITERAL> { result.setVersion(new StringValue(token.image)); } ]
+        [ <K_ENCODING> token=<S_CHAR_LITERAL> { result.setEncoding(stringValue(token)); } ]
+        [ <K_VERSION> token=<S_CHAR_LITERAL> { result.setVersion(stringValue(token)); } ]
         [
             LOOKAHEAD(2) <K_NO> token=<S_IDENTIFIER> {
                 requireDdlSyntax("INDENT".equalsIgnoreCase(token.image), "Expected INDENT after NO");
@@ -14594,7 +15282,6 @@ ColumnDefinition ColumnDefinition(): {
     ColumnDefinition coldef;
     String columnName;
     ColDataType colDataType;
-    List<String> columnSpecs = new ArrayList<String>();
     List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
     ColumnOption option;
 } {
@@ -14602,15 +15289,12 @@ ColumnDefinition ColumnDefinition(): {
     colDataType=ColDataType()
     ( LOOKAHEAD(2) option=ColumnDefinitionOption() {
         columnOptions.add(option);
-        columnSpecs.addAll(option.getTokens());
     } )*
     {
         coldef = new ColumnDefinition();
         coldef.setColumnName(columnName);
         coldef.setColDataType(colDataType);
-        if (columnSpecs.size() > 0)
-            coldef.setColumnSpecs(columnSpecs);
-        if (hasStructuredColumnOption(columnOptions))
+        if (!columnOptions.isEmpty())
             coldef.setColumnOptions(columnOptions);
         return coldef;
     }
@@ -14671,7 +15355,7 @@ ColumnOption ColumnDefinitionOption(): {
         { option = ColumnOption.collate(collation); }
         |
         LOOKAHEAD(<K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
-        { option = ColumnOption.comment(new StringValue(tk.image)); }
+        { option = ColumnOption.comment(stringValue(tk)); }
         |
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
         { option = ColumnOption.onUpdate(defaultExpression); }
@@ -14809,7 +15493,7 @@ StringValue MySqlAccountNamePart():
 }
 {
     (
-        token=<S_CHAR_LITERAL> { value = new StringValue(token.image); }
+        token=<S_CHAR_LITERAL> { value = stringValue(token); }
         |
         name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
     )
@@ -14829,7 +15513,7 @@ UserAuthentication MySqlUserAuthentication():
         (
             credential=<S_CHAR_LITERAL> {
                 authentication.setMode(UserAuthentication.Mode.BY_PASSWORD);
-                authentication.setCredential(new StringValue(credential.image));
+                authentication.setCredential(stringValue(credential));
             }
             |
             <K_RANDOM> <K_PASSWORD> {
@@ -14846,7 +15530,7 @@ UserAuthentication MySqlUserAuthentication():
             (
                 credential=<S_CHAR_LITERAL> {
                     authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_BY_PASSWORD);
-                    authentication.setCredential(new StringValue(credential.image));
+                    authentication.setCredential(stringValue(credential));
                 }
                 |
                 <K_RANDOM> <K_PASSWORD> {
@@ -14857,7 +15541,7 @@ UserAuthentication MySqlUserAuthentication():
             |
             <K_AS> credential=<S_CHAR_LITERAL> {
                 authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING);
-                authentication.setCredential(new StringValue(credential.image));
+                authentication.setCredential(stringValue(credential));
             }
         ]
     )
@@ -14930,7 +15614,7 @@ Expression MySqlEventIntervalValue():
         |
         value=<S_DOUBLE> { expression = new DoubleValue(value.image); }
         |
-        value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+        value=<S_CHAR_LITERAL> { expression = stringValue(value); }
     )
     { return expression; }
 }
@@ -14981,7 +15665,7 @@ CreateEvent CreateEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
       status=MySqlEventStatus() { createEvent.setStatus(status); } ]
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
-        createEvent.setComment(new StringValue(comment.image));
+        createEvent.setComment(stringValue(comment));
     } ]
     <K_DO> body=SingleStatement() { createEvent.setBody(body); }
     { return createEvent; }
@@ -15009,7 +15693,7 @@ AlterEvent AlterEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
       status=MySqlEventStatus() { alterEvent.setStatus(status); } ]
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
-        alterEvent.setComment(new StringValue(comment.image));
+        alterEvent.setComment(stringValue(comment));
     } ]
     [ LOOKAHEAD({ getToken(1).kind == K_DO })
       <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
@@ -15768,7 +16452,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                 createTable.setExecute(execute);
             }
             |
-            ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
+            select=Select()
             { createTable.setSelect(select, false); }
         )
         [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()
@@ -15846,7 +16530,7 @@ ForeignDataOption ForeignDataOption():
         [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
           | <K_SET> { action = ForeignDataOption.Action.SET; } ) ]
         name=RelObjectName() value=<S_CHAR_LITERAL>
-        { option = new ForeignDataOption(name, new StringValue(value.image)); option.setAction(action); }
+        { option = new ForeignDataOption(name, stringValue(value)); option.setAction(action); }
     )
     { return option; }
 }
@@ -15914,6 +16598,10 @@ TableOption CreateTableOption():
       }
       |
       LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
+      |
+      // Snowflake: COPY is reserved because it starts the COPY statement
+      LOOKAHEAD({ getToken(1).kind == K_COPY && "GRANTS".equalsIgnoreCase(getToken(2).image) })
+      <K_COPY> ContextualKeyword("GRANTS") { option = TableOption.raw("COPY", "GRANTS"); }
       | tokens=CreateParameter() { option = TableOption.raw(tokens); } )
     { return option; }
 }
@@ -16538,6 +17226,52 @@ ColDataType.TypeModifier MySqlTypeModifier():
         | <K_ZEROFILL> { modifier = ColDataType.TypeModifier.ZEROFILL; }
     )
     { return modifier; }
+}
+
+/**
+ * Parses MySQL/MariaDB CHECK, OPTIMIZE and REPAIR TABLE statements. Options are accepted only for
+ * the operation that defines them, without reserving the option words.
+ */
+TableMaintenanceStatement TableMaintenanceStatement():
+{
+    TableMaintenanceStatement statement = new TableMaintenanceStatement();
+    TableMaintenanceStatement.Operation operation = null;
+    TableMaintenanceStatement.Option option = null;
+    Token modifier = null;
+    Token word = null;
+    Table table = null;
+}
+{
+    (
+        <K_CHECK> { operation = TableMaintenanceStatement.Operation.CHECK; }
+        | <K_OPTIMIZE> { operation = TableMaintenanceStatement.Operation.OPTIMIZE; }
+        | <K_REPAIR> { operation = TableMaintenanceStatement.Operation.REPAIR; }
+    )
+    { statement.setOperation(operation); }
+    [
+        LOOKAHEAD({ operation.allowsModifier()
+                && (getToken(1).kind == K_NO_WRITE_TO_BINLOG || getToken(1).kind == K_LOCAL) })
+        ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
+        {
+            statement.setModifier(TableMaintenanceStatement.Modifier.valueOf(
+                    modifier.image.toUpperCase(Locale.ROOT)));
+        }
+    ]
+    ( <K_TABLE> | <K_TABLES> { statement.setTablesKeyword(true); } )
+    table=Table() { statement.addTables(table); }
+    ( "," table=Table() { statement.addTables(table); } )*
+    (
+        LOOKAHEAD({ isTableMaintenanceOptionAhead(operation) })
+        (
+            <K_FOR> ContextualKeyword("UPGRADE")
+            { option = TableMaintenanceStatement.Option.FOR_UPGRADE; }
+            | <K_QUICK> { option = TableMaintenanceStatement.Option.QUICK; }
+            | <K_EXTENDED> { option = TableMaintenanceStatement.Option.EXTENDED; }
+            | word=<S_IDENTIFIER> { option = TableMaintenanceStatement.Option.fromKeyword(word.image); }
+        )
+        { statement.addOptions(option); }
+    )*
+    { return statement; }
 }
 
 Analyze Analyze():
@@ -17327,7 +18061,6 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     boolean withType = false;
     boolean useSetData = false;
     ColDataType dataType = null;
-    List<String> columnSpecs = new ArrayList<String>();
     List<ColumnOption> columnOptions = new ArrayList<ColumnOption>();
     ColumnOption option = null;
     AlterExpression.ColumnDataType result;
@@ -17349,19 +18082,16 @@ AlterExpression.ColumnDataType AlterExpressionColumnDataType():
     ( LOOKAHEAD(2) dataType = ColDataType() )?
     ( LOOKAHEAD(2, { !(withType && getToken(1).kind == K_USING) }) option = ColumnDefinitionOption() {
         columnOptions.add(option);
-        columnSpecs.addAll(option.getTokens());
     } )*
     [ LOOKAHEAD({ withType && getToken(1).kind == K_USING }) <K_USING> usingExpression=Expression() ]
     )
     {
         requireDdlSyntax(!withType || dataType != null, "TYPE requires a data type");
-        result = new AlterExpression.ColumnDataType(columnName, withType, dataType, columnSpecs);
+        result = new AlterExpression.ColumnDataType(columnName, withType, dataType, null);
         result.setUseSetData(useSetData);
         result.setUsingExpression(usingExpression);
         result.setIdentityAlterations(identityAlterations);
-        if (hasStructuredColumnOption(columnOptions)) {
-            result.setColumnOptions(columnOptions);
-        }
+        result.setColumnOptions(columnOptions);
         return result;
     }
 }
@@ -18147,7 +18877,7 @@ void AlterExpressionAddConstraint(AlterExpression alterExp):
             )
             |
             (
-                tk=<K_UNIQUE> (tk2=<K_KEY> { alterExp.setUk(true); } | tk2=<K_INDEX>)?
+                tk=<K_UNIQUE> (tk2=<K_KEY> | tk2=<K_INDEX>)?
                   clustering=SqlServerIndexClustering()
                   columnNames=ColumnsNamesList()
                   {
@@ -18193,10 +18923,7 @@ AlterExpression AlterExpressionDrop():
 {
     <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
     (
-        LOOKAHEAD({ Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
-                && (getToken(1).kind == K_CHECK
-                    || getToken(1).kind == K_FOREIGN && getToken(2).kind == K_KEY
-                        && getToken(3).kind != OPENING_BRACKET) })
+        LOOKAHEAD({ isNamedConstraintDropAhead() })
         MySqlDropNamedConstraint(alterExp)
         |
         (
@@ -18211,7 +18938,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
             // Oracle Multi Column Drop
-            columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+            columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
             [ "INVALIDATE" { alterExp.addParameters("INVALIDATE"); } ]
             [
                 "CASCADE" { alterExp.addParameters("CASCADE"); }
@@ -18240,7 +18967,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
            tk=<K_UNIQUE>  { alterExp.setOperation(AlterOperation.DROP_UNIQUE); }
-           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
         )
         |
@@ -18251,7 +18978,7 @@ AlterExpression AlterExpressionDrop():
         |
         (
            tk=<K_FOREIGN> tk2=<K_KEY> { alterExp.setOperation(AlterOperation.DROP_FOREIGN_KEY); }
-           columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); columnNames = null; }
+           columnNames=ColumnsNamesList() { alterExp.setDropColumns(columnNames); columnNames = null; }
            [ ( tk=<K_CASCADE> | tk=<K_RESTRICT> ) { alterExp.addParameters(tk.image); } ]
         )
         |
@@ -19622,12 +20349,12 @@ RoleOption RoleOption(boolean create):
         |
         LOOKAHEAD({ isAccessKeywordAhead("PASSWORD") || isAccessKeywordAhead("ENCRYPTED") })
         [ AccessKeyword("ENCRYPTED") { encrypted = true; } ] <K_PASSWORD>
-        ( value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); } | <K_NULL> { expression = new NullValue(); } )
+        ( value=<S_CHAR_LITERAL> { expression = stringValue(value); } | <K_NULL> { expression = new NullValue(); } )
         { option = new RoleOption(RoleOption.Kind.PASSWORD); option.setEncrypted(encrypted); option.setValue(expression); }
         |
         LOOKAHEAD({ isAccessKeywordAhead("VALID") })
         AccessKeyword("VALID") AccessKeyword("UNTIL") value=<S_CHAR_LITERAL>
-        { option = new RoleOption(RoleOption.Kind.VALID_UNTIL); option.setValue(new StringValue(value.image)); }
+        { option = new RoleOption(RoleOption.Kind.VALID_UNTIL); option.setValue(stringValue(value)); }
         |
         <K_IN>
         ( AccessKeyword("ROLE") { option = new RoleOption(RoleOption.Kind.IN_ROLE); }
@@ -19963,7 +20690,7 @@ Expression PostgreSqlTriggerArgument():
 { Expression result; Token token; String name; }
 {
     (
-        token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
+        token=<S_CHAR_LITERAL> { result = stringValue(token); }
         | token=<S_LONG> { result = new LongValue(token.image); }
         | token=<S_DOUBLE> { result = new DoubleValue(token.image); }
         | name=RelObjectName() { result = createColumn(name); }
@@ -20226,6 +20953,10 @@ Statement Create():
                 || "DEFINER".equalsIgnoreCase(getToken(1).image) })
         statement = CreateTrigger()
         |
+        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isCreateFunctionMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
+        |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
@@ -20236,8 +20967,6 @@ Statement Create():
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)
-        |
-        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
         |
@@ -20414,11 +21143,10 @@ Synonym Synonym() #Synonym :
 
 
 String TypeDdlName():
-{ String name; String part; Token keyword; }
+{ String name; String part; }
 {
-    ( name=RelObjectName() | keyword=<K_SETTINGS> { name = keyword.image; } )
-    ( LOOKAHEAD(2) "." ( part=RelObjectNameExt() | keyword=<K_SETTINGS> { part = keyword.image; } )
-      { name += "." + part; } )*
+    name=RelObjectName()
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt() { name += "." + part; } )*
     { return name; }
 }
 
@@ -20429,7 +21157,7 @@ void TypeDdlKeyword(String expected):
 Expression ExtensionVersion():
 { Token token; String name; Expression result; }
 {
-    ( token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
+    ( token=<S_CHAR_LITERAL> { result = stringValue(token); }
       | name=RelObjectName() { result = createColumn(name); } )
     { return result; }
 }
@@ -20458,8 +21186,8 @@ CreateType CreateType():
         <K_AS>
         (
             LOOKAHEAD({ isKeywordAhead("ENUM") }) TypeDdlKeyword("ENUM") "("
-            [ label=<S_CHAR_LITERAL> { enumeration.getLabels().add(new StringValue(label.image)); }
-              ( "," label=<S_CHAR_LITERAL> { enumeration.getLabels().add(new StringValue(label.image)); } )* ]
+            [ label=<S_CHAR_LITERAL> { enumeration.getLabels().add(stringValue(label)); }
+              ( "," label=<S_CHAR_LITERAL> { enumeration.getLabels().add(stringValue(label)); } )* ]
             ")" { result.setDefinition(enumeration); }
             | <K_RANGE> "(" option=RangeTypeOption() { range.getOptions().add(option); }
               ( "," option=RangeTypeOption() { range.getOptions().add(option); } )* ")"
@@ -20527,14 +21255,14 @@ AlterType AlterType():
         LOOKAHEAD(<K_ADD> <K_VALUE>)
         <K_ADD> <K_VALUE> { result.setAction(AlterType.Action.ADD_VALUE); }
         [ <K_IF> <K_NOT> <K_EXISTS> { result.setIfNotExists(true); } ]
-        label=<S_CHAR_LITERAL> { result.setValue(new StringValue(label.image)); }
+        label=<S_CHAR_LITERAL> { result.setValue(stringValue(label)); }
         [ ( <K_BEFORE> { result.setPosition(AlterType.Position.BEFORE); }
             | TypeDdlKeyword("AFTER") { result.setPosition(AlterType.Position.AFTER); } )
-          label=<S_CHAR_LITERAL> { result.setNeighborValue(new StringValue(label.image)); } ]
+          label=<S_CHAR_LITERAL> { result.setNeighborValue(stringValue(label)); } ]
         | <K_RENAME>
           (
-              <K_VALUE> label=<S_CHAR_LITERAL> { result.setValue(new StringValue(label.image)); }
-              <K_TO> label=<S_CHAR_LITERAL> { result.setNewValue(new StringValue(label.image)); result.setAction(AlterType.Action.RENAME_VALUE); }
+              <K_VALUE> label=<S_CHAR_LITERAL> { result.setValue(stringValue(label)); }
+              <K_TO> label=<S_CHAR_LITERAL> { result.setNewValue(stringValue(label)); result.setAction(AlterType.Action.RENAME_VALUE); }
               | LOOKAHEAD({ isKeywordAhead("ATTRIBUTE") }) TypeDdlKeyword("ATTRIBUTE")
                 name=RelObjectName() { result.setAttributeName(name); }
                 <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.RENAME_ATTRIBUTE); }
@@ -20570,7 +21298,9 @@ CreateDomain CreateDomain():
     [ <K_AS> { result.setUseAs(true); } ] type=ColDataType() { result.setDataType(type); }
     [ <K_COLLATE> name=TypeDdlName() { result.setCollation(name); } ]
     [ <K_DEFAULT> expression=Expression() { result.setDefaultExpression(expression); } ]
-    ( constraint=DomainConstraint(true) { result.getConstraints().add(constraint); } )*
+    // A following CHECK TABLE statement is not a domain CHECK constraint.
+    ( LOOKAHEAD(1, { !isTableMaintenanceAhead() })
+      constraint=DomainConstraint(true) { result.getConstraints().add(constraint); } )*
     { return result; }
 }
 
@@ -20912,7 +21642,7 @@ CreateSubscription CreateSubscription():
 { CreateSubscription result = new CreateSubscription(); String name; Token connection; List<String> publications; List<SubscriptionOption> options; }
 {
     ReplicationKeyword("SUBSCRIPTION") name=RelObjectName() { result.setName(name); }
-    ReplicationKeyword("CONNECTION") connection=<S_CHAR_LITERAL> { result.setConnection(new StringValue(connection.image)); }
+    ReplicationKeyword("CONNECTION") connection=<S_CHAR_LITERAL> { result.setConnection(stringValue(connection)); }
     ReplicationKeyword("PUBLICATION") publications=SubscriptionPublications() { result.setPublications(publications); }
     [ LOOKAHEAD(2) <K_WITH> options=SubscriptionOptions() { result.setOptions(options); } ]
     { return result; }
@@ -20924,7 +21654,7 @@ AlterSubscription AlterSubscription():
     ReplicationKeyword("SUBSCRIPTION") name=RelObjectName() { result.setName(name); }
     (
         LOOKAHEAD({ isKeywordAhead("CONNECTION") }) ReplicationKeyword("CONNECTION")
-        connection=<S_CHAR_LITERAL> { result.setConnection(new StringValue(connection.image)); result.setAction(AlterSubscription.Action.CONNECTION); }
+        connection=<S_CHAR_LITERAL> { result.setConnection(stringValue(connection)); result.setAction(AlterSubscription.Action.CONNECTION); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ReplicationKeyword("OWNER") <K_TO>
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterSubscription.Action.OWNER); }
         | <K_RENAME> <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterSubscription.Action.RENAME); }
@@ -21556,7 +22286,7 @@ CreateServer CreateServer():
     ContextualKeyword("SERVER")
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
     name=RelObjectName() { statement.setName(name); }
-    [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(new StringValue(type.image)); } ]
+    [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(stringValue(type)); } ]
     [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
     <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setForeignDataWrapper(name); }
     [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
@@ -21566,7 +22296,7 @@ CreateServer CreateServer():
 Expression ForeignServerVersion():
 { Token value; Expression version; }
 {
-    ( value=<S_CHAR_LITERAL> { version = new StringValue(value.image); }
+    ( value=<S_CHAR_LITERAL> { version = stringValue(value); }
       | <K_NULL> { version = new NullValue(); } )
     { return version; }
 }
@@ -21741,7 +22471,7 @@ NotifyStatement NotifyStatement():
 { NotifyStatement statement = new NotifyStatement(); String channel; Token payload; }
 {
     <K_NOTIFY> channel=RelObjectName() { statement.setChannel(channel); }
-    [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(new StringValue(payload.image)); } ]
+    [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(stringValue(payload)); } ]
     { return statement; }
 }
 

@@ -253,5 +253,32 @@ public class KeywordsTest {
         assertEquals("exists", assertInstanceOf(Column.class, map.getEntries().get(0).getKey())
                 .getColumnName());
         assertInstanceOf(TernaryExpression.class, map.getEntries().get(0).getValue());
+    // ERRORS introduces Exasol's IMPORT/EXPORT error clauses but is an ordinary name elsewhere,
+    // e.g. a DuckDB column holding the errors of an upstream step.
+    @Test
+    public void testErrorsAsIdentifier() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT errors FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.errors AS errors FROM mytable t", true);
+        assertSqlCanBeParsedAndDeparsed("WITH errors AS (SELECT 1) SELECT * FROM errors", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (errors VARCHAR)", true);
+    }
+
+    // Dialect-specific clause words (Exasol IMPORT/EXPORT, ClickHouse PREWHERE/SETTINGS, CREATE
+    // FUNCTION ... RETURNS) are ordinary names in other dialects, e.g. PostgreSQL or DuckDB.
+    @Test
+    public void testDialectClauseWordsAsIdentifiers() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "SELECT csv, fbv, file, prewhere, returns, script, settings, verify FROM mytable",
+                true);
+        assertSqlCanBeParsedAndDeparsed("SELECT t.file, t.settings FROM mytable t", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM settings", true);
+        assertSqlCanBeParsedAndDeparsed("WITH file AS (SELECT 1) SELECT * FROM file", true);
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE mytable (csv VARCHAR, settings JSON)", true);
+    }
+
+    @Test
+    public void testClickHouseClausesAfterTable() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable PREWHERE b = 1 WHERE c = 2", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a FROM mytable SETTINGS max_threads = 8", true);
     }
 }

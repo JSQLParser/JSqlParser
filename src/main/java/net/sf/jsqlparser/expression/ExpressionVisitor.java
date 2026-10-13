@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -270,6 +271,15 @@ public interface ExpressionVisitor<T> {
     }
 
     <S> T visit(IntegerDivision integerDivision, S context);
+
+    default <S> T visit(Exponentiation exponentiation, S context) {
+        visitExpression(exponentiation.getLeftExpression(), context);
+        return visitExpression(exponentiation.getRightExpression(), context);
+    }
+
+    default void visit(Exponentiation exponentiation) {
+        this.visit(exponentiation, null);
+    }
 
     default void visit(IntegerDivision integerDivision) {
         this.visit(integerDivision, null);
@@ -820,6 +830,16 @@ public interface ExpressionVisitor<T> {
 
     default void visit(LambdaExpression lambdaExpression) {
         this.visit(lambdaExpression, null);
+    }
+
+    default <S> T visit(ListComprehension listComprehension, S context) {
+        visitExpression(listComprehension.getExpression(), context);
+        visitExpression(listComprehension.getList(), context);
+        return visitExpression(listComprehension.getCondition(), context);
+    }
+
+    default void visit(ListComprehension listComprehension) {
+        this.visit(listComprehension, null);
     }
 
     default <S> T visit(ColumnsExpression columnsExpression, S context) {

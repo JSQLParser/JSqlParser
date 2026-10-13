@@ -12,6 +12,7 @@ package net.sf.jsqlparser.expression;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:andreas@manticore-projects.com">Andreas Reichel</a>
@@ -58,7 +59,11 @@ public class JsonFunctionExpression implements Serializable {
     }
 
     public StringBuilder append(StringBuilder builder) {
-        builder.append(getExpression());
+        return appendTo(builder, builder::append);
+    }
+
+    public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        expressionPrinter.accept(getExpression());
         if (isUsingFormatJson()) {
             builder.append(" FORMAT JSON");
             if (encoding != null) {

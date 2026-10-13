@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -459,6 +460,13 @@ public enum Feature {
     analyze,
 
     /**
+     * MySQL/MariaDB "CHECK TABLE", "OPTIMIZE TABLE" and "REPAIR TABLE" statements are allowed
+     *
+     * @see TableMaintenanceStatement
+     */
+    tableMaintenance,
+
+    /**
      * SQL "TRUNCATE" statement is allowed
      *
      * @see Truncate
@@ -888,6 +896,19 @@ public enum Feature {
      * operator (#2507: PostgreSQL bitwise XOR / geometric intersection)
      */
     allowHashLineComments(false),
+
+    /**
+     * treats three consecutive newlines as a statement separator (enabled by default). When
+     * disabled, blank lines are plain whitespace, so a statement containing them is parsed whole
+     * instead of ending, or failing to parse, at the first run of blank lines
+     */
+    allowBlankLinesAsStatementSeparator(true),
+
+    /**
+     * allows digit separators in numeric literals, e.g. {@code 1_000_000} (DuckDB, PostgreSQL 16);
+     * disabled by default, where MySQL reads {@code 2024_01} as an identifier
+     */
+    allowDigitSeparators(false),
 
     /**
      * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`

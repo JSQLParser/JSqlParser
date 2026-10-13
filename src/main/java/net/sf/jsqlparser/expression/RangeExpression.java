@@ -14,6 +14,7 @@ import net.sf.jsqlparser.parser.ASTNodeAccessImpl;
 public class RangeExpression extends ASTNodeAccessImpl implements Expression {
     private Expression startExpression;
     private Expression endExpression;
+    private Expression stepExpression;
 
     public RangeExpression(Expression startExpression, Expression endExpression) {
         this.startExpression = startExpression;
@@ -38,9 +39,42 @@ public class RangeExpression extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    public Expression getStepExpression() {
+        return stepExpression;
+    }
+
+    public RangeExpression setStepExpression(Expression stepExpression) {
+        this.stepExpression = stepExpression;
+        return this;
+    }
+
+    public RangeExpression withStepExpression(Expression stepExpression) {
+        return setStepExpression(stepExpression);
+    }
+
+    /**
+     * Renders {@code [start]:[end][:step]}, a missing end before a step as DuckDB's {@code -}.
+     */
+    public static String toString(Expression start, Expression end, Expression step) {
+        StringBuilder builder = new StringBuilder();
+        if (start != null) {
+            builder.append(start);
+        }
+        builder.append(":");
+        if (end != null) {
+            builder.append(end);
+        } else if (step != null) {
+            builder.append("-");
+        }
+        if (step != null) {
+            builder.append(":").append(step);
+        }
+        return builder.toString();
+    }
+
     @Override
     public String toString() {
-        return startExpression + ":" + endExpression;
+        return toString(startExpression, endExpression, stepExpression);
     }
 
     @Override

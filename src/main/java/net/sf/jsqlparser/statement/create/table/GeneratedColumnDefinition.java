@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -55,6 +56,10 @@ public class GeneratedColumnDefinition implements Serializable {
         this.storage = storage;
     }
 
+    /**
+     * Returns an unmodifiable token snapshot. Use the setters or edit {@link #getExpression()} to
+     * change the definition; later changes do not affect previously returned snapshots.
+     */
     public List<String> getTokens() {
         List<String> tokens = new ArrayList<>();
         if (generatedAlways) {
@@ -66,7 +71,7 @@ public class GeneratedColumnDefinition implements Serializable {
         if (storage != null) {
             tokens.add(storage.name());
         }
-        return tokens;
+        return Collections.unmodifiableList(tokens);
     }
 
     public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {

@@ -269,6 +269,14 @@ public interface StatementVisitor<T> {
         this.visit(statement, null);
     }
 
+    default <S> T visit(TableMaintenanceStatement statement, S context) {
+        return null;
+    }
+
+    default void visit(TableMaintenanceStatement statement) {
+        this.visit(statement, null);
+    }
+
     default void visit(Execute execute) {
         this.visit(execute, null);
     }

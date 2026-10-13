@@ -107,7 +107,6 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
-import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -175,7 +174,7 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
      */
     private static SelectVisitorAdapter<Void> wire(Analysis analysis) {
         FeatureExpressionVisitor expressions = new FeatureExpressionVisitor(analysis);
-        FeatureFromItemVisitor fromItems = new FeatureFromItemVisitor(analysis);
+        FromItemVisitorAdapter<Void> fromItems = new FromItemVisitorAdapter<>();
 
         FeatureSelectVisitor selects = new FeatureSelectVisitor(analysis, expressions,
                 new PivotVisitorAdapter<>(expressions),
@@ -715,6 +714,20 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         return null;
     }
 
+    @Override
+    public <S> Void visit(TableMaintenanceStatement statement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.RETURNS_RESULT_SET);
+        if (statement.getOperation() != TableMaintenanceStatement.Operation.CHECK) {
+            // OPTIMIZE rebuilds table storage; REPAIR may also rewrite or discard rows
+            analysis.certain(StmtFeature.MODIFIES_SCHEMA);
+            if (statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+            }
+        }
+        return null;
+    }
+
     private Void schemaOnly() {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA);
@@ -1024,30 +1037,6 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         public <S> Void visit(TranscodingFunction expression, S context) {
             analyseFunction(expression.getKeyword());
             return super.visit(expression, context);
-        }
-    }
-
-    static final class FeatureFromItemVisitor extends FromItemVisitorAdapter<Void> {
-        private final Analysis analysis;
-
-        FeatureFromItemVisitor(Analysis analysis) {
-            this.analysis = analysis;
-        }
-
-        /**
-         * The inherited implementation is empty, so table functions escape the purity check.
-         * {@link TableFunction#getFunctions()} also covers {@code ROWS FROM (..)}, where
-         * {@link TableFunction#getFunction()} is null.
-         */
-        @Override
-        public <S> Void visit(TableFunction tableFunction, S context) {
-            List<Function> functions = tableFunction.getFunctions();
-            if (functions != null) {
-                for (Function function : functions) {
-                    function.accept(analysis.expressions, context);
-                }
-            }
-            return super.visit(tableFunction, context);
         }
     }
 

@@ -10,7 +10,6 @@
 package net.sf.jsqlparser.statement.create.table;
 
 import net.sf.jsqlparser.statement.imprt.ImportColumn;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.expression.Expression;
 
 import java.io.Serializable;
@@ -19,7 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -29,7 +28,6 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
 
     private String columnName;
     private ColDataType colDataType;
-    private List<String> columnSpecs;
     private List<ColumnOption> columnOptions;
     private boolean withOptions;
 
@@ -50,13 +48,14 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
 
     public ColumnDefinition(String columnName, ColDataType colDataType, List<String> columnSpecs) {
         this(columnName, colDataType);
-        this.columnSpecs = columnSpecs;
+        columnOptions = rawOptions(columnSpecs);
     }
 
     /**
-     * Returns raw specifications, or a token snapshot when structured options are present. Use the
-     * option API or {@link #addColumnSpecs(Collection)} to append without discarding structured
-     * expressions, references and constraints. DEFAULT values use the expression's SQL rendering.
+     * Returns an unmodifiable token snapshot for both raw and structured options, or null when
+     * options are unset. Use {@link #getColumnOptions()} to edit the nodes, or
+     * {@link #addColumnSpecs(Collection)} to append without discarding structured expressions,
+     * references and constraints. DEFAULT values use the expression's SQL rendering.
      */
     public List<String> getColumnSpecs() {
         if (columnOptions != null) {
@@ -64,28 +63,39 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
             for (ColumnOption option : columnOptions) {
                 tokens.addAll(option.getTokens());
             }
-            return tokens;
+            return Collections.unmodifiableList(tokens);
         }
-        return columnSpecs;
-    }
-
-    public void setColumnSpecs(List<String> list) {
-        columnSpecs = list;
-        columnOptions = null;
+        return null;
     }
 
     /**
-     * Returns column options in source order, including defaults, references, generated columns,
-     * nullability, collation, comments, visibility and MySQL attributes. Unrecognized options
-     * remain raw. Structured option keywords use canonical capitalization when rendered.
+     * Replaces every option with opaque tokens, without parsing them. The supplied list is copied;
+     * null clears the options, while an empty list stores an explicitly empty option list.
+     */
+    public void setColumnSpecs(List<String> list) {
+        columnOptions = rawOptions(list);
+    }
+
+    private static List<ColumnOption> rawOptions(List<String> list) {
+        List<ColumnOption> options = list == null ? null : new ArrayList<>();
+        if (list != null && !list.isEmpty()) {
+            options.add(ColumnOption.raw(new ArrayList<>(list)));
+        }
+        return options;
+    }
+
+    /**
+     * Returns the mutable option list in source order, or null when options are unset. Opaque
+     * specifications are included as {@link ColumnOption.Kind#OTHER} nodes. Structured option
+     * keywords use canonical capitalization when rendered.
      */
     public List<ColumnOption> getColumnOptions() {
         return columnOptions;
     }
 
+    /** Copies the list membership while retaining the supplied mutable option nodes. */
     public void setColumnOptions(List<ColumnOption> columnOptions) {
-        this.columnOptions = columnOptions;
-        this.columnSpecs = null;
+        this.columnOptions = columnOptions == null ? null : new ArrayList<>(columnOptions);
     }
 
     public boolean isSerialDefaultValue() {
@@ -110,13 +120,12 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
     }
 
     public ColumnDefinition addColumnOptions(ColumnOption... columnOptions) {
-        List<ColumnOption> collection =
-                Optional.ofNullable(getColumnOptions()).orElseGet(ArrayList::new);
-        if (this.columnOptions == null && columnSpecs != null && !columnSpecs.isEmpty()) {
-            collection.add(ColumnOption.raw(new ArrayList<>(columnSpecs)));
+        Objects.requireNonNull(columnOptions, "columnOptions");
+        if (this.columnOptions == null) {
+            this.columnOptions = new ArrayList<>();
         }
-        Collections.addAll(collection, columnOptions);
-        return withColumnOptions(collection);
+        Collections.addAll(this.columnOptions, columnOptions);
+        return this;
     }
 
     public ColDataType getColDataType() {
@@ -170,8 +179,6 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
                 builder.append(' ');
                 option.appendTo(builder, expressionPrinter);
             }
-        } else if (columnSpecs != null && !columnSpecs.isEmpty()) {
-            builder.append(' ').append(PlainSelect.getStringList(columnSpecs, false, false));
         }
     }
 
@@ -194,15 +201,15 @@ public class ColumnDefinition implements ImportColumn, TableElement, Serializabl
         return addColumnSpecs(Arrays.asList(columnSpecs));
     }
 
+    /** Appends copied opaque tokens after the existing nodes, preserving their structure. */
     public ColumnDefinition addColumnSpecs(Collection<String> columnSpecs) {
-        if (columnOptions != null) {
-            if (!columnSpecs.isEmpty()) {
-                columnOptions.add(ColumnOption.raw(new ArrayList<>(columnSpecs)));
-            }
-            return this;
+        Objects.requireNonNull(columnSpecs, "columnSpecs");
+        if (columnOptions == null) {
+            columnOptions = new ArrayList<>();
         }
-        List<String> collection = Optional.ofNullable(getColumnSpecs()).orElseGet(ArrayList::new);
-        collection.addAll(columnSpecs);
-        return this.withColumnSpecs(collection);
+        if (!columnSpecs.isEmpty()) {
+            columnOptions.add(ColumnOption.raw(new ArrayList<>(columnSpecs)));
+        }
+        return this;
     }
 }

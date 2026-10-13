@@ -11,6 +11,7 @@ package net.sf.jsqlparser.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -104,6 +106,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
@@ -265,7 +268,7 @@ public class TablesNamesFinder<Void>
     private boolean allowColumnProcessing = false;
     private Set<String> rowPatternVariables = java.util.Collections.emptySet();
 
-    private List<String> otherItemNames;
+    private Set<String> otherItemNames;
 
     public static Set<String> findTables(String sqlStr) throws JSQLParserException {
         TablesNamesFinder<?> tablesNamesFinder = new TablesNamesFinder<>();
@@ -349,8 +352,12 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(RangeExpression rangeExpression, S context) {
-        rangeExpression.getStartExpression().accept(this, context);
-        rangeExpression.getEndExpression().accept(this, context);
+        for (Expression bound : new Expression[] {rangeExpression.getStartExpression(),
+                rangeExpression.getEndExpression(), rangeExpression.getStepExpression()}) {
+            if (bound != null) {
+                bound.accept(this, context);
+            }
+        }
         return null;
     }
 
@@ -659,6 +666,12 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(IntegerDivision division, S context) {
         visitBinaryExpression(division);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Exponentiation exponentiation, S context) {
+        visitBinaryExpression(exponentiation);
         return null;
     }
 
@@ -1309,7 +1322,7 @@ public class TablesNamesFinder<Void>
      * @param allowColumnProcessing
      */
     protected void init(boolean allowColumnProcessing) {
-        otherItemNames = new ArrayList<String>();
+        otherItemNames = new LinkedHashSet<String>();
         tables = new HashSet<>();
         this.allowColumnProcessing = allowColumnProcessing;
         this.rowPatternVariables = java.util.Collections.emptySet();
@@ -1632,6 +1645,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(Analyze analyze) {
         StatementVisitor.super.visit(analyze);
+    }
+
+    @Override
+    public <S> Void visit(TableMaintenanceStatement statement, S context) {
+        statement.getTables().forEach(table -> visit(table, context));
+        return null;
+    }
+
+    @Override
+    public void visit(TableMaintenanceStatement statement) {
+        StatementVisitor.super.visit(statement);
     }
 
     @Override
@@ -2239,6 +2263,9 @@ public class TablesNamesFinder<Void>
         if (array.getStopIndexExpression() != null) {
             array.getStopIndexExpression().accept(this, context);
         }
+        if (array.getStepExpression() != null) {
+            array.getStepExpression().accept(this, context);
+        }
         return null;
     }
 
@@ -2334,6 +2361,16 @@ public class TablesNamesFinder<Void>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ListComprehension listComprehension, S context) {
+        listComprehension.getExpression().accept(this, context);
+        listComprehension.getList().accept(this, context);
+        if (listComprehension.getCondition() != null) {
+            listComprehension.getCondition().accept(this, context);
+        }
         return null;
     }
 
@@ -2721,8 +2758,10 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateMacro createMacro, S context) {
-        if (createMacro.getSelect() != null) {
-            createMacro.getSelect().accept((SelectVisitor<?>) this, context);
+        for (CreateMacro.Overload overload : createMacro.getOverloads()) {
+            if (overload.getSelect() != null) {
+                overload.getSelect().accept((SelectVisitor<?>) this, context);
+            }
         }
         return null;
     }

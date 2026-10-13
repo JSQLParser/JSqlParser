@@ -32,6 +32,8 @@ public class Limit extends ASTNodeAccessImpl {
      */
     private ExpressionList<Expression> byExpressions;
 
+    private String percentUnit;
+
     public Expression getOffset() {
         return offset;
     }
@@ -72,19 +74,39 @@ public class Limit extends ASTNodeAccessImpl {
         }
     }
 
+    /**
+     * DuckDB's {@code %} or {@code PERCENT} after the row count, which then is a percentage of the
+     * rows, or {@code null}.
+     */
+    public String getPercentUnit() {
+        return percentUnit;
+    }
+
+    public Limit setPercentUnit(String percentUnit) {
+        this.percentUnit = percentUnit;
+        return this;
+    }
+
+    String percentUnitToString() {
+        if (percentUnit == null) {
+            return "";
+        }
+        return "%".equals(percentUnit) ? "%" : " " + percentUnit;
+    }
+
     @Override
     public String toString() {
         String retVal = " LIMIT ";
 
         if (rowCount instanceof AllValue || rowCount instanceof NullValue) {
             // no offset allowed
-            retVal += rowCount;
+            retVal += rowCount + percentUnitToString();
         } else {
             if (null != offset) {
                 retVal += offset + ", ";
             }
             if (null != rowCount) {
-                retVal += rowCount;
+                retVal += rowCount + percentUnitToString();
             }
         }
 

@@ -125,8 +125,9 @@ public class RenameTableStatement implements Statement {
             if (i == 0) {
                 builder
                         .append("RENAME")
-                        .append(usingTableKeyword ? " TABLE " : " ")
-                        .append(usingIfExistsKeyword ? " IF EXISTS " : " ")
+                        .append(usingTableKeyword ? " TABLE" : "")
+                        .append(usingIfExistsKeyword ? " IF EXISTS" : "")
+                        .append(' ')
                         .append(e.getKey())
                         .append(waitDirective != null && waitDirective.length() > 0
                                 ? " " + waitDirective

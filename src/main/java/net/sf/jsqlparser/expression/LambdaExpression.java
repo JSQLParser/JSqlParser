@@ -22,6 +22,7 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     private List<String> identifiers;
     private Expression expression;
     private boolean parenthesized;
+    private boolean lambdaKeyword;
 
     public LambdaExpression(String identifier, Expression expression) {
         this.identifiers = Collections.singletonList(identifier);
@@ -53,6 +54,16 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
         return this;
     }
 
+    /** Whether it was written with DuckDB's lambda keyword: {@code lambda x, y : expr}. */
+    public boolean isLambdaKeyword() {
+        return lambdaKeyword;
+    }
+
+    public LambdaExpression setLambdaKeyword(boolean lambdaKeyword) {
+        this.lambdaKeyword = lambdaKeyword;
+        return this;
+    }
+
     public List<String> getIdentifiers() {
         return identifiers;
     }
@@ -76,6 +87,11 @@ public class LambdaExpression extends ASTNodeAccessImpl implements Expression {
     }
 
     public StringBuilder appendTo(StringBuilder builder, Consumer<Expression> expressionPrinter) {
+        if (lambdaKeyword) {
+            builder.append("lambda ").append(String.join(", ", identifiers)).append(" : ");
+            expressionPrinter.accept(expression);
+            return builder;
+        }
         if (identifiers.size() == 1 && !parenthesized) {
             builder.append(identifiers.get(0));
         } else {

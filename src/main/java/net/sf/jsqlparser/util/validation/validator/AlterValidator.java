@@ -23,6 +23,10 @@ import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
 import net.sf.jsqlparser.statement.create.table.ConstraintUsingIndex;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyConstraint;
+import net.sf.jsqlparser.statement.create.table.ConstraintKind;
+import net.sf.jsqlparser.statement.create.table.KeyConstraint;
+import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.util.TableDefinitionTraversal;
 import net.sf.jsqlparser.util.validation.ValidationCapability;
 import net.sf.jsqlparser.util.validation.ValidationUtil;
@@ -72,48 +76,76 @@ public class AlterValidator extends AbstractValidator<Alter> {
             validateOptionalName(c, NamedObject.constraint, e.getConstraintName());
             validateOptionalName(c, NamedObject.constraint, e.getNewConstraintName(), null, false,
                     NamedObject.table);
-            if (e.getPkColumns() != null) {
-                validateOptionalColumnNames(c, e.getPkColumns());
+            if (hasActiveDropColumns(e)) {
+                validateOptionalColumnNames(c, e.getDropColumns());
             }
 
-            if (e.getFkColumns() != null) {
-                validateName(c, NamedObject.table, e.getFkSourceTable());
-                validateOptionalColumnNames(c, e.getFkColumns());
-                validateOptionalColumnNames(c, e.getFkSourceColumns());
-            }
+            validateConstraint(c, e.getConstraint());
+            validateIndex(c, e);
+        }
+    }
 
-            if (e.getUk()) {
-                validateName(c, NamedObject.uniqueConstraint, e.getUkName());
-                validateOptionalColumnNames(c, e.getUkColumns(), NamedObject.uniqueConstraint);
-            }
-
-            NamedConstraint constraint = e.getConstraint();
-            if (constraint != null) {
-                validateOptionalName(c, NamedObject.constraint, constraint.getName(), null, false,
-                        NamedObject.table);
-                if (constraint instanceof ConstraintUsingIndex) {
-                    validateName(c, NamedObject.index,
-                            ((ConstraintUsingIndex) constraint).getExistingIndexName());
-                }
-                if (constraint instanceof KeyColumnSource) {
-                    KeyColumnSource keys = (KeyColumnSource) constraint;
-                    if (keys.getColumns() != null) {
-                        validateOptionalColumnNames(c, keys.getColumns().stream()
-                                .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
-                                .collect(toList()), NamedObject.constraint);
-                    }
-                }
-            }
-            if (e.getIndex() != null) {
-                validateName(c, NamedObject.index, e.getIndex().getName());
-                if (e.getIndex().getColumns() != null) {
-                    validateOptionalColumnNames(c, e.getIndex().getColumns().stream()
-                            .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
-                            .collect(toList()), NamedObject.index);
-                }
+    private void validateConstraint(ValidationCapability capability, NamedConstraint constraint) {
+        if (constraint == null) {
+            return;
+        }
+        validateOptionalName(capability, NamedObject.constraint, constraint.getName(), null, false,
+                NamedObject.table);
+        if (constraint instanceof ForeignKeyConstraint) {
+            validateOptionalColumnNames(capability,
+                    ((ForeignKeyConstraint) constraint).getReferencedColumnNames());
+        }
+        if (constraint instanceof KeyConstraint && constraint.getKind() == ConstraintKind.UNIQUE) {
+            validateOptionalName(capability, NamedObject.uniqueConstraint,
+                    ((KeyConstraint) constraint).getIndexName(), null, false, NamedObject.table);
+        }
+        if (constraint instanceof ConstraintUsingIndex) {
+            validateName(capability, NamedObject.index,
+                    ((ConstraintUsingIndex) constraint).getExistingIndexName());
+        }
+        if (constraint instanceof KeyColumnSource) {
+            KeyColumnSource keys = (KeyColumnSource) constraint;
+            if (keys.getColumns() != null) {
+                validateOptionalColumnNames(capability, keys.getColumns().stream()
+                        .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
+                        .collect(toList()), NamedObject.constraint);
             }
         }
     }
 
+    private boolean hasActiveDropColumns(AlterExpression expression) {
+        if (expression.getOperation() == null || expression.getDropColumns() == null) {
+            return false;
+        }
+        switch (expression.getOperation()) {
+            case DROP:
+                return expression.getColumnName() == null && !expression.getDropColumns().isEmpty();
+            case DROP_UNIQUE:
+                return true;
+            case DROP_FOREIGN_KEY:
+                return expression.getConstraintName() == null;
+            default:
+                return false;
+        }
+    }
+
+    private void validateIndex(ValidationCapability capability, AlterExpression expression) {
+        Index index = expression.getIndex();
+        if (index == null) {
+            return;
+        }
+        boolean rename = expression.getOperation() == AlterOperation.RENAME_INDEX
+                || expression.getOperation() == AlterOperation.RENAME_KEY;
+        if (rename && expression.getOldIndex() != null) {
+            validateName(capability, NamedObject.index, expression.getOldIndex().getName());
+        }
+        boolean introducedName = expression.getOperation() == AlterOperation.ADD || rename;
+        validateOptionalName(capability, NamedObject.index, index.getName(), null, !introducedName);
+        if (index.getColumns() != null) {
+            validateOptionalColumnNames(capability, index.getColumns().stream()
+                    .filter(key -> !key.isExpression()).map(KeyElement::getColumnName)
+                    .collect(toList()), NamedObject.index);
+        }
+    }
 
 }

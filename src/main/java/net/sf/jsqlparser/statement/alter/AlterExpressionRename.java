@@ -9,6 +9,9 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.Collections;
+import java.util.List;
+
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
 /**
@@ -40,6 +43,21 @@ public class AlterExpressionRename extends AlterExpression implements ColumnRena
     @Override
     public void setTargetName(String name) {
         setColumnName(name);
+    }
+
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return getOperation() == AlterOperation.RENAME && hasColumnDefinitionPayload();
     }
 
     @Override

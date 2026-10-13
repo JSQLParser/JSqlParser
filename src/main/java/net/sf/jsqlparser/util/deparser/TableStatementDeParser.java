@@ -13,6 +13,8 @@ import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.*;
 
+import java.util.List;
+
 /**
  * @author jxnu-liguobin
  */
@@ -84,17 +86,38 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
 
     @Override
     public <S> StringBuilder visit(TableStatement tableStatement, S context) {
+        List<WithItem<?>> withItemsList = tableStatement.getWithItemsList();
+        if (withItemsList != null && !withItemsList.isEmpty()) {
+            SelectDeParser selectDeParser = new SelectDeParser(expressionVisitor, builder);
+            builder.append("WITH ");
+            for (int i = 0; i < withItemsList.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                withItemsList.get(i).accept((SelectVisitor<?>) selectDeParser, context);
+            }
+            builder.append(" ");
+        }
         tableStatement.appendSelectBodyTo(builder);
         if (tableStatement.getOrderByElements() != null) {
             new OrderByDeParser(expressionVisitor, builder)
                     .deParse(tableStatement.getOrderByElements());
         }
 
+        if (tableStatement.getOption() != null) {
+            builder.append(tableStatement.getOption());
+        }
         if (tableStatement.getLimit() != null) {
             new LimitDeparser(expressionVisitor, builder).deParse(tableStatement.getLimit());
         }
         if (tableStatement.getOffset() != null) {
             deparse(tableStatement.getOffset());
+        }
+        if (tableStatement.getFetch() != null) {
+            builder.append(tableStatement.getFetch());
+        }
+        if (tableStatement.getIsolation() != null) {
+            builder.append(tableStatement.getIsolation());
         }
 
         // TODO UNION

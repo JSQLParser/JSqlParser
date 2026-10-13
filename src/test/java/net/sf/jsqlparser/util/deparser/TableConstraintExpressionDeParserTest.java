@@ -48,7 +48,7 @@ class TableConstraintExpressionDeParserTest {
         assertRewrite("CREATE TABLE t (id INT, INDEX idx ((id + 1)))",
                 "CREATE TABLE t (id INT, INDEX idx ((mapped_id + 101)))");
         assertRewrite("ALTER TABLE t ADD INDEX idx ((id + 1))",
-                "ALTER TABLE t ADD  INDEX idx ((mapped_id + 101))");
+                "ALTER TABLE t ADD INDEX idx ((mapped_id + 101))");
     }
 
     @ParameterizedTest

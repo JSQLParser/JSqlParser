@@ -9,6 +9,7 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.List;
 
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
@@ -18,6 +19,22 @@ import net.sf.jsqlparser.statement.create.table.ConstraintKind;
  * DROP INDEX/KEY, DROP PRIMARY KEY, DROP UNIQUE, DROP FOREIGN KEY, and DROP PARTITION.
  */
 public class AlterExpressionDrop extends AlterExpression {
+    @Override
+    public List<ColumnIdentityAction> getColumnIdentityActions() {
+        return getColumnIdentityActionsFromDefinitions();
+    }
+
+    @Override
+    protected boolean usesColumnActionBody() {
+        return false;
+    }
+
+    @Override
+    public boolean hasActiveColumnDefinitions() {
+        return hasColumnDefinitionPayload() && !isDropSpecialOperation()
+                && getOperation() != AlterOperation.DROP_PARTITION;
+    }
+
     @Override
     public boolean hasActiveTableDefinition() {
         return false;
