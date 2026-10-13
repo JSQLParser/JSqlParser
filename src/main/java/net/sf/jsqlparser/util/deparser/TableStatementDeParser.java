@@ -104,11 +104,20 @@ public class TableStatementDeParser extends AbstractDeParser<TableStatement>
                     .deParse(tableStatement.getOrderByElements());
         }
 
+        if (tableStatement.getOption() != null) {
+            builder.append(tableStatement.getOption());
+        }
         if (tableStatement.getLimit() != null) {
             new LimitDeparser(expressionVisitor, builder).deParse(tableStatement.getLimit());
         }
         if (tableStatement.getOffset() != null) {
             deparse(tableStatement.getOffset());
+        }
+        if (tableStatement.getFetch() != null) {
+            builder.append(tableStatement.getFetch());
+        }
+        if (tableStatement.getIsolation() != null) {
+            builder.append(tableStatement.getIsolation());
         }
 
         // TODO UNION

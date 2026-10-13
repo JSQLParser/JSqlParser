@@ -849,4 +849,20 @@ public class DuckDBTest {
         Assertions.assertTrue(((PlainSelect) union.getSelect(0)).isFromFirst());
         Assertions.assertEquals("1", union.getOrderByElements().get(0).toString());
     }
+
+    @Test
+    void testTableQueryKeepsTableColumnsAndTrailingClauses() throws JSQLParserException {
+        // TABLE also names columns, e.g. in ClickHouse's system.parts
+        for (String sqlStr : new String[] {
+                "SELECT database, table FROM system.parts WHERE (database = 'default') AND (table = 'hits')",
+                "SELECT (table), (table.a), (table + 1) FROM t",
+                "SELECT a FROM t WHERE (table, b) IN ((1, 2))",
+                "SELECT * FROM (TABLE s.t) x", "TABLE t FETCH FIRST 1 ROWS ONLY",
+                "WITH a AS (SELECT 1) TABLE a FETCH FIRST 1 ROWS ONLY",
+                "CREATE TABLE x AS TABLE a UNION TABLE b"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        Assertions.assertInstanceOf(net.sf.jsqlparser.statement.piped.FromQuery.class,
+                ((ParenthesedSelect) CCJSqlParserUtil.parse("(FROM t)")).getSelect());
+    }
 }

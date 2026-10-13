@@ -746,6 +746,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // ( VALUES ) can be ParenthesedFromItem(Values) or ParenthesedSelect;
             // ParenthesedFromItem is checked first so Values-as-FROM-item works
             if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT || k2 == K_FROM) return false;
+            if (k2 == K_TABLE && isTableQueryAhead(2)) return false;
             // ( ( SELECT ) UNION ( SELECT ) ) → isNestedSetOperationAhead handles it
             // Other (( patterns: ( (SELECT...) JOIN ... ) or ( (table) ) → ParenthesedFromItem
             if (k2 == K_LATERAL) return false; // handled by LateralSubSelect
@@ -777,13 +778,35 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         } catch (TokenMgrException e) { return false; }
     }
 
+    /**
+     * Whether the TABLE at {@code offset} starts DuckDB's TABLE t query rather than naming a
+     * column, as in (table = 'x'): a table name follows, and then the end of the query.
+     */
+    private boolean isTableQueryAhead(int offset) {
+        Token token = getToken(offset);
+        do {
+            token = nextWithItemToken(token);
+            if (!isIdentifierishNameToken(token)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+        } while (".".equals(token.image));
+        switch (token.kind) {
+            case CLOSING_BRACKET: case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+            case K_ORDER: case K_LIMIT: case K_OFFSET: case K_FETCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     protected boolean isParenthesedSelectAhead() {
         try {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             int k = getToken(2).kind;
-            // DuckDB's (FROM t ...) and (TABLE t), but not a TABLE(...) function
+            // DuckDB's (FROM t ...) and (TABLE t ...)
             return k == K_SELECT || k == K_WITH || k == K_VALUES || k == K_FROM
-                    || k == K_TABLE && getToken(3).kind != OPENING_BRACKET;
+                    || k == K_TABLE && isTableQueryAhead(2);
         } catch (TokenMgrException e) {
             return false;
         }
@@ -1408,9 +1431,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             if ("(".equals(token.image)) {
                 depth++;
             } else if (")".equals(token.image)) {
-                // the end of the parenthesized query this FROM starts, e.g. (FROM t)
+                // the end of the parenthesized query this FROM starts
                 if (--depth < 0) {
-                    return true;
+                    return false;
                 }
             } else if (depth == 0) {
                 switch (token.kind) {
@@ -15849,7 +15872,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                 createTable.setExecute(execute);
             }
             |
-            ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
+            select=Select()
             { createTable.setSelect(select, false); }
         )
         [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()
