@@ -1879,6 +1879,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // AS always starts an alias
         if (kind == K_AS) return true;
 
+        // SAMPLE followed by a size or BLOCK starts a sampling clause.
+        if (kind == K_SAMPLE && (getToken(2).kind == OPENING_BRACKET
+                || getToken(2).kind == K_BLOCK || getToken(2).kind == S_LONG
+                || getToken(2).kind == S_DOUBLE)) {
+            return false;
+        }
+
         // String-literal alias:  SELECT col 'myAlias'
         if (kind == S_CHAR_LITERAL) return true;
 
@@ -3038,6 +3045,7 @@ String NonReservedWord() :
       | tk=<K_EXECUTE: "EXECUTE">
       | tk=<K_EXPLAIN:"EXPLAIN">
       | tk=<K_EXPLICIT:"EXPLICIT">
+      | tk=<K_EXTEND:"EXTEND">
       | tk=<K_EXISTS:"EXISTS">
       | tk=<K_EXTENDED:"EXTENDED">
       | tk=<K_EXTRACT:"EXTRACT">
@@ -3231,6 +3239,7 @@ String NonReservedWord() :
       | tk=<K_RTRIM: "RTRIM">
       | tk=<K_SAFE_CAST: "SAFE_CAST">
       | tk=<K_SAFE_CONVERT: "SAFE_CONVERT">
+      | tk=<K_SAMPLE:"SAMPLE">
       | tk=<K_SAVEPOINT: "SAVEPOINT">
       | tk=<K_SCHEDULE: "SCHEDULE">
       | tk=<K_SCHEMA: "SCHEMA">
@@ -3366,7 +3375,8 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_ELSE:"ELSE">
 |   <K_EXCEPT: "EXCEPT">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
-|   <K_EXTEND:"EXTEND">
+|   <K_EXISTS:"EXISTS">
+|   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
 |   <K_FINAL: "FINAL">
 |   <K_FALSE: "FALSE">
@@ -3420,7 +3430,7 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_QUALIFY: "QUALIFY">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
-|   <K_SAMPLE: "SAMPLE">
+|   <K_SCRIPT: "SCRIPT">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SET:"SET">
