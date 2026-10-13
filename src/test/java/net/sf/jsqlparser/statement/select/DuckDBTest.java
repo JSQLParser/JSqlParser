@@ -1021,4 +1021,42 @@ public class DuckDBTest {
         }
         CCJSqlParserUtil.parse(sql.append("]").toString());
     }
+
+    @Test
+    void testStarRenameAndUnparenthesizedModifiers() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT * RENAME (i AS x, j AS y) FROM t",
+                "SELECT * RENAME i AS x FROM t", "SELECT * EXCLUDE i FROM t",
+                "SELECT * EXCLUDE t.i FROM t", "SELECT * REPLACE i + 1 AS i FROM t",
+                "SELECT * EXCLUDE (k) RENAME (i AS x) FROM t",
+                "SELECT t.* RENAME t.i AS x FROM t",
+                "SELECT COLUMNS(* REPLACE i + 1 AS i) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil
+                .parse("SELECT * RENAME (i AS x) FROM t");
+        net.sf.jsqlparser.expression.ColumnsTransformer rename =
+                ((net.sf.jsqlparser.statement.select.AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0);
+        Assertions.assertEquals(
+                net.sf.jsqlparser.expression.ColumnsTransformer.ColumnsTransformerType.RENAME,
+                rename.getType());
+        Assertions.assertEquals("i AS x", rename.getRenameItems().get(0).toString());
+    }
+
+    @Test
+    void testTrailingCommaInSelectList() throws JSQLParserException {
+        Assertions.assertEquals("SELECT i, j FROM t WHERE i > 0",
+                CCJSqlParserUtil.parse("SELECT i, j, FROM t WHERE i > 0").toString());
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT * RENAME i FROM t"));
+        Assertions.assertEquals("SELECT 1 LIMIT 1",
+                CCJSqlParserUtil.parse("SELECT 1, LIMIT 1").toString());
+        Assertions.assertEquals("SELECT (SELECT 1)",
+                CCJSqlParserUtil.parse("SELECT (SELECT 1,)").toString());
+        // keywords that may name a column still do
+        for (String column : new String[] {"limit", "offset", "group", "order", "qualify"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + column + " FROM t", true);
+        }
+    }
 }
