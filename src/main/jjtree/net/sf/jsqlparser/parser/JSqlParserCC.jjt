@@ -687,6 +687,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             else {
                 // Handle unnamed tokens by image
                 String img = t.image;
+                // DuckDB's LIMIT 10%: the % ends the row count instead of starting a modulo
+                if ("%".equals(img) && limitRowCountDepth > 0 && isLimitPercentEndAt(2)) break;
                 if      ("*".equals(img) || "%".equals(img))                  prec = 6;
                 else if ("+".equals(img) || "-".equals(img) || "&".equals(img)) prec = 5;
                 else break; // not an arithmetic operator
@@ -1531,6 +1533,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
+    // depth of LIMIT row counts, where a % before the end of the clause is DuckDB's percent unit
+    private int limitRowCountDepth = 0;
+
+    /** Whether the token at {@code index} ends a LIMIT clause, after DuckDB's LIMIT 10%. */
+    private boolean isLimitPercentEndAt(int index) {
+        switch (getToken(index).kind) {
+            case EOF: case ST_SEMICOLON: case CLOSING_BRACKET:
+            case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+                return true;
+            case K_OFFSET: case K_FETCH:
+                // not a column named offset: LIMIT a % offset
+                int next = getToken(index + 1).kind;
+                return next != EOF && next != ST_SEMICOLON && next != CLOSING_BRACKET;
+            default:
+                return false;
+        }
+    }
+
     private boolean isSampleMethod(Token token) {
         return token.kind == K_SYSTEM || token.kind == K_BERNOULLI
                 || (token.image != null && "RESERVOIR".equalsIgnoreCase(token.image));
@@ -7146,9 +7166,13 @@ SampleClause SampleClause():
         )
         |
         (
-            // SQL:2016 compliant
+            // SQL:2016 compliant; DuckDB: the method is optional and may be reservoir
             token = <K_TABLESAMPLE> { keyword = token.image; }
-            ( token = <K_SYSTEM> | token = <K_BERNOULLI> ) { method = token.image; }
+            [
+                LOOKAHEAD({ isSampleMethod(getToken(1)) })
+                ( token = <K_SYSTEM> | token = <K_BERNOULLI> | token = <S_IDENTIFIER> )
+                { method = token.image; }
+            ]
         )
         |
         (
@@ -10311,11 +10335,16 @@ Limit LimitWithOffset() #LimitWithOffset:
 }
 {
     <K_LIMIT>
-    (
-        LOOKAHEAD(3) firstExpression = ParenthesedSelect()
-        |
-        firstExpression = Expression()
-    )
+    try {
+        { limitRowCountDepth++; }
+        (
+            LOOKAHEAD(3) firstExpression = ParenthesedSelect()
+            |
+            firstExpression = Expression()
+        )
+    } finally {
+        limitRowCountDepth--;
+    }
     (
         // MySQL: LIMIT offset, row_count
         ","
@@ -10325,10 +10354,15 @@ Limit LimitWithOffset() #LimitWithOffset:
             limit.setRowCount(secondExpression);
         }
         |
-        // PostgreSQL: LIMIT row_count
+        // PostgreSQL: LIMIT row_count; DuckDB: LIMIT 10% or LIMIT 10 PERCENT
         {
             limit.setRowCount(firstExpression);
         }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_PERCENT
+                    || "%".equals(getToken(1).image) && isLimitPercentEndAt(2) })
+            ( "%" { limit.setPercentUnit("%"); } | <K_PERCENT> { limit.setPercentUnit("PERCENT"); } )
+        ]
     )
     {
         linkAST(limit, jjtThis);

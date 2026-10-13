@@ -40,6 +40,10 @@ public class LimitDeparser extends AbstractDeParser<Limit> {
 
                 if (null != limit.getRowCount()) {
                     limit.getRowCount().accept(expressionVisitor, context);
+                    if (limit.getPercentUnit() != null) {
+                        builder.append("%".equals(limit.getPercentUnit()) ? "%"
+                                : " " + limit.getPercentUnit());
+                    }
                 }
             }
         }
