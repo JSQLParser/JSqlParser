@@ -18,7 +18,6 @@ import net.sf.jsqlparser.statement.piped.SelectPipeOperator;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.MapExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
-import net.sf.jsqlparser.expression.TernaryExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -100,19 +99,18 @@ public class KeywordsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"sample", "extend", "SaMpLe", "ExTeNd"})
+    @ValueSource(strings = {"exists", "sample", "extend", "SaMpLe", "ExTeNd"})
     void testSampleExtendImplicitAliases(String keyword) throws JSQLParserException {
-    // exists is a non-reserved keyword in the common dialects and reaches the
-    // parser as an ordinary column name in downstream rewriting tools.
-    @Test
-    public void testExistsAsIdentifier() throws JSQLParserException {
-        assertSqlCanBeParsedAndDeparsed("SELECT exists FROM mytable", true);
-        assertSqlCanBeParsedAndDeparsed("SELECT mytable.exists FROM mytable", true);
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE exists = 1", true);
-        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable ORDER BY exists", true);
-        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET exists = 1 WHERE id = 1", true);
-        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (exists) VALUES (1)", true);
-        assertSqlCanBeParsedAndDeparsed("SELECT a AS exists FROM mytable", true);
+        // keyword is a non-reserved keyword in the common dialects and reaches the
+        // parser as an ordinary column name in downstream rewriting tools.
+        assertSqlCanBeParsedAndDeparsed("SELECT " + keyword + " FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT mytable.\" + keyword + \" FROM mytable", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable WHERE \" + keyword + \" = 1", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT * FROM mytable ORDER BY \" + keyword + \"", true);
+        assertSqlCanBeParsedAndDeparsed("UPDATE mytable SET \" + keyword + \" = 1 WHERE id = 1",
+                true);
+        assertSqlCanBeParsedAndDeparsed("INSERT INTO mytable (\" + keyword + \") VALUES (1)", true);
+        assertSqlCanBeParsedAndDeparsed("SELECT a AS \" + keyword + \" FROM mytable", true);
     }
 
     // the guarded keyword form keeps its operator meaning
@@ -208,7 +206,7 @@ public class KeywordsTest {
         assertEquals(keyword, assertInstanceOf(Function.class,
                 select.getSelectItem(0).getExpression()).getName());
     }
-      
+
     @Test
     void testExistsColumnWithOracleJoin() throws JSQLParserException {
         PlainSelect select = (PlainSelect) assertSqlCanBeParsedAndDeparsed(
@@ -311,7 +309,7 @@ public class KeywordsTest {
                 .getColumnName());
         assertInstanceOf(TernaryExpression.class, map.getEntries().get(0).getValue());
     }
-      
+
     // ERRORS introduces Exasol's IMPORT/EXPORT error clauses but is an ordinary name elsewhere,
     // e.g. a DuckDB column holding the errors of an upstream step.
     @Test

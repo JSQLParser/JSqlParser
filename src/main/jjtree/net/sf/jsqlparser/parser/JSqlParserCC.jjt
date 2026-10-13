@@ -3375,8 +3375,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_ELSE:"ELSE">
 |   <K_EXCEPT: "EXCEPT">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
-|   <K_EXISTS:"EXISTS">
-|   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
 |   <K_FINAL: "FINAL">
 |   <K_FALSE: "FALSE">
@@ -3430,7 +3428,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_QUALIFY: "QUALIFY">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
-|   <K_SCRIPT: "SCRIPT">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SET:"SET">
