@@ -1398,6 +1398,26 @@ responsibility. When constructing a ``ColDataType`` directly,
 use ``null`` for omitted parameters. The legacy ``int``
 constructor continues to treat negative arguments as omitted parameters.
 
+String literal values
+~~~~~~~~~~~~~~~~~~~~~
+
+``StringValue.getValue()`` returns the literal body as written, and ``toString()``
+renders it unchanged. ``getNotExcapedValue()`` returns the characters it denotes.
+A doubled quote of the literal's own quote character is resolved, so
+``"it""s"`` yields ``it"s``. ``getEscaping()`` records how the parser read
+backslashes:
+
+* ``MYSQL_BACKSLASH`` without a dialect or with ``Dialect.MYSQL``/``MARIADB`` when
+  backslash escapes are enabled: ``'it\'s'`` yields ``it's``, ``\n``, ``\t``,
+  ``\0`` and ``\Z`` become their characters, and ``\%`` and ``\_`` keep their backslash.
+* ``POSTGRESQL_ESCAPE_STRING`` for ``E'...'`` with ``Dialect.POSTGRESQL``, including
+  ``\x``, octal and ``\u`` escapes; octal and hexadecimal escapes are UTF-8 bytes.
+* ``STANDARD`` otherwise, including dollar-quoted strings and constructed values;
+  backslashes stay literal. Other dialects with backslash escapes keep this reading.
+
+``setEscaping()`` selects the reading for a constructed value. Escaping is not
+part of ``equals()``, like the quote character.
+
 Other dialect-specific syntax
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
