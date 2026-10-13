@@ -986,4 +986,28 @@ public class DuckDBTest {
         }
         return expression.toString();
     }
+
+    @Test
+    void testListComprehension() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT [x * 2 FOR x IN l] FROM t",
+                "SELECT [x FOR x IN l IF x > 1] FROM t", "SELECT [x + i FOR x, i IN l] FROM t",
+                "SELECT [[y FOR y IN x] FOR x IN [[1], [2]]]",
+                "SELECT [x FOR x IN l IF x IN (1, 2)] FROM t",
+                "SELECT [x FOR x IN (SELECT list(a) FROM t)]",
+                "SELECT [x FOR x IN l][1] FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        net.sf.jsqlparser.expression.ListComprehension comprehension =
+                (net.sf.jsqlparser.expression.ListComprehension) CCJSqlParserUtil
+                        .parseExpression("[x + i FOR x, i IN l IF x > 1]");
+        Assertions.assertEquals("x + i", comprehension.getExpression().toString());
+        Assertions.assertEquals(Arrays.asList("x", "i"), comprehension.getVariables());
+        Assertions.assertEquals("l", comprehension.getList().toString());
+        Assertions.assertEquals("x > 1", comprehension.getCondition().toString());
+
+        Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
+                new HashSet<>(new TablesNamesFinder<>().getTables(CCJSqlParserUtil.parse(
+                        "SELECT [x FOR x IN (SELECT list(a) FROM u)] FROM t"))));
+    }
 }

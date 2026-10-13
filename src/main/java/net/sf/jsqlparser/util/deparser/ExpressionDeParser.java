@@ -51,6 +51,7 @@ import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.ListComprehension;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MapExpression;
@@ -1880,6 +1881,12 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
     @Override
     public <S> StringBuilder visit(LambdaExpression lambdaExpression, S context) {
         return lambdaExpression.appendTo(builder, expression -> expression.accept(this, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(ListComprehension listComprehension, S context) {
+        return listComprehension.appendTo(builder,
+                expression -> expression.accept(this, context));
     }
 
     @Override

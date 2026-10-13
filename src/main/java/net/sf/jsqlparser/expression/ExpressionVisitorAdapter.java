@@ -919,6 +919,12 @@ public class ExpressionVisitorAdapter<T>
     }
 
     @Override
+    public <S> T visit(ListComprehension listComprehension, S context) {
+        return visitExpressions(listComprehension, context, listComprehension.getExpression(),
+                listComprehension.getList(), listComprehension.getCondition());
+    }
+
+    @Override
     public <S> T visit(ColumnsExpression columnsExpression, S context) {
         return visitExpressions(columnsExpression, context, columnsExpression.getAllExpressions());
     }
