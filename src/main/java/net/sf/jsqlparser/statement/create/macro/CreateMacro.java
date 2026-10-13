@@ -30,6 +30,10 @@ import java.util.function.Consumer;
  * {@link #getParameters()}, {@link #getExpression()} and {@link #getSelect()} and their setters
  * address the first overload.
  *
+ * <p>
+ * As in DuckDB, a {@code ,} after a {@code TABLE} body that ends with a list (FROM, GROUP BY, ORDER
+ * BY ...) continues that list rather than starting a new overload.
+ *
  * @see <a href="https://duckdb.org/docs/stable/sql/statements/create_macro">CREATE MACRO</a>
  */
 public class CreateMacro implements Statement {
@@ -110,8 +114,9 @@ public class CreateMacro implements Statement {
         return overloads;
     }
 
+    /** Copies {@code overloads}, so that the first-overload setters can add to an empty list. */
     public void setOverloads(List<Overload> overloads) {
-        this.overloads = overloads;
+        this.overloads = overloads == null ? new ArrayList<>() : new ArrayList<>(overloads);
     }
 
     public CreateMacro withOverloads(List<Overload> overloads) {

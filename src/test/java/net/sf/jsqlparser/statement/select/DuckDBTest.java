@@ -12,10 +12,6 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LambdaExpression;
-import java.util.Arrays;
-import java.util.Collections;
-import net.sf.jsqlparser.util.TablesNamesFinder;
-import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -30,14 +26,17 @@ import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class DuckDBTest {
 
@@ -537,18 +536,29 @@ public class DuckDBTest {
     @Test
     void testCreateOverloadedMacro() throws JSQLParserException {
         String sqlStr = "CREATE OR REPLACE MACRO is_maximal(a TINYINT) AS a = 127, "
-                + "(a INT) AS a = 2147483647, (a, b) AS TABLE SELECT * FROM t WHERE x = a";
+                + "(a INT) AS a = 2147483647";
         CreateMacro createMacro =
                 (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
-        Assertions.assertEquals(3, createMacro.getOverloads().size());
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
         Assertions.assertEquals("TINYINT",
                 createMacro.getOverloads().get(0).getParameters().get(0).getType().toString());
         Assertions.assertEquals("a = 2147483647",
                 createMacro.getOverloads().get(1).getExpression().toString());
-        Assertions.assertTrue(createMacro.getOverloads().get(2).isTable());
-        Assertions.assertEquals(2, createMacro.getOverloads().get(2).getParameters().size());
-        Assertions.assertEquals(Collections.singleton("t"), TablesNamesFinder.findTables(sqlStr));
+    }
+
+    @Test
+    void testCreateOverloadedTableMacro() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO get_t(i) AS TABLE SELECT * FROM t WHERE id = i, "
+                + "(i, j) AS TABLE SELECT * FROM u WHERE id = i AND x = j";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
+        Assertions.assertTrue(createMacro.getOverloads().get(1).isTable());
+        Assertions.assertEquals(2, createMacro.getOverloads().get(1).getParameters().size());
+        Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
+                TablesNamesFinder.findTables(sqlStr));
     }
 
     @Test
@@ -569,7 +579,9 @@ public class DuckDBTest {
         for (String sqlStr : Arrays.asList(
                 "CREATE FUNCTION add(a integer, b integer) RETURNS integer AS 'select $1 + $2' LANGUAGE SQL",
                 "CREATE FUNCTION add(IN a integer, OUT b integer) AS 'select $1 + 1' LANGUAGE SQL",
-                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $$ select $1 + 1 $$ LANGUAGE SQL")) {
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $$ select $1 + 1 $$ LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $function$ select $1 + 1 $function$ LANGUAGE SQL",
+                "CREATE OR REPLACE FUNCTION ds.add(x INT64) AS (x + 1) OPTIONS (description = 'd')")) {
             Assertions.assertInstanceOf(CreateFunction.class, CCJSqlParserUtil.parse(sqlStr));
         }
     }

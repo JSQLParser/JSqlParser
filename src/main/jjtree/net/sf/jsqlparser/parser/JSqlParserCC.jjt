@@ -1425,23 +1425,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    /**
-     * CREATE [TEMP|TEMPORARY] MACRO, DuckDB's inlined function definition, or its FUNCTION alias:
-     * FUNCTION [IF NOT EXISTS] name (parameters) AS body, where AS directly follows the parameters
-     * and the body is not a string, unlike other dialects' CREATE FUNCTION (RETURNS ..., or
-     * PostgreSQL's AS $$ ... $$ LANGUAGE ...).
-     */
+    /** CREATE [TEMP|TEMPORARY] MACRO, DuckDB's inlined function definition. */
     private boolean isCreateMacroAhead() {
         int offset = 1;
         int kind = getToken(offset).kind;
         if (kind == K_TEMP || kind == K_TEMPORARY) {
             offset++;
         }
-        kind = getToken(offset).kind;
-        if (kind == K_MACRO) {
-            return true;
+        return getToken(offset).kind == K_MACRO;
+    }
+
+    /**
+     * DuckDB's FUNCTION alias of MACRO: FUNCTION [IF NOT EXISTS] name (parameters) AS body, where
+     * AS directly follows the parameters, the body is not a string and no LANGUAGE or OPTIONS
+     * clause follows it, unlike other dialects' CREATE FUNCTION (RETURNS ..., PostgreSQL's
+     * AS $tag$ ... $tag$ LANGUAGE ..., BigQuery's AS (expr) OPTIONS (...)).
+     */
+    private boolean isCreateFunctionMacroAhead() {
+        int offset = 1;
+        int kind = getToken(offset).kind;
+        if (kind == K_TEMP || kind == K_TEMPORARY) {
+            offset++;
         }
-        if (kind != K_FUNCTION) {
+        if (getToken(offset).kind != K_FUNCTION) {
             return false;
         }
         // IF NOT EXISTS and a qualified name, at most 8 tokens, up to the parameter list
@@ -1466,9 +1472,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             }
             offset++;
         } while (depth > 0);
-        kind = getToken(offset + 1).kind;
-        return getToken(offset).kind == K_AS
-                && kind != S_CHAR_LITERAL && kind != S_DOLLAR_QUOTED_STRING;
+        if (getToken(offset).kind != K_AS) {
+            return false;
+        }
+        Token body = getToken(offset + 1);
+        if (body.kind == S_CHAR_LITERAL || body.kind == S_DOLLAR_QUOTED_STRING
+                || body.image.length() > 1 && body.image.startsWith("$") && body.image.endsWith("$")) {
+            return false;
+        }
+        // no LANGUAGE or OPTIONS clause outside parentheses up to the end of the statement
+        depth = 0;
+        for (offset++;; offset++) {
+            Token token = getToken(offset);
+            if (token.kind == EOF || depth == 0 && token.kind == ST_SEMICOLON) {
+                return true;
+            }
+            if (token.kind == OPENING_BRACKET) {
+                depth++;
+            } else if (token.kind == CLOSING_BRACKET) {
+                depth--;
+            } else if (depth == 0 && ("LANGUAGE".equalsIgnoreCase(token.image)
+                    || "OPTIONS".equalsIgnoreCase(token.image))) {
+                return false;
+            }
+        }
     }
 
     /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
@@ -20249,6 +20276,8 @@ Statement Create():
         statement = CreateTrigger()
         |
         LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isCreateFunctionMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
