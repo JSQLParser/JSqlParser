@@ -2722,8 +2722,10 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateMacro createMacro, S context) {
-        if (createMacro.getSelect() != null) {
-            createMacro.getSelect().accept((SelectVisitor<?>) this, context);
+        for (CreateMacro.Overload overload : createMacro.getOverloads()) {
+            if (overload.getSelect() != null) {
+                overload.getSelect().accept((SelectVisitor<?>) this, context);
+            }
         }
         return null;
     }

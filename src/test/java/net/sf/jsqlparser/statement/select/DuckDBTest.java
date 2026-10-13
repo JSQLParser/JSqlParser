@@ -12,6 +12,7 @@ package net.sf.jsqlparser.statement.select;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -25,14 +26,17 @@ import net.sf.jsqlparser.statement.DisconnectStatement;
 import net.sf.jsqlparser.statement.PrepareStatement;
 import net.sf.jsqlparser.statement.DeallocateStatement;
 import net.sf.jsqlparser.statement.CopyStatement;
+import net.sf.jsqlparser.statement.create.function.CreateFunction;
 import net.sf.jsqlparser.statement.create.macro.CreateMacro;
 import net.sf.jsqlparser.statement.create.extension.CreateExtensionRepository;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class DuckDBTest {
 
@@ -504,6 +508,82 @@ public class DuckDBTest {
 
         Assertions.assertTrue(createMacro.isTable());
         Assertions.assertNotNull(createMacro.getSelect());
+    }
+
+    @Test
+    void testCreateMacroIfNotExists() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO IF NOT EXISTS add(a, b) AS a + b";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertTrue(createMacro.isIfNotExists());
+        Assertions.assertEquals("add", createMacro.getName());
+    }
+
+    @Test
+    void testCreateMacroWithTypedParameters() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO add(a INTEGER, b DOUBLE, c := 5) AS a + b + c";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals("INTEGER", createMacro.getParameters().get(0).getType().toString());
+        Assertions.assertEquals("DOUBLE", createMacro.getParameters().get(1).getType().toString());
+        Assertions.assertNull(createMacro.getParameters().get(2).getType());
+        Assertions.assertEquals("5",
+                createMacro.getParameters().get(2).getDefaultValue().toString());
+    }
+
+    @Test
+    void testCreateOverloadedMacro() throws JSQLParserException {
+        String sqlStr = "CREATE OR REPLACE MACRO is_maximal(a TINYINT) AS a = 127, "
+                + "(a INT) AS a = 2147483647";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
+        Assertions.assertEquals("TINYINT",
+                createMacro.getOverloads().get(0).getParameters().get(0).getType().toString());
+        Assertions.assertEquals("a = 2147483647",
+                createMacro.getOverloads().get(1).getExpression().toString());
+    }
+
+    @Test
+    void testCreateOverloadedTableMacro() throws JSQLParserException {
+        String sqlStr = "CREATE MACRO get_t(i) AS TABLE SELECT * FROM t WHERE id = i, "
+                + "(i, j) AS TABLE SELECT * FROM u WHERE id = i AND x = j";
+        CreateMacro createMacro =
+                (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+        Assertions.assertEquals(2, createMacro.getOverloads().size());
+        Assertions.assertTrue(createMacro.getOverloads().get(1).isTable());
+        Assertions.assertEquals(2, createMacro.getOverloads().get(1).getParameters().size());
+        Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
+                TablesNamesFinder.findTables(sqlStr));
+    }
+
+    @Test
+    void testCreateFunctionAsMacro() throws JSQLParserException {
+        for (String sqlStr : Arrays.asList(
+                "CREATE FUNCTION add(a, b) AS a + b",
+                "CREATE OR REPLACE TEMPORARY FUNCTION IF NOT EXISTS add(a INTEGER) AS a + 1",
+                "CREATE FUNCTION get_t(i) AS TABLE SELECT * FROM t WHERE id = i")) {
+            CreateMacro createMacro =
+                    (CreateMacro) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+
+            Assertions.assertTrue(createMacro.isFunctionKeyword());
+        }
+    }
+
+    @Test
+    void testCreateFunctionOfOtherDialectsIsNotAMacro() throws JSQLParserException {
+        for (String sqlStr : Arrays.asList(
+                "CREATE FUNCTION add(a integer, b integer) RETURNS integer AS 'select $1 + $2' LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS 'select $1 + 1' LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $$ select $1 + 1 $$ LANGUAGE SQL",
+                "CREATE FUNCTION add(IN a integer, OUT b integer) AS $function$ select $1 + 1 $function$ LANGUAGE SQL",
+                "CREATE OR REPLACE FUNCTION ds.add(x INT64) AS (x + 1) OPTIONS (description = 'd')")) {
+            Assertions.assertInstanceOf(CreateFunction.class, CCJSqlParserUtil.parse(sqlStr));
+        }
     }
 
     @Test

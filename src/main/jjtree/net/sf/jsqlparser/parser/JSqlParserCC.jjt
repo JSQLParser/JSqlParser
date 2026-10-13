@@ -1435,6 +1435,69 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return getToken(offset).kind == K_MACRO;
     }
 
+    /**
+     * DuckDB's FUNCTION alias of MACRO: FUNCTION [IF NOT EXISTS] name (parameters) AS body, where
+     * AS directly follows the parameters, the body is not a string and no LANGUAGE or OPTIONS
+     * clause follows it, unlike other dialects' CREATE FUNCTION (RETURNS ..., PostgreSQL's
+     * AS $tag$ ... $tag$ LANGUAGE ..., BigQuery's AS (expr) OPTIONS (...)).
+     */
+    private boolean isCreateFunctionMacroAhead() {
+        int offset = 1;
+        int kind = getToken(offset).kind;
+        if (kind == K_TEMP || kind == K_TEMPORARY) {
+            offset++;
+        }
+        if (getToken(offset).kind != K_FUNCTION) {
+            return false;
+        }
+        // IF NOT EXISTS and a qualified name, at most 8 tokens, up to the parameter list
+        int nameEnd = offset + 8;
+        offset++;
+        while (getToken(offset).kind != OPENING_BRACKET) {
+            kind = getToken(offset).kind;
+            if (offset > nameEnd || kind == EOF || kind == ST_SEMICOLON) {
+                return false;
+            }
+            offset++;
+        }
+        int depth = 0;
+        do {
+            kind = getToken(offset).kind;
+            if (kind == OPENING_BRACKET) {
+                depth++;
+            } else if (kind == CLOSING_BRACKET) {
+                depth--;
+            } else if (kind == EOF) {
+                return false;
+            }
+            offset++;
+        } while (depth > 0);
+        if (getToken(offset).kind != K_AS) {
+            return false;
+        }
+        Token body = getToken(offset + 1);
+        if (body.kind == S_CHAR_LITERAL || body.kind == S_DOLLAR_QUOTED_STRING
+                || body.image.length() > 1 && body.image.startsWith("$") && body.image.endsWith("$")) {
+            return false;
+        }
+        // no LANGUAGE or OPTIONS clause outside parentheses up to the end of the statement
+        depth = 0;
+        for (offset++;; offset++) {
+            Token token = getToken(offset);
+            if (token.kind == EOF || depth == 0 && token.kind == ST_SEMICOLON) {
+                return true;
+            }
+            if (token.kind == OPENING_BRACKET) {
+                depth++;
+            } else if (token.kind == CLOSING_BRACKET) {
+                depth--;
+            } else if (depth == 0 && ("LANGUAGE".equalsIgnoreCase(token.image)
+                    || "OPTIONS".equalsIgnoreCase(token.image))) {
+                return false;
+            }
+        }
+    }
+
     /** DuckDB sampling methods, which are ordinary identifiers except for SYSTEM/BERNOULLI. */
     private boolean isSampleMethod(Token token) {
         return token.kind == K_SYSTEM || token.kind == K_BERNOULLI
@@ -5048,41 +5111,66 @@ RenameTableStatement RenameTableStatement(): {
 }
 
 /**
- * DuckDB's CREATE [OR REPLACE] [TEMPORARY] MACRO name (parameters) AS [TABLE] body.
+ * DuckDB's CREATE [OR REPLACE] [TEMPORARY] {MACRO | FUNCTION} [IF NOT EXISTS] name
+ * (parameters) AS [TABLE] body [, (parameters) AS [TABLE] body ...].
  */
 CreateMacro CreateMacro(boolean isUsingOrReplace) #CreateMacro:
 {
     CreateMacro createMacro = new CreateMacro();
-    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    List<CreateMacro.Overload> overloads = new ArrayList<CreateMacro.Overload>();
     ObjectNames name;
-    Expression expression;
-    Select select;
-    String parameterName;
-    Expression defaultValue;
+    CreateMacro.Overload overload;
 }
 {
     { createMacro.setOrReplace(isUsingOrReplace); }
     [ ( <K_TEMP> | <K_TEMPORARY> ) { createMacro.setTemporary(true); } ]
-    <K_MACRO> name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    ( <K_MACRO> | <K_FUNCTION> { createMacro.setFunctionKeyword(true); } )
+    [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { createMacro.setIfNotExists(true); } ]
+    name=RelObjectNames() { createMacro.setName(String.join(".", name.getNames())); }
+    overload=MacroOverload() { overloads.add(overload); }
+    ( LOOKAHEAD(2) "," overload=MacroOverload() { overloads.add(overload); } )*
+    { createMacro.setOverloads(overloads); }
+    { return createMacro; }
+}
+
+/**
+ * One (parameters) AS [TABLE] body of a DuckDB macro, a parameter being name [type] [:= default].
+ */
+CreateMacro.Overload MacroOverload():
+{
+    CreateMacro.Overload overload = new CreateMacro.Overload();
+    List<CreateMacro.Parameter> parameters = new ArrayList<CreateMacro.Parameter>();
+    CreateMacro.Parameter parameter;
+    Expression expression;
+    Select select;
+}
+{
     "("
     [
-        parameterName=RelObjectName() { defaultValue = null; }
-        [ ":=" defaultValue=Expression() ]
-        { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
-        (
-            "," parameterName=RelObjectName() { defaultValue = null; }
-            [ ":=" defaultValue=Expression() ]
-            { parameters.add(new CreateMacro.Parameter(parameterName, defaultValue)); }
-        )*
+        parameter=MacroParameter() { parameters.add(parameter); }
+        ( "," parameter=MacroParameter() { parameters.add(parameter); } )*
     ]
-    ")" { createMacro.setParameters(parameters); }
+    ")" { overload.setParameters(parameters); }
     <K_AS>
     (
-        LOOKAHEAD(2) <K_TABLE> select=Select() { createMacro.setSelect(select); }
+        LOOKAHEAD(2) <K_TABLE> select=Select() { overload.setSelect(select); }
         |
-        expression=Expression() { createMacro.setExpression(expression); }
+        expression=Expression() { overload.setExpression(expression); }
     )
-    { return createMacro; }
+    { return overload; }
+}
+
+CreateMacro.Parameter MacroParameter():
+{
+    String name;
+    ColDataType type = null;
+    Expression defaultValue = null;
+}
+{
+    name=RelObjectName()
+    [ LOOKAHEAD({ getToken(1).kind != K_COMMA && getToken(1).kind != CLOSING_BRACKET && !":=".equals(getToken(1).image) }) type=ColDataType() ]
+    [ ":=" defaultValue=Expression() ]
+    { return new CreateMacro.Parameter(name, type, defaultValue); }
 }
 
 /**
@@ -20187,6 +20275,10 @@ Statement Create():
                 || "DEFINER".equalsIgnoreCase(getToken(1).image) })
         statement = CreateTrigger()
         |
+        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
+        |
+        LOOKAHEAD({ isCreateFunctionMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
+        |
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
@@ -20197,8 +20289,6 @@ Statement Create():
         statement = CreateSequence()
         |
         statement = CreateSynonym(isUsingOrReplace)
-        |
-        LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         LOOKAHEAD(3) statement = CreateTable(isUsingOrReplace)
         |
