@@ -183,19 +183,22 @@ public class ColumnsTransformer extends ASTNodeAccessImpl {
                         .append(exceptPattern != null ? exceptPattern : exceptColumns);
                 break;
             case EXCLUDE:
-                builder.append("EXCLUDE ")
-                        .append(parenthesized ? exceptColumns : exceptColumns.get(0));
+                builder.append("EXCLUDE ").append(parenthesized || exceptColumns.size() != 1
+                        ? exceptColumns
+                        : exceptColumns.get(0));
                 break;
             case REPLACE:
+                boolean replaceParenthesized = parenthesized || replaceItems.size() != 1;
                 builder.append("REPLACE").append(strict ? " STRICT" : "")
-                        .append(parenthesized ? "(" : " ")
+                        .append(replaceParenthesized ? "(" : " ")
                         .append(Select.getStringList(replaceItems))
-                        .append(parenthesized ? ")" : "");
+                        .append(replaceParenthesized ? ")" : "");
                 break;
             case RENAME:
-                builder.append("RENAME ").append(parenthesized ? "(" : "")
+                boolean renameParenthesized = parenthesized || renameItems.size() != 1;
+                builder.append("RENAME ").append(renameParenthesized ? "(" : "")
                         .append(Select.getStringList(renameItems))
-                        .append(parenthesized ? ")" : "");
+                        .append(renameParenthesized ? ")" : "");
                 break;
             default:
                 throw new IllegalStateException("Unhandled ColumnsTransformerType: " + type);

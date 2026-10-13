@@ -1729,12 +1729,100 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
                 return true;
             case K_GROUP: case K_ORDER:
-                return following == K_BY;
+                // not a column named group aliased by: SELECT a, group by FROM t
+                int afterBy = getToken(4).kind;
+                return following == K_BY && afterBy != K_FROM && afterBy != EOF
+                        && afterBy != CLOSING_BRACKET && afterBy != ST_SEMICOLON
+                        && !",".equals(getToken(4).image);
             case K_LIMIT: case K_OFFSET:
-                return following == S_LONG || following == OPENING_BRACKET
-                        || "?".equals(getToken(3).image);
+                return following == S_LONG || "?".equals(getToken(3).image);
             default:
                 return false;
+        }
+    }
+
+    /**
+     * Whether the REPLACE at {@code offset} is DuckDB's unparenthesized {@code REPLACE expr AS name}:
+     * an AS follows at the top level before the end of the select item, so that a star aliased
+     * "replace" keeps parsing. With {@code offset} 0, the REPLACE has been consumed.
+     */
+    private boolean isUnparenthesizedReplaceAhead(int offset) {
+        Token token = getToken(offset);
+        if (offset > 0 && token.kind != K_REPLACE) {
+            return false;
+        }
+        int depth = 0;
+        while (true) {
+            token = nextWithItemToken(token);
+            if (token.kind == EOF || ";".equals(token.image)) {
+                return false;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image) || "{".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)
+                    || "}".equals(token.image)) {
+                if (--depth < 0) {
+                    return false;
+                }
+            } else if (depth == 0) {
+                if (token.kind == K_AS) {
+                    return true;
+                }
+                if (token.kind == K_FROM || ",".equals(token.image)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    private boolean isUnparenthesizedReplaceAhead() {
+        return isUnparenthesizedReplaceAhead(1);
+    }
+
+    /**
+     * Whether DuckDB's {@code RENAME (column AS name, ...)} or {@code RENAME column AS name}
+     * follows, every column being renamed with AS, so that a star aliased "rename" keeps parsing.
+     */
+    private boolean isRenameAhead() {
+        Token token = getToken(1);
+        if (token.kind != K_RENAME) {
+            return false;
+        }
+        token = nextWithItemToken(token);
+        boolean parenthesized = "(".equals(token.image);
+        if (parenthesized) {
+            token = nextWithItemToken(token);
+        }
+        while (true) {
+            // column [. column]* AS name
+            while (true) {
+                if (!isIdentifierishNameToken(token)) {
+                    return false;
+                }
+                token = nextWithItemToken(token);
+                if (!".".equals(token.image)) {
+                    break;
+                }
+                token = nextWithItemToken(token);
+            }
+            if (token.kind != K_AS) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+            if (!isIdentifierishNameToken(token)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+            if (!parenthesized) {
+                return true;
+            }
+            if (")".equals(token.image)) {
+                return true;
+            }
+            if (!",".equals(token.image)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
         }
     }
 
@@ -8799,7 +8887,8 @@ boolean AllColumnsTransformerAhead() #void:
         | <K_EXCLUDE> ParenthesedColumnList() )
       { return true; }
       // DuckDB: * EXCLUDE i, * REPLACE expr AS i, * RENAME [(]i AS x[)]
-    | LOOKAHEAD( <K_EXCLUDE> Column() | <K_REPLACE> | <K_RENAME> ) { return true; }
+    | LOOKAHEAD( <K_EXCLUDE> Column() ) { return true; }
+    | LOOKAHEAD({ isUnparenthesizedReplaceAhead() || isRenameAhead() }) { return true; }
     | { return false; }
 }
 
@@ -8921,7 +9010,8 @@ ColumnsTransformer ColumnsTransformer():
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.REPLACE)
                   .setStrict(strict); }
           (
-              LOOKAHEAD("(") "(" replaceItems = SelectItemsList() ")"
+              LOOKAHEAD({ "(".equals(getToken(1).image) && !isUnparenthesizedReplaceAhead(0) })
+              "(" replaceItems = SelectItemsList() ")"
               |
               item = SelectItem()
               {
@@ -8966,6 +9056,7 @@ AllColumns AllColumns(boolean allowAdditions):
     // BigData allows EXCEPT, DuckDB allows EXCLUDE and RENAME, ClickHouse allows APPLY;
     // they may repeat and combine in any order
     (
+        // AllColumnsTransformerAhead() tells DuckDB's REPLACE and RENAME from an alias of the star
         LOOKAHEAD( <K_APPLY> "(" | <K_REPLACE> | <K_RENAME>
             | <K_EXCEPT> [ <K_STRICT> ] ( ParenthesedColumnList() | <S_CHAR_LITERAL> )
             | <K_EXCLUDE> ( ParenthesedColumnList() | Column() ) )

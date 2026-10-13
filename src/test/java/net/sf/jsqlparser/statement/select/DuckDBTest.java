@@ -1042,6 +1042,18 @@ public class DuckDBTest {
                 net.sf.jsqlparser.expression.ColumnsTransformer.ColumnsTransformerType.RENAME,
                 rename.getType());
         Assertions.assertEquals("i AS x", rename.getRenameItems().get(0).toString());
+
+        // a star aliased rename or replace keeps parsing
+        for (String sqlStr : new String[] {"SELECT * rename FROM t", "SELECT * replace FROM t",
+                "SELECT t.* rename, b FROM t", "SELECT * rename(a, b) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        // DuckDB reads a parenthesized expression followed by AS as the single item
+        select = (PlainSelect) CCJSqlParserUtil.parse("SELECT * REPLACE (a + 1) AS a FROM t");
+        Assertions.assertEquals("(a + 1) AS a",
+                ((net.sf.jsqlparser.statement.select.AllColumns) select.getSelectItem(0)
+                        .getExpression()).getTransformers().get(0).getReplaceItems().get(0)
+                        .toString());
     }
 
     @Test
@@ -1054,9 +1066,10 @@ public class DuckDBTest {
                 CCJSqlParserUtil.parse("SELECT 1, LIMIT 1").toString());
         Assertions.assertEquals("SELECT (SELECT 1)",
                 CCJSqlParserUtil.parse("SELECT (SELECT 1,)").toString());
-        // keywords that may name a column still do
-        for (String column : new String[] {"limit", "offset", "group", "order", "qualify"}) {
-            TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + column + " FROM t", true);
+        // keywords that may name a column or a function still do
+        for (String item : new String[] {"limit", "offset", "group", "order", "qualify",
+                "limit(1)", "offset(1)", "group by", "order by"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + item + " FROM t", true);
         }
     }
 }
