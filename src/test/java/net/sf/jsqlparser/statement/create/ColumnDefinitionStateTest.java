@@ -54,10 +54,12 @@ class ColumnDefinitionStateTest {
         if (option.getKind() == ColumnOption.Kind.OTHER) {
             assertTrue(column.getColumnOptions().stream()
                     .allMatch(raw -> raw.getKind() == ColumnOption.Kind.OTHER));
-            List<String> rawTokens = column.getColumnOptions().stream()
-                    .map(ColumnOption::getTokens).filter(tokens -> tokens.contains("DYNAMIC"))
+            ColumnOption rawOption = column.getColumnOptions().stream()
+                    .filter(raw -> raw.getTokens().contains("DYNAMIC"))
                     .findFirst().orElseThrow();
+            List<String> rawTokens = new ArrayList<>(rawOption.getTokens());
             rawTokens.set(rawTokens.indexOf("DYNAMIC"), "FIXED");
+            rawOption.setTokens(rawTokens);
             assertEquals(List.of("COLUMN_FORMAT", "DYNAMIC"), snapshot);
             assertEquals(List.of("COLUMN_FORMAT", "FIXED"), column.getColumnSpecs());
         } else {

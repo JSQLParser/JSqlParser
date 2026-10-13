@@ -745,6 +745,35 @@ setter receives null. Appending preserves the current nodes and accepts an
 immutable input list. An empty append preserves existing options and creates an
 empty option list when none was set.
 
+``ColumnOption.getTokens()`` and ``GeneratedColumnDefinition.getTokens()`` also
+return unmodifiable, detached snapshots. Reading tokens does not detach the
+underlying expressions or other child nodes: their setters and direct edits
+remain visible in SQL output, visitors and newly requested snapshots.
+
+For opaque ``Kind.OTHER`` options, copy the tokens, edit the copy, then call
+``setTokens``. The setter and both ``ColumnOption.raw`` factories copy their
+inputs; subsequent changes to the supplied list or array do not edit the AST.
+Null raw tokens remain unset and return null; an empty list returns an empty
+snapshot. Raw tokens are never parsed or classified.
+
+.. code-block:: java
+
+    ColumnOption raw = ColumnOption.raw("COLUMN_FORMAT", "DYNAMIC");
+    List<String> tokens = new ArrayList<>(raw.getTokens());
+    tokens.set(1, "FIXED");
+    raw.setTokens(tokens); // COLUMN_FORMAT FIXED
+
+Migration: raw token getter edits now throw ``UnsupportedOperationException``,
+as do edits to structured token snapshots that previously changed a discarded
+copy. ``setTokens`` only accepts opaque options; it throws
+``IllegalStateException`` for structured options, including SERIAL DEFAULT
+VALUE. Use typed setters for structured edits. To explicitly replace a
+structured option with raw text, replace its node in the column's option list:
+
+.. code-block:: java
+
+    column.getColumnOptions().set(0, ColumnOption.raw("DEFAULT", "8"));
+
 Inspect logical replication statements
 ======================================
 
