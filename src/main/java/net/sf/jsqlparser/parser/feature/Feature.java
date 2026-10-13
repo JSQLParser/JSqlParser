@@ -890,9 +890,9 @@ public enum Feature {
     allowHashLineComments(false),
 
     /**
-     * treats three consecutive newlines as a statement separator, like `;`; enabled by default.
-     * When disabled, blank lines are plain whitespace, so a statement containing them is parsed
-     * whole instead of being cut off at the first run of blank lines
+     * treats three consecutive newlines as a statement separator (enabled by default). When
+     * disabled, blank lines are plain whitespace, so a statement containing them is parsed whole
+     * instead of being cut off at the first run of blank lines
      */
     allowBlankLinesAsStatementSeparator(true),
 
