@@ -90,6 +90,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -196,6 +197,12 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(IntegerDivision division, S context) {
         visitBinaryExpression(division, " DIV ");
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Exponentiation exponentiation, S context) {
+        visitBinaryExpression(exponentiation, " ** ");
         return null;
     }
 

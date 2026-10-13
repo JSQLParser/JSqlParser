@@ -903,4 +903,61 @@ public class DuckDBTest {
                 .parse("SELECT a FROM t TABLESAMPLE 10 OFFSET 3");
         Assertions.assertEquals("3", select.getOffset().getOffset().toString());
     }
+
+    @Test
+    void testDoubleEqualsOperator() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a FROM t WHERE a == 1 AND b = 2", true);
+        Assertions.assertEquals("==",
+                ((net.sf.jsqlparser.expression.operators.relational.EqualsTo) CCJSqlParserUtil
+                        .parseCondExpression("a == 1")).getStringExpression());
+    }
+
+    @Test
+    void testExponentiationOperator() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 2 ** 3, 2 * 3 ** 2, -2 ** 2", true);
+        // above the multiplicative operators, left-associative, below the unary sign
+        Assertions.assertEquals("Multiplication(2, Exponentiation(3, 2))",
+                tree(CCJSqlParserUtil.parseExpression("2 * 3 ** 2")));
+        Assertions.assertEquals("Exponentiation(Exponentiation(2, 3), 2)",
+                tree(CCJSqlParserUtil.parseExpression("2 ** 3 ** 2")));
+        Assertions.assertEquals("Exponentiation(-2, 2)",
+                tree(CCJSqlParserUtil.parseExpression("-2 ** 2")));
+    }
+
+    @Test
+    void testLikeOperators() throws JSQLParserException {
+        for (String operator : new String[] {"~~", "~~*", "~~~", "!~~", "!~~*"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(
+                    "SELECT a FROM t WHERE a " + operator + " 'x%'", true);
+        }
+        net.sf.jsqlparser.expression.operators.relational.LikeExpression like =
+                (net.sf.jsqlparser.expression.operators.relational.LikeExpression) CCJSqlParserUtil
+                        .parseCondExpression("a !~~* 'x%'");
+        Assertions.assertEquals(
+                net.sf.jsqlparser.expression.operators.relational.LikeExpression.KeyWord.ILIKE,
+                like.getLikeKeyWord());
+        Assertions.assertTrue(like.isNot());
+        // the regular expression operators are unchanged
+        Assertions.assertInstanceOf(
+                net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator.class,
+                CCJSqlParserUtil.parseCondExpression("a !~* 'x'"));
+    }
+
+    @Test
+    void testChainedSigns() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT - -1, +-+1, ++-++-+i, ~ ~a, x - -1 FROM t",
+                true);
+        Assertions.assertEquals("- - -a", CCJSqlParserUtil.parseExpression("- - -a").toString());
+    }
+
+    private static String tree(net.sf.jsqlparser.expression.Expression expression) {
+        if (expression instanceof net.sf.jsqlparser.expression.BinaryExpression) {
+            net.sf.jsqlparser.expression.BinaryExpression binary =
+                    (net.sf.jsqlparser.expression.BinaryExpression) expression;
+            return expression.getClass().getSimpleName() + "(" + tree(binary.getLeftExpression())
+                    + ", " + tree(binary.getRightExpression()) + ")";
+        }
+        return expression.toString();
+    }
 }

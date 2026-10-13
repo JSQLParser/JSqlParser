@@ -18,6 +18,7 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
     private boolean not = false;
     private boolean useBinary = false;
     private Expression escapeExpression = null;
+    private String likeOperator = null;
     private KeyWord likeKeyWord = KeyWord.LIKE;
 
     public boolean isNot() {
@@ -48,8 +49,42 @@ public class LikeExpression extends BinaryExpression implements SupportsOldOracl
         return likeKeyWord.toString();
     }
 
+    /** DuckDB's and PostgreSQL's operator spelling, e.g. {@code !~~} for {@code NOT LIKE}. */
+    public String getLikeOperator() {
+        return likeOperator;
+    }
+
+    /**
+     * Sets the operator spelling and the matching keyword: {@code ~~} is {@code LIKE}, {@code ~~*}
+     * {@code ILIKE}, {@code ~~~} {@code GLOB}, and a leading {@code !} negates.
+     */
+    public LikeExpression setLikeOperator(String likeOperator) {
+        boolean negated = likeOperator.startsWith("!");
+        String operator = negated ? likeOperator.substring(1) : likeOperator;
+        switch (operator) {
+            case "~~":
+                likeKeyWord = KeyWord.LIKE;
+                break;
+            case "~~*":
+                likeKeyWord = KeyWord.ILIKE;
+                break;
+            case "~~~":
+                likeKeyWord = KeyWord.GLOB;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown LIKE operator: " + likeOperator);
+        }
+        this.not = negated;
+        this.likeOperator = likeOperator;
+        return this;
+    }
+
     @Override
     public String toString() {
+        if (likeOperator != null) {
+            return getLeftExpression() + " " + likeOperator + " " + getRightExpression()
+                    + (escapeExpression != null ? " ESCAPE " + escapeExpression : "");
+        }
         String retval = (oraclePriorPosition == ORACLE_PRIOR_START ? "PRIOR " : "")
                 + getLeftExpression() + " " + (not ? "NOT " : "")
                 + (likeKeyWord == KeyWord.SIMILAR_TO ? "SIMILAR TO" : likeKeyWord) + " "

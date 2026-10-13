@@ -19,6 +19,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Exponentiation;
 import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -270,6 +271,12 @@ public interface ExpressionVisitor<T> {
     }
 
     <S> T visit(IntegerDivision integerDivision, S context);
+
+    <S> T visit(Exponentiation exponentiation, S context);
+
+    default void visit(Exponentiation exponentiation) {
+        this.visit(exponentiation, null);
+    }
 
     default void visit(IntegerDivision integerDivision) {
         this.visit(integerDivision, null);

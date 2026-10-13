@@ -54,7 +54,20 @@ public class SignedExpression extends ASTNodeAccessImpl implements Expression {
 
     @Override
     public String toString() {
-        return getSign() + expression.toString();
+        String operand = expression.toString();
+        return getSign() + (needsSpaceBefore(operand) ? " " : "") + operand;
+    }
+
+    /**
+     * Whether the sign must be separated from an operand starting with {@code firstChar}: "- -1"
+     * must not become the line comment "--1", nor "~ ~a" the LIKE operator "~~".
+     */
+    public boolean needsSpaceBefore(char firstChar) {
+        return (sign == '-' || sign == '~') && firstChar == sign;
+    }
+
+    private boolean needsSpaceBefore(String operand) {
+        return !operand.isEmpty() && needsSpaceBefore(operand.charAt(0));
     }
 
     public SignedExpression withSign(char sign) {
