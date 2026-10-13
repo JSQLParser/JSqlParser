@@ -78,6 +78,53 @@ class MySqlDropConstraintTest {
         assertEquals(sql, alter.toString().trim());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP FOREIGN KEY fk1", "DROP FOREIGN KEY `fk name`",
+            "DROP CHECK c1", "DROP FOREIGN KEY fk1, DROP CHECK c1"})
+    void acceptsNamedDropsWithoutDialect(String actions) throws JSQLParserException {
+        String sql = "ALTER TABLE t " + actions;
+        Alter alter = (Alter) CCJSqlParserUtil.parse(sql);
+
+        assertEquals(sql, alter.toString());
+        for (AlterExpression drop : alter.getAlterExpressions()) {
+            assertNotNull(drop.getConstraintName());
+            assertNull(drop.getDropColumns());
+        }
+        assertEquals(sql, CCJSqlParserUtil.parse(alter.toString()).toString());
+    }
+
+    @Test
+    void mariaDbAcceptsNamedForeignKeyButNotCheckDrops() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse("ALTER TABLE t DROP FOREIGN KEY fk1",
+                p -> p.withDialect(Dialect.MARIADB));
+        assertEquals(AlterOperation.DROP_FOREIGN_KEY,
+                alter.getAlterExpressions().get(0).getOperation());
+        assertEquals("fk1", alter.getAlterExpressions().get(0).getConstraintName());
+
+        assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                .parse("ALTER TABLE t DROP CHECK c1", p -> p.withDialect(Dialect.MARIADB)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"DROP FOREIGN KEY fk1", "DROP CHECK c1"})
+    void otherDialectsKeepRejectingMySqlNamedDrops(String action) {
+        for (Dialect dialect : List.of(Dialect.POSTGRESQL, Dialect.ORACLE, Dialect.SQLSERVER)) {
+            assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                    .parse("ALTER TABLE t " + action, p -> p.withDialect(dialect)),
+                    dialect.name());
+        }
+    }
+
+    @Test
+    void parenthesizedForeignKeyDropKeepsColumnsWithoutDialect() throws JSQLParserException {
+        Alter alter = (Alter) CCJSqlParserUtil.parse("ALTER TABLE t DROP FOREIGN KEY (a, b)");
+        AlterExpression drop = alter.getAlterExpressions().get(0);
+
+        assertEquals(AlterOperation.DROP_FOREIGN_KEY, drop.getOperation());
+        assertEquals(List.of("a", "b"), drop.getDropColumns());
+        assertNull(drop.getConstraintName());
+    }
+
     private static Alter parse(String sql) throws JSQLParserException {
         return (Alter) CCJSqlParserUtil.parse(sql, p -> p.withDialect(Dialect.MYSQL));
     }

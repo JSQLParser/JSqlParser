@@ -268,8 +268,11 @@ MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
 MySQL named constraint drops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With ``Dialect.MYSQL``, ``DROP FOREIGN KEY name`` and ``DROP CHECK name``
-expose the target through ``AlterExpression.getConstraintName()``. Inspect
+Without a dialect and with ``Dialect.MYSQL``, ``DROP FOREIGN KEY name`` and
+``DROP CHECK name`` expose the target through ``AlterExpression.getConstraintName()``.
+``Dialect.MARIADB`` accepts the named FOREIGN KEY form; MariaDB has no ``DROP CHECK``.
+Other dialects drop constraints with ``DROP CONSTRAINT``. A parenthesized
+``DROP FOREIGN KEY (...)`` keeps the legacy column-list form. Inspect
 ``getOperation()`` for ``DROP_FOREIGN_KEY`` or ``DROP_CHECK``. Identifier
 quotes are preserved, and changing the name changes both SQL renderers.
 These named targets do not populate the legacy ``getPkColumns()`` list.
