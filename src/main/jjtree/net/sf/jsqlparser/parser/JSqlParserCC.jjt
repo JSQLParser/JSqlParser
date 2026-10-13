@@ -806,7 +806,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL: case K_LEFT:
             case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_OPTIMIZE:
             case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
-            case K_FILE: case K_SET: case K_SOME: case K_START: case K_TABLES:
+            case K_SET: case K_SOME: case K_START: case K_TABLES:
             case K_TOP: case K_VALUE: case K_VALUES:
                 return true;
             default:
@@ -1592,6 +1592,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         // OPTION (...) introduces a query hint clause, not an alias
         if (kind == K_OPTION && getToken(2).kind == OPENING_BRACKET) {
+            return false;
+        }
+
+        // ClickHouse's PREWHERE and SETTINGS clauses, not aliases
+        if (kind == K_PREWHERE || kind == K_SETTINGS) {
             return false;
         }
 
@@ -2564,6 +2569,7 @@ String NonReservedWord() :
       | tk=<K_COSTS: "COSTS">
       | tk=<K_COUNT: "COUNT">
       | tk=<K_CREATED:"CREATED">
+      | tk=<K_CSV: "CSV">
       | tk=<K_CYCLE:"CYCLE">
       | tk=<K_DATABASE:"DATABASE">
       | tk=<K_DATA:"DATA">
@@ -2623,6 +2629,8 @@ String NonReservedWord() :
       | tk=<K_EXTENDED:"EXTENDED">
       | tk=<K_EXTRACT:"EXTRACT">
       | tk=<K_EXPORT:"EXPORT">
+      | tk=<K_FBV: "FBV">
+      | tk=<K_FILE: "FILE">
       | tk=<K_ISOLATION:("UR" | "RS" | "RR" | "CS")>
       | tk=<K_FILTER: "FILTER">
       | tk=<K_FIELDS: "FIELDS">
@@ -2762,6 +2770,7 @@ String NonReservedWord() :
       | tk=<K_PRAGMA: "PRAGMA">
       | tk=<K_PREPARE: "PREPARE">
       | tk=<K_PRECEDING: "PRECEDING">
+      | tk=<K_PREWHERE: "PREWHERE">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
       | tk=<K_PURGE:"PURGE">
@@ -2780,6 +2789,7 @@ String NonReservedWord() :
       | tk=<K_REGEXP: "REGEXP">
       | tk=<K_REJECT: "REJECT">
       | tk=<K_RESPECT: "RESPECT">
+      | tk=<K_RETURNS: "RETURNS">
       | tk=<K_RLIKE: "RLIKE">
       | tk=<K_REGEXP_LIKE: "REGEXP_LIKE">
       | tk=<K_REGISTER: "REGISTER">
@@ -2811,6 +2821,7 @@ String NonReservedWord() :
       | tk=<K_SAVEPOINT: "SAVEPOINT">
       | tk=<K_SCHEDULE: "SCHEDULE">
       | tk=<K_SCHEMA: "SCHEMA">
+      | tk=<K_SCRIPT: "SCRIPT">
       | tk=<K_SEARCH:"SEARCH">
       | tk=<K_SECURE: "SECURE">
       | tk=<K_SECURITY:"SECURITY">
@@ -2819,6 +2830,7 @@ String NonReservedWord() :
       | tk=<K_SEPARATOR:"SEPARATOR">
       | tk=<K_SESSION:"SESSION">
       | tk=<K_SETS:"SETS">
+      | tk=<K_SETTINGS: "SETTINGS">
       | tk=<K_SHOW : "SHOW">
       | tk=<K_SHUTDOWN : "SHUTDOWN">
       | tk=<K_SHARE : "SHARE">
@@ -2881,6 +2893,7 @@ String NonReservedWord() :
       | tk=<K_VALIDATE : "VALIDATE">
       | tk=<K_VALIDATION: "VALIDATION">
       | tk=<K_VERBOSE: "VERBOSE">
+      | tk=<K_VERIFY: "VERIFY">
       | tk=<K_VERSION: "VERSION">
       | tk=<K_VIEW:"VIEW">
       | tk=<K_VISIBLE: "VISIBLE">
@@ -2931,7 +2944,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
-|   <K_CSV:"CSV">
 |   <K_CURRENT: "CURRENT">
 |   <K_DATETIMELITERAL : "DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ" >
 |   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
@@ -2943,9 +2955,7 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
 |   <K_EXISTS:"EXISTS">
 |   <K_EXTEND:"EXTEND">
-|   <K_FBV:"FBV">
 |   <K_FETCH:"FETCH">
-|   <K_FILE: "FILE">
 |   <K_FINAL: "FINAL">
 |   <K_FALSE: "FALSE">
 |   <K_FOR:"FOR">
@@ -2992,20 +3002,16 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PIVOT:"PIVOT">
 |   <K_PREFERRING: "PREFERRING">
-|   <K_PREWHERE: "PREWHERE">
 |   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
 |   <K_QUALIFY: "QUALIFY">
-|   <K_RETURNS: "RETURNS">
 |   <K_RETURNING: "RETURNING">
 |   <K_RIGHT:"RIGHT">
 |   <K_SAMPLE: "SAMPLE">
-|   <K_SCRIPT: "SCRIPT">
 |   <K_SELECT: ("SELECT" | "SEL")>
 |   <K_SEMI : "SEMI">
 |   <K_SET:"SET">
-|   <K_SETTINGS:"SETTINGS">
 |   <K_SOME:"SOME">
 |   <K_START:"START">
 |   <K_TABLES:"TABLES">
@@ -3025,7 +3031,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
 |   <K_VALUES:"VALUES">
-|   <K_VERIFY: "VERIFY">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WINDOW:"WINDOW">
@@ -6934,7 +6939,7 @@ String RelObjectName() :
           | tk=<K_IIF> | tk=<K_IGNORE> | tk=<K_IN> | tk=<K_INTERVAL>
           | tk=<K_LEFT> | tk=<K_LIMIT> | tk=<K_NEXTVAL> | tk=<K_OFFSET>
           | tk=<K_ON> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
-          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT> | tk=<K_FILE>
+          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT>
           | tk=<K_SET> | tk=<K_SOME> | tk=<K_START> | tk=<K_TABLES>
           | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
     )
@@ -20465,11 +20470,10 @@ Synonym Synonym() #Synonym :
 
 
 String TypeDdlName():
-{ String name; String part; Token keyword; }
+{ String name; String part; }
 {
-    ( name=RelObjectName() | keyword=<K_SETTINGS> { name = keyword.image; } )
-    ( LOOKAHEAD(2) "." ( part=RelObjectNameExt() | keyword=<K_SETTINGS> { part = keyword.image; } )
-      { name += "." + part; } )*
+    name=RelObjectName()
+    ( LOOKAHEAD(2) "." part=RelObjectNameExt() { name += "." + part; } )*
     { return name; }
 }
 
