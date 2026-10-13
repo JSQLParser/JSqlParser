@@ -724,9 +724,25 @@ public class DuckDBTest {
     }
 
     @Test
+    void testLambdaKeywordFollowedByArguments() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT f(l, lambda x : x + 1, 2) FROM t", true);
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+
+        Assertions.assertEquals(3, function.getParameters().size());
+        Assertions.assertEquals("x + 1",
+                ((LambdaExpression) function.getParameters().get(1)).getExpression().toString());
+    }
+
+    @Test
     void testLambdaAsIdentifier() throws JSQLParserException {
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda FROM t", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda x, y FROM t", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT t.lambda FROM lambda t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT CAST(a AS lambda) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 'a' COLLATE lambda FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a lambda)", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t DROP COLUMN lambda", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t RENAME lambda TO x", true);
     }
 }
