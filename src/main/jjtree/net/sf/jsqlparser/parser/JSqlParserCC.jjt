@@ -203,9 +203,31 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // and must not be taken as the JSON path operator
     private int mapKeyDepth = 0;
 
-    // depth of subscripts: a ":" there separates the bounds of a slice such as l[1:3]
-    // and must not be taken as the JSON path operator
-    private int subscriptDepth = 0;
+    // opening brackets of the enclosing subscripts: a ":" at the top level of a subscript
+    // separates the bounds of a slice such as l[1:3] and is not the JSON path operator
+    private final Deque<Token> subscriptOpenings = new ArrayDeque<Token>();
+
+    /**
+     * Whether the pending ":" is at the top level of the innermost subscript, i.e. not nested
+     * in brackets, braces, parentheses or a CASE expression opened inside that subscript.
+     */
+    private boolean isSliceColonAhead() {
+        Token colon = getToken(1);
+        if (subscriptOpenings.isEmpty() || !":".equals(colon.image)) {
+            return false;
+        }
+        int depth = 0;
+        for (Token t = subscriptOpenings.peek().next; t != null && t != colon; t = t.next) {
+            if (t.kind == K_CASE || "(".equals(t.image) || "[".equals(t.image)
+                    || "{".equals(t.image)) {
+                depth++;
+            } else if (t.kind == K_END || ")".equals(t.image) || "]".equals(t.image)
+                    || "}".equals(t.image)) {
+                depth--;
+            }
+        }
+        return depth == 0;
+    }
 
     private Expression createOutputArgument(Expression argument) throws ParseException {
         Expression value = argument;
@@ -11358,14 +11380,15 @@ Expression ArrayExpression(Expression obj): {
 ArrayExpression ArraySubscript(Expression obj): {
     Expression idxExpr = null;
     RangeExpression slice = null;
+    Token opening;
 } {
-    "["
+    opening="["
     try {
-        { subscriptDepth++; }
+        { subscriptOpenings.push(opening); }
         [ LOOKAHEAD(3, { !":".equals(getToken(1).image) }) idxExpr = ArrayIndexExpression() ]
         [ slice = SliceTail(idxExpr) ]
     } finally {
-        subscriptDepth--;
+        subscriptOpenings.pop();
     }
     "]"
     {
@@ -11400,16 +11423,17 @@ RangeExpression SliceTail(Expression start): {
 ArrayConstructor Subscript() : {
     ExpressionList<Expression> expList = new ExpressionList<Expression>();
     Expression exp;
+    Token opening;
 } {
-    "["
+    opening="["
     try {
-        { subscriptDepth++; }
+        { subscriptOpenings.push(opening); }
         [
             exp=SubscriptElement() { expList.add(exp); }
             ( "," exp=SubscriptElement() { expList.add(exp); } )*
         ]
     } finally {
-        subscriptDepth--;
+        subscriptOpenings.pop();
     }
     "]"
     { return new ArrayConstructor(expList, false); }
@@ -11680,7 +11704,7 @@ Expression PrimaryExpression() #PrimaryExpression:
     // Check for JSON operands
     [
         LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
-                && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && subscriptDepth == 0)
+                && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && !isSliceColonAhead())
                     || !":".equals(getToken(1).image)) }) (
             LOOKAHEAD(2) (
                 token="->"
@@ -12045,7 +12069,7 @@ JsonExpression JsonExpression(Expression expr, List<Map.Entry<Expression, String
 
         (
             LOOKAHEAD(2, { !isPostgreSqlJsonAccess(getToken(1))
-                    && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && subscriptDepth == 0)
+                    && ((ternaryThenBranchDepth == 0 && mapKeyDepth == 0 && !isSliceColonAhead())
                         || !":".equals(getToken(1).image)) }) (
                 token="->"
                 |

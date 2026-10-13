@@ -185,4 +185,19 @@ class ArrayExpressionTest {
     void testJsonPathOutsideSubscripts() throws JSQLParserException {
         assertInstanceOf(JsonExpression.class, CCJSqlParserUtil.parseExpression("c:a[1]"));
     }
+
+    @Test
+    void testJsonPathNestedInSubscript() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT l[(SELECT c : a FROM t2)] FROM t",
+                "SELECT l[f(x, c : a)] FROM t", "SELECT l[CASE WHEN c : a = 1 THEN 1 END] FROM t",
+                "SELECT f()[(SELECT c : a FROM t)]"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        PlainSelect select = (PlainSelect) TestUtils
+                .assertSqlCanBeParsedAndDeparsed("SELECT l[ARRAY[c : a]] FROM t", true);
+        ArrayConstructor array = (ArrayConstructor) select.getSelectItem(0)
+                .getExpression(Column.class).getArrayConstructor().getExpressions().get(0);
+        assertInstanceOf(JsonExpression.class, array.getExpressions().get(0));
+    }
 }
