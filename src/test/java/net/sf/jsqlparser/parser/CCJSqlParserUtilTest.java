@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -576,6 +577,44 @@ public class CCJSqlParserUtilTest {
                 + "\n"
                 + "def'\n"
                 + "where id=?", true);
+    }
+
+    @Test
+    void testBlankLinesAsSeparatorDisabled() throws JSQLParserException {
+        Consumer<CCJSqlParser> blankLinesAsWhitespace = p -> p.withBlankLinesAsSeparator(false);
+
+        assertEquals("SELECT a FROM dual WHERE x = ? AND y = ?",
+                CCJSqlParserUtil.parse("SELECT a FROM dual WHERE x = ?\n\n\n AND y = ?",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a, b FROM t",
+                CCJSqlParserUtil.parse("SELECT a,\n\n\n\nb FROM t", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT a FROM t WHERE a > 1",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\nWHERE a > 1", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT a FROM t UNION SELECT a FROM u",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\n\n\nUNION\n\n\nSELECT a FROM u",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a FROM t JOIN u ON t.id = u.id",
+                CCJSqlParserUtil.parse("SELECT a FROM t\n\n\nJOIN u ON t.id = u.id",
+                        blankLinesAsWhitespace).toString());
+        assertEquals("SELECT a FROM dual",
+                CCJSqlParserUtil.parse("SELECT a FROM dual\n\n\n", blankLinesAsWhitespace)
+                        .toString());
+        assertEquals("SELECT 'a\n\n\nb' FROM dual",
+                CCJSqlParserUtil.parse("SELECT 'a\n\n\nb' FROM dual", blankLinesAsWhitespace)
+                        .toString());
+
+        assertEquals(1, CCJSqlParserUtil.parseStatements(
+                "SELECT a FROM t\n\n\nWHERE a > 1", blankLinesAsWhitespace).size());
+        assertEquals(3, CCJSqlParserUtil.parseStatements(
+                "SELECT 1 FROM dual;\n\n\nSELECT 2 FROM dual\ngo\nSELECT 3 FROM dual\n/\n",
+                blankLinesAsWhitespace).size());
+
+        JSQLParserException exception = assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT a\n\n\n\nFROM", blankLinesAsWhitespace));
+        assertTrue(exception.getCause().getMessage().contains("at line 5, column 1"),
+                exception.getCause().getMessage());
     }
 
     @Test

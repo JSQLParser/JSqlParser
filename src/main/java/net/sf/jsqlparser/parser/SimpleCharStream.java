@@ -208,6 +208,14 @@ public class SimpleCharStream {
                 && AbstractJSqlParser.Dialect.MYSQL.name()
                         .equals(featureConfiguration.getValue(Feature.dialect))) {
             c = mySqlCommentBoundary(c);
+        } else if (c == '\n' && featureConfiguration != null
+                && !featureConfiguration
+                        .getAsBoolean(Feature.allowBlankLinesAsStatementSeparator)
+                && peekCharacters(2).equals("\n\n")) {
+            // Blanking the first newline of the run stops ST_SEMICOLON matching "\n\n\n";
+            // line and column tracking was already updated when the newline was read.
+            buffer[bufpos] = ' ';
+            c = ' ';
         }
         return c;
     }

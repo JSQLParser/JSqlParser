@@ -194,6 +194,11 @@ public abstract class AbstractJSqlParser<P> {
         return withFeature(Feature.allowHashLineComments, allowHashLineComments);
     }
 
+    public P withBlankLinesAsSeparator(boolean allowBlankLinesAsStatementSeparator) {
+        return withFeature(Feature.allowBlankLinesAsStatementSeparator,
+                allowBlankLinesAsStatementSeparator);
+    }
+
     public P withUnparenthesizedSubSelects() {
         return withFeature(Feature.allowUnparenthesizedSubSelects, true);
     }
