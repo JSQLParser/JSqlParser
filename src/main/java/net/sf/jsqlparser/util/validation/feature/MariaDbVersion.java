@@ -79,6 +79,9 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/truncate-table/
                     Feature.truncate,
 
+                    // https://mariadb.com/kb/en/table-statements/
+                    Feature.tableMaintenance,
+
                     // https://mariadb.com/kb/en/call/
                     Feature.execute, Feature.executeCall,
 

@@ -106,6 +106,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.UseStatement;
@@ -1644,6 +1645,17 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(Analyze analyze) {
         StatementVisitor.super.visit(analyze);
+    }
+
+    @Override
+    public <S> Void visit(TableMaintenanceStatement statement, S context) {
+        statement.getTables().forEach(table -> visit(table, context));
+        return null;
+    }
+
+    @Override
+    public void visit(TableMaintenanceStatement statement) {
+        StatementVisitor.super.visit(statement);
     }
 
     @Override

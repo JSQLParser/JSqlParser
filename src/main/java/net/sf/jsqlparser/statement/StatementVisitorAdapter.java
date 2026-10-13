@@ -623,6 +623,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     }
 
     @Override
+    public <S> T visit(TableMaintenanceStatement statement, S context) {
+        return null;
+    }
+
+    @Override
     public <S> T visit(SavepointStatement savepointStatement, S context) {
         // @todo: do something usefully here
         return null;

@@ -714,6 +714,20 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         return null;
     }
 
+    @Override
+    public <S> Void visit(TableMaintenanceStatement statement, S context) {
+        analysis.claimTopLevel();
+        analysis.certain(StmtFeature.READS_DATA, StmtFeature.RETURNS_RESULT_SET);
+        if (statement.getOperation() != TableMaintenanceStatement.Operation.CHECK) {
+            // OPTIMIZE rebuilds table storage; REPAIR may also rewrite or discard rows
+            analysis.certain(StmtFeature.MODIFIES_SCHEMA);
+            if (statement.getOperation() == TableMaintenanceStatement.Operation.REPAIR) {
+                analysis.possible(StmtFeature.MODIFIES_DATA);
+            }
+        }
+        return null;
+    }
+
     private Void schemaOnly() {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA);
