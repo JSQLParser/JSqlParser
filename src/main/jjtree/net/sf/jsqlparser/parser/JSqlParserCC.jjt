@@ -745,7 +745,8 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // Direct subquery: ( SELECT/WITH/PIVOT ) → ParenthesedSelect handles it
             // ( VALUES ) can be ParenthesedFromItem(Values) or ParenthesedSelect;
             // ParenthesedFromItem is checked first so Values-as-FROM-item works
-            if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT) return false;
+            if (k2 == K_SELECT || k2 == K_WITH || k2 == K_PIVOT || k2 == K_FROM) return false;
+            if (k2 == K_TABLE && isTableQueryAhead(2)) return false;
             // ( ( SELECT ) UNION ( SELECT ) ) → isNestedSetOperationAhead handles it
             // Other (( patterns: ( (SELECT...) JOIN ... ) or ( (table) ) → ParenthesedFromItem
             if (k2 == K_LATERAL) return false; // handled by LateralSubSelect
@@ -777,11 +778,35 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         } catch (TokenMgrException e) { return false; }
     }
 
+    /**
+     * Whether the TABLE at {@code offset} starts DuckDB's TABLE t query rather than naming a
+     * column, as in (table = 'x'): a table name follows, and then the end of the query.
+     */
+    private boolean isTableQueryAhead(int offset) {
+        Token token = getToken(offset);
+        do {
+            token = nextWithItemToken(token);
+            if (!isIdentifierishNameToken(token)) {
+                return false;
+            }
+            token = nextWithItemToken(token);
+        } while (".".equals(token.image));
+        switch (token.kind) {
+            case CLOSING_BRACKET: case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
+            case K_ORDER: case K_LIMIT: case K_OFFSET: case K_FETCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     protected boolean isParenthesedSelectAhead() {
         try {
             if (getToken(1).kind != OPENING_BRACKET) return false;
             int k = getToken(2).kind;
-            return k == K_SELECT || k == K_WITH || k == K_VALUES;
+            // DuckDB's (FROM t ...) and (TABLE t ...)
+            return k == K_SELECT || k == K_WITH || k == K_VALUES || k == K_FROM
+                    || k == K_TABLE && isTableQueryAhead(2);
         } catch (TokenMgrException e) {
             return false;
         }
@@ -1393,22 +1418,29 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
      * nested in brackets (a sub-select, for instance) do not count.
      */
     private boolean isFromFirstSelectAhead() {
-        if (getToken(1).kind != K_FROM) {
+        Token token = getToken(1);
+        if (token.kind != K_FROM) {
             return false;
         }
         int depth = 0;
-        for (int i = 2;; i++) {
-            Token token = getToken(i);
-            if (token == null || token.kind == EOF || ";".equals(token.image)
-                    || "|>".equals(token.image)) {
+        while (true) {
+            token = nextWithItemToken(token);
+            if (token.kind == EOF || ";".equals(token.image) || "|>".equals(token.image)) {
                 return false;
             }
             if ("(".equals(token.image)) {
                 depth++;
             } else if (")".equals(token.image)) {
-                depth--;
+                // the end of the parenthesized query this FROM starts
+                if (--depth < 0) {
+                    return false;
+                }
             } else if (depth == 0) {
                 switch (token.kind) {
+                    case K_UNION:
+                    case K_EXCEPT:
+                    case K_INTERSECT:
+                    case K_MINUS:
                     case K_SELECT:
                     case K_WHERE:
                     case K_GROUP:
@@ -3479,8 +3511,6 @@ Statement SingleStatement() :
             )
             |
             stm = Select()
-            |
-            stm = TableStatement()
             |
             LOOKAHEAD(3) stm = Upsert()
             |
@@ -7175,12 +7205,15 @@ Select Select() #Select:
 {
     [ with=WithList() ]
     (
-        LOOKAHEAD({ isFromFirstSelectAhead() }) select = FromFirstSelect()
-        |
-        LOOKAHEAD(3) select = FromQuery()
+        LOOKAHEAD(3, { !isFromFirstSelectAhead() }) select = FromQuery()
         |
         (
             (
+                LOOKAHEAD({ isFromFirstSelectAhead() }) select = FromFirstSelect()
+                |
+                // DuckDB's TABLE t, also as a set operation operand
+                LOOKAHEAD({ getToken(1).kind == K_TABLE }) select = TableStatement()
+                |
                 LOOKAHEAD(2) select = PivotQuery()
                 |
                 LOOKAHEAD(2) select = UnPivotQuery()
@@ -8146,6 +8179,10 @@ Select SetOperationList(Select select) #SetOperationList: {
         )
 
         (
+            LOOKAHEAD({ getToken(1).kind == K_FROM }) select = FromFirstSelect()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_TABLE }) select = TableStatement()
+            |
             select = PlainSelect()
             |
             select = Values()
@@ -8195,6 +8232,20 @@ Select SetOperationList(Select select) #SetOperationList: {
             if (ps.getIsolation() != null) {
                 list.setIsolation(ps.getIsolation());
                 ps.setIsolation(null);
+            }
+        } else if (selects.get(selects.size() - 1) instanceof TableStatement) {
+            TableStatement table = (TableStatement) selects.get(selects.size() - 1);
+            if (table.getOrderByElements() != null) {
+                list.setOrderByElements(table.getOrderByElements());
+                table.setOrderByElements(null);
+            }
+            if (table.getLimit() != null) {
+                list.setLimit(table.getLimit());
+                table.setLimit(null);
+            }
+            if (table.getOffset() != null) {
+                list.setOffset(table.getOffset());
+                table.setOffset(null);
             }
         }
         list.setBracketsOpsAndSelects(selects,operations);
@@ -15826,7 +15877,7 @@ CreateTable CreateTable(boolean isUsingOrReplace):
                 createTable.setExecute(execute);
             }
             |
-            ( LOOKAHEAD(<K_TABLE>) select=TableStatement() | select=Select() )
+            select=Select()
             { createTable.setSelect(select, false); }
         )
         [ LOOKAHEAD(2) <K_WITH> withData=DataPopulation()

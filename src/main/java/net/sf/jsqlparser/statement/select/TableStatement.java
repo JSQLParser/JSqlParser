@@ -34,23 +34,6 @@ public class TableStatement extends Select {
         return builder;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
-    @Override
-    public StringBuilder appendTo(StringBuilder builder) {
-
-        appendSelectBodyTo(builder);
-
-        builder.append(orderByToString(false, orderByElements));
-
-        if (limit != null) {
-            builder.append(limit);
-        }
-        if (offset != null) {
-            builder.append(offset);
-        }
-        return builder;
-    }
-
     @Override
     public <T, S> T accept(SelectVisitor<T> selectVisitor, S context) {
         return selectVisitor.visit(this, context);
