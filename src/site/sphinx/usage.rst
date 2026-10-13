@@ -1568,7 +1568,7 @@ The individual features
     * - ``withBackslashEscapeCharacter``
       - ``\\..`` escaping inside string literals, in addition to the standard ``'..`` doubling
     * - ``withDoubleQuotedStrings``
-      - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``)
+      - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``); combined with ``withBackslashEscapeCharacter``, ``\\"`` does not end the literal, as in MySQL ``"it\\"s"``
     * - ``withHashLineComments``
       - ``#`` starts a line comment
     * - ``withAdjacentStringLiterals``
