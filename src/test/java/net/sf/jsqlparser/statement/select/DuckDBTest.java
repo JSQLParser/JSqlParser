@@ -1036,7 +1036,7 @@ public class DuckDBTest {
         PlainSelect select = (PlainSelect) CCJSqlParserUtil
                 .parse("SELECT * RENAME (i AS x) FROM t");
         net.sf.jsqlparser.expression.ColumnsTransformer rename =
-                ((net.sf.jsqlparser.statement.select.AllColumns) select.getSelectItem(0)
+                ((AllColumns) select.getSelectItem(0)
                         .getExpression()).getTransformers().get(0);
         Assertions.assertEquals(
                 net.sf.jsqlparser.expression.ColumnsTransformer.ColumnsTransformerType.RENAME,
@@ -1051,7 +1051,7 @@ public class DuckDBTest {
         // DuckDB reads a parenthesized expression followed by AS as the single item
         select = (PlainSelect) CCJSqlParserUtil.parse("SELECT * REPLACE (a + 1) AS a FROM t");
         Assertions.assertEquals("(a + 1) AS a",
-                ((net.sf.jsqlparser.statement.select.AllColumns) select.getSelectItem(0)
+                ((AllColumns) select.getSelectItem(0)
                         .getExpression()).getTransformers().get(0).getReplaceItems().get(0)
                         .toString());
     }
