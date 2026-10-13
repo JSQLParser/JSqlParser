@@ -2365,6 +2365,16 @@ public class TablesNamesFinder<Void>
     }
 
     @Override
+    public <S> Void visit(ListComprehension listComprehension, S context) {
+        listComprehension.getExpression().accept(this, context);
+        listComprehension.getList().accept(this, context);
+        if (listComprehension.getCondition() != null) {
+            listComprehension.getCondition().accept(this, context);
+        }
+        return null;
+    }
+
+    @Override
     public <S> Void visit(ColumnsExpression columnsExpression, S context) {
         for (Expression expression : columnsExpression.getAllExpressions()) {
             if (expression != null) {

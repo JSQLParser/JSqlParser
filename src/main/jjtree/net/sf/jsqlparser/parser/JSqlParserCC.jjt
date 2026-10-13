@@ -1689,6 +1689,30 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return ":".equals(token.image) || "]".equals(token.image) || ",".equals(token.image);
     }
 
+    /** Whether a {@code [} opens DuckDB's {@code [expr FOR x IN list]}: FOR at its top level. */
+    private boolean isListComprehensionAhead() {
+        Token token = getToken(1);
+        if (!"[".equals(token.image)) {
+            return false;
+        }
+        int depth = 0;
+        for (;; token = nextWithItemToken(token)) {
+            if (token.kind == EOF || ";".equals(token.image)) {
+                return false;
+            }
+            if ("(".equals(token.image) || "[".equals(token.image) || "{".equals(token.image)) {
+                depth++;
+            } else if (")".equals(token.image) || "]".equals(token.image)
+                    || "}".equals(token.image)) {
+                if (--depth == 0) {
+                    return false;
+                }
+            } else if (depth == 1 && token.kind == K_FOR) {
+                return true;
+            }
+        }
+    }
+
     private boolean isAliasAhead() {
         if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
@@ -11851,6 +11875,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(3, {!interrupted}) <K_ARRAY_LITERAL> [ "<" type=ColDataType() ">" ] retval=ArrayConstructor(true) { if (type!=null) ((ArrayConstructor) retval).setDataType(type); }
 
+        | LOOKAHEAD({ !interrupted && isListComprehensionAhead() }) retval=ListComprehension()
+
         | LOOKAHEAD(1, {!interrupted}) retval=ArrayConstructor(false)
 
         | LOOKAHEAD(2, {!interrupted}) retval = NextValExpression()
@@ -12157,6 +12183,24 @@ RangeExpression RangeExpression(Expression startExpression):
     {
         return new RangeExpression(startExpression, endExpression);
     }
+}
+
+/** DuckDB's list comprehension {@code [expr FOR x[, i] IN list [IF condition]]}. */
+ListComprehension ListComprehension() : {
+    Expression expression;
+    List<String> variables = new ArrayList<String>();
+    String variable;
+    Expression list;
+    Expression condition = null;
+} {
+    "["
+    expression=Expression()
+    <K_FOR> variable=RelObjectName() { variables.add(variable); }
+    [ "," variable=RelObjectName() { variables.add(variable); } ]
+    <K_IN> list=Expression()
+    [ <K_IF> condition=Expression() ]
+    "]"
+    { return new ListComprehension(expression, variables, list, condition); }
 }
 
 ArrayConstructor ArrayConstructor(boolean arrayKeyword) : {

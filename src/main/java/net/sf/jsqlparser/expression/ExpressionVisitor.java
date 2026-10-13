@@ -832,6 +832,16 @@ public interface ExpressionVisitor<T> {
         this.visit(lambdaExpression, null);
     }
 
+    default <S> T visit(ListComprehension listComprehension, S context) {
+        visitExpression(listComprehension.getExpression(), context);
+        visitExpression(listComprehension.getList(), context);
+        return visitExpression(listComprehension.getCondition(), context);
+    }
+
+    default void visit(ListComprehension listComprehension) {
+        this.visit(listComprehension, null);
+    }
+
     default <S> T visit(ColumnsExpression columnsExpression, S context) {
         for (Expression expression : columnsExpression.getAllExpressions()) {
             if (expression != null) {

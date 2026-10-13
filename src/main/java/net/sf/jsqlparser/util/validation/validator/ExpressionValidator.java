@@ -48,6 +48,7 @@ import net.sf.jsqlparser.expression.JsonTableFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.KeyExpression;
 import net.sf.jsqlparser.expression.LambdaExpression;
+import net.sf.jsqlparser.expression.ListComprehension;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.LowExpression;
 import net.sf.jsqlparser.expression.MapExpression;
@@ -1254,6 +1255,16 @@ public class ExpressionValidator extends AbstractValidator<Expression>
     @Override
     public <S> Void visit(LambdaExpression lambdaExpression, S context) {
         lambdaExpression.getExpression().accept(this, context);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(ListComprehension listComprehension, S context) {
+        listComprehension.getExpression().accept(this, context);
+        listComprehension.getList().accept(this, context);
+        if (listComprehension.getCondition() != null) {
+            listComprehension.getCondition().accept(this, context);
+        }
         return null;
     }
 
