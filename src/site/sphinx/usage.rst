@@ -204,6 +204,7 @@ For several statements at once, use ``CCJSqlParserUtil.parseStatements()``, whic
 .. note::
 
     Supported statement separators are semicolon ``;``, ``GO``, slash ``/`` and two empty lines ``\n\n\n``.
+    Use ``withBlankLinesAsSeparator(false)`` to treat empty lines as plain whitespace instead.
 
 If parsing fails on syntax JSQLParser does not know, see :ref:`Handle Parse Errors` — and please `open an issue <https://github.com/JSQLParser/JSqlParser/issues>`_, missing syntax gets added on demand.
 
@@ -1623,6 +1624,8 @@ The individual features
       - ``".."`` reads as a string literal instead of a quoted identifier (BigQuery, Spark/Databricks, MySQL default ``sql_mode``); combined with ``withBackslashEscapeCharacter``, ``\\"`` does not end the literal, as in MySQL ``"it\\"s"``
     * - ``withHashLineComments``
       - ``#`` starts a line comment
+    * - ``withBlankLinesAsSeparator``
+      - ``false`` stops two empty lines (``\n\n\n``) ending a statement, so they read as plain whitespace
     * - ``withAdjacentStringLiterals``
       - adjacent string literals concatenate: ``NEWLINE`` (SQL standard, PostgreSQL) or ``WHITESPACE`` (GoogleSQL, Spark/Databricks); ``true`` selects ``NEWLINE``, ``false`` switches it off
     * - ``withAllowComplexParsing``

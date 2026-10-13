@@ -898,6 +898,13 @@ public enum Feature {
     allowHashLineComments(false),
 
     /**
+     * treats three consecutive newlines as a statement separator (enabled by default). When
+     * disabled, blank lines are plain whitespace, so a statement containing them is parsed whole
+     * instead of ending, or failing to parse, at the first run of blank lines
+     */
+    allowBlankLinesAsStatementSeparator(true),
+
+    /**
      * allows digit separators in numeric literals, e.g. {@code 1_000_000} (DuckDB, PostgreSQL 16);
      * disabled by default, where MySQL reads {@code 2024_01} as an identifier
      */
