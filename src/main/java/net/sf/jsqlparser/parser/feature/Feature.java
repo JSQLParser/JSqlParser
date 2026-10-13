@@ -892,7 +892,7 @@ public enum Feature {
     /**
      * treats three consecutive newlines as a statement separator (enabled by default). When
      * disabled, blank lines are plain whitespace, so a statement containing them is parsed whole
-     * instead of being cut off at the first run of blank lines
+     * instead of ending, or failing to parse, at the first run of blank lines
      */
     allowBlankLinesAsStatementSeparator(true),
 
