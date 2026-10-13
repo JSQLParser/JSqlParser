@@ -2430,7 +2430,6 @@ TOKEN_MGR_DECLS : {
         token.endColumn = input_stream.getEndColumn();
     }
 
-    /** Splits a longest-match identifier without losing token positions. */
     /**
      * DuckDB's and PostgreSQL's digit separators, as in {@code 1_000_000}.  Under
      * Feature.allowDigitSeparators they are dropped from the image.  Otherwise the token is
@@ -2463,6 +2462,7 @@ TOKEN_MGR_DECLS : {
         }
     }
 
+    /** Splits a longest-match identifier without losing token positions. */
     private void truncateIdentifierToken(Token token, int length) {
         input_stream.backup(token.image.length() - length);
         token.image = token.image.substring(0, length);
