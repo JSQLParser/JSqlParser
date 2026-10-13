@@ -8419,10 +8419,10 @@ PlainSelect PlainSelect() #PlainSelect:
         windowName = RelObjectName() <K_AS> winDef = windowDefinition() { List<WindowDefinition> winDefs = new ArrayList<WindowDefinition>(); winDefs.add(winDef.withWindowName(windowName)); }
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
+        // DuckDB: QUALIFY after WINDOW
+        [ LOOKAHEAD(2, { plainSelect.getQualify() == null }) qualify=Qualify()
+            { plainSelect.setQualify(qualify); plainSelect.setQualifyAfterWindow(true); } ]
     ]
-    // DuckDB: QUALIFY after WINDOW
-    [ LOOKAHEAD(2, { plainSelect.getQualify() == null }) qualify=Qualify()
-        { plainSelect.setQualify(qualify); plainSelect.setQualifyAfterWindow(true); } ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
@@ -13493,7 +13493,13 @@ void windowFun(AnalyticExpression retval):{
     (
         windowName = RelObjectName() { retval.setWindowName(windowName); }
         |
-        winDef = windowDefinition() { retval.setWindowDefinition(winDef); }
+        winDef = windowDefinition()
+        {
+            if (winDef.getBaseWindowName() != null && retval.getType() != AnalyticType.OVER) {
+                throw new ParseException("Only an OVER window may extend a named window");
+            }
+            retval.setWindowDefinition(winDef);
+        }
 
         [
             LOOKAHEAD(2) <K_OVER> "("
@@ -13515,9 +13521,14 @@ WindowDefinition windowDefinition() : {
     String baseWindowName;
 } {
     "("
-    // DuckDB: (w ORDER BY b) extends the named window w
-    [ LOOKAHEAD({ isBaseWindowNameAhead() }) baseWindowName=RelObjectName()
-        { winDef.setBaseWindowName(baseWindowName); } ]
+    // DuckDB: (w ORDER BY b) extends the named window w. A choice, not an optional, so that
+    // lookahead scans through a window specification keep the check
+    (
+        LOOKAHEAD({ isBaseWindowNameAhead() }) baseWindowName=RelObjectName()
+        { winDef.setBaseWindowName(baseWindowName); }
+        |
+        {}
+    )
     [<K_PARTITION> <K_BY>
         (LOOKAHEAD(3) expressionList=ComplexExpressionList()
         | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
