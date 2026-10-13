@@ -1072,4 +1072,38 @@ public class DuckDBTest {
             TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a, " + item + " FROM t", true);
         }
     }
+
+    @Test
+    void testWindowAndFilterForms() throws JSQLParserException {
+        for (String sqlStr : new String[] {
+                "SELECT a FROM t WINDOW w AS (ORDER BY a) QUALIFY row_number() OVER w = 1",
+                "SELECT a FROM t QUALIFY row_number() OVER w = 1 WINDOW w AS (ORDER BY a)",
+                "SELECT sum(a) OVER (w ROWS 2 PRECEDING) FROM t WINDOW w AS (ORDER BY b)",
+                "SELECT sum(a) OVER (w) FROM t WINDOW w AS (ORDER BY b)",
+                "SELECT sum(a) OVER w2 FROM t WINDOW w AS (PARTITION BY c), w2 AS (w ORDER BY b)",
+                "SELECT sum(a) OVER (ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM t",
+                "SELECT sum(a) FILTER (b > 1) FROM t",
+                "SELECT count(*) FILTER (b > 1) OVER () FROM t",
+                // window specifications inside syntactic lookahead
+                "SELECT JSON_VALUE(j, '$.a' DEFAULT sum(a) OVER (PARTITION BY b) ON EMPTY) FROM t",
+                "SELECT JSON_VALUE(j, '$.a' DEFAULT sum(a) OVER (w ORDER BY b) ON EMPTY) FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+        PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(
+                "SELECT sum(a) FILTER (b > 1) OVER (w ORDER BY c) FROM t WINDOW w AS (PARTITION BY d)");
+        net.sf.jsqlparser.expression.AnalyticExpression sum =
+                (net.sf.jsqlparser.expression.AnalyticExpression) select.getSelectItem(0)
+                        .getExpression();
+        Assertions.assertFalse(sum.isFilterWhereKeyword());
+        Assertions.assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(
+                "SELECT percentile_cont(0.5) WITHIN GROUP (w ORDER BY a) FROM t"));
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT a FROM t ORDER SIBLINGS BY a QUALIFY x = 1"));
+        // PostgreSQL requires WHERE
+        Assertions.assertThrows(JSQLParserException.class,
+                () -> CCJSqlParserUtil.parse("SELECT sum(a) FILTER (b > 1) FROM t",
+                        parser -> parser.withDialect(
+                                net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect.POSTGRESQL)));
+        Assertions.assertEquals("w", sum.getWindowDefinition().getBaseWindowName());
+    }
 }

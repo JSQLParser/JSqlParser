@@ -45,6 +45,7 @@ public class PlainSelect extends Select {
     private GroupByElement groupBy;
     private Expression having;
     private Expression qualify;
+    private boolean qualifyAfterWindow;
     private OptimizeFor optimizeFor;
     private Skip skip;
     private final EnumSet<MySqlSelectModifier> mySqlSelectModifiers =
@@ -442,6 +443,16 @@ public class PlainSelect extends Select {
         return qualify;
     }
 
+    /** Whether QUALIFY follows the WINDOW clause, as in DuckDB, rather than preceding it. */
+    public boolean isQualifyAfterWindow() {
+        return qualifyAfterWindow;
+    }
+
+    public PlainSelect setQualifyAfterWindow(boolean qualifyAfterWindow) {
+        this.qualifyAfterWindow = qualifyAfterWindow;
+        return this;
+    }
+
     public PlainSelect setQualify(Expression qualify) {
         this.qualify = qualify;
         return this;
@@ -595,13 +606,16 @@ public class PlainSelect extends Select {
         if (having != null) {
             builder.append(" HAVING ").append(having);
         }
-        if (qualify != null) {
+        if (qualify != null && !qualifyAfterWindow) {
             builder.append(" QUALIFY ").append(qualify);
         }
         if (windowDefinitions != null) {
             builder.append(" WINDOW ");
             builder.append(windowDefinitions.stream().map(WindowDefinition::toString)
                     .collect(joining(", ")));
+        }
+        if (qualify != null && qualifyAfterWindow) {
+            builder.append(" QUALIFY ").append(qualify);
         }
         appendEmitClauseTo(builder);
         if (intoTempTable != null) {
