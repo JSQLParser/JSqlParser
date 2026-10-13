@@ -1265,6 +1265,31 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Distinguish EXISTS identifiers from predicates before suffixes and clause boundaries. */
+    private boolean isExistsIdentifierAhead() {
+        if (getToken(1).kind != K_EXISTS) {
+            return false;
+        }
+        if ((ternaryThenBranchDepth > 0 || mapKeyDepth > 0)
+                && ":".equals(getToken(2).image)) {
+            return true;
+        }
+        int kind = getToken(2).kind;
+        if (kind == OPENING_BRACKET) {
+            return "+".equals(getToken(3).image) && getToken(4).kind == CLOSING_BRACKET;
+        }
+        if (kind == K_LIMIT || kind == K_OFFSET) {
+            Token value = getToken(3);
+            return value.kind == S_LONG || value.kind == S_DOUBLE || value.kind == S_PARAMETER
+                    || value.kind == K_ALL || value.kind == K_NULL
+                    || "?".equals(value.image) || ":".equals(value.image)
+                    || "&".equals(value.image);
+        }
+        return isConditionKeywordAhead(2)
+                || kind == K_ORDER && (getToken(3).kind == K_BY || getToken(3).kind == K_SIBLINGS)
+                || kind == K_GROUP && getToken(3).kind == K_BY;
+    }
+
     /**
      * Follower-based disambiguation for reserved keywords in ambiguous
      * positions (implicit alias, clause boundary, after parenthesised
@@ -2597,7 +2622,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         // PostgreSQL JSON operator, it is consumed by prattExpressionRest instead
         if ("?".equals(t.image) && isTernaryAhead()) return false;
         if (isComparisonOperator(t)) return true;
-        switch (t.kind) {
+        return isConditionKeywordAhead(1);
+    }
+
+    private boolean isConditionKeywordAhead(int offset) {
+        switch (getToken(offset).kind) {
             // Each suffix's start token:
             case K_OVERLAPS:          // OVERLAPS
             case K_IN:                // IN
@@ -2625,10 +2654,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
             case K_NOT:               // NOT IN / NOT BETWEEN / NOT LIKE / NOT ISNULL / NOT SIMILAR
                 // A column's NOT NULL constraint starts after its DEFAULT expression.
-                return getToken(2).kind != K_NULL;
+                return getToken(offset + 1).kind != K_NULL;
             // Oracle (+) before IN: col(+) IN (...)
             case OPENING_BRACKET:
-                return getToken(2).image.equals("+");
+                return getToken(offset + 1).image.equals("+");
             default:
                 return false;
         }
@@ -3009,6 +3038,7 @@ String NonReservedWord() :
       | tk=<K_EXECUTE: "EXECUTE">
       | tk=<K_EXPLAIN:"EXPLAIN">
       | tk=<K_EXPLICIT:"EXPLICIT">
+      | tk=<K_EXISTS:"EXISTS">
       | tk=<K_EXTENDED:"EXTENDED">
       | tk=<K_EXTRACT:"EXTRACT">
       | tk=<K_EXPORT:"EXPORT">
@@ -3336,7 +3366,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_ELSE:"ELSE">
 |   <K_EXCEPT: "EXCEPT">
 |   <K_EXCLUDES: "EXCLUDES"> /* Salesforce SOQL */
-|   <K_EXISTS:"EXISTS">
 |   <K_EXTEND:"EXTEND">
 |   <K_FETCH:"FETCH">
 |   <K_FINAL: "FINAL">
@@ -11004,6 +11033,12 @@ Expression Condition():
         ( <K_NOT> { exclamationMarks.addFirst(Boolean.FALSE); } | "!" { exclamationMarks.addFirst(Boolean.TRUE); } )
     )*
     (
+        LOOKAHEAD(<K_EXISTS> JdbcNamedParameter() ":", {
+            getToken(1).kind == K_EXISTS && ":".equals(getToken(2).image)
+                    && (ternaryThenBranchDepth > 0 || mapKeyDepth > 0) })
+        result=ExistsExpression()
+        |
+        LOOKAHEAD(2, { !isExistsIdentifierAhead() })
         result=ExistsExpression()
         |
           [ LOOKAHEAD(2, { getToken(1).kind == K_PRIOR }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
@@ -11149,8 +11184,14 @@ Expression SQLCondition():
 }
 {
     (
-    result=ExistsExpression()
-    | left = SimpleExpression() { result = left; }
+        LOOKAHEAD(<K_EXISTS> JdbcNamedParameter() ":", {
+            getToken(1).kind == K_EXISTS && ":".equals(getToken(2).image)
+                    && (ternaryThenBranchDepth > 0 || mapKeyDepth > 0) })
+        result=ExistsExpression()
+        |
+        LOOKAHEAD(2, { !isExistsIdentifierAhead() })
+        result=ExistsExpression()
+        | left = SimpleExpression() { result = left; }
         [
             LOOKAHEAD(2) (
                 LOOKAHEAD(2, <K_OVERLAPS>) result=OverlapsCondition(left)
