@@ -50,7 +50,7 @@ class AlterConstraintSeparationTest {
         indexAction.getIndex().setName("new_ix");
         assertRoundTrip(statement,
                 "ALTER TABLE t ADD CONSTRAINT unique_symbol UNIQUE INDEX legacy_uq (new_id), "
-                        + "ADD  INDEX new_ix (other)",
+                        + "ADD INDEX new_ix (other)",
                 Dialect.MYSQL);
     }
 
@@ -98,7 +98,7 @@ class AlterConstraintSeparationTest {
         assertNull(action.getConstraint());
         action.setConstraint(null);
         assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
-        assertRoundTrip(statement, "ALTER TABLE t ADD  INDEX ix_new (id)", Dialect.MYSQL);
+        assertRoundTrip(statement, "ALTER TABLE t ADD INDEX ix_new (id)", Dialect.MYSQL);
     }
 
     @ParameterizedTest
@@ -116,7 +116,7 @@ class AlterConstraintSeparationTest {
                     .withName("ix").withColumnsNames(List.of("id")));
             assertNull(action.getConstraint());
             assertEquals(ConstraintKind.OTHER, action.getConstraintKind());
-            assertRoundTrip(statement, "ALTER TABLE t ADD  INDEX ix (id)", Dialect.MYSQL);
+            assertRoundTrip(statement, "ALTER TABLE t ADD INDEX ix (id)", Dialect.MYSQL);
         } else {
             action.setConstraint(new CheckConstraint()
                     .withExpression(CCJSqlParserUtil.parseCondExpression("id > 0")));
