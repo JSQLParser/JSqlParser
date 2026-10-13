@@ -825,4 +825,28 @@ public class DuckDBTest {
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t DROP COLUMN lambda", true);
         TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t RENAME lambda TO x", true);
     }
+
+    @Test
+    void testFromFirstAndTableAsQueryOperands() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT * FROM (FROM t)",
+                "SELECT * FROM (FROM t WHERE a > 1) x JOIN (SELECT 1) y ON true",
+                "SELECT * FROM t WHERE a IN (FROM u)", "SELECT (FROM u SELECT max(a))",
+                "FROM a UNION ALL FROM b", "FROM a WHERE x > 1 UNION ALL SELECT 1",
+                "SELECT 1 EXCEPT FROM b WHERE x", "FROM a SELECT x UNION FROM b SELECT x",
+                "WITH t AS (SELECT 1), u AS (SELECT 2) TABLE t", "TABLE a UNION TABLE b",
+                "SELECT 1 UNION TABLE b", "(TABLE a EXCEPT ALL TABLE b)",
+                "SELECT * FROM TABLE(f(1))"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        SetOperationList union = (SetOperationList) CCJSqlParserUtil
+                .parse("TABLE a UNION TABLE b ORDER BY 1 LIMIT 2");
+        Assertions.assertEquals("1", union.getOrderByElements().get(0).toString());
+        Assertions.assertNotNull(union.getLimit());
+        Assertions.assertNull(((TableStatement) union.getSelect(1)).getOrderByElements());
+
+        union = (SetOperationList) CCJSqlParserUtil.parse("FROM a UNION FROM b ORDER BY 1");
+        Assertions.assertTrue(((PlainSelect) union.getSelect(0)).isFromFirst());
+        Assertions.assertEquals("1", union.getOrderByElements().get(0).toString());
+    }
 }
