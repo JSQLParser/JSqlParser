@@ -34,6 +34,7 @@ import net.sf.jsqlparser.test.TestUtils;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -1009,5 +1010,15 @@ public class DuckDBTest {
         Assertions.assertEquals(new HashSet<>(Arrays.asList("t", "u")),
                 new HashSet<>(new TablesNamesFinder<>().getTables(CCJSqlParserUtil.parse(
                         "SELECT [x FOR x IN (SELECT list(a) FROM u)] FROM t"))));
+    }
+
+    @Test
+    @Timeout(10)
+    void testLargeArrayIsScannedOnce() throws JSQLParserException {
+        StringBuilder sql = new StringBuilder("SELECT [0");
+        for (int i = 1; i < 20000; i++) {
+            sql.append(", ").append(i);
+        }
+        CCJSqlParserUtil.parse(sql.append("]").toString());
     }
 }

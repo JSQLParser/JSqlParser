@@ -1691,13 +1691,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
     /** Whether a {@code [} opens DuckDB's {@code [expr FOR x IN list]}: FOR at its top level. */
     private boolean isListComprehensionAhead() {
-        if (!"[".equals(getToken(1).image)) {
+        Token token = getToken(1);
+        if (!"[".equals(token.image)) {
             return false;
         }
         int depth = 0;
-        for (int i = 1;; i++) {
-            Token token = getToken(i);
-            if (token == null || token.kind == EOF || ";".equals(token.image)) {
+        for (;; token = nextWithItemToken(token)) {
+            if (token.kind == EOF || ";".equals(token.image)) {
                 return false;
             }
             if ("(".equals(token.image) || "[".equals(token.image) || "{".equals(token.image)) {
