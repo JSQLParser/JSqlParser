@@ -2145,6 +2145,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Creates a string literal that remembers how this configuration lexed its backslashes. */
+    private StringValue stringValue(Token token) {
+        StringValue value = new StringValue(token.image);
+        if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")) {
+            return value;
+        }
+        String dialect = getAsString(Feature.dialect);
+        boolean backslashes = getAsBoolean(Feature.allowBackslashEscapeCharacter);
+        if (Dialect.POSTGRESQL.name().equals(dialect)) {
+            if (backslashes || "E".equalsIgnoreCase(value.getPrefix())) {
+                value.setEscaping(StringValue.Escaping.POSTGRESQL_ESCAPE_STRING);
+            }
+        } else if (backslashes && (dialect == null || isMySqlDialect())) {
+            value.setEscaping(StringValue.Escaping.MYSQL_BACKSLASH);
+        }
+        return value;
+    }
+
     /**
      * Semantic lookahead for the adjacent string literal concatenation in PrimaryExpression:
      * true when Feature.adjacentStringLiterals is on and the next token is a string literal
@@ -3625,7 +3643,7 @@ DoStatement DoStatement():
         [ LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) AccessKeyword("LANGUAGE")
             language=RelObjectName() { statement.setLanguage(language); } ]
     )
-    { statement.setCode(new StringValue(code.image)); return statement; }
+    { statement.setCode(stringValue(code)); return statement; }
 }
 
 Block Block() #Block : {
@@ -4085,7 +4103,7 @@ DBMSTableDestinationOption DBMSTableDestinationOption(): {
               token = <K_REPLACE>
             | token = <K_TRUNCATE>
             ) { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image); }
-        | token = <K_CREATED> token2 = <K_BY> token3 = <S_CHAR_LITERAL> { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        | token = <K_CREATED> token2 = <K_BY> token3 = <S_CHAR_LITERAL> { dbmsTableDestinationOption = new DBMSTableDestinationOption(token.image + " " + token2.image, stringValue(token3)); }
     )
 
     {
@@ -4159,7 +4177,7 @@ StringValue ImportExportStatement() #ImportExportStatement: {
 } {
     <K_STATEMENT> token = <S_CHAR_LITERAL>
     {
-      statement = new StringValue(token.image);
+      statement = stringValue(token);
       linkAST(statement, jjtThis);
       return statement;
     }
@@ -4181,7 +4199,7 @@ StringValue File() #File: {
 } {
     <K_FILE> token = <S_CHAR_LITERAL>
     {
-        StringValue file = new StringValue(token.image);
+        StringValue file = stringValue(token);
         linkAST(file, jjtThis);
         return file;
     }
@@ -4228,7 +4246,7 @@ CSVColumn CSVDestinationColumn(): {
           LOOKAHEAD(2)
           token=<S_LONG> ".." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
         | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
+          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(stringValue(token)); }]
           [
             <K_DELIMIT>
             "="
@@ -4266,7 +4284,7 @@ CSVColumn CSVSourceColumn(): {
           LOOKAHEAD(2)
           token=<S_LONG> ".." token2=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image), Long.valueOf(token2.image)); }
         | token=<S_LONG> { csvColumn = new CSVColumn(Long.valueOf(token.image)); }
-          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(new StringValue(token.image)); }]
+          [ <K_FORMAT> "=" token = <S_CHAR_LITERAL> { csvColumn.setFormat(stringValue(token)); }]
     )
     {
         return csvColumn;
@@ -4292,7 +4310,7 @@ FBVColumn FBVDestinationColumn(): {
 } {
     (
           token=<K_SIZE> "=" token2=<S_LONG> { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, stringValue(token2)); }
         | token=<K_ALIGN> "=" ( token2=<K_LEFT> | token2=<K_RIGHT> ) { fbvColumn = new FBVColumn(token.image, token2.image); }
     )
     {
@@ -4324,7 +4342,7 @@ FBVColumn FBVSourceColumn(): {
 } {
     (
           ( token=<K_SIZE> | token=<K_START> ) "=" token2=<S_LONG> { fbvColumn = new FBVColumn(token.image, new LongValue(token2.image)); }
-        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, new StringValue(token2.image)); }
+        | ( token=<K_FORMAT> | token=<K_PADDING> ) "=" token2=<S_CHAR_LITERAL> { fbvColumn = new FBVColumn(token.image, stringValue(token2)); }
         | token=<K_ALIGN> "=" ( token2=<K_LEFT> | token2=<K_RIGHT> ) { fbvColumn = new FBVColumn(token.image, token2.image); }
     )
     {
@@ -4358,12 +4376,12 @@ FileOption FileDestinationOption(): {
     (
         ( token=<K_REPLACE> | token=<K_TRUNCATE> ) { fileOption = new FileOption(token.image); }
       | token=<K_WITH> token2=<K_COLUMN> token3=<K_NAMES> { fileOption = new FileOption(token.image + " " + token2.image + " " + token3.image); }
-      | ( token=<K_ENCODING> | token=<K_NULL> | token=<K_BOOLEAN> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+      | ( token=<K_ENCODING> | token=<K_NULL> | token=<K_BOOLEAN> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, stringValue(token2)); }
       | (
             token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
           | token=<K_COLUMN> ( token2=<K_SEPARATOR> | token2=<K_DELIMITER> ) "=" token3=<S_CHAR_LITERAL>
         )
-        { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        { fileOption = new FileOption(token.image + " " + token2.image, stringValue(token3)); }
       | token=<K_DELIMIT> "=" ( token2=<K_ALWAYS> | token2=<K_NEVER> | token2=<K_AUTO> ) { fileOption = new FileOption(token.image, token2.image); }
     )
     {
@@ -4391,7 +4409,7 @@ FileOption FileSourceOption(): {
     (
         ( token=<K_TRIM> | token=<K_LTRIM> | token=<K_RTRIM> ) { fileOption = new FileOption(token.image); }
       | (
-            ( token=<K_ENCODING> | token=<K_NULL> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, new StringValue(token2.image)); }
+            ( token=<K_ENCODING> | token=<K_NULL> ) "=" token2=<S_CHAR_LITERAL> { fileOption = new FileOption(token.image, stringValue(token2)); }
           | token=<K_SKIP> "=" token2=<S_LONG> { fileOption = new FileOption(token.image, new LongValue(token2.image)); }
         )
       | LOOKAHEAD(2)
@@ -4399,7 +4417,7 @@ FileOption FileSourceOption(): {
             token=<K_ROW> token2=<K_SEPARATOR> "=" token3=<S_CHAR_LITERAL>
           | token=<K_COLUMN> ( token2=<K_SEPARATOR> | token2=<K_DELIMITER> ) "=" token3=<S_CHAR_LITERAL>
         )
-        { fileOption = new FileOption(token.image + " " + token2.image, new StringValue(token3.image)); }
+        { fileOption = new FileOption(token.image + " " + token2.image, stringValue(token3)); }
       | token=<K_ROW> token2=<K_SIZE> "=" token3=<S_LONG>
         { fileOption = new FileOption(token.image + " " + token2.image, new LongValue(token3.image)); }
     )
@@ -4519,10 +4537,10 @@ CertificateVerification CertificateVerification(): {
           [
             LOOKAHEAD(2)
             <K_PUBLIC> <K_KEY>
-            token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+            token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(stringValue(token)); }
           ]
         | <K_PUBLIC> <K_KEY>
-          token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(new StringValue(token.image)); }
+          token = <S_CHAR_LITERAL> { certificateVerification.setPublicKey(stringValue(token)); }
     )
     {
         return certificateVerification;
@@ -4555,7 +4573,7 @@ ScriptSourceDestination ScriptSourceDestination(): {
         <K_WITH>
         (
             LOOKAHEAD(2)
-            property = RelObjectName() "=" token = <S_CHAR_LITERAL> { value = new StringValue(token.image); }
+            property = RelObjectName() "=" token = <S_CHAR_LITERAL> { value = stringValue(token); }
             {
                 properties.add(property);
                 values.add(value);
@@ -4573,9 +4591,9 @@ UserIdentification UserIdentification(): {
     Token token;
 } {
     <K_USER>
-    token=<S_CHAR_LITERAL> { userIdentification.setUser(new StringValue(token.image)); }
+    token=<S_CHAR_LITERAL> { userIdentification.setUser(stringValue(token)); }
     <K_IDENTIFIED> <K_BY>
-    token=<S_CHAR_LITERAL> { userIdentification.setPassword(new StringValue(token.image)); }
+    token=<S_CHAR_LITERAL> { userIdentification.setPassword(stringValue(token)); }
 
     {
         return userIdentification;
@@ -4593,7 +4611,7 @@ ConnectionDefinition ConnectionDefinition(): {
   <K_AT>
   (
       connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
-    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
+    | token=<S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(stringValue(token)); }
   )
 
   [ LOOKAHEAD(2) userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -4621,7 +4639,7 @@ ConnectionDefinition CloudConnectionDefinition(): {
 
   (
       connectionObjectName = RelObjectName() { connectionDefinition.setConnectionObjectName(connectionObjectName); }
-    | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(new StringValue(token.image)); }
+    | token = <S_CHAR_LITERAL> { connectionDefinition.setConnectionDefinition(stringValue(token)); }
   )
 
   [ userIdentification = UserIdentification() { connectionDefinition.setUserIdentification(userIdentification); } ]
@@ -4963,7 +4981,7 @@ void SetCharacterSet(SetStatement set):
 {
     ( <K_CHARACTER> <K_SET> { name = "CHARACTER SET"; }
       | <S_IDENTIFIER> { name = "CHARSET"; } )
-    ( value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+    ( value=<S_CHAR_LITERAL> { expression = stringValue(value); }
       | (value=<S_IDENTIFIER> | value=<S_QUOTED_IDENTIFIER> | value=<K_DEFAULT>)
         { expression = new Column(value.image); } )
     { set.add(name, new ExpressionList<Expression>(expression), false); }
@@ -5430,7 +5448,7 @@ AssertStatement AssertStatement() #AssertStatement:
 {
     <K_ASSERT> expression=Expression() { assertStatement.setExpression(expression); }
     [ <K_AS> token=<S_CHAR_LITERAL>
-        { assertStatement.setDescription(new StringValue(token.image)); } ]
+        { assertStatement.setDescription(stringValue(token)); } ]
     { return assertStatement; }
 }
 
@@ -8482,7 +8500,7 @@ ColumnsTransformer ColumnsTransformer():
           (
               exceptColumns = ParenthesedColumnList()
               |
-              tk=<S_CHAR_LITERAL> { exceptPattern = new StringValue(tk.image); }
+              tk=<S_CHAR_LITERAL> { exceptPattern = stringValue(tk); }
           )
           { transformer = new ColumnsTransformer(ColumnsTransformer.ColumnsTransformerType.EXCEPT)
                   .setStrict(strict);
@@ -8895,11 +8913,11 @@ MySqlSelectIntoClause MySqlSelectIntoClause(MySqlSelectIntoClause.Position posit
     <K_INTO>
     (
           <K_OUTFILE> { intoClause.setType(MySqlSelectIntoClause.Type.OUTFILE); }
-          token=<S_CHAR_LITERAL> { intoClause.setFileName(new StringValue(token.image)); }
+          token=<S_CHAR_LITERAL> { intoClause.setFileName(stringValue(token)); }
           MySqlSelectIntoOutfileTail(intoClause)
         |
           <K_DUMPFILE> { intoClause.setType(MySqlSelectIntoClause.Type.DUMPFILE); }
-          token=<S_CHAR_LITERAL> { intoClause.setFileName(new StringValue(token.image)); }
+          token=<S_CHAR_LITERAL> { intoClause.setFileName(stringValue(token)); }
         |
           LOOKAHEAD({ isMySqlDialect() })
           variable=MySqlIntoVariable() { variables.add(variable); }
@@ -8996,20 +9014,20 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
     (
           LOOKAHEAD(<K_TERMINATED> <K_BY>)
           <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsTerminatedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsTerminatedBy(stringValue(token)); }
           (
                 LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
                 [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
                 <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEnclosedBy(new StringValue(token.image)); }
+                { intoClause.setFieldsEnclosedBy(stringValue(token)); }
                 [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
                     <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                    { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+                    { intoClause.setFieldsEscapedBy(stringValue(token)); }
                 ]
               |
                 LOOKAHEAD(<K_ESCAPED> <K_BY>)
                 <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-                { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+                { intoClause.setFieldsEscapedBy(stringValue(token)); }
               |
                 { }
           )
@@ -9017,15 +9035,15 @@ void MySqlSelectIntoFieldsClause(MySqlSelectIntoClause intoClause):
           LOOKAHEAD((<K_OPTIONALLY> | <K_ENCLOSED>))
           [ <K_OPTIONALLY> { intoClause.setFieldsOptionallyEnclosed(true); } ]
           <K_ENCLOSED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEnclosedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsEnclosedBy(stringValue(token)); }
           [ LOOKAHEAD(<K_ESCAPED> <K_BY>)
               <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+              { intoClause.setFieldsEscapedBy(stringValue(token)); }
           ]
         |
           LOOKAHEAD(<K_ESCAPED> <K_BY>)
           <K_ESCAPED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setFieldsEscapedBy(new StringValue(token.image)); }
+          { intoClause.setFieldsEscapedBy(stringValue(token)); }
         |
           { }
     )
@@ -9040,15 +9058,15 @@ void MySqlSelectIntoLinesClause(MySqlSelectIntoClause intoClause):
     (
           LOOKAHEAD(<K_STARTING> <K_BY>)
           <K_STARTING> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesStartingBy(new StringValue(token.image)); }
+          { intoClause.setLinesStartingBy(stringValue(token)); }
           [ LOOKAHEAD(<K_TERMINATED> <K_BY>)
               <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-              { intoClause.setLinesTerminatedBy(new StringValue(token.image)); }
+              { intoClause.setLinesTerminatedBy(stringValue(token)); }
           ]
         |
           LOOKAHEAD(<K_TERMINATED> <K_BY>)
           <K_TERMINATED> <K_BY> token=<S_CHAR_LITERAL>
-          { intoClause.setLinesTerminatedBy(new StringValue(token.image)); }
+          { intoClause.setLinesTerminatedBy(stringValue(token)); }
         |
           { }
     )
@@ -10636,7 +10654,7 @@ Expression InExpression(Expression leftExpression) #InExpression :
     [<K_NOT> { usingNot=true; } ]
     <K_IN>
     (
-        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = new StringValue(token.image); }
+        LOOKAHEAD(2) token=<S_CHAR_LITERAL> {  rightExpression = stringValue(token); }
         |
         LOOKAHEAD({ isNestedSetOperationAhead() }) rightExpression = ParenthesedSelect()
         |
@@ -10781,7 +10799,7 @@ Expression LikeExpression(Expression leftExpression) #LikeExpression:
     ]
     [ LOOKAHEAD(2) <K_ESCAPE>
         (
-            LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( new StringValue( token.image ) ); }
+            LOOKAHEAD(2)  token = <S_CHAR_LITERAL> { result.setEscape( stringValue(token) ); }
             |
             escape=Expression() { result.setEscape(escape); }
         )
@@ -10812,7 +10830,7 @@ Expression SimilarToExpression(Expression leftExpression) #SimilarToExpression:
             }
         }
     ]
-    [ LOOKAHEAD(2) <K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((new StringValue(token.image)).getValue()); }]
+    [ LOOKAHEAD(2) <K_ESCAPE> token=<S_CHAR_LITERAL> { result.setEscape((stringValue(token)).getValue()); }]
     {
         result.setLeftExpression(leftExpression);
         result.setRightExpression(rightExpression);
@@ -11191,7 +11209,7 @@ StringValue CharacterSetIntroducedString():
 {
     introducer=<S_IDENTIFIER> literal=<S_CHAR_LITERAL>
     {
-        return new StringValue(literal.image).withPrefix(introducer.image);
+        return stringValue(literal).withPrefix(introducer.image);
     }
 }
 
@@ -11328,10 +11346,10 @@ StringValue CharacterLiteral():
     StringValue value;
 }
 {
-    literal=<S_CHAR_LITERAL> { value = new StringValue(literal.image); }
+    literal=<S_CHAR_LITERAL> { value = stringValue(literal); }
     ( LOOKAHEAD({ isAdjacentStringConcat() })
         literal=<S_CHAR_LITERAL>
-        { value.setValue(value.getValue() + new StringValue(literal.image).getValue()); }
+        { value.setValue(value.getValue() + stringValue(literal).getValue()); }
     )*
     { return value; }
 }
@@ -13581,8 +13599,8 @@ XMLSerializeExpr XMLSerializeExpr(): {
         { result.setSerializationMode(XMLSerializeExpr.SerializationMode.valueOf(token.image.toUpperCase(Locale.ROOT))); }
         expression=Expression() { result.setExpression(expression); }
         [ <K_AS> dataType=ColDataType() { result.setDataType(dataType); } ]
-        [ <K_ENCODING> token=<S_CHAR_LITERAL> { result.setEncoding(new StringValue(token.image)); } ]
-        [ <K_VERSION> token=<S_CHAR_LITERAL> { result.setVersion(new StringValue(token.image)); } ]
+        [ <K_ENCODING> token=<S_CHAR_LITERAL> { result.setEncoding(stringValue(token)); } ]
+        [ <K_VERSION> token=<S_CHAR_LITERAL> { result.setVersion(stringValue(token)); } ]
         [
             LOOKAHEAD(2) <K_NO> token=<S_IDENTIFIER> {
                 requireDdlSyntax("INDENT".equalsIgnoreCase(token.image), "Expected INDENT after NO");
@@ -14636,7 +14654,7 @@ ColumnOption ColumnDefinitionOption(): {
         { option = ColumnOption.collate(collation); }
         |
         LOOKAHEAD(<K_COMMENT>) <K_COMMENT> tk=<S_CHAR_LITERAL>
-        { option = ColumnOption.comment(new StringValue(tk.image)); }
+        { option = ColumnOption.comment(stringValue(tk)); }
         |
         LOOKAHEAD(<K_ON> <K_UPDATE>) <K_ON> <K_UPDATE> defaultExpression=Expression()
         { option = ColumnOption.onUpdate(defaultExpression); }
@@ -14774,7 +14792,7 @@ StringValue MySqlAccountNamePart():
 }
 {
     (
-        token=<S_CHAR_LITERAL> { value = new StringValue(token.image); }
+        token=<S_CHAR_LITERAL> { value = stringValue(token); }
         |
         name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
     )
@@ -14794,7 +14812,7 @@ UserAuthentication MySqlUserAuthentication():
         (
             credential=<S_CHAR_LITERAL> {
                 authentication.setMode(UserAuthentication.Mode.BY_PASSWORD);
-                authentication.setCredential(new StringValue(credential.image));
+                authentication.setCredential(stringValue(credential));
             }
             |
             <K_RANDOM> <K_PASSWORD> {
@@ -14811,7 +14829,7 @@ UserAuthentication MySqlUserAuthentication():
             (
                 credential=<S_CHAR_LITERAL> {
                     authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_BY_PASSWORD);
-                    authentication.setCredential(new StringValue(credential.image));
+                    authentication.setCredential(stringValue(credential));
                 }
                 |
                 <K_RANDOM> <K_PASSWORD> {
@@ -14822,7 +14840,7 @@ UserAuthentication MySqlUserAuthentication():
             |
             <K_AS> credential=<S_CHAR_LITERAL> {
                 authentication.setMode(UserAuthentication.Mode.WITH_PLUGIN_AS_STRING);
-                authentication.setCredential(new StringValue(credential.image));
+                authentication.setCredential(stringValue(credential));
             }
         ]
     )
@@ -14895,7 +14913,7 @@ Expression MySqlEventIntervalValue():
         |
         value=<S_DOUBLE> { expression = new DoubleValue(value.image); }
         |
-        value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); }
+        value=<S_CHAR_LITERAL> { expression = stringValue(value); }
     )
     { return expression; }
 }
@@ -14946,7 +14964,7 @@ CreateEvent CreateEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
       status=MySqlEventStatus() { createEvent.setStatus(status); } ]
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
-        createEvent.setComment(new StringValue(comment.image));
+        createEvent.setComment(stringValue(comment));
     } ]
     <K_DO> body=SingleStatement() { createEvent.setBody(body); }
     { return createEvent; }
@@ -14974,7 +14992,7 @@ AlterEvent AlterEvent():
     [ LOOKAHEAD({ getToken(1).kind == K_ENABLE || getToken(1).kind == K_DISABLE })
       status=MySqlEventStatus() { alterEvent.setStatus(status); } ]
     [ LOOKAHEAD({ getToken(1).kind == K_COMMENT }) <K_COMMENT> comment=<S_CHAR_LITERAL> {
-        alterEvent.setComment(new StringValue(comment.image));
+        alterEvent.setComment(stringValue(comment));
     } ]
     [ LOOKAHEAD({ getToken(1).kind == K_DO })
       <K_DO> body=SingleStatement() { alterEvent.setBody(body); } ]
@@ -15811,7 +15829,7 @@ ForeignDataOption ForeignDataOption():
         [ LOOKAHEAD(1) ( <K_ADD> { action = ForeignDataOption.Action.ADD; }
           | <K_SET> { action = ForeignDataOption.Action.SET; } ) ]
         name=RelObjectName() value=<S_CHAR_LITERAL>
-        { option = new ForeignDataOption(name, new StringValue(value.image)); option.setAction(action); }
+        { option = new ForeignDataOption(name, stringValue(value)); option.setAction(action); }
     )
     { return option; }
 }
@@ -19583,12 +19601,12 @@ RoleOption RoleOption(boolean create):
         |
         LOOKAHEAD({ isAccessKeywordAhead("PASSWORD") || isAccessKeywordAhead("ENCRYPTED") })
         [ AccessKeyword("ENCRYPTED") { encrypted = true; } ] <K_PASSWORD>
-        ( value=<S_CHAR_LITERAL> { expression = new StringValue(value.image); } | <K_NULL> { expression = new NullValue(); } )
+        ( value=<S_CHAR_LITERAL> { expression = stringValue(value); } | <K_NULL> { expression = new NullValue(); } )
         { option = new RoleOption(RoleOption.Kind.PASSWORD); option.setEncrypted(encrypted); option.setValue(expression); }
         |
         LOOKAHEAD({ isAccessKeywordAhead("VALID") })
         AccessKeyword("VALID") AccessKeyword("UNTIL") value=<S_CHAR_LITERAL>
-        { option = new RoleOption(RoleOption.Kind.VALID_UNTIL); option.setValue(new StringValue(value.image)); }
+        { option = new RoleOption(RoleOption.Kind.VALID_UNTIL); option.setValue(stringValue(value)); }
         |
         <K_IN>
         ( AccessKeyword("ROLE") { option = new RoleOption(RoleOption.Kind.IN_ROLE); }
@@ -19924,7 +19942,7 @@ Expression PostgreSqlTriggerArgument():
 { Expression result; Token token; String name; }
 {
     (
-        token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
+        token=<S_CHAR_LITERAL> { result = stringValue(token); }
         | token=<S_LONG> { result = new LongValue(token.image); }
         | token=<S_DOUBLE> { result = new DoubleValue(token.image); }
         | name=RelObjectName() { result = createColumn(name); }
@@ -20390,7 +20408,7 @@ void TypeDdlKeyword(String expected):
 Expression ExtensionVersion():
 { Token token; String name; Expression result; }
 {
-    ( token=<S_CHAR_LITERAL> { result = new StringValue(token.image); }
+    ( token=<S_CHAR_LITERAL> { result = stringValue(token); }
       | name=RelObjectName() { result = createColumn(name); } )
     { return result; }
 }
@@ -20419,8 +20437,8 @@ CreateType CreateType():
         <K_AS>
         (
             LOOKAHEAD({ isKeywordAhead("ENUM") }) TypeDdlKeyword("ENUM") "("
-            [ label=<S_CHAR_LITERAL> { enumeration.getLabels().add(new StringValue(label.image)); }
-              ( "," label=<S_CHAR_LITERAL> { enumeration.getLabels().add(new StringValue(label.image)); } )* ]
+            [ label=<S_CHAR_LITERAL> { enumeration.getLabels().add(stringValue(label)); }
+              ( "," label=<S_CHAR_LITERAL> { enumeration.getLabels().add(stringValue(label)); } )* ]
             ")" { result.setDefinition(enumeration); }
             | <K_RANGE> "(" option=RangeTypeOption() { range.getOptions().add(option); }
               ( "," option=RangeTypeOption() { range.getOptions().add(option); } )* ")"
@@ -20488,14 +20506,14 @@ AlterType AlterType():
         LOOKAHEAD(<K_ADD> <K_VALUE>)
         <K_ADD> <K_VALUE> { result.setAction(AlterType.Action.ADD_VALUE); }
         [ <K_IF> <K_NOT> <K_EXISTS> { result.setIfNotExists(true); } ]
-        label=<S_CHAR_LITERAL> { result.setValue(new StringValue(label.image)); }
+        label=<S_CHAR_LITERAL> { result.setValue(stringValue(label)); }
         [ ( <K_BEFORE> { result.setPosition(AlterType.Position.BEFORE); }
             | TypeDdlKeyword("AFTER") { result.setPosition(AlterType.Position.AFTER); } )
-          label=<S_CHAR_LITERAL> { result.setNeighborValue(new StringValue(label.image)); } ]
+          label=<S_CHAR_LITERAL> { result.setNeighborValue(stringValue(label)); } ]
         | <K_RENAME>
           (
-              <K_VALUE> label=<S_CHAR_LITERAL> { result.setValue(new StringValue(label.image)); }
-              <K_TO> label=<S_CHAR_LITERAL> { result.setNewValue(new StringValue(label.image)); result.setAction(AlterType.Action.RENAME_VALUE); }
+              <K_VALUE> label=<S_CHAR_LITERAL> { result.setValue(stringValue(label)); }
+              <K_TO> label=<S_CHAR_LITERAL> { result.setNewValue(stringValue(label)); result.setAction(AlterType.Action.RENAME_VALUE); }
               | LOOKAHEAD({ isKeywordAhead("ATTRIBUTE") }) TypeDdlKeyword("ATTRIBUTE")
                 name=RelObjectName() { result.setAttributeName(name); }
                 <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterType.Action.RENAME_ATTRIBUTE); }
@@ -20873,7 +20891,7 @@ CreateSubscription CreateSubscription():
 { CreateSubscription result = new CreateSubscription(); String name; Token connection; List<String> publications; List<SubscriptionOption> options; }
 {
     ReplicationKeyword("SUBSCRIPTION") name=RelObjectName() { result.setName(name); }
-    ReplicationKeyword("CONNECTION") connection=<S_CHAR_LITERAL> { result.setConnection(new StringValue(connection.image)); }
+    ReplicationKeyword("CONNECTION") connection=<S_CHAR_LITERAL> { result.setConnection(stringValue(connection)); }
     ReplicationKeyword("PUBLICATION") publications=SubscriptionPublications() { result.setPublications(publications); }
     [ LOOKAHEAD(2) <K_WITH> options=SubscriptionOptions() { result.setOptions(options); } ]
     { return result; }
@@ -20885,7 +20903,7 @@ AlterSubscription AlterSubscription():
     ReplicationKeyword("SUBSCRIPTION") name=RelObjectName() { result.setName(name); }
     (
         LOOKAHEAD({ isKeywordAhead("CONNECTION") }) ReplicationKeyword("CONNECTION")
-        connection=<S_CHAR_LITERAL> { result.setConnection(new StringValue(connection.image)); result.setAction(AlterSubscription.Action.CONNECTION); }
+        connection=<S_CHAR_LITERAL> { result.setConnection(stringValue(connection)); result.setAction(AlterSubscription.Action.CONNECTION); }
         | LOOKAHEAD({ isKeywordAhead("OWNER") }) ReplicationKeyword("OWNER") <K_TO>
           name=RelObjectName() { result.setNewName(name); result.setAction(AlterSubscription.Action.OWNER); }
         | <K_RENAME> <K_TO> name=RelObjectName() { result.setNewName(name); result.setAction(AlterSubscription.Action.RENAME); }
@@ -21517,7 +21535,7 @@ CreateServer CreateServer():
     ContextualKeyword("SERVER")
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
     name=RelObjectName() { statement.setName(name); }
-    [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(new StringValue(type.image)); } ]
+    [ <K_TYPE> type=<S_CHAR_LITERAL> { statement.setType(stringValue(type)); } ]
     [ <K_VERSION> version=ForeignServerVersion() { statement.setVersion(version); } ]
     <K_FOREIGN> <K_DATA> ContextualKeyword("WRAPPER") name=RelObjectName() { statement.setForeignDataWrapper(name); }
     [ LOOKAHEAD({ isKeywordAhead("OPTIONS") }) options=ForeignDataOptions(false) { statement.setOptions(options); } ]
@@ -21527,7 +21545,7 @@ CreateServer CreateServer():
 Expression ForeignServerVersion():
 { Token value; Expression version; }
 {
-    ( value=<S_CHAR_LITERAL> { version = new StringValue(value.image); }
+    ( value=<S_CHAR_LITERAL> { version = stringValue(value); }
       | <K_NULL> { version = new NullValue(); } )
     { return version; }
 }
@@ -21702,7 +21720,7 @@ NotifyStatement NotifyStatement():
 { NotifyStatement statement = new NotifyStatement(); String channel; Token payload; }
 {
     <K_NOTIFY> channel=RelObjectName() { statement.setChannel(channel); }
-    [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(new StringValue(payload.image)); } ]
+    [ "," payload=<S_CHAR_LITERAL> { statement.setPayload(stringValue(payload)); } ]
     { return statement; }
 }
 
