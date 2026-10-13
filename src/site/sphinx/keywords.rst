@@ -37,8 +37,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | CROSS                     |
 +---------------------------+
-| CSV                       |
-+---------------------------+
 | CURRENT                   |
 +---------------------------+
 | DISTINCT                  |
@@ -57,11 +55,7 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | FALSE                     |
 +---------------------------+
-| FBV                       |
-+---------------------------+
 | FETCH                     |
-+---------------------------+
-| FILE                      |
 +---------------------------+
 | FINAL                     |
 +---------------------------+
@@ -143,8 +137,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | PREFERRING                |
 +---------------------------+
-| PREWHERE                  |
-+---------------------------+
 | PRIOR                     |
 +---------------------------+
 | PROCEDURE                 |
@@ -155,17 +147,11 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | RETURNING                 |
 +---------------------------+
-| RETURNS                   |
-+---------------------------+
 | RIGHT                     |
 +---------------------------+
 | SAMPLE                    |
 +---------------------------+
-| SCRIPT                    |
-+---------------------------+
 | SET                       |
-+---------------------------+
-| SETTINGS                  |
 +---------------------------+
 | SOME                      |
 +---------------------------+
@@ -208,8 +194,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 | VALUE                     |
 +---------------------------+
 | VALUES                    |
-+---------------------------+
-| VERIFY                    |
 +---------------------------+
 | WHEN                      |
 +---------------------------+
