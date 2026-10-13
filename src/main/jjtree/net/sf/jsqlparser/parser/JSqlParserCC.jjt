@@ -2431,6 +2431,38 @@ TOKEN_MGR_DECLS : {
     }
 
     /** Splits a longest-match identifier without losing token positions. */
+    /**
+     * DuckDB's and PostgreSQL's digit separators, as in {@code 1_000_000}.  Under
+     * Feature.allowDigitSeparators they are dropped from the image.  Otherwise the token is
+     * lexed as without separators: the longer of the number before the first {@code _} and the
+     * identifier starting there, so that MySQL's {@code 2024_01} stays an identifier.
+     */
+    private void lexDigitSeparators(Token token) {
+        int separator = token.image.indexOf('_');
+        if (separator < 0) {
+            return;
+        }
+        if (input_stream.featureConfiguration != null
+                && Boolean.TRUE.equals(configuration.getValue(Feature.allowDigitSeparators))) {
+            token.image = token.image.replace("_", "");
+            return;
+        }
+        int identifierLength = 0;
+        while (identifierLength < token.image.length()
+                && (Character.isLetterOrDigit(token.image.charAt(identifierLength))
+                        || token.image.charAt(identifierLength) == '_')) {
+            identifierLength++;
+        }
+        if (identifierLength > separator) {
+            truncateIdentifierToken(token, identifierLength);
+            token.kind = S_IDENTIFIER;
+        } else {
+            truncateIdentifierToken(token, separator);
+            token.kind = token.image.indexOf('.') >= 0 || token.image.indexOf('e') >= 0
+                    || token.image.indexOf('E') >= 0 ? S_DOUBLE : S_LONG;
+        }
+    }
+
     private void truncateIdentifierToken(Token token, int length) {
         input_stream.backup(token.image.length() - length);
         token.image = token.image.substring(0, length);
@@ -3126,8 +3158,8 @@ TOKEN : /* Numeric Constants */
             <S_LONG> "." (["e","E"] (["+", "-"])? <S_LONG>)?
             |
             <S_LONG> ["e","E"] (["+", "-"])? <S_LONG>
-            )>
-  |     < S_LONG: ( <DIGIT> )+ >
+            )> { lexDigitSeparators(matchedToken); }
+  |     < S_LONG: ( <DIGIT> )+ ( "_" ( <DIGIT> )+ )* > { lexDigitSeparators(matchedToken); }
   |     < #DIGIT: ["0" - "9"] >
   |     < S_HEX: ("X" <QUOTED_HEX> ( (" ")* <QUOTED_HEX> )* | "0x" ( <HEX_DIGIT> )+ ) >
   |     < #QUOTED_HEX: "'" ( <HEX_VALUE> )* "'" >

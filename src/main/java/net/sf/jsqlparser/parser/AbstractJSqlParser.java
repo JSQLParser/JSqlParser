@@ -39,7 +39,8 @@ public abstract class AbstractJSqlParser<P> {
                         Feature.allowDoubleQuotedStrings), SQLSERVER(AdjacentStringLiterals.OFF,
                                 Feature.allowSquareBracketQuotation), POSTGRESQL(
                                         AdjacentStringLiterals.NEWLINE,
-                                        Feature.allowDollarQuotedStringTags), H2, EXASOL, BIGQUERY(
+                                        Feature.allowDollarQuotedStringTags,
+                                        Feature.allowDigitSeparators), H2, EXASOL, BIGQUERY(
                                                 AdjacentStringLiterals.WHITESPACE,
                                                 Feature.allowDoubleQuotedStrings,
                                                 Feature.allowHashLineComments,
@@ -192,6 +193,14 @@ public abstract class AbstractJSqlParser<P> {
 
     public P withHashLineComments(boolean allowHashLineComments) {
         return withFeature(Feature.allowHashLineComments, allowHashLineComments);
+    }
+
+    public P withDigitSeparators() {
+        return withFeature(Feature.allowDigitSeparators, true);
+    }
+
+    public P withDigitSeparators(boolean allowDigitSeparators) {
+        return withFeature(Feature.allowDigitSeparators, allowDigitSeparators);
     }
 
     public P withUnparenthesizedSubSelects() {
