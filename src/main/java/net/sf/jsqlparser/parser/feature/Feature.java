@@ -890,6 +890,12 @@ public enum Feature {
     allowHashLineComments(false),
 
     /**
+     * allows digit separators in numeric literals, e.g. {@code 1_000_000} (DuckDB, PostgreSQL 16);
+     * disabled by default, where MySQL reads {@code 2024_01} as an identifier
+     */
+    allowDigitSeparators(false),
+
+    /**
      * allows sub selects without parentheses, e.g. `select * from dual where 1 = select 1`
      */
     allowUnparenthesizedSubSelects(false),
