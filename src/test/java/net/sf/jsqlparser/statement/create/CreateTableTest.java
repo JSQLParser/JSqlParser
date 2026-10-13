@@ -61,6 +61,14 @@ public class CreateTableTest {
     }
 
     @Test
+    public void testCreateTableCopyGrants() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE OR REPLACE TABLE testtab COPY GRANTS AS (SELECT a FROM tbl)");
+        assertSqlCanBeParsedAndDeparsed(
+                "CREATE OR REPLACE TABLE testtab (a VARCHAR (255)) COPY GRANTS");
+    }
+
+    @Test
     public void testCreateTable2() throws JSQLParserException {
         String statement = "CREATE TABLE testtab (\"test\" varchar (255))";
         assertSqlCanBeParsedAndDeparsed(statement);

@@ -16055,6 +16055,10 @@ TableOption CreateTableOption():
       }
       |
       LOOKAHEAD({ isMySqlTableOptionAhead() }) option=MySqlTableOption()
+      |
+      // Snowflake: COPY is reserved because it starts the COPY statement
+      LOOKAHEAD({ getToken(1).kind == K_COPY && "GRANTS".equalsIgnoreCase(getToken(2).image) })
+      <K_COPY> ContextualKeyword("GRANTS") { option = TableOption.raw("COPY", "GRANTS"); }
       | tokens=CreateParameter() { option = TableOption.raw(tokens); } )
     { return option; }
 }
