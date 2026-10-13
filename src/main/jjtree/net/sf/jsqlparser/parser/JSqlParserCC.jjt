@@ -2066,6 +2066,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return Dialect.MYSQL.name().equals(dialect) || Dialect.MARIADB.name().equals(dialect);
     }
 
+    /**
+     * Whether ALTER TABLE DROP names a MySQL FOREIGN KEY or CHECK constraint. The default
+     * configuration accepts both like MySQL; MariaDB has no DROP CHECK. A parenthesized FOREIGN KEY
+     * column list keeps the legacy form, and other dialects use DROP CONSTRAINT.
+     */
+    private boolean isNamedConstraintDropAhead() {
+        String dialect = getAsString(Feature.dialect);
+        boolean namedForeignKey = getToken(1).kind == K_FOREIGN && getToken(2).kind == K_KEY
+                && getToken(3).kind != OPENING_BRACKET;
+        if (dialect == null || Dialect.MYSQL.name().equals(dialect)) {
+            return namedForeignKey || getToken(1).kind == K_CHECK;
+        }
+        return Dialect.MARIADB.name().equals(dialect) && namedForeignKey;
+    }
+
     private boolean isBeginTransactionAhead() {
         String dialect = getAsString(Feature.dialect);
         if (getToken(1).kind != K_BEGIN || !(isMySqlDialect()
@@ -18601,10 +18616,7 @@ AlterExpression AlterExpressionDrop():
 {
     <K_DROP> { alterExp.setOperation(AlterOperation.DROP); }
     (
-        LOOKAHEAD({ Dialect.MYSQL.name().equals(getAsString(Feature.dialect))
-                && (getToken(1).kind == K_CHECK
-                    || getToken(1).kind == K_FOREIGN && getToken(2).kind == K_KEY
-                        && getToken(3).kind != OPENING_BRACKET) })
+        LOOKAHEAD({ isNamedConstraintDropAhead() })
         MySqlDropNamedConstraint(alterExp)
         |
         (
