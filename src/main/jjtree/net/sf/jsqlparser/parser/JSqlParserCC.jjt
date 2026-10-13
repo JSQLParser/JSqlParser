@@ -1833,6 +1833,17 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** Whether a window specification starts with the name of the window it extends. */
+    private boolean isBaseWindowNameAhead() {
+        Token token = getToken(1);
+        switch (token.kind) {
+            case K_PARTITION: case K_ORDER: case K_ROWS: case K_RANGE: case K_GROUPS:
+                return false;
+            default:
+                return isIdentifierishNameToken(token);
+        }
+    }
+
     private boolean isAliasAhead() {
         if (isAsOfJoinAhead() || isSemiAntiJoinAhead() || isApproxNearestAhead()) {
             return false;
@@ -8409,6 +8420,9 @@ PlainSelect PlainSelect() #PlainSelect:
         ( LOOKAHEAD(2) "," windowName = RelObjectName() <K_AS> winDef = windowDefinition() { winDefs.add(winDef.withWindowName(windowName)); } )*
         { plainSelect.setWindowDefinitions(winDefs); }
     ]
+    // DuckDB: QUALIFY after WINDOW
+    [ LOOKAHEAD(2, { plainSelect.getQualify() == null }) qualify=Qualify()
+        { plainSelect.setQualify(qualify); plainSelect.setQualifyAfterWindow(true); } ]
     [ LOOKAHEAD(<K_ORDER> <K_BY>) orderByElements = OrderByElements() { plainSelect.setOrderByElements(orderByElements); } ]
     [ LOOKAHEAD(2) interpolateElements = InterpolateClause() { plainSelect.setInterpolate(interpolateElements); } ]
     [ LOOKAHEAD(2) forClause = ForClause() {plainSelect.setForClause(forClause);} ]
@@ -13498,8 +13512,12 @@ WindowDefinition windowDefinition() : {
     WindowElement windowElement = null;
     boolean partitionByBrackets = false;
     WindowDefinition winDef = new WindowDefinition();
+    String baseWindowName;
 } {
     "("
+    // DuckDB: (w ORDER BY b) extends the named window w
+    [ LOOKAHEAD({ isBaseWindowNameAhead() }) baseWindowName=RelObjectName()
+        { winDef.setBaseWindowName(baseWindowName); } ]
     [<K_PARTITION> <K_BY>
         (LOOKAHEAD(3) expressionList=ComplexExpressionList()
         | "(" {partitionByBrackets = true;} expressionList=ComplexExpressionList() ")" )
@@ -13523,7 +13541,7 @@ AnalyticExpression AnalyticExpression(Function function) :
 {
     (
         (
-            filter=AggregateFilter() { retval.setType(AnalyticType.FILTER_ONLY); }
+            filter=AggregateFilter(retval) { retval.setType(AnalyticType.FILTER_ONLY); }
             [ LOOKAHEAD(2) windowFun(retval) ]
             {
                 if (Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
@@ -13535,7 +13553,7 @@ AnalyticExpression AnalyticExpression(Function function) :
         )
         | windowFun(retval)
           [ LOOKAHEAD({ retval.getType() == AnalyticType.WITHIN_GROUP
-                  && getToken(1).kind == K_FILTER }) filter=AggregateFilter() ]
+                  && getToken(1).kind == K_FILTER }) filter=AggregateFilter(retval) ]
     )
     {
         retval.setFilterExpression(filter);
@@ -13543,11 +13561,21 @@ AnalyticExpression AnalyticExpression(Function function) :
     }
 }
 
-/** Shared FILTER predicate for ordinary, window, and ordered-set aggregates. */
-Expression AggregateFilter():
+/**
+ * Shared FILTER predicate for ordinary, window, and ordered-set aggregates. DuckDB also accepts
+ * it without WHERE, FILTER (x > 1), but PostgreSQL does not.
+ */
+Expression AggregateFilter(AnalyticExpression analyticExpression):
 { Expression filter; }
 {
-    <K_FILTER> "(" <K_WHERE> filter=Expression() ")"
+    <K_FILTER> "("
+    (
+        <K_WHERE>
+        |
+        LOOKAHEAD({ !Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect)) })
+        { analyticExpression.setFilterWhereKeyword(false); }
+    )
+    filter=Expression() ")"
     { return filter; }
 }
 

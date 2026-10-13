@@ -1346,6 +1346,9 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
             builder.append(" ").append(analyticExpression.getWindowName());
         } else if (analyticExpression.getType() != AnalyticType.WITHIN_GROUP_OVER) {
             builder.append(" (");
+            if (analyticExpression.getWindowDefinition() != null) {
+                analyticExpression.getWindowDefinition().appendBaseWindowNameTo(builder);
+            }
 
             if (partitionExpressionList != null
                     && !partitionExpressionList.isEmpty()) {

@@ -23,6 +23,7 @@ public class WindowDefinition implements Serializable {
     final PartitionByClause partitionBy = new PartitionByClause();
     WindowElement windowElement = null;
     private String windowName;
+    private String baseWindowName;
 
     public OrderByClause getOrderBy() {
         return orderBy;
@@ -59,6 +60,31 @@ public class WindowDefinition implements Serializable {
     public void setPartitionExpressionList(ExpressionList<Expression> partitionExpressionList,
             boolean brackets) {
         partitionBy.setExpressions(partitionExpressionList, brackets);
+    }
+
+    /** DuckDB: the window this one extends, as w in OVER (w ORDER BY b), or {@code null}. */
+    public String getBaseWindowName() {
+        return baseWindowName;
+    }
+
+    public WindowDefinition setBaseWindowName(String baseWindowName) {
+        this.baseWindowName = baseWindowName;
+        return this;
+    }
+
+    /** Appends the base window name, separated from any following part. */
+    public void appendBaseWindowNameTo(StringBuilder builder) {
+        if (baseWindowName != null) {
+            builder.append(baseWindowName);
+            boolean more = partitionBy.getPartitionExpressionList() != null
+                    && !partitionBy.getPartitionExpressionList().isEmpty()
+                    || orderBy.getOrderByElements() != null
+                            && !orderBy.getOrderByElements().isEmpty()
+                    || windowElement != null;
+            if (more) {
+                builder.append(' ');
+            }
+        }
     }
 
     public String getWindowName() {
@@ -105,6 +131,7 @@ public class WindowDefinition implements Serializable {
             b.append(windowName).append(" AS ");
         }
         b.append("(");
+        appendBaseWindowNameTo(b);
         partitionBy.toStringPartitionBy(b);
         orderBy.toStringOrderByElements(b);
 
