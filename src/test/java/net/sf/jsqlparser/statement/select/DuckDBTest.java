@@ -10,6 +10,8 @@
 package net.sf.jsqlparser.statement.select;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.LambdaExpression;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -29,6 +31,8 @@ import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.test.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 public class DuckDBTest {
 
@@ -688,5 +692,57 @@ public class DuckDBTest {
         PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
 
         Assertions.assertNull(select.getWithItemsList().get(0).getUsingKeyExpressions());
+    }
+
+    @Test
+    void testLambdaKeyword() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_transform(l, lambda x : x + 1) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT list_filter(l, lambda x : x > 0) FROM t",
+                true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_filter(l, lambda x : x IS NOT NULL AND x <> 'a') FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_reduce(l, lambda acc, x : acc + x) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_filter([(CASE WHEN a THEN 1 END)], lambda x : x IS NOT NULL) FROM t",
+                true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_transform(l, lambda x : list_filter(x, lambda y : y > 1)) FROM t",
+                true);
+    }
+
+    @Test
+    void testLambdaKeywordExpression() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT list_reduce(l, lambda acc, x : acc + x) FROM t", true);
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+        LambdaExpression lambda = (LambdaExpression) function.getParameters().get(1);
+
+        Assertions.assertTrue(lambda.isLambdaKeyword());
+        Assertions.assertEquals(Arrays.asList("acc", "x"), lambda.getIdentifiers());
+    }
+
+    @Test
+    void testLambdaKeywordFollowedByArguments() throws JSQLParserException {
+        PlainSelect select = (PlainSelect) TestUtils.assertSqlCanBeParsedAndDeparsed(
+                "SELECT f(l, lambda x : x + 1, 2) FROM t", true);
+        Function function = select.getSelectItem(0).getExpression(Function.class);
+
+        Assertions.assertEquals(3, function.getParameters().size());
+        Assertions.assertEquals("x + 1",
+                ((LambdaExpression) function.getParameters().get(1)).getExpression().toString());
+    }
+
+    @Test
+    void testLambdaAsIdentifier() throws JSQLParserException {
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT lambda x, y FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT t.lambda FROM lambda t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT CAST(a AS lambda) FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT 'a' COLLATE lambda FROM t", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("CREATE TABLE t (a lambda)", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t DROP COLUMN lambda", true);
+        TestUtils.assertSqlCanBeParsedAndDeparsed("ALTER TABLE t RENAME lambda TO x", true);
     }
 }

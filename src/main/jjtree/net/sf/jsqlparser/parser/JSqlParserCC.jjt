@@ -1584,6 +1584,33 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         catch (IllegalArgumentException exception) { throw new ParseException("Unknown " + type.getSimpleName() + ": " + value); }
     }
 
+    /**
+     * DuckDB's lambda x, y : expr. LAMBDA stays a plain identifier, so a column, type or alias
+     * named lambda keeps parsing: only LAMBDA followed by names separated by commas and a ":" is
+     * a lambda.
+     */
+    private boolean isDuckDBLambdaAhead() {
+        if (getToken(1).kind != S_IDENTIFIER || !isKeywordAhead("LAMBDA")) {
+            return false;
+        }
+        int offset = 2;
+        while (true) {
+            int kind = getToken(offset).kind;
+            if (kind != S_IDENTIFIER && kind != S_QUOTED_IDENTIFIER && kind != DATA_TYPE
+                    && (kind < MIN_NON_RESERVED_WORD || kind > MAX_NON_RESERVED_WORD)) {
+                return false;
+            }
+            String next = getToken(offset + 1).image;
+            if (":".equals(next)) {
+                return true;
+            }
+            if (!",".equals(next)) {
+                return false;
+            }
+            offset += 2;
+        }
+    }
+
     private boolean isKeywordAhead(String keyword) {
         Token token = getToken(1);
         return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
@@ -11415,6 +11442,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         | LOOKAHEAD({ !interrupted && isCharacterSetIntroducedStringAhead() })
                   retval=CharacterSetIntroducedString()
 
+        // DuckDB's lambda x, y : expr, before Column() which would take LAMBDA as a column name
+        | LOOKAHEAD({ !interrupted && isDuckDBLambdaAhead() }) retval=DuckDBLambdaExpression()
+
         | LOOKAHEAD(2, {!interrupted}) retval=Column()
             [
                 LOOKAHEAD( "(" "+" ")" ("," | ")") )
@@ -13243,6 +13273,28 @@ LambdaExpression LambdaExpression() #LambdaExpression:
     expression = Expression()
     {
         lambdaExpression = LambdaExpression.from(columns, expression);
+        linkAST(lambdaExpression,jjtThis);
+        return lambdaExpression;
+    }
+}
+
+/**
+ * DuckDB's lambda syntax, lambda x, y : expr, equivalent to (x, y) -> expr.
+ */
+LambdaExpression DuckDBLambdaExpression() #LambdaExpression:
+{
+    List<String> identifiers = new ArrayList<String>();
+    String s;
+    Expression expression;
+    LambdaExpression lambdaExpression;
+}
+{
+    <S_IDENTIFIER> s = RelObjectName() { identifiers.add(s); }
+    ( "," s = RelObjectName() { identifiers.add(s); } )*
+    ":"
+    expression = Expression()
+    {
+        lambdaExpression = new LambdaExpression(identifiers, expression).setLambdaKeyword(true);
         linkAST(lambdaExpression,jjtThis);
         return lambdaExpression;
     }
