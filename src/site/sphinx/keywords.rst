@@ -47,8 +47,6 @@ The following Keywords are **reserved** in JSQLParser-|JSQLPARSER_VERSION| and m
 +---------------------------+
 | ELSE                      |
 +---------------------------+
-| ERRORS                    |
-+---------------------------+
 | EXCEPT                    |
 +---------------------------+
 | EXCLUDES                  |
