@@ -715,6 +715,9 @@ public class ExpressionVisitorAdapter<T>
         if (arrayExpression.getStopIndexExpression() != null) {
             subExpressions.add(arrayExpression.getStopIndexExpression());
         }
+        if (arrayExpression.getStepExpression() != null) {
+            subExpressions.add(arrayExpression.getStepExpression());
+        }
         return visitExpressions(arrayExpression, context, subExpressions);
     }
 
@@ -874,7 +877,7 @@ public class ExpressionVisitorAdapter<T>
     @Override
     public <S> T visit(RangeExpression rangeExpression, S context) {
         return visitExpressions(rangeExpression, context, rangeExpression.getStartExpression(),
-                rangeExpression.getEndExpression());
+                rangeExpression.getEndExpression(), rangeExpression.getStepExpression());
     }
 
     @Override

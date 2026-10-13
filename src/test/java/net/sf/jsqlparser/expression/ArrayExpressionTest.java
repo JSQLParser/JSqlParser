@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.expression;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -142,4 +143,46 @@ class ArrayExpressionTest {
                 () -> TestUtils.assertSqlCanBeParsedAndDeparsed("SELECT a[0].* FROM t", true));
     }
 
+    @Test
+    void testColumnSlices() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT l[2:3] FROM t", "SELECT l[:2] FROM t",
+                "SELECT l[2:] FROM t", "SELECT l[:] FROM t", "SELECT l[-5:] FROM t",
+                "SELECT l[1:-1:2] FROM t", "SELECT l[1:-:2] FROM t", "SELECT l[:-:-1] FROM t",
+                "SELECT l[x:y] FROM t", "SELECT s[2:] > 'a' FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        PlainSelect select = (PlainSelect) TestUtils
+                .assertSqlCanBeParsedAndDeparsed("SELECT l[1:-:2] FROM t", true);
+        RangeExpression slice = (RangeExpression) select.getSelectItem(0)
+                .getExpression(Column.class).getArrayConstructor().getExpressions().get(0);
+        assertEquals("1", slice.getStartExpression().toString());
+        assertNull(slice.getEndExpression());
+        assertEquals("2", slice.getStepExpression().toString());
+    }
+
+    @Test
+    void testExpressionSlices() throws JSQLParserException {
+        for (String sqlStr : new String[] {"SELECT f()[2:] FROM t", "SELECT (l)[:2] FROM t",
+                "SELECT ([1, 2, 3])[1:-:-1]", "SELECT l[1][2:3] FROM t",
+                "SELECT l[:2][1] FROM t"}) {
+            TestUtils.assertSqlCanBeParsedAndDeparsed(sqlStr, true);
+        }
+
+        ArrayExpression slice = (ArrayExpression) CCJSqlParserUtil.parseExpression("f()[x:y:2]");
+        assertNull(slice.getIndexExpression());
+        assertEquals("x", slice.getStartIndexExpression().toString());
+        assertEquals("y", slice.getStopIndexExpression().toString());
+        assertEquals("2", slice.getStepExpression().toString());
+    }
+
+    @Test
+    void testEmptyStepIsDropped() throws JSQLParserException {
+        assertEquals("l[1:2]", CCJSqlParserUtil.parseExpression("l[1:2:]").toString());
+    }
+
+    @Test
+    void testJsonPathOutsideSubscripts() throws JSQLParserException {
+        assertInstanceOf(JsonExpression.class, CCJSqlParserUtil.parseExpression("c:a[1]"));
+    }
 }

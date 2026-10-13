@@ -843,10 +843,25 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
 
     @Override
     public <S> StringBuilder visit(RangeExpression rangeExpression, S context) {
-        rangeExpression.getStartExpression().accept(this, context);
-        builder.append(":");
-        rangeExpression.getEndExpression().accept(this, context);
+        appendSlice(rangeExpression.getStartExpression(), rangeExpression.getEndExpression(),
+                rangeExpression.getStepExpression(), context);
         return builder;
+    }
+
+    private <S> void appendSlice(Expression start, Expression end, Expression step, S context) {
+        if (start != null) {
+            start.accept(this, context);
+        }
+        builder.append(":");
+        if (end != null) {
+            end.accept(this, context);
+        } else if (step != null) {
+            builder.append("-");
+        }
+        if (step != null) {
+            builder.append(":");
+            step.accept(this, context);
+        }
     }
 
     @Override
@@ -1645,13 +1660,8 @@ public class ExpressionDeParser extends AbstractDeParser<Expression>
         if (array.getIndexExpression() != null) {
             array.getIndexExpression().accept(this, context);
         } else {
-            if (array.getStartIndexExpression() != null) {
-                array.getStartIndexExpression().accept(this, context);
-            }
-            builder.append(":");
-            if (array.getStopIndexExpression() != null) {
-                array.getStopIndexExpression().accept(this, context);
-            }
+            appendSlice(array.getStartIndexExpression(), array.getStopIndexExpression(),
+                    array.getStepExpression(), context);
         }
 
         builder.append("]");
