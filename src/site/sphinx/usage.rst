@@ -1813,6 +1813,30 @@ visitors, both SQL renderers and metadata validation use this structured target.
 Feature analysis reports ``MODIFIES_SESSION``; the directive itself inserts no rows.
 The dedicated validation capability is ``setIdentityInsert``.
 
+MySQL table maintenance statements
+----------------------------------
+
+``CHECK TABLE``, ``OPTIMIZE TABLE`` and ``REPAIR TABLE`` parse to
+``TableMaintenanceStatement`` in every dialect; ``ANALYZE TABLE`` remains ``Analyze``.
+``getOperation()`` identifies the statement, ``getModifier()`` returns
+``NO_WRITE_TO_BINLOG`` or ``LOCAL`` for OPTIMIZE and REPAIR, and ``isTablesKeyword()``
+records the ``TABLES`` spelling. ``getOptions()`` keeps the trailing options in source
+order. CHECK accepts ``FOR UPGRADE``, ``QUICK``, ``FAST``, ``MEDIUM``, ``EXTENDED`` and
+``CHANGED``; REPAIR accepts ``QUICK``, ``EXTENDED`` and ``USE_FRM``. Other combinations
+are rejected, and the option words remain ordinary identifiers elsewhere.
+
+.. code-block:: java
+
+    TableMaintenanceStatement repair = (TableMaintenanceStatement) CCJSqlParserUtil.parse(
+        "REPAIR NO_WRITE_TO_BINLOG TABLE t1, t2 QUICK");
+    repair.getTables();   // [t1, t2]
+    repair.getOptions();  // [QUICK]
+
+Table visitors and metadata validation use the table list. Validators report the
+``tableMaintenance`` feature, which the MySQL and MariaDB capabilities enable. Feature
+analysis reports ``READS_DATA`` and ``RETURNS_RESULT_SET``; OPTIMIZE and REPAIR also
+report ``MODIFIES_SCHEMA``, and REPAIR may report ``MODIFIES_DATA``.
+
 Legacy MySQL GROUP BY ordering
 ==============================
 

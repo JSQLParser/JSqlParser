@@ -1616,6 +1616,43 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         return token.kind != EOF && token.image != null && keyword.equalsIgnoreCase(token.image);
     }
 
+    /**
+     * Whether a MySQL CHECK, OPTIMIZE or REPAIR TABLE statement starts here. TABLE or TABLES must
+     * follow, so other uses of these words are unaffected.
+     */
+    private boolean isTableMaintenanceAhead() {
+        int kind = getToken(1).kind;
+        if (kind != K_CHECK && kind != K_OPTIMIZE && kind != K_REPAIR) {
+            return false;
+        }
+        int offset = 2;
+        int modifier = getToken(2).kind;
+        if (kind != K_CHECK && (modifier == K_NO_WRITE_TO_BINLOG || modifier == K_LOCAL)) {
+            offset = 3;
+        }
+        int table = getToken(offset).kind;
+        return table == K_TABLE || table == K_TABLES;
+    }
+
+    /** Whether the next tokens spell an option accepted by this table maintenance operation. */
+    private boolean isTableMaintenanceOptionAhead(TableMaintenanceStatement.Operation operation) {
+        Token token = getToken(1);
+        TableMaintenanceStatement.Option option = null;
+        if (token.kind == K_FOR) {
+            Token next = getToken(2);
+            if (next.kind == S_IDENTIFIER && "UPGRADE".equalsIgnoreCase(next.image)) {
+                option = TableMaintenanceStatement.Option.FOR_UPGRADE;
+            }
+        } else if (token.kind == K_QUICK) {
+            option = TableMaintenanceStatement.Option.QUICK;
+        } else if (token.kind == K_EXTENDED) {
+            option = TableMaintenanceStatement.Option.EXTENDED;
+        } else if (token.kind == S_IDENTIFIER) {
+            option = TableMaintenanceStatement.Option.fromKeyword(token.image);
+        }
+        return option != null && operation.allows(option);
+    }
+
     private boolean isXmlTypeName(String name) {
         return "XML".equalsIgnoreCase(name) || "[XML]".equalsIgnoreCase(name)
                 || "\"XML\"".equalsIgnoreCase(name);
@@ -3428,6 +3465,8 @@ Statement SingleStatement() :
             stm = Drop()
             |
             stm = Analyze()
+            |
+            LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
             |
             stm = Truncate()
             |
@@ -16505,6 +16544,52 @@ ColDataType.TypeModifier MySqlTypeModifier():
     { return modifier; }
 }
 
+/**
+ * Parses MySQL/MariaDB CHECK, OPTIMIZE and REPAIR TABLE statements. Options are accepted only for
+ * the operation that defines them, without reserving the option words.
+ */
+TableMaintenanceStatement TableMaintenanceStatement():
+{
+    TableMaintenanceStatement statement = new TableMaintenanceStatement();
+    TableMaintenanceStatement.Operation operation = null;
+    TableMaintenanceStatement.Option option = null;
+    Token modifier = null;
+    Token word = null;
+    Table table = null;
+}
+{
+    (
+        <K_CHECK> { operation = TableMaintenanceStatement.Operation.CHECK; }
+        | <K_OPTIMIZE> { operation = TableMaintenanceStatement.Operation.OPTIMIZE; }
+        | <K_REPAIR> { operation = TableMaintenanceStatement.Operation.REPAIR; }
+    )
+    { statement.setOperation(operation); }
+    [
+        LOOKAHEAD({ operation.allowsModifier()
+                && (getToken(1).kind == K_NO_WRITE_TO_BINLOG || getToken(1).kind == K_LOCAL) })
+        ( modifier=<K_NO_WRITE_TO_BINLOG> | modifier=<K_LOCAL> )
+        {
+            statement.setModifier(TableMaintenanceStatement.Modifier.valueOf(
+                    modifier.image.toUpperCase(Locale.ROOT)));
+        }
+    ]
+    ( <K_TABLE> | <K_TABLES> { statement.setTablesKeyword(true); } )
+    table=Table() { statement.addTables(table); }
+    ( "," table=Table() { statement.addTables(table); } )*
+    (
+        LOOKAHEAD({ isTableMaintenanceOptionAhead(operation) })
+        (
+            <K_FOR> ContextualKeyword("UPGRADE")
+            { option = TableMaintenanceStatement.Option.FOR_UPGRADE; }
+            | <K_QUICK> { option = TableMaintenanceStatement.Option.QUICK; }
+            | <K_EXTENDED> { option = TableMaintenanceStatement.Option.EXTENDED; }
+            | word=<S_IDENTIFIER> { option = TableMaintenanceStatement.Option.fromKeyword(word.image); }
+        )
+        { statement.addOptions(option); }
+    )*
+    { return statement; }
+}
+
 Analyze Analyze():
 {
     Analyze analyze = new Analyze();
@@ -20531,7 +20616,9 @@ CreateDomain CreateDomain():
     [ <K_AS> { result.setUseAs(true); } ] type=ColDataType() { result.setDataType(type); }
     [ <K_COLLATE> name=TypeDdlName() { result.setCollation(name); } ]
     [ <K_DEFAULT> expression=Expression() { result.setDefaultExpression(expression); } ]
-    ( constraint=DomainConstraint(true) { result.getConstraints().add(constraint); } )*
+    // A following CHECK TABLE statement is not a domain CHECK constraint.
+    ( LOOKAHEAD(1, { !isTableMaintenanceAhead() })
+      constraint=DomainConstraint(true) { result.getConstraints().add(constraint); } )*
     { return result; }
 }
 

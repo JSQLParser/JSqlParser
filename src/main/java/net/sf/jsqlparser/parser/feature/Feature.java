@@ -26,6 +26,7 @@ import net.sf.jsqlparser.statement.ResetStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
+import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -457,6 +458,13 @@ public enum Feature {
      * @see Analyze
      */
     analyze,
+
+    /**
+     * MySQL/MariaDB "CHECK TABLE", "OPTIMIZE TABLE" and "REPAIR TABLE" statements are allowed
+     *
+     * @see TableMaintenanceStatement
+     */
+    tableMaintenance,
 
     /**
      * SQL "TRUNCATE" statement is allowed
