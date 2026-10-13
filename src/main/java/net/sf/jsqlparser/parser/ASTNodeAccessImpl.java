@@ -17,6 +17,8 @@ import java.util.TreeSet;
 
 public class ASTNodeAccessImpl implements ASTNodeAccess {
 
+    private static final long serialVersionUID = 3920262240331742793L;
+
     private transient Node node;
 
     @Override
@@ -31,8 +33,8 @@ public class ASTNodeAccessImpl implements ASTNodeAccess {
 
     /**
      * The comments preceding this node's first token, in source order, with the original token
-     * images (line comments keep their line terminator). Empty for nodes built programmatically,
-     * which carry no AST.
+     * images. Line comments do not include their line terminator; callers must add a line break
+     * when prepending them to SQL. Empty for nodes built programmatically, which carry no AST.
      */
     public List<String> getLeadingComments() {
         Node node = getASTNode();

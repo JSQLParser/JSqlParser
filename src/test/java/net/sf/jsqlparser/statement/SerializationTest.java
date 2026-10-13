@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.SpannerInterleaveIn;
@@ -34,6 +35,17 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class SerializationTest {
+    @Test
+    void serializeSelectWithLeadingComments() throws Exception {
+        PlainSelect original = (PlainSelect) CCJSqlParserUtil
+                .parse("/* keep orderby */ SELECT id FROM mytable");
+        Assertions.assertEquals(List.of("/* keep orderby */"), original.getLeadingComments());
+        PlainSelect copy = roundTrip(original);
+        Assertions.assertEquals("SELECT id FROM mytable", copy.toString());
+        Assertions.assertNull(copy.getASTNode());
+        Assertions.assertEquals(List.of(), copy.getLeadingComments());
+    }
+
     @Test
     void serializeWithItem() throws JSQLParserException, IOException, ClassNotFoundException {
         String sqlStr =

@@ -11,7 +11,6 @@ package net.sf.jsqlparser.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import net.sf.jsqlparser.JSQLParserException;
@@ -19,6 +18,8 @@ import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class LeadingCommentsTest {
 
@@ -29,12 +30,20 @@ public class LeadingCommentsTest {
         assertEquals(List.of("/* keep orderby */", "/*+ FULL(t) */"), select.getLeadingComments());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"\n", "\r\n", "\r"})
+    public void lineCommentsExcludeLineTerminators(String lineTerminator)
+            throws JSQLParserException {
+        Select select =
+                (Select) CCJSqlParserUtil.parse("-- paging hint" + lineTerminator + "SELECT 1");
+        assertEquals(List.of("-- paging hint"), select.getLeadingComments());
+    }
+
     @Test
-    public void lineCommentBeforeStatement() throws JSQLParserException {
-        Select select = (Select) CCJSqlParserUtil.parse("-- paging hint\nSELECT 1");
-        List<String> comments = select.getLeadingComments();
-        assertEquals(1, comments.size());
-        assertTrue(comments.get(0).startsWith("-- paging hint"));
+    public void mixedCommentsRetainExactImagesAndSourceOrder() throws JSQLParserException {
+        Select select = (Select) CCJSqlParserUtil
+                .parse("/* a */ -- b\r\n// c\r/* d */ SELECT 1");
+        assertEquals(List.of("/* a */", "-- b", "// c", "/* d */"), select.getLeadingComments());
     }
 
     @Test
