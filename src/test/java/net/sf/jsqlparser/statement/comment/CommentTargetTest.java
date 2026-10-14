@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.StmtFeature;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
+import net.sf.jsqlparser.statement.create.table.ExclusionOperator;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
@@ -49,7 +50,9 @@ class CommentTargetTest {
             CommentTarget.Kind.INDEX, CommentTarget.Kind.SEQUENCE, CommentTarget.Kind.DOMAIN,
             CommentTarget.Kind.TYPE, CommentTarget.Kind.MATERIALIZED_VIEW,
             CommentTarget.Kind.FOREIGN_TABLE, CommentTarget.Kind.COLLATION,
-            CommentTarget.Kind.STATISTICS);
+            CommentTarget.Kind.STATISTICS, CommentTarget.Kind.CONVERSION,
+            CommentTarget.Kind.TEXT_SEARCH_CONFIGURATION, CommentTarget.Kind.TEXT_SEARCH_DICTIONARY,
+            CommentTarget.Kind.TEXT_SEARCH_PARSER, CommentTarget.Kind.TEXT_SEARCH_TEMPLATE);
 
     private static final Set<CommentTarget.Kind> UNQUALIFIED = EnumSet.of(
             CommentTarget.Kind.SCHEMA, CommentTarget.Kind.ACCESS_METHOD,
@@ -269,10 +272,136 @@ class CommentTargetTest {
         }
     }
 
+    static Stream<Arguments> operators() {
+        List<Arguments> cases = new ArrayList<>();
+        // arithmetic, comparison, bitwise, string, pattern, JSON, array, range and geometric
+        for (String operator : List.of("+", "-", "*", "/", "%", "^", "|/", "||/", "@", "<", ">",
+                "=", "<=", ">=", "<>", "!=", "&", "|", "#", "~", "<<", ">>", "||", "~~", "~~*",
+                "!~~", "!~~*", "~*", "!~", "!~*", "^@", "->", "->>", "#>", "#>>", "#-", "@>", "<@",
+                "?", "?|", "?&", "@?", "@@", "@@@", "&&", "<->", "<#>", "<=>", "-|-", "<<=", ">>=",
+                "&<", "&>", "<<|", "|>>", "&<|", "|&>", "<^", ">^", "?#", "?-|", "?||", "~=",
+                "@-@", "##", "!!", "*=", "*<>", "~>=~")) {
+            cases.add(Arguments.of(operator, null, operator));
+        }
+        cases.add(Arguments.of("app.+", "app", "+"));
+        cases.add(Arguments.of("pg_catalog.||", "pg_catalog", "||"));
+        cases.add(Arguments.of("\"My.Schema\".->>", "\"My.Schema\"", "->>"));
+        // CLASS and FAMILY only start an operator class or family when no dot follows
+        cases.add(Arguments.of("class.<<=", "class", "<<="));
+        cases.add(Arguments.of("family.-|-", "family", "-|-"));
+        return cases.stream();
+    }
+
+    @ParameterizedTest
+    @MethodSource("operators")
+    void preservesOperatorNamesAndOperandTypes(String operator, String schema, String symbol)
+            throws Exception {
+        for (Comment comment : roundTrip(
+                "COMMENT ON OPERATOR " + operator + " (integer, app.t[]) IS 'body'")) {
+            CommentTarget target = comment.getTarget();
+            assertEquals(CommentTarget.Kind.OPERATOR, target.getKind());
+            assertNull(target.getName());
+            assertEquals(schema, target.getOperator().getSchemaName());
+            assertEquals(symbol, target.getOperator().getName());
+            assertFalse(target.getOperator().isUseOperatorKeyword());
+            assertEquals("integer", target.getLeftOperandType().toString());
+            assertEquals("app.t[]", target.getRightOperandType().toString());
+            assertTrue(new TablesNamesFinder().getTables(comment).isEmpty());
+        }
+    }
+
+    @Test
+    void joinsOnlyOperatorPartsThatTouch() throws Exception {
+        assertEquals("COMMENT ON OPERATOR <<= (inet, inet) IS NULL",
+                parse("COMMENT ON OPERATOR <<=(inet,inet) IS NULL").toString());
+        assertEquals("COMMENT ON OPERATOR - (NONE, integer) IS NULL",
+                parse("COMMENT ON OPERATOR -/* prefix */(NONE, integer) IS NULL").toString());
+        for (String operator : List.of("< =", "< >", "> =", "! =", "+ -", "+/**/-", "-\n|-")) {
+            assertThrows(JSQLParserException.class,
+                    () -> parse("COMMENT ON OPERATOR " + operator + " (integer, integer) IS NULL"),
+                    operator);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"NONE, integer", "integer, NONE", "\"NONE\", none",
+            "timestamp with time zone, double precision", "NONE, character varying"})
+    void representsMissingOperandsAsNull(String operands) throws Exception {
+        String[] types = operands.split(", ");
+        for (Comment comment : roundTrip("COMMENT ON OPERATOR - (" + operands + ") IS NULL")) {
+            CommentTarget target = comment.getTarget();
+            assertEquals(types[0].equals("NONE") ? null : types[0],
+                    target.getLeftOperandType() == null ? null
+                            : target.getLeftOperandType().toString());
+            assertEquals(types[1].equalsIgnoreCase("NONE") ? null : types[1],
+                    target.getRightOperandType() == null ? null
+                            : target.getRightOperandType().toString());
+            assertEquals("OPERATOR - (" + operands.replace("none", "NONE") + ")",
+                    target.toString());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"int4_ops USING btree", "app.\"my.ops\" USING gist",
+            "\"s.p\".ops USING \"my am\"", "class USING family"})
+    void namesOperatorClassesAndFamiliesWithinTheirAccessMethod(String reference)
+            throws Exception {
+        String name = reference.substring(0, reference.indexOf(" USING "));
+        String method = reference.substring(reference.indexOf(" USING ") + 7);
+        for (CommentTarget.Kind kind : List.of(CommentTarget.Kind.OPERATOR_CLASS,
+                CommentTarget.Kind.OPERATOR_FAMILY)) {
+            String sql = "COMMENT ON " + kind.name().replace('_', ' ') + " " + reference
+                    + " IS 'body'";
+            for (Comment comment : roundTrip(sql)) {
+                CommentTarget target = comment.getTarget();
+                assertEquals(kind, target.getKind());
+                assertEquals(name, target.getName().getFullyQualifiedName());
+                assertEquals(method, target.getAccessMethod());
+                assertNull(target.getRelation());
+                assertNull(target.getOperator());
+                assertEquals(sql, comment.toString());
+                assertTrue(new TablesNamesFinder().getTables(comment).isEmpty());
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "4242", "0004242", "4294967295"})
+    void storesLargeObjectOids(String oid) throws Exception {
+        for (Comment comment : roundTrip("COMMENT ON LARGE OBJECT " + oid + " IS 'lo'")) {
+            CommentTarget target = comment.getTarget();
+            assertEquals(CommentTarget.Kind.LARGE_OBJECT, target.getKind());
+            assertEquals(Long.valueOf(oid), target.getLargeObjectOid());
+            assertNull(target.getName());
+            assertEquals("COMMENT ON LARGE OBJECT " + Long.valueOf(oid) + " IS 'lo'",
+                    comment.toString());
+            assertTrue(new TablesNamesFinder().getTables(comment).isEmpty());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"int LANGUAGE sql", "hstore LANGUAGE plpython3u",
+            "app.\"my.type\"[] LANGUAGE \"my lang\"",
+            "timestamp with time zone LANGUAGE plperl", "language LANGUAGE language"})
+    void preservesTransformTypeAndLanguage(String reference) throws Exception {
+        String type = reference.substring(0, reference.indexOf(" LANGUAGE "));
+        String language = reference.substring(reference.indexOf(" LANGUAGE ") + 10);
+        for (Comment comment : roundTrip("COMMENT ON TRANSFORM FOR " + reference + " IS NULL")) {
+            CommentTarget target = comment.getTarget();
+            assertEquals(CommentTarget.Kind.TRANSFORM, target.getKind());
+            assertEquals(type, target.getTransformType().toString());
+            assertEquals(language, target.getLanguage());
+            assertNull(target.getName());
+            assertNull(target.getSourceType());
+            assertTrue(new TablesNamesFinder().getTables(comment).isEmpty());
+        }
+    }
+
     @Test
     void kindPredicatesDescribeTheReferenceShape() {
         Set<CommentTarget.Kind> routines = EnumSet.noneOf(CommentTarget.Kind.class);
         Set<CommentTarget.Kind> owned = EnumSet.noneOf(CommentTarget.Kind.class);
+        Set<CommentTarget.Kind> accessMethod = EnumSet.noneOf(CommentTarget.Kind.class);
         for (CommentTarget.Kind kind : CommentTarget.Kind.values()) {
             if (kind.isRoutine()) {
                 routines.add(kind);
@@ -280,11 +409,16 @@ class CommentTargetTest {
             if (kind.isOwnedByRelation()) {
                 owned.add(kind);
             }
+            if (kind.isOwnedByAccessMethod()) {
+                accessMethod.add(kind);
+            }
         }
         assertEquals(EnumSet.of(CommentTarget.Kind.FUNCTION, CommentTarget.Kind.PROCEDURE,
                 CommentTarget.Kind.ROUTINE, CommentTarget.Kind.AGGREGATE), routines);
         assertEquals(EnumSet.of(CommentTarget.Kind.CONSTRAINT, CommentTarget.Kind.TRIGGER,
                 CommentTarget.Kind.POLICY, CommentTarget.Kind.RULE), owned);
+        assertEquals(EnumSet.of(CommentTarget.Kind.OPERATOR_CLASS,
+                CommentTarget.Kind.OPERATOR_FAMILY), accessMethod);
     }
 
     @ParameterizedTest
@@ -302,7 +436,20 @@ class CommentTargetTest {
             "COMMENT ON PROCEDURE app.p(IN a integer, INOUT b text) IS 'x'",
             "COMMENT ON ROUTINE r() IS 'x'",
             "COMMENT ON AGGREGATE percentile_disc(float8 ORDER BY anyelement) IS 'x'",
-            "COMMENT ON CAST (bigint AS int4) IS 'x'"})
+            "COMMENT ON CAST (bigint AS int4) IS 'x'",
+            "COMMENT ON OPERATOR + (integer, integer) IS 'op'",
+            "COMMENT ON OPERATOR - (NONE, integer) IS 'prefix op'",
+            "COMMENT ON OPERATOR pg_catalog.->> (jsonb, text) IS 'x'",
+            "COMMENT ON OPERATOR app.-|- (int4range, int4range) IS NULL",
+            "COMMENT ON OPERATOR CLASS int4_ops USING btree IS 'opclass'",
+            "COMMENT ON OPERATOR FAMILY integer_ops USING btree IS 'opfamily'",
+            "COMMENT ON LARGE OBJECT 4242 IS 'lo'",
+            "COMMENT ON TEXT SEARCH CONFIGURATION english IS 'tscfg'",
+            "COMMENT ON TEXT SEARCH DICTIONARY english_stem IS 'tsdict'",
+            "COMMENT ON TEXT SEARCH PARSER \"default\" IS 'tsparser'",
+            "COMMENT ON TEXT SEARCH TEMPLATE simple IS 'tstemplate'",
+            "COMMENT ON CONVERSION utf8_to_iso_8859_1 IS 'conversion'",
+            "COMMENT ON TRANSFORM FOR int LANGUAGE sql IS 'transform'"})
     void parsesAndDeparsesWithAndWithoutPostgreSqlDialect(String sql) throws Exception {
         assertSqlCanBeParsedAndDeparsed(sql, false,
                 parser -> parser.withDialect(Dialect.POSTGRESQL));
@@ -323,6 +470,25 @@ class CommentTargetTest {
                 .getName());
         assertEquals("server.language", roundTrip("COMMENT ON COLUMN server.language IS NULL")
                 .get(0).getColumn().getFullyQualifiedName());
+    }
+
+    @Test
+    void operatorAndTextSearchKindWordsRemainIdentifiers() throws Exception {
+        assertSqlCanBeParsedAndDeparsed("SELECT operator, class, family, large, object, "
+                + "conversion, transform, configuration, dictionary, parser, template, search, "
+                + "none FROM operator");
+        assertEquals("operator", roundTrip("COMMENT ON TABLE operator IS NULL").get(0).getTable()
+                .getName());
+        assertEquals("conversion.transform",
+                roundTrip("COMMENT ON COLUMN conversion.transform IS NULL").get(0).getColumn()
+                        .getFullyQualifiedName());
+        assertEquals("template", roundTrip("COMMENT ON TEXT SEARCH TEMPLATE template IS NULL")
+                .get(0).getTarget().getName().getName());
+        assertEquals("conversion", roundTrip("COMMENT ON CONVERSION conversion IS NULL").get(0)
+                .getTarget().getName().getName());
+        assertEquals("operator",
+                roundTrip("COMMENT ON OPERATOR operator.+ (operator, NONE) IS NULL")
+                        .get(0).getTarget().getOperator().getSchemaName());
     }
 
     @Test
@@ -348,6 +514,30 @@ class CommentTargetTest {
         assertEquals("ROLE r", named.toString());
         named.setKind(CommentTarget.Kind.LANGUAGE);
         assertEquals("PROCEDURAL LANGUAGE r", named.toString());
+
+        CommentTarget operator = new CommentTarget();
+        operator.setKind(CommentTarget.Kind.OPERATOR);
+        operator.setOperator(new ExclusionOperator().withSchemaName("app").withName("->>"));
+        operator.setLeftOperandType(new ColDataType("jsonb"));
+        assertEquals("OPERATOR app.->> (jsonb, NONE)", operator.toString());
+
+        CommentTarget operatorClass = new CommentTarget();
+        operatorClass.setKind(CommentTarget.Kind.OPERATOR_FAMILY);
+        operatorClass.setName(new Table("app", "ops"));
+        operatorClass.setAccessMethod("gist");
+        assertEquals("OPERATOR FAMILY app.ops USING gist", operatorClass.toString());
+
+        CommentTarget largeObject = new CommentTarget();
+        largeObject.setKind(CommentTarget.Kind.LARGE_OBJECT);
+        largeObject.setLargeObjectOid(4242L);
+        assertEquals("COMMENT ON LARGE OBJECT 4242 IS NULL",
+                new Comment().withTarget(largeObject).toString());
+
+        CommentTarget transform = new CommentTarget();
+        transform.setKind(CommentTarget.Kind.TRANSFORM);
+        transform.setTransformType(new ColDataType("hstore"));
+        transform.setLanguage("plpython3u");
+        assertEquals("TRANSFORM FOR hstore LANGUAGE plpython3u", transform.toString());
     }
 
     @ParameterizedTest
@@ -362,6 +552,18 @@ class CommentTargetTest {
             "AGGREGATE agg", "CAST (integer)", "CAST integer AS text", "CAST (integer AS text",
             "FOREIGN ft", "FOREIGN DATA fdw", "EVENT et", "ACCESS heap", "ACCESS METHOD",
             "PROCEDURAL plpgsql", "LANGUAGE", "ROLE",
+            "OPERATOR", "OPERATOR +", "OPERATOR + ()", "OPERATOR + (integer)",
+            "OPERATOR + (NONE, NONE)", "OPERATOR + (integer, integer, integer)",
+            "OPERATOR + integer, integer", "OPERATOR app (integer, integer)",
+            "OPERATOR app. (integer, integer)", "OPERATOR => (integer, integer)",
+            "OPERATOR := (integer, integer)", "OPERATOR OPERATOR(pg_catalog.+) (integer, integer)",
+            "OPERATOR CLASS ops", "OPERATOR CLASS ops USING", "OPERATOR FAMILY ops USING a.b",
+            "OPERATOR CLASS USING btree", "LARGE OBJECT", "LARGE 42", "LARGE OBJECT lo",
+            "LARGE OBJECT -1", "LARGE OBJECT 4294967296", "LARGE OBJECT 99999999999999999999",
+            "LARGE OBJECT 1.5", "LARGE OBJECT 1, 2", "TEXT SEARCH", "TEXT SEARCH english",
+            "TEXT SEARCH INDEX english", "TEXT CONFIGURATION english",
+            "TINYTEXT SEARCH PARSER p", "CONVERSION", "TRANSFORM", "TRANSFORM int LANGUAGE sql",
+            "TRANSFORM FOR int", "TRANSFORM FOR int LANGUAGE", "TRANSFORM FOR int LANGUAGE a.b",
             "UNKNOWN obj"})
     void rejectsIncompleteOrInvalidTargets(String target) {
         assertThrows(JSQLParserException.class, () -> parse("COMMENT ON " + target + " IS NULL"));
@@ -374,7 +576,11 @@ class CommentTargetTest {
                 "AGGREGATE a(*)", "CAST (integer AS text)", "COLLATION app.c",
                 "STATISTICS app.st", "ACCESS METHOD am", "DATABASE d", "EVENT TRIGGER et",
                 "EXTENSION e", "FOREIGN DATA WRAPPER w", "LANGUAGE l", "PUBLICATION p", "ROLE r",
-                "SERVER s", "SUBSCRIPTION s", "TABLESPACE ts")) {
+                "SERVER s", "SUBSCRIPTION s", "TABLESPACE ts", "OPERATOR app.+ (integer, NONE)",
+                "OPERATOR CLASS app.t USING btree", "OPERATOR FAMILY app.t USING btree",
+                "LARGE OBJECT 42", "CONVERSION app.t", "TEXT SEARCH CONFIGURATION app.t",
+                "TEXT SEARCH DICTIONARY app.t", "TEXT SEARCH PARSER app.t",
+                "TEXT SEARCH TEMPLATE app.t", "TRANSFORM FOR app.t LANGUAGE sql")) {
             assertTrue(new TablesNamesFinder().getTables(parse("COMMENT ON " + target + " IS NULL"))
                     .isEmpty());
         }

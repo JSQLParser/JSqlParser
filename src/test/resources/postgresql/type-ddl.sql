@@ -82,3 +82,5 @@ ALTER EXTENSION hstore ADD TRANSFORM FOR hstore LANGUAGE plpython3u
 ALTER EXTENSION hstore ADD OPERATOR app.&& (integer, integer)
 ALTER EXTENSION hstore DROP OPERATOR = (hstore, hstore)
 ALTER EXTENSION hstore ADD OPERATOR - (NONE, integer)
+ALTER EXTENSION hstore ADD OPERATOR app.-> (hstore, text)
+ALTER EXTENSION hstore DROP OPERATOR <<= (inet, inet)

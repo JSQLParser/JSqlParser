@@ -57,7 +57,19 @@ class CommentValidatorTest extends ValidationTestAsserts {
                 Arguments.of("SERVER s", Feature.commentOnServer),
                 Arguments.of("STATISTICS st", Feature.commentOnStatistics),
                 Arguments.of("SUBSCRIPTION s", Feature.commentOnSubscription),
-                Arguments.of("TABLESPACE ts", Feature.commentOnTablespace));
+                Arguments.of("TABLESPACE ts", Feature.commentOnTablespace),
+                Arguments.of("OPERATOR - (NONE, integer)", Feature.commentOnOperator),
+                Arguments.of("OPERATOR CLASS ops USING btree", Feature.commentOnOperatorClass),
+                Arguments.of("OPERATOR FAMILY ops USING gist", Feature.commentOnOperatorFamily),
+                Arguments.of("CONVERSION conv", Feature.commentOnConversion),
+                Arguments.of("LARGE OBJECT 4242", Feature.commentOnLargeObject),
+                Arguments.of("TRANSFORM FOR hstore LANGUAGE plpython3u",
+                        Feature.commentOnTransform),
+                Arguments.of("TEXT SEARCH CONFIGURATION cfg",
+                        Feature.commentOnTextSearchConfiguration),
+                Arguments.of("TEXT SEARCH DICTIONARY dict", Feature.commentOnTextSearchDictionary),
+                Arguments.of("TEXT SEARCH PARSER prs", Feature.commentOnTextSearchParser),
+                Arguments.of("TEXT SEARCH TEMPLATE tmpl", Feature.commentOnTextSearchTemplate));
     }
 
     @Test
