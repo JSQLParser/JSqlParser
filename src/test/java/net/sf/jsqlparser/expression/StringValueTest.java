@@ -10,16 +10,21 @@
 package net.sf.jsqlparser.expression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.table.ColumnOption;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.test.TestUtils;
+import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -140,6 +145,108 @@ public class StringValueTest {
                 Dialect.POSTGRESQL).getNotExcapedValue());
         assertEquals("it''s\\n", literal("$$it''s\\n$$", Dialect.POSTGRESQL)
                 .getNotExcapedValue());
+    }
+
+    @Test
+    void testPostgresUnicodeEscapeStrings() throws JSQLParserException {
+        StringValue value = literal("U&'\\0041BC \\00e9'", Dialect.POSTGRESQL);
+        assertEquals(StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE, value.getEscaping());
+        assertEquals("U&", value.getPrefix());
+        assertEquals("\\0041BC \\00e9", value.getValue());
+        assertNull(value.getUnicodeEscapeCharacter());
+        assertEquals("ABC \u00e9", value.getNotExcapedValue());
+
+        StringValue custom = literal("U&'d!0061t!+000061' UESCAPE '!'", Dialect.POSTGRESQL);
+        assertEquals("d!0061t!+000061", custom.getValue());
+        assertEquals(Character.valueOf('!'), custom.getUnicodeEscapeCharacter());
+        assertEquals("data", custom.getNotExcapedValue());
+        assertEquals("U&'d!0061t!+000061' UESCAPE '!'", custom.toString());
+
+        String[][] cases = {
+                {"U&'\\+01F600'", "\uD83D\uDE00"},
+                {"U&'a\\\\b'", "a\\b"},
+                {"U&'it''s'", "it's"},
+                // a surrogate pair as two escapes, in either form
+                {"u&'\\D83D\\DE00'", "\uD83D\uDE00"},
+                {"U&'\\d83d\\+00de00'", "\uD83D\uDE00"},
+                {"U&'caf\\00E9 \\+00AC00 \uD55C\uAE00'", "caf\u00e9 \uAC00 \uD55C\uAE00"},
+                // a doubled escape character stands for itself; other backslashes stay
+                {"U&'a!!b\\n!0021' UESCAPE '!'", "a!b\\n!"},
+                {"U&'\\' UESCAPE '!'", "\\"},
+                {"U&'#0041' uescape '#'", "A"},
+                {"U&'x' UESCAPE '\\'", "x"},
+                {"U&''", ""}};
+        for (String[] c : cases) {
+            assertEquals(c[1], literal(c[0], Dialect.POSTGRESQL).getNotExcapedValue(), c[0]);
+        }
+    }
+
+    @Test
+    void testPostgresUnicodeEscapeStringsRoundTrip() throws JSQLParserException {
+        for (String sql : new String[] {
+                "COMMENT ON TABLE t IS U&'\\0041BC \\00e9'",
+                "COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'",
+                "CREATE TABLE t (a text DEFAULT U&'\\+01F600', b text DEFAULT U&'it''s')",
+                "ALTER TABLE t ALTER COLUMN a SET DEFAULT U&'a\\\\b'",
+                "INSERT INTO t VALUES (U&'#0041' UESCAPE '#', U&'x')",
+                "SELECT * FROM t WHERE a = U&'\\00e9' AND b LIKE U&'%!0041' UESCAPE '!'"}) {
+            Statement statement = TestUtils.assertSqlCanBeParsedAndDeparsed(sql, false,
+                    parser -> parser.withDialect(Dialect.POSTGRESQL));
+            Statement reparsed = CCJSqlParserUtil.parse(statement.toString(),
+                    parser -> parser.withDialect(Dialect.POSTGRESQL));
+            assertEquals(sql, reparsed.toString());
+        }
+        Comment comment = (Comment) CCJSqlParserUtil.parse(
+                "COMMENT ON TABLE t IS U&'d!0061t!+000061' UESCAPE '!'",
+                parser -> parser.withDialect(Dialect.POSTGRESQL));
+        assertEquals("data", comment.getComment().getNotExcapedValue());
+        // a continuation line belongs to the same Unicode escape string, as on the server
+        StringValue continued = literal("U&'\\0041'\n'\\0042'", Dialect.POSTGRESQL);
+        assertEquals("AB", continued.getNotExcapedValue());
+        assertEquals("U&'\\0041\\0042'", continued.toString());
+    }
+
+    @Test
+    void testConstructedUnicodeEscapeStrings() {
+        StringValue value = new StringValue("U&'!0041' UESCAPE '!'");
+        assertEquals("U&", value.getPrefix());
+        assertEquals("!0041", value.getValue());
+        assertEquals(StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE, value.getEscaping());
+        assertEquals("A", value.getNotExcapedValue());
+        assertEquals("U&'!0041' UESCAPE '!'", value.toString());
+        assertEquals("U&'!0041'", value.withUnicodeEscapeCharacter(null).toString());
+        assertEquals("!0041", value.getNotExcapedValue());
+
+        StringValue built = new StringValue("'#00e9'").withPrefix("U&")
+                .withEscaping(StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE)
+                .withUnicodeEscapeCharacter('#');
+        assertEquals("U&'#00e9' UESCAPE '#'", built.toString());
+        assertEquals("\u00e9", built.getNotExcapedValue());
+        ExpressionDeParser deParser = new ExpressionDeParser();
+        built.accept(deParser, null);
+        assertEquals("U&'#00e9' UESCAPE '#'", deParser.getBuilder().toString());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new StringValue("U&'\\00'").getNotExcapedValue());
+        assertThrows(IllegalArgumentException.class,
+                () -> new StringValue("U&'x' UESCAPE '+'").getNotExcapedValue());
+        // without the escaping a U& prefix only renders
+        assertEquals("\\0041", new StringValue("'\\0041'").withPrefix("U&").getNotExcapedValue());
+    }
+
+    @Test
+    void testUnicodeUnescapingIsLinear() {
+        int escapes = 500_000;
+        StringBuilder sb = new StringBuilder(13 * escapes + 4).append("U&'");
+        for (int i = 0; i < escapes; i++) {
+            sb.append("\\0041\\+01F600");
+        }
+        StringValue instance = new StringValue(sb.append('\'').toString());
+
+        String result = assertTimeoutPreemptively(Duration.ofSeconds(2),
+                instance::getNotExcapedValue);
+
+        assertEquals(3 * escapes, result.length());
     }
 
     @Test
