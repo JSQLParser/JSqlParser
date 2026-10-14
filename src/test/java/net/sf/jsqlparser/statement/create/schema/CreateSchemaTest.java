@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.AbstractJSqlParser.Dialect;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.create.database.DatabaseOption;
 import org.junit.jupiter.api.Test;
@@ -76,5 +77,21 @@ public class CreateSchemaTest {
         assertEquals("'N'", encryption.getValue());
 
         assertEquals(sql, CCJSqlParserUtil.parse(sql).toString());
+    }
+
+    @Test
+    void testMySqlCreateSchemaCharset() throws JSQLParserException {
+        String sql = "CREATE SCHEMA db1 DEFAULT CHARSET = utf8mb4 DEFAULT ENCRYPTION = 'N'";
+        for (Dialect dialect : new Dialect[] {Dialect.MYSQL, null}) {
+            CreateSchema schema = (CreateSchema) assertSqlCanBeParsedAndDeparsed(sql, false,
+                    dialect == null ? parser -> {
+                    } : parser -> parser.withDialect(dialect));
+            DatabaseOption charset =
+                    schema.getDatabaseOption(DatabaseOption.Kind.CHARACTER_SET).orElseThrow();
+            assertEquals("CHARSET", charset.getName());
+            assertEquals("utf8mb4", charset.getValue());
+            assertTrue(charset.isUseDefault());
+        }
+        assertSqlCanBeParsedAndDeparsed("CREATE SCHEMA db1 CHAR SET utf8mb4");
     }
 }

@@ -1868,6 +1868,60 @@ visitors, both SQL renderers and metadata validation use this structured target.
 Feature analysis reports ``MODIFIES_SESSION``; the directive itself inserts no rows.
 The dedicated validation capability is ``setIdentityInsert``.
 
+Database options and configuration parameters
+---------------------------------------------
+
+``CreateDatabase``, MySQL's ``CREATE SCHEMA`` and ``AlterDatabase`` share the
+``DatabaseOption`` model. MySQL options are ``CHARACTER_SET`` (``getName()`` keeps
+the ``CHARACTER SET``, ``CHAR SET`` or ``CHARSET`` spelling), ``COLLATE``,
+``ENCRYPTION`` and, for ALTER only, ``READ_ONLY``. PostgreSQL options have one kind
+each, from ``OWNER`` and ``TEMPLATE`` to ``CONNECTION_LIMIT``, ``IS_TEMPLATE`` and
+``OID``; ``isUseWith()`` records the optional ``WITH``. Values keep their SQL text,
+such as ``'UTF8'`` or ``-1``. Other option text remains one raw ``OTHER`` option.
+
+``AlterDatabase.getAction()`` selects what is rendered: ``OPTIONS`` (the default),
+``RENAME``, ``OWNER``, ``SET_TABLESPACE``, ``REFRESH_COLLATION_VERSION`` or
+``CONFIGURATION_PARAMETER``. Payloads of the other actions are kept. ``SET`` and
+``RESET`` of a configuration parameter use ``ConfigurationParameterChange``, which
+``AlterRole`` shares:
+
+.. code-block:: java
+
+    AlterDatabase alter = (AlterDatabase) CCJSqlParserUtil.parse(
+        "ALTER DATABASE app SET search_path TO app, public",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    ConfigurationParameterChange change = alter.getParameterChange();
+    change.getParameter();  // search_path
+    change.getValues();     // [app, public], a mutable ExpressionList
+    change.setValueKind(ConfigurationParameterChange.ValueKind.DEFAULT);
+    // ALTER DATABASE app SET search_path TO DEFAULT
+
+``getValueKind()`` is ``VALUES``, ``DEFAULT`` or ``FROM_CURRENT``; ``RESET ALL`` uses
+the parameter name ``ALL``. ``AlterRole`` keeps ``getParameter()``, ``isUseEquals()``,
+``isFromCurrent()``, ``isUseDefault()``, ``getValues()`` and their setters; they read
+and edit ``getParameterChange()``. ``FROM CURRENT`` and ``DEFAULT`` are now mutually
+exclusive: ``setFromCurrent(false)`` and ``setUseDefault(false)`` return to the values.
+
+Without the MySQL dialect, ``ALTER DATABASE`` forms that are neither MySQL nor
+PostgreSQL syntax, such as ``ALTER DATABASE d SET RECOVERY SIMPLE``, remain an
+``UnsupportedStatement``; ``Dialect.MYSQL`` reports them as errors. ``ALTER SCHEMA``
+followed by MySQL options is an ``AlterDatabase`` in every dialect, while PostgreSQL's
+``ALTER SCHEMA ... RENAME TO/OWNER TO`` remains an ``AlterSchema``. Validation
+reports the ``createDatabase`` and ``alterDatabase`` features, which the MySQL,
+MariaDB and PostgreSQL capabilities enable.
+
+``CreateDatabase.getOptions()`` is now a live list that is never null, and
+``setOptions`` copies its argument. ``getDatabaseOptions()`` is an unmodifiable
+token snapshot derived from the options, including ``WITH``, and is null without
+options. ``setDatabaseOptions`` replaces all options with one raw option, and
+``addDatabaseOptions`` appends one while keeping the typed options. Parsed
+statements no longer end with an empty raw option.
+
+References: MySQL `CREATE DATABASE <https://dev.mysql.com/doc/refman/8.4/en/create-database.html>`_,
+`ALTER DATABASE <https://dev.mysql.com/doc/refman/8.4/en/alter-database.html>`_;
+PostgreSQL `CREATE DATABASE <https://www.postgresql.org/docs/18/sql-createdatabase.html>`_,
+`ALTER DATABASE <https://www.postgresql.org/docs/18/sql-alterdatabase.html>`_.
+
 MySQL table maintenance statements
 ----------------------------------
 

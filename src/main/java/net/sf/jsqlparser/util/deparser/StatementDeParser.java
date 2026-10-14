@@ -838,7 +838,8 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(AlterDatabase statement, S context) {
-        return statement.appendTo(builder);
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
     }
 
     @Override

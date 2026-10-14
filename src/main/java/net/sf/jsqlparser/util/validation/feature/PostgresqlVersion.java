@@ -120,6 +120,10 @@ public enum PostgresqlVersion implements Version {
                     Feature.createViewMaterialized, // https://www.postgresql.org/docs/current/sql-alterview.html
                     // Feature.alterView,
 
+                    // https://www.postgresql.org/docs/current/sql-createdatabase.html
+                    // https://www.postgresql.org/docs/current/sql-alterdatabase.html
+                    Feature.createDatabase, Feature.alterDatabase,
+
                     // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
                     Feature.refreshMaterializedView,
                     Feature.refreshMaterializedWithNoDataView,

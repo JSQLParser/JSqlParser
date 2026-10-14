@@ -85,6 +85,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.create.event.AlterEvent;
 import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -437,6 +438,16 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(CreateDatabase aThis, S context) {
         validateFeatureAndName(Feature.createDatabase, NamedObject.database,
                 aThis.getDatabaseName());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterDatabase statement, S context) {
+        validateFeature(Feature.alterDatabase);
+        if (statement.getParameterChange() != null
+                && statement.getParameterChange().getValues() != null) {
+            statement.getParameterChange().getValues().forEach(this::validateOptionalExpression);
+        }
         return null;
     }
 
