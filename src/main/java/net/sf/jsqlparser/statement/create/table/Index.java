@@ -183,6 +183,11 @@ public class Index implements TableElement, Serializable, KeyColumnSource, Index
         return this;
     }
 
+    public Index withSpecOptions(List<IndexSpecOption> value) {
+        setSpecOptions(value);
+        return this;
+    }
+
     public Index withClustering(IndexOptions.Clustering value) {
         setClustering(value);
         return this;
