@@ -9,8 +9,11 @@
  */
 package net.sf.jsqlparser.statement.alter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.create.table.ConstraintKind;
 
@@ -19,6 +22,47 @@ import net.sf.jsqlparser.statement.create.table.ConstraintKind;
  * DROP INDEX/KEY, DROP PRIMARY KEY, DROP UNIQUE, DROP FOREIGN KEY, and DROP PARTITION.
  */
 public class AlterExpressionDrop extends AlterExpression {
+    private CascadeBehavior behavior;
+
+    /** The explicit CASCADE or RESTRICT clause; null when omitted. */
+    public CascadeBehavior getBehavior() {
+        return behavior;
+    }
+
+    public void setBehavior(CascadeBehavior behavior) {
+        this.behavior = behavior;
+    }
+
+    public AlterExpressionDrop withBehavior(CascadeBehavior behavior) {
+        setBehavior(behavior);
+        return this;
+    }
+
+    /**
+     * Returns the raw parameters, such as Oracle's {@code INVALIDATE} or
+     * {@code CASCADE CONSTRAINTS}. With a {@link #getBehavior() behavior}, this is an unmodifiable
+     * snapshot that ends with its keyword; use {@link #addParameters(String...)} to append raw
+     * parameters.
+     */
+    @Override
+    public List<String> getParameters() {
+        List<String> parameters = super.getParameters();
+        if (behavior == null) {
+            return parameters;
+        }
+        List<String> tokens = parameters == null ? new ArrayList<>() : new ArrayList<>(parameters);
+        tokens.add(behavior.name());
+        return Collections.unmodifiableList(tokens);
+    }
+
+    @Override
+    protected void appendCommonTail(StringBuilder b) {
+        super.appendCommonTail(b);
+        if (behavior != null) {
+            b.append(' ').append(behavior);
+        }
+    }
+
     @Override
     public List<ColumnIdentityAction> getColumnIdentityActions() {
         return getColumnIdentityActionsFromDefinitions();

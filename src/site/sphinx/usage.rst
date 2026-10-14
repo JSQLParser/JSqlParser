@@ -341,6 +341,14 @@ The existing getter and setter names remain, but their return and parameter type
 have changed, so clients must recompile. ``Truncate.setCascade(false)`` still
 clears the clause. Foreign-key referential actions retain their separate enum.
 
+``ALTER TABLE`` drop actions expose the same enum through
+``AlterExpressionDrop.getBehavior()``, for example in
+``ALTER TABLE t DROP COLUMN IF EXISTS c RESTRICT`` and
+``ALTER TABLE t DROP CONSTRAINT c CASCADE``. Oracle's ``CASCADE CONSTRAINTS`` and
+``INVALIDATE`` remain raw parameters. ``getParameters()`` still ends with the
+behavior keyword; when a behavior is set, it returns a read-only snapshot, so use
+``setBehavior`` to change the clause.
+
 Edit shared table options
 -------------------------
 
@@ -368,13 +376,74 @@ returns an unmodifiable snapshot.
 Any structured setter leaves the opaque representation; it never recovers
 previous values from those tokens. ``setTokens(null)`` clears opaque tokens
 without restoring discarded properties, and leaves structured options alone.
-``setUnionTables``, ``setStorageParameters`` and ``setForeignTableOptions``
-replace the current contents with their respective structured payloads. Their
-lists and child nodes remain editable. An empty UNION list means ``UNION ()``;
+``setUnionTables``, ``setStorageParameters``, ``setForeignTableOptions`` and
+``setOnCommitAction`` replace the current contents with their respective
+structured payloads. Their lists and child nodes remain editable. An empty
+UNION list means ``UNION ()``;
 a null payload omits its value. A non-null ``setTablespaceStorage`` also selects
 TABLESPACE; supply its tablespace name with ``setValue``. Choose the new kind and spelling explicitly
 when using the scalar setters. These methods edit the AST rather than checking
 database-specific DDL validity.
+
+A temporary table's ``ON COMMIT`` clause and a table access method are single
+options. ``Kind.ON_COMMIT`` exposes ``getOnCommitAction()``: ``PRESERVE_ROWS``,
+``DELETE_ROWS`` or ``DROP``, plus ``PRESERVE_DEFINITION`` and ``DROP_DEFINITION``
+for Oracle private temporary tables. ``Kind.ACCESS_METHOD`` stores the method of
+``USING method`` as its value, including ``CREATE TABLE … USING method AS query``.
+Use ``TableOption.onCommit`` and ``TableOption.accessMethod`` to build them.
+``getTableOptionsStrings()`` keeps the legacy word tokens, such as ``ON``,
+``COMMIT``, ``DELETE`` and ``ROWS``.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TEMP TABLE t (id INT) USING heap ON COMMIT DROP",
+            parser -> parser.withDialect(Dialect.POSTGRESQL));
+    table.getTableOption(TableOption.Kind.ACCESS_METHOD).orElseThrow().getValue(); // heap
+    table.getTableOption(TableOption.Kind.ON_COMMIT).orElseThrow()
+            .setOnCommitAction(TableOption.OnCommitAction.PRESERVE_ROWS);
+    // CREATE TEMP TABLE t (id INT) USING heap ON COMMIT PRESERVE ROWS
+
+MySQL table and partition comments
+----------------------------------
+
+A table ``COMMENT`` in CREATE TABLE, CREATE TABLE … AS SELECT and ALTER TABLE is a
+``StringValue`` in ``TableOption.getComment()``. Partition and subpartition comments,
+including those of ALTER TABLE ADD and REORGANIZE PARTITION, are in
+``PartitionDefinition.getCommentValue()``. The literal records the escaping of the
+parser configuration, so ``getNotExcapedValue()`` returns the text MySQL stores.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT) COMMENT = 'it\\'s' "
+                    + "PARTITION BY HASH (id) (PARTITION p0 COMMENT 'a\\\\b')",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    TableOption option = table.getTableOption(TableOption.Kind.COMMENT).orElseThrow();
+    option.getComment().getNotExcapedValue(); // it's
+    option.getValue();                        // 'it\'s'
+    table.getPartitioning().getPartitionDefinitions().get(0)
+            .getCommentValue().getNotExcapedValue(); // a\b
+
+``getValue()``, ``getTokens()``, ``CreateTable.getTableOptionsStrings()``,
+``AlterExpressionTableOption.getCommentText()`` and ``PartitionDefinition.getComment()``
+still return the literal as written, and the SQL output is unchanged except that a
+string prefix such as ``n'…'`` is printed in upper case, as in other string literals.
+The table comment literal is rendered by the expression deparser and visited like a
+column COMMENT literal.
+
+``setComment``, ``withComment`` and the ``TableOption.comment`` factory replace the
+option's contents with the literal and select COMMENT. They keep the equals spelling,
+and an existing COMMENT also keeps its name; a null literal omits the value.
+``setValue`` stores a plain value and ``setTokens`` opaque tokens. Neither is parsed,
+so ``getComment()`` then returns null. Selecting another kind keeps the literal's SQL
+text as a plain value. A COMMENT value that is not a string literal also stays a plain
+value, for example a double-quoted string parsed without the MySQL dialect, where it
+is a quoted identifier.
+
+``PartitionDefinition.setComment(String)`` reads the SQL text of a literal with
+standard escaping; pass a ``StringValue`` with another escaping to
+``setCommentValue``.
 
 Inspect PostgreSQL schema statements
 ------------------------------------

@@ -11,6 +11,7 @@ package net.sf.jsqlparser.statement.create.table;
 
 import java.io.Serializable;
 import java.util.List;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class PartitionDefinition implements Serializable {
@@ -39,7 +40,7 @@ public class PartitionDefinition implements Serializable {
     private boolean subPartition;
     private boolean storageKeyword;
     private boolean storageEngineUseEquals = true;
-    private String comment;
+    private StringValue commentValue;
     private boolean commentUseEquals;
     private String dataDirectory;
     private boolean dataDirectoryUseEquals;
@@ -143,12 +144,26 @@ public class PartitionDefinition implements Serializable {
         this.storageEngineUseEquals = storageEngineUseEquals;
     }
 
+    /** Returns the COMMENT literal's SQL text, for example {@code 'it''s'}, or null. */
     public String getComment() {
-        return comment;
+        return commentValue != null ? commentValue.toString() : null;
     }
 
+    /**
+     * Sets the COMMENT from a string literal's SQL text, read with standard escaping. Use
+     * {@link #setCommentValue(StringValue)} for another escaping. Null removes the comment.
+     */
     public void setComment(String comment) {
-        this.comment = comment;
+        commentValue = comment != null ? new StringValue(comment) : null;
+    }
+
+    /** Returns the COMMENT string literal; {@link StringValue#getNotExcapedValue()} decodes it. */
+    public StringValue getCommentValue() {
+        return commentValue;
+    }
+
+    public void setCommentValue(StringValue commentValue) {
+        this.commentValue = commentValue;
     }
 
     public boolean isCommentUseEquals() {
@@ -266,7 +281,7 @@ public class PartitionDefinition implements Serializable {
             }
             appendOption(b, "ENGINE", storageEngine, storageEngineUseEquals);
         }
-        appendOption(b, "COMMENT", comment, commentUseEquals);
+        appendOption(b, "COMMENT", getComment(), commentUseEquals);
         appendOption(b, "DATA DIRECTORY", dataDirectory, dataDirectoryUseEquals);
         appendOption(b, "INDEX DIRECTORY", indexDirectory, indexDirectoryUseEquals);
         appendOption(b, "MAX_ROWS", maxRows, maxRowsUseEquals);
