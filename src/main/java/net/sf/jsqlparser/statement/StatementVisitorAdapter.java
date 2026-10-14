@@ -103,7 +103,9 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -599,6 +601,16 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(ShowTablesStatement showTables, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowTableStatusStatement showTableStatus, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ShowCreateStatement showCreate, S context) {
         return null;
     }
 

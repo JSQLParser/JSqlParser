@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,6 @@ public class ShowStatementTest {
         String sqlStr =
                 "show create table my_table";
         Statement statement = assertSqlCanBeParsedAndDeparsed(sqlStr, true);
-        Assertions.assertTrue(statement instanceof UnsupportedStatement);
+        Assertions.assertTrue(statement instanceof ShowCreateStatement);
     }
 }

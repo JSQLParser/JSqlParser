@@ -122,7 +122,9 @@ import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.ParenthesedUpdate;
@@ -465,6 +467,18 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     @Override
     public <S> StringBuilder visit(ShowTablesStatement showTables, S context) {
         new ShowTablesStatementDeparser(builder).deParse(showTables);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ShowTableStatusStatement showTableStatus, S context) {
+        builder.append(showTableStatus);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ShowCreateStatement showCreate, S context) {
+        builder.append(showCreate);
         return builder;
     }
 

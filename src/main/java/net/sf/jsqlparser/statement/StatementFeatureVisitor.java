@@ -114,7 +114,9 @@ import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowCreateStatement;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
+import net.sf.jsqlparser.statement.show.ShowTableStatusStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -935,6 +937,16 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(ShowTablesStatement showTables, S context) {
+        return metadataOnly();
+    }
+
+    @Override
+    public <S> Void visit(ShowTableStatusStatement showTableStatus, S context) {
+        return metadataOnly();
+    }
+
+    @Override
+    public <S> Void visit(ShowCreateStatement showCreate, S context) {
         return metadataOnly();
     }
 

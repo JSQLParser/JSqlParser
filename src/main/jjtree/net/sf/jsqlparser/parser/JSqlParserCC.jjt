@@ -6779,11 +6779,19 @@ Statement Show():
 {
     <K_SHOW>
     (
-        LOOKAHEAD(2) statement = ShowColumns()
+        // A typed form must span the whole statement; other dialects' trailing clauses
+        // (e.g. Snowflake IN SCHEMA s, ClickHouse FORMAT f) still fall back to captureRest().
+        LOOKAHEAD(ShowColumns() ShowStatementEnd()) statement = ShowColumns()
         |
         LOOKAHEAD(2) statement = ShowIndex()
         |
         LOOKAHEAD(2) statement = ShowTables()
+        |
+        LOOKAHEAD(ShowTableStatus() ShowStatementEnd(),
+                { getToken(1).kind == K_TABLE && "STATUS".equalsIgnoreCase(getToken(2).image) })
+        statement = ShowTableStatus()
+        |
+        LOOKAHEAD(ShowCreate() ShowStatementEnd()) statement = ShowCreate()
         |
         // any of the RDBMS specific SHOW syntax
         captureRest = captureRest()
@@ -6800,13 +6808,135 @@ Statement Show():
     }
 }
 
+/**
+ * Only used inside the SHOW lookaheads: a typed SHOW statement ends at a semicolon, the input end,
+ * the ELSE or END of an enclosing IF or block, or the start of the next statement, as in
+ * Statements().
+ */
+void ShowStatementEnd():
+{}
+{
+    <ST_SEMICOLON>
+    |
+    <EOF>
+    |
+    <K_ELSE>
+    |
+    <K_END>
+    |
+    LOOKAHEAD({ getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
+            && getToken(1).kind != K_UNPIVOT && isStatementStartAhead() }) {}
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/show-columns.html
 ShowColumnsStatement ShowColumns(): {
-    String tableName;
+    ShowColumnsStatement statement = new ShowColumnsStatement();
+    Table table;
+    String dbName;
+    Expression expression;
 }
 {
-    <K_COLUMNS> <K_FROM> tableName = RelObjectName()
+    [ <K_EXTENDED> { statement.setExtended(true); } ]
+    [ <K_FULL> { statement.setFull(true); } ]
+    ( <K_COLUMNS> | <K_FIELDS> { statement.setFieldsKeyword(true); } )
+    (
+        <K_FROM>
+        |
+        <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+    )
+    table = Table() { statement.setTable(table); }
+    [
+        LOOKAHEAD(2)
+        (
+            <K_FROM>
+            |
+            <K_IN> { statement.setDbSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+        )
+        dbName = RelObjectName() { statement.setDbName(dbName); }
+    ]
+    [
+        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
+        |
+        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
+    ]
     {
-        return new ShowColumnsStatement(tableName);
+        return statement;
+    }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/show-table-status.html
+ShowTableStatusStatement ShowTableStatus(): {
+    ShowTableStatusStatement statement = new ShowTableStatusStatement();
+    String dbName;
+    Expression expression;
+}
+{
+    <K_TABLE> ContextualKeyword("STATUS")
+    [
+        LOOKAHEAD(2)
+        (
+            <K_FROM>
+            |
+            <K_IN> { statement.setSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+        )
+        dbName = RelObjectName() { statement.setDbName(dbName); }
+    ]
+    [
+        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
+        |
+        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
+    ]
+    {
+        return statement;
+    }
+}
+
+/**
+ * MySQL SHOW CREATE {TABLE | VIEW | PROCEDURE | FUNCTION | TRIGGER | EVENT} name,
+ * SHOW CREATE {DATABASE | SCHEMA} [IF NOT EXISTS] db and SHOW CREATE USER account.
+ */
+ShowCreateStatement ShowCreate(): {
+    ShowCreateStatement statement = new ShowCreateStatement();
+    Table name;
+    String databaseName;
+    String currentUser;
+    UserAccount account = new UserAccount();
+}
+{
+    <K_CREATE>
+    (
+        (
+            <K_TABLE> { statement.setObjectType(ShowCreateStatement.ObjectType.TABLE); }
+            |
+            <K_VIEW> { statement.setObjectType(ShowCreateStatement.ObjectType.VIEW); }
+            |
+            <K_PROCEDURE> { statement.setObjectType(ShowCreateStatement.ObjectType.PROCEDURE); }
+            |
+            <K_FUNCTION> { statement.setObjectType(ShowCreateStatement.ObjectType.FUNCTION); }
+            |
+            <K_TRIGGER> { statement.setObjectType(ShowCreateStatement.ObjectType.TRIGGER); }
+            |
+            <K_EVENT> { statement.setObjectType(ShowCreateStatement.ObjectType.EVENT); }
+        )
+        name = Table() { statement.setName(name); }
+        |
+        ( <K_DATABASE> | <K_SCHEMA> { statement.setSchemaKeyword(true); } )
+        { statement.setObjectType(ShowCreateStatement.ObjectType.DATABASE); }
+        [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+        databaseName = RelObjectName() { statement.setDatabaseName(databaseName); }
+        |
+        <K_USER> { statement.setObjectType(ShowCreateStatement.ObjectType.USER); }
+        (
+            LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) currentUser = RelObjectName()
+            { account.setUser(new StringValue(currentUser).setQuoteStr("")); }
+            [ LOOKAHEAD(2) "(" ")" { statement.setCurrentUserParentheses(true); } ]
+            |
+            account = MySqlAccountName()
+        )
+        { statement.setAccount(account); }
+    )
+    {
+        return statement;
     }
 }
 
