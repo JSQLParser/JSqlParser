@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class PostgreSqlExclusionOperatorTest {
     @ParameterizedTest
     @ValueSource(strings = {"OPERATOR(pg_catalog.&&)", "OPERATOR(&&)", "OPERATOR(\"My.Schema\".&&)",
-            "OPERATOR(pg_catalog.=)", "&&"})
+            "OPERATOR(pg_catalog.=)", "OPERATOR(pg_catalog.-|-)", "OPERATOR(<<=)", "&&"})
     void supportsSharedCreateAndAlterGrammar(String operator) throws JSQLParserException {
         for (String sql : new String[] {
                 "CREATE TABLE t (c INT4RANGE, CONSTRAINT ex EXCLUDE USING gist (c WITH " + operator

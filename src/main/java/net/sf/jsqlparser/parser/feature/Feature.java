@@ -678,6 +678,15 @@ public enum Feature {
     /** COMMENT ON EVENT TRIGGER, PUBLICATION or SUBSCRIPTION. */
     commentOnEventTrigger, commentOnPublication, commentOnSubscription,
 
+    /** COMMENT ON OPERATOR, OPERATOR CLASS or OPERATOR FAMILY. */
+    commentOnOperator, commentOnOperatorClass, commentOnOperatorFamily,
+
+    /** COMMENT ON CONVERSION, LARGE OBJECT or TRANSFORM. */
+    commentOnConversion, commentOnLargeObject, commentOnTransform,
+
+    /** COMMENT ON TEXT SEARCH CONFIGURATION, DICTIONARY, PARSER or TEMPLATE. */
+    commentOnTextSearchConfiguration, commentOnTextSearchDictionary, commentOnTextSearchParser, commentOnTextSearchTemplate,
+
     /**
      * SQL "DESCRIBE" statement is allowed
      *
