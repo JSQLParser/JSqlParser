@@ -15,15 +15,16 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.StringValue;
 
 /**
- * A characteristic set by {@code ALTER FUNCTION}, {@code ALTER PROCEDURE} or {@code ALTER ROUTINE}.
- * PostgreSQL and MySQL share the model, and each {@link Kind} renders its own SQL:
+ * A characteristic set by {@code ALTER FUNCTION}, {@code ALTER PROCEDURE} or {@code ALTER ROUTINE},
+ * or declared by MySQL's {@code CREATE FUNCTION|PROCEDURE}. PostgreSQL and MySQL share the model,
+ * and each {@link Kind} renders its own SQL:
  *
  * <ul>
  * <li>PostgreSQL: the volatility, the null input behavior, {@code [NOT] LEAKPROOF},
  * {@code [EXTERNAL] SECURITY}, {@code PARALLEL}, {@code COST}, {@code ROWS}, {@code SUPPORT} and
  * the {@code SET} or {@code RESET} of a configuration parameter;</li>
- * <li>MySQL: {@code COMMENT}, {@code LANGUAGE SQL}, the SQL data access and
- * {@code SQL SECURITY}.</li>
+ * <li>MySQL: {@code COMMENT}, {@code LANGUAGE SQL}, {@code [NOT] DETERMINISTIC} (CREATE only), the
+ * SQL data access and {@code SQL SECURITY}.</li>
  * </ul>
  *
  * The security kinds are shared; {@link #getSecurityClause()} keeps the spelling. Values keep their
@@ -70,6 +71,10 @@ public class RoutineCharacteristic implements Serializable {
         COMMENT("COMMENT"),
         /** MySQL {@code LANGUAGE SQL}. */
         LANGUAGE_SQL("LANGUAGE SQL"),
+        /** MySQL {@code DETERMINISTIC}, only in {@code CREATE FUNCTION|PROCEDURE}. */
+        DETERMINISTIC("DETERMINISTIC"),
+        /** MySQL {@code NOT DETERMINISTIC}, only in {@code CREATE FUNCTION|PROCEDURE}. */
+        NOT_DETERMINISTIC("NOT DETERMINISTIC"),
         /** MySQL {@code CONTAINS SQL}. */
         CONTAINS_SQL("CONTAINS SQL"),
         /** MySQL {@code NO SQL}. */
