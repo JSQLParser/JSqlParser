@@ -2230,6 +2230,37 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
+    /** MySQL {@code REVOKE ALL [PRIVILEGES], GRANT OPTION FROM ...}, which has no ON clause. */
+    private boolean isAccessAllGrantOptionAhead() {
+        if (getToken(1).kind != K_ALL) { return false; }
+        int i = "PRIVILEGES".equalsIgnoreCase(getToken(2).image) ? 3 : 2;
+        return ",".equals(getToken(i).image) && getToken(i + 1).kind == K_GRANT
+            && getToken(i + 2).kind == K_OPTION && getToken(i + 3).kind == K_FROM;
+    }
+
+    /** PUBLIC, CURRENT_USER, CURRENT_ROLE or SESSION_USER, unless used as the user of user@host. */
+    private boolean isAccessSpecialGranteeAhead() {
+        Token token = getToken(1);
+        int next = getToken(2).kind;
+        return (token.kind == K_PUBLIC || token.kind == S_IDENTIFIER)
+            && next != K_AT_SIGN && next != S_AT_IDENTIFIER
+            && Arrays.asList("PUBLIC", "CURRENT_USER", "CURRENT_ROLE", "SESSION_USER")
+                .contains(token.image.toUpperCase(Locale.ROOT));
+    }
+
+    /** Privileges take only GRANT OPTION; role memberships take distinct ADMIN, INHERIT and SET options. */
+    private static boolean isValidAccessGrantOptions(PrivilegeClause clause, List<GrantOption> options) {
+        if (clause.getPrivileges() != null) {
+            return options.size() == 1 && options.get(0).getKind() == GrantOption.Kind.GRANT
+                && options.get(0).getValue() == GrantOption.Value.OPTION;
+        }
+        EnumSet<GrantOption.Kind> kinds = EnumSet.noneOf(GrantOption.Kind.class);
+        for (GrantOption option : options) {
+            if (option.getKind() == GrantOption.Kind.GRANT || !kinds.add(option.getKind())) { return false; }
+        }
+        return true;
+    }
+
     private boolean isPostgreSqlTriggerAhead() {
         if (getToken(1).kind == K_CONSTRAINT) { return true; }
         if (getToken(1).kind != K_TRIGGER) { return false; }
@@ -15502,9 +15533,110 @@ StringValue MySqlAccountNamePart():
     (
         token=<S_CHAR_LITERAL> { value = stringValue(token); }
         |
-        name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
+        name=RelObjectName()
+        {
+            // a double-quoted or backquoted part keeps its quote character separately from its
+            // value, like a string literal; new StringValue(name) would drop the double quotes
+            value = name.length() > 1 && (name.charAt(0) == '"' || name.charAt(0) == '`')
+                    && name.charAt(name.length() - 1) == name.charAt(0)
+                    ? new StringValue().withValue(name.substring(1, name.length() - 1))
+                            .setQuoteStr(name.substring(0, 1))
+                    : new StringValue().withValue(name).setQuoteStr("");
+        }
     )
     { return value; }
+}
+
+/**
+ * A MySQL account name, user[@host], shared by CREATE USER, DEFINER and the account statements.
+ * Each part is unquoted or quoted with ', " or `. The lexer reads an unquoted user@host, and the
+ * user@ in front of a quoted host, as one identifier, and @host after a quoted user as one
+ * at-identifier, so those spellings are split here.
+ */
+UserAccount MySqlAccountName():
+{
+    UserAccount account = new UserAccount();
+    StringValue part;
+    Token token;
+    int at;
+}
+{
+    (
+        // user@ followed by a quoted host
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.indexOf('@') > 0
+                && getToken(1).image.indexOf('@') == getToken(1).image.length() - 1 })
+        token=<S_IDENTIFIER>
+        { account.setUser(new StringValue().withValue(token.image.substring(0, token.image.length() - 1))
+                .setQuoteStr("")); }
+        part=MySqlAccountNamePart() { account.setHost(part); }
+        |
+        // unquoted user@host
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.indexOf('@') > 0
+                && getToken(1).image.indexOf('@') == getToken(1).image.lastIndexOf('@') })
+        token=<S_IDENTIFIER>
+        {
+            at = token.image.indexOf('@');
+            account.setUser(new StringValue().withValue(token.image.substring(0, at)).setQuoteStr(""));
+            account.setHost(new StringValue().withValue(token.image.substring(at + 1)).setQuoteStr(""));
+        }
+        |
+        part=MySqlAccountNamePart() { account.setUser(part); }
+        [
+            <K_AT_SIGN> part=MySqlAccountNamePart() { account.setHost(part); }
+            |
+            // a quoted user followed by an unquoted @host
+            LOOKAHEAD({ getToken(1).kind == S_AT_IDENTIFIER && !getToken(1).image.startsWith("@@") })
+            token=<S_AT_IDENTIFIER>
+            { account.setHost(new StringValue().withValue(token.image.substring(1)).setQuoteStr("")); }
+        ]
+    )
+    { return account; }
+}
+
+List<UserAccount> MySqlAccountNameList():
+{
+    List<UserAccount> accounts = new ArrayList<UserAccount>();
+    UserAccount account;
+}
+{
+    account=MySqlAccountName() { accounts.add(account); }
+    ( "," account=MySqlAccountName() { accounts.add(account); } )*
+    { return accounts; }
+}
+
+/**
+ * Roles of SET ROLE, SET DEFAULT ROLE, ALTER USER ... DEFAULT ROLE and GRANT ... AS user WITH ROLE.
+ * Only SET ROLE and WITH ROLE (setRole) accept DEFAULT and ALL EXCEPT.
+ */
+RoleSelection MySqlRoleSelection(boolean setRole):
+{
+    RoleSelection selection;
+    List<UserAccount> roles;
+}
+{
+    (
+        LOOKAHEAD({ getToken(1).kind == K_DEFAULT }) <K_DEFAULT>
+        { selection = new RoleSelection(RoleSelection.Kind.DEFAULT); }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_NONE }) <K_NONE>
+        { selection = new RoleSelection(RoleSelection.Kind.NONE); }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_ALL }) <K_ALL>
+        { selection = new RoleSelection(RoleSelection.Kind.ALL); }
+        [
+            LOOKAHEAD({ getToken(1).kind == K_EXCEPT }) <K_EXCEPT> roles=MySqlAccountNameList()
+            { selection.setKind(RoleSelection.Kind.ALL_EXCEPT); selection.setRoles(roles); }
+        ]
+        |
+        roles=MySqlAccountNameList()
+        { selection = new RoleSelection(RoleSelection.Kind.ROLES).withRoles(roles); }
+    )
+    {
+        requireAccessSyntax(setRole || selection.getKind() != RoleSelection.Kind.DEFAULT
+                && selection.getKind() != RoleSelection.Kind.ALL_EXCEPT,
+                "DEFAULT and ALL EXCEPT require SET ROLE");
+        return selection;
+    }
 }
 
 UserAuthentication MySqlUserAuthentication():
@@ -15557,14 +15689,11 @@ UserAuthentication MySqlUserAuthentication():
 
 UserAccount MySqlUserAccount():
 {
-    UserAccount account = new UserAccount();
-    StringValue user = null;
-    StringValue host = null;
+    UserAccount account;
     UserAuthentication authentication = null;
 }
 {
-    user=MySqlAccountNamePart() { account.setUser(user); }
-    [ <K_AT_SIGN> host=MySqlAccountNamePart() { account.setHost(host); } ]
+    account=MySqlAccountName()
     [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
     { return account; }
 }
@@ -15710,8 +15839,7 @@ AlterEvent AlterEvent():
 /** Account spelling is shared, including CURRENT_USER and CURRENT_USER(). */
 void MySqlDefiner(MySqlDefiner definer):
 {
-    StringValue user;
-    StringValue host;
+    UserAccount account;
     String name;
 }
 {
@@ -15721,8 +15849,7 @@ void MySqlDefiner(MySqlDefiner definer):
         { definer.setUser(new StringValue(name).setQuoteStr("")); }
         [ "(" ")" { definer.setCurrentUserParentheses(true); } ]
         |
-        user=MySqlAccountNamePart() { definer.setUser(user); }
-        [ <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+        account=MySqlAccountName() { definer.setUser(account.getUser()); definer.setHost(account.getHost()); }
     )
 }
 
@@ -20460,12 +20587,46 @@ Expression AccessSettingValue():
 { Expression value; Token token; }
 { ( LOOKAHEAD(1) token=<K_ON> { value = new Column(token.image); } | value=PrimaryExpression() ) { return value; } }
 
+/** PostgreSQL and MySQL static privileges; another identifier is a MySQL dynamic privilege. */
 Privilege AccessPrivilege():
-{ Privilege result; Token token; boolean all = false; String column; ExpressionList<Column> columns = null; }
+{ Privilege result; Privilege.Kind kind = null; Token token = null; String column; ExpressionList<Column> columns = null; }
 {
-    ( token=<K_SELECT> | token=<K_ALL> | token=<S_IDENTIFIER> | token=<K_INSERT> | token=<K_UPDATE> | token=<K_DELETE> | token=<K_TRUNCATE> | token=<K_REFERENCES> | token=<K_TRIGGER> | token=<K_CREATE> | token=<K_CONNECT> | token=<K_TEMPORARY> | token=<K_TEMP> | token=<K_EXECUTE> | token=<K_SET> | token=<K_ALTER> | token=<K_DROP> )
-    { result = new Privilege(accessEnum(Privilege.Kind.class, token.image)); }
-    [ <K_SYSTEM> { requireAccessSyntax(result.getKind() == Privilege.Kind.ALTER, "SYSTEM requires ALTER"); result.setKind(Privilege.Kind.ALTER_SYSTEM); } ]
+    (
+        <K_ALTER> { kind = Privilege.Kind.ALTER; }
+        [ <K_SYSTEM> { kind = Privilege.Kind.ALTER_SYSTEM; }
+          | LOOKAHEAD({ isAccessKeywordAhead("ROUTINE") }) AccessKeyword("ROUTINE") { kind = Privilege.Kind.ALTER_ROUTINE; } ]
+        |
+        <K_CREATE> { kind = Privilege.Kind.CREATE; }
+        [ <K_VIEW> { kind = Privilege.Kind.CREATE_VIEW; }
+          | <K_USER> { kind = Privilege.Kind.CREATE_USER; }
+          | <K_TABLESPACE> { kind = Privilege.Kind.CREATE_TABLESPACE; }
+          | <K_TEMPORARY> <K_TABLES> { kind = Privilege.Kind.CREATE_TEMPORARY_TABLES; }
+          | LOOKAHEAD({ isAccessKeywordAhead("ROLE") }) AccessKeyword("ROLE") { kind = Privilege.Kind.CREATE_ROLE; }
+          | LOOKAHEAD({ isAccessKeywordAhead("ROUTINE") }) AccessKeyword("ROUTINE") { kind = Privilege.Kind.CREATE_ROUTINE; } ]
+        |
+        <K_DROP> { kind = Privilege.Kind.DROP; }
+        [ LOOKAHEAD({ isAccessKeywordAhead("ROLE") }) AccessKeyword("ROLE") { kind = Privilege.Kind.DROP_ROLE; } ]
+        |
+        <K_GRANT> <K_OPTION> { kind = Privilege.Kind.GRANT_OPTION; }
+        |
+        <K_LOCK> <K_TABLES> { kind = Privilege.Kind.LOCK_TABLES; }
+        |
+        <K_SHOW> ( <K_VIEW> { kind = Privilege.Kind.SHOW_VIEW; } | AccessKeyword("DATABASES") { kind = Privilege.Kind.SHOW_DATABASES; } )
+        |
+        LOOKAHEAD({ isAccessKeywordAhead("REPLICATION") && (getToken(2).kind == K_SLAVE || "CLIENT".equalsIgnoreCase(getToken(2).image)) })
+        AccessKeyword("REPLICATION")
+        ( <K_SLAVE> { kind = Privilege.Kind.REPLICATION_SLAVE; } | AccessKeyword("CLIENT") { kind = Privilege.Kind.REPLICATION_CLIENT; } )
+        |
+        ( token=<K_SELECT> | token=<K_ALL> | token=<K_INSERT> | token=<K_UPDATE> | token=<K_DELETE> | token=<K_TRUNCATE> | token=<K_REFERENCES> | token=<K_TRIGGER> | token=<K_CONNECT> | token=<K_TEMPORARY> | token=<K_TEMP> | token=<K_EXECUTE> | token=<K_SET> | token=<K_INDEX> | token=<K_EVENT> | token=<K_FILE> | token=<K_SHUTDOWN> )
+        { kind = accessEnum(Privilege.Kind.class, token.image); }
+        |
+        token=<S_IDENTIFIER>
+        { if (Arrays.asList("MAINTAIN", "USAGE", "PROCESS", "PROXY", "RELOAD", "SUPER").contains(token.image.toUpperCase(Locale.ROOT))) {
+              kind = accessEnum(Privilege.Kind.class, token.image);
+              requireAccessSyntax(kind != Privilege.Kind.PROXY, "PROXY requires an account target");
+          } }
+    )
+    { result = kind == null ? Privilege.dynamic(token.image) : new Privilege(kind); }
     [ LOOKAHEAD({ isAccessKeywordAhead("PRIVILEGES") })
       AccessKeyword("PRIVILEGES") { requireAccessSyntax(result.getKind() == Privilege.Kind.ALL, "PRIVILEGES requires ALL"); result.setUsePrivileges(true); } ]
     [ "(" { columns = new ExpressionList<Column>(); }
@@ -20541,34 +20702,101 @@ PrivilegeTarget AccessTarget(boolean defaults):
         ( "," number=<S_LONG> { target.getNames().add(Collections.singletonList(number.image)); } )*
         |
         [ LOOKAHEAD({ isAccessTargetKindAhead() }) kind=AccessObjectKind(false) { target.setKind(kind); target.setExplicitKind(true); } ]
-        name=RelObjectNames() { target.getNames().add(name.getNames()); }
-        ( "," name=RelObjectNames() { target.getNames().add(name.getNames()); } )*
+        (
+            // MySQL privilege levels *, *.* and db.*
+            "*" { target.setWildcard(PrivilegeTarget.Wildcard.DEFAULT_DATABASE); }
+            [ "." "*" { target.setWildcard(PrivilegeTarget.Wildcard.GLOBAL); } ]
+            |
+            name=RelObjectNames() { target.getNames().add(name.getNames()); }
+            (
+                "." "*"
+                { requireAccessSyntax(name.getNames().size() == 1, "Expected database.*"); target.setWildcard(PrivilegeTarget.Wildcard.DATABASE); }
+                |
+                ( "," name=RelObjectNames() { target.getNames().add(name.getNames()); } )*
+            )
+        )
+        { requireAccessSyntax(target.getWildcard() == null || target.getKind() == PrivilegeTarget.Kind.TABLE, "Wildcards require a table target"); }
     )
     { requireAccessSyntax(target.isDefaultPrivileges() == defaults, "Invalid default-privilege target"); return target; }
 }
 
-String AccessGrantee():
-{ String name; boolean group = false; }
-{ [ LOOKAHEAD(1) <K_GROUP> { group = true; } ] name=RelObjectName() { return (group ? "GROUP " : "") + name; } }
-
-List<String> AccessGrantees():
-{ List<String> names = new ArrayList<String>(); String name; }
-{ name=AccessGrantee() { names.add(name); } ( "," name=AccessGrantee() { names.add(name); } )* { return names; } }
-
-PrivilegeClause AccessClause(boolean revoke, boolean defaults):
-{ PrivilegeClause clause = new PrivilegeClause(); Privilege privilege; PrivilegeTarget target; List<String> names; }
+/** A role specification shared by MySQL and PostgreSQL grantees, grantors and accounts. */
+Grantee AccessGrantee():
+{ Grantee grantee; StringValue name; UserAccount account; Token token; }
 {
     (
+        LOOKAHEAD({ getToken(1).kind == K_GROUP }) <K_GROUP> name=MySqlAccountNamePart()
+        { grantee = new Grantee(Grantee.Kind.GROUP).withAccount(new UserAccount().withUser(name)); }
+        |
+        LOOKAHEAD({ isAccessSpecialGranteeAhead() }) ( token=<K_PUBLIC> | token=<S_IDENTIFIER> )
+        { grantee = new Grantee(accessEnum(Grantee.Kind.class, token.image)); }
+        [ LOOKAHEAD(2) "(" ")" { requireAccessSyntax(grantee.getKind() == Grantee.Kind.CURRENT_USER, "Only CURRENT_USER takes parentheses");
+                    grantee.setCurrentUserParentheses(true); } ]
+        |
+        account=MySqlAccountName() { grantee = new Grantee(account); }
+    )
+    { return grantee; }
+}
+
+List<Grantee> AccessGrantees():
+{ List<Grantee> grantees = new ArrayList<Grantee>(); Grantee grantee; }
+{ grantee=AccessGrantee() { grantees.add(grantee); } ( "," grantee=AccessGrantee() { grantees.add(grantee); } )* { return grantees; } }
+
+PrivilegeClause AccessClause(boolean revoke, boolean defaults):
+{ PrivilegeClause clause = new PrivilegeClause(); Privilege privilege; PrivilegeTarget target; List<UserAccount> roles; List<Grantee> grantees; Grantee account; }
+{
+    (
+        LOOKAHEAD({ isAccessKeywordAhead("PROXY") && getToken(2).kind == K_ON })
+        AccessKeyword("PROXY") <K_ON> account=AccessGrantee()
+        {
+            requireAccessSyntax(!defaults, "PROXY is not part of default privileges");
+            requireAccessSyntax(account.getKind() == Grantee.Kind.ACCOUNT || account.getKind() == Grantee.Kind.CURRENT_USER, "PROXY requires an account");
+            clause.setPrivileges(new ArrayList<Privilege>());
+            clause.getPrivileges().add(new Privilege(Privilege.Kind.PROXY));
+            target = new PrivilegeTarget(); target.setKind(PrivilegeTarget.Kind.ACCOUNT); target.setAccount(account);
+            clause.setTarget(target);
+        }
+        |
+        LOOKAHEAD({ isAccessAllGrantOptionAhead() })
+        <K_ALL> { privilege = new Privilege(Privilege.Kind.ALL); }
+        [ AccessKeyword("PRIVILEGES") { privilege.setUsePrivileges(true); } ]
+        "," <K_GRANT> <K_OPTION>
+        {
+            requireAccessSyntax(!defaults, "ALL, GRANT OPTION is not part of default privileges");
+            clause.setPrivileges(new ArrayList<Privilege>());
+            clause.getPrivileges().add(privilege);
+            clause.getPrivileges().add(new Privilege(Privilege.Kind.GRANT_OPTION));
+            clause.setTarget(null);
+        }
+        |
         LOOKAHEAD({ isObjectPrivilegeAhead() })
         { clause.setPrivileges(new ArrayList<Privilege>()); }
         privilege=AccessPrivilege() { clause.getPrivileges().add(privilege); }
         ( "," privilege=AccessPrivilege() { clause.getPrivileges().add(privilege); } )*
         <K_ON> target=AccessTarget(defaults) { clause.setTarget(target); }
         |
-        names=AccessNames() { clause.setRoles(names); }
+        roles=MySqlAccountNameList() { clause.setRoleItems(roles); clause.setTarget(null); }
     )
     ( <K_TO> { requireAccessSyntax(!revoke, "REVOKE requires FROM"); } | <K_FROM> { requireAccessSyntax(revoke, "GRANT requires TO"); } )
-    names=AccessGrantees() { clause.setGrantees(names); return clause; }
+    grantees=AccessGrantees() { clause.setGranteeItems(grantees); return clause; }
+}
+
+GrantOption AccessGrantOption():
+{ GrantOption option; Token token; }
+{
+    ( token=<K_GRANT> | token=<S_IDENTIFIER> | token=<K_SET> ) { option = new GrantOption(accessEnum(GrantOption.Kind.class, token.image)); }
+    ( token=<K_OPTION> | token=<K_TRUE> | token=<K_FALSE> ) { option.setValue(accessEnum(GrantOption.Value.class, token.image)); return option; }
+}
+
+Grantee AccessGrantor(boolean defaults):
+{ Grantee grantor; }
+{
+    AccessKeyword("GRANTED") <K_BY> grantor=AccessGrantee()
+    {
+        requireAccessSyntax(!defaults, "GRANTED BY is not part of default privileges");
+        requireAccessSyntax(grantor.getKind() != Grantee.Kind.PUBLIC && grantor.getKind() != Grantee.Kind.GROUP, "Invalid grantor");
+        return grantor;
+    }
 }
 
 Grant Grant():
@@ -20576,31 +20804,41 @@ Grant Grant():
 { grant=AccessGrant(false) { return grant; } }
 
 Grant AccessGrant(boolean defaults):
-{ Grant grant = new Grant(); PrivilegeClause clause; Token token; GrantOption option; String name; }
+{ Grant grant = new Grant(); PrivilegeClause clause; GrantOption option; Grantee grantee; RoleSelection roles; }
 {
     <K_GRANT> clause=AccessClause(false, defaults) { grant.setClause(clause); }
     [ LOOKAHEAD(1)
-        <K_WITH> ( token=<K_GRANT> | token=<S_IDENTIFIER> | token=<K_SET> ) { option = new GrantOption(accessEnum(GrantOption.Kind.class, token.image)); }
-        ( token=<K_OPTION> | token=<K_TRUE> | token=<K_FALSE> )
-        { option.setValue(accessEnum(GrantOption.Value.class, token.image)); grant.setOption(option);
-          requireAccessSyntax(clause.getPrivileges() == null ? option.getKind() != GrantOption.Kind.GRANT
-              : option.getKind() == GrantOption.Kind.GRANT && option.getValue() == GrantOption.Value.OPTION, "Invalid GRANT option"); }
+        <K_WITH> option=AccessGrantOption() { grant.getOptions().add(option); }
+        ( "," option=AccessGrantOption() { grant.getOptions().add(option); } )*
+        { requireAccessSyntax(isValidAccessGrantOptions(clause, grant.getOptions()), "Invalid GRANT option"); }
     ]
-    [ LOOKAHEAD({ isAccessKeywordAhead("GRANTED") }) AccessKeyword("GRANTED") <K_BY> name=RelObjectName()
-      { requireAccessSyntax(!defaults, "GRANTED BY is not part of default privileges"); clause.setGrantedBy(name); } ]
+    [ <K_AS> grantee=AccessGrantee()
+        {
+            requireAccessSyntax(!defaults && clause.getPrivileges() != null && clause.getTarget() != null
+                && clause.getTarget().getKind() != PrivilegeTarget.Kind.ACCOUNT, "AS requires object privileges");
+            requireAccessSyntax(grantee.getKind() == Grantee.Kind.ACCOUNT || grantee.getKind() == Grantee.Kind.CURRENT_USER, "AS requires an account");
+            grant.setAsUser(grantee);
+        }
+        [ LOOKAHEAD({ getToken(1).kind == K_WITH && "ROLE".equalsIgnoreCase(getToken(2).image) })
+          <K_WITH> AccessKeyword("ROLE") roles=MySqlRoleSelection(true) { grant.setWithRole(roles); } ]
+    ]
+    [ LOOKAHEAD({ isAccessKeywordAhead("GRANTED") }) grantee=AccessGrantor(defaults) { clause.setGrantor(grantee); } ]
     { return grant; }
 }
 
 Revoke Revoke(boolean defaults):
-{ Revoke revoke = new Revoke(); PrivilegeClause clause; Token token; String name; }
+{ Revoke revoke = new Revoke(); PrivilegeClause clause; Token token; Grantee grantor; }
 {
     <K_REVOKE>
+    [ LOOKAHEAD(2) <K_IF> <K_EXISTS>
+      { requireAccessSyntax(!defaults, "IF EXISTS is not part of default privileges"); revoke.setIfExists(true); } ]
     [ LOOKAHEAD(3) ( token=<K_GRANT> | token=<S_IDENTIFIER> | token=<K_SET> ) <K_OPTION> <K_FOR>
       { revoke.setOptionFor(accessEnum(GrantOption.Kind.class, token.image)); } ]
     clause=AccessClause(true, defaults) { revoke.setClause(clause); }
-    [ LOOKAHEAD({ isAccessKeywordAhead("GRANTED") }) AccessKeyword("GRANTED") <K_BY> name=RelObjectName()
-      { requireAccessSyntax(!defaults, "GRANTED BY is not part of default privileges"); clause.setGrantedBy(name); } ]
+    [ LOOKAHEAD({ isAccessKeywordAhead("GRANTED") }) grantor=AccessGrantor(defaults) { clause.setGrantor(grantor); } ]
     [ ( <K_CASCADE> { revoke.setBehavior(CascadeBehavior.CASCADE); } | <K_RESTRICT> { revoke.setBehavior(CascadeBehavior.RESTRICT); } ) ]
+    [ <K_IGNORE> <K_UNKNOWN> <K_USER>
+      { requireAccessSyntax(!defaults, "IGNORE UNKNOWN USER is not part of default privileges"); revoke.setIgnoreUnknownUser(true); } ]
     { requireAccessSyntax(revoke.getOptionFor() == null || (clause.getPrivileges() == null
         ? revoke.getOptionFor() != GrantOption.Kind.GRANT : revoke.getOptionFor() == GrantOption.Kind.GRANT), "Invalid REVOKE option");
       return revoke; }
