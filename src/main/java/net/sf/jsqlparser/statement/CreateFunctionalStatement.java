@@ -31,6 +31,7 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     private Operation operation = Operation.CREATE;
+    private MySqlDefiner definer;
     private FunctionReturnType returnType;
     private List<String> routineBodyParts;
 
@@ -40,6 +41,19 @@ public abstract class CreateFunctionalStatement implements Statement {
 
     public void setOperation(Operation operation) {
         this.operation = operation;
+    }
+
+    /**
+     * The MySQL {@code DEFINER} account, rendered after {@code CREATE [OR REPLACE]}.
+     *
+     * @return the definer, or {@code null}
+     */
+    public MySqlDefiner getDefiner() {
+        return definer;
+    }
+
+    public void setDefiner(MySqlDefiner definer) {
+        this.definer = definer;
     }
 
     public FunctionReturnType getReturnType() {
@@ -138,6 +152,9 @@ public abstract class CreateFunctionalStatement implements Statement {
         builder.append(operation.name().replace('_', ' ')).append(' ');
         if (orReplace && operation == Operation.CREATE) {
             builder.append("OR REPLACE ");
+        }
+        if (definer != null) {
+            builder.append("DEFINER = ").append(definer).append(' ');
         }
         builder.append(kind).append(' ');
         return appendDeclarationTo(builder, printer);

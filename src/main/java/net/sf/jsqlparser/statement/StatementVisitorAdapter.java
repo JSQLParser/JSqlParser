@@ -11,6 +11,8 @@ package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.create.fdw.CreateForeignDataWrapper;
@@ -1012,6 +1014,18 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     @Override
     public <S> T visit(CreateCollation statement, S context) {
         statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterRoutine statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTrigger statement, S context) {
+        fromItemVisitor.visitFromItem(statement.getTable(), context);
         return null;
     }
 
