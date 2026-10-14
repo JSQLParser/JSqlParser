@@ -166,6 +166,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
             default:
                 return "NOTIFY".equalsIgnoreCase(next.image)
+                    || "REASSIGN".equalsIgnoreCase(next.image)
                     || "REVOKE".equalsIgnoreCase(next.image)
                     || "RELEASE".equalsIgnoreCase(next.image);
         }
@@ -2508,10 +2509,21 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
     }
 
-    private void requireNoDropIndexOwner(Table owner) throws ParseException {
+    private void requireNoDropOwnerTable(Table owner) throws ParseException {
         if (owner != null) {
-            throw new ParseException("Duplicate DROP INDEX ON clause");
+            throw new ParseException("Duplicate ON clause in DROP");
         }
+    }
+
+    /**
+     * Whether ON names the table of a dropped index, trigger or rule. SQL Server DDL triggers
+     * name a scope instead: DROP TRIGGER t ON DATABASE or ON ALL SERVER.
+     */
+    private static boolean isDropOwnerTable(Drop drop, Table name) {
+        String text = name.getFullyQualifiedName();
+        boolean triggerScope = drop.getObjectType() == Drop.ObjectType.TRIGGER
+                && ("DATABASE".equalsIgnoreCase(text) || "ALL".equalsIgnoreCase(text));
+        return drop.getObjectType().hasOwnerTable() && !triggerScope;
     }
 
     /** Builds names from lexer-separated components without reinterpreting PostgreSQL dots. */
@@ -3202,6 +3214,7 @@ String NonReservedWord() :
       | tk=<K_RANDOM: "RANDOM">
       | tk=<K_RAW: "RAW">
       | tk=<K_READ: "READ" >
+      | tk=<K_REASSIGN: "REASSIGN">
       | tk=<K_REBUILD: "REBUILD">
       | tk=<K_RECYCLEBIN: "RECYCLEBIN">
       | tk=<K_RECURSIVE:"RECURSIVE">
@@ -3911,6 +3924,9 @@ Statement SingleStatement() :
             LOOKAHEAD(<K_DROP> <K_POLICY>) stm = DropPolicy()
             |
             stm = Drop()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_REASSIGN && "OWNED".equalsIgnoreCase(getToken(2).image) })
+            stm = ReassignOwned()
             |
             stm = Analyze()
             |
@@ -17894,48 +17910,6 @@ List<String> ColumnsNamesList():
     }
 }
 
-String FuncArgsListItem():
-{
-	Token tk = null;
-    String argName = null;
-    String argType = null;
-}
-{
-    (
-        LOOKAHEAD(2) (
-            argName = RelObjectName()
-            argType = RelObjectName()
-            [ "(" tk = <S_LONG>  ")" { argType = argType + "(" + tk.image + ")"; } ]
-        )
-        |
-        (
-            argType = RelObjectName()
-            [ "(" tk = <S_LONG>  ")" { argType = argType + "(" + tk.image + ")"; } ]
-        )
-    )
-	{
-	    return argName != null ? String.format("%s %s", argName, argType) : argType;
-	}
-}
-
-List<String> FuncArgsList():
-{
-    List<String> retval = null;
-    String img = null;
-}
-{
-    "("
-         { retval = new ArrayList<String>(); }
-         [
-            img=FuncArgsListItem() { retval.add(img); }
-            ( "," img=FuncArgsListItem() { retval.add(img); } )*
-         ]
-    ")"
-    {
-        return retval;
-    }
-}
-
 /** DROP names are lexer-separated identifiers, not strings to split again on dots. */
 Table DropObjectName() #TableName:
 {
@@ -17955,6 +17929,29 @@ Table DropObjectName() #TableName:
     { linkAST(table, jjtThis); return table; }
 }
 
+/** The targets of a DROP statement, typed by the object kind that was dropped. */
+void DropTargets(Drop drop):
+{
+    boolean aggregate = drop.getObjectType() == Drop.ObjectType.AGGREGATE;
+    RoutineReference routine;
+    UserAccount account;
+    Table name;
+}
+{
+    (
+        LOOKAHEAD({ drop.getObjectType().hasRoutineTargets() })
+        routine=RoutineReference(aggregate) { drop.addRoutines(routine); }
+        ( "," routine=RoutineReference(aggregate) { drop.addRoutines(routine); } )*
+        |
+        LOOKAHEAD({ drop.getObjectType().hasAccountTargets() })
+        account=MySqlAccountName() { drop.addAccounts(account); }
+        ( "," account=MySqlAccountName() { drop.addAccounts(account); } )*
+        |
+        name=DropObjectName() { drop.addNames(name); }
+        ( "," name=DropObjectName() { drop.addNames(name); } )*
+    )
+}
+
 Drop Drop():
 {
     Drop drop = new Drop();
@@ -17963,16 +17960,25 @@ Drop Drop():
     Table indexTable = null;
     int indexTablePosition = 0;
     List<String> dropArgs = new ArrayList<String>();
-    List<String> funcArgs = null;
     List<String> indexOption;
     boolean useTemporary = false;
     boolean foreign = false;
+    boolean eventTrigger = false;
+    CascadeBehavior behavior = null;
+    String engine;
 }
 {
     <K_DROP>
     [ <K_MATERIALIZED> { drop.setMaterialized(true);} ]
     (
         <K_FOREIGN> tk=<K_TABLE> { foreign = true; }
+        |
+        // PostgreSQL DROP OWNED BY role [, ...]
+        LOOKAHEAD({ isKeywordAhead("OWNED") && getToken(2).kind == K_BY }) tk=<S_IDENTIFIER> <K_BY>
+        |
+        // MySQL DROP UNDO TABLESPACE
+        LOOKAHEAD({ isKeywordAhead("UNDO") && getToken(2).kind == K_TABLESPACE })
+        <S_IDENTIFIER> tk=<K_TABLESPACE> { drop.setUndo(true); }
         |
         tk=<S_IDENTIFIER>
         |
@@ -17995,24 +18001,50 @@ Drop Drop():
         tk=<K_TRIGGER>
         |
         tk=<K_FUNCTION>
+        |
+        tk=<K_AGGREGATE>
+        |
+        // PostgreSQL DROP EVENT TRIGGER and MySQL DROP EVENT (TRIGGER cannot name a MySQL event)
+        tk=<K_EVENT> [ LOOKAHEAD(1) <K_TRIGGER> { eventTrigger = true; } ]
+        |
+        tk=<K_TYPE>
+        |
+        tk=<K_DOMAIN>
+        |
+        tk=<K_TABLESPACE>
+        |
+        tk=<K_USER>
+        |
+        tk=<K_GROUP>
     )
-    { drop.setType(foreign ? "FOREIGN TABLE" : tk.image); }
+    { drop.setType(foreign ? "FOREIGN TABLE" : eventTrigger ? "EVENT TRIGGER" : tk.image); }
     [ LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.INDEX
             && getToken(1).kind == K_CONCURRENTLY })
         <K_CONCURRENTLY> { drop.setConcurrently(true); } ]
 
-    [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
+    [ LOOKAHEAD(2, { drop.getObjectType() != Drop.ObjectType.OWNED })
+        <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
 
-    name = DropObjectName() { drop.setName(name); }
-    ( "," name = DropObjectName() { drop.addNames(name); } )*
-    [ LOOKAHEAD(2)  funcArgs = FuncArgsList() ]
+    DropTargets(drop)
+    [
+        // PostgreSQL DROP DATABASE name [ [ WITH ] ( FORCE ) ]
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.DATABASE
+                && (getToken(1).kind == K_WITH && "(".equals(getToken(2).image) && getToken(3).kind == K_FORCE
+                    || "(".equals(getToken(1).image) && getToken(2).kind == K_FORCE) })
+        [ <K_WITH> ] "(" <K_FORCE> ")" { drop.setForce(true); }
+    ]
+    [
+        // MySQL DROP [UNDO] TABLESPACE name [ ENGINE [=] engine_name ]
+        LOOKAHEAD({ drop.getObjectType() == Drop.ObjectType.TABLESPACE && getToken(1).kind == K_ENGINE })
+        <K_ENGINE> [ "=" { drop.setEngineUseEquals(true); } ] engine=RelObjectName() { drop.setEngine(engine); }
+    ]
     (
         LOOKAHEAD({ getToken(1).kind == K_ALGORITHM
                 || (getToken(1).kind == K_LOCK && getToken(2).kind != K_TABLE) })
         indexOption=IndexAlgorithmOrLockOption() { dropArgs.addAll(indexOption); }
         |
         (
-            tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT>
+            tk=<S_IDENTIFIER>
             // MySQL DROP INDEX accepts a trailing algorithm_option / lock_option,
             // e.g. "DROP INDEX i ON t ALGORITHM = INPLACE LOCK = NONE".
             | tk=<K_ALGORITHM> | tk=<K_NONE> | tk="="
@@ -18020,8 +18052,8 @@ Drop Drop():
         |
         (
             <K_ON> name = DropObjectName() {
-                if (drop.getObjectType() == Drop.ObjectType.INDEX) {
-                    requireNoDropIndexOwner(indexTable);
+                if (isDropOwnerTable(drop, name)) {
+                    requireNoDropOwnerTable(indexTable);
                     indexTable = name;
                     indexTablePosition = dropArgs.size();
                 } else {
@@ -18035,6 +18067,7 @@ Drop Drop():
         LOOKAHEAD({ getToken(1).kind == K_LOCK && getToken(2).kind != K_TABLE })
         tk=<K_LOCK> { dropArgs.add(tk.image); }
     )*
+    [ <K_CASCADE> { behavior = CascadeBehavior.CASCADE; } | <K_RESTRICT> { behavior = CascadeBehavior.RESTRICT; } ]
     {
         if (dropArgs.size() > 0) {
             drop.setParameters(dropArgs);
@@ -18042,14 +18075,26 @@ Drop Drop():
         if (indexTable != null) {
             drop.setTable(indexTable, indexTablePosition);
         }
-        if (drop.getType().equals("FUNCTION")) {
-            drop.getTypeToParameters().put("FUNCTION", funcArgs);
-        }
+        drop.setBehavior(behavior);
 
         drop.setUsingTemporary(useTemporary);
 
         return drop;
     }
+}
+
+/** PostgreSQL REASSIGN OWNED BY role [, ...] TO role */
+ReassignOwned ReassignOwned():
+{
+    ReassignOwned statement = new ReassignOwned();
+    UserAccount role;
+}
+{
+    <K_REASSIGN> ContextualKeyword("OWNED") <K_BY>
+    role=MySqlAccountName() { statement.addRoles(role); }
+    ( "," role=MySqlAccountName() { statement.addRoles(role); } )*
+    <K_TO> role=MySqlAccountName() { statement.setNewRole(role); }
+    { return statement; }
 }
 
 Truncate Truncate():

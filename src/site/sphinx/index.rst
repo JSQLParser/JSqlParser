@@ -156,6 +156,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``INSERT`` · ``UPDATE`` · ``UPSERT`` · ``MERGE`` · ``DELETE`` · ``TRUNCATE TABLE``
     * - **DDL**
       - ``CREATE …`` · ``ALTER …`` · ``DROP …``
+    * - **PostgreSQL ownership**
+      - ``DROP OWNED`` · ``REASSIGN OWNED``
     * - **MySQL table maintenance**
       - ``ANALYZE`` · ``CHECK`` · ``OPTIMIZE`` · ``REPAIR TABLE``
     * - **PostgreSQL RLS**

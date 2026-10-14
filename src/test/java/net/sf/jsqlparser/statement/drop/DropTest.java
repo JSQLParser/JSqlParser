@@ -16,6 +16,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.CascadeBehavior;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.Statements;
 import static net.sf.jsqlparser.test.TestUtils.*;
@@ -47,7 +48,7 @@ public class DropTest {
         assertEquals("CASCADE", parsed.getParameters().get(0));
         assertEquals(statement, "" + parsed);
         Drop created = new Drop().withType("INDEX").withName(new Table("myindex"))
-                .addParameters("CASCADE");
+                .withBehavior(CascadeBehavior.CASCADE);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }
@@ -89,7 +90,7 @@ public class DropTest {
         String statement = "DROP TABLE TABLE2 RESTRICT";
         Statement parsed = assertSqlCanBeParsedAndDeparsed(statement);
         Drop created = new Drop().withType("TABLE").withName(new Table("TABLE2"))
-                .addParameters(asList("RESTRICT"));
+                .withBehavior(CascadeBehavior.RESTRICT);
         assertDeparse(created, statement);
         assertEqualsObjectTree(parsed, created);
     }

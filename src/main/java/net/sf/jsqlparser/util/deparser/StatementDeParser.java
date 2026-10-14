@@ -37,6 +37,7 @@ import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.role.AlterRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.grant.Revoke;
 import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
 import net.sf.jsqlparser.statement.create.type.CreateType;
@@ -252,6 +253,12 @@ public class StatementDeParser extends AbstractDeParser<Statement>
         DropDeParser dropDeParser =
                 new DropDeParser(builder, table -> table.accept(selectDeParser, context));
         dropDeParser.deParse(drop);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(ReassignOwned statement, S context) {
+        builder.append(statement);
         return builder;
     }
 

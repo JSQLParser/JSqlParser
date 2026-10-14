@@ -31,6 +31,7 @@ import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.role.AlterRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.role.RoleOption;
 import net.sf.jsqlparser.statement.grant.Revoke;
 import net.sf.jsqlparser.statement.grant.AlterDefaultPrivileges;
@@ -365,6 +366,11 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
     public <S> T visit(Drop drop, S context) {
         drop.visitTables(table -> fromItemVisitor.visitFromItem(table, context));
 
+        return null;
+    }
+
+    @Override
+    public <S> T visit(ReassignOwned statement, S context) {
         return null;
     }
 
