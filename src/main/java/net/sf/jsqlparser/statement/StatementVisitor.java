@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
@@ -66,6 +67,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -737,6 +739,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterTablespaceMove statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(CreateTablespace statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateTablespace statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTablespace statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTablespace statement) {
         visit(statement, null);
     }
 

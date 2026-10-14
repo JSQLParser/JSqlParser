@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.util.validation.validator;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -95,6 +96,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -1197,6 +1199,20 @@ public class StatementValidator extends AbstractValidator<Statement>
             action.visitExpressions(this::validateOptionalExpression);
             action.visitTables(this::validateOptionalFromItem);
         });
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateTablespace statement, S context) {
+        validateFeature(Feature.createTablespace);
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTablespace statement, S context) {
+        validateFeature(Feature.alterTablespace);
+        statement.visitExpressions(this::validateOptionalExpression);
         return null;
     }
 
