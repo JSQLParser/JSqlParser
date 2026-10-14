@@ -112,7 +112,8 @@ public enum MySqlVersion implements Version {
                     Feature.showTables, // https://dev.mysql.com/doc/refman/8.0/en/show-columns.html
                     Feature.showColumns, // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
                     Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
-                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/use.html
+                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/revoke.html
+                    Feature.revoke, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
                     Feature.transactionChain, Feature.transactionConsistentSnapshot, //
