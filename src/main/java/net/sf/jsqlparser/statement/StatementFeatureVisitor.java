@@ -37,6 +37,7 @@ import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterType;
@@ -67,6 +68,7 @@ import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.subscription.SubscriptionOption;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.type.CreateType;
@@ -1198,6 +1200,16 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(AlterTablespaceMove statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateTablespace statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterTablespace statement, S context) {
         return schemaOnly();
     }
 

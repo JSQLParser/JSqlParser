@@ -158,6 +158,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``CREATE …`` · ``ALTER …`` · ``DROP …``
     * - **MySQL table maintenance**
       - ``ANALYZE`` · ``CHECK`` · ``OPTIMIZE`` · ``REPAIR TABLE``
+    * - **Tablespaces**
+      - MySQL and PostgreSQL ``CREATE TABLESPACE`` · ``ALTER TABLESPACE``
     * - **PostgreSQL RLS**
       - ``CREATE POLICY`` · ``ALTER TABLE … ENABLE``/``DISABLE``/``FORCE``/``NO FORCE ROW LEVEL SECURITY``
     * - **Salesforce SOQL**

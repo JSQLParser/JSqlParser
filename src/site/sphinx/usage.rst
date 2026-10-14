@@ -1857,6 +1857,38 @@ can be built with ``new NotNullConstraint().withName("nn")
 .withColumn(new Column("id"))``. This is distinct from column definitions and
 ``ALTER COLUMN ... SET NOT NULL``; those retain their existing APIs.
 
+MySQL and PostgreSQL tablespaces
+--------------------------------
+
+``CREATE TABLESPACE`` parses to ``CreateTablespace`` and ``ALTER TABLESPACE`` to
+``AlterTablespace`` in every dialect; ``isUndo()`` records the MySQL ``UNDO`` keyword.
+A PostgreSQL definition exposes ``getOwner()``, ``getLocation()`` and the ``WITH``
+parameters as ``IndexOption`` values in ``getParameters()``. A MySQL definition exposes
+``getDataFile()`` and keeps its options in source order in ``getOptions()``. They reuse the
+``TableOption`` kinds ``ENGINE``, ``ENCRYPTION``, ``AUTOEXTEND_SIZE`` and
+``ENGINE_ATTRIBUTE``; CREATE also accepts ``FILE_BLOCK_SIZE``.
+
+.. code-block:: java
+
+    CreateTablespace create = (CreateTablespace) CCJSqlParserUtil.parse(
+        "CREATE TABLESPACE ts1 ADD DATAFILE 'ts1.ibd' FILE_BLOCK_SIZE = 8192 ENGINE = InnoDB");
+    create.getDataFile().getValue();                              // ts1.ibd
+    create.getOption(TableOption.Kind.ENGINE).get().getValue();   // InnoDB
+
+    AlterTablespace alter = (AlterTablespace) CCJSqlParserUtil.parse(
+        "ALTER TABLESPACE fast SET (random_page_cost = 1.1)");
+    alter.getAction();       // SET_PARAMETERS
+    alter.getParameters();   // [random_page_cost = 1.1]
+
+``getAction()`` is ``RENAME``, ``OWNER``, ``SET_PARAMETERS`` or ``RESET_PARAMETERS``,
+``SET_STATE`` for ``ALTER UNDO TABLESPACE … SET ACTIVE|INACTIVE``, or ``OPTIONS`` for MySQL
+options. Undo tablespaces accept only ``ENGINE``, ``CREATE UNDO TABLESPACE`` requires
+``ADD DATAFILE``, and ALTER rejects ``FILE_BLOCK_SIZE``. Other ``ALTER TABLESPACE`` forms,
+such as Oracle and NDB data file clauses, still parse as ``UnsupportedStatement``, and
+``ALTER TABLE ALL IN TABLESPACE`` remains ``AlterTablespaceMove``. Validators report the
+``createTablespace`` and ``alterTablespace`` features, which the MySQL and PostgreSQL
+capabilities enable; feature analysis reports ``MODIFIES_SCHEMA``.
+
 SQL Server identity inserts
 ---------------------------
 

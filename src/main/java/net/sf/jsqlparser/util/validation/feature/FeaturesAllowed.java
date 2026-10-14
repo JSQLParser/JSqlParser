@@ -107,6 +107,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             Feature.createSchema, Feature.createSequence, Feature.createTable,
             Feature.createForeignDataWrapper, Feature.createServer, Feature.createUserMapping,
             Feature.createAccessMethod, Feature.createAccessMethodTable,
+            Feature.createTablespace,
             Feature.createTableUnlogged,
             Feature.createTableCreateOptionStrings, Feature.createTableTableOptionStrings,
             Feature.createTableIfNotExists, Feature.createTableRowMovement,
@@ -120,6 +121,7 @@ public class FeaturesAllowed implements FeatureSetValidation, ModifyableFeatureS
             new FeaturesAllowed("ALTER", Feature.alterTable, Feature.alterSequence,
                     Feature.alterTextSearchConfiguration,
                     Feature.alterCollation,
+                    Feature.alterTablespace,
                     Feature.alterView, Feature.alterIndex, Feature.alterSchema,
                     Feature.alterForeignDataWrapper, Feature.alterServer, Feature.alterUserMapping)
                     .unmodifyable();
