@@ -90,6 +90,8 @@ import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.piped.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.refresh.*;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
 import net.sf.jsqlparser.statement.update.*;
@@ -141,6 +143,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     // then-branch closes the ternary and must not be taken as the JSON path operator
     private int ternaryThenBranchDepth = 0;
 
+    // depth of open CREATE SCHEMA elements: GRANT there starts the next element, never an alias
+    private int schemaElementDepth = 0;
+
     // Keep this routing check aligned with SingleStatement, including aliases and dialect gates.
     // It does not validate syntax that the grammar captures as opaque.
     private boolean isStatementStartAhead() {
@@ -162,6 +167,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 return true;
             case K_DO:
                 return Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
+            case K_SECURITY:
+                return "LABEL".equalsIgnoreCase(getToken(2).image);
+            case K_REINDEX:
+                return isReindexAhead();
             case K_IMPORT: case K_EXPORT:
                 return Dialect.EXASOL.name().equals(getAsString(Feature.dialect))
                     || next.kind == K_EXPORT && getToken(2).kind == K_DATA;
@@ -2277,6 +2286,11 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return false;
         }
 
+        // GRANT after a CREATE SCHEMA element starts the next element
+        if (kind == K_GRANT && schemaElementDepth > 0) {
+            return false;
+        }
+
         // For reserved keywords in alias position, skip the structural-
         // keyword whitelist and go directly to follower disambiguation.
         // Only check keywords that are actually in RelObjectName's token
@@ -2381,6 +2395,16 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         }
         int table = getToken(offset).kind;
         return table == K_TABLE || table == K_TABLES;
+    }
+
+    /** Whether a PostgreSQL REINDEX statement starts here; REINDEX stays an identifier elsewhere. */
+    private boolean isReindexAhead() {
+        if (getToken(1).kind != K_REINDEX) {
+            return false;
+        }
+        int next = getToken(2).kind;
+        return next == K_INDEX || next == K_TABLE || next == K_SCHEMA || next == K_DATABASE
+                || next == K_SYSTEM || "(".equals(getToken(2).image);
     }
 
     /** Whether the next tokens spell an option accepted by this table maintenance operation. */
@@ -2845,6 +2869,23 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // DuckDB 2.0 uses the standard header with a statement body instead of EXECUTE
             if ("REFERENCING".equalsIgnoreCase(token.image) || token.kind == K_STATEMENT) { return true; }
         }
+    }
+
+    /**
+     * Whether EVENT TRIGGER starts a PostgreSQL event trigger rather than a MySQL event named
+     * trigger: the trigger name is followed by ON in CREATE and by an action keyword in ALTER.
+     */
+    private boolean isPostgreSqlEventTriggerAhead(boolean alter) {
+        if (getToken(1).kind != K_EVENT || getToken(2).kind != K_TRIGGER
+                || ".".equals(getToken(3).image)) {
+            return false;
+        }
+        Token next = getToken(4);
+        if (!alter) {
+            return next.kind == K_ON;
+        }
+        return next.kind == K_ENABLE || next.kind == K_DISABLE || next.kind == K_RENAME
+                || next.kind == S_IDENTIFIER && "OWNER".equalsIgnoreCase(next.image);
     }
 
     // In these dialects -> always denotes JSON access, even after a comma or parentheses.
@@ -3909,6 +3950,7 @@ String NonReservedWordPart2() :
       | tk=<K_RLIKE: "RLIKE">
       | tk=<K_REGEXP_LIKE: "REGEXP_LIKE">
       | tk=<K_REGISTER: "REGISTER">
+      | tk=<K_REINDEX: "REINDEX">
       | tk=<K_REMOTE: "REMOTE">
       | tk=<K_REMOVE: "REMOVE">
       | tk=<K_REMAINDER: "REMAINDER">
@@ -4619,6 +4661,11 @@ Statement SingleStatement() :
             stm = Analyze()
             |
             LOOKAHEAD({ isTableMaintenanceAhead() }) stm = TableMaintenanceStatement()
+            |
+            LOOKAHEAD({ isReindexAhead() }) stm = Reindex()
+            |
+            LOOKAHEAD({ getToken(1).kind == K_SECURITY && "LABEL".equalsIgnoreCase(getToken(2).image) })
+            stm = SecurityLabel()
             |
             stm = Truncate()
             |
@@ -17252,11 +17299,9 @@ CreateTrigger CreateTrigger(boolean orReplace):
 CreateSchema CreateSchema():
 {
     Token tk = null;
-    CreateTable table = null;
-    CreateView view = null;
+    Statement element = null;
     CreateSchema schema = new CreateSchema();
     List<String> schemaPath = null;
-    List<Statement> statements = new ArrayList<Statement>();
     DatabaseOption databaseOption = null;
 }
 {
@@ -17282,26 +17327,44 @@ CreateSchema CreateSchema():
 
     [schemaPath=PathSpecification() { schema.setSchemaPath(schemaPath); }]
 
+    // Elements keep their names as written; unqualified names refer to the new schema.
     (
-        LOOKAHEAD(2) (
-            <K_CREATE>
-
-            table = CreateTable(false)
-            {
-                table.getTable().setSchemaName(schema.getSchemaName());
-                schema.addStatement(table);
-            }
-            |
-            view = CreateView(false)
-            {
-                view.getView().setSchemaName(schema.getSchemaName());
-                schema.addStatement(view);
-            }
-        )
+        LOOKAHEAD({ getToken(1).kind == K_CREATE || getToken(1).kind == K_GRANT })
+        element=SchemaElement() { schema.addStatement(element); }
     )*
     {
+        requireDdlSyntax(!schema.hasIfNotExists() || schema.getStatements().isEmpty(),
+                "CREATE SCHEMA IF NOT EXISTS cannot include schema elements");
         return schema;
     }
+}
+
+/**
+ * A statement nested in CREATE SCHEMA. Only the object kinds that PostgreSQL accepts as schema
+ * elements are allowed: tables, views, indexes, sequences, triggers and GRANT.
+ */
+Statement SchemaElement():
+{
+    Statement element;
+}
+{
+    { schemaElementDepth++; }
+    try {
+        (
+            element=Create()
+            {
+                requireDdlSyntax(element instanceof CreateTable || element instanceof CreateIndex
+                        || element instanceof CreateSequence || element instanceof CreateTrigger
+                        || element instanceof CreateView && !((CreateView) element).isMaterialized(),
+                        "A schema element must be CREATE TABLE, VIEW, INDEX, SEQUENCE, TRIGGER or GRANT");
+            }
+            |
+            element=Grant()
+        )
+    } finally {
+        schemaElementDepth--;
+    }
+    { return element; }
 }
 
 DatabaseOption MySqlDatabaseOption():
@@ -18937,6 +19000,141 @@ Analyze Analyze():
     {
         return analyze;
     }
+}
+
+/** Parses PostgreSQL REINDEX; only DATABASE and SYSTEM may omit the name. */
+Reindex Reindex():
+{
+    Reindex statement = new Reindex();
+    Reindex.Option option;
+    Table table;
+    String name;
+}
+{
+    <K_REINDEX>
+    [ "(" option=ReindexOption() { statement.addOptions(option); }
+      ( "," option=ReindexOption() { statement.addOptions(option); } )* ")" ]
+    (
+        ( <K_INDEX> { statement.setTarget(Reindex.Target.INDEX); }
+          | <K_TABLE> { statement.setTarget(Reindex.Target.TABLE); } )
+        ReindexConcurrently(statement)
+        table=Table() { statement.setName(table); }
+        |
+        <K_SCHEMA> { statement.setTarget(Reindex.Target.SCHEMA); }
+        ReindexConcurrently(statement)
+        name=RelObjectName() { statement.setName(new Table(name, false)); }
+        |
+        ( <K_DATABASE> { statement.setTarget(Reindex.Target.DATABASE); }
+          | <K_SYSTEM> { statement.setTarget(Reindex.Target.SYSTEM); } )
+        ReindexConcurrently(statement)
+        [ LOOKAHEAD(1) name=RelObjectName() { statement.setName(new Table(name, false)); } ]
+    )
+    { return statement; }
+}
+
+void ReindexConcurrently(Reindex statement):
+{}
+{
+    // CONCURRENTLY is a keyword here, as in CREATE INDEX, never the reindexed object's name
+    [ LOOKAHEAD({ getToken(1).kind == K_CONCURRENTLY }) <K_CONCURRENTLY> { statement.setConcurrently(true); } ]
+}
+
+Reindex.Option ReindexOption():
+{ Reindex.Option option = new Reindex.Option(); Token token; String value = null; }
+{
+    ( <K_CONCURRENTLY> { option.setName(Reindex.Option.Name.CONCURRENTLY); }
+      | <K_TABLESPACE> { option.setName(Reindex.Option.Name.TABLESPACE); }
+      | <K_VERBOSE> { option.setName(Reindex.Option.Name.VERBOSE); } )
+    [
+        LOOKAHEAD(1)
+        ( token=<K_TRUE> | token=<K_FALSE> | token=<K_ON> | token=<S_LONG> | token=<S_CHAR_LITERAL> )
+        { value = token.image; }
+        | value=RelObjectName()
+    ]
+    {
+        requireDdlSyntax(option.getName() != Reindex.Option.Name.TABLESPACE || value != null,
+                "The REINDEX TABLESPACE option requires a tablespace name");
+        option.setValue(value);
+        return option;
+    }
+}
+
+/**
+ * Parses PostgreSQL SECURITY LABEL. The object kind selects how the object is addressed: by a
+ * name, a qualified column, a routine signature or a large object OID.
+ */
+SecurityLabel SecurityLabel():
+{
+    SecurityLabel statement = new SecurityLabel();
+    SecurityLabel.ObjectType type;
+    Token token;
+    String name;
+    Table object;
+    Column column;
+    RoutineReference routine;
+    StringValue label;
+}
+{
+    <K_SECURITY> ContextualKeyword("LABEL")
+    [ <K_FOR> ( token=<S_CHAR_LITERAL> { statement.setProvider(token.image); }
+                | name=RelObjectName() { statement.setProvider(name); } ) ]
+    <K_ON> type=SecurityLabelObjectType(statement)
+    (
+        LOOKAHEAD({ type == SecurityLabel.ObjectType.COLUMN })
+        column=Column() { statement.setColumn(column); }
+        |
+        LOOKAHEAD({ type.isRoutine() })
+        routine=RoutineReference(type == SecurityLabel.ObjectType.AGGREGATE)
+        { statement.setRoutine(type, routine); }
+        |
+        LOOKAHEAD({ type == SecurityLabel.ObjectType.LARGE_OBJECT })
+        token=<S_LONG> { statement.setLargeObjectOid(Long.parseLong(token.image)); }
+        |
+        LOOKAHEAD({ type.isRelation() || type == SecurityLabel.ObjectType.SEQUENCE
+                || type == SecurityLabel.ObjectType.TYPE || type == SecurityLabel.ObjectType.DOMAIN })
+        object=CommentObjectName() { statement.setObjectName(type, object); }
+        |
+        name=RelObjectName() { statement.setObjectName(type, new Table(name, false)); }
+    )
+    <K_IS> ( label=CharacterLiteral() { statement.setLabel(label); } | <K_NULL> )
+    { return statement; }
+}
+
+SecurityLabel.ObjectType SecurityLabelObjectType(SecurityLabel statement):
+{ SecurityLabel.ObjectType type; }
+{
+    (
+        <K_TABLE> { type = SecurityLabel.ObjectType.TABLE; }
+        | <K_COLUMN> { type = SecurityLabel.ObjectType.COLUMN; }
+        | <K_AGGREGATE> { type = SecurityLabel.ObjectType.AGGREGATE; }
+        | <K_DATABASE> { type = SecurityLabel.ObjectType.DATABASE; }
+        | <K_DOMAIN> { type = SecurityLabel.ObjectType.DOMAIN; }
+        | <K_EVENT> <K_TRIGGER> { type = SecurityLabel.ObjectType.EVENT_TRIGGER; }
+        | <K_FOREIGN> <K_TABLE> { type = SecurityLabel.ObjectType.FOREIGN_TABLE; }
+        | <K_FUNCTION> { type = SecurityLabel.ObjectType.FUNCTION; }
+        | <K_MATERIALIZED> <K_VIEW> { type = SecurityLabel.ObjectType.MATERIALIZED_VIEW; }
+        | <K_PROCEDURE> { type = SecurityLabel.ObjectType.PROCEDURE; }
+        | <K_SCHEMA> { type = SecurityLabel.ObjectType.SCHEMA; }
+        | <K_SEQUENCE> { type = SecurityLabel.ObjectType.SEQUENCE; }
+        | <K_TABLESPACE> { type = SecurityLabel.ObjectType.TABLESPACE; }
+        | <K_TYPE> { type = SecurityLabel.ObjectType.TYPE; }
+        | <K_VIEW> { type = SecurityLabel.ObjectType.VIEW; }
+        | LOOKAHEAD({ isKeywordAhead("LARGE") }) ContextualKeyword("LARGE") ContextualKeyword("OBJECT")
+          { type = SecurityLabel.ObjectType.LARGE_OBJECT; }
+        | LOOKAHEAD({ isKeywordAhead("PROCEDURAL") }) ContextualKeyword("PROCEDURAL")
+          ContextualKeyword("LANGUAGE") { type = SecurityLabel.ObjectType.LANGUAGE; statement.setProcedural(true); }
+        | LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) ContextualKeyword("LANGUAGE")
+          { type = SecurityLabel.ObjectType.LANGUAGE; }
+        | LOOKAHEAD({ isKeywordAhead("PUBLICATION") }) ContextualKeyword("PUBLICATION")
+          { type = SecurityLabel.ObjectType.PUBLICATION; }
+        | LOOKAHEAD({ isKeywordAhead("ROLE") }) ContextualKeyword("ROLE")
+          { type = SecurityLabel.ObjectType.ROLE; }
+        | LOOKAHEAD({ isKeywordAhead("ROUTINE") }) ContextualKeyword("ROUTINE")
+          { type = SecurityLabel.ObjectType.ROUTINE; }
+        | LOOKAHEAD({ isKeywordAhead("SUBSCRIPTION") }) ContextualKeyword("SUBSCRIPTION")
+          { type = SecurityLabel.ObjectType.SUBSCRIPTION; }
+    )
+    { return type; }
 }
 
 ExpressionList<Column> ColumnWithCommentList():
@@ -21292,6 +21490,8 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isKeywordAhead("SUBSCRIPTION") }) statement = AlterSubscription()
                 |
+                LOOKAHEAD({ isPostgreSqlEventTriggerAhead(true) }) statement = AlterEventTrigger()
+                |
                 statement = AlterEvent()
                 |
                 LOOKAHEAD(( <K_TABLE> | <K_INDEX> | <K_MATERIALIZED> <K_VIEW> ) <K_ALL> <K_IN> <K_TABLESPACE>)
@@ -22776,6 +22976,54 @@ Expression PostgreSqlTriggerArgument():
     { return result; }
 }
 
+/**
+ * Parses PostgreSQL CREATE EVENT TRIGGER. The routine invocation matches CREATE TRIGGER but takes
+ * no arguments; the event and filter names stay ordinary identifiers.
+ */
+CreateEventTrigger CreateEventTrigger():
+{
+    CreateEventTrigger statement = new CreateEventTrigger();
+    CreateEventTrigger.Filter filter;
+    Function function = new Function();
+    String name;
+}
+{
+    <K_EVENT> <K_TRIGGER> name=RelObjectName() { statement.setName(name); }
+    <K_ON> name=RelObjectName() { statement.setEvent(name); }
+    [ <K_WHEN> filter=EventTriggerFilter() { statement.addFilters(filter); }
+      ( <K_AND> filter=EventTriggerFilter() { statement.addFilters(filter); } )* ]
+    <K_EXECUTE> ( <K_FUNCTION> | <K_PROCEDURE> { statement.setExecuteKeyword(CreateTrigger.ExecuteKeyword.PROCEDURE); } )
+    name=AccessQualifiedName() "(" ")"
+    {
+        function.setName(name);
+        function.setParameters(new ExpressionList<Expression>());
+        statement.setFunction(function);
+        return statement;
+    }
+}
+
+CreateEventTrigger.Filter EventTriggerFilter():
+{ CreateEventTrigger.Filter filter = new CreateEventTrigger.Filter(); String name; Token value; }
+{
+    name=RelObjectName() { filter.setVariable(name); }
+    <K_IN> "(" value=<S_CHAR_LITERAL> { filter.addValues(stringValue(value)); }
+    ( "," value=<S_CHAR_LITERAL> { filter.addValues(stringValue(value)); } )* ")"
+    { return filter; }
+}
+
+/** Event trigger states reuse the enable states of table trigger and rule actions. */
+AlterEventTrigger AlterEventTrigger():
+{ AlterEventTrigger statement = new AlterEventTrigger(); RelationAlterAction.EnableState state; String name; }
+{
+    <K_EVENT> <K_TRIGGER> name=RelObjectName() { statement.setName(name); }
+    (
+        state=PostgreSqlEnableState() { statement.setEnableState(state); }
+        | ContextualKeyword("OWNER") <K_TO> name=RelObjectName() { statement.setOwner(name); }
+        | <K_RENAME> <K_TO> name=RelObjectName() { statement.setNewName(name); }
+    )
+    { return statement; }
+}
+
 List<String> UsersList():
 {
     List<String> users = new ArrayList<String>();
@@ -23030,6 +23278,10 @@ Statement Create():
         statement = CreateSubscription()
         |
         statement = CreateUser()
+        |
+        LOOKAHEAD({ isPostgreSqlEventTriggerAhead(false) })
+        { requireDdlSyntax(!isUsingOrReplace, "CREATE EVENT TRIGGER does not support OR REPLACE"); }
+        statement = CreateEventTrigger()
         |
         statement = CreateEvent()
         |

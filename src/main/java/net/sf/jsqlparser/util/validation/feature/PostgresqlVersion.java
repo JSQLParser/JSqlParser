@@ -184,7 +184,10 @@ public enum PostgresqlVersion implements Version {
                     Feature.explain, // https://www.postgresql.org/docs/current/sql-grant.html
                     Feature.grant,
                     Feature.revoke, Feature.createRole, Feature.alterRole,
-                    Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-set.html
+                    Feature.alterDefaultPrivileges, Feature.createTrigger, // https://www.postgresql.org/docs/current/sql-createeventtrigger.html
+                    Feature.createEventTrigger, Feature.alterEventTrigger, // https://www.postgresql.org/docs/current/sql-reindex.html
+                    Feature.reindex, // https://www.postgresql.org/docs/current/sql-security-label.html
+                    Feature.securityLabel, // https://www.postgresql.org/docs/current/sql-set.html
                     Feature.set, Feature.setAssignmentTo, // https://www.postgresql.org/docs/current/sql-reset.html
                     Feature.reset, // https://www.postgresql.org/docs/current/sql-commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
@@ -192,6 +195,7 @@ public enum PostgresqlVersion implements Version {
                             V10.copy().getFeatures()), V12("12",
                                     V11.copy()
                                             .add(Feature.createAccessMethodTable,
+                                                    Feature.reindexConcurrently,
                                                     Feature.transactionChain)
                                             .getFeatures()), V13(
                                                     "13",

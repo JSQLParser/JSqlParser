@@ -58,6 +58,7 @@ import net.sf.jsqlparser.schema.Partition;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.AlterUser;
@@ -75,6 +76,7 @@ import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -95,6 +97,8 @@ import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitor;
 import net.sf.jsqlparser.statement.merge.MergeOperationVisitorAdapter;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.PivotVisitor;
@@ -397,6 +401,7 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
 
     @Override
     public <S> T visit(CreateSchema createSchema, S context) {
+        createSchema.getStatements().forEach(element -> element.accept(this, context));
         return null;
     }
 
@@ -458,6 +463,32 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
         if (createTrigger.getBody() != null) {
             createTrigger.getBody().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateEventTrigger statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> T visit(Reindex statement, S context) {
+        if (statement.getTable() != null) {
+            statement.getTable().accept(fromItemVisitor, context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> T visit(SecurityLabel statement, S context) {
+        statement.visitRelations(table -> table.accept(fromItemVisitor, context));
+        expressionVisitor.visitExpression(statement.getLabel(), context);
         return null;
     }
 
