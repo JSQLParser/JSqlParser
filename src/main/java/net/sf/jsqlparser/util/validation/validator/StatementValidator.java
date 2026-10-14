@@ -79,6 +79,7 @@ import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -95,6 +96,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -112,6 +114,8 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
@@ -163,6 +167,52 @@ public class StatementValidator extends AbstractValidator<Statement>
         if (createTrigger.getBody() != null) {
             createTrigger.getBody().accept(this, context);
         }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(CreateEventTrigger statement, S context) {
+        // the filter values are tags and the function is declared, not called
+        validateFeature(Feature.createEventTrigger);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEventTrigger statement, S context) {
+        validateFeature(Feature.alterEventTrigger);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Reindex statement, S context) {
+        validateFeature(Feature.reindex);
+        if (statement.isConcurrently() || statement.getOptions().stream()
+                .anyMatch(option -> option.getName() == Reindex.Option.Name.CONCURRENTLY)) {
+            validateFeature(Feature.reindexConcurrently);
+        }
+        if (statement.getName() != null) {
+            validateName(reindexedObject(statement.getTarget()),
+                    statement.getName().getFullyQualifiedName());
+        }
+        return null;
+    }
+
+    private static NamedObject reindexedObject(Reindex.Target target) {
+        switch (target) {
+            case INDEX:
+                return NamedObject.index;
+            case TABLE:
+                return NamedObject.table;
+            case SCHEMA:
+                return NamedObject.schema;
+            default:
+                return NamedObject.database;
+        }
+    }
+
+    @Override
+    public <S> Void visit(SecurityLabel statement, S context) {
+        validateFeature(Feature.securityLabel);
         return null;
     }
 

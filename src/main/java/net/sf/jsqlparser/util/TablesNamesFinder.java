@@ -122,6 +122,7 @@ import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
@@ -155,6 +156,7 @@ import net.sf.jsqlparser.statement.create.subscription.CreateSubscription;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.type.CreateType;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
@@ -213,6 +215,8 @@ import net.sf.jsqlparser.statement.piped.UnPivotPipeOperator;
 import net.sf.jsqlparser.statement.piped.WherePipeOperator;
 import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -1708,7 +1712,7 @@ public class TablesNamesFinder<Void>
 
     @Override
     public <S> Void visit(CreateSchema createSchema, S context) {
-        throwUnsupported(createSchema);
+        createSchema.getStatements().forEach(element -> element.accept(this, context));
         return null;
     }
 
@@ -1779,6 +1783,31 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateTrigger createTrigger) {
         StatementVisitor.super.visit(createTrigger);
+    }
+
+    @Override
+    public <S> Void visit(CreateEventTrigger statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(this, context));
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(Reindex statement, S context) {
+        if (statement.getTable() != null) {
+            visit(statement.getTable(), context);
+        }
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SecurityLabel statement, S context) {
+        statement.visitRelations(table -> visit(table, context));
+        return null;
     }
 
     @Override

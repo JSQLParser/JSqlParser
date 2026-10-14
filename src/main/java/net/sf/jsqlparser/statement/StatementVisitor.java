@@ -52,6 +52,7 @@ import net.sf.jsqlparser.statement.alter.AlterSubscription;
 
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -66,6 +67,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -83,6 +85,8 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
@@ -221,6 +225,38 @@ public interface StatementVisitor<T> {
 
     default void visit(CreateTrigger createTrigger) {
         this.visit(createTrigger, null);
+    }
+
+    default <S> T visit(CreateEventTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(CreateEventTrigger statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(AlterEventTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterEventTrigger statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(Reindex statement, S context) {
+        return null;
+    }
+
+    default void visit(Reindex statement) {
+        this.visit(statement, null);
+    }
+
+    default <S> T visit(SecurityLabel statement, S context) {
+        return null;
+    }
+
+    default void visit(SecurityLabel statement) {
+        this.visit(statement, null);
     }
 
     <S> T visit(CreateView createView, S context);

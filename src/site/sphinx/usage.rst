@@ -1742,7 +1742,7 @@ role values, trigger conditions and invocation arguments. Declaring a trigger
 is classified as a schema change, not execution of its body.
 
 Capability validation covers these statement families, not every server-version
-or catalog-dependent restriction. EVENT TRIGGER is outside this support.
+or catalog-dependent restriction. Event triggers use separate statements, described below.
 Serialized role SQL can contain passwords; avoid logging real credentials.
 
 References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html>`_,
@@ -1751,6 +1751,56 @@ References: `CREATE ROLE <https://www.postgresql.org/docs/18/sql-createrole.html
 `REVOKE <https://www.postgresql.org/docs/18/sql-revoke.html>`_,
 `ALTER DEFAULT PRIVILEGES <https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html>`_,
 `CREATE TRIGGER <https://www.postgresql.org/docs/18/sql-createtrigger.html>`_.
+
+PostgreSQL event triggers, REINDEX, SECURITY LABEL and schema elements
+----------------------------------------------------------------------
+
+``CREATE EVENT TRIGGER`` parses to ``CreateEventTrigger``. ``getEvent()`` keeps the event
+name as written and ``getFilters()`` the ``WHEN … IN (…)`` conditions in source order. The
+invoked function reuses ``CreateTrigger.ExecuteKeyword`` and a ``Function`` without
+arguments. ``ALTER EVENT TRIGGER`` parses to ``AlterEventTrigger``; its states reuse
+``RelationAlterAction.EnableState``, and each non-null setter selects the ``STATE``,
+``OWNER`` or ``RENAME`` action. A MySQL event named ``trigger`` still parses to
+``CreateEvent`` or ``AlterEvent``.
+
+.. code-block:: java
+
+    CreateEventTrigger trigger = (CreateEventTrigger) CCJSqlParserUtil.parse(
+        "CREATE EVENT TRIGGER etg ON ddl_command_start "
+        + "WHEN TAG IN ('CREATE TABLE') EXECUTE FUNCTION abort_any_command()");
+    trigger.getEvent();                          // ddl_command_start
+    trigger.getFilters().get(0).getVariable();   // TAG
+    trigger.getFunction().getName();             // abort_any_command
+
+``REINDEX`` parses to ``Reindex``: a ``Target`` (INDEX, TABLE, SCHEMA, DATABASE or SYSTEM),
+the ``CONCURRENTLY`` keyword, the parenthesized ``CONCURRENTLY``, ``TABLESPACE`` and
+``VERBOSE`` options with their values as written, and the object name. Only DATABASE and
+SYSTEM may omit the name. ``getTable()`` returns the name only for ``REINDEX TABLE``, which
+table visitors report. ``REINDEX`` is a non-reserved keyword.
+
+``SECURITY LABEL`` parses to ``SecurityLabel`` with the provider as written and one target,
+told apart by ``getObjectType()``: a named object (``getObjectName()``), a qualified column
+(``getColumn()``), a FUNCTION, PROCEDURE, ROUTINE or AGGREGATE signature (``getRoutine()``)
+or a large object OID. A null label stands for ``IS NULL``. Table visitors report tables,
+views, materialized views, foreign tables and a column's table.
+
+``CREATE SCHEMA`` keeps its schema elements in ``getStatements()`` and renders them after the
+``AUTHORIZATION`` and ``PATH`` clauses. The element kinds are PostgreSQL's: ``CREATE TABLE``,
+``CREATE VIEW``, ``CREATE INDEX``, ``CREATE SEQUENCE``, ``CREATE TRIGGER`` and ``GRANT``;
+``CREATE SCHEMA IF NOT EXISTS`` cannot include them. Elements keep their names as written,
+and unqualified names refer to the new schema. The parser no longer copies the schema name
+into ``CREATE TABLE`` elements. Table visitors, validation and ``StatementDeParser`` traverse
+the elements.
+
+Validators report ``createEventTrigger``, ``alterEventTrigger``, ``reindex``,
+``reindexConcurrently`` (PostgreSQL 12) and ``securityLabel``. Feature analysis classifies
+these statements as schema changes; ``REINDEX`` also reads data.
+
+References: `CREATE EVENT TRIGGER <https://www.postgresql.org/docs/18/sql-createeventtrigger.html>`_,
+`ALTER EVENT TRIGGER <https://www.postgresql.org/docs/18/sql-altereventtrigger.html>`_,
+`REINDEX <https://www.postgresql.org/docs/18/sql-reindex.html>`_,
+`SECURITY LABEL <https://www.postgresql.org/docs/18/sql-security-label.html>`_,
+`CREATE SCHEMA <https://www.postgresql.org/docs/18/sql-createschema.html>`_.
 
 Migrating shared ALTER enums
 ----------------------------

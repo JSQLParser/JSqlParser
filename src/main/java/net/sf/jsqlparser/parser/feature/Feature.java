@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -40,6 +41,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -48,6 +50,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
@@ -60,6 +63,7 @@ import net.sf.jsqlparser.statement.select.Skip;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.Top;
 import net.sf.jsqlparser.statement.select.UnPivot;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
@@ -607,6 +611,26 @@ public enum Feature {
      * SQL "CREATE TRIGGER" statement is allowed
      */
     createTrigger,
+    /**
+     * PostgreSQL "CREATE EVENT TRIGGER" and "ALTER EVENT TRIGGER" statements are allowed
+     *
+     * @see CreateEventTrigger
+     * @see AlterEventTrigger
+     */
+    createEventTrigger, alterEventTrigger,
+    /**
+     * PostgreSQL "REINDEX" statement is allowed; "REINDEX … CONCURRENTLY" additionally requires
+     * {@link #reindexConcurrently}
+     *
+     * @see Reindex
+     */
+    reindex, reindexConcurrently,
+    /**
+     * PostgreSQL "SECURITY LABEL" statement is allowed
+     *
+     * @see SecurityLabel
+     */
+    securityLabel,
     /**
      * SQL "COMMIT" statement is allowed
      *
