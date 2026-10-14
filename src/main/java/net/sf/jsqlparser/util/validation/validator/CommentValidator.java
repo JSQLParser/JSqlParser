@@ -46,6 +46,68 @@ public class CommentValidator extends AbstractValidator<Comment> {
                 return Feature.commentOnFunction;
             case CONSTRAINT:
                 return Feature.commentOnConstraint;
+            case TRIGGER:
+                return Feature.commentOnTrigger;
+            case POLICY:
+                return Feature.commentOnPolicy;
+            case RULE:
+                return Feature.commentOnRule;
+            case PROCEDURE:
+                return Feature.commentOnProcedure;
+            case ROUTINE:
+                return Feature.commentOnRoutine;
+            case AGGREGATE:
+                return Feature.commentOnAggregate;
+            case CAST:
+                return Feature.commentOnCast;
+            case COLLATION:
+                return Feature.commentOnCollation;
+            case FOREIGN_TABLE:
+                return Feature.commentOnForeignTable;
+            case STATISTICS:
+                return Feature.commentOnStatistics;
+            case DATABASE:
+                return Feature.commentOnDatabase;
+            case ROLE:
+                return Feature.commentOnRole;
+            case TABLESPACE:
+                return Feature.commentOnTablespace;
+            case ACCESS_METHOD:
+                return Feature.commentOnAccessMethod;
+            case EXTENSION:
+                return Feature.commentOnExtension;
+            case FOREIGN_DATA_WRAPPER:
+                return Feature.commentOnForeignDataWrapper;
+            case LANGUAGE:
+                return Feature.commentOnLanguage;
+            case SERVER:
+                return Feature.commentOnServer;
+            case EVENT_TRIGGER:
+                return Feature.commentOnEventTrigger;
+            case PUBLICATION:
+                return Feature.commentOnPublication;
+            case SUBSCRIPTION:
+                return Feature.commentOnSubscription;
+            case OPERATOR:
+                return Feature.commentOnOperator;
+            case OPERATOR_CLASS:
+                return Feature.commentOnOperatorClass;
+            case OPERATOR_FAMILY:
+                return Feature.commentOnOperatorFamily;
+            case CONVERSION:
+                return Feature.commentOnConversion;
+            case LARGE_OBJECT:
+                return Feature.commentOnLargeObject;
+            case TRANSFORM:
+                return Feature.commentOnTransform;
+            case TEXT_SEARCH_CONFIGURATION:
+                return Feature.commentOnTextSearchConfiguration;
+            case TEXT_SEARCH_DICTIONARY:
+                return Feature.commentOnTextSearchDictionary;
+            case TEXT_SEARCH_PARSER:
+                return Feature.commentOnTextSearchParser;
+            case TEXT_SEARCH_TEMPLATE:
+                return Feature.commentOnTextSearchTemplate;
             default:
                 throw new IllegalArgumentException("Unknown COMMENT target: " + kind);
         }

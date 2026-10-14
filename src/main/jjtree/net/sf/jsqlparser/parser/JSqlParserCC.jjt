@@ -20291,36 +20291,135 @@ Table CommentObjectName():
             : new Table(names.getNames()); }
 }
 
+/** The object kind decides the shape of the reference that follows it. */
 CommentTarget CommentTarget():
 {
     CommentTarget result = new CommentTarget();
+    CommentTarget.Kind kind;
     Table name;
-    String constraintName;
+    String objectName;
     RoutineReference routine;
+    ColDataType type;
+    ExclusionOperator operator;
+    Long oid;
 }
 {
+    kind=CommentTargetKind(result) { result.setKind(kind); }
     (
-        <K_FUNCTION> routine=RoutineReference(false)
-        { result.setKind(CommentTarget.Kind.FUNCTION); result.setRoutine(routine); }
+        LOOKAHEAD({ kind.isRoutine() })
+        routine=RoutineReference(kind == CommentTarget.Kind.AGGREGATE) { result.setRoutine(routine); }
         |
-        <K_CONSTRAINT> constraintName=RelObjectName()
-        { result.setKind(CommentTarget.Kind.CONSTRAINT); result.setName(new Table(constraintName, false)); }
+        LOOKAHEAD({ kind.isOwnedByRelation() })
+        objectName=RelObjectName() { result.setName(new Table(objectName, false)); }
         <K_ON>
-        [ LOOKAHEAD({ getToken(1).kind == K_DOMAIN && !".".equals(getToken(2).image)
-                && getToken(2).kind != K_IS }) <K_DOMAIN> { result.setOnDomain(true); } ]
+        [ LOOKAHEAD({ kind == CommentTarget.Kind.CONSTRAINT && getToken(1).kind == K_DOMAIN
+                && !".".equals(getToken(2).image) && getToken(2).kind != K_IS })
+          <K_DOMAIN> { result.setOnDomain(true); } ]
         name=CommentObjectName() { result.setRelation(name); }
         |
-        (
-            <K_INDEX> { result.setKind(CommentTarget.Kind.INDEX); }
-            | <K_SCHEMA> { result.setKind(CommentTarget.Kind.SCHEMA); }
-            | <K_SEQUENCE> { result.setKind(CommentTarget.Kind.SEQUENCE); }
-            | <K_MATERIALIZED> <K_VIEW> { result.setKind(CommentTarget.Kind.MATERIALIZED_VIEW); }
-            | <K_DOMAIN> { result.setKind(CommentTarget.Kind.DOMAIN); }
-            | <K_TYPE> { result.setKind(CommentTarget.Kind.TYPE); }
-        )
+        LOOKAHEAD({ kind == CommentTarget.Kind.CAST })
+        "(" type=ColDataType() { result.setSourceType(type); }
+        <K_AS> type=ColDataType() { result.setTargetType(type); } ")"
+        |
+        LOOKAHEAD({ kind == CommentTarget.Kind.OPERATOR })
+        operator=PostgreSqlOperatorReference() { result.setOperator(operator); }
+        "(" type=ExtensionOperatorType() { result.setLeftOperandType(type); }
+        "," type=ExtensionOperatorType() { result.setRightOperandType(type); } ")"
+        { requireTypeDdlSyntax(result.getLeftOperandType() != null || result.getRightOperandType() != null,
+                "An operator signature needs an operand type"); }
+        |
+        LOOKAHEAD({ kind.isOwnedByAccessMethod() })
+        name=CommentObjectName() { result.setName(name); }
+        <K_USING> objectName=RelObjectName() { result.setAccessMethod(objectName); }
+        |
+        LOOKAHEAD({ kind == CommentTarget.Kind.LARGE_OBJECT })
+        oid=ObjectIdentifier() { result.setLargeObjectOid(oid); }
+        |
+        LOOKAHEAD({ kind == CommentTarget.Kind.TRANSFORM })
+        <K_FOR> type=ColDataType() { result.setTransformType(type); }
+        ContextualKeyword("LANGUAGE") objectName=RelObjectName() { result.setLanguage(objectName); }
+        |
         name=CommentObjectName() { result.setName(name); }
     )
     { return result; }
+}
+
+/** Kind words without a token are matched contextually and remain ordinary identifiers. */
+CommentTarget.Kind CommentTargetKind(CommentTarget target):
+{ CommentTarget.Kind kind; }
+{
+    (
+        <K_INDEX> { kind = CommentTarget.Kind.INDEX; }
+        | <K_SCHEMA> { kind = CommentTarget.Kind.SCHEMA; }
+        | <K_SEQUENCE> { kind = CommentTarget.Kind.SEQUENCE; }
+        | <K_MATERIALIZED> <K_VIEW> { kind = CommentTarget.Kind.MATERIALIZED_VIEW; }
+        | <K_DOMAIN> { kind = CommentTarget.Kind.DOMAIN; }
+        | <K_TYPE> { kind = CommentTarget.Kind.TYPE; }
+        | <K_FUNCTION> { kind = CommentTarget.Kind.FUNCTION; }
+        | <K_CONSTRAINT> { kind = CommentTarget.Kind.CONSTRAINT; }
+        | <K_TRIGGER> { kind = CommentTarget.Kind.TRIGGER; }
+        | <K_POLICY> { kind = CommentTarget.Kind.POLICY; }
+        | LOOKAHEAD({ isKeywordAhead("RULE") }) ContextualKeyword("RULE") { kind = CommentTarget.Kind.RULE; }
+        | <K_PROCEDURE> { kind = CommentTarget.Kind.PROCEDURE; }
+        | LOOKAHEAD({ isKeywordAhead("ROUTINE") }) ContextualKeyword("ROUTINE") { kind = CommentTarget.Kind.ROUTINE; }
+        | <K_AGGREGATE> { kind = CommentTarget.Kind.AGGREGATE; }
+        | <K_CAST> { kind = CommentTarget.Kind.CAST; }
+        | LOOKAHEAD({ isKeywordAhead("ACCESS") }) ContextualKeyword("ACCESS") ContextualKeyword("METHOD")
+          { kind = CommentTarget.Kind.ACCESS_METHOD; }
+        | LOOKAHEAD({ isKeywordAhead("COLLATION") }) ContextualKeyword("COLLATION") { kind = CommentTarget.Kind.COLLATION; }
+        | <K_DATABASE> { kind = CommentTarget.Kind.DATABASE; }
+        | <K_EVENT> <K_TRIGGER> { kind = CommentTarget.Kind.EVENT_TRIGGER; }
+        | LOOKAHEAD({ isKeywordAhead("EXTENSION") }) ContextualKeyword("EXTENSION") { kind = CommentTarget.Kind.EXTENSION; }
+        | <K_FOREIGN>
+          (
+              <K_DATA> ContextualKeyword("WRAPPER") { kind = CommentTarget.Kind.FOREIGN_DATA_WRAPPER; }
+              | <K_TABLE> { kind = CommentTarget.Kind.FOREIGN_TABLE; }
+          )
+        | LOOKAHEAD({ isKeywordAhead("PROCEDURAL") || isKeywordAhead("LANGUAGE") })
+          [ LOOKAHEAD({ isKeywordAhead("PROCEDURAL") }) ContextualKeyword("PROCEDURAL") { target.setProcedural(true); } ]
+          ContextualKeyword("LANGUAGE") { kind = CommentTarget.Kind.LANGUAGE; }
+        | LOOKAHEAD({ isKeywordAhead("PUBLICATION") }) ContextualKeyword("PUBLICATION") { kind = CommentTarget.Kind.PUBLICATION; }
+        | LOOKAHEAD({ isKeywordAhead("ROLE") }) ContextualKeyword("ROLE") { kind = CommentTarget.Kind.ROLE; }
+        | LOOKAHEAD({ isKeywordAhead("SERVER") }) ContextualKeyword("SERVER") { kind = CommentTarget.Kind.SERVER; }
+        | LOOKAHEAD({ isKeywordAhead("STATISTICS") }) ContextualKeyword("STATISTICS") { kind = CommentTarget.Kind.STATISTICS; }
+        | LOOKAHEAD({ isKeywordAhead("SUBSCRIPTION") }) ContextualKeyword("SUBSCRIPTION") { kind = CommentTarget.Kind.SUBSCRIPTION; }
+        | <K_TABLESPACE> { kind = CommentTarget.Kind.TABLESPACE; }
+        | LOOKAHEAD({ isKeywordAhead("OPERATOR") }) ContextualKeyword("OPERATOR") { kind = CommentTarget.Kind.OPERATOR; }
+          // a schema named CLASS or FAMILY may qualify an operator, as in class.+
+          [ LOOKAHEAD({ (isKeywordAhead("CLASS") || isKeywordAhead("FAMILY")) && !".".equals(getToken(2).image) })
+            ( LOOKAHEAD({ isKeywordAhead("CLASS") }) ContextualKeyword("CLASS") { kind = CommentTarget.Kind.OPERATOR_CLASS; }
+              | ContextualKeyword("FAMILY") { kind = CommentTarget.Kind.OPERATOR_FAMILY; } ) ]
+        | LOOKAHEAD({ isKeywordAhead("LARGE") }) ContextualKeyword("LARGE") ContextualKeyword("OBJECT")
+          { kind = CommentTarget.Kind.LARGE_OBJECT; }
+        | LOOKAHEAD({ isKeywordAhead("CONVERSION") }) ContextualKeyword("CONVERSION") { kind = CommentTarget.Kind.CONVERSION; }
+        | LOOKAHEAD({ isKeywordAhead("TRANSFORM") }) ContextualKeyword("TRANSFORM") { kind = CommentTarget.Kind.TRANSFORM; }
+        | LOOKAHEAD({ isKeywordAhead("TEXT") }) <K_TEXT_LITERAL> <K_SEARCH>
+          (
+              <K_PARSER> { kind = CommentTarget.Kind.TEXT_SEARCH_PARSER; }
+              | LOOKAHEAD({ isKeywordAhead("CONFIGURATION") }) ContextualKeyword("CONFIGURATION")
+                { kind = CommentTarget.Kind.TEXT_SEARCH_CONFIGURATION; }
+              | LOOKAHEAD({ isKeywordAhead("DICTIONARY") }) ContextualKeyword("DICTIONARY")
+                { kind = CommentTarget.Kind.TEXT_SEARCH_DICTIONARY; }
+              | ContextualKeyword("TEMPLATE") { kind = CommentTarget.Kind.TEXT_SEARCH_TEMPLATE; }
+          )
+    )
+    { return kind; }
+}
+
+/** An unsigned 32-bit PostgreSQL object identifier, such as the OID of a large object. */
+Long ObjectIdentifier():
+{ Token token; long value; }
+{
+    token=<S_LONG>
+    {
+        try {
+            value = Long.parseLong(token.image);
+        } catch (NumberFormatException exception) {
+            value = -1;
+        }
+        requireTypeDdlSyntax(value >= 0 && value <= 0xFFFFFFFFL, "OID out of range: " + token.image);
+        return value;
+    }
 }
 
 /** Consumes a keyword that remains an ordinary identifier outside this grammar context. */
@@ -21427,7 +21526,9 @@ RoutineReference RoutineReference(boolean aggregate):
         (
             "*" { requireTypeDdlSyntax(aggregate, "Only aggregate signatures accept *"); result.setAllArguments(true); }
             |
-            [ argument=RoutineSignatureArgument() { arguments.add(argument); }
+            // ORDER is non-reserved, so ORDER BY without direct arguments is not an argument name
+            [ LOOKAHEAD(1, { getToken(1).kind != K_ORDER || getToken(2).kind != K_BY })
+              argument=RoutineSignatureArgument() { arguments.add(argument); }
               ( "," argument=RoutineSignatureArgument() { arguments.add(argument); } )* ]
             [ <K_ORDER> <K_BY> { requireTypeDdlSyntax(aggregate, "ORDER BY requires an aggregate signature"); orderBy = new ArrayList<RoutineReference.Argument>(); }
               argument=RoutineSignatureArgument() { orderBy.add(argument); }
@@ -21445,15 +21546,49 @@ String ExtensionOperatorName():
 
 /** Shared schema-qualified operator spelling used in DDL references. */
 ExclusionOperator PostgreSqlOperatorReference():
-{ String schema = null; Token token; }
+{ String schema = null; String name; }
 {
     [ LOOKAHEAD(RelObjectName() ".") schema=RelObjectName() "." ]
-    ( token="+" | token="-" | token="*" | token="/" | token="%" | token="="
-      | token=<OP_NOTEQUALSSTANDARD> | token=<OP_NOTEQUALSBANG> | token="<" | token=">"
-      | token=<OP_MINORTHANEQUALS> | token=<OP_GREATERTHANEQUALS> | token="&&" | token="@>" | token="<@" | token="~"
-      | token="~*" | token="!~" | token="!~*" | token="?" | token="?|" | token="?&"
-      | token=<OP_CONCAT> )
-    { return new ExclusionOperator().withSchemaName(schema).withName(token.image); }
+    name=PostgreSqlOperatorName()
+    { return new ExclusionOperator().withSchemaName(schema).withName(name); }
+}
+
+/**
+ * The lexer splits some PostgreSQL operators, such as <<= or -|-, into several tokens. Parts that
+ * touch each other are joined, because PostgreSQL reads them as one operator.
+ */
+String PostgreSqlOperatorName():
+{ StringBuilder name = new StringBuilder(); Token token; }
+{
+    token=PostgreSqlOperatorPart() { name.append(token.image); }
+    (
+        LOOKAHEAD(1, { getToken(1).specialToken == null && getToken(1).beginLine == getToken(0).endLine
+                && getToken(1).beginColumn == getToken(0).endColumn + 1 })
+        token=PostgreSqlOperatorPart() { name.append(token.image); }
+    )*
+    { return name.toString(); }
+}
+
+Token PostgreSqlOperatorPart():
+{ Token token; }
+{
+    (
+        token="+" | token="-" | token="*" | token="/" | token="%" | token=<OP_CARET> | token=<OP_POWER>
+        | token="<" | token=">" | token="=" | token="==" | token=<OP_MINORTHANEQUALS> | token=<OP_GREATERTHANEQUALS>
+        | token=<OP_NOTEQUALSSTANDARD> | token=<OP_NOTEQUALSBANG> | token=<OP_NOTEQUALSHAT> | token="*=" | token="=*"
+        | token=<OP_COSINESIMILARITY> | token=<OP_CONCAT> | token=<OP_PIPE> | token="|>" | token="&" | token=<OP_DOUBLEAND>
+        | token=<OP_CONTAINS> | token=<OP_CONTAINEDBY> | token=<OP_LSHIFT> | token=<OP_RSHIFT>
+        | token="~" | token="~*" | token="!~" | token="!~*" | token="~~" | token="~~*" | token="!~~" | token="!~~*"
+        | token="~~~" | token="!" | token=<K_AT_SIGN> | token="@>" | token="<@" | token="@@" | token=<OP_JSON_PATH_EXISTS>
+        | token="?" | token="?|" | token="?&" | token="->" | token="->>" | token=<S_HASH_OPERATOR> | token="#>"
+        | token="#>>" | token=<OP_JSON_PATH_DELETE> | token="-#" | token="<->" | token="<#>"
+    )
+    {
+        // PostgreSQL reads "< =" as two operators, while the lexer tolerates whitespace inside it
+        requireTypeDdlSyntax(!token.image.matches("(?s).*\\s.*"),
+                "Unexpected whitespace in operator " + token.image);
+        return token;
+    }
 }
 
 ColDataType ExtensionOperatorType():

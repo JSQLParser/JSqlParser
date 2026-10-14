@@ -1913,36 +1913,78 @@ replacing the expression list clears them. Validators report the separate
 PostgreSQL COMMENT targets
 =========================
 
-``COMMENT ON`` supports ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``,
-``MATERIALIZED VIEW``, ``FUNCTION`` and ``CONSTRAINT`` in addition to the existing
-``TABLE``, ``COLUMN`` and ``VIEW`` forms. These unambiguous target forms also parse
-without a dialect preset. Tagged dollar strings still require
-``Dialect.POSTGRESQL`` or ``withDollarQuotedStringTags(true)``.
+``COMMENT ON`` supports these PostgreSQL object kinds in addition to the existing
+``TABLE``, ``COLUMN`` and ``VIEW`` forms:
+
+- ``INDEX``, ``SCHEMA``, ``SEQUENCE``, ``DOMAIN``, ``TYPE``, ``MATERIALIZED VIEW``,
+  ``FOREIGN TABLE``, ``COLLATION``, ``STATISTICS``, ``CONVERSION`` and
+  ``TEXT SEARCH {CONFIGURATION | DICTIONARY | PARSER | TEMPLATE}``
+- ``ACCESS METHOD``, ``DATABASE``, ``EVENT TRIGGER``, ``EXTENSION``,
+  ``FOREIGN DATA WRAPPER``, ``[PROCEDURAL] LANGUAGE``, ``PUBLICATION``, ``ROLE``,
+  ``SERVER``, ``SUBSCRIPTION`` and ``TABLESPACE``
+- ``FUNCTION``, ``PROCEDURE``, ``ROUTINE`` and ``AGGREGATE`` signatures
+- ``CONSTRAINT``, ``TRIGGER``, ``POLICY`` and ``RULE`` with their owning table
+- ``CAST (source_type AS target_type)``
+- ``OPERATOR [schema.]op (left_type, right_type)``, where ``NONE`` marks the missing
+  operand of a unary operator
+- ``OPERATOR CLASS`` and ``OPERATOR FAMILY`` with ``USING access_method``
+- ``LARGE OBJECT oid`` and ``TRANSFORM FOR type_name LANGUAGE lang_name``
+
+These unambiguous target forms also parse without a dialect preset. Kind words such as
+``ROLE``, ``SERVER``, ``RULE``, ``OPERATOR`` or ``CONVERSION`` are not reserved and
+remain ordinary identifiers.
+Tagged dollar strings still require ``Dialect.POSTGRESQL`` or
+``withDollarQuotedStringTags(true)``.
 
 The additional targets are exposed through ``Comment.getTarget()`` as a
 ``CommentTarget``. Its ``Kind`` identifies the object, and ``getName()`` preserves
 the individual identifier components. ``Table`` is used as the name container;
 an index or type name does not thereby represent a table dependency.
+``isProcedural()`` records ``PROCEDURAL LANGUAGE``.
 The original ``Comment.getTable()``, ``getColumn()`` and ``getView()`` accessors
 continue to describe their respective existing forms.
 
 ``COMMENT ON FUNCTION app.f(IN value integer) IS 'description'`` uses the shared
-``RoutineReference`` in ``getTarget().getRoutine()``. Argument mode, optional name
+``RoutineReference`` in ``getTarget().getRoutine()``; ``Kind.isRoutine()`` identifies
+these kinds and ``getName()`` is null. Argument mode, optional name
 and ``ColDataType`` are preserved. An omitted signature has null arguments;
-``f()`` has an empty argument list. The signature identifies a function and is not
-a function call.
+``f()`` has an empty argument list. The signature identifies a routine and is not
+a function call. An ``AGGREGATE`` requires a signature and also accepts ``(*)`` and
+ordered-set signatures such as ``(float8 ORDER BY integer)`` or ``(ORDER BY integer)``.
 
 For ``COMMENT ON CONSTRAINT ck ON app.t IS NULL``, ``getName()`` is the constraint
-name and ``getRelation()`` is its owning table. ``ON DOMAIN app.d`` sets
-``isOnDomain()`` and stores the domain as the owner instead. ``NULL`` removes the
-comment and remains represented by a null ``Comment.getComment()``.
+name and ``getRelation()`` is its owning table. ``TRIGGER``, ``POLICY`` and ``RULE``
+targets use the same fields; ``Kind.isOwnedByRelation()`` identifies these kinds.
+Only a constraint accepts ``ON DOMAIN app.d``, which sets ``isOnDomain()`` and stores
+the domain as the owner instead. A ``CAST`` target exposes ``getSourceType()`` and
+``getTargetType()``. ``NULL`` removes the comment and remains represented by a null
+``Comment.getComment()``.
 
-Table discovery visits tables, column owners, views, materialized views and
-table-owned constraints. It does not infer an index's table or treat domains,
-sequences, types or functions as tables. Statement visitors visit comment
-literals, and custom SQL deparsers can replace the explicit relation or literal.
-Feature analysis reports a schema modification. Validation exposes a separate
-``commentOn...`` capability for each additional target kind.
+``COMMENT ON OPERATOR app.-> (jsonb, NONE)`` reads the operator with the reference
+shared by exclusion constraints and ``ALTER EXTENSION``: ``getOperator()`` returns an
+``ExclusionOperator`` with ``getSchemaName()`` and the operator symbol in ``getName()``.
+``getLeftOperandType()`` and ``getRightOperandType()`` hold the operand types, and null
+stands for ``NONE``; at least one operand type is required. The lexer reads some
+PostgreSQL operators, such as ``<<=`` or ``-|-``, as several tokens. Parts that touch
+each other are joined into one operator, while whitespace or a comment separates two
+operators as in PostgreSQL. Exclusion constraints and ``ALTER EXTENSION`` accept the same
+operators. Operators that the lexer reads as part of an identifier, such as ``##``
+without ``Dialect.POSTGRESQL``, are not supported.
+
+``OPERATOR CLASS`` and ``OPERATOR FAMILY`` targets keep their name in ``getName()``
+and the index access method in ``getAccessMethod()``; ``Kind.isOwnedByAccessMethod()``
+identifies these kinds. ``LARGE OBJECT`` exposes ``getLargeObjectOid()``, which
+accepts an unsigned 32-bit integer. ``TRANSFORM`` exposes ``getTransformType()`` and
+``getLanguage()``. Each ``TEXT SEARCH`` object type has its own ``Kind``, for example
+``TEXT_SEARCH_DICTIONARY``.
+
+Table discovery visits tables, column owners, views, materialized views, foreign
+tables and the tables owning constraints, triggers, policies and rules. It does not
+infer an index's table or treat domains, sequences, types, routines or other catalog
+objects as tables. Statement visitors visit comment literals, and custom SQL deparsers
+can replace the explicit relation or literal. Feature analysis reports a schema
+modification. Validation exposes a separate ``commentOn...`` capability for each
+additional target kind.
 
 Current date/time expression metadata
 =====================================
