@@ -497,6 +497,27 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     /**
+     * Whether PRIOR starts Oracle's hierarchical operator, as in PRIOR id or PRIOR (a), rather
+     * than naming a column, as in prior = 1, prior IS NULL or ORDER BY prior DESC.
+     */
+    private boolean isPriorOperatorAhead() {
+        if (getToken(1).kind != K_PRIOR) {
+            return false;
+        }
+        int kind = getToken(2).kind;
+        switch (kind) {
+            case OPENING_BRACKET: case S_IDENTIFIER: case S_QUOTED_IDENTIFIER: case DATA_TYPE:
+            case S_LONG: case S_DOUBLE: case S_CHAR_LITERAL:
+                return true;
+            case K_ASC: case K_DESC: case K_NULLS:
+                return false;
+            default:
+                return kind >= MIN_NON_RESERVED_WORD && kind <= MAX_NON_RESERVED_WORD
+                        && !isConditionKeywordAhead(2);
+        }
+    }
+
+    /**
      * Scans ahead through a dotted identifier chain and checks if '(' follows.
      * Distinguishes function calls like func(), schema.func(), a.b.c.func()
      * from column references like col, schema.col, a.b.c.col.
@@ -699,6 +720,15 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 && Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect));
     }
 
+    /**
+     * Whether the ABSENT ON NULL or RETURNING clause of JSON_ARRAY or JSON_OBJECT starts here,
+     * rather than an element: ABSENT is a non-reserved word and RETURNING may name a column.
+     */
+    private boolean isJsonConstructorClauseAhead() {
+        int kind = getToken(1).kind;
+        return kind == K_RETURNING || kind == K_ABSENT && getToken(2).kind == K_ON;
+    }
+
         protected Expression prattArithRest(Expression left, int minPrec) throws ParseException {
         while (!interrupted) {
             Token t = getToken(1);
@@ -863,12 +893,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         switch (t.kind) {
             case S_IDENTIFIER: case S_QUOTED_IDENTIFIER: case DATA_TYPE:
             case K_DATETIMELITERAL: case K_DATE_LITERAL:
-            case K_ALL: case K_ANY: case K_CASEWHEN: case K_CONNECT: case K_CREATE:
-            case K_DEFAULT: case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
+            case K_ALL: case K_ANY: case K_BETWEEN: case K_CASEWHEN: case K_CONNECT: case K_CREATE:
+            case K_DEFAULT: case K_FULL: case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL: case K_LEFT:
-            case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_OPTIMIZE:
-            case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RIGHT:
-            case K_SET: case K_SOME: case K_START: case K_TABLES:
+            case K_LIMIT: case K_NEXTVAL: case K_OFFSET: case K_ON: case K_ONLY: case K_OPTIMIZE:
+            case K_ORDER: case K_PROCEDURE: case K_PUBLIC: case K_QUALIFY: case K_RETURNING:
+            case K_RIGHT: case K_SET: case K_SOME: case K_START: case K_TABLES:
             case K_TOP: case K_VALUE: case K_VALUES:
                 return true;
             default:
@@ -1243,7 +1273,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         switch (kind) {
             case K_JOIN: case K_FOR: case K_ORDER:
             case K_UNION: case K_EXCEPT: case K_INTERSECT:
-            case K_USE: case K_OPTIMIZE: case K_FORCE: case K_UNKNOWN:
+            case K_USE: case K_OPTIMIZE:
                 return true;
             default:
                 return false;
@@ -1331,6 +1361,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             case K_RIGHT:    return nextKind != K_JOIN && nextKind != K_OUTER
                                     && nextKind != K_SEMI && nextKind != K_ANTI
                                     && nextKind != K_ARRAY_LITERAL;
+            case K_FULL:     return nextKind != K_JOIN && nextKind != K_OUTER
+                                    && nextKind != K_SEMI && nextKind != K_ANTI
+                                    && nextKind != K_ANY && nextKind != K_ALL
+                                    && nextKind != K_ARRAY_LITERAL;
             case K_ARRAY_LITERAL:
                              return nextKind != K_JOIN;
             case K_ALL:      return nextKind != K_JOIN;
@@ -1396,8 +1430,12 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return true;
         }
 
+        if (getToken(1).kind == K_ONLY && isRelationOnlyAhead(prev)) {
+            return false;
+        }
+
         // ── 2. After delimiters and operators: expression position ─────
-        //    With K_FROM/K_SELECT/K_CURRENT removed from RelObjectName's
+        //    With K_FROM/K_SELECT removed from RelObjectName's
         //    token list, accepting all remaining keywords after these
         //    delimiters and operators is safe.
         if (!prev.image.isEmpty()) {
@@ -1458,6 +1496,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             // Set operators
             case K_UNION: case K_EXCEPT: case K_INTERSECT: case K_MINUS:
 
+            // TABLE and COLUMN are always followed by the object name, as in
+            // CREATE TABLE value (...) or ADD COLUMN offset INT
+            case K_TABLE: case K_COLUMN:
+
             // DDL / utility keywords (never identifiers)
             case K_FOREIGN: case K_CONSTRAINT: case K_UNIQUE: case K_CHECK:
             case K_FORCE:
@@ -1472,6 +1514,24 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
 
         // ── 5. Conservative default: fall back to follower check ──────
         return isReservedKeywordSafeByFollower();
+    }
+
+    /**
+     * Whether ONLY is PostgreSQL's prefix of a relation name, as in DELETE FROM ONLY t,
+     * JOIN ONLY t or FROM a, ONLY b, rather than a table or column named only.
+     */
+    private boolean isRelationOnlyAhead(Token prev) {
+        int next = getToken(2).kind;
+        boolean name = next == S_IDENTIFIER || next == S_QUOTED_IDENTIFIER || next == OPENING_BRACKET;
+        switch (prev.kind) {
+            case K_FROM: case K_JOIN: case K_UPDATE: case K_INTO: case K_USING:
+                return name || next >= MIN_NON_RESERVED_WORD && next <= MAX_NON_RESERVED_WORD;
+            case K_COMMA:
+                // a column definition continues with its type instead, as in (a INT, only INT)
+                return name;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -1905,13 +1965,18 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
             return false;
         }
 
+        // MySQL's FORCE INDEX|KEY (...) index hint, not an alias
+        if (kind == K_FORCE && (getToken(2).kind == K_INDEX || getToken(2).kind == K_KEY)) {
+            return false;
+        }
+
         // For reserved keywords in alias position, skip the structural-
         // keyword whitelist and go directly to follower disambiguation.
         // Only check keywords that are actually in RelObjectName's token
         // alternatives — don't fire for brackets, operators, literals, etc.
         switch (kind) {
             case K_ALL: case K_ARRAY_LITERAL: case K_ANY: case K_CASEWHEN: case K_CONNECT:
-            case K_CREATE: case K_DEFAULT:
+            case K_CREATE: case K_DEFAULT: case K_FULL:
             case K_GLOBAL: case K_GROUP: case K_GROUPING: case K_IF:
             case K_IIF: case K_IGNORE: case K_IN: case K_INTERVAL:
             case K_LEFT: case K_LIMIT: case K_NEXTVAL: case K_OFFSET:
@@ -2042,6 +2107,13 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || "INITIALLY".equalsIgnoreCase(getToken(offset).image)
                 || kind == K_NOT && (next == K_DEFERRABLE || next == K_ENFORCED
                     || "VALID".equalsIgnoreCase(getToken(offset + 1).image));
+    }
+
+    /** EXCLUDE starts an exclusion constraint only before USING, its elements or WHERE. */
+    private boolean isExcludeConstraintAhead() {
+        int next = getToken(2).kind;
+        return getToken(1).kind == K_EXCLUDE
+                && (next == K_USING || next == OPENING_BRACKET || next == K_WHERE);
     }
 
     private boolean isMySqlStatisticsOptionAhead() {
@@ -2290,7 +2362,7 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
         Token token = getToken(1);
         // These existing modifiers remain available without a dialect preset.
         if (token.kind == K_STRAIGHT || token.kind == K_SQL_CACHE
-                || token.kind == K_SQL_NO_CACHE || token.kind == K_SQL_CALC_FOUND_ROWS) {
+                || token.kind == K_SQL_CALC_FOUND_ROWS) {
             return true;
         }
         // Keep qualified names, aliases and standalone identifier expressions intact.
@@ -2299,6 +2371,10 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
                 || ".".equals(getToken(2).image) || ",".equals(getToken(2).image)
                 || ")".equals(getToken(2).image)) {
             return false;
+        }
+        // SQL_NO_CACHE is a non-reserved word, so it is a modifier only before a select item.
+        if (token.kind == K_SQL_NO_CACHE) {
+            return true;
         }
         if (getAsString(Feature.dialect) != null && !isMySqlDialect()) {
             return false;
@@ -2907,12 +2983,24 @@ SKIP:
  * Non-reserved SQL keywords usable as unquoted identifiers.
  * Tokens are declared inline to get consecutive kind values between
  * MIN_NON_RESERVED_WORD and MAX_NON_RESERVED_WORD sentinels.
+ *
+ * The words are split over two productions: the lookahead routine JavaCC generates for one
+ * choice of all of them exceeds the JVM's 8000 byte limit for JIT compiled methods
+ * (-XX:HugeMethodLimit) and would always run interpreted.
  */
 String NonReservedWord() :
+{    String word; }
+{
+    ( word=NonReservedWordPart1() | word=NonReservedWordPart2() )
+    { return word; }
+}
+
+String NonReservedWordPart1() :
 {    Token tk = null; }
 {
     (
-        tk=<K_ACTION: "ACTION">
+        tk=<K_ABSENT: "ABSENT">
+      | tk=<K_ACTION: "ACTION">
       | tk=<K_ACTIVE: "ACTIVE">
       | tk=<K_ADD:"ADD">
       | tk=<K_ADVANCE:"ADVANCE">
@@ -2989,6 +3077,7 @@ String NonReservedWord() :
       | tk=<K_COUNT: "COUNT">
       | tk=<K_CREATED:"CREATED">
       | tk=<K_CSV: "CSV">
+      | tk=<K_CURRENT: "CURRENT">
       | tk=<K_CYCLE:"CYCLE">
       | tk=<K_DATABASE:"DATABASE">
       | tk=<K_DATA:"DATA">
@@ -3060,6 +3149,7 @@ String NonReservedWord() :
       | tk=<K_FIRST: "FIRST">
       | tk=<K_FLUSH: "FLUSH">
       | tk=<K_FOLLOWING: "FOLLOWING">
+      | tk=<K_FORCE: "FORCE">
       | tk=<K_FORMAT:"FORMAT">
       | tk=<K_FULLTEXT:"FULLTEXT">
       | tk=<K_FUNCTION:"FUNCTION">
@@ -3076,6 +3166,7 @@ String NonReservedWord() :
       | tk=<K_HOPPING:"HOPPING">
       | tk=<K_IDENTIFIED:"IDENTIFIED">
       | tk=<K_IDENTITY:"IDENTITY">
+      | tk=<K_IMPORT: "IMPORT">
       | tk=<K_INCLUDE:"INCLUDE">
       | tk=<K_INCLUDE_NULL_VALUES:"INCLUDE_NULL_VALUES">
       | tk=<K_INCLUDING:"INCLUDING">
@@ -3120,7 +3211,15 @@ String NonReservedWord() :
       | tk=<K_LOW : "LOW">
       | tk=<K_LOW_PRIORITY : "LOW_PRIORITY">
       | tk=<K_LTRIM : "LTRIM">
-      | tk=<K_MATCH: "MATCH">
+    )
+    { return tk.image; }
+}
+
+String NonReservedWordPart2() :
+{    Token tk = null; }
+{
+    (
+        tk=<K_MATCH: "MATCH">
       | tk=<K_MATCH_ANY: "MATCH_ANY">
       | tk=<K_MATCH_ALL: "MATCH_ALL">
       | tk=<K_MATCH_PHRASE: "MATCH_PHRASE">
@@ -3194,6 +3293,7 @@ String NonReservedWord() :
       | tk=<K_PREWHERE: "PREWHERE">
       | tk=<K_PRIMARY:"PRIMARY">
       | tk=<K_POLICY:"POLICY">
+      | tk=<K_PRIOR: "PRIOR">
       | tk=<K_PURGE:"PURGE">
       | tk=<K_QUERY:"QUERY">
       | tk=<K_QUICK : "QUICK">
@@ -3263,6 +3363,7 @@ String NonReservedWord() :
       | tk=<K_SKIP: "SKIP">
       | tk=<K_SLAVE: "SLAVE">
       | tk=<K_SPATIAL:"SPATIAL">
+      | tk=<K_SQL_NO_CACHE: "SQL_NO_CACHE">
       | tk=<K_STALENESS: "STALENESS">
       | tk=<K_STARTS: "STARTS">
       | tk=<K_STARTING:"STARTING">
@@ -3303,6 +3404,8 @@ String NonReservedWord() :
       | tk=<K_TRY_CONVERT: "TRY_CONVERT">
       | tk=<K_TUMBLING:"TUMBLING">
       | tk=<K_TYPE:"TYPE">
+      | tk=<K_UNBOUNDED: "UNBOUNDED">
+      | tk=<K_UNKNOWN: "UNKNOWN">
       | tk=<K_UNLIMITED: "UNLIMITED">
       | tk=<K_UNLOGGED: "UNLOGGED">
       | tk=<K_UPDATE:"UPDATE">
@@ -3331,6 +3434,7 @@ String NonReservedWord() :
       | tk=<K_XMLAGG:"XMLAGG">
       | tk=<K_XMLDATA:"XMLDATA">
       | tk=<K_XMLSCHEMA:"XMLSCHEMA">
+      | tk=<K_XMLSERIALIZE: "XMLSERIALIZE">
       | tk=<K_XMLTEXT:"XMLTEXT">
       | tk=<K_XSINIL:"XSINIL">
       | tk=<K_YAML:"YAML">
@@ -3351,7 +3455,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 {
     <K_AT_SIGN: "@">
 |   <K_AT_V: "@V">
-|   <K_ABSENT: "ABSENT">
 |   <K_ALL:"ALL">
 |   <K_AND:"AND">
 |   <K_ANY:"ANY">
@@ -3366,7 +3469,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_CONSTRAINT:"CONSTRAINT">
 |   <K_CREATE:"CREATE">
 |   <K_CROSS:"CROSS">
-|   <K_CURRENT: "CURRENT">
 |   <K_DATETIMELITERAL : "DATE" | "DATETIME" | "TIME" | "TIMESTAMP" | "TIMESTAMPTZ" >
 |   <K_DATE_LITERAL : "YEAR" | "MONTH" | "DAY" | "HOUR" | "MINUTE" | "SECOND" >
 |   <K_DEFAULT : "DEFAULT">
@@ -3379,7 +3481,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_FINAL: "FINAL">
 |   <K_FALSE: "FALSE">
 |   <K_FOR:"FOR">
-|   <K_FORCE : "FORCE">
 |   <K_FOREIGN:"FOREIGN">
 |   <K_FROM:"FROM">
 |   <K_FULL:"FULL">
@@ -3391,7 +3492,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_IIF:"IIF">
 |   <K_IGNORE : "IGNORE">
 |   <K_ILIKE:"ILIKE">
-|   <K_IMPORT:"IMPORT">
 |   <K_IN:"IN">
 |   <K_INCLUDES:"INCLUDES"> /* Salesforce SOQL */
 |   <K_INNER:"INNER">
@@ -3422,7 +3522,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_OPTIMIZE: "OPTIMIZE" >
 |   <K_PIVOT:"PIVOT">
 |   <K_PREFERRING: "PREFERRING">
-|   <K_PRIOR:"PRIOR">
 |   <K_PROCEDURE:"PROCEDURE">
 |   <K_PUBLIC:"PUBLIC">
 |   <K_QUALIFY: "QUALIFY">
@@ -3438,14 +3537,11 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_TOP:"TOP">
 |   <K_TRAILING:"TRAILING">
 |   <K_TRUE:"TRUE">
-|   <K_UNBOUNDED: "UNBOUNDED">
 |   <K_UNION:"UNION">
 |   <K_UNIQUE:"UNIQUE">
-|   <K_UNKNOWN:"UNKNOWN">
 |   <K_UNPIVOT:"UNPIVOT">
 |   <K_USE:"USE">
 |   <K_SQL_CALC_FOUND_ROWS: "SQL_CALC_FOUND_ROWS">
-|   <K_SQL_NO_CACHE: "SQL_NO_CACHE">
 |   <K_SQL_CACHE: "SQL_CACHE">
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
@@ -3455,7 +3551,6 @@ TOKEN: /* Reserved SQL Keywords and structural tokens */
 |   <K_WINDOW:"WINDOW">
 |   <K_WITH:"WITH">
 |   <K_XOR:"XOR">
-|   <K_XMLSERIALIZE:"XMLSERIALIZE">
 |   <OPENING_BRACKET: "("> |   <CLOSING_BRACKET: ")">
 |   <OPENING_CURLY_BRACKET: "{">
 |   <CLOSING_CURLY_BRACKET: "}">
@@ -4354,7 +4449,7 @@ TableReference RelationTarget():
     TableReference target;
 }
 {
-    [ <K_ONLY> { only = true; } ]
+    [ LOOKAHEAD(2) <K_ONLY> { only = true; } ]
     ( "(" table=Table() ")" { parenthesized = true; } | table=Table() )
     [ "*" { descendants = true; } ]
     {
@@ -7328,11 +7423,11 @@ Column Column() #Column :
  * check isReservedKeywordAsIdentifier() — reserved keywords that can serve as
  * unquoted identifiers in the current parser position.
  *
- * NOTE: K_FROM, K_SELECT, and K_CURRENT are deliberately NOT included here
+ * NOTE: K_FROM and K_SELECT are deliberately NOT included here
  * to avoid FIRST-set pollution in JavaCC's choice resolution.  They are only
  * valid as identifiers in dotted-name continuations (after '.'), named
  * parameters (after ':'), index columns, constraint names, and similar
- * restricted contexts.  Those call sites add the three tokens inline.
+ * restricted contexts.  Those call sites add the two tokens inline.
  */
 String RelObjectName() :
 {    Token tk = null; String result = null; }
@@ -7352,13 +7447,13 @@ String RelObjectName() :
 
       /* ── Reserved keywords usable as identifiers (context-guarded) ─── */
       | LOOKAHEAD({ isReservedKeywordAsIdentifier() })
-        ( tk=<K_ALL> | tk=<K_ANY> | tk=<K_CASEWHEN> | tk=<K_CONNECT>
-          | tk=<K_CREATE> | tk=<K_DEFAULT>
+        ( tk=<K_ALL> | tk=<K_ANY> | tk=<K_BETWEEN> | tk=<K_CASEWHEN> | tk=<K_CONNECT>
+          | tk=<K_CREATE> | tk=<K_DEFAULT> | tk=<K_FULL>
           | tk=<K_GLOBAL> | tk=<K_GROUP> | tk=<K_GROUPING> | tk=<K_IF>
           | tk=<K_IIF> | tk=<K_IGNORE> | tk=<K_IN> | tk=<K_INTERVAL>
           | tk=<K_LEFT> | tk=<K_LIMIT> | tk=<K_NEXTVAL> | tk=<K_OFFSET>
-          | tk=<K_ON> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
-          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RIGHT>
+          | tk=<K_ON> | tk=<K_ONLY> | tk=<K_OPTIMIZE> | tk=<K_ORDER> | tk=<K_PROCEDURE>
+          | tk=<K_PUBLIC> | tk=<K_QUALIFY> | tk=<K_RETURNING> | tk=<K_RIGHT>
           | tk=<K_SET> | tk=<K_SOME> | tk=<K_START> | tk=<K_TABLES>
           | tk=<K_TOP> | tk=<K_VALUE> | tk=<K_VALUES> )
     )
@@ -7366,10 +7461,10 @@ String RelObjectName() :
 }
 
 /*
- * Extended version of RelObjectName that additionally accepts FROM, SELECT,
- * and CURRENT as unquoted identifiers.
+ * Extended version of RelObjectName that additionally accepts FROM and SELECT
+ * as unquoted identifiers.
  *
- * These three tokens are kept OUT of RelObjectName() to avoid polluting
+ * These two tokens are kept OUT of RelObjectName() to avoid polluting
  * JavaCC's FIRST-set computation (which would cause choice conflicts in
  * expression parsing, subselect detection, etc.).
  *
@@ -7380,7 +7475,7 @@ String RelObjectName() :
 String RelObjectNameExt() :
 { Token tk = null; String result = null; }
 {
-    ( result = RelObjectName() | tk=<K_FROM> | tk=<K_SELECT> | tk=<K_CURRENT> )
+    ( result = RelObjectName() | tk=<K_FROM> | tk=<K_SELECT> )
     { return tk != null ? tk.image : result; }
 }
 
@@ -8192,7 +8287,8 @@ void MySqlSelectModifier(PlainSelect select):
 {
     ( LOOKAHEAD({ getToken(1).kind == K_HIGH_PRIORITY && isMySqlSelectModifierAhead() }) token=<K_HIGH_PRIORITY>
         | token=<K_STRAIGHT>
-        | token=<K_SQL_CALC_FOUND_ROWS> | token=<K_SQL_NO_CACHE> | token=<K_SQL_CACHE>
+        | token=<K_SQL_CALC_FOUND_ROWS> | token=<K_SQL_CACHE>
+        | LOOKAHEAD({ getToken(1).kind == K_SQL_NO_CACHE && isMySqlSelectModifierAhead() }) token=<K_SQL_NO_CACHE>
         | LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && isMySqlSelectModifierAhead() }) token=<S_IDENTIFIER> )
     {
         modifier = MySqlSelectModifier.valueOf(token.image.toUpperCase(Locale.ROOT));
@@ -8958,7 +9054,7 @@ Expression SelectItemExpression() #ColumnsExpression(transformers != null):
     // @fixme: Oracle's SEQUENCE.nextval is parsed as COLUMN with a name part nextval
     // @todo: parse a proper SEQUENCE instead of a COLUMN
     (
-        LOOKAHEAD(3) expression = ConnectByPriorOperator()
+        LOOKAHEAD({ isPriorOperatorAhead() }) expression = ConnectByPriorOperator()
         |
         ( expression = Condition() { expression = prattExpressionRest(expression, 2); } )
     )
@@ -10688,7 +10784,7 @@ String OptionHintName():
         ( tk=<S_IDENTIFIER> | word = NonReservedWord()
           | tk=<K_JOIN> | tk=<K_FOR> | tk=<K_ORDER>
           | tk=<K_UNION> | tk=<K_EXCEPT> | tk=<K_INTERSECT>
-          | tk=<K_USE> | tk=<K_OPTIMIZE> | tk=<K_FORCE> | tk=<K_UNKNOWN> )
+          | tk=<K_USE> | tk=<K_OPTIMIZE> )
         {
             if (name.length() > 0) { name.append(' '); }
             name.append(tk != null ? tk.image : word);
@@ -11048,7 +11144,8 @@ Expression Condition():
         LOOKAHEAD(2, { !isExistsIdentifierAhead() })
         result=ExistsExpression()
         |
-          [ LOOKAHEAD(2, { getToken(1).kind == K_PRIOR }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } ]
+          // A choice rather than [...], so that enclosing syntactic lookaheads honour the guard
+          ( LOOKAHEAD({ isPriorOperatorAhead() }) <K_PRIOR> { oraclePrior = EqualsTo.ORACLE_PRIOR_START; } | {} )
           left=SimpleExpression() { result = left; }
 
           // Consume Oracle (+) once, before dispatching
@@ -11143,7 +11240,7 @@ Expression RegularConditionRHS(Expression leftExpression, int oracleJoinRight) #
         | <OP_COSINESIMILARITY> { result = new CosineSimilarity(); }
     )
 
-    ( LOOKAHEAD(2) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
+    ( LOOKAHEAD({ isPriorOperatorAhead() }) <K_PRIOR> rightExpression=ComparisonItem() { oraclePrior = EqualsTo.ORACLE_PRIOR_END; }
         | rightExpression=ComparisonItem() )
 
     [ LOOKAHEAD(2) "(" "+" ")" { oracleJoin = EqualsTo.ORACLE_JOIN_LEFT; } ]
@@ -12058,7 +12155,8 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | LOOKAHEAD(4 , {!interrupted}) retval=ExtractExpression()
 
-        | retval=XMLSerializeExpr()
+        | LOOKAHEAD({ getToken(1).kind == K_XMLSERIALIZE && getToken(2).kind == OPENING_BRACKET })
+                retval=XMLSerializeExpr()
 
         | LOOKAHEAD(3, { !interrupted}) retval = JsonFunction()
 
@@ -12093,8 +12191,9 @@ Expression PrimaryExpression() #PrimaryExpression:
         // there is a huge! performance deterioration from this production
         //| LOOKAHEAD(FunctionAllColumns()) retval=FunctionAllColumns()
 
-        // support timestamp expressions
-        | LOOKAHEAD(2, {!interrupted}) (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
+        // support timestamp expressions; current.x is a qualified column
+        | LOOKAHEAD(2, {!interrupted && !(getToken(1).kind == K_CURRENT && ".".equals(getToken(2).image))})
+                (token=<K_TIME_KEY_EXPR> | token=<K_CURRENT>) { retval = new TimeKeyExpression(token.image); }
 
         | LOOKAHEAD(2, {!interrupted}) retval=DateTimeLiteralExpression()
 
@@ -12110,7 +12209,7 @@ Expression PrimaryExpression() #PrimaryExpression:
 
         | retval=ConnectByRootOperator()
 
-        | retval=ConnectByPriorOperator()
+        | LOOKAHEAD({ isPriorOperatorAhead() }) retval=ConnectByPriorOperator()
 
         | LOOKAHEAD(2, { !interrupted && getToken(1).kind == K_KEY && getToken(2).kind != OPENING_BRACKET }) retval=KeyExpression()
 
@@ -12698,7 +12797,8 @@ JsonFunction JsonObjectBody() : {
     ( "("
         (
             // First Element
-            LOOKAHEAD(2) keyValuePair = JsonKeyValuePair(true) { result.add(keyValuePair);}
+            LOOKAHEAD(2, { !isJsonConstructorClauseAhead() })
+            keyValuePair = JsonKeyValuePair(true) { result.add(keyValuePair);}
 
             // Next Elements
             (
@@ -12744,6 +12844,7 @@ JsonFunction JsonArrayBody() : {
                 <K_NULL> <K_ON> <K_NULL>  { result.setOnNullType(  JsonAggregateOnNullType.NULL ); }
             )
             |
+            LOOKAHEAD(1, { !isJsonConstructorClauseAhead() })
             expression=Expression() { functionExpression = new JsonFunctionExpression( expression ); result.add( functionExpression ); }
 
             [
@@ -13649,7 +13750,7 @@ WindowElement WindowElement():
     (<K_ROWS> { windowElement.setType(WindowElement.Type.ROWS); }
      | <K_RANGE> { windowElement.setType(WindowElement.Type.RANGE); }
      | <K_GROUPS> { windowElement.setType(WindowElement.Type.GROUPS); })
-    ( (
+    ( LOOKAHEAD(1) (
       <K_BETWEEN> { windowElement.setRange(range); }
       offset = WindowOffset() { range.setStart(offset); }
       <K_AND> offset = WindowOffset() { range.setEnd(offset); }
@@ -13702,7 +13803,7 @@ WindowOffset WindowOffset():
 }
 {
     (
-		(
+		LOOKAHEAD(2) (
 			<K_UNBOUNDED> (<K_PRECEDING> { offset.setType(WindowOffset.Type.PRECEDING); } |
 											<K_FOLLOWING> { offset.setType(WindowOffset.Type.FOLLOWING); } )
 		)
@@ -14486,7 +14587,8 @@ JsonTableFunction.JsonTableColumnDefinition JsonTableColumnDefinition() : {
 
                 LOOKAHEAD(
                     ColDataType(),
-                        { !(getToken(1).kind == S_IDENTIFIER && (
+                        { getToken(1).kind != K_PATH
+                            && !(getToken(1).kind == S_IDENTIFIER && (
                                 getToken(1).image.equalsIgnoreCase("ALLOW")
                                 || getToken(1).image.equalsIgnoreCase("DISALLOW"))) } )
                 dataType = ColDataType() { valueColumnDefinition.setDataType(dataType); }
@@ -15194,7 +15296,7 @@ CreateIndex CreateIndex():
         name=RelObjectNames() { index.setName(name.getNames()); } ]
     (
         LOOKAHEAD(3)(
-            <K_ON> [ <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
+            <K_ON> [ LOOKAHEAD(2) <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
             [ indexType=UsingIndexType() { index.setUsing(indexType); } ]
         )
         |
@@ -15204,7 +15306,7 @@ CreateIndex CreateIndex():
                     createIndex.setIndexTypeBeforeOn(true);
                 }
             ]
-            <K_ON> [ <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
+            <K_ON> [ LOOKAHEAD(2) <K_ONLY> { createIndex.setOnly(true); } ] table=Table()
         )
     )
     colNames = IndexColumnsWithParamsList()
@@ -16258,6 +16360,7 @@ TableElement TableConstraint(boolean createContext):
                 index = checkConstraint;
             }
             |
+            LOOKAHEAD({ isExcludeConstraintAhead() })
             namedConstraint=PostgreSqlExcludeConstraint() { namedConstraint.setName(constraintName); index = namedConstraint; }
             |
             LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
@@ -16269,7 +16372,7 @@ TableElement TableConstraint(boolean createContext):
         |
         checkConstraint=CheckConstraintSpec(null) { index = checkConstraint; }
         |
-        index=PostgreSqlExcludeConstraint()
+        LOOKAHEAD({ isExcludeConstraintAhead() }) index=PostgreSqlExcludeConstraint()
         |
         LOOKAHEAD({ Dialect.POSTGRESQL.name().equals(getAsString(Feature.dialect))
                 && getToken(1).kind == K_NOT })
@@ -17084,6 +17187,8 @@ ColDataType ColDataType():
 			| tk=<K_PUBLIC>
 			| tk=<K_DATA>
 			| tk=<K_NAME>
+			// PostgreSQL's geometric type
+			| tk=<K_PATH>
         )
         {
             schema = tk.image;
@@ -19905,7 +20010,7 @@ Alter AlterTable(boolean foreign):
 {
     <K_TABLE> { alter.setForeignTable(foreign); }
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> { alter.setUseTableIfExists(true); } ]
-    [ <K_ONLY> { alter.setUseOnly(true); } ]
+    [ LOOKAHEAD(2) <K_ONLY> { alter.setUseOnly(true); } ]
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {
         requireDdlSyntax(!alter.isUseTableIfExists(), "Duplicate IF EXISTS");
         alter.setUseTableIfExists(true);
@@ -21567,7 +21672,7 @@ List<SubscriptionOption> SubscriptionOptions():
 PublicationTable PublicationTable(boolean drop):
 { PublicationTable result = new PublicationTable(); Table table; String name; Expression expression; ExpressionList<Column> columns; }
 {
-    [ <K_ONLY> { result.setOnly(true); } ]
+    [ LOOKAHEAD(2) <K_ONLY> { result.setOnly(true); } ]
     table=Table() { result.setTable(table); }
     [ "*" { result.setIncludeDescendants(true); } ]
     [ LOOKAHEAD(1) "(" { columns = new ExpressionList<Column>(); }
