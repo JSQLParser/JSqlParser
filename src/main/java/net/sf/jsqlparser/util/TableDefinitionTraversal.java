@@ -152,11 +152,12 @@ public final class TableDefinitionTraversal {
         visit(table.getPartitionBound(), expressions);
     }
 
-    /** Shared CREATE/ALTER table option traversal. */
+    /** Shared CREATE/ALTER table option traversal, including COMMENT literals. */
     public static void visit(net.sf.jsqlparser.statement.create.table.TableOption option,
             Consumer<Expression> expressions, Consumer<Table> tables) {
         if (option != null) {
             visitOptions(option.getStorageParameters(), expressions);
+            accept(option.getComment(), expressions);
             if (option.getUnionTables() != null) {
                 option.getUnionTables().forEach(source -> accept(source, tables));
             }

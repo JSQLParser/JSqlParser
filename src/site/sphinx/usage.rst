@@ -404,6 +404,47 @@ Use ``TableOption.onCommit`` and ``TableOption.accessMethod`` to build them.
             .setOnCommitAction(TableOption.OnCommitAction.PRESERVE_ROWS);
     // CREATE TEMP TABLE t (id INT) USING heap ON COMMIT PRESERVE ROWS
 
+MySQL table and partition comments
+----------------------------------
+
+A table ``COMMENT`` in CREATE TABLE, CREATE TABLE … AS SELECT and ALTER TABLE is a
+``StringValue`` in ``TableOption.getComment()``. Partition and subpartition comments,
+including those of ALTER TABLE ADD and REORGANIZE PARTITION, are in
+``PartitionDefinition.getCommentValue()``. The literal records the escaping of the
+parser configuration, so ``getNotExcapedValue()`` returns the text MySQL stores.
+
+.. code-block:: java
+
+    CreateTable table = (CreateTable) CCJSqlParserUtil.parse(
+            "CREATE TABLE t (id INT) COMMENT = 'it\\'s' "
+                    + "PARTITION BY HASH (id) (PARTITION p0 COMMENT 'a\\\\b')",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    TableOption option = table.getTableOption(TableOption.Kind.COMMENT).orElseThrow();
+    option.getComment().getNotExcapedValue(); // it's
+    option.getValue();                        // 'it\'s'
+    table.getPartitioning().getPartitionDefinitions().get(0)
+            .getCommentValue().getNotExcapedValue(); // a\b
+
+``getValue()``, ``getTokens()``, ``CreateTable.getTableOptionsStrings()``,
+``AlterExpressionTableOption.getCommentText()`` and ``PartitionDefinition.getComment()``
+still return the literal as written, and the SQL output is unchanged except that a
+string prefix such as ``n'…'`` is printed in upper case, as in other string literals.
+The table comment literal is rendered by the expression deparser and visited like a
+column COMMENT literal.
+
+``setComment``, ``withComment`` and the ``TableOption.comment`` factory replace the
+option's contents with the literal and select COMMENT. They keep the equals spelling,
+and an existing COMMENT also keeps its name; a null literal omits the value.
+``setValue`` stores a plain value and ``setTokens`` opaque tokens. Neither is parsed,
+so ``getComment()`` then returns null. Selecting another kind keeps the literal's SQL
+text as a plain value. A COMMENT value that is not a string literal also stays a plain
+value, for example a double-quoted string parsed without the MySQL dialect, where it
+is a quoted identifier.
+
+``PartitionDefinition.setComment(String)`` reads the SQL text of a literal with
+standard escaping; pass a ``StringValue`` with another escaping to
+``setCommentValue``.
+
 Inspect PostgreSQL schema statements
 ------------------------------------
 
