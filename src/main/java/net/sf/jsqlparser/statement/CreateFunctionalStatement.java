@@ -31,8 +31,10 @@ public abstract class CreateFunctionalStatement implements Statement {
     }
 
     private Operation operation = Operation.CREATE;
+    private MySqlDefiner definer;
     private FunctionReturnType returnType;
     private List<String> routineBodyParts;
+    private List<RoutineCharacteristic> characteristics = Collections.emptyList();
 
     public Operation getOperation() {
         return operation;
@@ -40,6 +42,19 @@ public abstract class CreateFunctionalStatement implements Statement {
 
     public void setOperation(Operation operation) {
         this.operation = operation;
+    }
+
+    /**
+     * The MySQL {@code DEFINER} account, rendered after {@code CREATE [OR REPLACE]}.
+     *
+     * @return the definer, or {@code null}
+     */
+    public MySqlDefiner getDefiner() {
+        return definer;
+    }
+
+    public void setDefiner(MySqlDefiner definer) {
+        this.definer = definer;
     }
 
     public FunctionReturnType getReturnType() {
@@ -85,8 +100,38 @@ public abstract class CreateFunctionalStatement implements Statement {
         return functionDeclarationParts;
     }
 
+    /**
+     * Replaces the declaration parts. The {@link #getCharacteristics() characteristics} described
+     * the replaced parts, so they are cleared.
+     *
+     * @param functionDeclarationParts the new parts
+     */
     public void setFunctionDeclarationParts(List<String> functionDeclarationParts) {
+        setFunctionDeclarationParts(functionDeclarationParts, Collections.emptyList());
+    }
+
+    /**
+     * Replaces the declaration parts together with the characteristics written in them.
+     *
+     * @param functionDeclarationParts the new parts, which keep rendering the statement
+     * @param characteristics the characteristics among the parts, in source order
+     */
+    public void setFunctionDeclarationParts(List<String> functionDeclarationParts,
+            List<RoutineCharacteristic> characteristics) {
         this.functionDeclarationParts = functionDeclarationParts;
+        this.characteristics = List.copyOf(characteristics);
+    }
+
+    /**
+     * The MySQL characteristics of {@code CREATE FUNCTION|PROCEDURE}, such as {@code COMMENT},
+     * {@code DETERMINISTIC} or {@code SQL SECURITY}, parsed with a MySQL or MariaDB dialect. They
+     * describe tokens of {@link #getFunctionDeclarationParts()}, which still render the statement,
+     * so the list is read-only.
+     *
+     * @return the characteristics in source order, empty if none were parsed
+     */
+    public List<RoutineCharacteristic> getCharacteristics() {
+        return characteristics;
     }
 
     /**
@@ -139,6 +184,9 @@ public abstract class CreateFunctionalStatement implements Statement {
         if (orReplace && operation == Operation.CREATE) {
             builder.append("OR REPLACE ");
         }
+        if (definer != null) {
+            builder.append("DEFINER = ").append(definer).append(' ');
+        }
         builder.append(kind).append(' ');
         return appendDeclarationTo(builder, printer);
     }
@@ -160,19 +208,23 @@ public abstract class CreateFunctionalStatement implements Statement {
         return this;
     }
 
+    /** Appends declaration parts and keeps the {@link #getCharacteristics() characteristics}. */
     public CreateFunctionalStatement addFunctionDeclarationParts(
             String... functionDeclarationParts) {
         List<String> collection =
                 Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         Collections.addAll(collection, functionDeclarationParts);
-        return this.withFunctionDeclarationParts(collection);
+        setFunctionDeclarationParts(collection, characteristics);
+        return this;
     }
 
+    /** Appends declaration parts and keeps the {@link #getCharacteristics() characteristics}. */
     public CreateFunctionalStatement addFunctionDeclarationParts(
             Collection<String> functionDeclarationParts) {
         List<String> collection =
                 Optional.ofNullable(getFunctionDeclarationParts()).orElseGet(ArrayList::new);
         collection.addAll(functionDeclarationParts);
-        return this.withFunctionDeclarationParts(collection);
+        setFunctionDeclarationParts(collection, characteristics);
+        return this;
     }
 }

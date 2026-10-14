@@ -17,9 +17,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
@@ -39,6 +41,12 @@ class StatementFeatureVisitorMetadataDdlTest {
                 Arguments.of("ALTER DATABASE d READ ONLY = 0", AlterDatabase.class),
                 Arguments.of("ALTER DATABASE d CHARACTER SET utf8mb4 COLLATE utf8mb4_bin",
                         AlterDatabase.class),
+                Arguments.of("ALTER DATABASE d SET work_mem = '64MB'", AlterDatabase.class),
+                Arguments.of("ALTER DATABASE d OWNER TO CURRENT_USER", AlterDatabase.class),
+                Arguments.of("ALTER FUNCTION f(int) OWNER TO u1", AlterRoutine.class),
+                Arguments.of("ALTER PROCEDURE p SET search_path = public", AlterRoutine.class),
+                Arguments.of("ALTER FUNCTION f READS SQL DATA", AlterRoutine.class),
+                Arguments.of("ALTER TRIGGER t ON tbl RENAME TO t2", AlterTrigger.class),
                 Arguments.of("ALTER SCHEMA s RENAME TO s2", AlterSchema.class),
                 Arguments.of("ALTER SCHEMA s OWNER TO CURRENT_USER", AlterSchema.class),
                 Arguments.of("ALTER STATISTICS s RENAME TO s2", AlterStatistics.class),

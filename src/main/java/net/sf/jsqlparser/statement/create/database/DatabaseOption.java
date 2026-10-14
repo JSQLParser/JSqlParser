@@ -16,12 +16,19 @@ import java.util.List;
 
 /**
  * A structured option shared by MySQL {@code CREATE/ALTER DATABASE} and
- * {@code CREATE/ALTER SCHEMA}.
+ * {@code CREATE/ALTER SCHEMA}, and by PostgreSQL {@code CREATE/ALTER DATABASE}. The name keeps the
+ * written spelling, for example {@code CHARSET} for {@link Kind#CHARACTER_SET}. Values keep their
+ * SQL text, including string quotes and signs. Unrecognized option text is an {@link Kind#OTHER}
+ * option with raw tokens.
  */
 public class DatabaseOption implements Serializable {
 
+    /**
+     * The option. MySQL uses {@code CHARACTER_SET} to {@code READ_ONLY}, PostgreSQL uses
+     * {@code OWNER} to {@code OID}, and {@code OTHER} holds raw tokens.
+     */
     public enum Kind {
-        CHARACTER_SET, COLLATE, ENCRYPTION, READ_ONLY, OTHER
+        CHARACTER_SET, COLLATE, ENCRYPTION, READ_ONLY, OWNER, TEMPLATE, ENCODING, STRATEGY, LOCALE, LC_COLLATE, LC_CTYPE, BUILTIN_LOCALE, ICU_LOCALE, ICU_RULES, LOCALE_PROVIDER, COLLATION_VERSION, TABLESPACE, ALLOW_CONNECTIONS, CONNECTION_LIMIT, IS_TEMPLATE, OID, OTHER
     }
 
     private Kind kind = Kind.OTHER;

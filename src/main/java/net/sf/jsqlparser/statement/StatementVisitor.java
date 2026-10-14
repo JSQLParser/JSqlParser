@@ -23,6 +23,8 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.drop.DropPolicy;
 import net.sf.jsqlparser.statement.create.statistics.CreateStatistics;
@@ -873,6 +875,22 @@ public interface StatementVisitor<T> {
     }
 
     default void visit(AlterCollation statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterRoutine statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterRoutine statement) {
+        visit(statement, null);
+    }
+
+    default <S> T visit(AlterTrigger statement, S context) {
+        return null;
+    }
+
+    default void visit(AlterTrigger statement) {
         visit(statement, null);
     }
 }

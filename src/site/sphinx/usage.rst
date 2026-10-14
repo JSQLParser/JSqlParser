@@ -1868,6 +1868,120 @@ visitors, both SQL renderers and metadata validation use this structured target.
 Feature analysis reports ``MODIFIES_SESSION``; the directive itself inserts no rows.
 The dedicated validation capability is ``setIdentityInsert``.
 
+Database options and configuration parameters
+---------------------------------------------
+
+``CreateDatabase``, MySQL's ``CREATE SCHEMA`` and ``AlterDatabase`` share the
+``DatabaseOption`` model. MySQL options are ``CHARACTER_SET`` (``getName()`` keeps
+the ``CHARACTER SET``, ``CHAR SET`` or ``CHARSET`` spelling), ``COLLATE``,
+``ENCRYPTION`` and, for ALTER only, ``READ_ONLY``. PostgreSQL options have one kind
+each, from ``OWNER`` and ``TEMPLATE`` to ``CONNECTION_LIMIT``, ``IS_TEMPLATE`` and
+``OID``; ``isUseWith()`` records the optional ``WITH``. Values keep their SQL text,
+such as ``'UTF8'`` or ``-1``. Other option text remains one raw ``OTHER`` option.
+
+``AlterDatabase.getAction()`` selects what is rendered: ``OPTIONS`` (the default),
+``RENAME``, ``OWNER``, ``SET_TABLESPACE``, ``REFRESH_COLLATION_VERSION`` or
+``CONFIGURATION_PARAMETER``. Payloads of the other actions are kept. ``SET`` and
+``RESET`` of a configuration parameter use ``ConfigurationParameterChange``, which
+``AlterRole`` shares:
+
+.. code-block:: java
+
+    AlterDatabase alter = (AlterDatabase) CCJSqlParserUtil.parse(
+        "ALTER DATABASE app SET search_path TO app, public",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    ConfigurationParameterChange change = alter.getParameterChange();
+    change.getParameter();  // search_path
+    change.getValues();     // [app, public], a mutable ExpressionList
+    change.setValueKind(ConfigurationParameterChange.ValueKind.DEFAULT);
+    // ALTER DATABASE app SET search_path TO DEFAULT
+
+``getValueKind()`` is ``VALUES``, ``DEFAULT`` or ``FROM_CURRENT``; ``RESET ALL`` uses
+the parameter name ``ALL``. ``AlterRole`` keeps ``getParameter()``, ``isUseEquals()``,
+``isFromCurrent()``, ``isUseDefault()``, ``getValues()`` and their setters; they read
+and edit ``getParameterChange()``. ``FROM CURRENT`` and ``DEFAULT`` are now mutually
+exclusive: ``setFromCurrent(false)`` and ``setUseDefault(false)`` return to the values.
+
+Without the MySQL dialect, ``ALTER DATABASE`` forms that are neither MySQL nor
+PostgreSQL syntax, such as ``ALTER DATABASE d SET RECOVERY SIMPLE``, remain an
+``UnsupportedStatement``; ``Dialect.MYSQL`` reports them as errors. ``ALTER SCHEMA``
+followed by MySQL options is an ``AlterDatabase`` in every dialect, while PostgreSQL's
+``ALTER SCHEMA ... RENAME TO/OWNER TO`` remains an ``AlterSchema``. Validation
+reports the ``createDatabase`` and ``alterDatabase`` features, which the MySQL,
+MariaDB and PostgreSQL capabilities enable.
+
+``CreateDatabase.getOptions()`` is now a live list that is never null, and
+``setOptions`` copies its argument. ``getDatabaseOptions()`` is an unmodifiable
+token snapshot derived from the options, including ``WITH``, and is null without
+options. ``setDatabaseOptions`` replaces all options with one raw option, and
+``addDatabaseOptions`` appends one while keeping the typed options. Parsed
+statements no longer end with an empty raw option.
+
+References: MySQL `CREATE DATABASE <https://dev.mysql.com/doc/refman/8.4/en/create-database.html>`_,
+`ALTER DATABASE <https://dev.mysql.com/doc/refman/8.4/en/alter-database.html>`_;
+PostgreSQL `CREATE DATABASE <https://www.postgresql.org/docs/18/sql-createdatabase.html>`_,
+`ALTER DATABASE <https://www.postgresql.org/docs/18/sql-alterdatabase.html>`_.
+
+Routine and trigger alterations
+-------------------------------
+
+PostgreSQL ``ALTER FUNCTION``, ``ALTER PROCEDURE`` and ``ALTER ROUTINE`` and MySQL
+``ALTER FUNCTION`` and ``ALTER PROCEDURE`` parse to ``AlterRoutine``. ``getRoutineType()``
+names the keyword and ``getRoutine()`` is a ``RoutineReference`` with the optional
+PostgreSQL argument types. ``getAction()`` is ``CHARACTERISTICS``, ``RENAME``, ``OWNER``,
+``SET_SCHEMA`` or ``DEPENDS_ON_EXTENSION`` (``isNoDependency()`` for ``NO DEPENDS``);
+payloads of the other actions are kept. ``getCharacteristics()`` is a mutable list of
+``RoutineCharacteristic`` in source order, shared by both dialects. Each ``Kind`` renders
+its own keywords, such as ``IMMUTABLE``, ``CALLED_ON_NULL_INPUT``, ``PARALLEL_SAFE``,
+``COST`` or MySQL's ``READS_SQL_DATA``. ``SECURITY_DEFINER`` and ``SECURITY_INVOKER`` keep
+the ``[EXTERNAL] SECURITY`` or ``SQL SECURITY`` spelling in ``getSecurityClause()``.
+``COST``, ``ROWS``, ``SUPPORT`` and ``COMMENT`` keep their value as SQL text in ``getValue()``.
+``getComment()`` returns the ``COMMENT`` literal as a ``StringValue`` read with the dialect's
+escaping, so ``getNotExcapedValue()`` is the text MySQL stores. ``SET`` and ``RESET`` reuse
+``ConfigurationParameterChange``:
+
+.. code-block:: java
+
+    AlterRoutine alter = (AlterRoutine) CCJSqlParserUtil.parse(
+        "ALTER FUNCTION f(int) IMMUTABLE SET search_path = public",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    alter.getRoutine().getArguments();                // [int]
+    alter.getCharacteristics().get(0).getKind();      // IMMUTABLE
+    alter.getCharacteristics().get(1).getParameterChange().getParameter(); // search_path
+
+The characteristics of one statement belong to one dialect, and MySQL's take no argument
+list. Other forms after ``ALTER FUNCTION`` or ``ALTER PROCEDURE``, such as Oracle's
+``COMPILE`` or SQL Server routine definitions without the SQL Server dialect, remain an
+``UnsupportedStatement``. PostgreSQL's ``ALTER TRIGGER name ON table RENAME TO`` and
+``[NO] DEPENDS ON EXTENSION`` parse to ``AlterTrigger``; table visitors report its table.
+Validators report ``alterFunction``, ``alterProcedure``, ``alterRoutine`` and
+``alterTrigger``; PostgreSQL enables all of them, MySQL and MariaDB the first two.
+
+``CreateFunctionalStatement.getDefiner()`` returns the MySQL ``DEFINER`` of
+``CREATE DEFINER = ... FUNCTION|PROCEDURE`` as the ``MySqlDefiner`` that views and
+triggers use. With ``Dialect.MYSQL`` or ``Dialect.MARIADB``,
+``CreateFunctionalStatement.getCharacteristics()`` lists the characteristics between the
+routine header and its body, such as ``COMMENT``, ``DETERMINISTIC``, ``READS SQL DATA`` or
+``SQL SECURITY INVOKER``, with the same ``RoutineCharacteristic`` kinds; ``DETERMINISTIC``
+and ``NOT_DETERMINISTIC`` occur only here. ``getFunctionDeclarationParts()`` still holds
+every token and renders the statement unchanged, so the list is read-only. Replacing the
+tokens with ``setFunctionDeclarationParts(parts)`` clears it, while
+``setFunctionDeclarationParts(parts, characteristics)`` sets both, and appending tokens
+keeps it. Without a MySQL dialect the list stays empty. MySQL ``CREATE TRIGGER`` accepts ``IF NOT EXISTS`` (``isIfNotExists()``)
+and keeps MariaDB's ``OR REPLACE``. A ``BEGIN ... END`` trigger body with only SQL
+statements remains a ``Block``; a compound body with procedural statements such as
+``IF``, ``DECLARE`` or loops is an ``UnsupportedStatement`` with its tokens, captured with
+the boundary of routine bodies. In both cases the semicolon after ``END`` separates the
+next statement.
+
+References: PostgreSQL `ALTER FUNCTION <https://www.postgresql.org/docs/18/sql-alterfunction.html>`_,
+`ALTER PROCEDURE <https://www.postgresql.org/docs/18/sql-alterprocedure.html>`_,
+`ALTER ROUTINE <https://www.postgresql.org/docs/18/sql-alterroutine.html>`_,
+`ALTER TRIGGER <https://www.postgresql.org/docs/18/sql-altertrigger.html>`_;
+MySQL `ALTER FUNCTION <https://dev.mysql.com/doc/refman/8.4/en/alter-function.html>`_,
+`ALTER PROCEDURE <https://dev.mysql.com/doc/refman/8.4/en/alter-procedure.html>`_,
+`CREATE TRIGGER <https://dev.mysql.com/doc/refman/8.4/en/create-trigger.html>`_.
+
 MySQL table maintenance statements
 ----------------------------------
 

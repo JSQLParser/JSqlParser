@@ -28,6 +28,8 @@ import net.sf.jsqlparser.statement.create.rule.CreateRule;
 import net.sf.jsqlparser.statement.notify.NotifyStatement;
 import net.sf.jsqlparser.statement.create.collation.CreateCollation;
 import net.sf.jsqlparser.statement.alter.AlterCollation;
+import net.sf.jsqlparser.statement.alter.AlterRoutine;
+import net.sf.jsqlparser.statement.alter.AlterTrigger;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleAssignment;
@@ -85,6 +87,7 @@ import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.database.CreateDatabase;
+import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.create.event.AlterEvent;
 import net.sf.jsqlparser.statement.create.event.CreateEvent;
 import net.sf.jsqlparser.statement.create.function.CreateFunction;
@@ -437,6 +440,16 @@ public class StatementValidator extends AbstractValidator<Statement>
     public <S> Void visit(CreateDatabase aThis, S context) {
         validateFeatureAndName(Feature.createDatabase, NamedObject.database,
                 aThis.getDatabaseName());
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterDatabase statement, S context) {
+        validateFeature(Feature.alterDatabase);
+        if (statement.getParameterChange() != null
+                && statement.getParameterChange().getValues() != null) {
+            statement.getParameterChange().getValues().forEach(this::validateOptionalExpression);
+        }
         return null;
     }
 
@@ -1183,6 +1196,29 @@ public class StatementValidator extends AbstractValidator<Statement>
     @Override
     public <S> Void visit(AlterCollation statement, S context) {
         validateFeature(Feature.alterCollation);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterRoutine statement, S context) {
+        switch (statement.getRoutineType()) {
+            case PROCEDURE:
+                validateFeature(Feature.alterProcedure);
+                break;
+            case ROUTINE:
+                validateFeature(Feature.alterRoutine);
+                break;
+            default:
+                validateFeature(Feature.alterFunction);
+        }
+        statement.visitExpressions(this::validateOptionalExpression);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(AlterTrigger statement, S context) {
+        validateFeature(Feature.alterTrigger);
+        validateOptionalFromItem(statement.getTable());
         return null;
     }
 
