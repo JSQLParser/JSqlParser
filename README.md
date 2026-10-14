@@ -146,6 +146,7 @@ and missing syntax gets added on demand — [open an issue](https://github.com/J
 | **PostgreSQL ownership** | `DROP OWNED` · `REASSIGN OWNED` |
 | **MySQL table maintenance** | `ANALYZE` · `CHECK` · `OPTIMIZE` · `REPAIR TABLE` |
 | **MySQL account management** | `CREATE`/`ALTER`/`RENAME USER` · `CREATE ROLE` · `SET ROLE` · `SET DEFAULT ROLE` · `SET PASSWORD` |
+| **Tablespaces** | MySQL and PostgreSQL `CREATE TABLESPACE` · `ALTER TABLESPACE` |
 | **PostgreSQL RLS** | `CREATE POLICY` · `ALTER TABLE … ENABLE`/`DISABLE`/`FORCE`/`NO FORCE ROW LEVEL SECURITY` |
 | **Routine changes** | `ALTER FUNCTION` · `ALTER PROCEDURE` · `ALTER ROUTINE` · PostgreSQL `ALTER TRIGGER` |
 | **Informix constraints** | `ALTER TABLE … ADD CONSTRAINT` with trailing constraint names for primary, unique, foreign and check constraints; enable with `parser.withDialect(Dialect.INFORMIX)` |

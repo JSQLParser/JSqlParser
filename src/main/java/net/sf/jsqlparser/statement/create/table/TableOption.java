@@ -20,7 +20,8 @@ import net.sf.jsqlparser.schema.Table;
 /**
  * A shared CREATE/ALTER TABLE option with either opaque tokens or structured properties. Setting
  * non-null tokens discards all structured properties. A structured setter discards the tokens;
- * their contents are never parsed or restored by a later setter.
+ * their contents are never parsed or restored by a later setter. MySQL tablespace statements reuse
+ * this model for their options; {@link Kind#FILE_BLOCK_SIZE} occurs only there.
  */
 public class TableOption implements Serializable {
 
@@ -36,7 +37,7 @@ public class TableOption implements Serializable {
     private OnCommitAction onCommitAction;
 
     public enum Kind {
-        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, ACCESS_METHOD, ON_COMMIT, OTHER
+        ENGINE, CHARACTER_SET, COLLATE, COMMENT, AUTO_INCREMENT, STATS_AUTO_RECALC, STATS_PERSISTENT, STATS_SAMPLE_PAGES, UNION, ENCRYPTION, PASSWORD, DATA_DIRECTORY, INDEX_DIRECTORY, SECONDARY_ENGINE, AUTOEXTEND_SIZE, INSERT_METHOD, PACK_KEYS, DELAY_KEY_WRITE, CHECKSUM, CONNECTION, COMPRESSION, STORAGE_PARAMETERS, WITHOUT_OIDS, ENGINE_ATTRIBUTE, SECONDARY_ENGINE_ATTRIBUTE, ROW_FORMAT, AVG_ROW_LENGTH, MAX_ROWS, MIN_ROWS, KEY_BLOCK_SIZE, TABLESPACE, FOREIGN_SERVER, ACCESS_METHOD, ON_COMMIT, FILE_BLOCK_SIZE, OTHER
     }
 
     /**

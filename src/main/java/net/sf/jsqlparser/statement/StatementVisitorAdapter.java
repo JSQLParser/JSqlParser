@@ -10,6 +10,7 @@
 package net.sf.jsqlparser.statement;
 
 import net.sf.jsqlparser.statement.alter.AlterRelation;
+import net.sf.jsqlparser.statement.alter.AlterTablespace;
 import net.sf.jsqlparser.statement.alter.AlterPolicy;
 import net.sf.jsqlparser.statement.alter.AlterRoutine;
 import net.sf.jsqlparser.statement.alter.AlterTrigger;
@@ -73,6 +74,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.tablespace.CreateTablespace;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -969,6 +971,18 @@ public class StatementVisitorAdapter<T> implements StatementVisitor<T> {
             action.visitExpressions(expression -> expression.accept(expressionVisitor, context));
             action.visitTables(table -> table.accept(fromItemVisitor, context));
         });
+        return null;
+    }
+
+    @Override
+    public <S> T visit(CreateTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
+        return null;
+    }
+
+    @Override
+    public <S> T visit(AlterTablespace statement, S context) {
+        statement.visitExpressions(expression -> expression.accept(expressionVisitor, context));
         return null;
     }
 
