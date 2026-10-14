@@ -162,6 +162,8 @@ One grammar covers the SQL standard plus all major RDBMS. Missing syntax gets ad
       - ``ANALYZE`` · ``CHECK`` · ``OPTIMIZE`` · ``REPAIR TABLE``
     * - **PostgreSQL RLS**
       - ``CREATE POLICY`` · ``ALTER TABLE … ENABLE``/``DISABLE``/``FORCE``/``NO FORCE ROW LEVEL SECURITY``
+    * - **Routine changes**
+      - ``ALTER FUNCTION`` · ``ALTER PROCEDURE`` · ``ALTER ROUTINE`` · PostgreSQL ``ALTER TRIGGER``
     * - **Salesforce SOQL**
       - ``INCLUDES`` · ``EXCLUDES``
 

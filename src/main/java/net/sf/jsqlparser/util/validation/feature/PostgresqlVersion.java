@@ -124,6 +124,13 @@ public enum PostgresqlVersion implements Version {
                     // https://www.postgresql.org/docs/current/sql-alterdatabase.html
                     Feature.createDatabase, Feature.alterDatabase,
 
+                    // https://www.postgresql.org/docs/current/sql-alterfunction.html
+                    // https://www.postgresql.org/docs/current/sql-alterprocedure.html
+                    // https://www.postgresql.org/docs/current/sql-alterroutine.html
+                    // https://www.postgresql.org/docs/current/sql-altertrigger.html
+                    Feature.alterFunction, Feature.alterProcedure, Feature.alterRoutine,
+                    Feature.alterTrigger,
+
                     // https://www.postgresql.org/docs/16/sql-refreshmaterializedview.html
                     Feature.refreshMaterializedView,
                     Feature.refreshMaterializedWithNoDataView,

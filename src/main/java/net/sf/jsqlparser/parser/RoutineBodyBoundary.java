@@ -39,6 +39,16 @@ final class RoutineBodyBoundary {
     private boolean handlerAction;
     private boolean statementStart = true;
 
+    /**
+     * Tracks a compound statement without a routine header, such as a MySQL trigger body. Its
+     * tokens belong to the body from the start, as after a routine's parameter list.
+     */
+    static RoutineBodyBoundary forCompoundStatement() {
+        RoutineBodyBoundary boundary = new RoutineBodyBoundary();
+        boundary.hasParameters = true;
+        return boundary;
+    }
+
     boolean endsAt(Token token) throws ParseException {
         if (token.kind == EOF) {
             if (!blocks.isEmpty()) {

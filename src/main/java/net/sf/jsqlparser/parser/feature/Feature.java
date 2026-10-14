@@ -725,6 +725,18 @@ public enum Feature {
 
     alterFunction, alterProcedure, createOrAlterRoutine,
     /**
+     * PostgreSQL "ALTER ROUTINE" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterRoutine
+     */
+    alterRoutine,
+    /**
+     * PostgreSQL "ALTER TRIGGER" statement is allowed
+     *
+     * @see net.sf.jsqlparser.statement.alter.AlterTrigger
+     */
+    alterTrigger,
+    /**
      * SQL block starting with "BEGIN" and ends with "END" statement is allowed
      *
      * @see Block

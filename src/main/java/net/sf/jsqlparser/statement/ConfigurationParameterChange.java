@@ -16,7 +16,8 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 
 /**
  * A PostgreSQL {@code SET} or {@code RESET} of a configuration parameter, shared by statements that
- * store parameter defaults, such as {@code ALTER ROLE} and {@code ALTER DATABASE}:
+ * store parameter defaults: {@code ALTER ROLE}, {@code ALTER DATABASE} and the routine
+ * characteristics of {@code ALTER FUNCTION}, {@code ALTER PROCEDURE} and {@code ALTER ROUTINE}:
  *
  * <pre>
  * SET parameter { TO | = } { value [, ...] | DEFAULT }
