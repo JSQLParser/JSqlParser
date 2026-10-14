@@ -82,6 +82,10 @@ public enum MariaDbVersion implements Version {
                     // https://mariadb.com/kb/en/table-statements/
                     Feature.tableMaintenance,
 
+                    // https://mariadb.com/kb/en/account-management-sql-statements/
+                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.setDefaultRole, Feature.setPassword,
+
                     // https://mariadb.com/kb/en/call/
                     Feature.execute, Feature.executeCall,
 
@@ -124,7 +128,8 @@ public enum MariaDbVersion implements Version {
                     Feature.showColumns, // https://mariadb.com/kb/en/show-index/
                     Feature.showIndex, // https://mariadb.com/kb/en/use/
                     Feature.use, // https://mariadb.com/kb/en/grant/
-                    Feature.grant, // https://mariadb.com/kb/en/commit/
+                    Feature.grant, // https://mariadb.com/kb/en/revoke/
+                    Feature.revoke, // https://mariadb.com/kb/en/commit/
                     Feature.commit, // https://mariadb.com/kb/en/optimizer-hints/
                     Feature.mySqlHintStraightJoin,
                     Feature.mysqlSelectModifiers, Feature.mysqlCalcFoundRows,

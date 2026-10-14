@@ -78,6 +78,10 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
                     Feature.tableMaintenance,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
+                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.setDefaultRole, Feature.setPassword,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
@@ -112,7 +116,8 @@ public enum MySqlVersion implements Version {
                     Feature.showTables, // https://dev.mysql.com/doc/refman/8.0/en/show-columns.html
                     Feature.showColumns, // https://dev.mysql.com/doc/refman/8.0/en/show-index.html
                     Feature.showIndex, // https://dev.mysql.com/doc/refman/8.0/en/grant.html
-                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/use.html
+                    Feature.grant, // https://dev.mysql.com/doc/refman/8.0/en/revoke.html
+                    Feature.revoke, // https://dev.mysql.com/doc/refman/8.0/en/use.html
                     Feature.use, // https://dev.mysql.com/doc/refman/8.0/en/commit.html
                     Feature.commit, Feature.startTransaction, Feature.releaseSavepoint,
                     Feature.transactionChain, Feature.transactionConsistentSnapshot, //

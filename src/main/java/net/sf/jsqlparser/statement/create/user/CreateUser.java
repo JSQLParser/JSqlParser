@@ -17,11 +17,16 @@ import java.util.stream.Collectors;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 
-/** MySQL {@code CREATE USER} statement with structured account and authentication data. */
+/**
+ * MySQL {@code CREATE USER} statement with structured account and authentication data. The
+ * {@link UserOptions} after the account list are shared with
+ * {@link net.sf.jsqlparser.statement.alter.AlterUser}.
+ */
 public class CreateUser implements Statement {
 
     private boolean ifNotExists;
     private final List<UserAccount> accounts = new ArrayList<>();
+    private UserOptions options = new UserOptions();
 
     public boolean isIfNotExists() {
         return ifNotExists;
@@ -42,6 +47,15 @@ public class CreateUser implements Statement {
         }
     }
 
+    /** The account options after the account list; empty, never null, when none are given. */
+    public UserOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(UserOptions options) {
+        this.options = options != null ? options : new UserOptions();
+    }
+
     @Override
     public <T, S> T accept(StatementVisitor<T> statementVisitor, S context) {
         return statementVisitor.visit(this, context);
@@ -49,8 +63,12 @@ public class CreateUser implements Statement {
 
     @Override
     public String toString() {
-        return "CREATE USER " + (ifNotExists ? "IF NOT EXISTS " : "")
-                + accounts.stream().map(Object::toString).collect(Collectors.joining(", "));
+        StringBuilder builder = new StringBuilder("CREATE USER ");
+        if (ifNotExists) {
+            builder.append("IF NOT EXISTS ");
+        }
+        builder.append(accounts.stream().map(Object::toString).collect(Collectors.joining(", ")));
+        return options.appendTo(builder).toString();
     }
 
     public CreateUser withIfNotExists(boolean ifNotExists) {
@@ -65,6 +83,11 @@ public class CreateUser implements Statement {
 
     public CreateUser addAccounts(UserAccount... accounts) {
         Collections.addAll(this.accounts, accounts);
+        return this;
+    }
+
+    public CreateUser withOptions(UserOptions options) {
+        setOptions(options);
         return this;
     }
 }
