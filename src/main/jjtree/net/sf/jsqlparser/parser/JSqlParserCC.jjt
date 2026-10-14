@@ -269,9 +269,241 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     }
 
     private boolean isMySqlDatabaseOptionAhead() {
-        int offset = getToken(1).kind == K_DEFAULT ? 2 : 1;
-        int kind = getToken(offset).kind;
-        return kind == K_CHARACTER || kind == K_COLLATE || kind == K_ENCRYPTION;
+        return isMySqlDatabaseOptionAhead(1);
+    }
+
+    private boolean isMySqlDatabaseOptionAhead(int offset) {
+        int start = getToken(offset).kind == K_DEFAULT ? offset + 1 : offset;
+        Token token = getToken(start);
+        return token.kind == K_CHARACTER || token.kind == K_COLLATE || token.kind == K_ENCRYPTION
+                || token.kind == K_CHAR && getToken(start + 1).kind == K_SET
+                || token.kind == S_IDENTIFIER && "CHARSET".equalsIgnoreCase(token.image);
+    }
+
+    /**
+     * Whether MySQL's ALTER DATABASE omits the database name before its options. CHARSET can also
+     * be a database name, so it starts an option only when "=" follows, or when its value ends the
+     * statement or precedes another option.
+     */
+    private boolean isAlterDatabaseNameOmitted() {
+        Token first = getToken(1);
+        if (first.kind == K_READ) {
+            return true;
+        }
+        if (!isMySqlDatabaseOptionAhead(1)) {
+            return false;
+        }
+        if (first.kind != S_IDENTIFIER || "=".equals(getToken(2).image)) {
+            return true;
+        }
+        Token afterValue = getToken(3);
+        return afterValue.kind == EOF || afterValue.kind == ST_SEMICOLON || afterValue.kind == K_READ
+                || isMySqlDatabaseOptionAhead(3);
+    }
+
+    /** Whether a PostgreSQL CREATE/ALTER DATABASE option name starts at the offset. */
+    private boolean isPostgreSqlDatabaseOptionAhead(int offset) {
+        Token token = getToken(offset);
+        if (token.kind == K_ENCODING || token.kind == K_TABLESPACE) {
+            return true;
+        }
+        if (token.kind != S_IDENTIFIER) {
+            return false;
+        }
+        String name = token.image.toUpperCase(Locale.ROOT);
+        if ("CONNECTION".equals(name)) {
+            return getToken(offset + 1).kind == K_LIMIT;
+        }
+        return Arrays.asList("OWNER", "TEMPLATE", "STRATEGY", "LOCALE", "LC_COLLATE", "LC_CTYPE",
+                "BUILTIN_LOCALE", "ICU_LOCALE", "ICU_RULES", "LOCALE_PROVIDER", "COLLATION_VERSION",
+                "ALLOW_CONNECTIONS", "IS_TEMPLATE", "OID").contains(name);
+    }
+
+    /** Whether the words, matched without case, start at the offset. */
+    private boolean isWordSequenceAhead(int offset, String... words) {
+        for (int i = 0; i < words.length; i++) {
+            Token token = getToken(offset + i);
+            if (token.kind == EOF || !words[i].equalsIgnoreCase(token.image)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isSignedNumberAhead(int offset) {
+        Token token = getToken(offset);
+        if ("+".equals(token.image) || "-".equals(token.image)) {
+            token = getToken(offset + 1);
+        }
+        return token.kind == S_LONG || token.kind == S_DOUBLE;
+    }
+
+    /**
+     * Whether ALTER FUNCTION, PROCEDURE or ROUTINE has a PostgreSQL or MySQL alteration after the
+     * routine name and optional signature. Other forms, such as SQL Server routine definitions,
+     * remain unsupported statements.
+     */
+    private boolean isAlterRoutineAhead() {
+        Token token = getToken(1);
+        if (token.kind != K_FUNCTION && token.kind != K_PROCEDURE && !isKeywordAhead("ROUTINE")) {
+            return false;
+        }
+        int offset = 3;
+        while (".".equals(getToken(offset).image)) {
+            offset += 2;
+        }
+        if (getToken(offset).kind == OPENING_BRACKET) {
+            for (int depth = 0; ; offset++) {
+                int kind = getToken(offset).kind;
+                if (kind == EOF || kind == ST_SEMICOLON) {
+                    return false;
+                }
+                depth += kind == OPENING_BRACKET ? 1 : kind == CLOSING_BRACKET ? -1 : 0;
+                if (depth == 0) {
+                    offset++;
+                    break;
+                }
+            }
+        }
+        Token next = getToken(offset + 1);
+        return getToken(offset).kind == K_RENAME && next.kind == K_TO
+                || isWordSequenceAhead(offset, "OWNER", "TO")
+                || getToken(offset).kind == K_SET && next.kind == K_SCHEMA
+                || isExtensionDependencyAhead(offset)
+                || isPostgreSqlRoutineCharacteristicAhead(offset)
+                || isMySqlRoutineCharacteristicAhead(offset);
+    }
+
+    /** Whether PostgreSQL's [NO] DEPENDS ON EXTENSION starts at the offset. */
+    private boolean isExtensionDependencyAhead(int offset) {
+        return isWordSequenceAhead(getToken(offset).kind == K_NO ? offset + 1 : offset,
+                "DEPENDS", "ON", "EXTENSION");
+    }
+
+    /**
+     * Whether a PostgreSQL characteristic of ALTER FUNCTION, PROCEDURE or ROUTINE starts at the
+     * offset. SET without TO, = or FROM after the parameter name is SET SCHEMA instead.
+     */
+    private boolean isPostgreSqlRoutineCharacteristicAhead(int offset) {
+        Token token = getToken(offset);
+        switch (token.kind) {
+            case K_SET:
+                int nameEnd = offset + 2;
+                while (".".equals(getToken(nameEnd).image)) {
+                    nameEnd += 2;
+                }
+                Token assignment = getToken(nameEnd);
+                return assignment.kind == K_TO || "=".equals(assignment.image)
+                        || assignment.kind == K_FROM;
+            case K_RESET:
+            case K_VOLATILE:
+            case K_STRICT:
+                return true;
+            case K_ROWS:
+                return isSignedNumberAhead(offset + 1);
+            case K_NOT:
+                return isWordSequenceAhead(offset + 1, "LEAKPROOF");
+            case K_RETURNS:
+                return isWordSequenceAhead(offset + 1, "NULL", "ON", "NULL", "INPUT");
+            case K_PARALLEL:
+                return isWordSequenceAhead(offset + 1, "UNSAFE")
+                        || isWordSequenceAhead(offset + 1, "RESTRICTED")
+                        || isWordSequenceAhead(offset + 1, "SAFE");
+            case K_SECURITY:
+                return isRoutineSecurityAhead(offset + 1);
+            case S_IDENTIFIER:
+                break;
+            default:
+                return false;
+        }
+        switch (token.image.toUpperCase(Locale.ROOT)) {
+            case "IMMUTABLE":
+            case "STABLE":
+            case "LEAKPROOF":
+                return true;
+            case "CALLED":
+                return isWordSequenceAhead(offset + 1, "ON", "NULL", "INPUT");
+            case "EXTERNAL":
+                return getToken(offset + 1).kind == K_SECURITY && isRoutineSecurityAhead(offset + 2);
+            case "COST":
+                return isSignedNumberAhead(offset + 1);
+            case "SUPPORT":
+                int kind = getToken(offset + 1).kind;
+                return kind != EOF && kind != ST_SEMICOLON;
+            default:
+                return false;
+        }
+    }
+
+    /** Whether a MySQL characteristic of ALTER FUNCTION or PROCEDURE starts at the offset. */
+    private boolean isMySqlRoutineCharacteristicAhead(int offset) {
+        if (getToken(offset).kind == K_COMMENT) {
+            return getToken(offset + 1).kind == S_CHAR_LITERAL;
+        }
+        return isWordSequenceAhead(offset, "LANGUAGE", "SQL")
+                || isWordSequenceAhead(offset, "CONTAINS", "SQL")
+                || isWordSequenceAhead(offset, "NO", "SQL")
+                || isWordSequenceAhead(offset, "READS", "SQL", "DATA")
+                || isWordSequenceAhead(offset, "MODIFIES", "SQL", "DATA")
+                || isWordSequenceAhead(offset, "SQL", "SECURITY") && isRoutineSecurityAhead(offset + 2);
+    }
+
+    private boolean isRoutineSecurityAhead(int offset) {
+        return isWordSequenceAhead(offset, "DEFINER") || isWordSequenceAhead(offset, "INVOKER");
+    }
+
+    /**
+     * Whether a MySQL compound statement starts here: BEGIN ... END or a flow control statement,
+     * where BEGIN, LOOP, REPEAT and WHILE may have a label.
+     */
+    private boolean isMySqlCompoundStatementAhead() {
+        boolean labeled = getToken(1).kind == S_IDENTIFIER && ":".equals(getToken(2).image);
+        Token token = getToken(labeled ? 3 : 1);
+        if (token.kind == K_BEGIN || token.kind == K_LOOP
+                || isWordSequenceAhead(labeled ? 3 : 1, "REPEAT")
+                || isWordSequenceAhead(labeled ? 3 : 1, "WHILE")) {
+            return true;
+        }
+        return !labeled && (token.kind == K_IF || token.kind == K_CASE);
+    }
+
+    /**
+     * Whether BEGIN ... END holds only SQL statements, each ending with a semicolon, and ends the
+     * enclosing statement. CASE ... END inside a statement is an expression.
+     */
+    private boolean isStatementBlockAhead() {
+        if (getToken(1).kind != K_BEGIN) {
+            return false;
+        }
+        boolean statementStart = true;
+        boolean statements = false;
+        int caseDepth = 0;
+        for (int i = 2; ; i++) {
+            Token token = getToken(i);
+            if (token.kind == EOF) {
+                return false;
+            } else if (token.kind == ST_SEMICOLON) {
+                statementStart = true;
+            } else if (statementStart) {
+                if (token.kind == K_END) {
+                    int next = getToken(i + 1).kind;
+                    return statements && (next == ST_SEMICOLON || next == EOF);
+                }
+                switch (token.kind) {
+                    case K_SELECT: case K_INSERT: case K_UPDATE: case K_DELETE: case K_REPLACE:
+                    case K_SET: case K_CALL: case K_WITH:
+                        break;
+                    default:
+                        return false;
+                }
+                statementStart = false;
+                statements = true;
+            } else if (token.kind == K_CASE) {
+                caseDepth++;
+            } else if (token.kind == K_END && caseDepth-- == 0) {
+                return false;
+            }
+        }
     }
 
     private static class ObjectNames {
@@ -4116,6 +4348,18 @@ DoStatement DoStatement():
 }
 
 Block Block() #Block : {
+    Block block;
+}
+{
+    block = BeginEndBlock()
+    [LOOKAHEAD(2) <ST_SEMICOLON> { block.setSemicolonAfterEnd(true); } ]
+    {
+        return block;
+    }
+}
+
+/** BEGIN, statements and END; unlike Block(), it leaves a following semicolon to the caller. */
+Block BeginEndBlock(): {
     Statements stmts = new Statements();
     List<Statement> list = new ArrayList<Statement>();
     Statement stm;
@@ -4147,7 +4391,7 @@ Block Block() #Block : {
         block.setStatements(stmts);
     }
 
-    <K_END> [LOOKAHEAD(2) <ST_SEMICOLON> { block.setSemicolonAfterEnd(true); } ]
+    <K_END>
     {
         return block;
     }
@@ -15730,6 +15974,10 @@ TriggerDefiner MySqlTriggerDefiner():
 { TriggerDefiner definer = new TriggerDefiner(); }
 { MySqlDefiner(definer) { return definer; } }
 
+MySqlDefiner MySqlRoutineDefiner():
+{ MySqlDefiner definer = new MySqlDefiner(); }
+{ MySqlDefiner(definer) { return definer; } }
+
 /** MySQL fixes the prefix order: ALGORITHM, DEFINER, SQL SECURITY. */
 MySqlViewOptions MySqlViewPrefix():
 {
@@ -15785,7 +16033,58 @@ CreateTrigger.Order MySqlTriggerOrder():
     { return order; }
 }
 
-CreateTrigger CreateTrigger():
+/**
+ * MySQL trigger statement. BEGIN ... END with SQL statements only remains a Block. Other compound
+ * statements, such as those with IF or DECLARE, keep their tokens like routine bodies and use the
+ * same boundary tracking. The semicolon after END is left to separate statements.
+ */
+Statement MySqlTriggerBody():
+{
+    Statement body;
+    List<String> tokens;
+}
+{
+    (
+        LOOKAHEAD({ isStatementBlockAhead() }) body=BeginEndBlock()
+        |
+        LOOKAHEAD({ isMySqlCompoundStatementAhead() }) tokens=captureCompoundStatement()
+        { body = new UnsupportedStatement(tokens); }
+        |
+        body=SingleStatement()
+    )
+    { return body; }
+}
+
+/**
+ * Captures a compound statement through its END and optional end label. Qualified names are
+ * joined, and a semicolon or label colon is attached to the preceding token.
+ */
+JAVACODE
+List<String> captureCompoundStatement() {
+    List<String> tokens = new LinkedList<String>();
+    RoutineBodyBoundary boundary = RoutineBodyBoundary.forCompoundStatement();
+    boolean afterDot = false;
+    Token tok;
+    while (true) {
+        tok = getToken(1);
+        if (boundary.endsAt(tok)) {
+            break;
+        }
+        int last = tokens.size() - 1;
+        if (last >= 0 && (afterDot || ".".equals(tok.image) || ":".equals(tok.image)
+                || tok.kind == ST_SEMICOLON)) {
+            tokens.set(last, tokens.get(last) + tok.image);
+        } else {
+            tokens.add(tok.image);
+        }
+        afterDot = ".".equals(tok.image);
+        boundary.accept(tok, getToken(2));
+        getNextToken();
+    }
+    return tokens;
+}
+
+CreateTrigger CreateTrigger(boolean orReplace):
 {
     CreateTrigger createTrigger = new CreateTrigger();
     TriggerDefiner definer = null;
@@ -15800,7 +16099,14 @@ CreateTrigger CreateTrigger():
 {
     [ LOOKAHEAD({ "DEFINER".equalsIgnoreCase(getToken(1).image) })
       definer=MySqlTriggerDefiner() { createTrigger.setDefiner(definer); } ]
-    <K_TRIGGER> trigger=Table() { createTrigger.setTrigger(trigger); }
+    <K_TRIGGER>
+    [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createTrigger.setIfNotExists(true); } ]
+    {
+        requireDdlSyntax(!orReplace || !createTrigger.isIfNotExists(),
+                "OR REPLACE and IF NOT EXISTS cannot be combined");
+        createTrigger.setOrReplace(orReplace);
+    }
+    trigger=Table() { createTrigger.setTrigger(trigger); }
     timing=MySqlTriggerTiming() { createTrigger.setTiming(timing); }
     ( event=<K_INSERT> { createTrigger.setEvent(CreateTrigger.Event.INSERT); }
       | event=<K_UPDATE> { createTrigger.setEvent(CreateTrigger.Event.UPDATE); }
@@ -15812,7 +16118,7 @@ CreateTrigger CreateTrigger():
         createTrigger.setOrder(order);
         createTrigger.setOtherTrigger(otherTrigger);
     } ]
-    ( body=SingleStatement() | body=Block() ) { createTrigger.setBody(body); }
+    body=MySqlTriggerBody() { createTrigger.setBody(body); }
     { return createTrigger; }
 }
 
@@ -15888,6 +16194,16 @@ DatabaseOption MySqlDatabaseOption():
             name = "CHARACTER SET";
         }
         |
+        <K_CHAR> <K_SET> {
+            kind = DatabaseOption.Kind.CHARACTER_SET;
+            name = "CHAR SET";
+        }
+        |
+        LOOKAHEAD({ isKeywordAhead("CHARSET") }) ContextualKeyword("CHARSET") {
+            kind = DatabaseOption.Kind.CHARACTER_SET;
+            name = "CHARSET";
+        }
+        |
         <K_COLLATE> {
             kind = DatabaseOption.Kind.COLLATE;
             name = "COLLATE";
@@ -15903,33 +16219,142 @@ DatabaseOption MySqlDatabaseOption():
     { return new DatabaseOption(kind, name, value, useDefault, useEquals); }
 }
 
-/** Reuses CREATE's database options; READ ONLY is specific to ALTER. */
+/** PostgreSQL option of CREATE DATABASE; ALTER DATABASE accepts the same option list. */
+DatabaseOption PostgreSqlDatabaseOption():
+{
+    Token token;
+    DatabaseOption.Kind kind;
+    String name;
+    String value;
+    boolean useEquals = false;
+}
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("CONNECTION") }) ContextualKeyword("CONNECTION") <K_LIMIT>
+        { kind = DatabaseOption.Kind.CONNECTION_LIMIT; name = "CONNECTION LIMIT"; }
+        |
+        <K_ENCODING> { kind = DatabaseOption.Kind.ENCODING; name = "ENCODING"; }
+        |
+        <K_TABLESPACE> { kind = DatabaseOption.Kind.TABLESPACE; name = "TABLESPACE"; }
+        |
+        LOOKAHEAD({ isPostgreSqlDatabaseOptionAhead(1) }) token=<S_IDENTIFIER> {
+            name = token.image.toUpperCase(Locale.ROOT);
+            kind = DatabaseOption.Kind.valueOf(name);
+        }
+    )
+    [ "=" { useEquals = true; } ]
+    value=PostgreSqlDatabaseOptionValue()
+    { return new DatabaseOption(kind, name, value, false, useEquals); }
+}
+
+/** A name, string, signed number, boolean or DEFAULT, as written. */
+String PostgreSqlDatabaseOptionValue():
+{
+    Token token;
+    String value;
+    String sign = "";
+}
+{
+    (
+        LOOKAHEAD(1) token=<K_DEFAULT> { value = token.image; }
+        |
+        LOOKAHEAD(1) token=<K_ON> { value = token.image; }
+        |
+        ( token=<K_TRUE> | token=<K_FALSE> | token=<S_CHAR_LITERAL> ) { value = token.image; }
+        |
+        [ "+" { sign = "+"; } | "-" { sign = "-"; } ]
+        ( token=<S_LONG> | token=<S_DOUBLE> ) { value = sign + token.image; }
+        |
+        value=RelObjectName()
+    )
+    { return value; }
+}
+
+/**
+ * MySQL ALTER DATABASE/SCHEMA options and the PostgreSQL ALTER DATABASE forms. Options reuse the
+ * CREATE DATABASE productions; READ ONLY is specific to MySQL's ALTER. Only MySQL options may
+ * follow an omitted name.
+ */
 AlterDatabase AlterDatabase():
 {
     AlterDatabase result = new AlterDatabase();
     String name;
     DatabaseOption option;
-    Token value;
-    boolean equals;
+    ConfigurationParameterChange change;
 }
 {
-    ( <K_DATABASE> | <K_SCHEMA> { result.setUseSchemaKeyword(true); } )
-    [ LOOKAHEAD({ !isMySqlDatabaseOptionAhead() && getToken(1).kind != K_READ })
-        name=RelObjectName() { result.setDatabaseName(name); } ]
     (
+        <K_SCHEMA> { result.setUseSchemaKeyword(true); }
         (
-            LOOKAHEAD({ isMySqlDatabaseOptionAhead() }) option=MySqlDatabaseOption()
+            LOOKAHEAD({ isAlterDatabaseNameOmitted() }) MySqlAlterDatabaseOptions(result)
             |
-            <K_READ> <K_ONLY> { equals = false; }
-            [ "=" { equals = true; } ]
-            ( value=<K_DEFAULT> | value=<S_LONG> ) {
-                requireDdlSyntax(value.kind == K_DEFAULT || "0".equals(value.image) || "1".equals(value.image),
-                        "READ ONLY requires DEFAULT, 0, or 1");
-                option = new DatabaseOption(DatabaseOption.Kind.READ_ONLY, "READ ONLY", value.image, false, equals);
-            }
-        ) { result.getOptions().add(option); }
-    )+
+            name=RelObjectName() { result.setDatabaseName(name); } MySqlAlterDatabaseOptions(result)
+        )
+        |
+        <K_DATABASE>
+        (
+            LOOKAHEAD({ isAlterDatabaseNameOmitted() }) MySqlAlterDatabaseOptions(result)
+            |
+            name=RelObjectName() { result.setDatabaseName(name); }
+            (
+                <K_RENAME> <K_TO> name=RelObjectName()
+                { result.setAction(AlterDatabase.Action.RENAME); result.setNewName(name); }
+                |
+                LOOKAHEAD({ isKeywordAhead("OWNER") && getToken(2).kind == K_TO })
+                ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+                { result.setAction(AlterDatabase.Action.OWNER); result.setOwner(name); }
+                |
+                LOOKAHEAD({ getToken(1).kind == K_SET && getToken(2).kind == K_TABLESPACE
+                        && getToken(3).kind != K_TO && getToken(3).kind != K_FROM && !"=".equals(getToken(3).image) })
+                <K_SET> <K_TABLESPACE> name=RelObjectName()
+                { result.setAction(AlterDatabase.Action.SET_TABLESPACE); result.setTablespace(name); }
+                |
+                <K_REFRESH> ContextualKeyword("COLLATION") <K_VERSION>
+                { result.setAction(AlterDatabase.Action.REFRESH_COLLATION_VERSION); }
+                |
+                change=ConfigurationParameterChange()
+                { result.setAction(AlterDatabase.Action.CONFIGURATION_PARAMETER); result.setParameterChange(change); }
+                |
+                [ <K_WITH> { result.setUseWith(true); } ]
+                (
+                    (
+                        LOOKAHEAD({ isPostgreSqlDatabaseOptionAhead(1) }) option=PostgreSqlDatabaseOption()
+                        |
+                        option=MySqlAlterDatabaseOption()
+                    ) { result.getOptions().add(option); }
+                )+
+            )
+        )
+    )
     { return result; }
+}
+
+void MySqlAlterDatabaseOptions(AlterDatabase result):
+{ DatabaseOption option; }
+{
+    ( option=MySqlAlterDatabaseOption() { result.getOptions().add(option); } )+
+}
+
+/** MySQL ALTER DATABASE option: a CREATE DATABASE option or READ ONLY. */
+DatabaseOption MySqlAlterDatabaseOption():
+{
+    DatabaseOption option;
+    Token value;
+    boolean equals = false;
+}
+{
+    (
+        LOOKAHEAD({ isMySqlDatabaseOptionAhead() }) option=MySqlDatabaseOption()
+        |
+        <K_READ> <K_ONLY>
+        [ "=" { equals = true; } ]
+        ( value=<K_DEFAULT> | value=<S_LONG> ) {
+            requireDdlSyntax(value.kind == K_DEFAULT || "0".equals(value.image) || "1".equals(value.image),
+                    "READ ONLY requires DEFAULT, 0, or 1");
+            option = new DatabaseOption(DatabaseOption.Kind.READ_ONLY, "READ ONLY", value.image, false, equals);
+        }
+    )
+    { return option; }
 }
 
 List<String> PathSpecification():
@@ -15945,6 +16370,7 @@ List<String> PathSpecification():
     }
 }
 
+/** Typed MySQL and PostgreSQL options; other option text is kept as one raw option. */
 CreateDatabase CreateDatabase():
 {
     CreateDatabase createDatabase = new CreateDatabase();
@@ -15956,12 +16382,20 @@ CreateDatabase CreateDatabase():
     <K_DATABASE>
     [ LOOKAHEAD(2) <K_IF> <K_NOT> <K_EXISTS> { createDatabase.setIfNotExists(true); } ]
     databaseName = RelObjectName() { createDatabase.setDatabaseName(databaseName); }
+    [ LOOKAHEAD({ getToken(1).kind == K_WITH && isPostgreSqlDatabaseOptionAhead(2) })
+        <K_WITH> { createDatabase.setUseWith(true); } ]
     (
-        LOOKAHEAD({ isMySqlDatabaseOptionAhead() })
-        databaseOption=MySqlDatabaseOption() { createDatabase.addOptions(databaseOption); }
+        LOOKAHEAD({ isMySqlDatabaseOptionAhead() || isPostgreSqlDatabaseOptionAhead(1) })
+        (
+            LOOKAHEAD({ isMySqlDatabaseOptionAhead() }) databaseOption=MySqlDatabaseOption()
+            |
+            databaseOption=PostgreSqlDatabaseOption()
+        ) { createDatabase.addOptions(databaseOption); }
     )*
     [ databaseOptions = captureRest() {
-        createDatabase.addOptions(DatabaseOption.raw(databaseOptions));
+        if (!databaseOptions.isEmpty()) {
+            createDatabase.addOptions(DatabaseOption.raw(databaseOptions));
+        }
     } ]
     {
         return createDatabase;
@@ -19584,6 +20018,11 @@ Statement Alter():
                 |
                 LOOKAHEAD({ isKeywordAhead("STATISTICS") }) statement = AlterStatistics()
                 |
+                // Other routine forms, such as SQL Server definitions, remain unsupported.
+                LOOKAHEAD({ isAlterRoutineAhead() }) statement = AlterRoutine()
+                |
+                LOOKAHEAD(AlterTrigger() ( <ST_SEMICOLON> | <EOF> )) statement = AlterTrigger()
+                |
                 LOOKAHEAD(<K_POLICY>) statement = AlterPolicy()
                 |
                 LOOKAHEAD({ isKeywordAhead("ROLE") || isKeywordAhead("USER") || isKeywordAhead("GROUP") })
@@ -19591,9 +20030,12 @@ Statement Alter():
                 |
                 statement = AlterDefaultPrivileges()
                 |
-                LOOKAHEAD({ getToken(1).kind == K_DATABASE || (getToken(1).kind == K_SCHEMA
-                        && Dialect.MYSQL.name().equals(getAsString(Feature.dialect))) })
+                LOOKAHEAD({ (getToken(1).kind == K_DATABASE || getToken(1).kind == K_SCHEMA)
+                        && Dialect.MYSQL.name().equals(getAsString(Feature.dialect)) })
                 statement = AlterDatabase()
+                |
+                // Other dialects keep unmodelled ALTER DATABASE forms as unsupported statements.
+                LOOKAHEAD(AlterDatabase()) statement = AlterDatabase()
                 |
                 LOOKAHEAD(<K_SCHEMA>) statement = AlterSchema()
                 |
@@ -20412,8 +20854,8 @@ AlterSchema AlterSchema():
 
 AlterRole AlterRole():
 {
-    AlterRole role = new AlterRole(); String name; RoleOption option; Token token; Expression value;
-    ExpressionList<Expression> values = new ExpressionList<Expression>(); List<String> names;
+    AlterRole role = new AlterRole(); String name; RoleOption option; Token token;
+    ConfigurationParameterChange change; List<String> names;
 }
 {
     ( token=<S_IDENTIFIER> | token=<K_USER> | token=<K_GROUP> ) { role.setCommand(accessEnum(CreateRole.Command.class, token.image)); }
@@ -20425,22 +20867,7 @@ AlterRole AlterRole():
         ( <K_ADD> { role.setAction(AlterRole.Action.ADD_USER); } | <K_DROP> { role.setAction(AlterRole.Action.DROP_USER); } )
         <K_USER> names=AccessNames() { requireAccessSyntax(role.getCommand() == CreateRole.Command.GROUP, "ADD/DROP USER requires ALTER GROUP"); role.setUsers(names); }
         |
-        <K_SET> name=AccessQualifiedName() { role.setAction(AlterRole.Action.SET); role.setParameter(name); }
-        (
-            <K_FROM> <K_CURRENT> { role.setFromCurrent(true); }
-            |
-            ( <K_TO> | "=" { role.setUseEquals(true); } )
-            (
-                LOOKAHEAD(1) <K_DEFAULT> { role.setUseDefault(true); }
-                |
-                value=AccessSettingValue() { values.add(value); }
-                ( "," value=AccessSettingValue() { values.add(value); } )*
-                { role.setValues(values); }
-            )
-        )
-        |
-        <K_RESET> ( LOOKAHEAD(1) <K_ALL> { role.setParameter("ALL"); } | name=AccessQualifiedName() { role.setParameter(name); } )
-        { role.setAction(AlterRole.Action.RESET); }
+        change=ConfigurationParameterChange() { role.setParameterChange(change); }
         |
         [ <K_WITH> { role.setUseWith(true); } ]
         option=RoleOption(false) { role.getOptions().add(option); role.setAction(AlterRole.Action.OPTIONS); }
@@ -20454,6 +20881,39 @@ AlterRole AlterRole():
             || role.getAction() == AlterRole.Action.ADD_USER || role.getAction() == AlterRole.Action.DROP_USER, "Invalid ALTER GROUP action");
         return role;
     }
+}
+
+/**
+ * PostgreSQL SET/RESET of a configuration parameter, shared by ALTER ROLE, ALTER DATABASE and
+ * ALTER FUNCTION/PROCEDURE/ROUTINE.
+ */
+ConfigurationParameterChange ConfigurationParameterChange():
+{
+    ConfigurationParameterChange change = new ConfigurationParameterChange();
+    String name;
+    Expression value;
+    ExpressionList<Expression> values = new ExpressionList<Expression>();
+}
+{
+    (
+        <K_SET> name=AccessQualifiedName() { change.setParameter(name); }
+        (
+            <K_FROM> <K_CURRENT> { change.setValueKind(ConfigurationParameterChange.ValueKind.FROM_CURRENT); }
+            |
+            ( <K_TO> | "=" { change.setUseEquals(true); } )
+            (
+                LOOKAHEAD(1) <K_DEFAULT> { change.setValueKind(ConfigurationParameterChange.ValueKind.DEFAULT); }
+                |
+                value=AccessSettingValue() { values.add(value); }
+                ( "," value=AccessSettingValue() { values.add(value); } )*
+                { change.setValues(values); }
+            )
+        )
+        |
+        <K_RESET> { change.setAction(ConfigurationParameterChange.Action.RESET); }
+        ( LOOKAHEAD(1) <K_ALL> { change.setParameter("ALL"); } | name=AccessQualifiedName() { change.setParameter(name); } )
+    )
+    { return change; }
 }
 
 Expression AccessSettingValue():
@@ -20639,6 +21099,27 @@ TransitionRelation PostgreSqlTransitionRelation():
 {
     ( token=<S_IDENTIFIER> ) { result.setImage(accessEnum(TransitionRelation.Image.class, token.image)); }
     <K_TABLE> [ <K_AS> { result.setUseAs(true); } ] name=RelObjectName() { result.setName(name); return result; }
+}
+
+/** PostgreSQL ALTER TRIGGER name ON table RENAME TO or [NO] DEPENDS ON EXTENSION. */
+AlterTrigger AlterTrigger():
+{
+    AlterTrigger result = new AlterTrigger();
+    String name;
+    Table table;
+}
+{
+    <K_TRIGGER> name=RelObjectName() { result.setName(name); }
+    <K_ON> table=Table() { result.setTable(table); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName() { result.setNewName(name); }
+        |
+        LOOKAHEAD({ isExtensionDependencyAhead(1) })
+        [ <K_NO> { result.setNoDependency(true); } ]
+        ContextualKeyword("DEPENDS") <K_ON> ContextualKeyword("EXTENSION") name=RelObjectName()
+        { result.setAction(AlterTrigger.Action.DEPENDS_ON_EXTENSION); result.setExtensionName(name); }
+    )
+    { return result; }
 }
 
 CreateTrigger PostgreSqlTrigger(boolean replace):
@@ -20956,14 +21437,15 @@ Statement Create():
         |
         LOOKAHEAD(MySqlViewPrefix() <K_VIEW>) statement = CreateView(isUsingOrReplace)
         |
-        LOOKAHEAD({ getToken(1).kind == K_TRIGGER
-                || "DEFINER".equalsIgnoreCase(getToken(1).image) })
-        statement = CreateTrigger()
+        LOOKAHEAD([ MySqlTriggerDefiner() ] <K_TRIGGER>,
+                { getToken(1).kind == K_TRIGGER || isKeywordAhead("DEFINER") })
+        statement = CreateTrigger(isUsingOrReplace)
         |
         LOOKAHEAD({ isCreateMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
         LOOKAHEAD({ isCreateFunctionMacroAhead() }) statement = CreateMacro(isUsingOrReplace)
         |
+        LOOKAHEAD([ MySqlRoutineDefiner() ] ( <K_FUNCTION> | <K_PROCEDURE> ))
         statement = CreateFunctionStatement(isUsingOrReplace)
         |
         statement = CreateSchema()
@@ -21002,8 +21484,10 @@ CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
   CreateFunctionalStatement type = null;
   List<String> tokens = new LinkedList<String>();
   String statementType = null;
+  MySqlDefiner definer = null;
 }
 {
+  [ definer=MySqlRoutineDefiner() ]
   (
    <K_FUNCTION> { statementType = "FUNCTION"; }
    |
@@ -21017,9 +21501,184 @@ CreateFunctionalStatement CreateFunctionStatement(boolean isUsingOrReplace):
     if(statementType.equals("PROCEDURE")) {
       type = new CreateProcedure(isUsingOrReplace, tokens);
     }
-
+    type.setDefiner(definer);
     return type;
   }
+}
+
+/**
+ * PostgreSQL ALTER FUNCTION, PROCEDURE or ROUTINE, or MySQL ALTER FUNCTION or PROCEDURE. One
+ * statement's characteristics belong to one dialect; MySQL's take no argument list.
+ */
+AlterRoutine AlterRoutine():
+{
+    AlterRoutine result = new AlterRoutine();
+    RoutineReference routine;
+    RoutineCharacteristic characteristic;
+    String name;
+}
+{
+    (
+        <K_FUNCTION> { result.setRoutineType(AlterRoutine.RoutineType.FUNCTION); }
+        |
+        <K_PROCEDURE> { result.setRoutineType(AlterRoutine.RoutineType.PROCEDURE); }
+        |
+        ContextualKeyword("ROUTINE") { result.setRoutineType(AlterRoutine.RoutineType.ROUTINE); }
+    )
+    routine=RoutineReference(false) { result.setRoutine(routine); }
+    (
+        <K_RENAME> <K_TO> name=RelObjectName()
+        { result.setAction(AlterRoutine.Action.RENAME); result.setNewName(name); }
+        |
+        LOOKAHEAD({ isWordSequenceAhead(1, "OWNER", "TO") }) ContextualKeyword("OWNER") <K_TO> name=RelObjectName()
+        { result.setAction(AlterRoutine.Action.OWNER); result.setOwner(name); }
+        |
+        LOOKAHEAD({ getToken(1).kind == K_SET && getToken(2).kind == K_SCHEMA
+                && !isPostgreSqlRoutineCharacteristicAhead(1) })
+        <K_SET> <K_SCHEMA> name=RelObjectName()
+        { result.setAction(AlterRoutine.Action.SET_SCHEMA); result.setSchemaName(name); }
+        |
+        LOOKAHEAD({ isExtensionDependencyAhead(1) })
+        [ <K_NO> { result.setNoDependency(true); } ]
+        ContextualKeyword("DEPENDS") <K_ON> ContextualKeyword("EXTENSION") name=RelObjectName()
+        { result.setAction(AlterRoutine.Action.DEPENDS_ON_EXTENSION); result.setExtensionName(name); }
+        |
+        LOOKAHEAD({ isMySqlRoutineCharacteristicAhead(1) })
+        (
+            LOOKAHEAD({ isMySqlRoutineCharacteristicAhead(1) })
+            characteristic=MySqlRoutineCharacteristic() { result.getCharacteristics().add(characteristic); }
+        )+
+        {
+            requireDdlSyntax(result.getRoutineType() != AlterRoutine.RoutineType.ROUTINE
+                    && routine.getArguments() == null,
+                    "MySQL characteristics require ALTER FUNCTION or PROCEDURE without arguments");
+        }
+        |
+        (
+            LOOKAHEAD({ isPostgreSqlRoutineCharacteristicAhead(1) })
+            characteristic=PostgreSqlRoutineCharacteristic() { result.getCharacteristics().add(characteristic); }
+        )+
+        [ <K_RESTRICT> { result.setRestrict(true); } ]
+    )
+    { return result; }
+}
+
+RoutineCharacteristic PostgreSqlRoutineCharacteristic():
+{
+    RoutineCharacteristic.Kind kind = RoutineCharacteristic.Kind.CONFIGURATION_PARAMETER;
+    RoutineCharacteristic.SecurityClause clause = null;
+    ConfigurationParameterChange change = null;
+    String value = null;
+}
+{
+    (
+        change=ConfigurationParameterChange()
+        |
+        LOOKAHEAD({ isKeywordAhead("IMMUTABLE") }) ContextualKeyword("IMMUTABLE")
+        { kind = RoutineCharacteristic.Kind.IMMUTABLE; }
+        |
+        LOOKAHEAD({ isKeywordAhead("STABLE") }) ContextualKeyword("STABLE")
+        { kind = RoutineCharacteristic.Kind.STABLE; }
+        |
+        <K_VOLATILE> { kind = RoutineCharacteristic.Kind.VOLATILE; }
+        |
+        LOOKAHEAD({ isKeywordAhead("CALLED") }) ContextualKeyword("CALLED") <K_ON> <K_NULL> ContextualKeyword("INPUT")
+        { kind = RoutineCharacteristic.Kind.CALLED_ON_NULL_INPUT; }
+        |
+        <K_RETURNS> <K_NULL> <K_ON> <K_NULL> ContextualKeyword("INPUT")
+        { kind = RoutineCharacteristic.Kind.RETURNS_NULL_ON_NULL_INPUT; }
+        |
+        <K_STRICT> { kind = RoutineCharacteristic.Kind.STRICT; }
+        |
+        LOOKAHEAD({ isKeywordAhead("LEAKPROOF") }) ContextualKeyword("LEAKPROOF")
+        { kind = RoutineCharacteristic.Kind.LEAKPROOF; }
+        |
+        <K_NOT> ContextualKeyword("LEAKPROOF") { kind = RoutineCharacteristic.Kind.NOT_LEAKPROOF; }
+        |
+        LOOKAHEAD({ isKeywordAhead("EXTERNAL") }) ContextualKeyword("EXTERNAL") <K_SECURITY>
+        kind=RoutineSecurity() { clause = RoutineCharacteristic.SecurityClause.EXTERNAL_SECURITY; }
+        |
+        <K_SECURITY> kind=RoutineSecurity() { clause = RoutineCharacteristic.SecurityClause.SECURITY; }
+        |
+        <K_PARALLEL>
+        (
+            LOOKAHEAD({ isKeywordAhead("UNSAFE") }) ContextualKeyword("UNSAFE")
+            { kind = RoutineCharacteristic.Kind.PARALLEL_UNSAFE; }
+            |
+            <K_RESTRICTED> { kind = RoutineCharacteristic.Kind.PARALLEL_RESTRICTED; }
+            |
+            ContextualKeyword("SAFE") { kind = RoutineCharacteristic.Kind.PARALLEL_SAFE; }
+        )
+        |
+        LOOKAHEAD({ isKeywordAhead("COST") }) ContextualKeyword("COST") value=PostgreSqlNumericValue()
+        { kind = RoutineCharacteristic.Kind.COST; }
+        |
+        <K_ROWS> value=PostgreSqlNumericValue() { kind = RoutineCharacteristic.Kind.ROWS; }
+        |
+        LOOKAHEAD({ isKeywordAhead("SUPPORT") }) ContextualKeyword("SUPPORT") value=AccessQualifiedName()
+        { kind = RoutineCharacteristic.Kind.SUPPORT; }
+    )
+    {
+        return change != null ? new RoutineCharacteristic(change)
+                : new RoutineCharacteristic(kind, value).withSecurityClause(clause);
+    }
+}
+
+RoutineCharacteristic MySqlRoutineCharacteristic():
+{
+    RoutineCharacteristic.Kind kind;
+    RoutineCharacteristic.SecurityClause clause = null;
+    Token token;
+    StringValue comment = null;
+}
+{
+    (
+        <K_COMMENT> token=<S_CHAR_LITERAL>
+        { kind = RoutineCharacteristic.Kind.COMMENT; comment = stringValue(token); }
+        |
+        LOOKAHEAD({ isKeywordAhead("LANGUAGE") }) ContextualKeyword("LANGUAGE") ContextualKeyword("SQL")
+        { kind = RoutineCharacteristic.Kind.LANGUAGE_SQL; }
+        |
+        LOOKAHEAD({ isKeywordAhead("CONTAINS") }) ContextualKeyword("CONTAINS") ContextualKeyword("SQL")
+        { kind = RoutineCharacteristic.Kind.CONTAINS_SQL; }
+        |
+        <K_NO> ContextualKeyword("SQL") { kind = RoutineCharacteristic.Kind.NO_SQL; }
+        |
+        LOOKAHEAD({ isKeywordAhead("READS") }) ContextualKeyword("READS") ContextualKeyword("SQL") <K_DATA>
+        { kind = RoutineCharacteristic.Kind.READS_SQL_DATA; }
+        |
+        LOOKAHEAD({ isKeywordAhead("MODIFIES") }) ContextualKeyword("MODIFIES") ContextualKeyword("SQL") <K_DATA>
+        { kind = RoutineCharacteristic.Kind.MODIFIES_SQL_DATA; }
+        |
+        ContextualKeyword("SQL") <K_SECURITY> kind=RoutineSecurity()
+        { clause = RoutineCharacteristic.SecurityClause.SQL_SECURITY; }
+    )
+    {
+        return new RoutineCharacteristic(kind).withComment(comment).withSecurityClause(clause);
+    }
+}
+
+RoutineCharacteristic.Kind RoutineSecurity():
+{ RoutineCharacteristic.Kind kind; }
+{
+    (
+        LOOKAHEAD({ isKeywordAhead("DEFINER") }) ContextualKeyword("DEFINER")
+        { kind = RoutineCharacteristic.Kind.SECURITY_DEFINER; }
+        |
+        ContextualKeyword("INVOKER") { kind = RoutineCharacteristic.Kind.SECURITY_INVOKER; }
+    )
+    { return kind; }
+}
+
+/** PostgreSQL NumericOnly: an optionally signed integer or decimal, as written. */
+String PostgreSqlNumericValue():
+{
+    Token sign = null;
+    Token number;
+}
+{
+    [ sign="+" | sign="-" ] ( number=<S_LONG> | number=<S_DOUBLE> )
+    { return (sign == null ? "" : sign.image) + number.image; }
 }
 
 CreateFunctionalStatement SqlServerRoutine():

@@ -46,6 +46,7 @@ public class CreateTrigger implements Statement {
     private Table trigger;
     private Timing timing;
     private boolean orReplace;
+    private boolean ifNotExists;
     private boolean constraint;
     private Table referencedTable;
     private Orientation orientation;
@@ -74,6 +75,19 @@ public class CreateTrigger implements Statement {
 
     public void setOrReplace(boolean orReplace) {
         this.orReplace = orReplace;
+    }
+
+    /**
+     * Whether MySQL's {@code IF NOT EXISTS} follows {@code TRIGGER}.
+     *
+     * @return {@code true} if {@code IF NOT EXISTS} is rendered
+     */
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
     }
 
     public boolean isConstraint() {
@@ -207,6 +221,14 @@ public class CreateTrigger implements Statement {
         this.otherTrigger = otherTrigger;
     }
 
+    /**
+     * The MySQL trigger statement: a single statement, a {@link net.sf.jsqlparser.statement.Block}
+     * of statements, or an {@link net.sf.jsqlparser.statement.UnsupportedStatement} holding the
+     * tokens of a compound statement with procedural statements, such as {@code IF} or
+     * {@code DECLARE}.
+     *
+     * @return the body
+     */
     public Statement getBody() {
         return body;
     }
@@ -307,10 +329,17 @@ public class CreateTrigger implements Statement {
 
     private String mysqlSql() {
         StringBuilder builder = new StringBuilder("CREATE ");
+        if (orReplace) {
+            builder.append("OR REPLACE ");
+        }
         if (definer != null) {
             builder.append("DEFINER = ").append(definer).append(" ");
         }
-        builder.append("TRIGGER ").append(trigger).append(" ").append(timing).append(" ")
+        builder.append("TRIGGER ");
+        if (ifNotExists) {
+            builder.append("IF NOT EXISTS ");
+        }
+        builder.append(trigger).append(" ").append(timing).append(" ")
                 .append(getEvent()).append(" ON ").append(table).append(" FOR EACH ROW ");
         if (order != null) {
             builder.append(order).append(" ").append(otherTrigger).append(" ");
