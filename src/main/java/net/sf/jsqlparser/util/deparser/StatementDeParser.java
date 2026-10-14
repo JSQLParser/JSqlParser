@@ -80,6 +80,7 @@ import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.TableMaintenanceStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -94,6 +95,7 @@ import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -111,6 +113,8 @@ import net.sf.jsqlparser.statement.insert.ParenthesedInsert;
 import net.sf.jsqlparser.statement.lock.LockStatement;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.WithItem;
@@ -214,6 +218,30 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(CreateTrigger createTrigger, S context) {
         createTrigger.appendTo(builder, e -> e.accept(expressionDeParser, context));
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(CreateEventTrigger statement, S context) {
+        return statement.appendTo(builder,
+                expression -> expression.accept(expressionDeParser, context));
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterEventTrigger statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(Reindex statement, S context) {
+        return statement.appendTo(builder);
+    }
+
+    @Override
+    public <S> StringBuilder visit(SecurityLabel statement, S context) {
+        return statement.appendTo(builder,
+                table -> table.accept(selectDeParser, context),
+                column -> column.accept(expressionDeParser, context),
+                label -> label.accept(expressionDeParser, context));
     }
 
     @Override
@@ -513,8 +541,7 @@ public class StatementDeParser extends AbstractDeParser<Statement>
 
     @Override
     public <S> StringBuilder visit(CreateSchema aThis, S context) {
-        builder.append(aThis.toString());
-        return builder;
+        return aThis.appendTo(builder, element -> element.accept(this, context));
     }
 
     @Override

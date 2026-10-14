@@ -36,6 +36,7 @@ import net.sf.jsqlparser.statement.alter.AlterServer;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterStatistics;
 import net.sf.jsqlparser.statement.alter.AlterSubscription;
+import net.sf.jsqlparser.statement.alter.AlterEventTrigger;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.AlterTablespaceMove;
 import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
@@ -68,6 +69,7 @@ import net.sf.jsqlparser.statement.create.subscription.SubscriptionOption;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.textsearch.CreateTextSearchConfiguration;
+import net.sf.jsqlparser.statement.create.trigger.CreateEventTrigger;
 import net.sf.jsqlparser.statement.create.trigger.CreateTrigger;
 import net.sf.jsqlparser.statement.create.type.CreateType;
 import net.sf.jsqlparser.statement.create.user.CreateUser;
@@ -93,6 +95,8 @@ import net.sf.jsqlparser.statement.oracle.OracleAssignment;
 import net.sf.jsqlparser.statement.oracle.OracleBlock;
 import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.reindex.Reindex;
+import net.sf.jsqlparser.statement.securitylabel.SecurityLabel;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -1062,6 +1066,29 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(CreateTrigger statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(CreateEventTrigger statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterEventTrigger statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(Reindex statement, S context) {
+        analysis.claimTopLevel();
+        // rebuilds index storage from the indexed rows
+        analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.READS_DATA);
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SecurityLabel statement, S context) {
         return schemaOnly();
     }
 
