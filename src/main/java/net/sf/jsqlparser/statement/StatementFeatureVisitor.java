@@ -95,6 +95,7 @@ import net.sf.jsqlparser.statement.oracle.OracleNullStatement;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.FromItemVisitorAdapter;
 import net.sf.jsqlparser.statement.select.MySqlSelectIntoClause;
@@ -544,6 +545,11 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
         analysis.claimTopLevel();
         analysis.certain(StmtFeature.MODIFIES_SCHEMA, StmtFeature.MODIFIES_DATA);
         return null;
+    }
+
+    @Override
+    public <S> Void visit(ReassignOwned statement, S context) {
+        return schemaOnly();
     }
 
     @Override

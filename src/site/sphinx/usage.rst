@@ -245,6 +245,71 @@ are independent: ``isNoInherit()`` is true and
 ``getConstraintAttributes().isNotValid()`` is true. Clearing one flag preserves
 the other when the statement is rendered.
 
+DROP targets
+------------
+
+``Drop`` keeps the parts of a DROP statement that are not plain object names in
+typed properties:
+
+* FUNCTION, PROCEDURE, ROUTINE and AGGREGATE targets are ``RoutineReference``
+  items in ``getRoutines()``, the model that GRANT and COMMENT use. Every target
+  keeps its own signature, so ``DROP PROCEDURE p(int)`` and
+  ``DROP FUNCTION f(int), g(text)`` render as written. Null arguments mean an
+  omitted signature; an empty list is an explicit ``()``.
+* USER, ROLE and GROUP targets and the roles of PostgreSQL ``DROP OWNED BY`` are
+  ``UserAccount`` items in ``getAccounts()``, read with the MySQL account-name rule
+  that CREATE USER uses. MySQL accounts keep their host, as in ``'app'@'%'``,
+  and a quoted PostgreSQL role name such as ``"Admin"`` keeps ``"`` in
+  ``getQuoteStr()``.
+* ``DROP TRIGGER t ON tbl`` and ``DROP RULE r ON tbl`` expose ``tbl`` through
+  ``getTable()``, like ``DROP INDEX i ON tbl``, and table discovery reports it.
+  SQL Server's ``ON DATABASE`` and ``ON ALL SERVER`` trigger scopes stay
+  parameters.
+* ``getBehavior()`` holds an explicit CASCADE or RESTRICT as a
+  ``CascadeBehavior``. It is rendered last.
+* ``isUndo()``, ``getEngine()`` and ``isEngineUseEquals()`` cover MySQL
+  ``DROP [UNDO] TABLESPACE name [ENGINE [=] engine]``. ``isForce()`` covers
+  PostgreSQL ``DROP DATABASE name [WITH] (FORCE)``; the optional WITH is
+  always rendered.
+
+TYPE, DOMAIN, EVENT, EVENT TRIGGER, TABLESPACE, USER and GROUP are recognized
+object types. PostgreSQL ``REASSIGN OWNED BY old_role [, ...] TO new_role`` is
+parsed into ``ReassignOwned``, whose roles use the same ``UserAccount`` model.
+
+.. code-block:: java
+
+    Drop drop = (Drop) CCJSqlParserUtil.parse("DROP FUNCTION f(int), g(text) CASCADE",
+        parser -> parser.withDialect(Dialect.POSTGRESQL));
+    RoutineReference g = drop.getRoutines().get(1);
+    g.getArguments().get(0).setDataType(new ColDataType("varchar"));
+    // DROP FUNCTION f(int), g(varchar) CASCADE
+    String sql = drop.toString();
+
+The legacy accessors remain and are derived from these properties:
+
+* ``getName()`` and ``getNames()`` return read-only snapshots of routine and
+  account names. Edit ``getRoutines()`` or ``getAccounts()`` to change them.
+* ``getTypeToParameters()`` and ``getParamsByType()`` return a read-only map with
+  the argument declarations of the last routine, where the legacy
+  single-signature form kept them. The map now also covers PROCEDURE, ROUTINE
+  and AGGREGATE.
+* ``getParameters()`` is a snapshot that includes ON with the owner table, the
+  MySQL ALGORITHM and LOCK clauses and the CASCADE or RESTRICT keyword, in
+  source order. ``setParameters()`` replaces the clause with raw tokens and
+  clears all three; ``addParameters()`` keeps them. Raw tokens are not parsed:
+  ``addParameters("CASCADE")`` leaves ``getBehavior()`` null.
+* ``setName()``, ``setNames()``, ``addNames()`` and ``setTypeToParameters()``
+  first convert routine and account targets to the legacy names and single
+  signature, so ``setName()`` on ``DROP FUNCTION f(int)`` still renders
+  ``DROP FUNCTION g(int)``. Use ``getRoutines()`` to keep several signatures.
+
+Migration: mutating the map returned by ``getTypeToParameters()`` for a parsed
+routine now throws ``UnsupportedOperationException``; edit its
+``RoutineReference`` instead. ``getObjectType()`` reports the new ``AGGREGATE``,
+``DOMAIN``, ``EVENT_TRIGGER``, ``GROUP``, ``OWNED``, ``ROLE``, ``ROUTINE``,
+``RULE``, ``TYPE`` and ``USER`` kinds where it reported ``OTHER``.
+``DROP OWNED BY r`` no longer returns the name ``BY``.
+
 DROP INDEX owners
 -----------------
 
@@ -264,7 +329,8 @@ setters do not parse SQL or infer a table.
 Table discovery and statement visitors traverse DROP TABLE/VIEW targets and
 explicit index owners, without reporting catalog-only object names as tables.
 The statement deparser delegates real tables to its configured select deparser.
-MySQL ALGORITHM/LOCK tokens retain their order and optional equals signs.
+MySQL ALGORITHM and LOCK clauses retain their order and optional equals signs as
+typed nodes; see :ref:`Share MySQL index options`.
 
 MySQL named constraint drops
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -375,6 +441,73 @@ a null payload omits its value. A non-null ``setTablespaceStorage`` also selects
 TABLESPACE; supply its tablespace name with ``setValue``. Choose the new kind and spelling explicitly
 when using the scalar setters. These methods edit the AST rather than checking
 database-specific DDL validity.
+
+Share MySQL index options
+-------------------------
+
+CREATE INDEX, the index and key definitions of CREATE TABLE, and ALTER TABLE
+``ADD`` or ``ALTER INDEX`` parse MySQL index options with one grammar rule into
+one model. ``IndexOptions.getSpecOptions()``, also available on ``Index`` and
+``KeyConstraint``, returns the options written after the key list as mutable,
+ordered ``IndexSpecOption`` nodes. ``getKind()`` selects the payload:
+
+* ``KEY_BLOCK_SIZE``, ``ENGINE_ATTRIBUTE`` and ``SECONDARY_ENGINE_ATTRIBUTE``:
+  ``getValue()`` and the optional ``=`` reported by ``isUseEquals()``
+* ``INDEX_TYPE`` (``USING BTREE``) and ``PARSER`` (``WITH PARSER ngram``):
+  ``getValue()``
+* ``COMMENT``: ``getComment()`` returns the literal as a ``StringValue`` that
+  records how the dialect escapes it, so ``getNotExcapedValue()`` returns the
+  stored text, for example ``it's`` for ``'it''s'`` or, with MySQL backslash
+  escapes, ``'it\'s'``. ``getValue()`` remains the literal's SQL text.
+* ``VISIBILITY``: ``getVisible()`` for VISIBLE or INVISIBLE
+* ``OTHER``: opaque tokens that CREATE TABLE and CREATE INDEX accept for other
+  dialects
+
+Values keep their SQL spelling, including the quotes of string literals. An
+index type written before the key list, as in ``KEY k USING BTREE (a)``,
+``PRIMARY KEY USING BTREE (id)`` or ``CREATE INDEX k USING HASH ON t (a)``,
+remains ``getUsing()``; ``CreateIndex.isIndexTypeBeforeOn()`` still distinguishes
+the two CREATE INDEX positions. After the key list it is an ``INDEX_TYPE`` option
+at its source position. PostgreSQL's INCLUDE, NULLS DISTINCT, storage parameters
+and tablespace keep their dedicated properties.
+
+CREATE INDEX keeps these options on ``getIndex()``. Its ALGORITHM and LOCK
+clauses are ``AlgorithmOrLockOption`` nodes in
+``CreateIndex.getAlgorithmOrLockOptions()``; DROP INDEX exposes the same type
+through ``Drop.getAlgorithmOrLockOptions()``. CREATE INDEX renders them after the
+index options, as MySQL requires.
+
+.. code-block:: java
+
+    CreateIndex create = (CreateIndex) CCJSqlParserUtil.parse(
+            "CREATE UNIQUE INDEX uk ON t (a) USING BTREE COMMENT 'x' ALGORITHM = INPLACE",
+            parser -> parser.withDialect(Dialect.MYSQL));
+    List<IndexSpecOption> options = create.getIndex().getSpecOptions();
+    options.get(0).setValue("HASH");                    // INDEX_TYPE
+    options.add(IndexSpecOption.visibility(false));
+    create.getAlgorithmOrLockOptions().get(0).setValue("COPY");
+    // CREATE UNIQUE INDEX uk ON t (a) USING HASH COMMENT 'x' INVISIBLE ALGORITHM = COPY
+
+The kind of an option is fixed. Setters for a payload that the kind does not have,
+and ``setTokens`` on a typed option, throw ``IllegalStateException``; replace the
+node to change its kind. ``IndexSpecOption.raw`` copies its tokens and never
+parses them.
+
+The legacy accessors are derived from these nodes. ``getIndexSpec()`` returns an
+unmodifiable token snapshot of ``getSpecOptions()``, or null when the options are
+unset. ``CreateIndex.getTailParameters()`` returns the tokens of the index options
+followed by ALGORITHM and LOCK, and ``Drop.getParameters()`` includes ALGORITHM
+and LOCK at their source position. ``setIndexSpec`` and
+``CreateIndex.setTailParameters`` replace these clauses with one opaque option;
+``Drop.setParameters`` also clears ALGORITHM and LOCK.
+
+Migration: edits of the ``getIndexSpec()`` and ``getTailParameters()`` snapshots
+now throw ``UnsupportedOperationException``; edit the nodes or call the setters.
+ALTER TABLE key definitions report the same tokens as CREATE TABLE, for example
+``KEY_BLOCK_SIZE``, ``=`` and ``8`` instead of the single entry
+``KEY_BLOCK_SIZE = 8``. For a constructed statement without trailing clauses,
+``getTailParameters()`` returns an empty list instead of null. Typed option
+keywords are rendered in upper case.
 
 Inspect PostgreSQL schema statements
 ------------------------------------
@@ -1717,6 +1850,20 @@ the PostgreSQL ``CreateRole`` AST for this ambiguous form::
     CreateRole user = (CreateRole) CCJSqlParserUtil.parse(
         "CREATE USER app",
         parser -> parser.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL));
+
+MySQL account names (``user[@host]``) of ``CREATE USER`` and of view, trigger and
+routine ``DEFINER`` clauses share one grammar rule and are read into separate user
+and host ``StringValue`` parts (``UserAccount`` and ``MySqlDefiner``). Every MySQL
+spelling is accepted, including ``app@localhost``, ``app@'%'`` and
+``'app'@localhost``. A part quoted with ``'``, ``"`` or a backquote keeps its quote
+character in ``getQuoteStr()`` and its text in ``getValue()``::
+
+    CreateUser createUser = (CreateUser) CCJSqlParserUtil.parse(
+        "CREATE USER `app`@'%' IDENTIFIED BY 'secret'");
+    UserAccount account = createUser.getAccounts().get(0);
+    account.getUser().getValue();    // app
+    account.getUser().getQuoteStr(); // `
+    account.getHost().getValue();    // %
 
 ``Grant`` retains its string-based getters, setters and fluent methods. Its
 ``PrivilegeClause`` exposes typed ``Privilege`` items, column lists,

@@ -215,6 +215,7 @@ import net.sf.jsqlparser.statement.piped.WindowPipeOperator;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.role.AlterRole;
 import net.sf.jsqlparser.statement.role.CreateRole;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -1667,6 +1668,12 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(Drop drop) {
         StatementVisitor.super.visit(drop);
+    }
+
+    @Override
+    public <S> Void visit(ReassignOwned statement, S context) {
+        // Role names do not refer to tables.
+        return null;
     }
 
     @Override

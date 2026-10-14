@@ -48,6 +48,7 @@ import net.sf.jsqlparser.statement.execute.Execute;
 import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
+import net.sf.jsqlparser.statement.role.ReassignOwned;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.KSQLWindow;
@@ -502,6 +503,12 @@ public enum Feature {
      * @see Drop
      */
     drop, dropTable, dropIndex, dropView, dropSchema, dropSequence, dropTableIfExists, dropIndexIfExists, dropViewIfExists, dropSchemaIfExists, dropSequenceIfExists,
+    /**
+     * PostgreSQL "REASSIGN OWNED BY ... TO ..." statement is allowed
+     *
+     * @see ReassignOwned
+     */
+    reassignOwned,
 
     /**
      * SQL "CREATE DATABASE" statement is allowed
