@@ -42,6 +42,8 @@ import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterType;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -874,6 +876,11 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
     }
 
     @Override
+    public <S> Void visit(SetRoleStatement statement, S context) {
+        return sessionOnly();
+    }
+
+    @Override
     public <S> Void visit(UseStatement use, S context) {
         return sessionOnly();
     }
@@ -1219,6 +1226,26 @@ public class StatementFeatureVisitor extends StatementVisitorAdapter<Void> {
 
     @Override
     public <S> Void visit(CreateUser statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(AlterUser statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(RenameUser statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetDefaultRoleStatement statement, S context) {
+        return schemaOnly();
+    }
+
+    @Override
+    public <S> Void visit(SetPasswordStatement statement, S context) {
         return schemaOnly();
     }
 
