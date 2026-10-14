@@ -12,6 +12,7 @@ package net.sf.jsqlparser.util.validation.validator;
 import static java.util.stream.Collectors.toList;
 
 import java.util.EnumSet;
+import java.util.List;
 import net.sf.jsqlparser.parser.feature.Feature;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterExpression;
@@ -19,6 +20,7 @@ import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDataType;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnDropNotNull;
 import net.sf.jsqlparser.statement.alter.AlterExpression.ColumnSetNotNull;
 import net.sf.jsqlparser.statement.alter.AlterOperation;
+import net.sf.jsqlparser.statement.alter.ColumnPosition;
 import net.sf.jsqlparser.statement.create.table.NamedConstraint;
 import net.sf.jsqlparser.statement.create.table.KeyColumnSource;
 import net.sf.jsqlparser.statement.create.table.KeyElement;
@@ -71,6 +73,7 @@ public class AlterValidator extends AbstractValidator<Alter> {
                         ValidationUtil.map(e.getColDataTypeList(), ColumnDataType::getColumnName),
                         validateForExist,
                         NamedObject.table);
+                validateOptionalColumnNames(c, precedingColumnNames(e), NamedObject.table);
             }
 
             validateOptionalName(c, NamedObject.constraint, e.getConstraintName());
@@ -148,4 +151,11 @@ public class AlterValidator extends AbstractValidator<Alter> {
         }
     }
 
+    /** Returns the existing columns named by AFTER positions. */
+    private static List<String> precedingColumnNames(AlterExpression expression) {
+        return expression.getColDataTypeList().stream().map(ColumnDataType::getPosition)
+                .filter(position -> position != null
+                        && position.getKind() == ColumnPosition.Kind.AFTER)
+                .map(ColumnPosition::getColumnName).collect(toList());
+    }
 }

@@ -101,6 +101,28 @@ public class AlterValidatorTest extends ValidationTestAsserts {
     }
 
     @Test
+    void validatesTheColumnNamedByAnAfterPosition() {
+        List<Named> names = new ArrayList<>();
+        DatabaseMetaDataValidation metadata = name -> {
+            names.add(name);
+            return !"c1".equals(name.getFqn());
+        };
+        List<ValidationError> errors = new Validation(List.of(metadata),
+                "ALTER TABLE t ADD COLUMN c1 INT AFTER id, MODIFY c2 INT FIRST").validate();
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(List.of(new Named(NamedObject.table, "t"),
+                new Named(NamedObject.column, "c1"), new Named(NamedObject.column, "id"),
+                new Named(NamedObject.column, "c2")), names);
+
+        DatabaseMetaDataValidation missing = name -> !"id".equals(name.getFqn())
+                && !"c1".equals(name.getFqn());
+        errors = new Validation(List.of(missing), "ALTER TABLE t ADD COLUMN c1 INT AFTER id")
+                .validate();
+        assertEquals(1, errors.size());
+        assertTrue(errors.toString().contains("id does not exist"), errors.toString());
+    }
+
+    @Test
     void validatesRenamedConstraintTargetAsANewConstraint() {
         List<Named> names = new ArrayList<>();
         DatabaseMetaDataValidation metadata = name -> {
