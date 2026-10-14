@@ -6203,11 +6203,19 @@ Statement Show():
 {
     <K_SHOW>
     (
-        LOOKAHEAD(2) statement = ShowColumns()
+        // A typed form must span the whole statement; other dialects' trailing clauses
+        // (e.g. Snowflake IN SCHEMA s, ClickHouse FORMAT f) still fall back to captureRest().
+        LOOKAHEAD(ShowColumns() ShowStatementEnd()) statement = ShowColumns()
         |
         LOOKAHEAD(2) statement = ShowIndex()
         |
         LOOKAHEAD(2) statement = ShowTables()
+        |
+        LOOKAHEAD(ShowTableStatus() ShowStatementEnd(),
+                { getToken(1).kind == K_TABLE && "STATUS".equalsIgnoreCase(getToken(2).image) })
+        statement = ShowTableStatus()
+        |
+        LOOKAHEAD(ShowCreate() ShowStatementEnd()) statement = ShowCreate()
         |
         // any of the RDBMS specific SHOW syntax
         captureRest = captureRest()
@@ -6224,13 +6232,135 @@ Statement Show():
     }
 }
 
+/**
+ * Only used inside the SHOW lookaheads: a typed SHOW statement ends at a semicolon, the input end,
+ * the ELSE or END of an enclosing IF or block, or the start of the next statement, as in
+ * Statements().
+ */
+void ShowStatementEnd():
+{}
+{
+    <ST_SEMICOLON>
+    |
+    <EOF>
+    |
+    <K_ELSE>
+    |
+    <K_END>
+    |
+    LOOKAHEAD({ getToken(1).kind != K_FROM && getToken(1).kind != K_PIVOT
+            && getToken(1).kind != K_UNPIVOT && isStatementStartAhead() }) {}
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/show-columns.html
 ShowColumnsStatement ShowColumns(): {
-    String tableName;
+    ShowColumnsStatement statement = new ShowColumnsStatement();
+    Table table;
+    String dbName;
+    Expression expression;
 }
 {
-    <K_COLUMNS> <K_FROM> tableName = RelObjectName()
+    [ <K_EXTENDED> { statement.setExtended(true); } ]
+    [ <K_FULL> { statement.setFull(true); } ]
+    ( <K_COLUMNS> | <K_FIELDS> { statement.setFieldsKeyword(true); } )
+    (
+        <K_FROM>
+        |
+        <K_IN> { statement.setTableSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+    )
+    table = Table() { statement.setTable(table); }
+    [
+        LOOKAHEAD(2)
+        (
+            <K_FROM>
+            |
+            <K_IN> { statement.setDbSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+        )
+        dbName = RelObjectName() { statement.setDbName(dbName); }
+    ]
+    [
+        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
+        |
+        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
+    ]
     {
-        return new ShowColumnsStatement(tableName);
+        return statement;
+    }
+}
+
+// https://dev.mysql.com/doc/refman/8.4/en/show-table-status.html
+ShowTableStatusStatement ShowTableStatus(): {
+    ShowTableStatusStatement statement = new ShowTableStatusStatement();
+    String dbName;
+    Expression expression;
+}
+{
+    <K_TABLE> ContextualKeyword("STATUS")
+    [
+        LOOKAHEAD(2)
+        (
+            <K_FROM>
+            |
+            <K_IN> { statement.setSelectionMode(ShowTablesStatement.SelectionMode.IN); }
+        )
+        dbName = RelObjectName() { statement.setDbName(dbName); }
+    ]
+    [
+        <K_LIKE> expression = SimpleExpression() { statement.setLikeExpression(expression); }
+        |
+        <K_WHERE> expression = Expression() { statement.setWhereCondition(expression); }
+    ]
+    {
+        return statement;
+    }
+}
+
+/**
+ * MySQL SHOW CREATE {TABLE | VIEW | PROCEDURE | FUNCTION | TRIGGER | EVENT} name,
+ * SHOW CREATE {DATABASE | SCHEMA} [IF NOT EXISTS] db and SHOW CREATE USER account.
+ */
+ShowCreateStatement ShowCreate(): {
+    ShowCreateStatement statement = new ShowCreateStatement();
+    Table name;
+    String databaseName;
+    String currentUser;
+    UserAccount account = new UserAccount();
+}
+{
+    <K_CREATE>
+    (
+        (
+            <K_TABLE> { statement.setObjectType(ShowCreateStatement.ObjectType.TABLE); }
+            |
+            <K_VIEW> { statement.setObjectType(ShowCreateStatement.ObjectType.VIEW); }
+            |
+            <K_PROCEDURE> { statement.setObjectType(ShowCreateStatement.ObjectType.PROCEDURE); }
+            |
+            <K_FUNCTION> { statement.setObjectType(ShowCreateStatement.ObjectType.FUNCTION); }
+            |
+            <K_TRIGGER> { statement.setObjectType(ShowCreateStatement.ObjectType.TRIGGER); }
+            |
+            <K_EVENT> { statement.setObjectType(ShowCreateStatement.ObjectType.EVENT); }
+        )
+        name = Table() { statement.setName(name); }
+        |
+        ( <K_DATABASE> | <K_SCHEMA> { statement.setSchemaKeyword(true); } )
+        { statement.setObjectType(ShowCreateStatement.ObjectType.DATABASE); }
+        [ LOOKAHEAD(3) <K_IF> <K_NOT> <K_EXISTS> { statement.setIfNotExists(true); } ]
+        databaseName = RelObjectName() { statement.setDatabaseName(databaseName); }
+        |
+        <K_USER> { statement.setObjectType(ShowCreateStatement.ObjectType.USER); }
+        (
+            LOOKAHEAD({ isKeywordAhead("CURRENT_USER") }) currentUser = RelObjectName()
+            { account.setUser(new StringValue(currentUser).setQuoteStr("")); }
+            [ LOOKAHEAD(2) "(" ")" { statement.setCurrentUserParentheses(true); } ]
+            |
+            account = MySqlAccountName()
+        )
+        { statement.setAccount(account); }
+    )
+    {
+        return statement;
     }
 }
 
@@ -15502,9 +15632,64 @@ StringValue MySqlAccountNamePart():
     (
         token=<S_CHAR_LITERAL> { value = stringValue(token); }
         |
-        name=RelObjectName() { value = new StringValue(name).setQuoteStr(""); }
+        name=RelObjectName()
+        {
+            // a double-quoted or backquoted part keeps its quote character separately from its
+            // value, like a string literal; new StringValue(name) would drop the double quotes
+            value = name.length() > 1 && (name.charAt(0) == '"' || name.charAt(0) == '`')
+                    && name.charAt(name.length() - 1) == name.charAt(0)
+                    ? new StringValue().withValue(name.substring(1, name.length() - 1))
+                            .setQuoteStr(name.substring(0, 1))
+                    : new StringValue().withValue(name).setQuoteStr("");
+        }
     )
     { return value; }
+}
+
+/**
+ * A MySQL account name, user[@host], shared by CREATE USER, DEFINER and the account statements.
+ * Each part is unquoted or quoted with ', " or `. The lexer reads an unquoted user@host, and the
+ * user@ in front of a quoted host, as one identifier, and @host after a quoted user as one
+ * at-identifier, so those spellings are split here.
+ */
+UserAccount MySqlAccountName():
+{
+    UserAccount account = new UserAccount();
+    StringValue part;
+    Token token;
+    int at;
+}
+{
+    (
+        // user@ followed by a quoted host
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.indexOf('@') > 0
+                && getToken(1).image.indexOf('@') == getToken(1).image.length() - 1 })
+        token=<S_IDENTIFIER>
+        { account.setUser(new StringValue().withValue(token.image.substring(0, token.image.length() - 1))
+                .setQuoteStr("")); }
+        part=MySqlAccountNamePart() { account.setHost(part); }
+        |
+        // unquoted user@host
+        LOOKAHEAD({ getToken(1).kind == S_IDENTIFIER && getToken(1).image.indexOf('@') > 0
+                && getToken(1).image.indexOf('@') == getToken(1).image.lastIndexOf('@') })
+        token=<S_IDENTIFIER>
+        {
+            at = token.image.indexOf('@');
+            account.setUser(new StringValue().withValue(token.image.substring(0, at)).setQuoteStr(""));
+            account.setHost(new StringValue().withValue(token.image.substring(at + 1)).setQuoteStr(""));
+        }
+        |
+        part=MySqlAccountNamePart() { account.setUser(part); }
+        [
+            <K_AT_SIGN> part=MySqlAccountNamePart() { account.setHost(part); }
+            |
+            // a quoted user followed by an unquoted @host
+            LOOKAHEAD({ getToken(1).kind == S_AT_IDENTIFIER && !getToken(1).image.startsWith("@@") })
+            token=<S_AT_IDENTIFIER>
+            { account.setHost(new StringValue().withValue(token.image.substring(1)).setQuoteStr("")); }
+        ]
+    )
+    { return account; }
 }
 
 UserAuthentication MySqlUserAuthentication():
@@ -15557,14 +15742,11 @@ UserAuthentication MySqlUserAuthentication():
 
 UserAccount MySqlUserAccount():
 {
-    UserAccount account = new UserAccount();
-    StringValue user = null;
-    StringValue host = null;
+    UserAccount account;
     UserAuthentication authentication = null;
 }
 {
-    user=MySqlAccountNamePart() { account.setUser(user); }
-    [ <K_AT_SIGN> host=MySqlAccountNamePart() { account.setHost(host); } ]
+    account=MySqlAccountName()
     [ authentication=MySqlUserAuthentication() { account.setAuthentication(authentication); } ]
     { return account; }
 }
@@ -15710,8 +15892,7 @@ AlterEvent AlterEvent():
 /** Account spelling is shared, including CURRENT_USER and CURRENT_USER(). */
 void MySqlDefiner(MySqlDefiner definer):
 {
-    StringValue user;
-    StringValue host;
+    UserAccount account;
     String name;
 }
 {
@@ -15721,8 +15902,7 @@ void MySqlDefiner(MySqlDefiner definer):
         { definer.setUser(new StringValue(name).setQuoteStr("")); }
         [ "(" ")" { definer.setCurrentUserParentheses(true); } ]
         |
-        user=MySqlAccountNamePart() { definer.setUser(user); }
-        [ <K_AT_SIGN> host=MySqlAccountNamePart() { definer.setHost(host); } ]
+        account=MySqlAccountName() { definer.setUser(account.getUser()); definer.setHost(account.getHost()); }
     )
 }
 
