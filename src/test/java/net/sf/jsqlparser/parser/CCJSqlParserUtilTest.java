@@ -14,6 +14,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.schema.Column;
@@ -854,6 +855,83 @@ public class CCJSqlParserUtilTest {
         assertEquals("SELECT 'a\\' AS x", CCJSqlParserUtil.parse("SELECT 'a\\' AS x").toString());
         assertEquals("SELECT * FROM t WHERE a LIKE 'x\\_%' ESCAPE '\\'", CCJSqlParserUtil
                 .parse("SELECT * FROM t WHERE a LIKE 'x\\_%' ESCAPE '\\'").toString());
+    }
+
+    @Test
+    public void testPostgresUnicodeEscapeStringsAreOneLiteral() throws Exception {
+        Consumer<CCJSqlParser> postgres =
+                p -> p.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL);
+        for (String literal : new String[] {"U&'\\0041BC \\00e9'",
+                "U&'d!0061t!+000061' UESCAPE '!'", "U&'it''s'", "U&'a\\\\b'",
+                "U&'\\' UESCAPE '!'", "U&'x' UESCAPE '\\'"}) {
+            PlainSelect select = (PlainSelect) ((Select) CCJSqlParserUtil.parse(
+                    "SELECT " + literal + " FROM t", postgres)).getSelectBody();
+            assertEquals(1, select.getSelectItems().size(), literal);
+            assertNull(select.getSelectItems().get(0).getAlias(), literal);
+            assertInstanceOf(StringValue.class, select.getSelectItems().get(0).getExpression());
+            assertEquals("SELECT " + literal + " FROM t", select.toString());
+        }
+        // the prefix is case-insensitive; UESCAPE may follow without or after any whitespace
+        assertEquals("SELECT U&'#0041' UESCAPE '#', U&'x' FROM t", CCJSqlParserUtil.parse(
+                "SELECT u&'#0041'\n\tuescape\n'#', U&'x'FROM t", postgres).toString());
+        // spaces inside U&' make it an expression
+        assertInstanceOf(BitwiseAnd.class, ((PlainSelect) CCJSqlParserUtil
+                .parse("SELECT U & 'x' FROM t", postgres)).getSelectItem(0).getExpression());
+        assertInstanceOf(BitwiseAnd.class, ((PlainSelect) CCJSqlParserUtil
+                .parse("SELECT U &'x' FROM t", postgres)).getSelectItem(0).getExpression());
+    }
+
+    @Test
+    public void testUnicodeEscapeStringsNeedThePostgresDialect() throws Exception {
+        for (AbstractJSqlParser.Dialect dialect : new AbstractJSqlParser.Dialect[] {null,
+                AbstractJSqlParser.Dialect.MYSQL, AbstractJSqlParser.Dialect.ORACLE,
+                AbstractJSqlParser.Dialect.SQLSERVER, AbstractJSqlParser.Dialect.ANSI_SQL}) {
+            Consumer<CCJSqlParser> consumer = p -> {
+                if (dialect != null) {
+                    p.withDialect(dialect);
+                }
+            };
+            for (String sql : new String[] {"SELECT U&'x' FROM t",
+                    "SELECT u&'\\0041' FROM t"}) {
+                BitwiseAnd and = assertInstanceOf(BitwiseAnd.class, ((PlainSelect) CCJSqlParserUtil
+                        .parse(sql, consumer)).getSelectItem(0).getExpression(), sql);
+                assertInstanceOf(Column.class, and.getLeftExpression(), sql);
+                assertNull(assertInstanceOf(StringValue.class, and.getRightExpression(), sql)
+                        .getPrefix(), sql);
+            }
+            for (String sql : new String[] {"SELECT a & b FROM t", "SELECT U & 1 FROM t",
+                    "SELECT U&1 FROM t", "SELECT U & 'x' FROM t"}) {
+                assertInstanceOf(BitwiseAnd.class, ((PlainSelect) CCJSqlParserUtil.parse(sql,
+                        consumer)).getSelectItem(0).getExpression(), sql);
+            }
+            assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil
+                    .parse("SELECT U&'d!0061' UESCAPE '!' FROM t", consumer));
+            // literals that merely start with & are unaffected
+            assertEquals("SELECT '&', '&x', N'&', 'a' & 'b' FROM t", CCJSqlParserUtil
+                    .parse("SELECT '&', '&x', N'&', 'a' & 'b' FROM t", consumer).toString());
+        }
+        // the bitwise reading also stays for PostgreSQL's U & 1 and a & b
+        for (String sql : new String[] {"SELECT a & b FROM t", "SELECT U & 1 FROM t",
+                "SELECT U&1 FROM t", "SELECT '&' & 'b' FROM t"}) {
+            assertInstanceOf(BitwiseAnd.class, ((PlainSelect) CCJSqlParserUtil.parse(sql,
+                    p -> p.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL)))
+                    .getSelectItem(0).getExpression(), sql);
+        }
+    }
+
+    @Test
+    public void testInvalidUnicodeEscapeStringsAreRejected() {
+        for (String literal : new String[] {"U&'\\00'", "U&'\\0000'", "U&'\\+110000'",
+                "U&'\\+12'", "U&'\\D800'", "U&'\\DC00'", "U&'\\D800x'",
+                "U&'\\D800\\0041'", "U&'\\D800\\\\'", "U&'x\\'", "U&'\\g000'",
+                "U&'x' UESCAPE '+'", "U&'x' UESCAPE 'a'", "U&'x' UESCAPE 'F'",
+                "U&'x' UESCAPE ' '", "U&'x' UESCAPE '\"'", "U&'x' UESCAPE '\u00e9'"}) {
+            for (String sql : new String[] {"SELECT " + literal, "SELECT f(" + literal + ")",
+                    "COMMENT ON TABLE t IS " + literal}) {
+                assertThrows(JSQLParserException.class, () -> CCJSqlParserUtil.parse(sql,
+                        p -> p.withDialect(AbstractJSqlParser.Dialect.POSTGRESQL)), sql);
+            }
+        }
     }
 
     @Test

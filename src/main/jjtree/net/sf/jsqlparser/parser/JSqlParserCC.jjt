@@ -2573,7 +2573,9 @@ public class CCJSqlParser extends AbstractJSqlParser<CCJSqlParser> {
     /** Creates a string literal that remembers how this configuration lexed its backslashes. */
     private StringValue stringValue(Token token) {
         StringValue value = new StringValue(token.image);
-        if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")) {
+        // a U&'...' string brings its own escaping
+        if (value.getQuoteStr() == null || value.getQuoteStr().startsWith("$")
+                || value.getEscaping() == StringValue.Escaping.POSTGRESQL_UNICODE_ESCAPE) {
             return value;
         }
         String dialect = getAsString(Feature.dialect);
@@ -2744,12 +2746,38 @@ TOKEN_MGR_DECLS : {
     }
 
     // Like closingQuote for a single-quoted literal after its optional prefix. Oracle q'..'
-    // literals have their own delimiters and are left unchanged.
+    // literals have their own delimiters and PostgreSQL U&'..' strings their own lexing, so
+    // both are left unchanged.
     public static int closingSingleQuote(String s, boolean backslashEscapes) {
-        if (s.length() > 1 && (s.charAt(0) == 'q' || s.charAt(0) == 'Q') && s.charAt(1) == '\'') {
+        if (s.length() > 1 && (s.charAt(0) == 'q' || s.charAt(0) == 'Q') && s.charAt(1) == '\''
+                || isUnicodeEscapeString(s)) {
             return -1;
         }
         return closingQuote(s, s.indexOf('\''), '\'', backslashEscapes);
+    }
+
+    private static boolean isUnicodeEscapeString(String s) {
+        return s.regionMatches(true, 0, "U&'", 0, 3);
+    }
+
+    // A PostgreSQL Unicode escape string U&'...' [UESCAPE 'c'] is one literal with
+    // Dialect.POSTGRESQL, which rejects invalid escapes as the server does. Other dialects keep
+    // reading the identifier U followed by the & operator.
+    private void lexUnicodeEscapeString(Token token) {
+        if (!AbstractJSqlParser.Dialect.POSTGRESQL.name().equals(configuration.getValue(Feature.dialect))) {
+            truncateIdentifierToken(token, 1);
+            token.kind = S_IDENTIFIER;
+            return;
+        }
+        try {
+            new StringValue(token.image).getNotExcapedValue();
+        } catch (IllegalArgumentException e) {
+            // Rewind so that every later attempt to read past the literal fails as well
+            input_stream.backup(token.image.length());
+            throw new TokenMgrException("Lexical error at line " + token.beginLine + ", column "
+                    + token.beginColumn + ". Invalid Unicode escape string " + token.image + ": "
+                    + e.getMessage(), TokenMgrException.LEXICAL_ERROR);
+        }
     }
 
     private RowPatternTokenContext rowPatternContext;
@@ -3722,6 +3750,10 @@ TOKEN:
                             | ("q''" (~[])* "''")
                             // | ("q'\\" (~[])* "\\'") <--- Does not work
                         )
+                        // PostgreSQL Unicode escape string with an optional UESCAPE clause, see
+                        // lexUnicodeEscapeString(). Backslashes do not escape its quotes.
+                        | "U&'" ("''" | ~["'"])* "'"
+                            ( ([" ", "\t", "\r", "\n"])* "UESCAPE" ([" ", "\t", "\r", "\n"])* "'" ~["'"] "'" )?
                      ) >
     {
         // The longest match may run past the closing quote of the active rules. A backslash
@@ -3735,6 +3767,9 @@ TOKEN:
         if (end > 0 && end < matchedToken.image.length()) {
             matchedToken.image = image.substring(0, end);
             input_stream.backup(image.length() - end);
+        }
+        if (isUnicodeEscapeString(matchedToken.image)) {
+            lexUnicodeEscapeString(matchedToken);
         }
     }
 | < S_QUOTED_IDENTIFIER: "\"" ( "\"\"" | ~["\n","\r","\""])* "\""
