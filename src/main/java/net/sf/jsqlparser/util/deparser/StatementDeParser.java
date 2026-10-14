@@ -69,6 +69,9 @@ import net.sf.jsqlparser.statement.RollbackStatement;
 import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
+import net.sf.jsqlparser.statement.SetPasswordStatement;
+import net.sf.jsqlparser.statement.SetRoleStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -82,6 +85,8 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.analyze.Analyze;
 import net.sf.jsqlparser.statement.comment.Comment;
@@ -527,6 +532,35 @@ public class StatementDeParser extends AbstractDeParser<Statement>
     public <S> StringBuilder visit(CreateUser createUser, S context) {
         builder.append(createUser);
         return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(AlterUser alterUser, S context) {
+        builder.append(alterUser);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(RenameUser renameUser, S context) {
+        builder.append(renameUser);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetRoleStatement setRole, S context) {
+        builder.append(setRole);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        builder.append(setDefaultRole);
+        return builder;
+    }
+
+    @Override
+    public <S> StringBuilder visit(SetPasswordStatement setPassword, S context) {
+        return setPassword.appendTo(builder, e -> e.accept(expressionDeParser, context));
     }
 
     @Override

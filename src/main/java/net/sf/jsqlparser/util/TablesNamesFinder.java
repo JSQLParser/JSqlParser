@@ -101,6 +101,9 @@ import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SessionStatement;
 import net.sf.jsqlparser.statement.SetIdentityInsertStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.SetDefaultRoleStatement;
+import net.sf.jsqlparser.statement.SetPasswordStatement;
+import net.sf.jsqlparser.statement.SetRoleStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StartTransaction;
@@ -128,6 +131,8 @@ import net.sf.jsqlparser.statement.alter.AlterTextSearchConfiguration;
 import net.sf.jsqlparser.statement.alter.AlterType;
 import net.sf.jsqlparser.statement.alter.AlterUserMapping;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
+import net.sf.jsqlparser.statement.alter.AlterUser;
+import net.sf.jsqlparser.statement.alter.RenameUser;
 import net.sf.jsqlparser.statement.alter.database.AlterDatabase;
 import net.sf.jsqlparser.statement.alter.schema.AlterSchema;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
@@ -1736,6 +1741,33 @@ public class TablesNamesFinder<Void>
     @Override
     public void visit(CreateUser createUser) {
         StatementVisitor.super.visit(createUser);
+    }
+
+    // Account and role names are not tables.
+
+    @Override
+    public <S> Void visit(AlterUser alterUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(RenameUser renameUser, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetRoleStatement setRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetDefaultRoleStatement setDefaultRole, S context) {
+        return null;
+    }
+
+    @Override
+    public <S> Void visit(SetPasswordStatement setPassword, S context) {
+        return null;
     }
 
     @Override

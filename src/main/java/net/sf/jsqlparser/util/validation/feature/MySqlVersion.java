@@ -78,6 +78,10 @@ public enum MySqlVersion implements Version {
                     // https://dev.mysql.com/doc/refman/8.0/en/table-maintenance-statements.html
                     Feature.tableMaintenance,
 
+                    // https://dev.mysql.com/doc/refman/8.0/en/account-management-statements.html
+                    Feature.createRole, Feature.alterUser, Feature.renameUser, Feature.setRole,
+                    Feature.setDefaultRole, Feature.setPassword,
+
                     // https://dev.mysql.com/doc/refman/8.0/en/call.html
                     Feature.execute, Feature.executeCall,
 
